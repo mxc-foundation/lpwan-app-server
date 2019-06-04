@@ -99,7 +99,7 @@ class Login extends Component {
         <Grid item xs={6} lg={4}>
           <Card>
             <CardHeader
-              title="Login"
+              title="Login MXC Cloud"
             />
             <CardContent>
               <LoginForm
