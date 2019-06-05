@@ -76,6 +76,84 @@
         ]
       }
     },
+    "/api/internal/registration": {
+      "post": {
+        "operationId": "RegisterUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiRegisterUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/registration-confirm": {
+      "post": {
+        "operationId": "ConfirmRegistration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiConfirmRegistrationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiConfirmRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/registration-finish": {
+      "post": {
+        "operationId": "FinishRegistration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiFinishRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
     "/api/internal/search": {
       "get": {
         "summary": "Perform a global search.",
@@ -134,6 +212,59 @@
         "footer": {
           "type": "string",
           "description": "Footer html."
+        }
+      }
+    },
+    "apiConfirmRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        }
+      }
+    },
+    "apiConfirmRegistrationResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "username": {
+          "type": "string"
+        },
+        "sessionTTL": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "isActive": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "jwt": {
+          "type": "string"
+        }
+      }
+    },
+    "apiFinishRegistrationRequest": {
+      "type": "object",
+      "properties": {
+        "organizationName": {
+          "type": "string"
+        },
+        "organizationDisplayName": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "password": {
+          "type": "string"
         }
       }
     },
@@ -275,6 +406,14 @@
           "type": "boolean",
           "format": "boolean",
           "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
+        }
+      }
+    },
+    "apiRegisterUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
         }
       }
     },

@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/brocaar/lora-app-server/internal/api"
+	"github.com/brocaar/lora-app-server/internal/regsrv"
 	"github.com/brocaar/lora-app-server/internal/applayer/fragmentation"
 	"github.com/brocaar/lora-app-server/internal/applayer/multicastsetup"
 	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
@@ -24,6 +25,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/integration/application"
 	"github.com/brocaar/lora-app-server/internal/integration/multi"
 	"github.com/brocaar/lora-app-server/internal/storage"
+	"github.com/brocaar/lora-app-server/internal/email"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -37,6 +39,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupStorage,
 		setupNetworkServer,
 		setupIntegration,
+		setupSMTP,
 		setupCodec,
 		handleDataDownPayloads,
 		startGatewayPing,
@@ -44,6 +47,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFragmentation,
 		setupFUOTA,
 		setupAPI,
+		setupRegSrv,
 	}
 
 	for _, t := range tasks {
@@ -91,6 +95,14 @@ func setupStorage() error {
 	return nil
 }
 
+func setupSMTP() error {
+	if err := email.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup SMTP error")
+	}
+
+	return nil
+}
+
 func setupIntegration() error {
 	var confs []interface{}
 
@@ -116,6 +128,13 @@ func setupIntegration() error {
 	mi.Add(application.New())
 	integration.SetIntegration(mi)
 
+	return nil
+}
+
+func setupRegSrv() error {
+	if err := regsrv.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup regsrv error")
+	}
 	return nil
 }
 

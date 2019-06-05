@@ -38,6 +38,28 @@ service InternalService {
 			get: "/api/internal/search"
 		};
 	}
+
+	rpc RegisterUser(RegisterUserRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			post: "/api/internal/registration"
+			body: "*"
+		};
+	}
+
+	rpc ConfirmRegistration(ConfirmRegistrationRequest) returns (ConfirmRegistrationResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/registration-confirm"
+			body: "*"
+		};
+	}
+
+	rpc FinishRegistration(FinishRegistrationRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			post: "/api/internal/registration-finish"
+			body: "*"
+		};
+	}
+
 }
 
 message ProfileSettings {
@@ -144,4 +166,28 @@ message BrandingResponse {
     
     // Footer html.
 	string footer = 3;
+}
+
+message RegisterUserRequest {
+    string email = 1;
+}
+
+message ConfirmRegistrationRequest {
+    string token = 1;
+}
+
+message ConfirmRegistrationResponse {
+    int64 id = 1;
+    string username = 2;
+    int32 sessionTTL = 3;
+    bool isAdmin = 4;
+    bool isActive = 5;
+    string jwt = 6;
+}
+
+message FinishRegistrationRequest {
+    string organizationName = 1;
+    string organizationDisplayName = 2;
+    int64 userId = 3;
+    string password = 4;
 }

@@ -36,6 +36,7 @@ var (
 	ErrInvalidEmail                    = errors.New("invalid e-mail")
 	ErrInvalidGatewayDiscoveryInterval = errors.New("invalid gateway-discovery interval, it must be greater than 0")
 	ErrDeviceProfileInvalidName        = errors.New("invalid device-profile name")
+	ErrBoardInvalidServer              = errors.New("invalid hostname of the server")
 )
 
 func handlePSQLError(action Action, err error, description string) error {
@@ -63,4 +64,15 @@ func handlePSQLError(action Action, err error, description string) error {
 
 func handleGrpcError(err error, description string) error {
 	return errors.Wrap(err, description)
+}
+
+func handlePSQLEffect(res sql.Result) error {
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+	return nil;
 }

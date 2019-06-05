@@ -20,6 +20,8 @@ log_level={{ .General.LogLevel }}
 # an attack takes more time to perform.
 password_hash_iterations={{ .General.PasswordHashIterations }}
 
+host_server={{ .General.HostServer }}
+
 
 # PostgreSQL settings.
 #
@@ -82,6 +84,15 @@ max_idle={{ .Redis.MaxIdle }}
 # is zero, then idle connections are not closed. You should set
 # the timeout to a value less than the server's timeout.
 idle_timeout="{{ .Redis.IdleTimeout }}"
+
+
+# SMTP settings
+#
+[smtp]
+#email={{ .SMTP.Email }}
+#password={{ .SMTP.Password }}
+#host={{ .SMTP.Host }}
+#port={{ .SMTP.Port }}
 
 
 # Application-server settings.
@@ -305,30 +316,6 @@ id="{{ .ApplicationServer.ID }}"
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users={{ .ApplicationServer.ExternalAPI.DisableAssignExistingUsers }}
 
-
-  # Settings for the remote multicast setup.
-  [application_server.remote_multicast_setup]
-  # Synchronization interval.
-  sync_interval="{{ .ApplicationServer.RemoteMulticastSetup.SyncInterval }}"
-
-  # Synchronization retries.
-  sync_retries={{ .ApplicationServer.RemoteMulticastSetup.SyncRetries }}
-
-  # Synchronization batch-size.
-  sync_batch_size={{ .ApplicationServer.RemoteMulticastSetup.SyncBatchSize }}
-
-
-  # Settings for the fragmentation-session setup.
-  [application_server.fragmentation_session]
-  # Synchronization interval.
-  sync_interval="{{ .ApplicationServer.FragmentationSession.SyncInterval }}"
-
-  # Synchronization retries.
-  sync_retries={{ .ApplicationServer.FragmentationSession.SyncRetries }}
-
-  # Synchronization batch-size.
-  sync_batch_size={{ .ApplicationServer.FragmentationSession.SyncBatchSize }}
-
 {{ if ne .ApplicationServer.Branding.Header  "" }}
   # Branding configuration.
   [application_server.branding]
@@ -407,6 +394,27 @@ tls_key="{{ .JoinServer.TLSKey }}"
   label="{{ $element.Label }}"
   kek="{{ $element.KEK }}"
 {{ end }}
+
+[registration_server]
+server="{{ .RegistrationServer.Server }}"
+username="{{ .RegistrationServer.Username }}"
+password="{{ .RegistrationServer.Password }}"
+
+# CA certificate (optional).
+#
+# When set, the server requires a client-certificate and will validate this
+# certificate on incoming requests.
+ca_cert="{{ .RegistrationServer.CACert }}"
+
+# TLS server-certificate (optional).
+#
+# Set this to enable TLS.
+tls_cert="{{ .RegistrationServer.TLSCert }}"
+
+# TLS server-certificate key (optional).
+#
+# Set this to enable TLS.
+tls_key="{{ .RegistrationServer.TLSKey }}"
 `
 
 var configCmd = &cobra.Command{
