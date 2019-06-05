@@ -37,6 +37,9 @@ import OrganizationRedirect from "./views/organizations/OrganizationRedirect";
 
 // user
 import Login from "./views/users/Login";
+import Registration from "./views/users/Registration";
+import RegistrationConfirm from "./views/users/RegistrationConfirm";
+
 import ListUsers from "./views/users/ListUsers";
 import CreateUser from "./views/users/CreateUser";
 import UserLayout from "./views/users/UserLayout";
@@ -170,6 +173,8 @@ class App extends Component {
                     <Route exact path="/users/create" component={CreateUser} />
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />
                     <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
+                    <Route exact path="/registration" component={Registration} />
+                    <Route exact path="/registration-confirm/:securityToken" component={RegistrationConfirm} />
 
                     <Route exact path="/network-servers" component={ListNetworkServers} />
                     <Route exact path="/network-servers/create" component={CreateNetworkServer} />

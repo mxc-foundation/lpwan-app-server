@@ -1,14 +1,12 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
@@ -29,37 +27,22 @@ const styles = {
 };
 
 
-class LoginForm extends FormComponent {
+class RegistrationForm extends FormComponent {
   render() {
     if (this.state.object === undefined) {
       return null;
     }
-    
-    const extraButtons = [
-      <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
-    ]
 
     return(
       <Form
         submitLabel={this.props.submitLabel}
-        extraButtons={extraButtons}
         onSubmit={this.onSubmit}
       >
         <TextField
           id="username"
-          label="Username"
+          label="Email"
           margin="normal"
           value={this.state.object.username || ""}
-          onChange={this.onChange}
-          fullWidth
-          required
-        />
-        <TextField
-          id="password"
-          label="Password"
-          type="password"
-          margin="normal"
-          value={this.state.object.password || ""}
           onChange={this.onChange}
           fullWidth
           required
@@ -70,31 +53,15 @@ class LoginForm extends FormComponent {
 }
 
 
-class Login extends Component {
+class Registration extends Component {
   constructor() {
     super();
-
-    this.state = {
-      registration: null,
-    };
 
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  componentDidMount() {
-    SessionStore.logout(() => {});
-
-    SessionStore.getBranding(resp => {
-      if (resp.registration !== "") {
-        this.setState({
-          registration: resp.registration,
-        });
-      }
-    });
-  }
-
-  onSubmit(login) {
-    SessionStore.login(login, () => {
+  onSubmit(user) {
+    SessionStore.register(user, () => {
       this.props.history.push("/");
     });
   }
@@ -105,17 +72,14 @@ class Login extends Component {
         <Grid item xs={6} lg={4}>
           <Card>
             <CardHeader
-              title="Login MXC Cloud"
+              title="Registration"
             />
             <CardContent>
-              <LoginForm
-                submitLabel="Login"
+              <RegistrationForm
+                submitLabel="Register"
                 onSubmit={this.onSubmit}
               />
             </CardContent>
-            {this.state.registration && <CardContent>
-              <Typography className={this.props.classes.link} dangerouslySetInnerHTML={{__html: this.state.registration}}></Typography>
-             </CardContent>}
           </Card>
         </Grid>
       </Grid>
@@ -123,4 +87,4 @@ class Login extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(Login));
+export default withStyles(styles)(withRouter(Registration));

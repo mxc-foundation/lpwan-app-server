@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 
 import Swagger from "swagger-client";
 import { checkStatus, errorHandler, errorHandlerLogin } from "./helpers";
-
+import dispatcher from "../dispatcher";
 
 class SessionStore extends EventEmitter {
   constructor() {
@@ -148,6 +148,66 @@ class SessionStore extends EventEmitter {
         .catch(errorHandler);
     });
   }
+  
+  register(data, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.RegisterUser({
+        body: {
+          email: data.username,
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notifyActivation();
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  confirmRegistration(securityToken, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.ConfirmRegistration({
+        body: {
+          token: securityToken,
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  finishRegistration(data, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.FinishRegistration({
+        body: {
+          userId: data.userId,
+          password: data.password,
+          organizationName: data.organizationName,
+          organizationDisplayName: data.organizationDisplayName,
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  notifyActivation() {
+    dispatcher.dispatch({
+      type: "CREATE_NOTIFICATION",
+      notification: {
+        type: "success",
+        message: "Confirmation email has been sent.",
+      },
+    });
+  }
+
 }
 
 const sessionStore = new SessionStore();
