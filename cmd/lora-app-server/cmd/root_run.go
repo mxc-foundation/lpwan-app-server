@@ -12,20 +12,19 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/brocaar/lora-app-server/internal/api"
-	"github.com/brocaar/lora-app-server/internal/regsrv"
 	"github.com/brocaar/lora-app-server/internal/applayer/fragmentation"
 	"github.com/brocaar/lora-app-server/internal/applayer/multicastsetup"
 	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
 	"github.com/brocaar/lora-app-server/internal/codec"
 	"github.com/brocaar/lora-app-server/internal/config"
 	"github.com/brocaar/lora-app-server/internal/downlink"
+	"github.com/brocaar/lora-app-server/internal/email"
 	"github.com/brocaar/lora-app-server/internal/fuota"
 	"github.com/brocaar/lora-app-server/internal/gwping"
 	"github.com/brocaar/lora-app-server/internal/integration"
 	"github.com/brocaar/lora-app-server/internal/integration/application"
 	"github.com/brocaar/lora-app-server/internal/integration/multi"
 	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/email"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -47,7 +46,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFragmentation,
 		setupFUOTA,
 		setupAPI,
-		setupRegSrv,
+		//setupRegSrv,
 	}
 
 	for _, t := range tasks {
@@ -131,12 +130,12 @@ func setupIntegration() error {
 	return nil
 }
 
-func setupRegSrv() error {
+/* func setupRegSrv() error {
 	if err := regsrv.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup regsrv error")
 	}
 	return nil
-}
+} */
 
 func setupCodec() error {
 	if err := codec.Setup(config.C); err != nil {

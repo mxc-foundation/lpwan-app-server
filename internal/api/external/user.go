@@ -12,6 +12,10 @@ import (
 	"github.com/brocaar/lora-app-server/internal/api/external/auth"
 	"github.com/brocaar/lora-app-server/internal/api/helpers"
 	"github.com/brocaar/lora-app-server/internal/storage"
+
+	"github.com/brocaar/lora-app-server/internal/email"
+	"github.com/gofrs/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 // UserAPI exports the User related functions.
@@ -391,7 +395,7 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 
 // RegisterUser adds new user and sends activation email
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
-	user := storage.User {
+	user := storage.User{
 		Username:   req.Email,
 		SessionTTL: 0,
 		IsAdmin:    false,
@@ -434,11 +438,11 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.Confi
 	}
 
 	return &pb.ConfirmRegistrationResponse{
-		Id:         user.ID,
-		Username:   user.Username,
-		IsAdmin:    user.IsAdmin,
-		IsActive:   user.IsActive,
-		Jwt: jwt,
+		Id:       user.ID,
+		Username: user.Username,
+		IsAdmin:  user.IsAdmin,
+		IsActive: user.IsActive,
+		Jwt:      jwt,
 	}, nil
 }
 

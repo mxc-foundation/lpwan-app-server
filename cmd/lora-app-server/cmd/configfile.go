@@ -89,10 +89,10 @@ idle_timeout="{{ .Redis.IdleTimeout }}"
 # SMTP settings
 #
 [smtp]
-#email={{ .SMTP.Email }}
-#password={{ .SMTP.Password }}
-#host={{ .SMTP.Host }}
-#port={{ .SMTP.Port }}
+email={{ .SMTP.Email }}
+password="1324qwasxy~!"
+host="mail.smtp2go.com"
+port="587"
 
 
 # Application-server settings.
