@@ -17,6 +17,7 @@ services:
       - LOCAL_HOST_ADDRESS=http://localhost:8080/
     ports:
       - 8080:8080  
+    tty: true  
   postgres:
     image: postgres:9.6-alpine
     volumes:

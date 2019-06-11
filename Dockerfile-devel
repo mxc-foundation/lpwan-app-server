@@ -10,6 +10,6 @@ RUN apk add --no-cache ca-certificates make git bash protobuf protobuf-dev alpin
 RUN mkdir -p $PROJECT_PATH
 COPY . $PROJECT_PATH
 WORKDIR $PROJECT_PATH
-
+COPY lora-app-server.toml_cp $PATH/lora-app-server.toml
 RUN make dev-requirements
 
