@@ -128,6 +128,7 @@ class RegistrationConfirm extends Component {
   }
 
   onSubmit(data) {
+    console.log('onSubmit(', data, ')')
     if (data.password === data.passwordConfirmation) {
       this.setState({
         isPwdMatch: true
@@ -148,6 +149,7 @@ class RegistrationConfirm extends Component {
           isPwdMatch: false
       })
     }
+    
   }
 
   render() {

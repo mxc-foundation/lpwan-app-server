@@ -17,8 +17,8 @@ class SessionStore extends EventEmitter {
     
     this.swagger.then(client => {
       this.client = client;
-
-      if (this.getToken() !== null) {
+      const token = this.getToken();
+      if (token) {// !== null && !history.location.pathname.includes('/registration-confirm/')) {
         this.fetchProfile(() => {});
       }
     });
@@ -45,7 +45,7 @@ class SessionStore extends EventEmitter {
 
   getOrganizationID() {
     const orgID = localStorage.getItem("organizationID");
-    if (orgID === "") {
+    if (!orgID) {
       return null;
     }
 
@@ -174,6 +174,7 @@ class SessionStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
+        this.setToken(resp.obj.jwt);
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);
@@ -192,7 +193,7 @@ class SessionStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        callbackFunc(resp.obj);
+        this.fetchProfile(callbackFunc);
       })
       .catch(errorHandler);
     });

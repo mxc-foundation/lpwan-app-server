@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"errors"
-	"fmt"
 	"net/smtp"
 	"os"
 	"strings"
@@ -20,18 +19,13 @@ var conf Conf
 
 // Setup configures the package.
 func Setup(c config.Config) error {
-	/* conf = Conf{
+	conf = Conf{
 		senderID: c.SMTP.Email,
 		password: c.SMTP.Password,
 		host:     c.SMTP.Host,
 		port:     c.SMTP.Port,
-	} */
-	conf = Conf{
-		senderID: "namgyeong.cho@mxc.org",
-		password: "1324qwasxy~!",
-		host:     "mail.smtp2go.com",
-		port:     "2525",
-	} 
+	}
+
 	return nil
 }
 
@@ -67,7 +61,6 @@ func SendInvite(user string, token string) error {
 	if conf.disable == true {
 		return nil
 	}
-	fmt.Println(conf)
 	if conf.host == "" {
 		log.Error("Tried to send registration email, but SMTP is not configured")
 		return errors.New("Unable to send confirmation email")
@@ -81,17 +74,22 @@ func SendInvite(user string, token string) error {
 	if mail.Host, err = os.Hostname(); err != nil {
 		return err
 	}
+
 	if !strings.ContainsRune(mail.Host, '.') {
-		mail.Host += ".matchx.io"
+		mail.Host = ".matchx.io"
 	}
 
-	mail.Link = "https://" + mail.Host + "/#/registration-confirm/" + token
+	localHostAddr := os.Getenv("LOCAL_HOST_ADDRESS")
+	if localHostAddr != "" {
+		mail.Link = localHostAddr + "/#/registration-confirm/" + token
+	} else {
+		mail.Link = "https://" + mail.Host + "/#/registration-confirm/" + token
+	}
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
 		return err
 	}
 	mail.MessageID = base32.StdEncoding.EncodeToString(b)
-
 	content, _ := static.Asset("templates/registration-confirm.txt")
 	t := template.New("Invite")
 	tpl, _ := t.Parse(string(content))
@@ -107,6 +105,7 @@ func SendInvite(user string, token string) error {
 	err = smtp.SendMail(conf.host+":"+conf.port,
 		smtp.CRAMMD5Auth(mail.Sender, conf.password),
 		mail.Sender, []string{mail.Recepient}, msg.Bytes())
+
 	if err != nil {
 		return err
 	}

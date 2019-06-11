@@ -150,7 +150,7 @@ class App extends Component {
   render() {
     let topNav = null;
     let sideNav = null;
-
+    
     if (this.state.user !== null) {
       topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} />;
       sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />

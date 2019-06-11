@@ -1,7 +1,7 @@
 From: {{.Sender}}
 To: {{.Recepient}}
 Subject: Confirm your {{.Host}} registration
-Message-Id: <{{.MessageId}}@{{.Host}}>
+
 Content-Type: multipart/alternative; boundary="boundary"
 MIME-Version: 1.0
 

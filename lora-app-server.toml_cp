@@ -71,6 +71,19 @@ max_idle=10
 # the timeout to a value less than the server's timeout.
 idle_timeout="5m0s"
 
+# SMTP settings
+#
+[smtp]
+
+email="registration-bounce@mxc.org"
+password="OhPZKM1SIfh3wZJoUzNgJx1DGz+sorcv"
+host="lora-test-srv.matchx.io"
+port="25"
+
+#email="namgyeong.cho@mxc.org"
+#password="3abASYMQ79ngB26"
+#host="mail.smtp2go.com"
+#port="587"
 
 # Application-server settings.
 [application_server]
@@ -281,14 +294,14 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
 
   # JWT secret used for api authentication / authorization
   # You could generate this by executing 'openssl rand -base64 32' for example
-  jwt_secret="verysecret"
+  jwt_secret="DOE1KiNzpQ82elRQ9HMWyxmADQ5f2B2TBAgOjL7ZZWA="
 
   # Allow origin header (CORS).
   #
   # Set this to allows cross-domain communication from the browser (CORS).
   # Example value: https://example.com.
   # When left blank (default), CORS will not be used.
-  cors_allow_origin=""
+  cors_allow_origin="http://172.18.0.5:8080"
 
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users=false
