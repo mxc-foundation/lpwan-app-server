@@ -17,6 +17,11 @@ import RadioTower from "mdi-material-ui/RadioTower";
 import Tune from "mdi-material-ui/Tune";
 import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
+import Wallet from "mdi-material-ui/Wallet";
+//import ModifyEthAccount from "mdi-material-ui/Card-bulleted-settings-outline"
+//import History from "mdi-material-ui/History"
+//import Topup from "mdi-material-ui/Bank-transfer-in"
+//import Withdraw from "mdi-material-ui/Cash-multiple"
 import AccountDetails from "mdi-material-ui/AccountDetails";
 
 import AutocompleteSelect from "./AutocompleteSelect";
@@ -240,6 +245,36 @@ class SideNav extends Component {
               <Rss />
             </ListItemIcon>
             <ListItemText primary="Multicast-groups" />
+          </ListItem>
+          <ListItem button component={Link} to={`/wallet`}>
+            <ListItemIcon>
+              <Wallet />
+            </ListItemIcon>
+            <ListItemText primary="M2M-Wallet" />
+          </ListItem>
+          <ListItem button component={Link} to={`/withdraw`}>
+            <ListItemIcon>
+              <Wallet />
+            </ListItemIcon>
+            <ListItemText primary="Withdraw" />
+          </ListItem>
+          <ListItem button component={Link} to={`/topup`}>
+            <ListItemIcon>
+              <Wallet />
+            </ListItemIcon>
+            <ListItemText primary="Topup" />
+          </ListItem>
+          <ListItem button component={Link} to={`/history`}>
+            <ListItemIcon>
+              <Wallet />
+            </ListItemIcon>
+            <ListItemText primary="History" />
+          </ListItem>
+          <ListItem button component={Link} to={`/modify-account`}>
+            <ListItemIcon>
+              <Wallet />
+            </ListItemIcon>
+            <ListItemText primary="ModifyEthAccount" />
           </ListItem>
         </List>}
       </Drawer>

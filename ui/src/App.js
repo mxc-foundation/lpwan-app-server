@@ -81,6 +81,12 @@ import Search from "./views/search/Search";
 import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentForDevice";
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
+//M2M Wallet
+import Dashboard from "./views/m2m-wallet/Dashboard"
+import Topup from "./views/m2m-wallet/Topup"
+import Withdraw from "./views/m2m-wallet/Withdraw"
+import History from "./views/m2m-wallet/History"
+import ModifyEthAccount from "./views/m2m-wallet/ModifyEthAccount"
 
 const drawerWidth = 270;
 
@@ -212,6 +218,12 @@ class App extends Component {
                     <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
                     <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
                     <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
+
+                    <Route exact path="/wallet" component={Dashboard} />
+                    <Route exact path="/withdraw" component={Withdraw} />
+                    <Route exact path="/topup" component={Topup} />
+                    <Route exact path="/history" component={History} />
+                    <Route exact path="/modify-account" component={ModifyEthAccount} />
 
                     <Route exact path="/search" component={Search} />
                   </Switch>

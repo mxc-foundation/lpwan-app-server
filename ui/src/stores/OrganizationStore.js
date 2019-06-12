@@ -31,6 +31,7 @@ class OrganizationStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
+    console.log(id)
     this.swagger.then(client => {
       client.apis.OrganizationService.Get({
         id: id,
