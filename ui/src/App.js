@@ -220,7 +220,7 @@ class App extends Component {
                     <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
 
                     <Route exact path="/wallet" component={Dashboard} />
-                    <Route exact path="/withdraw" component={Withdraw} />
+                    <Route exact path="/withdraw/:organizationID(\d+)" component={Withdraw} />
                     <Route exact path="/topup" component={Topup} />
                     <Route exact path="/history" component={History} />
                     <Route exact path="/modify-account" component={ModifyEthAccount} />

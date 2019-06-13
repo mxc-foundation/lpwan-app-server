@@ -13,11 +13,13 @@ import Form from "../../components/Form";
 
 
 class WithdrawForm extends FormComponent {
+  
   render() {
-    if (this.state.object === undefined) {
+    if (this.props.object === undefined) {
       return(<div></div>);
     }
-
+console.log("withdrar from this.props")
+console.log(this.props)
     return(
       <Form
         submitLabel={this.props.submitLabel}
@@ -28,7 +30,7 @@ class WithdrawForm extends FormComponent {
           label="Balance"
           //helperText="The name may only contain words, numbers and dashes."
           margin="normal"
-          value={this.state.object.name || ""}
+          value={this.props.object.organization.name || ""}
           onChange={this.onChange}
           /* inputProps={{
             pattern: "[\\w-]+",
@@ -40,7 +42,7 @@ class WithdrawForm extends FormComponent {
           id="price"
           label="Withdraw Price"
           margin="normal"
-          value={this.state.object.displayName || ""}
+          value={this.props.object.organization.displayName || ""}
           onChange={this.onChange}
           required
           fullWidth
@@ -50,7 +52,7 @@ class WithdrawForm extends FormComponent {
           label="Withdraw Amount"
           //helperText="The name may only contain words, numbers and dashes."
           margin="normal"
-          value={this.state.object.name || ""}
+          value={this.props.object.organization.name || ""}
           onChange={this.onChange}
           inputProps={{
             pattern: "[\\w-]+",
@@ -62,7 +64,7 @@ class WithdrawForm extends FormComponent {
           id="receiverEthAddress"
           label="Receiver Eth Address"
           margin="normal"
-          value={this.state.object.displayName || ""}
+          value={this.props.object.organization.displayName || ""}
           onChange={this.onChange}
           required
           fullWidth
