@@ -148,8 +148,9 @@ class SideNav extends Component {
     if (this.state.organization !== null) {
       organizationID = this.state.organization.id;
     }
-
+   
     return(
+      <>
       <Drawer
         variant="persistent"
         anchor="left"
@@ -246,13 +247,21 @@ class SideNav extends Component {
             </ListItemIcon>
             <ListItemText primary="Multicast-groups" />
           </ListItem>
-          <ListItem button component={Link} to={`/wallet`}>
+        </List>}
+      </Drawer>
+      <Drawer
+        variant="persistent"
+        anchor="left"
+        open={!this.props.open}
+        classes={{paper: this.props.classes.drawerPaper}}
+      >
+        <ListItem button component={Link} to={`/wallet`}>
             <ListItemIcon>
               <Wallet />
             </ListItemIcon>
             <ListItemText primary="M2M-Wallet" />
           </ListItem>
-          <ListItem button component={Link} to={`/withdraw/${this.state.organization.id}`}>
+          <ListItem button component={Link} to={`/withdraw`}>
             <ListItemIcon>
               <Wallet />
             </ListItemIcon>
@@ -276,8 +285,8 @@ class SideNav extends Component {
             </ListItemIcon>
             <ListItemText primary="ModifyEthAccount" />
           </ListItem>
-        </List>}
       </Drawer>
+      </>
     );
   }
 }

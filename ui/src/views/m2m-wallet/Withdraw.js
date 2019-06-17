@@ -5,8 +5,9 @@ import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
-import Admin from "../../components/Admin";
-import OrganizationStore from "../../stores/OrganizationStore";
+//import Admin from "../../components/Admin";
+//import OrganizationStore from "../../stores/OrganizationStore";
+import WithdrawStore from "../../stores/WithdrawStore";
 import WithdrawForm from "./WithdrawForm";
 import { withRouter } from "react-router-dom";
 
@@ -19,16 +20,31 @@ class Withdraw extends Component {
   }
   
   componentDidMount() {
-    console.log("componentDidMount this.props")
-    console.log(this.props)
+    //console.log("componentDidMount this.props")
+    //console.log(this.props)
     this.loadData();
   }
 
+  formatNumber(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
   loadData() {
-    console.log("loadData")
-    console.log(this.props)
-    OrganizationStore.get(this.props.match.params.organizationID, resp => {
-      console.log(resp)
+    //console.log("loadData")
+    //console.log(this.props)
+    WithdrawStore.get(this.props.match.params.organizationID, resp => {
+      //console.log(resp)
+      resp.balance = 1000000.23
+      
+      Object.keys(resp).forEach(attr => {
+        const value = resp[attr];
+    
+        if (typeof value === 'number') {
+          resp[attr] = this.formatNumber(value);
+        }
+        });
+      
+
       this.setState({
         organization: resp,
       });
@@ -36,8 +52,8 @@ class Withdraw extends Component {
   }
   
   componentDidUpdate(prevProps) {
-    console.log("prevProps")
-    console.log(prevProps)
+    //console.log("prevProps")
+    //console.log(prevProps)
     if (prevProps === this.props) {
       return;
     }
@@ -47,14 +63,14 @@ class Withdraw extends Component {
 
   deleteOrganization() {
     if (window.confirm("Are you sure you want to delete this organization?")) {
-      OrganizationStore.delete(this.props.match.params.organizationID, () => {
+      WithdrawStore.delete(this.props.match.params.organizationID, () => {
         this.props.history.push("/withdraw");
       });
     }
   }
 
   onSubmit(organization) {
-    OrganizationStore.update(organization, resp => {
+    WithdrawStore.update(organization, resp => {
     this.props.history.push("/withdraw");
     });
   }

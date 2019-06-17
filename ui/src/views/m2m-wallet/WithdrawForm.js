@@ -18,8 +18,8 @@ class WithdrawForm extends FormComponent {
     if (this.props.object === undefined) {
       return(<div></div>);
     }
-console.log("withdrar from this.props")
-console.log(this.props)
+//console.log("withdrar from this.props")
+//console.log(this.props)
     return(
       <Form
         submitLabel={this.props.submitLabel}
@@ -30,7 +30,7 @@ console.log(this.props)
           label="Balance"
           //helperText="The name may only contain words, numbers and dashes."
           margin="normal"
-          value={this.props.object.organization.name || ""}
+          value={this.props.object.balance || ""}
           onChange={this.onChange}
           /* inputProps={{
             pattern: "[\\w-]+",

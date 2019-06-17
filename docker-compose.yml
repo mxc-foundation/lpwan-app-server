@@ -16,7 +16,7 @@ services:
       - TEST_MQTT_SERVER=tcp://mosquitto:1883
       - LOCAL_HOST_ADDRESS=http://localhost:8080/
     ports:
-      - 8080:8080  
+      - 3000:8080
     tty: true  
   postgres:
     image: postgres:9.6-alpine

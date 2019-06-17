@@ -156,7 +156,7 @@ class App extends Component {
 
     if (this.state.user !== null) {
       topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} />;
-      sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
+      sideNav = <SideNav open={this.state.drawerOpen} /* walletOpen={!this.state.drawerOpen} */ user={this.state.user} />
     }
 
     return (
@@ -167,7 +167,7 @@ class App extends Component {
             <div className={this.props.classes.root}>
               {topNav}
               {sideNav}
-              <div className={classNames(this.props.classes.main, this.state.drawerOpen && this.props.classes.mainDrawerOpen)}>
+              <div className={classNames(this.props.classes.main, this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={24}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />
