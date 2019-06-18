@@ -6,56 +6,27 @@ import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-// OrganizationService is the service managing the organization access.
+// WithdrawService is the service managing the withdraw access.
 service WithdrawService {
 	
-	// Get data for a particular organization.
-	rpc Get(GetOrganizationRequest) returns (GetOrganizationResponse) {
+	// Get data for a particular Withdraw.
+	rpc GetWithdrawFee(GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse) {
 		option(google.api.http) = {
-			get: "/api/organizations/{id}"
-		};
-	}
-
-	// Update an existing organization.
-	rpc Update(UpdateOrganizationRequest) returns (google.protobuf.Empty) {
-		option(google.api.http) = {
-			put: "/api/organizations/{organization.id}"
-			body: "*"
+			get: "/api/getWithdrawFee/{cryptoCurrency}"
 		};
 	}
 }
 
-message Organization {
-	// Organization ID.
-	int64 id = 1;
-	
-	// Organization name.
-	string name = 2;
-
-	// Organization display name.
-	string display_name = 3;
-
-	// Can the organization create and "own" Gateways?
-	bool can_have_gateways = 4;
+enum CryptoCurrencies{
+	Ether = 0;
 }
+ 
+ message GetWithdrawFeeRequest {
+	// type of crypto currency
+	CryptoCurrencies cryptoCurrency = 1;
+ }
 
-message GetOrganizationRequest {
-	// Organization ID.
-	int64 id = 1;
-}
-
-message GetOrganizationResponse {
-	// Organization object.
-	Organization organization = 1;
-
-	// Created at timestamp.
-	google.protobuf.Timestamp created_at = 2;
-
-	// Last update timestamp.
-	google.protobuf.Timestamp updated_at = 3;
-}
-
-message UpdateOrganizationRequest {
-	// Organization object to update.
-	Organization organization = 1;
+message GetWithdrawFeeResponse {
+	// Withdraw object.
+	int64 WithdrawFee = 1;
 }

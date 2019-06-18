@@ -255,13 +255,14 @@ class SideNav extends Component {
         open={!this.props.open}
         classes={{paper: this.props.classes.drawerPaper}}
       >
+        {this.state.organization && <List>
         <ListItem button component={Link} to={`/wallet`}>
             <ListItemIcon>
               <Wallet />
             </ListItemIcon>
             <ListItemText primary="M2M-Wallet" />
           </ListItem>
-          <ListItem button component={Link} to={`/withdraw`}>
+          <ListItem button component={Link} to={`/withdraw/${this.state.organization.id}`}>
             <ListItemIcon>
               <Wallet />
             </ListItemIcon>
@@ -285,6 +286,7 @@ class SideNav extends Component {
             </ListItemIcon>
             <ListItemText primary="ModifyEthAccount" />
           </ListItem>
+        </List>}
       </Drawer>
       </>
     );

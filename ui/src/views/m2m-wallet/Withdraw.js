@@ -6,8 +6,8 @@ import TitleBarTitle from "../../components/TitleBarTitle";
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 //import Admin from "../../components/Admin";
-//import OrganizationStore from "../../stores/OrganizationStore";
-import WithdrawStore from "../../stores/WithdrawStore";
+import OrganizationStore from "../../stores/OrganizationStore";
+//import WithdrawStore from "../../stores/WithdrawStore";
 import WithdrawForm from "./WithdrawForm";
 import { withRouter } from "react-router-dom";
 
@@ -32,7 +32,7 @@ class Withdraw extends Component {
   loadData() {
     //console.log("loadData")
     //console.log(this.props)
-    WithdrawStore.get(this.props.match.params.organizationID, resp => {
+    OrganizationStore.get(this.props.match.params.organizationID, resp => {
       //console.log(resp)
       resp.balance = 1000000.23
       
@@ -63,14 +63,14 @@ class Withdraw extends Component {
 
   deleteOrganization() {
     if (window.confirm("Are you sure you want to delete this organization?")) {
-      WithdrawStore.delete(this.props.match.params.organizationID, () => {
+      OrganizationStore.delete(this.props.match.params.organizationID, () => {
         this.props.history.push("/withdraw");
       });
     }
   }
 
   onSubmit(organization) {
-    WithdrawStore.update(organization, resp => {
+    OrganizationStore.update(organization, resp => {
     this.props.history.push("/withdraw");
     });
   }

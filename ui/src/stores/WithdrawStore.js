@@ -10,7 +10,7 @@ import dispatcher from "../dispatcher";
 class WithdrawStore extends EventEmitter {
   constructor() {
     super();
-    this.swagger = new Swagger("/swagger/withdraw.swagger.json", sessionStore.getClientOpts());
+    this.swagger = new Swagger("/swagger/organization.swagger.json", sessionStore.getClientOpts());
   }
   
   get(id, callbackFunc) {
