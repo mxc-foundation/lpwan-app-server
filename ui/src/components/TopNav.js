@@ -111,7 +111,11 @@ class TopNav extends Component {
     if(!this.props.drawerOpen){
       this.props.history.push("/");
     }else{
-      this.props.history.push("/wallet");
+      //this.props.history.push("/wallet");
+      console.log(this.props)
+      
+      let id = this.props.organizationId;
+      this.props.history.push("/withdraw/"+id);
     }
     
   }

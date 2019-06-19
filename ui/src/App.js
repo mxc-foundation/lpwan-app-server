@@ -82,7 +82,7 @@ import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentF
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
 //M2M Wallet
-import Dashboard from "./views/m2m-wallet/Dashboard"
+//import Dashboard from "./views/m2m-wallet/Dashboard"
 import Topup from "./views/m2m-wallet/Topup"
 import Withdraw from "./views/m2m-wallet/Withdraw"
 import History from "./views/m2m-wallet/History"
@@ -134,12 +134,14 @@ class App extends Component {
     SessionStore.on("change", () => {
       this.setState({
         user: SessionStore.getUser(),
+        organizationId: SessionStore.getOrganizationID(),
         drawerOpen: SessionStore.getUser() != null,
       });
     });
 
     this.setState({
       user: SessionStore.getUser(),
+      organizationId: SessionStore.getOrganizationID(),
       drawerOpen: SessionStore.getUser() != null,
     });
   }
@@ -155,10 +157,10 @@ class App extends Component {
     let sideNav = null;
 
     if (this.state.user !== null) {
-      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} />;
-      sideNav = <SideNav open={this.state.drawerOpen} /* walletOpen={!this.state.drawerOpen} */ user={this.state.user} />
+      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
+      sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
     }
-
+    
     return (
       <Router history={history}>
         <React.Fragment>
@@ -167,7 +169,7 @@ class App extends Component {
             <div className={this.props.classes.root}>
               {topNav}
               {sideNav}
-              <div className={classNames(this.props.classes.main, this.props.classes.mainDrawerOpen)}>
+              <div className={classNames(this.props.classes.main, /* this.state.drawerOpen &&  */this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={24}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />
@@ -219,7 +221,7 @@ class App extends Component {
                     <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
                     <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
 
-                    <Route exact path="/wallet" component={Dashboard} />
+                    {/* <Route exact path="/wallet" component={Dashboard} /> */}
                     <Route exact path="/withdraw/:organizationID(\d+)" component={Withdraw} />
                     <Route exact path="/topup" component={Topup} />
                     <Route exact path="/history" component={History} />
