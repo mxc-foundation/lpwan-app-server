@@ -6,34 +6,42 @@ import TitleBarTitle from "../../components/TitleBarTitle";
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 //import Admin from "../../components/Admin";
-import OrganizationStore from "../../stores/OrganizationStore";
-//import WithdrawStore from "../../stores/WithdrawStore";
+//import OrganizationStore from "../../stores/OrganizationStore";
+import WithdrawStore from "../../stores/WithdrawStore";
 import WithdrawForm from "./WithdrawForm";
 import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
+
+const styles = {
+  backgroundColor: {
+    backgroundColor: "#090046",
+  },
+  font: {
+    color: '#FFFFFF', 
+    fontFamily: 'Montserrat',
+  }
+};
 
 class Withdraw extends Component {
   constructor() {
     super();
     this.state = {};
     this.loadData = this.loadData.bind(this);
-    //this.deleteOrganization = this.deleteOrganization.bind(this);
   }
   
   componentDidMount() {
-    //console.log("componentDidMount this.props")
-    //console.log(this.props)
     this.loadData();
   }
 
   formatNumber(number) {
+    //let balance = number.toString().replace(".", ",");
+    //balance = number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
   loadData() {
-    //console.log("loadData")
-    //console.log(this.props)
-    OrganizationStore.get(this.props.match.params.organizationID, resp => {
-      //console.log(resp)
+    WithdrawStore.getWithdrawFee("Ether", 
+      resp => {
       resp.balance = 1000000.23
       
       Object.keys(resp).forEach(attr => {
@@ -43,17 +51,14 @@ class Withdraw extends Component {
           resp[attr] = this.formatNumber(value);
         }
         });
-      
-
-      this.setState({
+        
+        this.setState({
         organization: resp,
       });
     });
   }
   
   componentDidUpdate(prevProps) {
-    //console.log("prevProps")
-    //console.log(prevProps)
     if (prevProps === this.props) {
       return;
     }
@@ -62,34 +67,47 @@ class Withdraw extends Component {
   }
 
   deleteOrganization() {
-    if (window.confirm("Are you sure you want to delete this organization?")) {
-      OrganizationStore.delete(this.props.match.params.organizationID, () => {
-        this.props.history.push("/withdraw");
-      });
-    }
+    
   }
 
   onSubmit(organization) {
-    OrganizationStore.update(organization, resp => {
-    this.props.history.push("/withdraw");
-    });
+    /* OrganizationStore.update(organization, resp => {
+    this.props.history.push(`/withdraw/${this.props.match.params.organizationID}`);
+    }); */
   }
 
   render() {
     
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={24} className={this.props.classes.backgroundColor}>
         <TitleBar>
-          <TitleBarTitle title="Withdraw" />
+          <TitleBarTitle title="Withdraw" className={this.props.classes.font}/>
         </TitleBar>
         <Grid item xs={12}>
           <Card>
             <CardContent>
+              
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6}>
+          <Card>
+            <CardContent>
               <WithdrawForm
                 submitLabel="Withdraw"
-                object={this.state.organization} {...this.props}
+                organization={this.state.organization} {...this.props}
                 onSubmit={this.onSubmit}
-                
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={6}>
+          <Card>
+            <CardContent>
+              <WithdrawForm
+                submitLabel="Withdraw"
+                organization={this.state.organization} {...this.props}
+                onSubmit={this.onSubmit}
               />
             </CardContent>
           </Card>
@@ -99,4 +117,4 @@ class Withdraw extends Component {
   }
 }
 
-export default withRouter(Withdraw);
+export default withStyles(styles)(withRouter(Withdraw));

@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import Grid from "@material-ui/core/Grid";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
+import Divider from '@material-ui/core/Divider';
 
 import Plus from "mdi-material-ui/Plus";
 
@@ -13,7 +14,18 @@ import TitleBarButton from "../../components/TitleBarButton";
 import DataTable from "../../components/DataTable";
 import Admin from "../../components/Admin";
 import ApplicationStore from "../../stores/ApplicationStore";
-
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
+  
+const styles = {
+  backgroundColor: {
+    backgroundColor: "#090046",
+  },
+  font: {
+    color: '#FFFFFF', 
+    fontFamily: 'Montserrat',
+  }
+};
 
 class History extends Component {
   constructor() {
@@ -51,9 +63,35 @@ class History extends Component {
             </Admin>
           }
         >
-          <TitleBarTitle title="History" />
+          <TitleBarTitle title="History" className={this.props.classes.font}/>
         </TitleBar>
         <Grid item xs={12}>
+          <DataTable
+            header={
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Service-profile</TableCell>
+                <TableCell>Description</TableCell>
+              </TableRow>
+            }
+            getPage={this.getPage}
+            getRow={this.getRow}
+          />
+          <Divider />
+          <DataTable
+            header={
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Service-profile</TableCell>
+                <TableCell>Description</TableCell>
+              </TableRow>
+            }
+            getPage={this.getPage}
+            getRow={this.getRow}
+          />
+          <Divider />
           <DataTable
             header={
               <TableRow>
@@ -72,4 +110,4 @@ class History extends Component {
   }
 }
 
-export default History;
+export default withStyles(styles)(withRouter(History));

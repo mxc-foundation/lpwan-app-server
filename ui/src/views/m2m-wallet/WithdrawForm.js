@@ -1,58 +1,74 @@
 import React from "react";
 
 import TextField from '@material-ui/core/TextField';
-/* import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from "@material-ui/core/FormGroup";
-import FormHelperText from '@material-ui/core/FormHelperText';
-import Checkbox from '@material-ui/core/Checkbox';
-
-import FormControl from "../../components/FormControl"; */
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
+import purple from "@material-ui/core/colors/purple";
+import green from "@material-ui/core/colors/green";
 
+import { createMuiTheme } from "@material-ui/core/styles";
+import { ThemeProvider } from "@material-ui/styles";
+import { withRouter } from "react-router-dom";
+//import { withStyles } from "@material-ui/core/styles";
 
+const theme = createMuiTheme({
+  palette: {
+    primary: purple,
+    secondary: green
+  },
+  overrides: {
+    MuiInputLabel: { // Name of the component ⚛️ / style sheet
+      root: { // Name of the rule
+        color: "orange",
+        "&$focused": { // increase the specificity for the pseudo class
+          color: "purple"
+        }
+      }
+    }
+  }
+});
 
 class WithdrawForm extends FormComponent {
   
   render() {
-    if (this.props.object === undefined) {
-      return(<div></div>);
+    if (this.props.organization === undefined) {
+      return(<div>loading...</div>);
     }
-//console.log("withdrar from this.props")
-//console.log(this.props)
+
     return(
       <Form
         submitLabel={this.props.submitLabel}
         onSubmit={this.onSubmit}
       >
-        <TextField
-          id="balance"
-          label="Balance"
-          //helperText="The name may only contain words, numbers and dashes."
-          margin="normal"
-          value={this.props.object.balance || ""}
-          onChange={this.onChange}
-          /* inputProps={{
-            pattern: "[\\w-]+",
-          }} */
-          required
-          fullWidth
-        />
-        <TextField
-          id="price"
-          label="Withdraw Price"
-          margin="normal"
-          value={this.props.object.organization.displayName || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-        />
+        <ThemeProvider theme={theme}>
         <TextField
           id="amount"
-          label="Withdraw Amount"
+          bgcolor="primary.main"
+          label="Amount to Withdraw"
           //helperText="The name may only contain words, numbers and dashes."
           margin="normal"
-          value={this.props.object.organization.name || ""}
+          value={this.props.organization.balance || ""}
+          onChange={this.onChange}
+          
+          required
+          fullWidth
+        />
+        </ThemeProvider>
+        <TextField
+          id="txFee"
+          label="Transaction fee is"
+          margin="normal"
+          value={this.props.organization.displayName || ""}
+          onChange={this.onChange}
+          required
+          fullWidth
+        />
+        <TextField
+          id="destination"
+          label="Withdraw destination"
+          //helperText="The name may only contain words, numbers and dashes."
+          margin="normal"
+          value={this.props.organization.name || ""}
           onChange={this.onChange}
           inputProps={{
             pattern: "[\\w-]+",
@@ -60,37 +76,9 @@ class WithdrawForm extends FormComponent {
           required
           fullWidth
         />
-        <TextField
-          id="receiverEthAddress"
-          label="Receiver Eth Address"
-          margin="normal"
-          value={this.props.object.organization.displayName || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-        />
-        {/* <FormControl
-          label="Gateways"
-        >
-          <FormGroup>
-            <FormControlLabel
-              label="Organization can have gateways"
-              control={
-                <Checkbox
-                  id="canHaveGateways"
-                  checked={!!this.state.object.canHaveGateways}
-                  onChange={this.onChange}
-                  value="true"
-                  color="primary"
-                />
-              }
-            />
-          </FormGroup>
-          <FormHelperText>When checked, it means that organization administrators are able to add their own gateways to the network. Note that the usage of the gateways is not limited to this organization.</FormHelperText>
-        </FormControl> */}
       </Form>
     );
   }
 }
 
-export default WithdrawForm;
+export default (withRouter(WithdrawForm));

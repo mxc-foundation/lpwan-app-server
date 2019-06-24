@@ -16,6 +16,18 @@ import CardContent from "@material-ui/core/CardContent";
 import Admin from "../../components/Admin";
 import ApplicationStore from "../../stores/ApplicationStore";
 import ModifyEthAccountForm from "./ModifyEthAccountForm";
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
+
+const styles = {
+  backgroundColor: {
+    backgroundColor: "#090046",
+  },
+  font: {
+    color: '#FFFFFF', 
+    fontFamily: 'Montserrat',
+  }
+};
 
 class ModifyEthAccount extends Component {
   constructor() {
@@ -53,7 +65,7 @@ class ModifyEthAccount extends Component {
             </Admin>
           }
         >
-          <TitleBarTitle title="ModifyEthAccount" />
+          <TitleBarTitle title="ModifyEthAccount" className={this.props.classes.font}/>
         </TitleBar>
         <Grid item xs={12}>
           <Card>
@@ -71,4 +83,4 @@ class ModifyEthAccount extends Component {
   }
 }
 
-export default ModifyEthAccount;
+export default withStyles(styles)(withRouter(ModifyEthAccount));

@@ -87,6 +87,7 @@ import Topup from "./views/m2m-wallet/Topup"
 import Withdraw from "./views/m2m-wallet/Withdraw"
 import History from "./views/m2m-wallet/History"
 import ModifyEthAccount from "./views/m2m-wallet/ModifyEthAccount"
+//import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const drawerWidth = 270;
 
@@ -96,6 +97,12 @@ const styles = {
     display: "flex",
     minHeight: "100vh",
     flexDirection: "column",
+    backgroundColor: "#090046",
+    background: "#311b92",
+    fontFamily: 'Montserrat',
+  },
+  input: {
+    color: '#FFFFFF',
   },
   paper: {
     padding: theme.spacing.unit * 2,
@@ -115,8 +122,10 @@ const styles = {
   footerDrawerOpen: {
     paddingLeft: drawerWidth,
   },
+  color: {
+    backgroundColor: "#090046",
+  },
 };
-
 
 class App extends Component {
   constructor() {
@@ -124,6 +133,7 @@ class App extends Component {
 
     this.state = {
       user: null,
+      organizationId: null,
       drawerOpen: false,
     };
 
@@ -158,7 +168,7 @@ class App extends Component {
 
     if (this.state.user !== null) {
       topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
-      sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
+      sideNav = <SideNav setDrawerOpen={this.setDrawerOpen} open={this.state.drawerOpen} user={this.state.user} />
     }
     
     return (
@@ -169,7 +179,7 @@ class App extends Component {
             <div className={this.props.classes.root}>
               {topNav}
               {sideNav}
-              <div className={classNames(this.props.classes.main, /* this.state.drawerOpen &&  */this.props.classes.mainDrawerOpen)}>
+              <div className={classNames(this.props.classes.main, /* this.state.drawerOpen &&  */ this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={24}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />

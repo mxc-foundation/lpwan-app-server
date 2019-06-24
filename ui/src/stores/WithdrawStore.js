@@ -10,18 +10,15 @@ import dispatcher from "../dispatcher";
 class WithdrawStore extends EventEmitter {
   constructor() {
     super();
-    this.swagger = new Swagger("/swagger/organization.swagger.json", sessionStore.getClientOpts());
+    this.withdrawSwagger = new Swagger("/swagger/withdraw.swagger.json", sessionStore.getClientOpts());
   }
   
-  get(id, callbackFunc) {
-    //console.log("Organication id")
-    //console.log(id)
-    this.swagger.then(client => {
-      client.apis.OrganizationService.Get({
-        id: id,
-      })
+  getWithdrawFee(money_abbr, callbackFunc) {
+    this.withdrawSwagger.then(client => {
+      client.apis.WithdrawService.GetWithdrawFee({money_abbr})
       .then(checkStatus)
       .then(resp => {
+        console.log("withdrawFee:", resp);
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);

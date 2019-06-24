@@ -7,6 +7,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
+
+import Card from '@material-ui/core/Card';
+import CardContent from "@material-ui/core/CardContent";
 
 import Divider from '@material-ui/core/Divider';
 import Domain from "mdi-material-ui/Domain";
@@ -18,6 +22,14 @@ import Tune from "mdi-material-ui/Tune";
 import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
 import Wallet from "mdi-material-ui/Wallet";
+
+import AccessPoint from "mdi-material-ui/AccessPoint";
+import Repeat from "mdi-material-ui/Repeat";
+import CalendarCheckOutline from "mdi-material-ui/CalendarCheckOutline";
+import CreditCard from "mdi-material-ui/CreditCard";
+import ArrowExpandLeft from "mdi-material-ui/ArrowExpandLeft";
+
+
 //import ModifyEthAccount from "mdi-material-ui/Card-bulleted-settings-outline"
 //import History from "mdi-material-ui/History"
 //import Topup from "mdi-material-ui/Bank-transfer-in"
@@ -37,6 +49,8 @@ const styles = {
     position: "fixed",
     width: 270,
     paddingTop: theme.spacing.unit * 9,
+    backgroundColor: '#09006E',
+    color: '#FFFFFF',
   },
   select: {
     paddingTop: theme.spacing.unit,
@@ -44,6 +58,20 @@ const styles = {
     paddingRight: theme.spacing.unit * 3,
     paddingBottom: theme.spacing.unit * 1,
   },
+  card: {
+    width: '100%',
+    height: 200,
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#09006E',
+    color: '#FFFFFF',
+  },
+  static: {
+    position: 'static'
+  },
+  iconStyle: {
+    color: theme.palette.common.white,
+  }
 };
 
 class SideNav extends Component {
@@ -66,6 +94,7 @@ class SideNav extends Component {
   componentDidMount() {
     SessionStore.on("organization.change", () => {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
+        console.log('org organization.change', resp.organization);
         this.setState({
           organization: resp.organization,
         });
@@ -80,6 +109,7 @@ class SideNav extends Component {
 
     OrganizationStore.on("change", (org) => {
       if (this.state.organization !== null && this.state.organization.id === org.id) {
+        console.log('org change', org);
         this.setState({
           organization: org,
         });
@@ -88,8 +118,9 @@ class SideNav extends Component {
 
     OrganizationStore.on("delete", id => {
       if (this.state.organization !== null && this.state.organization.id === id) {
+        console.log('org delete');
         this.setState({
-          organization: null,
+          organization: null
         });
       }
 
@@ -100,6 +131,7 @@ class SideNav extends Component {
 
     if (SessionStore.getOrganizationID() !== null) {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
+        console.log('org componentDidMount', resp.organization);
         this.setState({
           organization: resp.organization,
         });
@@ -107,6 +139,10 @@ class SideNav extends Component {
     }
 
     this.getOrganizationFromLocation();
+  }
+
+  componentWillUnmount() {
+    console.log('SideNav.componentWillUnmount');
   }
 
   componentDidUpdate(prevProps) {
@@ -143,9 +179,30 @@ class SideNav extends Component {
     });
   }
 
+  handleOpenM2M = () => {
+    this.props.setDrawerOpen(false);
+    this.props.history.push(`/withdraw/${this.state.organization.id}`);
+    
+    /* if(!this.props.drawerOpen){
+      this.props.history.push("/");
+    }else{
+      //this.props.history.push("/wallet");
+      console.log(this.props)
+      
+      // `/organizations/${this.state.organization.id}/applications`
+      
+    } */
+    
+  }
+
+  handleOpenLora = () => {
+    this.props.setDrawerOpen(true);
+    this.props.history.push(`/`);
+  }  
+
   render() {
     let organizationID = "";
-    if (this.state.organization !== null) {
+    if (this.state.organization) {
       organizationID = this.state.organization.id;
     }
    
@@ -163,25 +220,29 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Server />
               </ListItemIcon>
-              <ListItemText primary="Network-servers" />
+              <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text">Network-servers</Typography>} />
             </ListItem>
             <ListItem button component={Link} to="/gateway-profiles">
               <ListItemIcon>
                 <RadioTower />
               </ListItemIcon>
-              <ListItemText primary="Gateway-profiles" />
+              <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text">Gateway-profiles</Typography>} />
             </ListItem>
             <ListItem button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
               </ListItemIcon>
-              <ListItemText primary="Organizations" />
+              <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text">Organizations</Typography>} />
             </ListItem>
             <ListItem button component={Link} to="/users">
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="All users" />
+              <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text">All users</Typography>} />
             </ListItem>
           </List>
           <Divider />
@@ -200,13 +261,15 @@ class SideNav extends Component {
           />
         </div>
 
-        {this.state.organization && <List>
+        {this.state.organization && <>
+        <List className={this.props.classes.static}>
           <Admin>
             <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              <ListItemText primary="Org. settings" />
+              <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >Org. settings</Typography>} />
             </ListItem>
           </Admin>
           <Admin organizationID={this.state.organization.id}>
@@ -214,73 +277,138 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="Org. users" />
+              <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >Org. users</Typography>} />
             </ListItem>
           </Admin>
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
             </ListItemIcon>
-            <ListItemText primary="Service-profiles" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >Service-profiles</Typography>} />
           </ListItem>
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
             <ListItemIcon>
               <Tune />
             </ListItemIcon>
-            <ListItemText primary="Device-profiles" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >Device-profiles</Typography>} />
           </ListItem>
           {this.state.organization.canHaveGateways && <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
             <ListItemIcon>
               <RadioTower />
             </ListItemIcon>
-            <ListItemText primary="Gateways" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >Gateways</Typography>} />
           </ListItem>}
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
             <ListItemIcon>
               <Apps />
             </ListItemIcon>
-            <ListItemText primary="Applications" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >Applications</Typography>} />
           </ListItem>
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
             <ListItemIcon>
               <Rss />
             </ListItemIcon>
-            <ListItemText primary="Multicast-groups" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >Multicast-groups</Typography>} />
           </ListItem>
-        </List>}
+        </List>
+
+        <Card className={this.props.classes.card}>
+            <CardContent>
+              <List className={this.props.classes.static}>
+                <ListItem button  onClick={this.handleOpenLora}>
+                  <ListItemIcon>
+                    <AccessPoint />
+                  </ListItemIcon>
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Lora</Typography>} />
+                </ListItem>
+                <ListItem button onClick={this.handleOpenM2M} >
+                  <ListItemIcon>
+                    <Wallet />
+                  </ListItemIcon>
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >M2M Wallet</Typography>} />
+                </ListItem>
+                <ListItem button  onClick={this.handleOpenLora}>
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Account name</Typography>} />
+                  <ListItemIcon>
+                    <Settings />
+                  </ListItemIcon>
+                </ListItem>
+                <ListItem button onClick={this.handleOpenM2M} >
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Change Account</Typography>} />
+                  <ListItemIcon>
+                    <Repeat />
+                  </ListItemIcon>
+                </ListItem>
+              </List>
+            </CardContent>
+          </Card>
+        </>}
       </Drawer>
-      <Drawer
+      <Drawer 
         variant="persistent"
         anchor="left"
         open={!this.props.open}
         classes={{paper: this.props.classes.drawerPaper}}
       >
-        {this.state.organization && <List>
+        {this.state.organization && <List className={this.props.classes.static}>
         
           <ListItem button component={Link} to={`/withdraw/${this.state.organization.id}`}>
-            <ListItemIcon>
-              <Wallet />
+            <ListItemIcon className={this.props.classes.iconStyle}>
+              <ArrowExpandLeft />
             </ListItemIcon>
-            <ListItemText primary="Withdraw" />
-          </ListItem>
-          <ListItem button component={Link} to={`/topup`}>
-            <ListItemIcon>
-              <Wallet />
-            </ListItemIcon>
-            <ListItemText primary="Topup" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat' }} >Withdraw</Typography>} />
           </ListItem>
           <ListItem button component={Link} to={`/history`}>
             <ListItemIcon>
-              <Wallet />
+              <CalendarCheckOutline />
             </ListItemIcon>
-            <ListItemText primary="History" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >History</Typography>} />
           </ListItem>
           <ListItem button component={Link} to={`/modify-account`}>
             <ListItemIcon>
-              <Wallet />
+              <CreditCard />
             </ListItemIcon>
-            <ListItemText primary="ModifyEthAccount" />
+            <ListItemText disableTypography
+        primary={<Typography type="body2" className="default-text" >ModifyEthAccount</Typography>} />
           </ListItem>
+          <Card className={this.props.classes.card}>
+            <CardContent>
+              <List className={this.props.classes.static}>
+                <ListItem button  onClick={this.handleOpenLora}>
+                  <ListItemIcon>
+                    <AccessPoint />
+                  </ListItemIcon>
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Lora</Typography>} />
+                </ListItem>
+                <ListItem button onClick={this.handleOpenM2M} >
+                  <ListItemIcon>
+                    <Wallet />
+                  </ListItemIcon>
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >M2M Wallet</Typography>} />
+                </ListItem>
+                <ListItem button  onClick={this.handleOpenLora}>
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Account name</Typography>} />
+                  <ListItemIcon>
+                    <Settings />
+                  </ListItemIcon>
+                </ListItem>
+                <ListItem button onClick={this.handleOpenM2M} >
+                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Change Account</Typography>} />
+                  <ListItemIcon>
+                    <Repeat />
+                  </ListItemIcon>
+                </ListItem>
+              </List>
+            </CardContent>
+          </Card>
         </List>}
       </Drawer>
       </>

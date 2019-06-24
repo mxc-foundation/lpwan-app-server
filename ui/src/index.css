@@ -3,3 +3,12 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+.default-text {
+  color: white !important;
+  font-family: 'Montserrat' !important;
+}
+
+.fix-padding {
+  margin-left: -125px;
+}
