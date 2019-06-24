@@ -1,0 +1,138 @@
+--boundary
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-ID: text-body
+
+To complete your {{.Host}} registration, please follow the link below:
+{{.Link}}
+
+--boundary
+Content-Type: text/html;charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-ID: html-body
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+</head>
+<body width="100%" style="margin: 0;">
+	<p>
+	To complete your {{.Host}} registration, please follow the link below:
+	</p>
+	<p><a href="{{.Link}}">{{.Link}}</a></p>
+</body>
+</html>
+
+--boundary--
+
+
+From: MXC <{{ .From }}>
+To: {{ .To }}
+Subject: Confirm your {{.Host}} registration
+Message-Id: <{{ .MsgId }}>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="{{ .Boundary }}"
+
+--{{ .Boundary }}
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: text-body
+
+To complete your {{.Host}} registration, please follow the link below:
+{{.Link}}
+
+--{{ .Boundary }}
+Content-Type: text/html;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: html-body
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>MXC E-Mail</title>
+</head>
+<body>
+
+<style>
+	@import url('https://fonts.googleapis.com/css?family=3DMontserrat:200,700');
+</style>
+
+<!-- wrap starts -->
+<table align=3D"center">
+	<tbody>
+		<tr>
+			<td align=3D"center">
+
+				<!-- head starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; width: 100%; max-width: 650px; position: relative;background-color:#09006e; font-weight: bold; font-size: 10px;">
+					<tbody>
+						<tr>
+							<td>
+								<img style=3D"font-family: Montserrat, Helvetica; width: 100px !important; margin: 15px;" class=3D"logo" src=3D"https://cdn2.hubspot.net/hubfs/4475127/web-assets/mxc_logo_02.png">
+							</td>
+							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
+								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/">
+									MXC.org
+								</a>
+							</td>
+							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
+								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/about">
+									About
+								</a>
+							</td>
+							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
+								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/get-mxc">
+									Get MXC
+								</a>
+							</td>
+							</tr>
+							<tr>
+						</tr>
+					</tbody>
+				</table>
+				<!-- head ends indeed -->
+				<!-- title starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; width: 100%; max-width: 650px; text-align: center; color: #000000; padding: 30px 0 0;border: solid #09006e;
+				    border-width: 0 10px; ">
+					<tr>
+					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 30px; font-weight: 700; line-height: 37px; padding: 0 15%;">
+							Welcome to MXC, the Coin with Purpose
+					    </td>
+					</tr>
+				</table>
+				<!-- title ends -->
+				<!-- msg starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; width: 100%; max-width: 650px; color: #000000; padding: 30px;border: solid #09006e;
+				    border-width: 0 10px 10px 10px; ">
+					<tr>
+					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 14px; font-weight: 300; line-height: 140%;">
+							To complete your {{.Host}} registration, please follow the link below:
+                            {{.Link}}
+					    </td>
+					</tr>
+				</table>
+				<!-- msg ends -->
+				<!-- footer starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; font-size: 10px; padding: 10px;">
+					<tbody>
+						<tr>
+							<td>
+								MXC Foundation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alexanderstraße 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10178 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2018
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- footer ends -->
+			</td>
+		</tr>
+	</tbody>
+</table>
+<!-- wrap ends -->
+
+</body>
+</html>
+
+--{{ .Boundary }}--

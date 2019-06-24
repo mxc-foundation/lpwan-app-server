@@ -9,21 +9,38 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"time"
 
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/static"
 	log "github.com/sirupsen/logrus"
+	"github.com/brocaar/lora-app-server/internal/config"
+	"gitlab.com/MXCFoundation/cloud/lora-app-server/internal/static"
 )
 
-var conf Conf
+var (
+	senderID string
+	password string
+	host     string
+	port     string
+	disable  bool
+)
+
+const (
+	sendInvite = iota
+)
 
 // Setup configures the package.
 func Setup(c config.Config) error {
-	conf = Conf{
-		senderID: c.SMTP.Email,
-		password: c.SMTP.Password,
-		host:     c.SMTP.Host,
-		port:     c.SMTP.Port,
+	senderID = c.SMTP.Email
+	password = c.SMTP.Password
+	host = c.SMTP.Host
+	port = c.SMTP.Port
+	disable = false
+
+	base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
+	mailTemplates = make([]*template.Template, len(mailTemplateNames))
+	for k, v := range mailTemplateNames {
+		mailTemplates[k] = template.Must(
+			template.New(v.templatePath).Parse(string(static.MustAsset(v.templatePath))))
 	}
 
 	return nil
@@ -31,80 +48,76 @@ func Setup(c config.Config) error {
 
 // Disable stops emails from being sent.
 func Disable() {
-	conf = Conf{
-		disable: true,
+	disable = true
+}
+
+var (
+	mailTemplates    []*template.Template
+	base32endocoding *base32.Encoding
+
+	mailTemplateNames = []struct {
+		templatePath string
+		url          string
+	}{
+		sendInvite: {
+			templatePath: "template/registration-confirm",
+			url:          "/#/registration-confirm/",
+		},
 	}
-}
-
-// Conf ...
-type Conf struct {
-	senderID string
-	password string
-	host     string
-	port     string
-	disable  bool
-}
-
-// Mail ...
-type Mail struct {
-	Sender    string
-	Recepient string
-	Host      string
-	MessageID string
-	Link      string
-}
+)
 
 // SendInvite ...
 func SendInvite(user string, token string) error {
 	var err error
 
-	if conf.disable == true {
+	if disable == true {
 		return nil
 	}
-	if conf.host == "" {
+
+	if host == "" {
 		log.Error("Tried to send registration email, but SMTP is not configured")
 		return errors.New("Unable to send confirmation email")
 	}
 
-	var mail = Mail{
-		Sender:    conf.senderID,
-		Recepient: user,
-	}
-
-	if mail.Host, err = os.Hostname(); err != nil {
+	if host, err = os.Hostname(); err != nil {
 		return err
 	}
 
-	if !strings.ContainsRune(mail.Host, '.') {
-		mail.Host = ".matchx.io"
+	if !strings.ContainsRune(host, '.') {
+		host = ".matchx.io"
 	}
 
 	localHostAddr := os.Getenv("LOCAL_HOST_ADDRESS")
+	var link string
 	if localHostAddr != "" {
-		mail.Link = localHostAddr + "/#/registration-confirm/" + token
+		link = localHostAddr + mailTemplateNames[sendInvite].url + token
 	} else {
-		mail.Link = "https://" + mail.Host + "/#/registration-confirm/" + token
+		link = "https://" + host + mailTemplateNames[sendInvite].url + token
 	}
+
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
 		return err
 	}
-	mail.MessageID = base32.StdEncoding.EncodeToString(b)
-	content, _ := static.Asset("templates/registration-confirm.txt")
-	t := template.New("Invite")
-	tpl, _ := t.Parse(string(content))
-	if err != nil {
-		return err
-	}
+	messageID := time.Now().Format("20060102150405.") + base32endocoding.EncodeToString(b)
 
 	var msg bytes.Buffer
-	if err = tpl.Execute(&msg, mail); err != nil {
+	if err := mailTemplates[sendInvite].Execute(&msg, struct {
+		From, To, Host, MsgId, Boundary, Link string
+	}{
+		From: senderID,
+		To: user,
+		Host: host,
+		MsgId:messageID + "@" + host,
+		Boundary: "----=_Part_" + messageID,
+		Link: link,
+	}); err != nil {
+		log.Error(err)
 		return err
 	}
 
-	err = smtp.SendMail(conf.host+":"+conf.port,
-		smtp.CRAMMD5Auth(mail.Sender, conf.password),
-		mail.Sender, []string{mail.Recepient}, msg.Bytes())
+	err = smtp.SendMail(host+":"+ port,
+		smtp.CRAMMD5Auth(senderID, password),senderID, []string{user}, msg.Bytes())
 
 	if err != nil {
 		return err
