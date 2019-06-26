@@ -7,21 +7,21 @@ import (
 	"errors"
 	"net/smtp"
 	"os"
-	"strings"
 	"text/template"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/brocaar/lora-app-server/internal/config"
-	"gitlab.com/MXCFoundation/cloud/lora-app-server/internal/static"
+	"github.com/brocaar/lora-app-server/internal/static"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
-	senderID string
-	password string
-	host     string
-	port     string
-	disable  bool
+	senderID   string
+	password   string
+	host       string
+	smtpServer string
+	smtpPort   string
+	disable    bool
 )
 
 const (
@@ -32,8 +32,9 @@ const (
 func Setup(c config.Config) error {
 	senderID = c.SMTP.Email
 	password = c.SMTP.Password
-	host = c.SMTP.Host
-	port = c.SMTP.Port
+	smtpServer = c.SMTP.Host
+	smtpPort = c.SMTP.Port
+	host = c.General.HostServer
 	disable = false
 
 	base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
@@ -60,7 +61,7 @@ var (
 		url          string
 	}{
 		sendInvite: {
-			templatePath: "template/registration-confirm",
+			templatePath: "templates/registration-confirm",
 			url:          "/#/registration-confirm/",
 		},
 	}
@@ -74,17 +75,9 @@ func SendInvite(user string, token string) error {
 		return nil
 	}
 
-	if host == "" {
+	if smtpServer == "" {
 		log.Error("Tried to send registration email, but SMTP is not configured")
 		return errors.New("Unable to send confirmation email")
-	}
-
-	if host, err = os.Hostname(); err != nil {
-		return err
-	}
-
-	if !strings.ContainsRune(host, '.') {
-		host = ".matchx.io"
 	}
 
 	localHostAddr := os.Getenv("LOCAL_HOST_ADDRESS")
@@ -105,19 +98,19 @@ func SendInvite(user string, token string) error {
 	if err := mailTemplates[sendInvite].Execute(&msg, struct {
 		From, To, Host, MsgId, Boundary, Link string
 	}{
-		From: senderID,
-		To: user,
-		Host: host,
-		MsgId:messageID + "@" + host,
+		From:     senderID,
+		To:       user,
+		Host:     host,
+		MsgId:    messageID + "@" + host,
 		Boundary: "----=_Part_" + messageID,
-		Link: link,
+		Link:     link,
 	}); err != nil {
 		log.Error(err)
 		return err
 	}
 
-	err = smtp.SendMail(host+":"+ port,
-		smtp.CRAMMD5Auth(senderID, password),senderID, []string{user}, msg.Bytes())
+	err = smtp.SendMail(smtpServer+":"+smtpPort,
+		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
 
 	if err != nil {
 		return err

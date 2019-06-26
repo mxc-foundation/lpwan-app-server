@@ -18,7 +18,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/codec"
 	"github.com/brocaar/lora-app-server/internal/config"
 	"github.com/brocaar/lora-app-server/internal/downlink"
-	"gitlab.com/MXCFoundation/cloud/lora-app-server/internal/email"
+	"github.com/brocaar/lora-app-server/internal/email"
 	"github.com/brocaar/lora-app-server/internal/fuota"
 	"github.com/brocaar/lora-app-server/internal/gwping"
 	"github.com/brocaar/lora-app-server/internal/integration"
