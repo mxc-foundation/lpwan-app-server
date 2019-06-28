@@ -4,29 +4,42 @@ import Grid from "@material-ui/core/Grid";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
 
-import Plus from "mdi-material-ui/Plus";
-
+import Button from "@material-ui/core/Button";
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
+import Divider from '@material-ui/core/Divider';
 
-import Admin from "../../components/Admin";
 import ApplicationStore from "../../stores/ApplicationStore";
 import ModifyEthAccountForm from "./ModifyEthAccountForm";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
 
 const styles = {
-  backgroundColor: {
-    backgroundColor: "#090046",
+  navText: {
+    fontSize: 14,
   },
-  font: {
-    color: '#FFFFFF', 
-    fontFamily: 'Montserrat',
-  }
+  TitleBar: {
+    height: 115,
+    width: '50%',
+    light: true,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  card: {
+    backgroundColor: "#090046",
+    display: 'flex',
+    justifyContent: 'flex-end',
+    boxShadow: 0
+  },
+  divider: {
+    padding: 0,
+    color: '#FFFFFF',
+    width: '100%',
+  },
+  padding: {
+    paddingTop: 13,
+  },
 };
 
 class ModifyEthAccount extends Component {
@@ -54,29 +67,28 @@ class ModifyEthAccount extends Component {
   render() {
     return(
       <Grid container spacing={24}>
-        <TitleBar
-          buttons={
-            <Admin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                label="Create"
-                icon={<Plus />}
-                to={`/organizations/${this.props.match.params.organizationID}/applications/create`}
-              />
-            </Admin>
-          }
-        >
-          <TitleBarTitle title="ModifyEthAccount" className={this.props.classes.font}/>
-        </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <ModifyEthAccountForm
-                submitLabel="Confirm"
-                //object={this.state.organization} {...props}
-                //onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
+        <Grid item xs={12} className={this.props.classes.divider}>
+          <div className={this.props.classes.TitleBar}>
+              <TitleBar className={this.props.classes.padding}>
+                <TitleBarTitle title="ETH Account" />
+              </TitleBar>
+              <Divider light={true}/>
+              <TitleBar>
+                <TitleBarTitle title="M2M Wallet" className={this.props.classes.navText}/>
+                <TitleBarTitle title="/" className={this.props.classes.navText}/>
+                <TitleBarTitle title="ETH Account" className={this.props.classes.navText}/>
+              </TitleBar>
+          </div>
+        </Grid>
+        <Grid item xs={6}>
+          <ModifyEthAccountForm
+            submitLabel="Confirm"
+            //object={this.state.organization} {...props}
+            //onSubmit={this.onSubmit}
+          />
+        </Grid>
+        <Grid item xs={6} className={this.props.classes.card}>
+          <Button color="primary" type="submit" disabled={this.props.disabled}>ADD TOKEN</Button>
         </Grid>
       </Grid>
     );

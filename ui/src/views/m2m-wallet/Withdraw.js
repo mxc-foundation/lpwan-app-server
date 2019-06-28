@@ -5,20 +5,69 @@ import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
-//import Admin from "../../components/Admin";
-//import OrganizationStore from "../../stores/OrganizationStore";
+
+import OrganizationStore from "../../stores/OrganizationStore";
 import WithdrawStore from "../../stores/WithdrawStore";
 import WithdrawForm from "./WithdrawForm";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
+import Divider from '@material-ui/core/Divider';
+import Typography from "@material-ui/core/Typography";
+import theme from "../../theme";
+//import { FormHelperText } from "@material-ui/core";
+//import { endianness } from "os";
 
 const styles = {
-  backgroundColor: {
-    backgroundColor: "#090046",
+  card: {
+    minWidth: 180,
+    width: 220,
+    backgroundColor: "#0C0270",
   },
-  font: {
-    color: '#FFFFFF', 
-    fontFamily: 'Montserrat',
+  flex: {
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  title: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    padding: 6,
+  },
+  balance: {
+    fontSize: 24,
+    color: '#FFFFFF',
+    textAlign: 'center',
+  },
+  newBalance: {
+    fontSize: 24,
+    textAlign: 'center',
+    color: theme.palette.primary.main,
+  },
+  navText: {
+    fontSize: 14,
+  },
+  pos: {
+    marginBottom: 12,
+    color: '#FFFFFF',
+    textAlign: 'right',
+  },
+  TitleBar: {
+    height: 115,
+    width: '50%',
+    light: true,
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  divider: {
+    padding: 0,
+    color: '#FFFFFF',
+    width: '100%',
+  },
+  padding: {
+    padding: 0,
+  },
+  between: {
+    display: 'flex',
+    justifyContent:'spaceBetween'
   }
 };
 
@@ -55,7 +104,7 @@ class Withdraw extends Component {
         this.setState({
         organization: resp,
       });
-    });
+    }); 
   }
   
   componentDidUpdate(prevProps) {
@@ -71,44 +120,68 @@ class Withdraw extends Component {
   }
 
   onSubmit(organization) {
-    /* OrganizationStore.update(organization, resp => {
+    OrganizationStore.update(organization, resp => {
     this.props.history.push(`/withdraw/${this.props.match.params.organizationID}`);
-    }); */
+    }); 
   }
 
   render() {
     
     return(
       <Grid container spacing={24} className={this.props.classes.backgroundColor}>
-        <TitleBar>
-          <TitleBarTitle title="Withdraw" className={this.props.classes.font}/>
-        </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              
-            </CardContent>
-          </Card>
+        <Grid item xs={12} className={this.props.classes.divider}>
+          <div className={this.props.classes.TitleBar}>
+              <TitleBar className={this.props.classes.padding}>
+                <TitleBarTitle title="Withdraw" />
+              </TitleBar>
+              <Divider light={true}/>
+              <TitleBar>
+                <TitleBarTitle title="M2M Wallet" className={this.props.classes.navText}/>
+                <TitleBarTitle title="/" className={this.props.classes.navText}/>
+                <TitleBarTitle title="Withdraw" className={this.props.classes.navText}/>
+              </TitleBar>
+          </div>
+        </Grid>
+        <Grid item xs={6} className={this.props.classes.divider}></Grid>
+        <Grid item xs={12} className={this.props.classes.divider}>
+          
         </Grid>
         <Grid item xs={6}>
-          <Card>
-            <CardContent>
-              <WithdrawForm
-                submitLabel="Withdraw"
-                organization={this.state.organization} {...this.props}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
+          <WithdrawForm
+            submitLabel="Withdraw"
+            organization={this.state.organization} {...this.props}
+            onSubmit={this.onSubmit}
+          />
         </Grid>
-        <Grid item xs={6}>
-          <Card>
-            <CardContent>
-              <WithdrawForm
-                submitLabel="Withdraw"
-                organization={this.state.organization} {...this.props}
-                onSubmit={this.onSubmit}
-              />
+        <Grid item xs={2}>
+          
+        </Grid>
+        <Grid item xs={3}>
+          <Card className={this.props.classes.card}>
+            <CardContent className="space-between" >
+              <Typography  className={this.props.classes.title} gutterBottom>
+                Balance
+              </Typography>
+              <Typography className={this.props.classes.title} gutterBottom>
+                Tokens
+              </Typography>
+            </CardContent>
+            <CardContent>    
+              <Typography className={this.props.classes.balance} variant="h5" component="h2">
+                1234.00098
+              </Typography>
+              <Typography className={this.props.classes.pos} color="textSecondary">
+                MXC
+              </Typography>
+              <Typography className={this.props.classes.title} color="textSecondary" gutterBottom>
+                New Balance
+              </Typography>
+              <Typography className={this.props.classes.newBalance} variant="h5" component="h2">
+                1234.00098
+              </Typography>
+              <Typography className={this.props.classes.pos} color="textSecondary">
+                MXC
+              </Typography>
             </CardContent>
           </Card>
         </Grid>

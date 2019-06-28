@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import Grid from "@material-ui/core/Grid";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
-import Divider from '@material-ui/core/Divider';
 
 import Plus from "mdi-material-ui/Plus";
 
@@ -13,33 +12,8 @@ import TableCellLink from "../../components/TableCellLink";
 import TitleBarButton from "../../components/TitleBarButton";
 import DataTable from "../../components/DataTable";
 import Admin from "../../components/Admin";
-import ApplicationStore from "../../stores/ApplicationStore";
-import { withRouter } from "react-router-dom";
-import { withStyles } from "@material-ui/core/styles";
-  
-const styles = {
-  font: {
-    padding: [0, 0, 0, 0],
-  },
-  card: {
-    minWidth: 180,
-    width: 220,
-    backgroundColor: "#0C0270",
-  },
-  navText: {
-    fontSize: 14,
-  },
-  divider: {
-    padding: 0,
-    color: '#FFFFFF',
-    width: '100%',
-  },
-  padding: {
-    padding: 0,
-  },
-};
 
-class History extends Component {
+class EthAccount extends Component {
   constructor() {
     super();
     this.getPage = this.getPage.bind(this);
@@ -47,7 +21,7 @@ class History extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
-    ApplicationStore.list("", this.props.match.params.organizationID, limit, offset, callbackFunc);
+    //ApplicationStore.list("", this.props.match.params.organizationID, limit, offset, callbackFunc);
   }
 
   getRow(obj) {
@@ -62,6 +36,7 @@ class History extends Component {
   }
 
   render() {
+    console.warn('Component loaded!')
     return(
       <Grid container spacing={24}>
         <TitleBar
@@ -75,35 +50,9 @@ class History extends Component {
             </Admin>
           }
         >
-          <TitleBarTitle title="History" className={this.props.classes.font}/>
+          <TitleBarTitle title="Dashboard" />
         </TitleBar>
         <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Service-profile</TableCell>
-                <TableCell>Description</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-          <Divider />
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Service-profile</TableCell>
-                <TableCell>Description</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-          <Divider />
           <DataTable
             header={
               <TableRow>
@@ -122,4 +71,4 @@ class History extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(History));
+export default EthAccount;

@@ -3,30 +3,9 @@ import React from "react";
 import TextField from '@material-ui/core/TextField';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
-import purple from "@material-ui/core/colors/purple";
-import green from "@material-ui/core/colors/green";
+import Button from "@material-ui/core/Button";
 
-import { createMuiTheme } from "@material-ui/core/styles";
-import { ThemeProvider } from "@material-ui/styles";
 import { withRouter } from "react-router-dom";
-//import { withStyles } from "@material-ui/core/styles";
-
-const theme = createMuiTheme({
-  palette: {
-    primary: purple,
-    secondary: green
-  },
-  overrides: {
-    MuiInputLabel: { // Name of the component ⚛️ / style sheet
-      root: { // Name of the rule
-        color: "orange",
-        "&$focused": { // increase the specificity for the pseudo class
-          color: "purple"
-        }
-      }
-    }
-  }
-});
 
 class WithdrawForm extends FormComponent {
   
@@ -35,44 +14,55 @@ class WithdrawForm extends FormComponent {
       return(<div>loading...</div>);
     }
 
+    const extraButtons = [
+      <Button color="primary" type="button" disabled={false}>Cancel</Button>
+    ]
+
     return(
       <Form
         submitLabel={this.props.submitLabel}
+        extraButtons={extraButtons}
         onSubmit={this.onSubmit}
       >
-        <ThemeProvider theme={theme}>
+        
         <TextField
           id="amount"
-          bgcolor="primary.main"
-          label="Amount to Withdraw"
+          //bgcolor="primary.main"
+          label="Amount"
           //helperText="The name may only contain words, numbers and dashes."
           margin="normal"
           value={this.props.organization.balance || ""}
           onChange={this.onChange}
+          className={this.props.classes.root}
           
           required
           fullWidth
         />
-        </ThemeProvider>
+        
         <TextField
           id="txFee"
-          label="Transaction fee is"
+          label="Transaction fee"
           margin="normal"
           value={this.props.organization.displayName || ""}
           onChange={this.onChange}
+          className={this.props.classes.root}
+
           required
           fullWidth
         />
+        
         <TextField
           id="destination"
-          label="Withdraw destination"
-          //helperText="The name may only contain words, numbers and dashes."
+          label="Destination"
+          helperText="ETH Account."
           margin="normal"
           value={this.props.organization.name || ""}
           onChange={this.onChange}
-          inputProps={{
+          className={this.props.classes.root}
+          InputProps={{
             pattern: "[\\w-]+",
           }}
+          
           required
           fullWidth
         />
@@ -81,4 +71,4 @@ class WithdrawForm extends FormComponent {
   }
 }
 
-export default (withRouter(WithdrawForm));
+export default withRouter(WithdrawForm);

@@ -85,7 +85,7 @@ import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 //import Dashboard from "./views/m2m-wallet/Dashboard"
 import Topup from "./views/m2m-wallet/Topup"
 import Withdraw from "./views/m2m-wallet/Withdraw"
-import History from "./views/m2m-wallet/History"
+import HistoryLayout from "./views/m2m-wallet/HistoryLayout"
 import ModifyEthAccount from "./views/m2m-wallet/ModifyEthAccount"
 //import deepPurple from "@material-ui/core/colors/deepPurple";
 
@@ -234,7 +234,7 @@ class App extends Component {
                     {/* <Route exact path="/wallet" component={Dashboard} /> */}
                     <Route exact path="/withdraw/:organizationID(\d+)" component={Withdraw} />
                     <Route exact path="/topup" component={Topup} />
-                    <Route exact path="/history" component={History} />
+                    <Route path="/history" component={HistoryLayout} />
                     <Route exact path="/modify-account" component={ModifyEthAccount} />
 
                     <Route exact path="/search" component={Search} />
