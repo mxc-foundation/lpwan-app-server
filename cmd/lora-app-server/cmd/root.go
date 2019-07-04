@@ -47,7 +47,7 @@ func init() {
 	viper.SetDefault("application_server.api.bind", "0.0.0.0:8001")
 	viper.SetDefault("application_server.external_api.bind", "0.0.0.0:8080")
 	viper.SetDefault("application_server.external_api.jwt_secret", "DOE1KiNzpQ82elRQ9HMWyxmADQ5f2B2TBAgOjL7ZZWA=")
-	viper.SetDefault("application_server.external_api.cors_allow_origin", "http://localhost:5420")
+	viper.SetDefault("application_server.external_api.cors_allow_origin", "http://localhost:3000")
 
 	viper.SetDefault("join_server.bind", "0.0.0.0:8003")
 

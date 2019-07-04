@@ -180,19 +180,18 @@ class SideNav extends Component {
   }
 
   handleOpenM2M = () => {
-    this.props.setDrawerOpen(false);
-    this.props.history.push(`/withdraw/${this.state.organization.id}`);
+    //this.props.setDrawerOpen(false);
+    //this.props.history.push(`/withdraw/${this.state.organization.id}`);
     
-    /* if(!this.props.drawerOpen){
-      this.props.history.push("/");
-    }else{
-      //this.props.history.push("/wallet");
-      console.log(this.props)
-      
-      // `/organizations/${this.state.organization.id}/applications`
-      
-    } */
+    const data = {
+      jwt: window.localStorage.getItem("jwt"),
+      path: `/withdraw/${this.state.organization.id}`,
+      org_id: `${this.state.organization.id}`
+    };
+    const dataString = encodeURIComponent(JSON.stringify(data));
     
+    // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
+    window.location.replace(`http://localhost:3001/#/j/${dataString}`);
   }
 
   handleOpenLora = () => {
