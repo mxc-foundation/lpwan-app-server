@@ -21,7 +21,7 @@ const styles = {
   },
   link: {
     "& a": {
-      color: theme.palette.primary.main,
+      color: theme.palette.textSecondary.main,
       textDecoration: "none",
     },
   },
@@ -98,9 +98,9 @@ class Login extends Component {
       <Grid container justify="center">
         <Grid item xs={6} lg={4}>
           <Card>
-            <CardHeader
+            {/* <CardHeader
               title="Login"
-            />
+            /> */}
             <CardContent>
               <LoginForm
                 submitLabel="Login"

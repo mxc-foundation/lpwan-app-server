@@ -90,6 +90,12 @@ const styles = {
     display: "flex",
     minHeight: "100vh",
     flexDirection: "column",
+    backgroundColor: "#090046",
+    background: "#311b92",
+    fontFamily: 'Montserrat',
+  },
+  input: {
+      color: theme.palette.textPrimary.main.white,
   },
   paper: {
     padding: theme.spacing.unit * 2,
@@ -108,6 +114,9 @@ const styles = {
   },
   footerDrawerOpen: {
     paddingLeft: drawerWidth,
+  },
+  color: {
+    backgroundColor: theme.palette.secondary.main,
   },
 };
 
