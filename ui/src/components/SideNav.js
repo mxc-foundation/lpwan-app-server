@@ -180,25 +180,19 @@ class SideNav extends Component {
   }
 
   handleOpenM2M = () => {
-    this.props.setDrawerOpen(false);
-    this.props.history.push(`/withdraw/${this.state.organization.id}`);
+    //this.props.setDrawerOpen(false);
+    //this.props.history.push(`/withdraw/${this.state.organization.id}`);
     
-    /* if(!this.props.drawerOpen){
-      this.props.history.push("/");
-    }else{
-      //this.props.history.push("/wallet");
-      console.log(this.props)
-      
-      // `/organizations/${this.state.organization.id}/applications`
-      
-    } */
+    const data = {
+      jwt: window.localStorage.getItem("jwt"),
+      path: `/withdraw/${this.state.organization.id}`,
+      org_id: `${this.state.organization.id}`
+    };
+    const dataString = encodeURIComponent(JSON.stringify(data));
     
+    // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
+    window.location.replace(`http://localhost:3001/#/j/${dataString}`);
   }
-
-  handleOpenLora = () => {
-    this.props.setDrawerOpen(true);
-    this.props.history.push(`/`);
-  }  
 
   render() {
     let organizationID = "";
@@ -207,7 +201,6 @@ class SideNav extends Component {
     }
    
     return(
-      <>
       <Drawer
         variant="persistent"
         anchor="left"
@@ -220,29 +213,25 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Server />
               </ListItemIcon>
-              <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text">Network-servers</Typography>} />
+              <ListItemText primary="Network-servers" />
             </ListItem>
             <ListItem button component={Link} to="/gateway-profiles">
               <ListItemIcon>
                 <RadioTower />
               </ListItemIcon>
-              <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text">Gateway-profiles</Typography>} />
+              <ListItemText primary="Gateway-profiles" />
             </ListItem>
             <ListItem button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
               </ListItemIcon>
-              <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text">Organizations</Typography>} />
+              <ListItemText primary="Organizations" />
             </ListItem>
             <ListItem button component={Link} to="/users">
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text">All users</Typography>} />
+              <ListItemText primary="All users" />
             </ListItem>
           </List>
           <Divider />
@@ -268,8 +257,7 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >Org. settings</Typography>} />
+              <ListItemText primary="Org. settings" />
             </ListItem>
           </Admin>
           <Admin organizationID={this.state.organization.id}>
@@ -277,70 +265,58 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >Org. users</Typography>} />
+              <ListItemText primary="Org. users" />
             </ListItem>
           </Admin>
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
             </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >Service-profiles</Typography>} />
+            <ListItemText primary="Service-profiles" />
           </ListItem>
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
             <ListItemIcon>
               <Tune />
             </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >Device-profiles</Typography>} />
+            <ListItemText primary="Device-profiles" />
           </ListItem>
           {this.state.organization.canHaveGateways && <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
             <ListItemIcon>
               <RadioTower />
             </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >Gateways</Typography>} />
+            <ListItemText primary="Gateways" />
           </ListItem>}
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
             <ListItemIcon>
               <Apps />
             </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >Applications</Typography>} />
+            <ListItemText primary="Applications" />
           </ListItem>
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
             <ListItemIcon>
               <Rss />
             </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >Multicast-groups</Typography>} />
+            <ListItemText primary="Multicast-groups" />
           </ListItem>
         </List>
 
         <Card className={this.props.classes.card}>
             <CardContent>
               <List className={this.props.classes.static}>
-                <ListItem button  onClick={this.handleOpenLora}>
-                  <ListItemIcon>
-                    <AccessPoint />
-                  </ListItemIcon>
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Lora</Typography>} />
-                </ListItem>
                 <ListItem button onClick={this.handleOpenM2M} >
                   <ListItemIcon>
                     <Wallet />
                   </ListItemIcon>
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >M2M Wallet</Typography>} />
+                  <ListItemText primary="M2M Wallet" />
                 </ListItem>
                 <ListItem button  onClick={this.handleOpenLora}>
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Account name</Typography>} />
+                  <ListItemText primary="Account name" />
                   <ListItemIcon>
                     <Settings />
                   </ListItemIcon>
                 </ListItem>
                 <ListItem button onClick={this.handleOpenM2M} >
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Change Account</Typography>} />
+                  <ListItemText primary="Change Account" />
                   <ListItemIcon>
                     <Repeat />
                   </ListItemIcon>
@@ -350,68 +326,6 @@ class SideNav extends Component {
           </Card>
         </>}
       </Drawer>
-      <Drawer 
-        variant="persistent"
-        anchor="left"
-        open={!this.props.open}
-        classes={{paper: this.props.classes.drawerPaper}}
-      >
-        {this.state.organization && <List className={this.props.classes.static}>
-        
-          <ListItem button component={Link} to={`/withdraw/${this.state.organization.id}`}>
-            <ListItemIcon className={this.props.classes.iconStyle}>
-              <ArrowExpandLeft />
-            </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat' }} >Withdraw</Typography>} />
-          </ListItem>
-          <ListItem button component={Link} to={`/history`}>
-            <ListItemIcon>
-              <CalendarCheckOutline />
-            </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >History</Typography>} />
-          </ListItem>
-          <ListItem button component={Link} to={`/modify-account`}>
-            <ListItemIcon>
-              <CreditCard />
-            </ListItemIcon>
-            <ListItemText disableTypography
-        primary={<Typography type="body2" className="default-text" >ModifyEthAccount</Typography>} />
-          </ListItem>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <List className={this.props.classes.static}>
-                <ListItem button  onClick={this.handleOpenLora}>
-                  <ListItemIcon>
-                    <AccessPoint />
-                  </ListItemIcon>
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Lora</Typography>} />
-                </ListItem>
-                <ListItem button onClick={this.handleOpenM2M} >
-                  <ListItemIcon>
-                    <Wallet />
-                  </ListItemIcon>
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >M2M Wallet</Typography>} />
-                </ListItem>
-                <ListItem button  onClick={this.handleOpenLora}>
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Account name</Typography>} />
-                  <ListItemIcon>
-                    <Settings />
-                  </ListItemIcon>
-                </ListItem>
-                <ListItem button onClick={this.handleOpenM2M} >
-                  <ListItemText disableTypography primary={<Typography type="body2" className="default-text" >Change Account</Typography>} />
-                  <ListItemIcon>
-                    <Repeat />
-                  </ListItemIcon>
-                </ListItem>
-              </List>
-            </CardContent>
-          </Card>
-        </List>}
-      </Drawer>
-      </>
     );
   }
 }
