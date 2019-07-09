@@ -191,7 +191,7 @@ class SideNav extends Component {
     const dataString = encodeURIComponent(JSON.stringify(data));
     
     // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(`http://localhost:3001/#/j/${dataString}`);
+    window.location.replace(`http://localhost:3000/#/j/${dataString}`);
   }
 
   render() {
