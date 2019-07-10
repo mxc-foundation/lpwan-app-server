@@ -19,14 +19,7 @@ const theme = createMuiTheme({
       }
     },
     //tab 
-    MuiTypography: {
-      root: {
-        color: white,
-      },
-      body: {
-        color: white,
-      },
-    },
+    
     typography: {
       subheading: {
         color: white,
@@ -39,6 +32,14 @@ const theme = createMuiTheme({
       ].join(','),
     },
     overrides: {
+      MuiTypography: {
+        root: {
+          color: white,
+        },
+        body1: {
+          color: white,
+        },
+      },
       MuiInput: {
         root: {
           color: white,
@@ -120,6 +121,11 @@ const theme = createMuiTheme({
         },
         text: { 
           color: blueMxcBrand, 
+        },
+      },
+      MuiFormControlLabel: {
+        root: { 
+          color: white, 
         },
       },
       MuiFormLabel: { 
