@@ -19,7 +19,7 @@ import Typography from '@material-ui/core/Typography';
 //import Wallet from "mdi-material-ui/Wallet";
 import AccountCircle from "mdi-material-ui/AccountCircle";
 import Magnify from "mdi-material-ui/Magnify";
-import HelpCicle from "mdi-material-ui/HelpCircle";
+import HelpCircle from "mdi-material-ui/HelpCircle";
 
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
@@ -48,7 +48,7 @@ const styles = {
   search: {
     marginRight: 3 * theme.spacing.unit,
     color: theme.palette.textPrimary.main,
-    background: theme.palette.primary.main,
+    backgroundColor: theme.palette.primary.secondary,
     width: 480,
     padding: 5,
     borderRadius: 3,
@@ -194,7 +194,7 @@ class TopNav extends Component {
           />
           <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
             <IconButton className={this.props.classes.iconButton}>
-              <HelpCicle />
+              <HelpCircle />
             </IconButton>
           </a>
 

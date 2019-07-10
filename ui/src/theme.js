@@ -1,13 +1,14 @@
 import { createMuiTheme } from "@material-ui/core/styles";
 
 const blueHighLight = '#4D89E5';
+const blueHighLight40 = '#4D89E540';
 const blueMxcBrand = '#09006E';
 const white = '#F9FAFC';
 const linkTextColor = '#CAFCF5';
 
 const theme = createMuiTheme({
     palette: {
-      primary: { main: blueHighLight }, 
+      primary: { main: blueHighLight, secondary: blueHighLight40 }, 
       secondary: { main: blueMxcBrand }, 
       textPrimary: {main: white}, 
       textSecondary: {main: linkTextColor} 
@@ -20,7 +21,10 @@ const theme = createMuiTheme({
     //tab 
     MuiTypography: {
       root: {
-        color: white
+        color: white,
+      },
+      body: {
+        color: white,
       },
     },
     typography: {
@@ -82,7 +86,10 @@ const theme = createMuiTheme({
           background: blueMxcBrand,
           color: white,
           fontWeight: 'bold'
-        }
+        },
+        body: {
+          color: white,
+        },
       },
       MuiPaper: {
         root: {
@@ -104,9 +111,15 @@ const theme = createMuiTheme({
           fontWeight: 'bolder',
           marginRight: 5,
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
+          "&:hover": {
+            backgroundColor: "#206CDF",
+          },
+        outline: {
+          backgroundColor: blueMxcBrand,
+        },
         },
         text: { 
-          color: white, 
+          color: blueMxcBrand, 
         },
       },
       MuiFormLabel: { 
