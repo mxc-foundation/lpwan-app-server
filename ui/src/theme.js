@@ -71,6 +71,7 @@ const theme = createMuiTheme({
       MuiDivider: {
         root: {
           backgroundColor: '#FFFFFF50',
+          margin: 15,
         },
         light: {
           backgroundColor: '#FFFFFF50',
@@ -130,6 +131,11 @@ const theme = createMuiTheme({
         textColorPrimary: {
           color: white
         }
+      },
+      MuiSvgIcon: {
+        root: {
+          fill: white,
+        },
       },
     },
 });
