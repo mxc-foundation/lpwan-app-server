@@ -48,7 +48,7 @@ const styles = {
   drawerPaper: {
     position: "fixed",
     width: 270,
-    paddingTop: theme.spacing.unit * 9,
+    paddingTop: theme.spacing.unit * 12,
     backgroundColor: '#09006E',
     color: '#FFFFFF',
   },
@@ -65,13 +65,17 @@ const styles = {
     bottom: 0,
     backgroundColor: '#09006E',
     color: '#FFFFFF',
+    marginTop: -20,
   },
   static: {
     position: 'static'
   },
   iconStyle: {
     color: theme.palette.common.white,
-  }
+  },
+  divider: {
+    padding: 30,
+  },
 };
 
 class SideNav extends Component {
@@ -221,6 +225,7 @@ class SideNav extends Component {
               </ListItemIcon>
               <ListItemText primary="Gateway-profiles" />
             </ListItem>
+            <Divider />
             <ListItem button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
@@ -234,9 +239,7 @@ class SideNav extends Component {
               <ListItemText primary="All users" />
             </ListItem>
           </List>
-          <Divider />
         </Admin>
-
         <div>
           <AutocompleteSelect
             id="organizationID"
@@ -249,25 +252,25 @@ class SideNav extends Component {
             triggerReload={this.state.cacheCounter}
           />
         </div>
-
+        <Divider />
         {this.state.organization && <>
         <List className={this.props.classes.static}>
-          <Admin>
+{/*           <Admin>
             <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
               <ListItemText primary="Org. settings" />
             </ListItem>
-          </Admin>
-          <Admin organizationID={this.state.organization.id}>
+          </Admin> */}
+{/*           <Admin organizationID={this.state.organization.id}>
             <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
               <ListItemText primary="Org. users" />
             </ListItem>
-          </Admin>
+          </Admin> */}
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
@@ -299,9 +302,9 @@ class SideNav extends Component {
             <ListItemText primary="Multicast-groups" />
           </ListItem>
         </List>
-
-        <Card className={this.props.classes.card}>
-            <CardContent>
+        <Divider />
+{/*         <Card className={this.props.classes.card}
+            <CardContent> */}
               <List className={this.props.classes.static}>
                 <ListItem button onClick={this.handleOpenM2M} >
                   <ListItemIcon>
@@ -309,7 +312,7 @@ class SideNav extends Component {
                   </ListItemIcon>
                   <ListItemText primary="M2M Wallet" />
                 </ListItem>
-                <ListItem button  onClick={this.handleOpenLora}>
+{/*                 <ListItem button  onClick={this.handleOpenLora}>
                   <ListItemText primary="Account name" />
                   <ListItemIcon>
                     <Settings />
@@ -320,10 +323,10 @@ class SideNav extends Component {
                   <ListItemIcon>
                     <Repeat />
                   </ListItemIcon>
-                </ListItem>
+                </ListItem> */}
               </List>
-            </CardContent>
-          </Card>
+{/*             </CardContent>
+          </Card> */}
         </>}
       </Drawer>
     );

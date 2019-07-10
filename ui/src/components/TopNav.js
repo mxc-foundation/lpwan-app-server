@@ -28,7 +28,7 @@ import theme from "../theme";
 const styles = {
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: '#09006E',
+    backgroundColor: theme.palette.secondary.main,
   },
   menuButton: {
     marginLeft: -12,
@@ -43,28 +43,30 @@ const styles = {
   },
   logo: {
     height: 32,
+    marginLeft: -45,
   },
   search: {
     marginRight: 3 * theme.spacing.unit,
-    color: theme.palette.common.white,
-    background: blue[400],
-    width: 450,
+    color: theme.palette.textPrimary.main,
+    background: theme.palette.primary.main,
+    width: 480,
     padding: 5,
     borderRadius: 3,
   },
   avatar: {
-    background: blue[600],
+    background: theme.palette.secondary.main,
     color: theme.palette.common.white,
   },
   chip: {
-    background: blue[600],
+    background: theme.palette.secondary.main,
     color: theme.palette.common.white,
     marginRight: theme.spacing.unit,
     "&:hover": {
-      background: blue[400],
+      background: theme.palette.primary.main,
+      color: theme.palette.secondary.main,
     },
     "&:active": {
-      background: blue[400],
+      background: theme.palette.primary.main,
     },
   },
   iconButton: {
@@ -177,12 +179,6 @@ class TopNav extends Component {
             { searchbar }
           </form>
 
-          <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
-            <IconButton className={this.props.classes.iconButton}>
-              <HelpCicle />
-            </IconButton>
-          </a>
-
           <Chip
             avatar={
               <Avatar>
@@ -196,6 +192,12 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
+          <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
+            <IconButton className={this.props.classes.iconButton}>
+              <HelpCicle />
+            </IconButton>
+          </a>
+
           <Menu
             id="menu-appbar"
             anchorEl={this.state.menuAnchor}
