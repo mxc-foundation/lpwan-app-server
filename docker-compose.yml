@@ -14,9 +14,10 @@ services:
       - TEST_POSTGRES_DSN=postgres://loraserver_as:loraserver_as@postgres/loraserver_as?sslmode=disable
       - TEST_REDIS_URL=redis://redis:6379
       - TEST_MQTT_SERVER=tcp://mosquitto:1883
-    tty: true
+      - LOCAL_HOST_ADDRESS=http://localhost:8080/
     ports:
       - 8080:8080
+    tty: true  
   postgres:
     image: postgres:9.6-alpine
     volumes:

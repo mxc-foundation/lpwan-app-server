@@ -138,7 +138,7 @@ class GatewayStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      console.log('connected to', wsURL);
+      //console.log('connected to', wsURL);
       this.wsStatus = "CONNECTED";
       this.emit("ws.status.change");
       onOpen();
@@ -160,14 +160,14 @@ class GatewayStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      console.log('closing', wsURL);
+      //console.log('closing', wsURL);
       this.wsStatus = null;
       this.emit("ws.status.change");
       onClose();
     });
 
     conn.addEventListener("error", () => {
-      console.log("error");
+      //console.log("error");
       this.wsStatus = "ERROR";
       this.emit("ws.status.change");
     });

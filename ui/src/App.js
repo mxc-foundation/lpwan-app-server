@@ -81,6 +81,13 @@ import Search from "./views/search/Search";
 import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentForDevice";
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
+//M2M Wallet
+//import Dashboard from "./views/m2m-wallet/Dashboard"
+/* import Topup from "./views/m2m-wallet/Topup"
+import Withdraw from "./views/m2m-wallet/Withdraw"
+import HistoryLayout from "./views/m2m-wallet/HistoryLayout"
+import ModifyEthAccount from "./views/m2m-wallet/ModifyEthAccount" */
+//import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const drawerWidth = 270;
 
@@ -120,13 +127,13 @@ const styles = {
   },
 };
 
-
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
       user: null,
+      organizationId: null,
       drawerOpen: false,
     };
 
@@ -137,12 +144,14 @@ class App extends Component {
     SessionStore.on("change", () => {
       this.setState({
         user: SessionStore.getUser(),
+        organizationId: SessionStore.getOrganizationID(),
         drawerOpen: SessionStore.getUser() != null,
       });
     });
 
     this.setState({
       user: SessionStore.getUser(),
+      organizationId: SessionStore.getOrganizationID(),
       drawerOpen: SessionStore.getUser() != null,
     });
   }
@@ -158,10 +167,10 @@ class App extends Component {
     let sideNav = null;
 
     if (this.state.user !== null) {
-      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} />;
+      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
       sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
     }
-
+    
     return (
       <Router history={history}>
         <React.Fragment>
@@ -170,7 +179,7 @@ class App extends Component {
             <div className={this.props.classes.root}>
               {topNav}
               {sideNav}
-              <div className={classNames(this.props.classes.main, this.state.drawerOpen && this.props.classes.mainDrawerOpen)}>
+              <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={24}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />
@@ -221,6 +230,12 @@ class App extends Component {
                     <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
                     <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
                     <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
+
+                    {/* <Route exact path="/wallet" component={Dashboard} /> */}
+                    {/* <Route exact path="/withdraw/:organizationID(\d+)" component={Withdraw} />
+                    <Route exact path="/topup" component={Topup} />
+                    <Route path="/history" component={HistoryLayout} />
+                    <Route exact path="/modify-account" component={ModifyEthAccount} /> */}
 
                     <Route exact path="/search" component={Search} />
                   </Switch>

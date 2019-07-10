@@ -1,6 +1,8 @@
 package external
 
 import (
+	"fmt"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -74,6 +76,8 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 		},
 	}
 
+	fmt.Println("flag resp")
+	fmt.Println(resp)
 	resp.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)

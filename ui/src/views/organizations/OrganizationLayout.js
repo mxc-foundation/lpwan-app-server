@@ -69,13 +69,13 @@ class OrganizationLayout extends Component {
         >
           <TitleBarTitle to="/organizations" title="Organizations" />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.organization.organization.name} />
+          <TitleBarTitle title={this.state.organization.name} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Switch>
             <Route exact path={this.props.match.path} render={() => <Redirect to={`${this.props.match.url}/edit`} />} />
-            <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateOrganization organization={this.state.organization.organization} {...props} />} />
+            <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateOrganization organization={this.state.organization} {...props} />} />
           </Switch>
         </Grid>
       </Grid>
