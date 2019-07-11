@@ -4,7 +4,7 @@ const blueHighLight = '#4D89E5';
 const blueHighLight40 = '#4D89E540';
 const blueMxcBrand = '#09006E';
 const white = '#F9FAFC';
-const linkTextColor = '#CAFCF5';
+const linkTextColor = '#216CDF';
 
 const theme = createMuiTheme({
     palette: {
@@ -37,6 +37,9 @@ const theme = createMuiTheme({
           color: white,
         },
         body1: {
+          color: white,
+        },
+        colorTextSecondary: {
           color: white,
         },
       },
@@ -107,6 +110,7 @@ const theme = createMuiTheme({
       MuiButton: { 
         root: {
           background: blueHighLight,
+          color: blueMxcBrand,
           width: 135,
           height: 50,
           fontWeight: 'bolder',
@@ -117,10 +121,14 @@ const theme = createMuiTheme({
           },
         outline: {
           backgroundColor: blueMxcBrand,
+          color: blueMxcBrand,
         },
         },
         text: { 
           color: blueMxcBrand, 
+        },
+        textPrimary: {
+          color: blueMxcBrand,
         },
       },
       MuiFormControlLabel: {
@@ -145,15 +153,25 @@ const theme = createMuiTheme({
       },
       MuiTab: {
         root: {
-          color: white,
+          textColor: white,
         },
         textColorPrimary: {
           color: white
-        }
+        },
+        label: {
+          color: white,
+        },
       },
       MuiSvgIcon: {
         root: {
           fill: white,
+        },
+      },
+      MuiDialog: {
+        color: white,
+        root: {
+          color: white,
+          boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
         },
       },
     },
