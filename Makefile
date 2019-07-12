@@ -5,7 +5,7 @@ VERSION := $(shell git describe --always |sed -e "s/^v//")
 build: ui/build internal/statics internal/migrations
 	mkdir -p build
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
-
+    
 clean:
 	@echo "Cleaning up workspace"
 	@rm -rf build dist internal/migrations/migrations_gen.go internal/static/static_gen.go ui/build static/static
@@ -73,7 +73,7 @@ ui-requirements:
 	@echo "Installing UI requirements"
 	@cd ui && npm install
 
-serve: build
+serve: 
 	@echo "Starting Lora App Server"
 	./build/lora-app-server
 
