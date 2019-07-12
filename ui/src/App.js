@@ -102,7 +102,7 @@ const styles = {
     fontFamily: 'Montserrat',
   },
   input: {
-    color: '#FFFFFF',
+      color: theme.palette.textPrimary.main.white,
   },
   paper: {
     padding: theme.spacing.unit * 2,
@@ -123,7 +123,7 @@ const styles = {
     paddingLeft: drawerWidth,
   },
   color: {
-    backgroundColor: "#090046",
+    backgroundColor: theme.palette.secondary.main,
   },
 };
 

@@ -21,7 +21,7 @@ const styles = {
   },
   link: {
     "& a": {
-      color: theme.palette.primary.main,
+      color: theme.palette.textSecondary.main,
       textDecoration: "none",
     },
   },

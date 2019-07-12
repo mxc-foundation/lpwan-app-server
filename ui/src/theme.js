@@ -15,17 +15,24 @@ const theme = createMuiTheme({
     },
     MuiListItemIcon: {
       root: {
-        color: white,
+        color: white
       }
     },
     //tab 
-    
+    MuiTypography: {
+      root: {
+        color: white
+      },
+      headline: {
+        color: white
+      },
+    },
     typography: {
       subheading: {
-        color: white,
+        color: white
       },
       title: {
-        color: white,
+        color: white
       },
       fontFamily: [
         'Montserrat',
@@ -178,3 +185,4 @@ const theme = createMuiTheme({
 });
   
 export default theme;
+
