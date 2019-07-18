@@ -52,19 +52,11 @@ const theme = createMuiTheme({
       },
       MuiInput: {
         root: {
-<<<<<<< HEAD
-          color: white
-        },
-        underline: {
-          "&:before": {
-            borderBottom: `1px solid white`
-=======
           color: white,
         },
         underline: {
           "&:before": {
             borderBottom: `1px solid #F9FAFC`
->>>>>>> develop
           }
         }
       },
@@ -126,18 +118,11 @@ const theme = createMuiTheme({
         root: {
           background: blueHighLight,
           color: blueMxcBrand,
-<<<<<<< HEAD
-          boxShadow: '0 8px 6px -6px #00000050',
-=======
->>>>>>> develop
           width: 135,
           height: 50,
           fontWeight: 'bolder',
           marginRight: 5,
-<<<<<<< HEAD
-=======
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
->>>>>>> develop
           "&:hover": {
             backgroundColor: "#206CDF",
           },
@@ -151,14 +136,11 @@ const theme = createMuiTheme({
         },
         textPrimary: {
           color: blueMxcBrand,
-<<<<<<< HEAD
-=======
         },
       },
       MuiFormControlLabel: {
         root: { 
           color: white, 
->>>>>>> develop
         },
       },
       MuiFormLabel: { 
@@ -192,8 +174,6 @@ const theme = createMuiTheme({
           fill: white,
         },
       },
-<<<<<<< HEAD
-=======
       MuiDialog: {
         color: white,
         root: {
@@ -201,7 +181,6 @@ const theme = createMuiTheme({
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
         },
       },
->>>>>>> develop
     },
 });
   
