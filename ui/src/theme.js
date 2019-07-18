@@ -1,15 +1,17 @@
 import { createMuiTheme } from "@material-ui/core/styles";
 
 const blueHighLight = '#4D89E5';
-const blueHighLight40 = '#4D89E540';
+const blueHighLight20 = '#4D89E520';
 const blueMxcBrand = '#09006E';
+const blueBG = '#090046';
 const white = '#F9FAFC';
 const linkTextColor = '#216CDF';
 
 const theme = createMuiTheme({
     palette: {
-      primary: { main: blueHighLight, secondary: blueHighLight40 }, 
+      primary: { main: blueHighLight, secondary: blueHighLight20 }, 
       secondary: { main: blueMxcBrand }, 
+      darkBG: { main: blueBG }, 
       textPrimary: {main: white}, 
       textSecondary: {main: linkTextColor} 
     },
@@ -126,10 +128,20 @@ const theme = createMuiTheme({
           "&:hover": {
             backgroundColor: "#206CDF",
           },
-        outline: {
-          backgroundColor: blueMxcBrand,
-          color: blueMxcBrand,
         },
+        outlined: {
+          backgroundColor: blueBG,
+          color: blueHighLight,
+          //padding: 30,
+          fontWeight: 900,
+          lineHeight: 1.5,
+          borderWidth: 2,
+          borderColor: blueHighLight,
+          "&:hover": {
+            backgroundColor: blueHighLight20,
+            borderColor: "#206CDF",
+            color: "#206CDF",
+          },
         },
         text: { 
           color: blueMxcBrand, 

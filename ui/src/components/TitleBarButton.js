@@ -35,7 +35,7 @@ class TitleBarButton extends Component {
     return(
       <Button
         variant="outlined"
-        color={this.props.color || "secondary"}
+        color={this.props.color}
         className={this.props.classes.button}
         component={component}
         to={this.props.to}

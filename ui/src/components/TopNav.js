@@ -62,8 +62,7 @@ const styles = {
     color: theme.palette.common.white,
     marginRight: theme.spacing.unit,
     "&:hover": {
-      background: theme.palette.primary.main,
-      color: theme.palette.secondary.main,
+      background: theme.palette.primary.secondary,
     },
     "&:active": {
       background: theme.palette.primary.main,
