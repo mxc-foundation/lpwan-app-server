@@ -143,11 +143,23 @@ const theme = createMuiTheme({
             color: "#206CDF",
           },
         },
+        /*         link: {
+          color: blueHighLight,
+          //padding: 30,
+          fontWeight: 900,
+          lineHeight: 1.5,
+          "&:hover": {
+            color: "#206CDF",
+          },
+        }, */
         text: { 
           color: blueMxcBrand, 
         },
         textPrimary: {
           color: blueMxcBrand,
+          "&:hover": {
+            backgroundColor: "#206CDF",
+          },
         },
       },
       MuiFormControlLabel: {
