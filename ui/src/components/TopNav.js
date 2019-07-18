@@ -67,6 +67,9 @@ const styles = {
     "&:active": {
       background: theme.palette.primary.main,
     },
+    "&:visited": {
+      background: theme.palette.primary.main,
+    },
   },
   iconButton: {
     color: theme.palette.common.white,

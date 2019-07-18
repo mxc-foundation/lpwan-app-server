@@ -62,7 +62,6 @@ class OrganizationLayout extends Component {
               key={1}
               label="Delete"
               icon={<Delete />}
-              color="secondary"
               onClick={this.deleteOrganization}
             />,
           ]}
