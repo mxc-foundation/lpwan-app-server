@@ -9,9 +9,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
-
 import Divider from '@material-ui/core/Divider';
 import Domain from "mdi-material-ui/Domain";
 import Account from "mdi-material-ui/Account";
@@ -21,7 +18,7 @@ import RadioTower from "mdi-material-ui/RadioTower";
 import Tune from "mdi-material-ui/Tune";
 import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
-import Wallet from "mdi-material-ui/Wallet";
+import Wallet from "mdi-material-ui/WalletOutline";
 
 import AccessPoint from "mdi-material-ui/AccessPoint";
 import Repeat from "mdi-material-ui/Repeat";
@@ -48,7 +45,9 @@ const styles = {
   drawerPaper: {
     position: "fixed",
     width: 270,
-    paddingTop: theme.spacing.unit * 12,
+    paddingTop: theme.spacing.unit * 10,
+    paddingRight: 0,
+    paddingLeft: 0,
     backgroundColor: '#09006E',
     color: '#FFFFFF',
   },
@@ -58,7 +57,7 @@ const styles = {
     paddingRight: theme.spacing.unit * 3,
     paddingBottom: theme.spacing.unit * 1,
   },
-  card: {
+/*   card: {
     width: '100%',
     height: 200,
     position: 'absolute',
@@ -66,7 +65,7 @@ const styles = {
     backgroundColor: '#09006E',
     color: '#FFFFFF',
     marginTop: -20,
-  },
+  }, */
   static: {
     position: 'static'
   },
@@ -74,7 +73,10 @@ const styles = {
     color: theme.palette.common.white,
   },
   divider: {
-    padding: 30,
+    padding: 10,
+  },
+  autocompleteSelect: {
+    color: theme.palette.common.white,
   },
 };
 
@@ -250,6 +252,7 @@ class SideNav extends Component {
             getOptions={this.getOrganizationOptions}
             className={this.props.classes.select}
             triggerReload={this.state.cacheCounter}
+            placeHolder="Change Organization"
           />
         </div>
         <Divider />

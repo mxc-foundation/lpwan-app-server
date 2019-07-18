@@ -98,9 +98,6 @@ class Login extends Component {
       <Grid container justify="center" className="fix-padding">
         <Grid item xs={6} lg={4}>
           <Card>
-            {/* <CardHeader
-              title="Login"
-            /> */}
             <CardContent>
               <LoginForm
                 submitLabel="Login"

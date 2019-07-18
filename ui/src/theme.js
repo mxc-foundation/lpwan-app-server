@@ -1,13 +1,14 @@
 import { createMuiTheme } from "@material-ui/core/styles";
 
 const blueHighLight = '#4D89E5';
+const blueHighLight40 = '#4D89E540';
 const blueMxcBrand = '#09006E';
 const white = '#F9FAFC';
 const linkTextColor = '#216CDF';
 
 const theme = createMuiTheme({
     palette: {
-      primary: { main: blueHighLight }, 
+      primary: { main: blueHighLight, secondary: blueHighLight40 }, 
       secondary: { main: blueMxcBrand }, 
       textPrimary: {main: white}, 
       textSecondary: {main: linkTextColor} 
@@ -38,13 +39,32 @@ const theme = createMuiTheme({
       ].join(','),
     },
     overrides: {
+      MuiTypography: {
+        root: {
+          color: white,
+        },
+        body1: {
+          color: white,
+        },
+        colorTextSecondary: {
+          color: white,
+        },
+      },
       MuiInput: {
         root: {
+<<<<<<< HEAD
           color: white
         },
         underline: {
           "&:before": {
             borderBottom: `1px solid white`
+=======
+          color: white,
+        },
+        underline: {
+          "&:before": {
+            borderBottom: `1px solid #F9FAFC`
+>>>>>>> develop
           }
         }
       },
@@ -85,7 +105,10 @@ const theme = createMuiTheme({
           background: blueMxcBrand,
           color: white,
           fontWeight: 'bold'
-        }
+        },
+        body: {
+          color: white,
+        },
       },
       MuiPaper: {
         root: {
@@ -103,17 +126,39 @@ const theme = createMuiTheme({
         root: {
           background: blueHighLight,
           color: blueMxcBrand,
+<<<<<<< HEAD
           boxShadow: '0 8px 6px -6px #00000050',
+=======
+>>>>>>> develop
           width: 135,
           height: 50,
           fontWeight: 'bolder',
           marginRight: 5,
+<<<<<<< HEAD
+=======
+          boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
+>>>>>>> develop
           "&:hover": {
-            backgroundColor: '#216CDF'
-          }
+            backgroundColor: "#206CDF",
+          },
+        outline: {
+          backgroundColor: blueMxcBrand,
+          color: blueMxcBrand,
+        },
         },
         text: { 
+          color: blueMxcBrand, 
+        },
+        textPrimary: {
           color: blueMxcBrand,
+<<<<<<< HEAD
+=======
+        },
+      },
+      MuiFormControlLabel: {
+        root: { 
+          color: white, 
+>>>>>>> develop
         },
       },
       MuiFormLabel: { 
@@ -133,17 +178,30 @@ const theme = createMuiTheme({
       },
       MuiTab: {
         root: {
-          color: white,
+          textColor: white,
         },
         textColorPrimary: {
           color: white
-        }
+        },
+        label: {
+          color: white,
+        },
       },
       MuiSvgIcon: {
         root: {
           fill: white,
         },
       },
+<<<<<<< HEAD
+=======
+      MuiDialog: {
+        color: white,
+        root: {
+          color: white,
+          boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
+        },
+      },
+>>>>>>> develop
     },
 });
   
