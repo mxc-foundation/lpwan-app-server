@@ -100,7 +100,6 @@ class SideNav extends Component {
   componentDidMount() {
     SessionStore.on("organization.change", () => {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
-        console.log('org organization.change', resp.organization);
         this.setState({
           organization: resp.organization,
         });
@@ -115,7 +114,6 @@ class SideNav extends Component {
 
     OrganizationStore.on("change", (org) => {
       if (this.state.organization !== null && this.state.organization.id === org.id) {
-        console.log('org change', org);
         this.setState({
           organization: org,
         });
@@ -124,7 +122,6 @@ class SideNav extends Component {
 
     OrganizationStore.on("delete", id => {
       if (this.state.organization !== null && this.state.organization.id === id) {
-        console.log('org delete');
         this.setState({
           organization: null
         });
@@ -137,7 +134,6 @@ class SideNav extends Component {
 
     if (SessionStore.getOrganizationID() !== null) {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
-        console.log('org componentDidMount', resp.organization);
         this.setState({
           organization: resp.organization,
         });
@@ -145,10 +141,6 @@ class SideNav extends Component {
     }
 
     this.getOrganizationFromLocation();
-  }
-
-  componentWillUnmount() {
-    console.log('SideNav.componentWillUnmount');
   }
 
   componentDidUpdate(prevProps) {
@@ -188,16 +180,22 @@ class SideNav extends Component {
   handleOpenM2M = () => {
     //this.props.setDrawerOpen(false);
     //this.props.history.push(`/withdraw/${this.state.organization.id}`);
-    
+    let org_id = '';
+    if(SessionStore.getUser().isAdmin){
+      org_id = '0';
+    }else{
+      org_id = this.state.organization.id;
+    }
     const data = {
       jwt: window.localStorage.getItem("jwt"),
-      path: `/withdraw/${this.state.organization.id}`,
-      org_id: `${this.state.organization.id}`
+      path: `/withdraw/${org_id}`,
+      org_id
     };
+    
     const dataString = encodeURIComponent(JSON.stringify(data));
     
     // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(`http://localhost:3000/#/j/${dataString}`);
+    window.location.replace(`http://localhost:3001/#/j/${dataString}`);
   }
 
   render() {

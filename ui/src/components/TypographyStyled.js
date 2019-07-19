@@ -23,6 +23,12 @@ const styles = {
   padding: {
     padding: 30,
   },
+  acolor: {
+    color: 'white',
+  },
+  bcolor: {
+    color: 'red',
+  },
 };
 
 
