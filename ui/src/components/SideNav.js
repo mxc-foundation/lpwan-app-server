@@ -98,10 +98,8 @@ class SideNav extends Component {
   }
 
   componentDidMount() {
-    console.log('SessionStore.getUser()',SessionStore.getUser());
     SessionStore.on("organization.change", () => {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
-        console.log('org organization.change', resp.organization);
         this.setState({
           organization: resp.organization,
         });
@@ -116,7 +114,6 @@ class SideNav extends Component {
 
     OrganizationStore.on("change", (org) => {
       if (this.state.organization !== null && this.state.organization.id === org.id) {
-        console.log('org change', org);
         this.setState({
           organization: org,
         });
@@ -125,7 +122,6 @@ class SideNav extends Component {
 
     OrganizationStore.on("delete", id => {
       if (this.state.organization !== null && this.state.organization.id === id) {
-        console.log('org delete');
         this.setState({
           organization: null
         });
@@ -138,7 +134,6 @@ class SideNav extends Component {
 
     if (SessionStore.getOrganizationID() !== null) {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
-        console.log('org componentDidMount', resp.organization);
         this.setState({
           organization: resp.organization,
         });
@@ -146,10 +141,6 @@ class SideNav extends Component {
     }
 
     this.getOrganizationFromLocation();
-  }
-
-  componentWillUnmount() {
-    console.log('SideNav.componentWillUnmount');
   }
 
   componentDidUpdate(prevProps) {
