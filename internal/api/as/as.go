@@ -12,6 +12,7 @@ import (
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -56,7 +57,7 @@ func Setup(conf config.Config) error {
 		"tls_key":  tlsKey,
 	}).Info("api/as: starting application-server api")
 
-	grpcOpts := helpers.GetgRPCLoggingServerOptions()
+	grpcOpts := helpers.GetgRPCServerOptions()
 	if caCert != "" && tlsCert != "" && tlsKey != "" {
 		creds, err := helpers.GetTransportCredentials(caCert, tlsCert, tlsKey, true)
 		if err != nil {
@@ -66,6 +67,7 @@ func Setup(conf config.Config) error {
 	}
 	server := grpc.NewServer(grpcOpts...)
 	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI())
+	grpc_prometheus.Register(server)
 
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {
@@ -247,6 +249,20 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 				Type:            "CODEC",
 				Error:           err.Error(),
 				FCnt:            req.FCnt,
+				Tags:            make(map[string]string),
+				Variables:       make(map[string]string),
+			}
+
+			for k, v := range d.Tags.Map {
+				if v.Valid {
+					errNotification.Tags[k] = v.String
+				}
+			}
+
+			for k, v := range d.Variables.Map {
+				if v.Valid {
+					errNotification.Variables[k] = v.String
+				}
 			}
 
 			if err := eventlog.LogEventForDevice(d.DevEUI, eventlog.EventLog{
@@ -279,11 +295,26 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 			Frequency: int(req.TxInfo.Frequency),
 			DR:        int(req.Dr),
 		},
-		ADR:    req.Adr,
-		FCnt:   req.FCnt,
-		FPort:  uint8(req.FPort),
-		Data:   b,
-		Object: object,
+		ADR:       req.Adr,
+		FCnt:      req.FCnt,
+		FPort:     uint8(req.FPort),
+		Data:      b,
+		Object:    object,
+		Tags:      make(map[string]string),
+		Variables: make(map[string]string),
+	}
+
+	// set tags and variables
+	for k, v := range d.Tags.Map {
+		if v.Valid {
+			pl.Tags[k] = v.String
+		}
+	}
+
+	for k, v := range d.Variables.Map {
+		if v.Valid {
+			pl.Variables[k] = v.String
+		}
 	}
 
 	// collect gateway data of receiving gateways (e.g. gateway name)
@@ -378,6 +409,20 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 		DevEUI:          devEUI,
 		Acknowledged:    req.Acknowledged,
 		FCnt:            req.FCnt,
+		Tags:            make(map[string]string),
+		Variables:       make(map[string]string),
+	}
+
+	// set tags and variables
+	for k, v := range d.Tags.Map {
+		if v.Valid {
+			pl.Tags[k] = v.String
+		}
+	}
+	for k, v := range d.Variables.Map {
+		if v.Valid {
+			pl.Variables[k] = v.String
+		}
 	}
 
 	err = eventlog.LogEventForDevice(devEUI, eventlog.EventLog{
@@ -427,6 +472,21 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 		Type:            req.Type.String(),
 		Error:           req.Error,
 		FCnt:            req.FCnt,
+		Tags:            make(map[string]string),
+		Variables:       make(map[string]string),
+	}
+
+	// set tags and variables
+	for k, v := range d.Tags.Map {
+		if v.Valid {
+			pl.Tags[k] = v.String
+		}
+	}
+
+	for k, v := range d.Variables.Map {
+		if v.Valid {
+			pl.Variables[k] = v.String
+		}
 	}
 
 	err = eventlog.LogEventForDevice(devEUI, eventlog.EventLog{
@@ -516,7 +576,22 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 		ExternalPowerSource:     req.ExternalPowerSource,
 		BatteryLevel:            float32(math.Round(float64(req.BatteryLevel*100))) / 100,
 		BatteryLevelUnavailable: req.BatteryLevelUnavailable,
+		Tags:                    make(map[string]string),
+		Variables:               make(map[string]string),
 	}
+
+	// set tags and variables
+	for k, v := range d.Tags.Map {
+		if v.Valid {
+			pl.Tags[k] = v.String
+		}
+	}
+	for k, v := range d.Variables.Map {
+		if v.Valid {
+			pl.Variables[k] = v.String
+		}
+	}
+
 	err = eventlog.LogEventForDevice(d.DevEUI, eventlog.EventLog{
 		Type:    eventlog.Status,
 		Payload: pl,
@@ -580,6 +655,20 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 			Longitude: req.Location.Longitude,
 			Altitude:  req.Location.Altitude,
 		},
+		Tags:      make(map[string]string),
+		Variables: make(map[string]string),
+	}
+
+	// set tags and variables
+	for k, v := range d.Tags.Map {
+		if v.Valid {
+			pl.Tags[k] = v.String
+		}
+	}
+	for k, v := range d.Variables.Map {
+		if v.Valid {
+			pl.Variables[k] = v.String
+		}
 	}
 
 	err = eventlog.LogEventForDevice(d.DevEUI, eventlog.EventLog{
@@ -672,6 +761,20 @@ func handleDeviceActivation(d storage.Device, app storage.Application, daCtx *as
 		DevEUI:          d.DevEUI,
 		DeviceName:      d.Name,
 		DevAddr:         da.DevAddr,
+		Tags:            make(map[string]string),
+		Variables:       make(map[string]string),
+	}
+
+	// set tags and variables
+	for k, v := range d.Tags.Map {
+		if v.Valid {
+			pl.Tags[k] = v.String
+		}
+	}
+	for k, v := range d.Variables.Map {
+		if v.Valid {
+			pl.Variables[k] = v.String
+		}
 	}
 
 	err = eventlog.LogEventForDevice(d.DevEUI, eventlog.EventLog{
