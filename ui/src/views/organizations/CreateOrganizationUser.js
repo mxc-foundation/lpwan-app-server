@@ -45,7 +45,8 @@ class AssignUserForm extends FormComponent {
   constructor() {
     super();
 
-    //this.getUserOption = this.getUserOption.bind(this);
+    // we need combo box
+    // this.getUserOption = this.getUserOption.bind(this);
     this.getUserOptions = this.getUserOptions.bind(this);
   }
 
