@@ -35,6 +35,8 @@ class TitleBarTitle extends Component {
       combinedStyles = this.props.classes.title;
     }
 
+    combinedStyles += ' ' + (this.props.className || '');
+
 
     return(
       <Typography variant="title" className={combinedStyles} to={this.props.to} component={component}>

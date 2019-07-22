@@ -66,7 +66,6 @@ class DeviceProfileLayout extends Component {
               <TitleBarButton
                 label="Delete"
                 icon={<Delete />}
-                color="secondary"
                 onClick={this.deleteDeviceProfile}
               />
             </Admin>

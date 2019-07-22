@@ -44,6 +44,7 @@ class Admin extends Component {
 
   render() {
     if (this.state.admin) {
+
       return(this.props.children);
     }
 

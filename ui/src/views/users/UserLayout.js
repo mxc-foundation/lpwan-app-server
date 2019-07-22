@@ -57,7 +57,6 @@ class UserLayout extends Component {
               key={2}
               label="Delete"
               icon={<Delete />}
-              color="secondary"
               onClick={this.deleteUser}
             />,
           ]}
