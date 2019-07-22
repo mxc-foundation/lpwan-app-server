@@ -207,7 +207,7 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
+      console.log('connected to', wsURL);
       this.wsDataStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -228,13 +228,13 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
+      console.log('closing', wsURL);
       this.wsDataStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", () => {
-      //console.log("error");
+      console.log("error");
       this.wsDataStatus = "ERROR";
       this.emit("ws.status.change");
     });
@@ -256,7 +256,7 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
+      console.log('connected to', wsURL);
       this.wsFramesStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -277,13 +277,13 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
+      console.log('closing', wsURL);
       this.wsFramesStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", (e) => {
-      //console.log("error", e);
+      console.log("error", e);
       this.wsFramesStatus = "ERROR";
       this.emit("ws.status.change");
     });

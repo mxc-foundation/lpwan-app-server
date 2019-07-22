@@ -79,12 +79,12 @@ const styles = theme => ({
       padding: 0,
     },
     '.Select-value': {
-      color: "black",
+      color: "black !important",
       paddingLeft: "0 !important",
     },
     '.Select-placeholder': {
       opacity: 0.42,
-      color: theme.palette.common.white,
+      color: theme.palette.common.black,
     },
     '.Select-menu-outer': {
       backgroundColor: theme.palette.background.paper,

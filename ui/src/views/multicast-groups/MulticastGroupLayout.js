@@ -110,6 +110,7 @@ class MulticastGroupLayout extends Component {
               <TitleBarButton
                 label="Delete"
                 icon={<Delete />}
+                color="secondary"
                 onClick={this.deleteMulticastGroup}
               />
             </Admin>

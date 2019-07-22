@@ -4,14 +4,12 @@ VERSION := $(shell git describe --always |sed -e "s/^v//")
 
 build: ui/build internal/statics internal/migrations
 	mkdir -p build
-	cp lora-app-server.toml_cp build/lora-app-server.toml
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
-    
+
 clean:
 	@echo "Cleaning up workspace"
 	@rm -rf build dist internal/migrations/migrations_gen.go internal/static/static_gen.go ui/build static/static
 	@rm -f static/index.html static/icon.png static/manifest.json static/asset-manifest.json static/service-worker.js
-	@rm -f static/swagger/*.json
 	@rm -rf static/logo
 	@rm -rf docs/public
 	@rm -rf dist
@@ -61,6 +59,7 @@ static/swagger/api.swagger.json:
 # shortcuts for development
 
 dev-requirements:
+	go mod download
 	go install golang.org/x/lint/golint
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
@@ -75,7 +74,7 @@ ui-requirements:
 	@echo "Installing UI requirements"
 	@cd ui && npm install
 
-serve: 
+serve: build
 	@echo "Starting Lora App Server"
 	./build/lora-app-server
 

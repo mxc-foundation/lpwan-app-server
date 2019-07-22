@@ -14,7 +14,3 @@ import "./index.css";
 Leaflet.Icon.Default.imagePath = "//cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0/images/"
 
 ReactDOM.render(<App />, document.getElementById("root"));
-
-if (module.hot) {
-    module.hot.accept()
-}

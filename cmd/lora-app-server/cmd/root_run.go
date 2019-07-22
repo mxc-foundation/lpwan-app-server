@@ -23,6 +23,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/integration"
 	"github.com/brocaar/lora-app-server/internal/integration/application"
 	"github.com/brocaar/lora-app-server/internal/integration/multi"
+	"github.com/brocaar/lora-app-server/internal/metrics"
 	"github.com/brocaar/lora-app-server/internal/storage"
 )
 
@@ -44,6 +45,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFragmentation,
 		setupFUOTA,
 		setupAPI,
+		setupMetrics,
 	}
 
 	for _, t := range tasks {
@@ -104,6 +106,8 @@ func setupIntegration() error {
 			confs = append(confs, config.C.ApplicationServer.Integration.MQTT)
 		case "gcp_pub_sub":
 			confs = append(confs, config.C.ApplicationServer.Integration.GCPPubSub)
+		case "postgresql":
+			confs = append(confs, config.C.ApplicationServer.Integration.PostgreSQL)
 		default:
 			return fmt.Errorf("unknown integration type: %s", name)
 		}
@@ -168,6 +172,13 @@ func setupFragmentation() error {
 func setupFUOTA() error {
 	if err := fuota.Setup(config.C); err != nil {
 		return errors.Wrap(err, "fuota setup error")
+	}
+	return nil
+}
+
+func setupMetrics() error {
+	if err := metrics.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup metrics error")
 	}
 	return nil
 }

@@ -146,7 +146,7 @@ class GatewayFrames extends Component {
       });
     }
 
-    //console.log(frame);
+    console.log(frame);
 
     this.setState({
       frames: frames,

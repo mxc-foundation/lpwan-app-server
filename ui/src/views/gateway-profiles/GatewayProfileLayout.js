@@ -50,6 +50,7 @@ class GatewayProfileLayout extends Component {
               key={1}
               label="Delete"
               icon={<Delete />}
+              color="secondary"
               onClick={this.deleteGatewayProfile}
             />,
           ]}

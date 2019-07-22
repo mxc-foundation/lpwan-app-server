@@ -12,14 +12,12 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import blue from "@material-ui/core/colors/blue";
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
-import Typography from '@material-ui/core/Typography';
 
-//import MenuIcon from "mdi-material-ui/Menu";
-//import Backburger from "mdi-material-ui/Backburger";
-//import Wallet from "mdi-material-ui/Wallet";
+import MenuIcon from "mdi-material-ui/Menu";
+import Backburger from "mdi-material-ui/Backburger";
 import AccountCircle from "mdi-material-ui/AccountCircle";
 import Magnify from "mdi-material-ui/Magnify";
-import HelpCircle from "mdi-material-ui/HelpCircle";
+import HelpCicle from "mdi-material-ui/HelpCircle";
 
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
@@ -28,7 +26,6 @@ import theme from "../theme";
 const styles = {
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.secondary.main,
   },
   menuButton: {
     marginLeft: -12,
@@ -39,36 +36,31 @@ const styles = {
   },
   flex: {
     flex: 1,
-    paddingLeft: 40,
   },
   logo: {
     height: 32,
-    marginLeft: -45,
   },
   search: {
     marginRight: 3 * theme.spacing.unit,
-    color: theme.palette.textPrimary.main,
-    backgroundColor: theme.palette.primary.secondary,
-    width: 480,
+    color: theme.palette.common.white,
+    background: blue[400],
+    width: 450,
     padding: 5,
     borderRadius: 3,
   },
   avatar: {
-    background: theme.palette.secondary.main,
+    background: blue[600],
     color: theme.palette.common.white,
   },
   chip: {
-    background: theme.palette.secondary.main,
+    background: blue[600],
     color: theme.palette.common.white,
     marginRight: theme.spacing.unit,
     "&:hover": {
-      background: theme.palette.primary.secondary,
+      background: blue[400],
     },
     "&:active": {
-      background: theme.palette.primary.main,
-    },
-    "&:visited": {
-      background: theme.palette.primary.main,
+      background: blue[400],
     },
   },
   iconButton: {
@@ -112,16 +104,9 @@ class TopNav extends Component {
       this.props.history.push("/login");
     });
   }
-  //ROUTE
+
   handleDrawerToggle() {
     this.props.setDrawerOpen(!this.props.drawerOpen);
-    if(!this.props.drawerOpen){
-      this.props.history.push("/");
-    }else{
-      let id = this.props.organizationId;
-      this.props.history.push("/withdraw/"+id);
-    }
-    
   }
 
   onSearchChange(e) {
@@ -136,27 +121,11 @@ class TopNav extends Component {
   }
 
   render() {
-    //let drawerIcon;
-    let logoIcon;
-    let searchbar;
+    let drawerIcon;
     if (!this.props.drawerOpen) {
-      //drawerIcon = <Wallet />;
-      logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
+      drawerIcon = <MenuIcon />;
     } else {
-      //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
-      searchbar = <Input
-                    placeholder="Search organization, application, gateway or device"
-                    className={this.props.classes.search}
-                    disableUnderline={true}
-                    value={this.state.search || ""}
-                    onChange={this.onSearchChange}
-                    startAdornment={
-                      <InputAdornment position="start">
-                      <Magnify />
-                      </InputAdornment>
-                    }
-                  />
+      drawerIcon = <Backburger />;
     }
 
     const open = Boolean(this.state.menuAnchor);
@@ -164,22 +133,39 @@ class TopNav extends Component {
     return(
       <AppBar className={this.props.classes.appBar}>
         <Toolbar>
-          {/* <IconButton
+          <IconButton
             color="inherit"
             aria-label="toggle drawer"
             onClick={this.handleDrawerToggle}
             className={this.props.classes.menuButton}
           >
             {drawerIcon}
-          </IconButton> */}
+          </IconButton>
 
           <div className={this.props.classes.flex}>
-            {logoIcon}
+            <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
           </div>
 
           <form onSubmit={this.onSearchSubmit}>
-            { searchbar }
+            <Input
+              placeholder="Search organization, application, gateway or device"
+              className={this.props.classes.search}
+              disableUnderline={true}
+              value={this.state.search || ""}
+              onChange={this.onSearchChange}
+              startAdornment={
+                <InputAdornment position="start">
+                  <Magnify />
+                </InputAdornment>
+              }
+            />
           </form>
+
+          <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
+            <IconButton className={this.props.classes.iconButton}>
+              <HelpCicle />
+            </IconButton>
+          </a>
 
           <Chip
             avatar={
@@ -194,12 +180,6 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
-          <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
-            <IconButton className={this.props.classes.iconButton}>
-              <HelpCircle />
-            </IconButton>
-          </a>
-
           <Menu
             id="menu-appbar"
             anchorEl={this.state.menuAnchor}

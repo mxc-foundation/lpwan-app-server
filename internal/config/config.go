@@ -7,6 +7,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/integration/azureservicebus"
 	"github.com/brocaar/lora-app-server/internal/integration/gcppubsub"
 	"github.com/brocaar/lora-app-server/internal/integration/mqtt"
+	"github.com/brocaar/lora-app-server/internal/integration/postgresql"
 )
 
 // Config defines the configuration structure.
@@ -43,6 +44,7 @@ type Config struct {
 			AzureServiceBus azureservicebus.Config `mapstructure:"azure_service_bus"`
 			MQTT            mqtt.Config            `mapstructure:"mqtt"`
 			GCPPubSub       gcppubsub.Config       `mapstructure:"gcp_pub_sub"`
+			PostgreSQL      postgresql.Config      `mapstructure:"postgresql"`
 		}
 
 		API struct {
@@ -101,6 +103,14 @@ type Config struct {
 			}
 		} `mapstructure:"kek"`
 	} `mapstructure:"join_server"`
+
+	Metrics struct {
+		Prometheus struct {
+			EndpointEnabled    bool   `mapstructure:"endpoint_enabled"`
+			Bind               string `mapstructure:"bind"`
+			APITimingHistogram bool   `mapstructure:"api_timing_histogram"`
+		}
+	} `mapstructure:"metrics"`
 }
 
 // C holds the global configuration.
