@@ -167,24 +167,21 @@ class SideNav extends Component {
   }
 
   handleOpenM2M = () => {
-    //this.props.setDrawerOpen(false);
-    //this.props.history.push(`/withdraw/${this.state.organization.id}`);
-    let org_id = '';
-    if(SessionStore.getUser().isAdmin){
-      org_id = '0';
-    }else{
-      org_id = this.state.organization.id;
-    }
+    let org_id = this.state.organization.id;
+    if(!org_id){
+      return false;
+    }    
     const data = {
       jwt: window.localStorage.getItem("jwt"),
       path: `/withdraw/${org_id}`,
-      org_id
+      org_id,
+      loraHostUrl: window.location.origin
     };
     
     const dataString = encodeURIComponent(JSON.stringify(data));
     
     // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(`http://localhost:3000/#/j/${dataString}`);
+    window.location.replace(`http://localhost:3001/#/j/${dataString}`);
   }
 
   render() {
