@@ -10,12 +10,6 @@ services:
       - postgres
       - redis
       - mosquitto
-    environment:
-      - TEST_POSTGRES_DSN=postgres://loraserver_as:loraserver_as@postgres/loraserver_as?sslmode=disable
-      - TEST_REDIS_URL=redis://redis:6379
-      - TEST_MQTT_SERVER=tcp://mosquitto:1883
-      - M2M_DEV_SERVER=http://localhost:3001
-      - M2M_PROD_SERVER=http://www.google.com
     tty: true
     ports:
       - 8080:8080

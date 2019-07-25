@@ -1,6 +1,8 @@
 .PHONY: build clean test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --always |sed -e "s/^v//")
+M2M_SERVER=$(shell cat lora-app-server.toml | grep mxp_server=| sed 's/^mxp_server=//g')
+M2M_SERVER_DEV=$(shell cat lora-app-server.toml | grep mxp_server_development=| sed 's/^mxp_server_development=//g')
 
 build: ui/build internal/statics internal/migrations
 	mkdir -p build
@@ -14,6 +16,7 @@ clean:
 	@rm -f static/swagger/*.json
 	@rm -rf docs/public
 	@rm -rf dist
+	@rm -f ui/.env.*
 
 test: internal/statics internal/migrations
 	@echo "Running tests"
@@ -36,6 +39,8 @@ snapshot: ui/build internal/statics internal/migrations
 
 ui/build:
 	@echo "Building ui"
+	@cd ui && echo 'REACT_APP_M2M_SERVER=$(M2M_SERVER)' >> .env.production
+	@cd ui && echo 'REACT_APP_M2M_SERVER=$(M2M_SERVER_DEV)' >> .env.development
 	@cd ui && npm run build
 	@mv ui/build/* static
 
