@@ -98,7 +98,11 @@ const styles = {
     minHeight: "100vh",
     flexDirection: "column",
     backgroundColor: "#090046",
-    background: "#311b92",
+    backgroundImage: 'url("/img/world-map.png")',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '100vw auto',
+    //backgroundColor: '#cccccc',
+    //background: "#311b92",
     fontFamily: 'Montserrat',
   },
   input: {
