@@ -170,7 +170,12 @@ class SideNav extends Component {
     let org_id = this.state.organization.id;
     if(!org_id){
       return false;
-    }    
+    }
+    const user = SessionStore.getUser();  
+    if(user.isAdmin){
+      org_id = '0';
+    }
+    
     const data = {
       jwt: window.localStorage.getItem("jwt"),
       path: `/withdraw/${org_id}`,

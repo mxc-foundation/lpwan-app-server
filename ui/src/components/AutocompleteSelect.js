@@ -134,7 +134,6 @@ class Option extends Component {
   };
 
   render() {
-    console.log('Option.render', this.props);
     const { children, isFocused, isSelected, onFocus } = this.props;
 
     return (
@@ -295,7 +294,6 @@ class AutocompleteSelect extends Component {
 
   render() {
     const inputProps = this.props.inputProps || {};
-    console.log('render', this.state.options, this.props);
     return(
       <FormControl margin={this.props.margin || ""}  fullWidth={true} 
         className={this.props.className}>
