@@ -11,8 +11,8 @@ import MenuDown from "mdi-material-ui/MenuDown";
 import Cancel from "mdi-material-ui/Cancel";
 import MenuUp from "mdi-material-ui/MenuUp";
 import Close from "mdi-material-ui/Close";
-import Select from 'react-select';
-import 'react-select/dist/react-select.css';
+import AsyncSelect from 'react-select/async';
+//import 'react-select/dist/react-select.css';
 
 
 // taken from react-select example
@@ -56,7 +56,7 @@ const styles = theme => ({
       height: 'auto',
     },
     '.Select-input input': {
-      background: 'transparent',
+      //background: 'transparent',
       border: 0,
       padding: 0,
       cursor: 'default',
@@ -84,7 +84,8 @@ const styles = theme => ({
     },
     '.Select-placeholder': {
       opacity: 0.42,
-      color: theme.palette.common.white,
+      //color: theme.palette.common.white,
+      color: 'black'
     },
     '.Select-menu-outer': {
       backgroundColor: theme.palette.background.paper,
@@ -142,6 +143,7 @@ class Option extends Component {
         onClick={this.handleClick}
         component="div"
         style={{
+          color: 'black',
           fontWeight: isSelected ? 500 : 400,
         }}
       >
@@ -154,37 +156,40 @@ class Option extends Component {
 function SelectWrapped(props) {
   const { classes, ...other } = props;
 
+  const components = {
+    option: Option,
+    value: (valueProps) => {
+      const { value, children, onRemove } = valueProps;
+      const onDelete = event => {
+        event.preventDefault();
+        event.stopPropagation();
+        onRemove(value);
+      };
+
+      if (onRemove) {
+        return (
+          <Chip
+            tabIndex={-1}
+            label={children}
+            className={classes.chip}
+            deleteIcon={<Cancel onTouchEnd={onDelete} />}
+            onDelete={onDelete}
+          />
+        );
+      }
+
+      return <div className="Select-value">{children}</div>;
+    }
+  };
+
   return (
-    <Select.Async
-      optionComponent={Option}
-      noResultsText={<Typography>{'No results found'}</Typography>}
+    <AsyncSelect
+      components={components}
+      //noOptionsMessage={<Typography>{'No results found'}</Typography>}
       arrowRenderer={arrowProps => {
         return arrowProps.isOpen ? <MenuUp /> : <MenuDown />;
       }}
       clearRenderer={() => <Close />}
-      valueComponent={valueProps => {
-        const { value, children, onRemove } = valueProps;
-
-        const onDelete = event => {
-          event.preventDefault();
-          event.stopPropagation();
-          onRemove(value);
-        };
-
-        if (onRemove) {
-          return (
-            <Chip
-              tabIndex={-1}
-              label={children}
-              className={classes.chip}
-              deleteIcon={<Cancel onTouchEnd={onDelete} />}
-              onDelete={onDelete}
-            />
-          );
-        }
-
-        return <div className="Select-value">{children}</div>;
-      }}
       {...other}
     />
   );
@@ -219,6 +224,7 @@ class AutocompleteSelect extends Component {
 
   setInitialOptions(callbackFunc) {
     this.props.getOptions("", options => {
+      
       this.setState({
         options: options,
       }, callbackFunc);
@@ -255,15 +261,15 @@ class AutocompleteSelect extends Component {
     }
   }
 
-  onAutocomplete(input, callbackFunc) {
-    this.props.getOptions(input, options => {
-      this.setState({
-        options: options,
-      });
+  onAutocomplete(input) {
+    return new Promise((resolve, reject) => {
+      this.props.getOptions(input, options => {
+        
+        this.setState({
+          options: options,
+        });
 
-      callbackFunc(null, {
-        options: options,
-        complete: true,
+        resolve(options);
       });
     });
   }
@@ -289,7 +295,8 @@ class AutocompleteSelect extends Component {
   render() {
     const inputProps = this.props.inputProps || {};
     return(
-      <FormControl margin={this.props.margin || ""}  fullWidth={true} className={this.props.className}>
+      <FormControl margin={this.props.margin || ""}  fullWidth={true} 
+        className={this.props.className}>
         <Input
           fullWidth
           inputComponent={SelectWrapped}
@@ -299,7 +306,7 @@ class AutocompleteSelect extends Component {
           inputProps={{...{
             instanceId: this.props.id,
             clearable: false,
-            options: this.state.options,
+            defaultOptions: this.state.options,
             loadOptions: this.onAutocomplete,
             value: this.state.selectedOption || "",
           }, ...inputProps}}

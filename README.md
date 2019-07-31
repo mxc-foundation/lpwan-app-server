@@ -32,6 +32,12 @@ and payloads can be enqueued by using MQTT or the API.
   * [Support forum](https://forum.loraserver.io)
   * [Bug or feature requests](https://github.com/brocaar/lora-app-server/issues)
 
+## Sponsors
+
+[![CableLabs](https://www.loraserver.io/img/sponsors/cablelabs.png)](https://www.cablelabs.com/)
+[![SIDNFonds](https://www.loraserver.io/img/sponsors/sidn_fonds.png)](https://www.sidnfonds.nl/)
+[![acklio](https://www.loraserver.io/img/sponsors/acklio.png)](http://www.ackl.io/)
+
 ## License
 
 LoRa App Server is distributed under the MIT license. See also

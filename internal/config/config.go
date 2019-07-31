@@ -22,6 +22,11 @@ type Config struct {
 		Automigrate bool
 	} `mapstructure:"postgresql"`
 
+	MxpServer struct {
+		MxpServer            string `mapstructure:"mxp_server"`
+		MxpServerDevelopment string `mapstructure:"mxp_server_development"`
+	} `mapstructure:"mxprotocol_server"`
+
 	Redis struct {
 		URL         string        `mapstructure:"url"`
 		MaxIdle     int           `mapstructure:"max_idle"`
