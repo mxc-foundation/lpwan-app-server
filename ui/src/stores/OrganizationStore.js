@@ -11,7 +11,6 @@ class OrganizationStore extends EventEmitter {
   constructor() {
     super();
     this.swagger = new Swagger("/swagger/organization.swagger.json", sessionStore.getClientOpts());
-    this.withdrawSwagger = new Swagger("/swagger/withdraw.swagger.json", sessionStore.getClientOpts());
   }
 
   

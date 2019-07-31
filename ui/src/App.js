@@ -81,13 +81,6 @@ import Search from "./views/search/Search";
 import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentForDevice";
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
-//M2M Wallet
-//import Dashboard from "./views/m2m-wallet/Dashboard"
-/* import Topup from "./views/m2m-wallet/Topup"
-import Withdraw from "./views/m2m-wallet/Withdraw"
-import HistoryLayout from "./views/m2m-wallet/HistoryLayout"
-import ModifyEthAccount from "./views/m2m-wallet/ModifyEthAccount" */
-//import deepPurple from "@material-ui/core/colors/deepPurple";
 
 const drawerWidth = 270;
 

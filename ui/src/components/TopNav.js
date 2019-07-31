@@ -87,7 +87,6 @@ class TopNav extends Component {
       search: "",
     };
 
-    this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
     this.onMenuOpen = this.onMenuOpen.bind(this);
     this.onMenuClose = this.onMenuClose.bind(this);
     this.onLogout = this.onLogout.bind(this);
@@ -111,17 +110,6 @@ class TopNav extends Component {
     SessionStore.logout(() => {
       this.props.history.push("/login");
     });
-  }
-  //ROUTE
-  handleDrawerToggle() {
-    this.props.setDrawerOpen(!this.props.drawerOpen);
-    if(!this.props.drawerOpen){
-      this.props.history.push("/");
-    }else{
-      let id = this.props.organizationId;
-      this.props.history.push("/withdraw/"+id);
-    }
-    
   }
 
   onSearchChange(e) {
