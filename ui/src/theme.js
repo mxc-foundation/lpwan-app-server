@@ -77,7 +77,7 @@ const theme = createMuiTheme({
       },
       MuiInputBase: {
         input: {
-          color: white,
+          color: "black",
         }
       },
       MuiTable: {

@@ -20,17 +20,6 @@ import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
 import Wallet from "mdi-material-ui/WalletOutline";
 
-import AccessPoint from "mdi-material-ui/AccessPoint";
-import Repeat from "mdi-material-ui/Repeat";
-import CalendarCheckOutline from "mdi-material-ui/CalendarCheckOutline";
-import CreditCard from "mdi-material-ui/CreditCard";
-import ArrowExpandLeft from "mdi-material-ui/ArrowExpandLeft";
-
-
-//import ModifyEthAccount from "mdi-material-ui/Card-bulleted-settings-outline"
-//import History from "mdi-material-ui/History"
-//import Topup from "mdi-material-ui/Bank-transfer-in"
-//import Withdraw from "mdi-material-ui/Cash-multiple"
 import AccountDetails from "mdi-material-ui/AccountDetails";
 
 import AutocompleteSelect from "./AutocompleteSelect";
@@ -178,24 +167,39 @@ class SideNav extends Component {
   }
 
   handleOpenM2M = () => {
-    //this.props.setDrawerOpen(false);
-    //this.props.history.push(`/withdraw/${this.state.organization.id}`);
-    let org_id = '';
-    if(SessionStore.getUser().isAdmin){
-      org_id = '0';
-    }else{
-      org_id = this.state.organization.id;
+    let org_id = this.state.organization.id;
+    let org_name = '';
+    if(!org_id){
+      return false;
     }
+    const user = SessionStore.getUser();  
+    const org = SessionStore.getOrganizations(); 
+    
+    if(user.isAdmin){
+      org_id = '0';
+      org_name = 'Super_admin';
+    }else{
+      if(org.length > 0){
+        org_name = org[0].organizationName;
+      }else{
+        org_name = '';
+      }
+    }
+    
     const data = {
       jwt: window.localStorage.getItem("jwt"),
       path: `/withdraw/${org_id}`,
-      org_id
+      org_id,
+      org_name,
+      loraHostUrl: window.location.origin
     };
     
     const dataString = encodeURIComponent(JSON.stringify(data));
-    
+    /* console.log('M2M_DEV_SERVER', process.env.M2M_DEV_SERVER);
+    console.log('M2M_DEV_SERVER', process.env);
+    return false; */
     // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(`http://localhost:3001/#/j/${dataString}`);
+    window.location.replace(process.env.REACT_APP_M2M_SERVER + `/#/j/${dataString}`);
   }
 
   render() {
@@ -256,22 +260,22 @@ class SideNav extends Component {
         <Divider />
         {this.state.organization && <>
         <List className={this.props.classes.static}>
-{/*           <Admin>
+           <Admin>
             <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
               <ListItemText primary="Org. settings" />
             </ListItem>
-          </Admin> */}
-{/*           <Admin organizationID={this.state.organization.id}>
+          </Admin>
+          <Admin organizationID={this.state.organization.id}>
             <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
               <ListItemText primary="Org. users" />
             </ListItem>
-          </Admin> */}
+          </Admin>
           <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
@@ -304,8 +308,6 @@ class SideNav extends Component {
           </ListItem>
         </List>
         <Divider />
-{/*         <Card className={this.props.classes.card}
-            <CardContent> */}
               <List className={this.props.classes.static}>
                 <ListItem button onClick={this.handleOpenM2M} >
                   <ListItemIcon>
@@ -313,21 +315,9 @@ class SideNav extends Component {
                   </ListItemIcon>
                   <ListItemText primary="M2M Wallet" />
                 </ListItem>
-{/*                 <ListItem button  onClick={this.handleOpenLora}>
-                  <ListItemText primary="Account name" />
-                  <ListItemIcon>
-                    <Settings />
-                  </ListItemIcon>
-                </ListItem>
-                <ListItem button onClick={this.handleOpenM2M} >
-                  <ListItemText primary="Change Account" />
-                  <ListItemIcon>
-                    <Repeat />
-                  </ListItemIcon>
-                </ListItem> */}
+
               </List>
-{/*             </CardContent>
-          </Card> */}
+
         </>}
       </Drawer>
     );

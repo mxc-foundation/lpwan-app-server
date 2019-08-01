@@ -36,21 +36,17 @@ func init() {
 
 	// defaults
 	viper.SetDefault("general.password_hash_iterations", 100000)
-	viper.SetDefault("postgresql.dsn", "postgres://postgres:password@postgres:5432/loraserver_as?sslmode=disable")
+	viper.SetDefault("postgresql.dsn", "postgres://localhost/loraserver_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
 	viper.SetDefault("redis.url", "redis://localhost:6379")
 	viper.SetDefault("redis.max_idle", 10)
 	viper.SetDefault("redis.idle_timeout", 5*time.Minute)
-	viper.SetDefault("application_server.integration.mqtt.server", "tcp://mosquitto:1883")
+	viper.SetDefault("application_server.integration.mqtt.server", "tcp://localhost:1883")
 	viper.SetDefault("application_server.api.public_host", "localhost:8001")
 	viper.SetDefault("application_server.id", "6d5db27e-4ce2-4b2b-b5d7-91f069397978")
 	viper.SetDefault("application_server.api.bind", "0.0.0.0:8001")
 	viper.SetDefault("application_server.external_api.bind", "0.0.0.0:8080")
-	viper.SetDefault("application_server.external_api.jwt_secret", "DOE1KiNzpQ82elRQ9HMWyxmADQ5f2B2TBAgOjL7ZZWA=")
-	viper.SetDefault("application_server.external_api.cors_allow_origin", "http://localhost:3001")
-
 	viper.SetDefault("join_server.bind", "0.0.0.0:8003")
-
 	viper.SetDefault("application_server.integration.mqtt.uplink_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/rx")
 	viper.SetDefault("application_server.integration.mqtt.downlink_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/tx")
 	viper.SetDefault("application_server.integration.mqtt.join_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/join")

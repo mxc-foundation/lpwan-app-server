@@ -83,6 +83,10 @@ max_idle={{ .Redis.MaxIdle }}
 # the timeout to a value less than the server's timeout.
 idle_timeout="{{ .Redis.IdleTimeout }}"
 
+# Mxprotocol-server settings
+[mxprotocol_server]
+mxp_server="{{ .MxpServer.MxpServer }}"
+mxp_server_development="{{ .MxpServer.MxpServerDevelopment }}"
 
 # Application-server settings.
 [application_server]
