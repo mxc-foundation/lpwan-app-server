@@ -79,7 +79,6 @@ const styles = theme => ({
       padding: 0,
     },
     '.Select-value': {
-      color: "black",
       paddingLeft: "0 !important",
     },
     '.Select-placeholder': {

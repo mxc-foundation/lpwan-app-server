@@ -65,7 +65,7 @@ const styles = {
     padding: 10,
   },
   autocompleteSelect: {
-    color: theme.palette.common.white,
+    color: theme.palette.secondary.main,
   },
 };
 
@@ -155,13 +155,13 @@ class SideNav extends Component {
 
   getOrganizationOption(id, callbackFunc) {
     OrganizationStore.get(id, resp => {
-      callbackFunc({label: resp.organization.name, value: resp.organization.id});
+      callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
     });
   }
 
   getOrganizationOptions(search, callbackFunc) {
     OrganizationStore.list(search, 10, 0, resp => {
-      const options = resp.result.map((o, i) => {return {label: o.name, value: o.id}});
+      const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
       callbackFunc(options);
     });
   }
@@ -191,6 +191,7 @@ class SideNav extends Component {
       path: `/withdraw/${org_id}`,
       org_id,
       org_name,
+      username: user.username,
       loraHostUrl: window.location.origin
     };
     
