@@ -1,36 +1,6 @@
---boundary
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-ID: text-body
-
-To complete your {{.Host}} registration, please follow the link below:
-{{.Link}}
-
---boundary
-Content-Type: text/html;charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-ID: html-body
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
-</head>
-<body width="100%" style="margin: 0;">
-	<p>
-	To complete your {{.Host}} registration, please follow the link below:
-	</p>
-	<p><a href="{{.Link}}">{{.Link}}</a></p>
-</body>
-</html>
-
---boundary--
-
-
 From: MXC <{{ .From }}>
 To: {{ .To }}
-Subject: Confirm your {{.Host}} registration
+Subject: Please confirm the e-mail linked to your Your MXProtocol server provider 
 Message-Id: <{{ .MsgId }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -41,8 +11,11 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-To complete your {{.Host}} registration, please follow the link below:
-{{.Link}}
+You have created a new user access to MXProtocol. This is a security measure. Please click the link below to verify your email
+address. If you are unable to click the link, copy and paste this URL
+into your browser.
+
+{{ .Link }}
 
 --{{ .Boundary }}
 Content-Type: text/html;charset=UTF-8
@@ -65,7 +38,7 @@ Content-ID: html-body
 	<tbody>
 		<tr>
 			<td align=3D"center">
-
+				
 				<!-- head starts -->
 				<table style=3D"font-family: Montserrat, Helvetica; width: 100%; max-width: 650px; position: relative;background-color:#09006e; font-weight: bold; font-size: 10px;">
 					<tbody>
@@ -83,11 +56,6 @@ Content-ID: html-body
 									About
 								</a>
 							</td>
-							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
-								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/get-mxc">
-									Get MXC
-								</a>
-							</td>
 							</tr>
 							<tr>
 						</tr>
@@ -99,7 +67,7 @@ Content-ID: html-body
 				    border-width: 0 10px; ">
 					<tr>
 					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 30px; font-weight: 700; line-height: 37px; padding: 0 15%;">
-							Welcome to MXC, the Coin with Purpose
+							Welcome to your supernode access.
 					    </td>
 					</tr>
 				</table>
@@ -109,8 +77,8 @@ Content-ID: html-body
 				    border-width: 0 10px 10px 10px; ">
 					<tr>
 					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 14px; font-weight: 300; line-height: 140%;">
-							To complete your {{.Host}} registration, please follow the link below:
-                            {{.Link}}
+							<p>You have created a new user access to MXProtocol. This is a security measure. Please click the link below to verify your email address. If you are unable to click the link, copy and paste this URL into your browser.</p>
+							<p><a target=3D"_blank" href=3D"{{ .Link }}">{{ .Link }}</a></p>
 					    </td>
 					</tr>
 				</table>
@@ -120,7 +88,7 @@ Content-ID: html-body
 					<tbody>
 						<tr>
 							<td>
-								MXC Foundation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Alexanderstraße 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10178 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2018
+								MXC Foundation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
 							</td>
 						</tr>
 					</tbody>
