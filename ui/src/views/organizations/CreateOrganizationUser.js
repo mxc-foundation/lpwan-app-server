@@ -64,7 +64,7 @@ class AssignUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Add user"
+        submitLabel="Add"
         onSubmit={this.onSubmit}
       >
         <FormControl margin="normal" fullWidth>
@@ -106,7 +106,7 @@ class CreateUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Create user"
+        submitLabel="Create"
         onSubmit={this.onSubmit}
       >
         <TextField

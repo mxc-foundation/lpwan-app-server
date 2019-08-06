@@ -76,7 +76,7 @@ class CreateGatewayProfile extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to="/network-servers/create" onClick={this.closeDialog}>Add network-server</Button>
+            <Button color="primary" component={Link} to="/network-servers/create" onClick={this.closeDialog}>Add</Button>
             <Button color="primary" onClick={this.closeDialog}>Dismiss</Button>
           </DialogActions>
         </Dialog>
@@ -91,7 +91,7 @@ class CreateGatewayProfile extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <GatewayProfileForm
-                submitLabel="Create gateway-profile"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

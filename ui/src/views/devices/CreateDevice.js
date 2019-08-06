@@ -99,7 +99,7 @@ class CreateDevice extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to={`/organizations/${this.props.match.params.organizationID}/device-profiles/create`} onClick={this.closeDialog}>Create device-profile</Button>
+            <Button color="primary" component={Link} to={`/organizations/${this.props.match.params.organizationID}/device-profiles/create`} onClick={this.closeDialog}>Create</Button>
             <Button color="primary" onClick={this.closeDialog}>Dismiss</Button>
           </DialogActions>
         </Dialog>
@@ -118,7 +118,7 @@ class CreateDevice extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <DeviceForm
-                submitLabel="Create device"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
                 match={this.props.match}
               />

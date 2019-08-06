@@ -110,8 +110,9 @@ const styles = {
   main: {
     width: "100%",
     padding: 2 * 24,
-    display: 'flex',
-    alignItems: 'center',
+    paddingTop: 115,
+    /* display: 'flex',
+    alignItems: 'center', */
     flex: 1,
   },
   mainDrawerOpen: {
