@@ -50,6 +50,11 @@ class CreateIntegration extends Component {
           this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
         });
         break;
+      case "thingsboard":
+        ApplicationStore.createThingsBoardIntegration(integr, resp => {
+          this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
+        });
+        break;
       default:
         break;
     }
@@ -75,7 +80,7 @@ class CreateIntegration extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <IntegrationForm
-                submitLabel="Create integration"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

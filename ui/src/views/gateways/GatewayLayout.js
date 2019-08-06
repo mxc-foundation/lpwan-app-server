@@ -123,7 +123,6 @@ class GatewayLayout extends Component {
                 key={1}
                 label="Delete"
                 icon={<Delete />}
-                color="secondary"
                 onClick={this.deleteGateway}
               />
             </Admin>

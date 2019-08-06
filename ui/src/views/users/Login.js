@@ -22,10 +22,13 @@ const styles = {
   },
   link: {
     "& a": {
-      color: theme.palette.primary.main,
+      color: theme.palette.textSecondary.main,
       textDecoration: "none",
     },
   },
+  padding: {
+    paddingTop: 115,
+  }
 };
 
 
@@ -101,12 +104,9 @@ class Login extends Component {
 
   render() {
     return(
-      <Grid container justify="center">
+      <Grid container justify="center" className={this.props.classes.padding}>
         <Grid item xs={6} lg={4}>
           <Card>
-            <CardHeader
-              title="Login MXC Cloud"
-            />
             <CardContent>
               <LoginForm
                 submitLabel="Login"

@@ -36,7 +36,7 @@ class CreateOrganization extends Component {
           <Card>
             <CardContent>
               <OrganizationForm
-                submitLabel="Create organization"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

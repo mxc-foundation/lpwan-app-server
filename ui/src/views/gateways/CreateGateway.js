@@ -48,7 +48,7 @@ class CreateGateway extends Component {
             <CardContent>
               <GatewayForm
                 match={this.props.match}
-                submitLabel="Create gateway"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
                 object={{location: {}}}
               />

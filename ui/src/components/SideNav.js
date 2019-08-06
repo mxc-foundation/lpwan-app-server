@@ -7,6 +7,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 
 import Divider from '@material-ui/core/Divider';
 import Domain from "mdi-material-ui/Domain";
@@ -17,6 +18,8 @@ import RadioTower from "mdi-material-ui/RadioTower";
 import Tune from "mdi-material-ui/Tune";
 import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
+import Wallet from "mdi-material-ui/WalletOutline";
+
 import AccountDetails from "mdi-material-ui/AccountDetails";
 
 import AutocompleteSelect from "./AutocompleteSelect";
@@ -31,13 +34,38 @@ const styles = {
   drawerPaper: {
     position: "fixed",
     width: 270,
-    paddingTop: theme.spacing.unit * 9,
+    paddingTop: theme.spacing.unit * 10,
+    paddingRight: 0,
+    paddingLeft: 0,
+    backgroundColor: '#09006E',
+    color: '#FFFFFF',
   },
   select: {
     paddingTop: theme.spacing.unit,
     paddingLeft: theme.spacing.unit * 3,
     paddingRight: theme.spacing.unit * 3,
     paddingBottom: theme.spacing.unit * 1,
+  },
+/*   card: {
+    width: '100%',
+    height: 200,
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#09006E',
+    color: '#FFFFFF',
+    marginTop: -20,
+  }, */
+  static: {
+    position: 'static'
+  },
+  iconStyle: {
+    color: theme.palette.common.white,
+  },
+  divider: {
+    padding: 10,
+  },
+  autocompleteSelect: {
+    color: theme.palette.secondary.main,
   },
 };
 
@@ -84,7 +112,7 @@ class SideNav extends Component {
     OrganizationStore.on("delete", id => {
       if (this.state.organization !== null && this.state.organization.id === id) {
         this.setState({
-          organization: null,
+          organization: null
         });
       }
 
@@ -127,23 +155,60 @@ class SideNav extends Component {
 
   getOrganizationOption(id, callbackFunc) {
     OrganizationStore.get(id, resp => {
-      callbackFunc({label: resp.organization.name, value: resp.organization.id});
+      callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
     });
   }
 
   getOrganizationOptions(search, callbackFunc) {
     OrganizationStore.list(search, 10, 0, resp => {
-      const options = resp.result.map((o, i) => {return {label: o.name, value: o.id}});
+      const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
       callbackFunc(options);
     });
   }
 
+  handleOpenM2M = () => {
+    let org_id = this.state.organization.id;
+    let org_name = '';
+    if(!org_id){
+      return false;
+    }
+    const user = SessionStore.getUser();  
+    const org = SessionStore.getOrganizations(); 
+    
+    if(user.isAdmin){
+      org_id = '0';
+      org_name = 'Super_admin';
+    }else{
+      if(org.length > 0){
+        org_name = org[0].organizationName;
+      }else{
+        org_name = '';
+      }
+    }
+    
+    const data = {
+      jwt: window.localStorage.getItem("jwt"),
+      path: `/withdraw/${org_id}`,
+      org_id,
+      org_name,
+      username: user.username,
+      loraHostUrl: window.location.origin
+    };
+    
+    const dataString = encodeURIComponent(JSON.stringify(data));
+    /* console.log('M2M_DEV_SERVER', process.env.M2M_DEV_SERVER);
+    console.log('M2M_DEV_SERVER', process.env);
+    return false; */
+    // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
+    window.location.replace(process.env.REACT_APP_M2M_SERVER + `/#/j/${dataString}`);
+  }
+
   render() {
     let organizationID = "";
-    if (this.state.organization !== null) {
+    if (this.state.organization) {
       organizationID = this.state.organization.id;
     }
-
+   
     return(
       <Drawer
         variant="persistent"
@@ -165,6 +230,7 @@ class SideNav extends Component {
               </ListItemIcon>
               <ListItemText primary="Gateway-profiles" />
             </ListItem>
+            <Divider />
             <ListItem button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
@@ -178,9 +244,7 @@ class SideNav extends Component {
               <ListItemText primary="All users" />
             </ListItem>
           </List>
-          <Divider />
         </Admin>
-
         <div>
           <AutocompleteSelect
             id="organizationID"
@@ -191,11 +255,13 @@ class SideNav extends Component {
             getOptions={this.getOrganizationOptions}
             className={this.props.classes.select}
             triggerReload={this.state.cacheCounter}
+            placeHolder="Change Organization"
           />
         </div>
-
-        {this.state.organization && <List>
-          <Admin>
+        <Divider />
+        {this.state.organization && <>
+        <List className={this.props.classes.static}>
+           <Admin>
             <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
               <ListItemIcon>
                 <Settings />
@@ -241,7 +307,19 @@ class SideNav extends Component {
             </ListItemIcon>
             <ListItemText primary="Multicast-groups" />
           </ListItem>
-        </List>}
+        </List>
+        <Divider />
+              <List className={this.props.classes.static}>
+                <ListItem button onClick={this.handleOpenM2M} >
+                  <ListItemIcon>
+                    <Wallet />
+                  </ListItemIcon>
+                  <ListItemText primary="M2M Wallet" />
+                </ListItem>
+
+              </List>
+
+        </>}
       </Drawer>
     );
   }

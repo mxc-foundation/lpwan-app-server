@@ -61,6 +61,10 @@ class SessionStore extends EventEmitter {
     return this.user;
   }
 
+  getOrganizations() {
+    return this.organizations;
+  }
+
   getSettings() {
     return this.settings;
   }
@@ -117,7 +121,7 @@ class SessionStore extends EventEmitter {
           }
 
           this.emit("change");
-          callBackFunc();
+          callBackFunc(resp);
         })
         .catch(errorHandler);
     });
