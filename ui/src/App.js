@@ -93,7 +93,8 @@ const styles = {
     backgroundColor: "#090046",
     backgroundImage: 'url("/img/world-map.png")',
     backgroundRepeat: 'no-repeat',
-    backgroundSize: '100vw auto',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
     //backgroundColor: '#cccccc',
     //background: "#311b92",
     fontFamily: 'Montserrat',
@@ -109,10 +110,10 @@ const styles = {
   main: {
     width: "100%",
     padding: 2 * 24,
-    paddingTop: 115,
+    display: 'flex',
+    alignItems: 'center',
     flex: 1,
   },
-
   mainDrawerOpen: {
     paddingLeft: drawerWidth + (2 * 24),
   },
