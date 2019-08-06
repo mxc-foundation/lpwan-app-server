@@ -1,7 +1,20 @@
+@keyframes animationName {
+  0% {
+    background: rgba(0,50,150,.8);
+  }
+  50% {
+    background: rgba(0,50,150,1);
+  }
+  100% {
+    background: rgba(0,50,150,.8);
+  }
+}
+
 body {
   margin: 0;
   padding: 0;
   font-family: sans-serif;
+  /* animation: animationName 2s infinite; */
 }
 
 .default-text {

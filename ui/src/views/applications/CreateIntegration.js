@@ -80,7 +80,7 @@ class CreateIntegration extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <IntegrationForm
-                submitLabel="Create integration"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

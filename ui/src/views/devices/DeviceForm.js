@@ -186,8 +186,6 @@ class DeviceForm extends FormComponent {
       };
       ss[name] = kvs;
 
-      console.log(ss);
-
       this.setState(ss);
     };
   }

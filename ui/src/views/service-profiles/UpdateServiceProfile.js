@@ -28,7 +28,7 @@ class UpdateServiceProfile extends Component {
           <Card>
             <CardContent>
               <ServiceProfileForm
-                submitLabel="Update service-profile"
+                submitLabel="Update"
                 object={this.props.serviceProfile}
                 onSubmit={this.onSubmit}
                 match={this.props.match}

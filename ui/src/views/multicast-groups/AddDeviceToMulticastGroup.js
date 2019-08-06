@@ -119,7 +119,7 @@ class AddDeviceToMulticastGroup extends Component {
         <Grid item xs={12}>
           <Card className={this.props.classes.card}>
             <CardContent>
-              <AddDeviceForm submitLabel="Add device" onSubmit={this.onSubmit} serviceProfileID={this.state.multicastGroup.serviceProfileID} />
+              <AddDeviceForm submitLabel="Add" onSubmit={this.onSubmit} serviceProfileID={this.state.multicastGroup.serviceProfileID} />
             </CardContent>
           </Card>
         </Grid>
