@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
@@ -8,6 +8,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
+import Button from "@material-ui/core/Button";
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
@@ -36,10 +37,15 @@ class LoginForm extends FormComponent {
     if (this.state.object === undefined) {
       return null;
     }
+    
+    const extraButtons = [
+      <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
+    ]
 
     return(
       <Form
         submitLabel={this.props.submitLabel}
+        extraButtons={extraButtons}
         onSubmit={this.onSubmit}
       >
         <TextField

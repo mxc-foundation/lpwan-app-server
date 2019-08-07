@@ -27,6 +27,7 @@ const (
 	Delete
 	List
 	UpdateProfile
+	FinishRegistration
 )
 
 const userQuery = `
@@ -128,6 +129,14 @@ func ValidateUserAccess(userID int64, flag Flag) ValidatorFunc {
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "u.id = $2"},
 		}
+	case FinishRegistration:
+		// global admin
+		// inactive user itself
+		where = [][]string{
+			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
+			{"u.username = $1", "u.is_active = false", "u.id = $2"},
+		}
+
 	default:
 		panic("unsupported flag")
 	}

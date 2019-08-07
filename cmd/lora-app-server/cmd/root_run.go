@@ -18,6 +18,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/codec"
 	"github.com/brocaar/lora-app-server/internal/config"
 	"github.com/brocaar/lora-app-server/internal/downlink"
+	"github.com/brocaar/lora-app-server/internal/email"
 	"github.com/brocaar/lora-app-server/internal/fuota"
 	"github.com/brocaar/lora-app-server/internal/gwping"
 	"github.com/brocaar/lora-app-server/internal/integration"
@@ -38,6 +39,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupStorage,
 		setupNetworkServer,
 		setupIntegration,
+		setupSMTP,
 		setupCodec,
 		handleDataDownPayloads,
 		startGatewayPing,
@@ -93,6 +95,14 @@ func setupStorage() error {
 	return nil
 }
 
+func setupSMTP() error {
+	if err := email.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup SMTP error")
+	}
+
+	return nil
+}
+
 func setupIntegration() error {
 	var confs []interface{}
 
@@ -122,6 +132,13 @@ func setupIntegration() error {
 
 	return nil
 }
+
+/* func setupRegSrv() error {
+	if err := regsrv.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup regsrv error")
+	}
+	return nil
+} */
 
 func setupCodec() error {
 	if err := codec.Setup(config.C); err != nil {

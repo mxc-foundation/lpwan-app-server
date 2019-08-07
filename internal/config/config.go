@@ -13,8 +13,9 @@ import (
 // Config defines the configuration structure.
 type Config struct {
 	General struct {
-		LogLevel               int `mapstructure:"log_level"`
-		PasswordHashIterations int `mapstructure:"password_hash_iterations"`
+		LogLevel               int    `mapstructure:"log_level"`
+		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
+		HostServer             string `mapstructure:"host_server"`
 	}
 
 	PostgreSQL struct {
@@ -32,6 +33,13 @@ type Config struct {
 		MaxIdle     int           `mapstructure:"max_idle"`
 		IdleTimeout time.Duration `mapstructure:"idle_timeout"`
 	}
+
+	SMTP struct {
+		Email    string `mapstructure:"email"`
+		Password string `mapstructure:"password"`
+		Host     string `mapstructure:"host"`
+		Port     string `mapstructure:"port"`
+	} `mapstructure:"smtp"`
 
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
@@ -92,6 +100,15 @@ type Config struct {
 			Registration string
 		}
 	} `mapstructure:"application_server"`
+
+	RegistrationServer struct {
+		Server   string `mapstructure:"server"`
+		Username string `mapstructure:"username"`
+		Password string `mapstructure:"password"`
+		CACert   string `mapstructure:"ca_cert"`
+		TLSCert  string `mapstructure:"tls_cert"`
+		TLSKey   string `mapstructure:"tls_key"`
+	} `mapstructure:"registration_server"`
 
 	JoinServer struct {
 		Bind    string
