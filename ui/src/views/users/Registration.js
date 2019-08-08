@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
+import { isEmail } from 'validator';
 
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
@@ -42,6 +43,7 @@ class RegistrationForm extends FormComponent {
           id="username"
           label="Email"
           margin="normal"
+          type="email"
           value={this.state.object.username || ""}
           onChange={this.onChange}
           fullWidth
@@ -61,9 +63,13 @@ class Registration extends Component {
   }
 
   onSubmit(user) {
-    SessionStore.register(user, () => {
-      this.props.history.push("/");
-    });
+    if(isEmail(user.username)){
+      SessionStore.register(user, () => {
+        this.props.history.push("/");
+      });
+    }else{
+      alert("Please, enter a valid email address to use.");
+    }
   }
 
   render() {
