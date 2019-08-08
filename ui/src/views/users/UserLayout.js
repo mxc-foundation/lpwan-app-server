@@ -42,8 +42,7 @@ class UserLayout extends Component {
     if (this.state.user === undefined) {
       return(<div></div>);
     }
-    
-    const isDisabled = (this.state.user.user.username === 'build@mxc.org')
+    const isDisabled = (this.state.user.user.username === process.env.REACT_APP_DEMO_USER)
                         ?true
                         :false; 
     return(
