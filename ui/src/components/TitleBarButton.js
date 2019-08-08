@@ -40,6 +40,7 @@ class TitleBarButton extends Component {
         component={component}
         to={this.props.to}
         onClick={this.props.onClick}
+        disabled={this.props.disabled}
       >
         {icon}
         {this.props.label}

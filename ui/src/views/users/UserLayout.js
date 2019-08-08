@@ -52,6 +52,7 @@ class UserLayout extends Component {
               label="Change password"
               icon={<KeyVariant />}
               to={`/users/${this.props.match.params.userID}/password`}
+              disabled={true}
             />,
             <TitleBarButton
               key={2}
