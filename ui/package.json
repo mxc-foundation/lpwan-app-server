@@ -28,6 +28,7 @@
     "source-map-explorer": "^1.6.0",
     "swagger-client": "^3.8.23",
     "typeface-roboto": "0.0.54",
+    "validator": "^11.1.0",
     "whatwg-fetch": "^3.0.0"
   },
   "scripts": {
