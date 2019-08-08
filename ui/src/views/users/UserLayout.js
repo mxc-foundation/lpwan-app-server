@@ -42,7 +42,10 @@ class UserLayout extends Component {
     if (this.state.user === undefined) {
       return(<div></div>);
     }
-
+    
+    const isDisabled = (this.state.user.user.username === 'build@mxc.org')
+                        ?true
+                        :false; 
     return(
       <Grid container spacing={24}>
         <TitleBar
@@ -52,7 +55,7 @@ class UserLayout extends Component {
               label="Change password"
               icon={<KeyVariant />}
               to={`/users/${this.props.match.params.userID}/password`}
-              disabled={true}
+              disabled={isDisabled}
             />,
             <TitleBarButton
               key={2}
