@@ -40,8 +40,8 @@ snapshot: ui/build internal/statics internal/migrations
 
 ui/build:
 	@echo "Building ui"
-	@cd ui && echo 'REACT_APP_M2M_SERVER=$(M2M_SERVER)' >> .env.production
-	@cd ui && echo 'REACT_APP_M2M_SERVER=$(M2M_SERVER_DEV)' >> .env.development
+	@echo 'REACT_APP_M2M_SERVER=$(M2M_SERVER)' >> ui/.env.production
+	@echo 'REACT_APP_M2M_SERVER=$(M2M_SERVER_DEV)' >> ui/.env.development
 	@cd ui && npm run build
 	@mv ui/build/* static
 
