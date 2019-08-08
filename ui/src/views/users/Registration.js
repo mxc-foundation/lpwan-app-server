@@ -42,6 +42,7 @@ class RegistrationForm extends FormComponent {
           id="username"
           label="Email"
           margin="normal"
+          type="email"
           value={this.state.object.username || ""}
           onChange={this.onChange}
           fullWidth
