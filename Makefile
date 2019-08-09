@@ -41,8 +41,8 @@ snapshot: ui/build internal/statics internal/migrations
 
 ui/build:
 	@echo "Building ui"
-	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER) \nREACT_APP_DEMO_USER=$(DEMO_USER)'  >> .env.production 
-	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER_DEV) \nREACT_APP_DEMO_USER=$(DEMO_USER)' >> .env.development 
+	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER)\nREACT_APP_DEMO_USER=$(DEMO_USER)'  >> .env.production 
+	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER_DEV)\nREACT_APP_DEMO_USER=$(DEMO_USER)' >> .env.development 
 	@cd ui && npm run build
 	@mv ui/build/* static
 
