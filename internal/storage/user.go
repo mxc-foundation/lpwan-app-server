@@ -35,17 +35,17 @@ var emailValidator = regexp.MustCompile(`.+@.+`)
 
 // User represents a user to external code.
 type User struct {
-	ID            int64      `db:"id"`
-	Username      string     `db:"username"`
-	IsAdmin       bool       `db:"is_admin"`
-	IsActive      bool       `db:"is_active"`
-	SessionTTL    int32      `db:"session_ttl"`
-	CreatedAt     time.Time  `db:"created_at"`
-	UpdatedAt     time.Time  `db:"updated_at"`
-	PasswordHash  string     `db:"password_hash"`
-	Email         string     `db:"email"`
-	Note          string     `db:"note"`
-	SecurityToken *string    `db:"security_token"`
+	ID            int64     `db:"id"`
+	Username      string    `db:"username"`
+	IsAdmin       bool      `db:"is_admin"`
+	IsActive      bool      `db:"is_active"`
+	SessionTTL    int32     `db:"session_ttl"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	PasswordHash  string    `db:"password_hash"`
+	Email         string    `db:"email"`
+	Note          string    `db:"note"`
+	SecurityToken *string   `db:"security_token"`
 }
 
 const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note"
@@ -141,9 +141,9 @@ func ValidateEmail(email string) error {
 
 // CreateUser creates the given user.
 func CreateUser(db sqlx.Queryer, user *User, password string) (int64, error) {
-	if err := ValidateUsername(user.Username); err != nil {
+	/* if err := ValidateUsername(user.Username); err != nil {
 		return 0, errors.Wrap(err, "validation error")
-	}
+	} */
 
 	if err := ValidatePassword(password); err != nil {
 		return 0, errors.Wrap(err, "validation error")
