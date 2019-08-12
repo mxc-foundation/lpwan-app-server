@@ -148,7 +148,9 @@ class TopNav extends Component {
     }
 
     const open = Boolean(this.state.menuAnchor);
-
+    const isDisabled = (this.props.user.username === process.env.REACT_APP_DEMO_USER)
+                        ?true
+                        :false;
     return(
       <AppBar className={this.props.classes.appBar}>
         <Toolbar>
@@ -202,7 +204,7 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem>
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem> :
             <MenuItem onClick={this.onLogout}>Logout</MenuItem>
           </Menu>
         </Toolbar>
