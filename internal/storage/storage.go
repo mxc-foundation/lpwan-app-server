@@ -17,6 +17,7 @@ import (
 var (
 	jwtsecret      []byte
 	HashIterations = 100000
+	DemoUser       = ""
 )
 
 // Setup configures the storage package.
@@ -25,6 +26,7 @@ func Setup(c config.Config) error {
 
 	jwtsecret = []byte(c.ApplicationServer.ExternalAPI.JWTSecret)
 	HashIterations = c.General.PasswordHashIterations
+	DemoUser = c.General.DemoUser
 
 	log.Info("storage: setting up Redis pool")
 	redisPool = &redis.Pool{
