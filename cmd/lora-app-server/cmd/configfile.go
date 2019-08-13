@@ -19,7 +19,7 @@ log_level={{ .General.LogLevel }}
 # The number of times passwords must be hashed. A higher number is safer as
 # an attack takes more time to perform.
 password_hash_iterations={{ .General.PasswordHashIterations }}
-
+demo_user={{ .General.DemoUser }}
 host_server={{ .General.HostServer }}
 
 

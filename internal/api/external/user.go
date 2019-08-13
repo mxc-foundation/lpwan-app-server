@@ -1,6 +1,8 @@
 package external
 
 import (
+	"errors"
+	"fmt"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -231,7 +233,16 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.UpdatePassword(storage.DB(), req.UserId, req.Password)
+	user, err := storage.GetUser(storage.DB(), req.UserId)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if user.Username == storage.DemoUser {
+		return nil, helpers.ErrToRPCError(errors.New(fmt.Sprintf("User %s can not change password.", storage.DemoUser)))
+	}
+
+	err = storage.UpdatePassword(storage.DB(), req.UserId, req.Password)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

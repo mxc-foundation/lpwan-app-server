@@ -7,7 +7,7 @@ log_level=4
 # The number of times passwords must be hashed. A higher number is safer as
 # an attack takes more time to perform.
 password_hash_iterations=100000
-
+demo_user="build@mxc.org"
 
 # PostgreSQL settings.
 #

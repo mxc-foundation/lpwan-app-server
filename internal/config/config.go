@@ -16,6 +16,7 @@ type Config struct {
 		LogLevel               int    `mapstructure:"log_level"`
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
 		HostServer             string `mapstructure:"host_server"`
+		DemoUser			   string `mapstructure:"demo_user"`
 	}
 
 	PostgreSQL struct {
