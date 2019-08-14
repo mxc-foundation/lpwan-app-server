@@ -8,7 +8,7 @@ log_level=4
 # an attack takes more time to perform.
 password_hash_iterations=100000
 demo_user="build@mxc.org"
-
+host_server="lora.demo.cloud.mxc.org"
 # PostgreSQL settings.
 #
 # Please note that PostgreSQL 9.5+ is required.

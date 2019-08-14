@@ -36,6 +36,7 @@ func init() {
 
 	// defaults
 	viper.SetDefault("general.password_hash_iterations", 100000)
+	viper.SetDefault("general.host_server", "lora.demo.cloud.mxc.org")
 	viper.SetDefault("postgresql.dsn", "postgres://localhost/loraserver_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
 	viper.SetDefault("redis.url", "redis://localhost:6379")
