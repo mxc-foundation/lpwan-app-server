@@ -120,13 +120,14 @@ const theme = createMuiTheme({
         root: {
           background: blueHighLight,
           color: blueMxcBrand,
-          width: 135,
+          width: 160,
           height: 50,
           fontWeight: 'bolder',
           marginRight: 5,
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
           "&:hover": {
             backgroundColor: "#206CDF",
+            fontSize: '1rem'
           },
         },
         outlined: {
