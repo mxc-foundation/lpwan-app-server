@@ -155,6 +155,7 @@ const theme = createMuiTheme({
         }, */
         text: { 
           color: blueMxcBrand, 
+          marginBottom: 24,
         },
         textPrimary: {
           color: blueMxcBrand,
