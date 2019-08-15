@@ -5,7 +5,6 @@ import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
-import CardActions from "@material-ui/core/CardActions";
 import Table from "@material-ui/core/Table";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
@@ -210,7 +209,7 @@ class DeviceDetails extends Component {
   render() {
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Grid item xs={6}>
           <DetailsCard device={this.props.device} deviceProfile={this.props.deviceProfile} match={this.props.match} />
         </Grid>
