@@ -51,6 +51,9 @@ const theme = createMuiTheme({
         colorTextSecondary: {
           color: white,
         },
+        headline: {
+          color: white
+        },
       },
       MuiInput: {
         root: {
