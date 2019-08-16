@@ -52,7 +52,7 @@ class DeviceLayout extends Component {
   }
 
   componentDidMount() {
-    ApplicationStore.get(this.props.match.params.applicationID, resp => {
+    /* ApplicationStore.get(this.props.match.params.applicationID, resp => {
       this.setState({
         application: resp,
       });
@@ -62,9 +62,10 @@ class DeviceLayout extends Component {
     DeviceStore.on("update", this.getDevice);
     SessionStore.on("change", this.setIsAdmin);
 
-    this.locationToTab();
+    
     this.setIsAdmin();
-    this.getDevice();
+    this.getDevice(); */
+    this.locationToTab();
   }
 
   componentWillUnmount() {
@@ -128,10 +129,10 @@ class DeviceLayout extends Component {
 
     if (tab > 1 && !this.state.admin) {
       tab = tab - 1;
-    }
+    } 
 
     this.setState({
-      tab: tab,
+      tab: 2,
     });
   }
 

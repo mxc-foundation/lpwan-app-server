@@ -65,6 +65,14 @@ const theme = createMuiTheme({
           }
         }
       },
+      MuiInputLabel: {
+        root: {
+          color: white,
+          "&$focused": {
+            color: white
+          }
+        }
+      },
       MuiSelect: {
         icon: {
           color: white,
@@ -174,6 +182,9 @@ const theme = createMuiTheme({
         root: { 
           color: white, 
         },
+        label: {
+          color: white,
+        }
       },
       MuiFormHelperText: { 
         root: { 
