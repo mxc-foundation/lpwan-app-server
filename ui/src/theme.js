@@ -60,9 +60,6 @@ const theme = createMuiTheme({
         caption: {
           color: white
         },
-        caption: {
-          color: white
-        },
       },
       MuiInput: {
         root: {
