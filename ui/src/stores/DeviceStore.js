@@ -98,19 +98,12 @@ class DeviceStore extends EventEmitter {
   }
 
   getKeys(devEUI, callbackFunc) {
-    const obj = {};
-    obj.devEUI = "devEUI";
-    obj.nwkKey = "nwkKey";
-    obj.appKey = "appKey";
-    obj.genAppKey = "genAppKey";
-    return obj;
     this.swagger.then(client => {
       client.apis.DeviceService.GetKeys({
         dev_eui: devEUI,
       })
-      //.then(checkStatus)
+      .then(checkStatus)
       .then(resp => {
-        
         callbackFunc(resp.obj);
       })
       .catch(errorHandlerIgnoreNotFoundWithCallback(callbackFunc));

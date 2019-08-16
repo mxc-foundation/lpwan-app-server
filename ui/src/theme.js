@@ -182,9 +182,6 @@ const theme = createMuiTheme({
         root: { 
           color: white, 
         },
-        label: {
-          color: white,
-        }
       },
       MuiFormHelperText: { 
         root: { 
