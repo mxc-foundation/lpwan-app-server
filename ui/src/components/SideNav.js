@@ -37,8 +37,9 @@ const styles = {
     paddingTop: theme.spacing.unit * 10,
     paddingRight: 0,
     paddingLeft: 0,
-    backgroundColor: '#09006E',
-    color: '#FFFFFF',
+    backgroundColor: theme.palette.secondary.secondary,
+    color: theme.palette.secondary.secondary,
+    boxShadow: '1px 1px 5px 0px rgba(29, 30, 33, 0.5)',
   },
   select: {
     paddingTop: theme.spacing.unit,
