@@ -129,7 +129,7 @@ class ListFUOTADeploymentsForDevice extends Component {
           <Grid item xs={12} className={this.props.classes.buttons}>
             <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments/create`}>
               <CloudUpload className={this.props.classes.icon} />
-              Create Firmware Update Job
+              {/* Create */} Firmware Update {/* Job */}
             </Button>
           </Grid>
         </Admin>

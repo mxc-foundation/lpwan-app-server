@@ -48,10 +48,16 @@ const theme = createMuiTheme({
         body1: {
           color: white,
         },
+        body2: {
+          color: white,
+        },
         colorTextSecondary: {
           color: white,
         },
         headline: {
+          color: white
+        },
+        caption: {
           color: white
         },
       },
@@ -62,6 +68,14 @@ const theme = createMuiTheme({
         underline: {
           "&:before": {
             borderBottom: `1px solid #F9FAFC`
+          }
+        }
+      },
+      MuiInputLabel: {
+        root: {
+          color: white,
+          "&$focused": {
+            color: white
           }
         }
       },
