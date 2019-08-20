@@ -48,7 +48,7 @@ type User struct {
 	SecurityToken *string   `db:"security_token"`
 }
 
-const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note"
+const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
 const internalUserFields = "*"
 
 // UserUpdate represents the user fields that can be "updated" in the simple
@@ -553,9 +553,9 @@ func GetUserByToken(db sqlx.Queryer, token string) (User, error) {
 }
 
 // GetTokenByUsername ...
-func GetTokenByUsername(db sqlx.Queryer, token string) (User, error) {
+func GetTokenByUsername(db sqlx.Queryer, username string) (User, error) {
 	var user User
-	err := sqlx.Get(db, &user, "select security_token from \"user\" where username = $1", token)
+	err := sqlx.Get(db, &user, "select security_token from \"user\" where username = $1", username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, ErrDoesNotExist
