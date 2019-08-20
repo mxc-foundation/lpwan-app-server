@@ -88,7 +88,7 @@ port="25"
 # Mxprotocol-server settings
 [mxprotocol_server]
 mxp_server="http://localhost:4000"
-mxp_server_development="http://localhost:3001"
+mxp_server_development="http://localhost:3000"
 
 # Application-server settings.
 [application_server]

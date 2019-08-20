@@ -4,16 +4,17 @@ const blueHighLight = '#4D89E5';
 const blueHighLight20 = '#4D89E520';
 const blueMxcBrand = '#09006E';
 const blueBG = '#090046';
+const overlayBG = '#0C027060';
 const white = '#F9FAFC';
 const linkTextColor = '#216CDF';
 
 const theme = createMuiTheme({
     palette: {
       primary: { main: blueHighLight, secondary: blueHighLight20 }, 
-      secondary: { main: blueMxcBrand }, 
+      secondary: { main: blueMxcBrand, secondary: overlayBG }, 
       darkBG: { main: blueBG }, 
-      textPrimary: {main: white}, 
-      textSecondary: {main: linkTextColor} 
+      textPrimary: { main: white }, 
+      textSecondary: { main: linkTextColor } 
     },
     MuiListItemIcon: {
       root: {
@@ -97,11 +98,6 @@ const theme = createMuiTheme({
           color: white,
         }
       },
-      MuiTable: {
-        root: {
-          background: blueMxcBrand,
-        }
-      },
       MuiDivider: {
         root: {
           backgroundColor: '#FFFFFF50',
@@ -113,7 +109,6 @@ const theme = createMuiTheme({
       },
       MuiTableCell: {
         head: {
-          background: blueMxcBrand,
           color: white,
           fontWeight: 'bold'
         },
@@ -123,14 +118,13 @@ const theme = createMuiTheme({
       },
       MuiPaper: {
         root: {
-          backgroundColor: blueMxcBrand,
+          backgroundColor: overlayBG,
           padding: 10,
         }
       },
       MuiTablePagination: {
         root: {
           color: white,
-          background: blueMxcBrand,
         }
       },
       MuiButton: { 
@@ -148,7 +142,7 @@ const theme = createMuiTheme({
           },
         },
         outlined: {
-          backgroundColor: blueBG,
+          backgroundColor: 'transparent',
           color: blueHighLight,
           //padding: 30,
           fontWeight: 900,
@@ -224,6 +218,12 @@ const theme = createMuiTheme({
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
         },
       },
+      MuiMenu: {
+        paper: {
+          backgroundColor: blueBG,
+          marginTop: '50px',
+        }
+      }
     },
 });
   
