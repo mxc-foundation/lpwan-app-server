@@ -218,12 +218,12 @@ const theme = createMuiTheme({
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
         },
       },
-      MuiMenuItem: {
-        root: {
-          backgroundColor: blueMxcBrand,
-          padding: 'x',
+      MuiMenu: {
+        paper: {
+          backgroundColor: blueBG,
+          marginTop: '50px',
         }
-      },
+      }
     },
 });
   
