@@ -419,12 +419,30 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 	}
 	token := u.String()
 
-	err = storage.RegisterUser(storage.DB(), &user, token)
-	if err != nil {
+	obj, err := storage.GetUserByUsername(storage.DB(), user.Username)
+	if err == storage.ErrDoesNotExist {
+		// user has never been created yet
+		err = storage.RegisterUser(storage.DB(), &user, token)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		// get user again
+		obj, err = storage.GetUserByUsername(storage.DB(), user.Username)
+		if err != nil {
+			// internal error
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+	} else if err != nil && err != storage.ErrDoesNotExist {
+		// internal error
 		return nil, helpers.ErrToRPCError(err)
+	} else if err == nil && obj.SecurityToken == nil {
+		// user exists and finished registration
+		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(user.Username, token)
+	err = email.SendInvite(obj.Username, *obj.SecurityToken)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"username": user.Username,
