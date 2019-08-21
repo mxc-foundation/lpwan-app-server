@@ -31,6 +31,9 @@ const styles = {
   }
 };
 
+const demoUsername = process.env.REACT_APP_DEMO_USER;
+const demoPassword = "thefutureismxc";
+const helptext = "If you click the login button without any input. You can login as a demo user.";
 
 class LoginForm extends FormComponent {
   render() {
@@ -41,9 +44,6 @@ class LoginForm extends FormComponent {
     const extraButtons = [
       <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
     ]
-    
-    let demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
-    let helptext = "build@mxc.org is for demo user. You can access with this account right now.";
     
     return(
       <Form
@@ -56,9 +56,12 @@ class LoginForm extends FormComponent {
           label="Username"
           margin="normal"
           value={this.state.object.username || ""}
-          placeholder="build@mxc.org"
+          placeholder={demoUsername}
+          autoComplete='off'
           onChange={this.onChange}
-          autoFocus
+          InputLabelProps={{
+            shrink: true,
+          }}
           fullWidth
         />
         <TextField
@@ -66,11 +69,15 @@ class LoginForm extends FormComponent {
           label="Password"
           type="password"
           margin="normal"
-          value={this.state.object.password === undefined ? this.state.object.password = demoPassword : this.state.object.password }
+          value={this.state.object.password || "" }
+          placeholder={demoPassword}
           helperText={helptext}
+          InputLabelProps={{
+            shrink: true,
+          }}
           onChange={this.onChange}
           fullWidth
-          required
+          //required
         />
       </Form>
     );
@@ -102,8 +109,11 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    if(login.username === undefined){
-      login.username = process.env.REACT_APP_DEMO_USER;
+    if(!login.username){
+      login.username = demoUsername;
+    }
+    if(!login.password){
+      login.password = demoPassword;
     }
 
     SessionStore.login(login, () => {
