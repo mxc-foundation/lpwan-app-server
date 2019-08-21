@@ -41,7 +41,13 @@ class LoginForm extends FormComponent {
     const extraButtons = [
       <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
     ]
-
+    let demoUsername = "";
+    let demoPassword = "";
+    if(window.location.origin.includes("demo.")){
+      demoUsername = process.env.REACT_APP_DEMO_USER;
+      demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
+    }
+    
     return(
       <Form
         submitLabel={this.props.submitLabel}
@@ -52,7 +58,7 @@ class LoginForm extends FormComponent {
           id="username"
           label="Username"
           margin="normal"
-          value={this.state.object.username || ""}
+          value={this.state.object.username === undefined ? demoUsername : this.state.object.username }
           onChange={this.onChange}
           fullWidth
           required
@@ -62,7 +68,8 @@ class LoginForm extends FormComponent {
           label="Password"
           type="password"
           margin="normal"
-          value={this.state.object.password || ""}
+          value={this.state.object.password === undefined ? demoPassword : this.state.object.password }
+          helperText="build@mxc.org is for demo user. You can access with this account right now."
           onChange={this.onChange}
           fullWidth
           required
@@ -79,6 +86,7 @@ class Login extends Component {
 
     this.state = {
       registration: null,
+      login:{}
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -111,6 +119,7 @@ class Login extends Component {
               <LoginForm
                 submitLabel="Login"
                 onSubmit={this.onSubmit}
+                login={this.state.login}
               />
             </CardContent>
             {this.state.registration && <CardContent>
