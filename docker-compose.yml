@@ -3,9 +3,9 @@ services:
   appserver:
     build: 
       context: .
-      dockerfile: Dockerfile-devel
+      dockerfile: Dockerfile
     volumes:
-      - ./:/lora-app-server
+      - ./configuration:/etc/lora-app-server
     links:
       - postgres
       - redis
