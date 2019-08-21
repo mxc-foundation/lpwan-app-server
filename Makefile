@@ -4,6 +4,7 @@ VERSION := $(shell git describe --always |sed -e "s/^v//")
 M2M_SERVER=$(shell cat lora-app-server.toml | grep mxp_server=| sed 's/^mxp_server=//g')
 M2M_SERVER_DEV=$(shell cat lora-app-server.toml | grep mxp_server_development=| sed 's/^mxp_server_development=//g')
 DEMO_USER=$(shell cat lora-app-server.toml | grep demo_user=| sed 's/^demo_user=//g')
+DEMO_USER_PASSWORD=$(shell cat lora-app-server.toml | grep demo_user_password=| sed 's/^demo_user_password=//g')
 
 build: ui/build internal/statics internal/migrations
 	mkdir -p build
@@ -41,8 +42,8 @@ snapshot: ui/build internal/statics internal/migrations
 
 ui/build:
 	@echo "Building ui"
-	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER)\nREACT_APP_DEMO_USER=$(DEMO_USER)'  >> .env.production 
-	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER_DEV)\nREACT_APP_DEMO_USER=$(DEMO_USER)' >> .env.development 
+	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER)\nREACT_APP_DEMO_USER=$(DEMO_USER)\nREACT_APP_DEMO_USER_PASSWORD=$(DEMO_USER_PASSWORD)'  >> .env.production 
+	@cd ui && printf 'REACT_APP_M2M_SERVER=$(M2M_SERVER_DEV)\nREACT_APP_DEMO_USER=$(DEMO_USER)\nREACT_APP_DEMO_USER_PASSWORD=$(DEMO_USER_PASSWORD)' >> .env.development 
 	@cd ui && npm run build
 	@mv ui/build/* static
 
