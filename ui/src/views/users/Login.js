@@ -90,7 +90,7 @@ class Login extends Component {
     super();
 
     this.state = {
-      registration: null
+      registration: null,
     };
 
     this.onSubmit = this.onSubmit.bind(this);
