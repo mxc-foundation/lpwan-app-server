@@ -85,8 +85,7 @@ class Login extends Component {
     super();
 
     this.state = {
-      registration: null,
-      login:{}
+      registration: null
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -119,7 +118,6 @@ class Login extends Component {
               <LoginForm
                 submitLabel="Login"
                 onSubmit={this.onSubmit}
-                login={this.state.login}
               />
             </CardContent>
             {this.state.registration && <CardContent>
