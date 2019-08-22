@@ -30,10 +30,19 @@ const styles = {
     paddingTop: 115,
   }
 };
+const isDemo = window.location.origin.includes('demo.')
+                  |window.location.origin.includes('localhost')
+                    ?true
+                    :false; 
+let demoUsername = "";
+let demoPassword = "";
+let helptext = "";
 
-const demoUsername = process.env.REACT_APP_DEMO_USER;
-const demoPassword = "thefutureismxc";
-const helptext = "If you click the login button without any input. You can login as a demo user.";
+if(isDemo){
+  demoUsername = process.env.REACT_APP_DEMO_USER;
+  demoPassword = "thefutureismxc";
+  helptext = "If you click the login button without any input. You can login as a demo user.";
+}                    
 
 class LoginForm extends FormComponent {
   render() {
@@ -60,7 +69,7 @@ class LoginForm extends FormComponent {
           autoComplete='off'
           onChange={this.onChange}
           InputLabelProps={{
-            shrink: true,
+            shrink: isDemo,
           }}
           fullWidth
         />
@@ -73,7 +82,7 @@ class LoginForm extends FormComponent {
           placeholder={demoPassword}
           helperText={helptext}
           InputLabelProps={{
-            shrink: true,
+            shrink: isDemo,
           }}
           onChange={this.onChange}
           fullWidth
@@ -109,10 +118,7 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    const isDemo = window.location.origin.includes('demo.')
-                  |window.location.origin.includes('localhost')
-                    ?true
-                    :false; 
+    
                     
     if(isDemo){
       if(!login.username){
