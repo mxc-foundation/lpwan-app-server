@@ -109,11 +109,27 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    if(!login.username){
-      login.username = demoUsername;
-    }
-    if(!login.password){
-      login.password = demoPassword;
+    const isDemo = window.location.origin.includes('demo.')
+                  |window.location.origin.includes('localhost')
+                    ?true
+                    :false; 
+                    
+    if(isDemo){
+      if(!login.username){
+        login.username = demoUsername;
+      }
+      if(!login.password){
+        login.password = demoPassword;
+      }
+    }else{
+      if(!login.username){
+        alert("Pleas, fill out the name filed.");
+        return false;
+      }
+      if(!login.password){
+        alert("Pleas, fill out the password filed.");
+        return false;
+      }
     }
 
     SessionStore.login(login, () => {
