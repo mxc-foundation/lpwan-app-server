@@ -112,7 +112,6 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    console.log('login', login);
     SessionStore.login(login, () => {
       this.props.history.push("/");
     });
