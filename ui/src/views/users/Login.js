@@ -30,19 +30,8 @@ const styles = {
     paddingTop: 115,
   }
 };
-const isDemo = window.location.origin.includes('demo.')
-                  |window.location.origin.includes('localhost')
-                    ?true
-                    :false; 
-let demoUsername = "";
-let demoPassword = "";
-let helptext = "";
 
-if(isDemo){
-  demoUsername = process.env.REACT_APP_DEMO_USER;
-  demoPassword = "thefutureismxc";
-  helptext = "If you click the login button without any input. You can login as a demo user.";
-}                    
+
 
 class LoginForm extends FormComponent {
   render() {
@@ -53,7 +42,15 @@ class LoginForm extends FormComponent {
     const extraButtons = [
       <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
     ]
-    
+    let demoUsername = "";
+    let demoPassword = "";
+    let helpText = "";
+    if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
+      demoUsername = process.env.REACT_APP_DEMO_USER;
+      demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
+      helpText = "build@mxc.org is for demo user. You can access with this account right now.";
+    }
+
     return(
       <Form
         submitLabel={this.props.submitLabel}
@@ -64,29 +61,26 @@ class LoginForm extends FormComponent {
           id="username"
           label="Username"
           margin="normal"
-          value={this.state.object.username || ""}
-          placeholder={demoUsername}
+          value={this.state.object.username === undefined 
+                  ? this.state.object.username = demoUsername 
+                  : this.state.object.username }
           autoComplete='off'
           onChange={this.onChange}
-          InputLabelProps={{
-            shrink: isDemo,
-          }}
           fullWidth
+          required
         />
         <TextField
           id="password"
           label="Password"
           type="password"
           margin="normal"
-          value={this.state.object.password || "" }
-          placeholder={demoPassword}
-          helperText={helptext}
-          InputLabelProps={{
-            shrink: isDemo,
-          }}
+          value={this.state.object.password === undefined 
+                  ? this.state.object.password = demoPassword 
+                  : this.state.object.password }
+          helperText={helpText}
           onChange={this.onChange}
           fullWidth
-          //required
+          required
         />
       </Form>
     );
@@ -118,26 +112,7 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    
-                    
-    if(isDemo){
-      if(!login.username){
-        login.username = demoUsername;
-      }
-      if(!login.password){
-        login.password = demoPassword;
-      }
-    }else{
-      if(!login.username){
-        alert("Pleas, fill out the name filed.");
-        return false;
-      }
-      if(!login.password){
-        alert("Pleas, fill out the password filed.");
-        return false;
-      }
-    }
-
+    console.log('login', login);
     SessionStore.login(login, () => {
       this.props.history.push("/");
     });
