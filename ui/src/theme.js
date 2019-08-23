@@ -71,6 +71,11 @@ const theme = createMuiTheme({
         root: {
           color: white,
         },
+        underline: {
+          "&:before": {
+            borderBottom: '1px solid #F9FAFC',
+          }
+        }
       },
       MuiInputLabel: {
         root: {
