@@ -1,6 +1,5 @@
 # hidden files
 .*
-!.env.*
 
 # logs
 *.log
