@@ -32,6 +32,7 @@ const styles = {
 };
 
 
+
 class LoginForm extends FormComponent {
   render() {
     if (this.state.object === undefined) {
@@ -41,6 +42,14 @@ class LoginForm extends FormComponent {
     const extraButtons = [
       <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
     ]
+    let demoUsername = "";
+    let demoPassword = "";
+    let helpText = "";
+    if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
+      demoUsername = process.env.REACT_APP_DEMO_USER;
+      demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
+      helpText = "build@mxc.org is for demo user. You can access with this account right now.";
+    }
 
     return(
       <Form
@@ -52,7 +61,10 @@ class LoginForm extends FormComponent {
           id="username"
           label="Username"
           margin="normal"
-          value={this.state.object.username || ""}
+          value={this.state.object.username === undefined 
+                  ? this.state.object.username = demoUsername 
+                  : this.state.object.username }
+          autoComplete='off'
           onChange={this.onChange}
           fullWidth
           required
@@ -62,7 +74,10 @@ class LoginForm extends FormComponent {
           label="Password"
           type="password"
           margin="normal"
-          value={this.state.object.password || ""}
+          value={this.state.object.password === undefined 
+                  ? this.state.object.password = demoPassword 
+                  : this.state.object.password }
+          helperText={helpText}
           onChange={this.onChange}
           fullWidth
           required
