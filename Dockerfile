@@ -18,6 +18,6 @@ FROM alpine:latest AS production
 
 WORKDIR /root/
 RUN apk --no-cache add ca-certificates
+RUN mkdir /etc/lora-app-server
 COPY --from=development /lora-app-server/build/lora-app-server .
-COPY ./loraapp-server.toml_cp $PATH/lora-app-server/toml
 ENTRYPOINT ["./lora-app-server"]

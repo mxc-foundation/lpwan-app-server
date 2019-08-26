@@ -8,8 +8,8 @@ log_level=4
 # an attack takes more time to perform.
 password_hash_iterations=100000
 demo_user="build@mxc.org"
-demo_user_password="thefutureismxc"
 host_server="lora.demo.supernodes.mxc.org"
+demo_user_password="thefutureismxc"
 demo_host_server="demo.supernodes."
 # PostgreSQL settings.
 #
@@ -86,11 +86,6 @@ port="25"
 #password="3abASYMQ79ngB26"
 #host="mail.smtp2go.com"
 #port="587"
-
-# Mxprotocol-server settings
-[mxprotocol_server]
-mxp_server="https://m2m.demo.supernodes.mxc.org/"
-mxp_server_development="http://localhost:3000"
 
 # Application-server settings.
 [application_server]

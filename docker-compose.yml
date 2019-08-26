@@ -3,11 +3,11 @@ services:
   appserver:
     build: 
       context: .
-      dockerfile: Dockerfile-devel
+      dockerfile: Dockerfile
     volumes:
-      - ./:/lora-app-server
+      - ./configuration:/etc/lora-app-server
     links:
-      - postgres
+      - postgresql
       - redis
       - mosquitto
     environment:
@@ -19,7 +19,7 @@ services:
       - 8080:8080
     tty: true
 
-  postgres:
+  postgresql:
     image: postgres:9.6-alpine
     volumes:
       - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
