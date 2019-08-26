@@ -62,13 +62,18 @@ const theme = createMuiTheme({
           color: white
         },
       },
+      MuiListItem: {
+        root: {
+          padding: '5px 0',
+        }
+      },
       MuiInput: {
         root: {
           color: white,
         },
         underline: {
           "&:before": {
-            borderBottom: `1px solid #F9FAFC`
+            borderBottom: '1px solid #F9FAFC',
           }
         }
       },
@@ -100,11 +105,11 @@ const theme = createMuiTheme({
       },
       MuiDivider: {
         root: {
-          backgroundColor: '#FFFFFF50',
-          margin: 15,
+          backgroundColor: '#00000040',
+          margin: '5px 10px',
         },
         light: {
-          backgroundColor: '#FFFFFF50',
+          backgroundColor: '#FFFFFF40',
         }
       },
       MuiTableCell: {
@@ -208,7 +213,7 @@ const theme = createMuiTheme({
       },
       MuiSvgIcon: {
         root: {
-          fill: white,
+          fill: '#F9FAFC80',
         },
       },
       MuiDialog: {
