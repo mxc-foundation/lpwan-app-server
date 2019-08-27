@@ -48,7 +48,7 @@ class LoginForm extends FormComponent {
     if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
       demoUsername = process.env.REACT_APP_DEMO_USER;
       demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
-      helpText = "build@mxc.org is for demo user. You can access with this account right now.";
+      helpText = "You can access with this account right now as a demo user.";
     }
 
     return(
