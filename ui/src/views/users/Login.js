@@ -102,6 +102,7 @@ class Login extends Component {
   componentDidMount() {
     SessionStore.logout(() => {});
 
+    document.querySelector('body').classList.add('login');
     SessionStore.getBranding(resp => {
       if (resp.registration !== "") {
         this.setState({
@@ -113,6 +114,7 @@ class Login extends Component {
 
   onSubmit(login) {
     SessionStore.login(login, () => {
+      document.querySelector('body').classList.remove('login');
       this.props.history.push("/");
     });
   }
