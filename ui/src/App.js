@@ -94,6 +94,7 @@ const styles = {
     minHeight: "100vh",
     flexDirection: "column",
     backgroundColor: "#070033",
+    // backgroundImage: 'url("/img/world-map.png")',
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
