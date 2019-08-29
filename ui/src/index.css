@@ -17,10 +17,6 @@ body {
   /* animation: animationName 2s infinite; */
 }
 
-body.login [class^=App-root-] {
-  background-image: url("/img/world-map.png");
-}
-
 .default-text {
   color: white !important;
   font-family: 'Montserrat' !important;

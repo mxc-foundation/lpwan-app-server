@@ -15,7 +15,6 @@ import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
 
-
 const styles = {
   textField: {
     width: "100%",
@@ -27,7 +26,15 @@ const styles = {
     },
   },
   padding: {
-    paddingTop: 115,
+    paddingTop: 230,
+  },
+  padd: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    top: 0,
+    left: 0,
+    backgroundImage: 'url("/img/world-map.png")',
   }
 };
 
@@ -102,7 +109,6 @@ class Login extends Component {
   componentDidMount() {
     SessionStore.logout(() => {});
 
-    document.querySelector('body').classList.add('login');
     SessionStore.getBranding(resp => {
       if (resp.registration !== "") {
         this.setState({
@@ -114,13 +120,13 @@ class Login extends Component {
 
   onSubmit(login) {
     SessionStore.login(login, () => {
-      document.querySelector('body').classList.remove('login');
       this.props.history.push("/");
     });
   }
 
   render() {
     return(
+      <div className={this.props.classes.padd}>
       <Grid container justify="center" className={this.props.classes.padding}>
         <Grid item xs={6} lg={4}>
           <Card>
@@ -136,6 +142,7 @@ class Login extends Component {
           </Card>
         </Grid>
       </Grid>
+      </div>
     );
   }
 }

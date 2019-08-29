@@ -36,3 +36,6 @@
 
 # node modules
 node_modules
+
+#docker-compose
+/*.yml
