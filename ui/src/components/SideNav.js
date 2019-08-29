@@ -47,6 +47,10 @@ const styles = {
     paddingRight: theme.spacing.unit * 3,
     paddingBottom: theme.spacing.unit * 1,
   },
+  selected: {
+    //fontSize: 'larger', 
+    color: theme.palette.primary.white,
+  },
 /*   card: {
     width: '100%',
     height: 200,
@@ -209,7 +213,18 @@ class SideNav extends Component {
     if (this.state.organization) {
       organizationID = this.state.organization.id;
     }
-   
+    const { pathname } = this.props.location;
+    const pathLastName = pathname.split('/').pop();
+    
+    const active = (sideNavName) => Boolean(pathLastName.match(sideNavName));
+    const selected = (sideNavName) => {
+      if(Boolean(pathLastName.match(sideNavName))){
+        return { primary: this.props.classes.selected };
+      }else{
+        return {};
+      }
+    }
+
     return(
       <Drawer
         variant="persistent"
@@ -219,30 +234,30 @@ class SideNav extends Component {
       >
         <Admin>
           <List>
-            <ListItem button component={Link} to="/network-servers">
+            <ListItem selected={active('/network-servers')} button component={Link} to="/network-servers">
               <ListItemIcon>
                 <Server />
               </ListItemIcon>
-              <ListItemText primary="Network-servers" />
+              <ListItemText classes={selected('/network-servers')} primary="Network-servers" />
             </ListItem>
-            <ListItem button component={Link} to="/gateway-profiles">
+            <ListItem selected={active('/gateway-profiles')} button component={Link} to="/gateway-profiles">
               <ListItemIcon>
                 <RadioTower />
               </ListItemIcon>
-              <ListItemText primary="Gateway-profiles" />
+              <ListItemText classes={selected('/gateway-profiles')} primary="Gateway-profiles" />
             </ListItem>
             <Divider />
-            <ListItem button component={Link} to="/organizations">
+            <ListItem selected={active('/organizations')} button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
               </ListItemIcon>
-              <ListItemText primary="Organizations" />
+              <ListItemText classes={selected('/organizations')} primary="Organizations" />
             </ListItem>
-            <ListItem button component={Link} to="/users">
+            <ListItem selected={active('/users')} button component={Link} to="/users">
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="All users" />
+              <ListItemText classes={selected('/users')} primary="All users" />
             </ListItem>
           </List>
         </Admin>
@@ -263,50 +278,50 @@ class SideNav extends Component {
         {this.state.organization && <>
         <List className={this.props.classes.static}>
            <Admin>
-            <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
+            <ListItem selected={active(`edit`)} button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              <ListItemText primary="Org. settings" />
+              <ListItemText classes={selected(`edit`)} primary="Org. settings" />
             </ListItem>
           </Admin>
           <Admin organizationID={this.state.organization.id}>
-            <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
+            <ListItem selected={active(`users`)} button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="Org. users" />
+              <ListItemText classes={selected(`users`)} primary="Org. users" />
             </ListItem>
           </Admin>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
+          <ListItem selected={active(`service-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
             </ListItemIcon>
-            <ListItemText primary="Service-profiles" />
+            <ListItemText classes={selected(`service-profiles`)} primary="Service-profiles" />
           </ListItem>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
+          <ListItem selected={active(`device-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
             <ListItemIcon>
               <Tune />
             </ListItemIcon>
-            <ListItemText primary="Device-profiles" />
+            <ListItemText classes={selected(`device-profiles`)} primary="Device-profiles" />
           </ListItem>
-          {this.state.organization.canHaveGateways && <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
+          {this.state.organization.canHaveGateways && <ListItem selected={active(`gateways`)} button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
             <ListItemIcon>
               <RadioTower />
             </ListItemIcon>
-            <ListItemText primary="Gateways" />
+            <ListItemText classes={selected(`gateways`)} primary="Gateways" />
           </ListItem>}
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
+          <ListItem selected={active(`applications`)} button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
             <ListItemIcon>
               <Apps />
             </ListItemIcon>
-            <ListItemText primary="Applications" />
+            <ListItemText classes={selected(`applications`)} primary="Applications" />
           </ListItem>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
+          <ListItem selected={active(`multicast-groups`)} button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
             <ListItemIcon>
               <Rss />
             </ListItemIcon>
-            <ListItemText primary="Multicast-groups" />
+            <ListItemText classes={selected(`multicast-groups`)} primary="Multicast-groups" />
           </ListItem>
         </List>
         <Divider />
