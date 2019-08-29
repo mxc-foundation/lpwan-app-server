@@ -84,6 +84,8 @@ import Search from "./views/search/Search";
 import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentForDevice";
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
+//Temp banner
+import TopBanner from "./components/TopBanner";
 
 const drawerWidth = 270;
 
@@ -167,9 +169,11 @@ class App extends Component {
   render() {
     let topNav = null;
     let sideNav = null;
+    let topbanner = null;
     
     if (this.state.user !== null) {
       topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
+      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
       sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
     }
     
@@ -180,6 +184,7 @@ class App extends Component {
           <MuiThemeProvider theme={theme}>
             <div className={this.props.classes.root}>
               {topNav}
+              {topbanner}
               {sideNav}
               <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={24}>
