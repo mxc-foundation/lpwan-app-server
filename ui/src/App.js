@@ -185,7 +185,7 @@ class App extends Component {
                 <Grid container spacing={24}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />
-                    <Route exact path="/login" component={Login} style={this.props.classes.roo}/>
+                    <Route exact path="/login" component={Login} />
                     <Route exact path="/users" component={ListUsers} />
                     <Route exact path="/users/create" component={CreateUser} />
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />

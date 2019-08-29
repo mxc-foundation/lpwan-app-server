@@ -1,6 +1,5 @@
 {
   "name": "lora-app-server-ui",
-  "homepage": "http://localhost:8080/#/login",
   "version": "3.0.0",
   "private": true,
   "dependencies": {
