@@ -332,7 +332,12 @@ class SideNav extends Component {
                   </ListItemIcon>
                   <ListItemText primary="M2M Wallet" />
                 </ListItem>
-
+                <ListItem>
+                  <ListItemText primary="Powered by" />
+                  <ListItemIcon>
+                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
+                  </ListItemIcon>
+                </ListItem>
               </List>
 
         </>}

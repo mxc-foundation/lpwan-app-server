@@ -2,6 +2,9 @@ import { createMuiTheme } from "@material-ui/core/styles";
 
 const blueHighLight = '#4D89E5';
 const blueHighLight20 = '#4D89E520';
+//"#206CDF"
+const tealHighLight = '#00FFD9';
+const tealHighLight20 = '#00FFD920';
 const blueMxcBrand = '#09006E';
 const blueBG = '#090046';
 const overlayBG = '#0C027060';
@@ -10,7 +13,7 @@ const linkTextColor = '#216CDF';
 
 const theme = createMuiTheme({
     palette: {
-      primary: { main: blueHighLight, secondary: blueHighLight20 }, 
+      primary: { main: tealHighLight, secondary: tealHighLight20 }, 
       secondary: { main: blueMxcBrand, secondary: overlayBG }, 
       darkBG: { main: blueBG }, 
       textPrimary: { main: white }, 
@@ -134,7 +137,7 @@ const theme = createMuiTheme({
       },
       MuiButton: { 
         root: {
-          background: blueHighLight,
+          background: tealHighLight,
           color: blueMxcBrand,
           width: 160,
           height: 50,
@@ -142,26 +145,26 @@ const theme = createMuiTheme({
           marginRight: 5,
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
           "&:hover": {
-            backgroundColor: "#206CDF",
+            backgroundColor: "#00CCAE",
             fontSize: '1rem'
           },
         },
         outlined: {
           backgroundColor: 'transparent',
-          color: blueHighLight,
+          color: tealHighLight,
           //padding: 30,
           fontWeight: 900,
           lineHeight: 1.5,
           borderWidth: 2,
-          borderColor: blueHighLight,
+          borderColor: tealHighLight,
           "&:hover": {
-            backgroundColor: blueHighLight20,
-            borderColor: "#206CDF",
-            color: "#206CDF",
+            backgroundColor: tealHighLight20,
+            borderColor: "#00CCAE",
+            color: "#00CCAE",
           },
         },
         /*         link: {
-          color: blueHighLight,
+          color: tealHighLight,
           //padding: 30,
           fontWeight: 900,
           lineHeight: 1.5,
