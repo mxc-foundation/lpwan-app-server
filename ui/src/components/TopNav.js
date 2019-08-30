@@ -184,7 +184,7 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
-          <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
+          <a href="https://www.mxc.org/support" target="mxc-support">
             <IconButton className={this.props.classes.iconButton}>
               <HelpCircle />
             </IconButton>
