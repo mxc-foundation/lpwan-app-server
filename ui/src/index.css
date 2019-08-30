@@ -43,3 +43,8 @@ body {
 .fix-padding {
   margin-left: -125px;
 }
+
+.iconStyle {
+  max-height: 20px;
+  background-size: contain;
+}

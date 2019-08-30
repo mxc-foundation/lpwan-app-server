@@ -12,7 +12,6 @@ import TitleBarButton from "../../components/TitleBarButton";
 import UserStore from "../../stores/UserStore";
 import UpdateUser from "./UpdateUser";
 
-
 class UserLayout extends Component {
   constructor() {
     super();
@@ -45,6 +44,7 @@ class UserLayout extends Component {
     const isDisabled = (this.state.user.user.username === process.env.REACT_APP_DEMO_USER)
                         ?true
                         :false; 
+                        
     return(
       <Grid container spacing={24}>
         <TitleBar

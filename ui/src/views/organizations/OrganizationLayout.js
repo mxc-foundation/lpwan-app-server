@@ -66,7 +66,7 @@ class OrganizationLayout extends Component {
             />,
           ]}
         >
-          <TitleBarTitle to="/organizations" title="Organizations" />
+          <TitleBarTitle title="Organizations" />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.organization.name} />
         </TitleBar>

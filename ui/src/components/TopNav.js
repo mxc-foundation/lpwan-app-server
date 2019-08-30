@@ -21,6 +21,12 @@ import AccountCircle from "mdi-material-ui/AccountCircle";
 import Magnify from "mdi-material-ui/Magnify";
 import HelpCircle from "mdi-material-ui/HelpCircle";
 
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Wallet from "mdi-material-ui/WalletOutline";
+
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
 
@@ -70,6 +76,9 @@ const styles = {
     "&:visited": {
       background: theme.palette.primary.main,
     },
+  },
+  iconStyle: {
+    color: theme.palette.primary.main,
   },
   iconButton: {
     color: theme.palette.common.white,
@@ -146,6 +155,10 @@ class TopNav extends Component {
                     }
                   />
     }
+    const balance = 6631;
+    const balanceEl = balance === null ? 
+      <span className="color-gray">(no org selected)</span> : 
+      balance + " MXC";
 
     const open = Boolean(this.state.menuAnchor);
     const isDisabled = (this.props.user.username === process.env.REACT_APP_DEMO_USER)
@@ -170,6 +183,15 @@ class TopNav extends Component {
           <form onSubmit={this.onSearchSubmit}>
             { searchbar }
           </form>
+
+          <List>
+            <ListItem>
+              <ListItemIcon >
+                <Wallet color="primary" className={this.props.classes.iconStyle} />
+              </ListItemIcon>
+              <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }}/>
+            </ListItem>
+          </List>
 
           <Chip
             avatar={
