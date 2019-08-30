@@ -226,6 +226,7 @@ class AutocompleteSelect extends Component {
           placeholder={this.props.label}
           id={this.props.id}
           onChange={this.onChange}
+          disableUnderline
           inputProps={{...{
             instanceId: this.props.id,
             clearable: false,
