@@ -76,9 +76,12 @@ const theme = createMuiTheme({
         },
         underline: {
           "&:before": {
-            borderBottom: '1px solid #F9FAFC',
+            borderBottom: `1px solid #F9FAFC`
+          },
+          "&:hover": {
+            borderBottom: `1px solid #00FFD9`
           }
-        }
+        },
       },
       MuiInputLabel: {
         root: {
