@@ -5,12 +5,19 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Chip from '@material-ui/core/Chip';
 import FormControl from "@material-ui/core/FormControl";
 
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
+
 import MenuDown from "mdi-material-ui/MenuDown";
 import Cancel from "mdi-material-ui/Cancel";
 import MenuUp from "mdi-material-ui/MenuUp";
 import Close from "mdi-material-ui/Close";
 import AsyncSelect from 'react-select/async';
-
+const inputStyles = {
+  marginB: {
+    marginBottom: 24,
+  },
+} 
 const customStyles = {
   control: (base, state) => ({
     ...base,
@@ -31,14 +38,14 @@ const customStyles = {
     // override border radius to match the box
     borderRadius: 0,
     // kill the gap
-    marginTop: 0
+    marginTop: 28
   }),
   menuList: base => ({
     ...base,
     background:'#1a2d6e',
     // kill the white space on first and last option
     padding: 0
-  })
+  }),
 };
 // taken from react-select example
 // https://material-ui.com/demos/autocomplete/
@@ -68,13 +75,7 @@ class Option extends Component {
 }
 
 function SelectWrapped(props) {
-  const { classes, inputRef, ...other } = props;
-
-  // implement `InputElement` interface.
-  React.useImperativeHandle(inputRef, () => ({
-    focus: () => {
-    },
-  }));
+  const { classes, ...other } = props;
 
   const components = {
     option: Option,
@@ -228,6 +229,7 @@ class AutocompleteSelect extends Component {
         className={this.props.className}>
         <Input
           fullWidth
+          className={this.props.classes.marginB}
           inputComponent={SelectWrapped}
           placeholder={this.props.label}
           id={this.props.id}
@@ -246,4 +248,4 @@ class AutocompleteSelect extends Component {
   }
 }
 
-export default AutocompleteSelect;
+export default withStyles(inputStyles)(withRouter(AutocompleteSelect));

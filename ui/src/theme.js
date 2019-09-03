@@ -129,7 +129,7 @@ const theme = createMuiTheme({
       },
       MuiPaper: {
         root: {
-          backgroundColor: overlayBG,
+          backgroundColor: blueBG,
           padding: 10,
         }
       },
@@ -231,12 +231,19 @@ const theme = createMuiTheme({
       },
       MuiMenu: {
         paper: {
+          color: white,
           backgroundColor: blueBG,
           marginTop: '50px',
+        }
+      },
+      MuiMenuItem: {
+        root: {
+          "&:hover": {
+            backgroundColor: "#1a2d6e",
+          },
         }
       }
     },
 });
   
 export default theme;
-
