@@ -68,7 +68,13 @@ class Option extends Component {
 }
 
 function SelectWrapped(props) {
-  const { classes, ...other } = props;
+  const { classes, inputRef, ...other } = props;
+
+  // implement `InputElement` interface.
+  React.useImperativeHandle(inputRef, () => ({
+    focus: () => {
+    },
+  }));
 
   const components = {
     option: Option,

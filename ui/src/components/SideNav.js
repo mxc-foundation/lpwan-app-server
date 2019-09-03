@@ -42,10 +42,10 @@ const styles = {
     boxShadow: '1px 1px 5px 0px rgba(29, 30, 33, 0.5)',
   },
   select: {
-    paddingTop: theme.spacing.unit,
-    paddingLeft: theme.spacing.unit * 3,
-    paddingRight: theme.spacing.unit * 3,
-    paddingBottom: theme.spacing.unit * 1,
+    paddingTop: theme.spacing(1),
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    paddingBottom: theme.spacing(1),
   },
   selected: {
     //fontSize: 'larger', 
@@ -112,6 +112,10 @@ class SideNav extends Component {
           organization: org,
         });
       }
+
+      this.setState({
+        cacheCounter: this.state.cacheCounter + 1,
+      });
     });
 
     OrganizationStore.on("delete", id => {

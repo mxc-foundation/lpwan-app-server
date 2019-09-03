@@ -66,7 +66,7 @@ const styles = {
   chip: {
     background: theme.palette.secondary.main,
     color: theme.palette.common.white,
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     "&:hover": {
       background: theme.palette.primary.secondary,
     },
@@ -82,7 +82,7 @@ const styles = {
   },
   iconButton: {
     color: theme.palette.common.white,
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
 };
 

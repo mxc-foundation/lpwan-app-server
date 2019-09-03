@@ -227,7 +227,7 @@ class CreateOrganizationUser extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar>
           <TitleBarTitle title="Organization users" to={`/organizations/${this.props.match.params.organizationID}/users`} />
           <TitleBarTitle title="/" />
@@ -235,7 +235,7 @@ class CreateOrganizationUser extends Component {
         </TitleBar>
 
         <Grid item xs={12}>
-          <Tabs value={this.state.tab} onChange={this.onChangeTab} indicatorColor="primary" fullWidth className={this.props.classes.tabs}>
+          <Tabs value={this.state.tab} onChange={this.onChangeTab} indicatorColor="primary" className={this.props.classes.tabs}>
             {this.state.assignUser && <Tab label="Assign existing user" />}
             <Tab label="Create and assign user" />
           </Tabs>
