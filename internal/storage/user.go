@@ -141,9 +141,6 @@ func ValidateEmail(email string) error {
 
 // CreateUser creates the given user.
 func CreateUser(db sqlx.Queryer, user *User, password string) (int64, error) {
-	/* if err := ValidateUsername(user.Username); err != nil {
-		return 0, errors.Wrap(err, "validation error")
-	} */
 
 	if err := ValidatePassword(password); err != nil {
 		return 0, errors.Wrap(err, "validation error")
