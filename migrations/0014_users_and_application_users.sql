@@ -44,7 +44,23 @@ insert into "user" (
 	0,
 	true,
 	true
-);
+),(
+    now(),
+    now(),
+    'organizationUser',
+    'PBKDF2$sha512$100000$uOauzGT/QzjH3fQYCR6xNg==$KO0kaSTmY/2Mhee6tAo9SN/RXkXb++PeZJLZWr2czpDN37AkekXVWPFDkVC5souRMFJNRm0gdRzuonjYFhs1Sg==',
+    0,
+    true,
+    false
+),(
+     now(),
+     now(),
+     'organizationAdmin',
+     'PBKDF2$sha512$100000$TAXvNESDHX622shLiC9eUQ==$zeEKWK1WB+oM7iIp11hJCLCQe53Gf07879oZTXvqzCKJ4SIIET8uvoKTuZSHIIV0Ppxp+lorFDaWX7pP1/baAA==',
+     0,
+     true,
+     false
+ );
 
 
 -- +migrate Down

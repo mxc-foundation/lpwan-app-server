@@ -7,6 +7,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
 
 import Divider from '@material-ui/core/Divider';
 import Domain from "mdi-material-ui/Domain";
@@ -17,6 +18,8 @@ import RadioTower from "mdi-material-ui/RadioTower";
 import Tune from "mdi-material-ui/Tune";
 import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
+import Wallet from "mdi-material-ui/WalletOutline";
+
 import AccountDetails from "mdi-material-ui/AccountDetails";
 
 import AutocompleteSelect from "./AutocompleteSelect";
@@ -31,13 +34,43 @@ const styles = {
   drawerPaper: {
     position: "fixed",
     width: 270,
-    paddingTop: theme.spacing(9),
+    paddingTop: theme.spacing.unit * 10,
+    paddingRight: 0,
+    paddingLeft: 0,
+    backgroundColor: theme.palette.secondary.secondary,
+    color: theme.palette.secondary.secondary,
+    boxShadow: '1px 1px 5px 0px rgba(29, 30, 33, 0.5)',
   },
   select: {
     paddingTop: theme.spacing(1),
     paddingLeft: theme.spacing(3),
     paddingRight: theme.spacing(3),
     paddingBottom: theme.spacing(1),
+  },
+  selected: {
+    //fontSize: 'larger', 
+    color: theme.palette.primary.white,
+  },
+/*   card: {
+    width: '100%',
+    height: 200,
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: '#09006E',
+    color: '#FFFFFF',
+    marginTop: -20,
+  }, */
+  static: {
+    position: 'static'
+  },
+  iconStyle: {
+    color: theme.palette.common.white,
+  },
+  divider: {
+    padding: 10,
+  },
+  autocompleteSelect: {
+    color: theme.palette.secondary.main,
   },
 };
 
@@ -88,7 +121,7 @@ class SideNav extends Component {
     OrganizationStore.on("delete", id => {
       if (this.state.organization !== null && this.state.organization.id === id) {
         this.setState({
-          organization: null,
+          organization: null
         });
       }
 
@@ -131,21 +164,69 @@ class SideNav extends Component {
 
   getOrganizationOption(id, callbackFunc) {
     OrganizationStore.get(id, resp => {
-      callbackFunc({label: resp.organization.name, value: resp.organization.id});
+      callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
     });
   }
 
   getOrganizationOptions(search, callbackFunc) {
     OrganizationStore.list(search, 10, 0, resp => {
-      const options = resp.result.map((o, i) => {return {label: o.name, value: o.id}});
+      const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
       callbackFunc(options);
     });
   }
 
+  handleOpenM2M = () => {
+    let org_id = this.state.organization.id;
+    let org_name = '';
+    if(!org_id){
+      return false;
+    }
+    const user = SessionStore.getUser();  
+    const org = SessionStore.getOrganizations(); 
+    
+    if(user.isAdmin){
+      org_id = '0';
+      org_name = 'Super_admin';
+    }else{
+      if(org.length > 0){
+        org_name = org[0].organizationName;
+      }else{
+        org_name = '';
+      }
+    }
+    
+    const data = {
+      jwt: window.localStorage.getItem("jwt"),
+      path: `/withdraw/${org_id}`,
+      org_id,
+      org_name,
+      username: user.username,
+      loraHostUrl: window.location.origin
+    };
+    
+    const dataString = encodeURIComponent(JSON.stringify(data));
+    /* console.log('M2M_DEV_SERVER', process.env.M2M_DEV_SERVER);
+    console.log('M2M_DEV_SERVER', process.env);
+    return false; */
+    // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
+    window.location.replace(process.env.REACT_APP_M2M_SERVER + `/#/j/${dataString}`);
+  }
+
   render() {
     let organizationID = "";
-    if (this.state.organization !== null) {
+    if (this.state.organization) {
       organizationID = this.state.organization.id;
+    }
+    const { pathname } = this.props.location;
+    const pathLastName = pathname.split('/').pop();
+    
+    const active = (sideNavName) => Boolean(pathLastName.match(sideNavName));
+    const selected = (sideNavName) => {
+      if(Boolean(pathLastName.match(sideNavName))){
+        return { primary: this.props.classes.selected };
+      }else{
+        return {};
+      }
     }
 
     return(
@@ -157,34 +238,33 @@ class SideNav extends Component {
       >
         <Admin>
           <List>
-            <ListItem button component={Link} to="/network-servers">
+            <ListItem selected={active('/network-servers')} button component={Link} to="/network-servers">
               <ListItemIcon>
                 <Server />
               </ListItemIcon>
-              <ListItemText primary="Network-servers" />
+              <ListItemText classes={selected('/network-servers')} primary="Network-servers" />
             </ListItem>
-            <ListItem button component={Link} to="/gateway-profiles">
+            <ListItem selected={active('/gateway-profiles')} button component={Link} to="/gateway-profiles">
               <ListItemIcon>
                 <RadioTower />
               </ListItemIcon>
-              <ListItemText primary="Gateway-profiles" />
+              <ListItemText classes={selected('/gateway-profiles')} primary="Gateway-profiles" />
             </ListItem>
-            <ListItem button component={Link} to="/organizations">
+            <Divider />
+            <ListItem selected={active('/organizations')} button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
               </ListItemIcon>
-              <ListItemText primary="Organizations" />
+              <ListItemText classes={selected('/organizations')} primary="Organizations" />
             </ListItem>
-            <ListItem button component={Link} to="/users">
+            <ListItem selected={active('/users')} button component={Link} to="/users">
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="All users" />
+              <ListItemText classes={selected('/users')} primary="All users" />
             </ListItem>
           </List>
-          <Divider />
         </Admin>
-
         <div>
           <AutocompleteSelect
             id="organizationID"
@@ -195,57 +275,76 @@ class SideNav extends Component {
             getOptions={this.getOrganizationOptions}
             className={this.props.classes.select}
             triggerReload={this.state.cacheCounter}
+            placeHolder="Change Organization"
           />
         </div>
-
-        {this.state.organization && <List>
-          <Admin>
-            <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
+        <Divider />
+        {this.state.organization && <>
+        <List className={this.props.classes.static}>
+           <Admin>
+            <ListItem selected={active(`edit`)} button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              <ListItemText primary="Org. settings" />
+              <ListItemText classes={selected(`edit`)} primary="Org. settings" />
             </ListItem>
           </Admin>
           <Admin organizationID={this.state.organization.id}>
-            <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
+            <ListItem selected={active(`users`)} button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="Org. users" />
+              <ListItemText classes={selected(`users`)} primary="Org. users" />
             </ListItem>
           </Admin>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
+          <ListItem selected={active(`service-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
             </ListItemIcon>
-            <ListItemText primary="Service-profiles" />
+            <ListItemText classes={selected(`service-profiles`)} primary="Service-profiles" />
           </ListItem>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
+          <ListItem selected={active(`device-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
             <ListItemIcon>
               <Tune />
             </ListItemIcon>
-            <ListItemText primary="Device-profiles" />
+            <ListItemText classes={selected(`device-profiles`)} primary="Device-profiles" />
           </ListItem>
-          {this.state.organization.canHaveGateways && <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
+          {this.state.organization.canHaveGateways && <ListItem selected={active(`gateways`)} button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
             <ListItemIcon>
               <RadioTower />
             </ListItemIcon>
-            <ListItemText primary="Gateways" />
+            <ListItemText classes={selected(`gateways`)} primary="Gateways" />
           </ListItem>}
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
+          <ListItem selected={active(`applications`)} button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
             <ListItemIcon>
               <Apps />
             </ListItemIcon>
-            <ListItemText primary="Applications" />
+            <ListItemText classes={selected(`applications`)} primary="Applications" />
           </ListItem>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
+          <ListItem selected={active(`multicast-groups`)} button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
             <ListItemIcon>
               <Rss />
             </ListItemIcon>
-            <ListItemText primary="Multicast-groups" />
+            <ListItemText classes={selected(`multicast-groups`)} primary="Multicast-groups" />
           </ListItem>
-        </List>}
+        </List>
+        <Divider />
+              <List className={this.props.classes.static}>
+                <ListItem button onClick={this.handleOpenM2M} >
+                  <ListItemIcon>
+                    <Wallet />
+                  </ListItemIcon>
+                  <ListItemText primary="M2M Wallet" />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary="Powered by" />
+                  <ListItemIcon>
+                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
+                  </ListItemIcon>
+                </ListItem>
+              </List>
+
+        </>}
       </Drawer>
     );
   }

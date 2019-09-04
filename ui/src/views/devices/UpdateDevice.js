@@ -36,7 +36,7 @@ class UpdateDevice extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <DeviceForm
-                submitLabel="Update device"
+                submitLabel="Update"
                 object={this.props.device}
                 onSubmit={this.onSubmit}
                 match={this.props.match}

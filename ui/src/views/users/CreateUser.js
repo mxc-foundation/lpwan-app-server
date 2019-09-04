@@ -36,7 +36,7 @@ class CreateUser extends Component {
           <Card>
             <CardContent>
               <UserForm
-                submitLabel="Create user"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

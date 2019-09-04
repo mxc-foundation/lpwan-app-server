@@ -1,6 +1,8 @@
 package external
 
 import (
+	"errors"
+	"fmt"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -12,6 +14,10 @@ import (
 	"github.com/brocaar/lora-app-server/internal/api/external/auth"
 	"github.com/brocaar/lora-app-server/internal/api/helpers"
 	"github.com/brocaar/lora-app-server/internal/storage"
+
+	"github.com/brocaar/lora-app-server/internal/email"
+	"github.com/gofrs/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 // UserAPI exports the User related functions.
@@ -227,7 +233,16 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.UpdatePassword(storage.DB(), req.UserId, req.Password)
+	user, err := storage.GetUser(storage.DB(), req.UserId)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if user.Username == storage.DemoUser {
+		return nil, helpers.ErrToRPCError(errors.New(fmt.Sprintf("User %s can not change password.", storage.DemoUser)))
+	}
+
+	err = storage.UpdatePassword(storage.DB(), req.UserId, req.Password)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -387,4 +402,113 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 	}
 
 	return &out, nil
+}
+
+// RegisterUser adds new user and sends activation email
+func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
+	user := storage.User{
+		Username:   req.Email,
+		SessionTTL: 0,
+		IsAdmin:    false,
+		IsActive:   false,
+	}
+
+	u, err := uuid.NewV4()
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	token := u.String()
+
+	obj, err := storage.GetUserByUsername(storage.DB(), user.Username)
+	if err == storage.ErrDoesNotExist {
+		// user has never been created yet
+		err = storage.RegisterUser(storage.DB(), &user, token)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		// get user again
+		obj, err = storage.GetUserByUsername(storage.DB(), user.Username)
+		if err != nil {
+			// internal error
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+	} else if err != nil && err != storage.ErrDoesNotExist {
+		// internal error
+		return nil, helpers.ErrToRPCError(err)
+	} else if err == nil && obj.SecurityToken == nil {
+		// user exists and finished registration
+		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
+	}
+
+	err = email.SendInvite(obj.Username, *obj.SecurityToken)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"username": user.Username,
+		}).Info("Send email error!")
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	return &empty.Empty{}, nil
+}
+
+// ConfirmRegistration checks provided security token and activates user
+func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.ConfirmRegistrationRequest) (*pb.ConfirmRegistrationResponse, error) {
+	user, err := storage.GetUserByToken(storage.DB(), req.Token)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	log.Println("Confirming GetJwt", user.Username)
+	jwt, err := storage.MakeJWT(user.Username, user.SessionTTL)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	return &pb.ConfirmRegistrationResponse{
+		Id:       user.ID,
+		Username: user.Username,
+		IsAdmin:  user.IsAdmin,
+		IsActive: user.IsActive,
+		Jwt:      jwt,
+	}, nil
+}
+
+// FinishRegistration sets new user password and creates a new organization
+func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.FinishRegistrationRequest) (*empty.Empty, error) {
+	if err := a.validator.Validate(ctx, auth.ValidateUserAccess(req.UserId, auth.FinishRegistration)); err != nil {
+		log.Println("UpdatePassword", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	org := storage.Organization{
+		Name:            req.OrganizationName,
+		DisplayName:     req.OrganizationDisplayName,
+		CanHaveGateways: true,
+	}
+
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := storage.FinishRegistration(tx, req.UserId, req.Password)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+
+		err = storage.CreateOrganization(tx, &org)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+
+		err = storage.CreateOrganizationUser(tx, org.ID, req.UserId, true)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	return &empty.Empty{}, nil
 }

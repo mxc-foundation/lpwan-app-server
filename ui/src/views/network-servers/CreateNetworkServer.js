@@ -36,7 +36,7 @@ class CreateNetworkServer extends Component {
           <Card>
             <CardContent>
               <NetworkServerForm
-                submitLabel="Add network-server"
+                submitLabel="Add"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

@@ -16,6 +16,7 @@
 /internal/static/static_gen.go
 /internal/migrations/migrations_gen.go
 /static/logo
+/static/img
 /static/static
 /static/swagger/*.json
 /static/index.html
@@ -35,3 +36,6 @@
 
 # node modules
 node_modules
+
+#docker-compose
+/*.yml

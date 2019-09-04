@@ -36,7 +36,7 @@ class UpdateMulticastGroup extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <MulticastGroupForm
-                submitLabel="Update multicast-group"
+                submitLabel="Update"
                 object={this.props.multicastGroup}
                 onSubmit={this.onSubmit}
                 update={true}

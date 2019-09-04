@@ -27,7 +27,9 @@ class OrganizationUserForm extends FormComponent {
             value={this.state.object.username || ""}
             required
             fullWidth
-            disabled
+            InputProps={{
+              readOnly: true,
+            }}
           />
           <FormControlLabel
             label="Is organization admin"

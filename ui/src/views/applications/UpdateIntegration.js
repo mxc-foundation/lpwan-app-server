@@ -137,7 +137,7 @@ class UpdateIntegration extends Component {
           <Card>
             <CardContent>
               <IntegrationForm
-                submitLabel="Update integration"
+                submitLabel="Update"
                 object={this.state.integration}
                 onSubmit={this.onSubmit}
                 update={true}

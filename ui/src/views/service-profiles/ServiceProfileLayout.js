@@ -67,7 +67,6 @@ class ServiceProfileLayout extends Component {
                 key={1}
                 label="Delete"
                 icon={<Delete />}
-                color="secondary"
                 onClick={this.deleteServiceProfile}
               />
             </Admin>

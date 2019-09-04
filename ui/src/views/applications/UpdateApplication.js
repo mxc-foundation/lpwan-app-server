@@ -36,7 +36,7 @@ class UpdateApplication extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <ApplicationForm
-                submitLabel="Update application"
+                submitLabel="Update"
                 object={this.props.application}
                 onSubmit={this.onSubmit}
                 update={true}

@@ -121,7 +121,6 @@ class ApplicationLayout extends Component {
               <TitleBarButton
                 label="Delete"
                 icon={<Delete />}
-                color="secondary"
                 onClick={this.deleteApplication}
               />
             </Admin>

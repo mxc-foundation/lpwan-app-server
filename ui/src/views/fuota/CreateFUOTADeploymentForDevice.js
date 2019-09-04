@@ -74,7 +74,7 @@ class CreateFUOTADeploymentForDevice extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <FUOTADeploymentForm
-                submitLabel="Create FUOTA deployment"
+                submitLabel="Create"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

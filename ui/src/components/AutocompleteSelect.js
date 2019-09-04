@@ -1,131 +1,54 @@
 import React, { Component } from "react";
 
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
 import Input from '@material-ui/core/Input';
 import MenuItem from '@material-ui/core/MenuItem';
 import Chip from '@material-ui/core/Chip';
 import FormControl from "@material-ui/core/FormControl";
 
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
+
 import MenuDown from "mdi-material-ui/MenuDown";
 import Cancel from "mdi-material-ui/Cancel";
 import MenuUp from "mdi-material-ui/MenuUp";
 import Close from "mdi-material-ui/Close";
-import Select from 'react-select';
-import 'react-select/dist/react-select.css';
-
-
+import AsyncSelect from 'react-select/async';
+const inputStyles = {
+  marginB: {
+    marginBottom: 24,
+  },
+} 
+const customStyles = {
+  control: (base, state) => ({
+    ...base,
+    // match with the menu
+    borderRadius: state.isFocused ? "3px 3px 0 0" : 3,
+    // Overwrittes the different states of border
+    borderColor: state.isFocused ? "#00FFD9" : "white",
+    // Removes weird border around container
+    boxShadow: state.isFocused ? null : null,
+    "&:hover": {
+      // Overwrittes the different states of border
+      borderColor: state.isFocused ? "#00FFD9" : "white"
+    }
+  }),
+  menu: base => ({
+    ...base,
+    background:'#1a2d6e',
+    // override border radius to match the box
+    borderRadius: 0,
+    // kill the gap
+    marginTop: 28
+  }),
+  menuList: base => ({
+    ...base,
+    background:'#1a2d6e',
+    // kill the white space on first and last option
+    padding: 0
+  }),
+};
 // taken from react-select example
 // https://material-ui.com/demos/autocomplete/
-
-
-const ITEM_HEIGHT = 48;
-
-const styles = theme => ({
-  chip: {
-    margin: theme.spacing(1) / 4,
-  },
-  '@global': {
-    '.Select-control': {
-      display: 'flex',
-      alignItems: 'center',
-      border: 0,
-      height: 'auto',
-      background: 'transparent',
-      '&:hover': {
-        boxShadow: 'none',
-      },
-    },
-    '.Select-multi-value-wrapper': {
-      flexGrow: 1,
-      display: 'flex',
-      flexWrap: 'wrap',
-    },
-    '.Select--multi .Select-input': {
-      margin: 0,
-    },
-    '.Select.has-value.is-clearable.Select--single > .Select-control .Select-value': {
-      padding: 0,
-    },
-    '.Select-noresults': {
-      padding: theme.spacing(2),
-    },
-    '.Select-input': {
-      display: 'inline-flex !important',
-      padding: 0,
-      height: 'auto',
-    },
-    '.Select-input input': {
-      background: 'transparent',
-      border: 0,
-      padding: 0,
-      cursor: 'default',
-      display: 'inline-block',
-      fontFamily: 'inherit',
-      fontSize: 'inherit',
-      margin: 0,
-      outline: 0,
-    },
-    '.Select-placeholder, .Select--single .Select-value': {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      display: 'flex',
-      alignItems: 'center',
-      fontFamily: theme.typography.fontFamily,
-      fontSize: theme.typography.pxToRem(16),
-      padding: 0,
-    },
-    '.Select-value': {
-      color: "black !important",
-      paddingLeft: "0 !important",
-    },
-    '.Select-placeholder': {
-      opacity: 0.42,
-      color: theme.palette.common.black,
-    },
-    '.Select-menu-outer': {
-      backgroundColor: theme.palette.background.paper,
-      boxShadow: theme.shadows[2],
-      position: 'absolute',
-      left: 0,
-      top: `calc(100% + ${theme.spacing(1)}px)`,
-      width: '100%',
-      zIndex: 2,
-      maxHeight: ITEM_HEIGHT * 4.5,
-    },
-    '.Select.is-focused:not(.is-open) > .Select-control': {
-      boxShadow: 'none',
-    },
-    '.Select-menu': {
-      maxHeight: ITEM_HEIGHT * 4.5,
-      overflowY: 'auto',
-      zIndex: 99999,
-    },
-    '.Select-menu div': {
-      boxSizing: 'content-box',
-    },
-    '.Select-arrow-zone, .Select-clear-zone': {
-      color: theme.palette.action.active,
-      cursor: 'pointer',
-      height: 21,
-      width: 21,
-      zIndex: 1,
-    },
-    // Only for screen readers. We can't use display none.
-    '.Select-aria-only': {
-      position: 'absolute',
-      overflow: 'hidden',
-      clip: 'rect(0 0 0 0)',
-      height: 1,
-      width: 1,
-      margin: -1,
-    },
-  },
-});
-
 
 class Option extends Component {
   handleClick = event => {
@@ -152,45 +75,51 @@ class Option extends Component {
 }
 
 function SelectWrapped(props) {
-  const { classes, inputRef, ...other } = props;
+  const { classes, ...other } = props;
 
-  // implement `InputElement` interface.
-  React.useImperativeHandle(inputRef, () => ({
-    focus: () => {
-    },
-  }));
+  const components = {
+    option: Option,
+    value: (valueProps) => {
+      const { value, children, onRemove } = valueProps;
+      const onDelete = event => {
+        event.preventDefault();
+        event.stopPropagation();
+        onRemove(value);
+      };
+
+      if (onRemove) {
+        return (
+          <Chip
+            tabIndex={-1}
+            label={children}
+            className={classes.chip}
+            deleteIcon={<Cancel onTouchEnd={onDelete} />}
+            onDelete={onDelete}
+          />
+        );
+      }
+
+      return <div className="Select-value">{children}</div>;
+    }
+  };
 
   return (
-    <Select.Async
-      optionComponent={Option}
-      noResultsText={<Typography>{'No results found'}</Typography>}
+     <AsyncSelect
+      components={components}
+      styles={customStyles}
+      theme={(theme) => ({
+        ...theme,
+        borderRadius: 4,
+        colors: {
+          primary25: '#00FFD950',
+          primary: '#00FFD950',
+        },
+      })}
+      //noOptionsMessage={<Typography>{'No results found'}</Typography>}
       arrowRenderer={arrowProps => {
         return arrowProps.isOpen ? <MenuUp /> : <MenuDown />;
       }}
       clearRenderer={() => <Close />}
-      valueComponent={valueProps => {
-        const { value, children, onRemove } = valueProps;
-
-        const onDelete = event => {
-          event.preventDefault();
-          event.stopPropagation();
-          onRemove(value);
-        };
-
-        if (onRemove) {
-          return (
-            <Chip
-              tabIndex={-1}
-              label={children}
-              className={classes.chip}
-              deleteIcon={<Cancel onTouchEnd={onDelete} />}
-              onDelete={onDelete}
-            />
-          );
-        }
-
-        return <div className="Select-value">{children}</div>;
-      }}
       {...other}
     />
   );
@@ -225,6 +154,7 @@ class AutocompleteSelect extends Component {
 
   setInitialOptions(callbackFunc) {
     this.props.getOptions("", options => {
+      
       this.setState({
         options: options,
       }, callbackFunc);
@@ -261,15 +191,15 @@ class AutocompleteSelect extends Component {
     }
   }
 
-  onAutocomplete(input, callbackFunc) {
-    this.props.getOptions(input, options => {
-      this.setState({
-        options: options,
-      });
+  onAutocomplete(input) {
+    return new Promise((resolve, reject) => {
+      this.props.getOptions(input, options => {
+        
+        this.setState({
+          options: options,
+        });
 
-      callbackFunc(null, {
-        options: options,
-        complete: true,
+        resolve(options);
       });
     });
   }
@@ -295,17 +225,20 @@ class AutocompleteSelect extends Component {
   render() {
     const inputProps = this.props.inputProps || {};
     return(
-      <FormControl margin={this.props.margin || "none"}  fullWidth={true} className={this.props.className}>
+      <FormControl margin={this.props.margin || ""}  fullWidth={true} 
+        className={this.props.className}>
         <Input
           fullWidth
+          className={this.props.classes.marginB}
           inputComponent={SelectWrapped}
           placeholder={this.props.label}
           id={this.props.id}
           onChange={this.onChange}
+          disableUnderline
           inputProps={{...{
             instanceId: this.props.id,
             clearable: false,
-            options: this.state.options,
+            defaultOptions: this.state.options,
             loadOptions: this.onAutocomplete,
             value: this.state.selectedOption || "",
           }, ...inputProps}}
@@ -315,4 +248,4 @@ class AutocompleteSelect extends Component {
   }
 }
 
-export default withStyles(styles)(AutocompleteSelect);
+export default withStyles(inputStyles)(withRouter(AutocompleteSelect));

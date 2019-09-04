@@ -54,7 +54,7 @@ insert into organization_user (
 		1,
 		true
 	from "user" u
-	where u.username = 'admin'
+	where u.username = 'admin' or u.username = 'organizationAdmin' or u.username = 'organizationUser'
 );
 
 create table gateway (

@@ -45,6 +45,8 @@ class AssignUserForm extends FormComponent {
   constructor() {
     super();
 
+    // we need combo box
+    // this.getUserOption = this.getUserOption.bind(this);
     this.getUserOptions = this.getUserOptions.bind(this);
   }
 
@@ -62,7 +64,7 @@ class AssignUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Add user"
+        submitLabel="Add"
         onSubmit={this.onSubmit}
       >
         <FormControl margin="normal" fullWidth>
@@ -104,7 +106,7 @@ class CreateUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Create user"
+        submitLabel="Create"
         onSubmit={this.onSubmit}
       >
         <TextField

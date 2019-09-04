@@ -51,7 +51,6 @@ class NetworkServerLayout extends Component {
               key={1}
               icon={<Delete />}
               label="Delete"
-              color="secondary"
               onClick={this.deleteNetworkServer}
             />,
           ]}

@@ -37,6 +37,9 @@ import OrganizationRedirect from "./views/organizations/OrganizationRedirect";
 
 // user
 import Login from "./views/users/Login";
+import Registration from "./views/users/Registration";
+import RegistrationConfirm from "./views/users/RegistrationConfirm";
+
 import ListUsers from "./views/users/ListUsers";
 import CreateUser from "./views/users/CreateUser";
 import UserLayout from "./views/users/UserLayout";
@@ -81,6 +84,8 @@ import Search from "./views/search/Search";
 import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentForDevice";
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
+//Temp banner
+import TopBanner from "./components/TopBanner";
 
 const drawerWidth = 270;
 
@@ -90,8 +95,13 @@ const styles = {
     display: "flex",
     minHeight: "100vh",
     flexDirection: "column",
-    backgroundColor: "#090046",
-    background: "#311b92",
+    backgroundColor: "#070033",
+    // backgroundImage: 'url("/img/world-map.png")',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    //backgroundColor: '#cccccc',
+    //background: "#311b92",
     fontFamily: 'Montserrat',
   },
   input: {
@@ -106,9 +116,10 @@ const styles = {
     width: "100%",
     padding: 2 * 24,
     paddingTop: 115,
+    /* display: 'flex',
+    alignItems: 'center', */
     flex: 1,
   },
-
   mainDrawerOpen: {
     paddingLeft: drawerWidth + (2 * 24),
   },
@@ -120,13 +131,13 @@ const styles = {
   },
 };
 
-
 class App extends Component {
   constructor() {
     super();
 
     this.state = {
       user: null,
+      organizationId: null,
       drawerOpen: false,
     };
 
@@ -137,12 +148,14 @@ class App extends Component {
     SessionStore.on("change", () => {
       this.setState({
         user: SessionStore.getUser(),
+        organizationId: SessionStore.getOrganizationID(),
         drawerOpen: SessionStore.getUser() != null,
       });
     });
 
     this.setState({
       user: SessionStore.getUser(),
+      organizationId: SessionStore.getOrganizationID(),
       drawerOpen: SessionStore.getUser() != null,
     });
   }
@@ -156,12 +169,14 @@ class App extends Component {
   render() {
     let topNav = null;
     let sideNav = null;
-
+    let topbanner = null;
+    
     if (this.state.user !== null) {
-      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} />;
+      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
+      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
       sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
     }
-
+    
     return (
       <Router history={history}>
         <React.Fragment>
@@ -169,9 +184,10 @@ class App extends Component {
           <MuiThemeProvider theme={theme}>
             <div className={this.props.classes.root}>
               {topNav}
+              {topbanner}
               {sideNav}
-              <div className={classNames(this.props.classes.main, this.state.drawerOpen && this.props.classes.mainDrawerOpen)}>
-                <Grid container spacing={4}>
+              <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
+                <Grid container spacing={24}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />
                     <Route exact path="/login" component={Login} />
@@ -179,6 +195,8 @@ class App extends Component {
                     <Route exact path="/users/create" component={CreateUser} />
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />
                     <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
+                    <Route exact path="/registration" component={Registration} />
+                    <Route exact path="/registration-confirm/:securityToken" component={RegistrationConfirm} />
 
                     <Route exact path="/network-servers" component={ListNetworkServers} />
                     <Route exact path="/network-servers/create" component={CreateNetworkServer} />
@@ -221,6 +239,12 @@ class App extends Component {
                     <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
                     <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
                     <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
+
+                    {/* <Route exact path="/wallet" component={Dashboard} /> */}
+                    {/* <Route exact path="/withdraw/:organizationID(\d+)" component={Withdraw} />
+                    <Route exact path="/topup" component={Topup} />
+                    <Route path="/history" component={HistoryLayout} />
+                    <Route exact path="/modify-account" component={ModifyEthAccount} /> */}
 
                     <Route exact path="/search" component={Search} />
                   </Switch>

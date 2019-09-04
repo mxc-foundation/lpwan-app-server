@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
@@ -8,12 +8,12 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
+import Button from "@material-ui/core/Button";
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
-
 
 const styles = {
   textField: {
@@ -25,7 +25,19 @@ const styles = {
       textDecoration: "none",
     },
   },
+  padding: {
+    paddingTop: 230,
+  },
+  padd: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    top: 0,
+    left: 0,
+    backgroundImage: 'url("/img/world-map.png")',
+  }
 };
+
 
 
 class LoginForm extends FormComponent {
@@ -33,17 +45,33 @@ class LoginForm extends FormComponent {
     if (this.state.object === undefined) {
       return null;
     }
+    
+    const extraButtons = [
+      <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
+    ]
+    let demoUsername = "";
+    let demoPassword = "";
+    let helpText = "";
+    if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
+      demoUsername = process.env.REACT_APP_DEMO_USER;
+      demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
+      helpText = "You can access with this account right now as a demo user.";
+    }
 
     return(
       <Form
         submitLabel={this.props.submitLabel}
+        extraButtons={extraButtons}
         onSubmit={this.onSubmit}
       >
         <TextField
           id="username"
           label="Username"
           margin="normal"
-          value={this.state.object.username || ""}
+          value={this.state.object.username === undefined 
+                  ? this.state.object.username = demoUsername 
+                  : this.state.object.username }
+          autoComplete='off'
           onChange={this.onChange}
           fullWidth
           required
@@ -53,7 +81,10 @@ class LoginForm extends FormComponent {
           label="Password"
           type="password"
           margin="normal"
-          value={this.state.object.password || ""}
+          value={this.state.object.password === undefined 
+                  ? this.state.object.password = demoPassword 
+                  : this.state.object.password }
+          helperText={helpText}
           onChange={this.onChange}
           fullWidth
           required
@@ -95,12 +126,10 @@ class Login extends Component {
 
   render() {
     return(
-      <Grid container justify="center">
+      <div className={this.props.classes.padd}>
+      <Grid container justify="center" className={this.props.classes.padding}>
         <Grid item xs={6} lg={4}>
           <Card>
-            {/* <CardHeader
-              title="Login"
-            /> */}
             <CardContent>
               <LoginForm
                 submitLabel="Login"
@@ -113,6 +142,7 @@ class Login extends Component {
           </Card>
         </Grid>
       </Grid>
+      </div>
     );
   }
 }

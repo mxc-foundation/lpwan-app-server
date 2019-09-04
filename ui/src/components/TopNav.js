@@ -12,12 +12,20 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import blue from "@material-ui/core/colors/blue";
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
+import Typography from '@material-ui/core/Typography';
 
-import MenuIcon from "mdi-material-ui/Menu";
-import Backburger from "mdi-material-ui/Backburger";
+//import MenuIcon from "mdi-material-ui/Menu";
+//import Backburger from "mdi-material-ui/Backburger";
+//import Wallet from "mdi-material-ui/Wallet";
 import AccountCircle from "mdi-material-ui/AccountCircle";
 import Magnify from "mdi-material-ui/Magnify";
-import HelpCicle from "mdi-material-ui/HelpCircle";
+import HelpCircle from "mdi-material-ui/HelpCircle";
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Wallet from "mdi-material-ui/WalletOutline";
 
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
@@ -26,6 +34,7 @@ import theme from "../theme";
 const styles = {
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
+    backgroundColor: theme.palette.secondary.main,
   },
   menuButton: {
     marginLeft: -12,
@@ -36,32 +45,40 @@ const styles = {
   },
   flex: {
     flex: 1,
+    paddingLeft: 40,
   },
   logo: {
     height: 32,
+    marginLeft: -45,
   },
   search: {
-    marginRight: 3 * theme.spacing(1),
-    color: theme.palette.common.white,
-    background: blue[400],
-    width: 450,
+    marginRight: 3 * theme.spacing.unit,
+    color: theme.palette.textPrimary.main,
+    backgroundColor: theme.palette.primary.secondary,
+    width: 480,
     padding: 5,
     borderRadius: 3,
   },
   avatar: {
-    background: blue[600],
+    background: theme.palette.secondary.main,
     color: theme.palette.common.white,
   },
   chip: {
-    background: blue[600],
+    background: theme.palette.secondary.main,
     color: theme.palette.common.white,
     marginRight: theme.spacing(1),
     "&:hover": {
-      background: blue[400],
+      background: theme.palette.primary.secondary,
     },
     "&:active": {
-      background: blue[400],
+      background: theme.palette.primary.main,
     },
+    "&:visited": {
+      background: theme.palette.primary.main,
+    },
+  },
+  iconStyle: {
+    color: theme.palette.primary.main,
   },
   iconButton: {
     color: theme.palette.common.white,
@@ -79,7 +96,6 @@ class TopNav extends Component {
       search: "",
     };
 
-    this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
     this.onMenuOpen = this.onMenuOpen.bind(this);
     this.onMenuClose = this.onMenuClose.bind(this);
     this.onLogout = this.onLogout.bind(this);
@@ -105,10 +121,6 @@ class TopNav extends Component {
     });
   }
 
-  handleDrawerToggle() {
-    this.props.setDrawerOpen(!this.props.drawerOpen);
-  }
-
   onSearchChange(e) {
     this.setState({
       search: e.target.value,
@@ -121,51 +133,65 @@ class TopNav extends Component {
   }
 
   render() {
-    let drawerIcon;
+    //let drawerIcon;
+    let logoIcon;
+    let searchbar;
     if (!this.props.drawerOpen) {
-      drawerIcon = <MenuIcon />;
+      //drawerIcon = <Wallet />;
+      logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
-      drawerIcon = <Backburger />;
+      //drawerIcon = <MenuIcon />;
+      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
+      searchbar = <Input
+                    placeholder="Search organization, application, gateway or device"
+                    className={this.props.classes.search}
+                    disableUnderline={true}
+                    value={this.state.search || ""}
+                    onChange={this.onSearchChange}
+                    startAdornment={
+                      <InputAdornment position="start">
+                      <Magnify />
+                      </InputAdornment>
+                    }
+                  />
     }
+    const balance = 6631;
+    const balanceEl = balance === null ? 
+      <span className="color-gray">(no org selected)</span> : 
+      balance + " MXC";
 
     const open = Boolean(this.state.menuAnchor);
-
+    const isDisabled = (this.props.user.username === process.env.REACT_APP_DEMO_USER)
+                        ?true
+                        :false;
     return(
       <AppBar className={this.props.classes.appBar}>
         <Toolbar>
-          <IconButton
+          {/* <IconButton
             color="inherit"
             aria-label="toggle drawer"
             onClick={this.handleDrawerToggle}
             className={this.props.classes.menuButton}
           >
             {drawerIcon}
-          </IconButton>
+          </IconButton> */}
 
           <div className={this.props.classes.flex}>
-            <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
+            {logoIcon}
           </div>
 
           <form onSubmit={this.onSearchSubmit}>
-            <Input
-              placeholder="Search organization, application, gateway or device"
-              className={this.props.classes.search}
-              disableUnderline={true}
-              value={this.state.search || ""}
-              onChange={this.onSearchChange}
-              startAdornment={
-                <InputAdornment position="start">
-                  <Magnify />
-                </InputAdornment>
-              }
-            />
+            { searchbar }
           </form>
 
-          <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
-            <IconButton className={this.props.classes.iconButton}>
-              <HelpCicle />
-            </IconButton>
-          </a>
+          <List>
+            <ListItem>
+              <ListItemIcon >
+                <Wallet color="primary" className={this.props.classes.iconStyle} />
+              </ListItemIcon>
+              <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }}/>
+            </ListItem>
+          </List>
 
           <Chip
             avatar={
@@ -180,6 +206,12 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
+          <a href="https://www.mxc.org/support" target="mxc-support">
+            <IconButton className={this.props.classes.iconButton}>
+              <HelpCircle />
+            </IconButton>
+          </a>
+
           <Menu
             id="menu-appbar"
             anchorEl={this.state.menuAnchor}
@@ -194,7 +226,7 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem>
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem> :
             <MenuItem onClick={this.onLogout}>Logout</MenuItem>
           </Menu>
         </Toolbar>

@@ -11,12 +11,12 @@ RUN mkdir -p $PROJECT_PATH
 COPY . $PROJECT_PATH
 WORKDIR $PROJECT_PATH
 
-RUN make dev-requirements ui-requirements
-RUN make
+RUN make dev-requirements ui-requirements clean build
 
 FROM alpine:latest AS production
 
 WORKDIR /root/
 RUN apk --no-cache add ca-certificates
+RUN mkdir /etc/lora-app-server
 COPY --from=development /lora-app-server/build/lora-app-server .
 ENTRYPOINT ["./lora-app-server"]

@@ -12,7 +12,6 @@ import TitleBarButton from "../../components/TitleBarButton";
 import UserStore from "../../stores/UserStore";
 import UpdateUser from "./UpdateUser";
 
-
 class UserLayout extends Component {
   constructor() {
     super();
@@ -42,7 +41,10 @@ class UserLayout extends Component {
     if (this.state.user === undefined) {
       return(<div></div>);
     }
-
+    const isDisabled = (this.state.user.user.username === process.env.REACT_APP_DEMO_USER)
+                        ?true
+                        :false; 
+                        
     return(
       <Grid container spacing={4}>
         <TitleBar
@@ -52,12 +54,12 @@ class UserLayout extends Component {
               label="Change password"
               icon={<KeyVariant />}
               to={`/users/${this.props.match.params.userID}/password`}
+              disabled={isDisabled}
             />,
             <TitleBarButton
               key={2}
               label="Delete"
               icon={<Delete />}
-              color="secondary"
               onClick={this.deleteUser}
             />,
           ]}

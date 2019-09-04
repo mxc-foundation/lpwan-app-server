@@ -2,7 +2,7 @@ import { EventEmitter } from "events";
 
 import Swagger from "swagger-client";
 import { checkStatus, errorHandler, errorHandlerLogin } from "./helpers";
-
+import dispatcher from "../dispatcher";
 
 class SessionStore extends EventEmitter {
   constructor() {
@@ -17,8 +17,8 @@ class SessionStore extends EventEmitter {
     
     this.swagger.then(client => {
       this.client = client;
-
-      if (this.getToken() !== null) {
+      const token = this.getToken();
+      if (token) {// !== null && !history.location.pathname.includes('/registration-confirm/')) {
         this.fetchProfile(() => {});
       }
     });
@@ -45,7 +45,7 @@ class SessionStore extends EventEmitter {
 
   getOrganizationID() {
     const orgID = localStorage.getItem("organizationID");
-    if (orgID === "") {
+    if (!orgID) {
       return null;
     }
 
@@ -59,6 +59,10 @@ class SessionStore extends EventEmitter {
 
   getUser() {
     return this.user;
+  }
+
+  getOrganizations() {
+    return this.organizations;
   }
 
   getSettings() {
@@ -117,7 +121,7 @@ class SessionStore extends EventEmitter {
           }
 
           this.emit("change");
-          callBackFunc();
+          callBackFunc(resp);
         })
         .catch(errorHandler);
     });
@@ -148,6 +152,67 @@ class SessionStore extends EventEmitter {
         .catch(errorHandler);
     });
   }
+  
+  register(data, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.RegisterUser({
+        body: {
+          email: data.username,
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notifyActivation();
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  confirmRegistration(securityToken, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.ConfirmRegistration({
+        body: {
+          token: securityToken,
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.setToken(resp.obj.jwt);
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  finishRegistration(data, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.FinishRegistration({
+        body: {
+          userId: data.userId,
+          password: data.password,
+          organizationName: data.organizationName,
+          organizationDisplayName: data.organizationDisplayName,
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.fetchProfile(callbackFunc);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  notifyActivation() {
+    dispatcher.dispatch({
+      type: "CREATE_NOTIFICATION",
+      notification: {
+        type: "success",
+        message: "Confirmation email has been sent.",
+      },
+    });
+  }
+
 }
 
 const sessionStore = new SessionStore();

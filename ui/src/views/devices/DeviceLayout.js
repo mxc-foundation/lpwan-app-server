@@ -156,7 +156,6 @@ class DeviceLayout extends Component {
               <TitleBarButton
                 label="Delete"
                 icon={<Delete />}
-                color="secondary"
                 onClick={this.deleteDevice}
               />
             </Admin>

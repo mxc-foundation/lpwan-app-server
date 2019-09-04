@@ -11,6 +11,8 @@ clean:
 	@rm -rf build dist internal/migrations/migrations_gen.go internal/static/static_gen.go ui/build static/static
 	@rm -f static/index.html static/icon.png static/manifest.json static/asset-manifest.json static/service-worker.js
 	@rm -rf static/logo
+	@rm -rf static/img
+	@rm -f static/swagger/*.json
 	@rm -rf docs/public
 	@rm -rf dist
 
@@ -67,8 +69,6 @@ dev-requirements:
 	go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
 	go install github.com/jteeuwen/go-bindata/go-bindata
 	go install golang.org/x/tools/cmd/stringer
-	go install github.com/goreleaser/goreleaser
-	go install github.com/goreleaser/nfpm
 
 ui-requirements:
 	@echo "Installing UI requirements"

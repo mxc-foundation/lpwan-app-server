@@ -35,19 +35,20 @@ var emailValidator = regexp.MustCompile(`.+@.+`)
 
 // User represents a user to external code.
 type User struct {
-	ID           int64     `db:"id"`
-	Username     string    `db:"username"`
-	IsAdmin      bool      `db:"is_admin"`
-	IsActive     bool      `db:"is_active"`
-	SessionTTL   int32     `db:"session_ttl"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
-	PasswordHash string    `db:"password_hash"`
-	Email        string    `db:"email"`
-	Note         string    `db:"note"`
+	ID            int64     `db:"id"`
+	Username      string    `db:"username"`
+	IsAdmin       bool      `db:"is_admin"`
+	IsActive      bool      `db:"is_active"`
+	SessionTTL    int32     `db:"session_ttl"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	PasswordHash  string    `db:"password_hash"`
+	Email         string    `db:"email"`
+	Note          string    `db:"note"`
+	SecurityToken *string   `db:"security_token"`
 }
 
-const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note"
+const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
 const internalUserFields = "*"
 
 // UserUpdate represents the user fields that can be "updated" in the simple
@@ -101,16 +102,17 @@ type UserProfileOrganization struct {
 
 // userInternal represents a user as known by the database.
 type userInternal struct {
-	ID           int64     `db:"id"`
-	Username     string    `db:"username"`
-	PasswordHash string    `db:"password_hash"`
-	IsAdmin      bool      `db:"is_admin"`
-	IsActive     bool      `db:"is_active"`
-	SessionTTL   int32     `db:"session_ttl"`
-	CreatedAt    time.Time `db:"created_at"`
-	UpdatedAt    time.Time `db:"updated_at"`
-	Email        string    `db:"email"`
-	Note         string    `db:"note"`
+	ID            int64     `db:"id"`
+	Username      string    `db:"username"`
+	PasswordHash  string    `db:"password_hash"`
+	IsAdmin       bool      `db:"is_admin"`
+	IsActive      bool      `db:"is_active"`
+	SessionTTL    int32     `db:"session_ttl"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	Email         string    `db:"email"`
+	Note          string    `db:"note"`
+	SecurityToken *string   `db:"security_token"`
 }
 
 // ValidateUsername validates the given username.
@@ -139,9 +141,6 @@ func ValidateEmail(email string) error {
 
 // CreateUser creates the given user.
 func CreateUser(db sqlx.Queryer, user *User, password string) (int64, error) {
-	if err := ValidateUsername(user.Username); err != nil {
-		return 0, errors.Wrap(err, "validation error")
-	}
 
 	if err := ValidatePassword(password); err != nil {
 		return 0, errors.Wrap(err, "validation error")
@@ -398,12 +397,17 @@ func LoginUser(db sqlx.Queryer, username string, password string) (string, error
 		return "", ErrInvalidUsernameOrPassword
 	}
 
+	return MakeJWT(user.Username, user.SessionTTL)
+}
+
+// MakeJWT ...
+func MakeJWT(username string, sessionTTL int32) (string, error) {
 	// Generate the token.
 	now := time.Now()
 	nowSecondsSinceEpoch := now.Unix()
 	var expSecondsSinceEpoch int64
-	if user.SessionTTL > 0 {
-		expSecondsSinceEpoch = nowSecondsSinceEpoch + (60 * int64(user.SessionTTL))
+	if sessionTTL > 0 {
+		expSecondsSinceEpoch = nowSecondsSinceEpoch + (60 * int64(sessionTTL))
 	} else {
 		expSecondsSinceEpoch = nowSecondsSinceEpoch + int64(defaultSessionTTL/time.Second)
 	}
@@ -413,7 +417,7 @@ func LoginUser(db sqlx.Queryer, username string, password string) (string, error
 		"nbf":      nowSecondsSinceEpoch,
 		"exp":      expSecondsSinceEpoch,
 		"sub":      "user",
-		"username": user.Username,
+		"username": username,
 	})
 
 	jwt, err := token.SignedString(jwtsecret)
@@ -487,4 +491,107 @@ func GetProfile(db sqlx.Queryer, id int64) (UserProfile, error) {
 	}
 
 	return prof, nil
+}
+
+// RegisterUser ...
+func RegisterUser(db sqlx.Queryer, user *User, token string) error {
+	if user.Username == "" {
+		if err := ValidateUsername(user.Username); err != nil {
+			errors.Wrap(err, "validation error")
+		}
+	}
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
+	// Add the new user.
+	err := sqlx.Get(db, &user.ID, `
+		insert into "user" (
+			username,
+			is_admin,
+			is_active,
+			session_ttl,
+			created_at,
+			updated_at,
+	        security_token)
+		values (
+			$1, $2, $3, $4, $5, $6, $7) returning id`,
+		user.Username,
+		user.IsAdmin,
+		user.IsActive,
+		user.SessionTTL,
+		user.CreatedAt,
+		user.UpdatedAt,
+		token,
+	)
+	if err != nil {
+		return handlePSQLError(Insert, err, "insert error")
+	}
+
+	log.WithFields(log.Fields{
+		"username":    user.Username,
+		"session_ttl": user.SessionTTL,
+		"is_admin":    user.IsAdmin,
+	}).Info("Registration: user created")
+	return nil
+}
+
+// GetUserByToken ...
+func GetUserByToken(db sqlx.Queryer, token string) (User, error) {
+	var user User
+	err := sqlx.Get(db, &user, "select "+externalUserFields+" from \"user\" where security_token = $1", token)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, ErrDoesNotExist
+		}
+		return user, errors.Wrap(err, "select error")
+	}
+
+	return user, nil
+}
+
+// GetTokenByUsername ...
+func GetTokenByUsername(db sqlx.Queryer, username string) (User, error) {
+	var user User
+	err := sqlx.Get(db, &user, "select security_token from \"user\" where username = $1", username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, ErrDoesNotExist
+		}
+		return user, errors.Wrap(err, "select error")
+	}
+
+	return user, nil
+}
+
+// FinishRegistration ...
+func FinishRegistration(db sqlx.Execer, userID int64, newPwd string) error {
+	if err := ValidatePassword(newPwd); err != nil {
+		return errors.Wrap(err, "validation error")
+	}
+
+	pwdHash, err := hash(newPwd, saltSize, HashIterations)
+	if err != nil {
+		return err
+	}
+	log.Println("newPwd", newPwd)
+	_, err = db.Exec(`
+		update "user"
+		set
+			password_hash = $1,
+			is_active = true,
+			security_token = null,
+			updated_at = now()
+		where id = $2`,
+		pwdHash,
+		userID,
+	)
+	if err != nil {
+		return errors.Wrap(err, "update error")
+	}
+
+	log.WithFields(log.Fields{
+		"id": userID,
+	}).Info("user password updated")
+
+	return nil
 }

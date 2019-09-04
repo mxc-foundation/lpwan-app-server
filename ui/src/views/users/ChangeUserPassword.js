@@ -81,7 +81,7 @@ class ChangeUserPassword extends Component {
           <Card>
             <CardContent>
               <PasswordForm
-                submitLabel="Update password"
+                submitLabel="Confirm"
                 onSubmit={this.onSubmit}
               />
             </CardContent>

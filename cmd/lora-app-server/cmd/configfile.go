@@ -19,6 +19,8 @@ log_level={{ .General.LogLevel }}
 # The number of times passwords must be hashed. A higher number is safer as
 # an attack takes more time to perform.
 password_hash_iterations={{ .General.PasswordHashIterations }}
+demo_user={{ .General.DemoUser }}
+host_server={{ .General.HostServer }}
 
 
 # PostgreSQL settings.
@@ -82,6 +84,20 @@ max_idle={{ .Redis.MaxIdle }}
 # is zero, then idle connections are not closed. You should set
 # the timeout to a value less than the server's timeout.
 idle_timeout="{{ .Redis.IdleTimeout }}"
+
+# Mxprotocol-server settings
+[mxprotocol_server]
+mxp_server="{{ .MxpServer.MxpServer }}"
+mxp_server_development="{{ .MxpServer.MxpServerDevelopment }}"
+
+# SMTP settings
+#
+[smtp]
+email={{ .SMTP.Email }}
+password={{ .SMTP.Password }}
+host={{ .SMTP.Host }}
+port={{ .SMTP.Port }}
+
 
 
 # Application-server settings.
@@ -312,7 +328,6 @@ id="{{ .ApplicationServer.ID }}"
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users={{ .ApplicationServer.ExternalAPI.DisableAssignExistingUsers }}
 
-
   # Settings for the remote multicast setup.
   [application_server.remote_multicast_setup]
   # Synchronization interval.
@@ -415,6 +430,26 @@ tls_key="{{ .JoinServer.TLSKey }}"
   kek="{{ $element.KEK }}"
 {{ end }}
 
+[registration_server]
+server="{{ .RegistrationServer.Server }}"
+username="{{ .RegistrationServer.Username }}"
+password="{{ .RegistrationServer.Password }}"
+
+# CA certificate (optional).
+#
+# When set, the server requires a client-certificate and will validate this
+# certificate on incoming requests.
+ca_cert="{{ .RegistrationServer.CACert }}"
+
+# TLS server-certificate (optional).
+#
+# Set this to enable TLS.
+tls_cert="{{ .RegistrationServer.TLSCert }}"
+
+# TLS server-certificate key (optional).
+#
+# Set this to enable TLS.
+tls_key="{{ .RegistrationServer.TLSKey }}"
 # Metrics collection settings.
 [metrics]
   # Metrics stored in Prometheus.
