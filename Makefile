@@ -61,7 +61,6 @@ static/swagger/api.swagger.json:
 # shortcuts for development
 
 dev-requirements:
-	go mod download
 	go install golang.org/x/lint/golint
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
