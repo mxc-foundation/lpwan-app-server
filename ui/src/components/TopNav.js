@@ -87,13 +87,15 @@ const styles = {
   },
 };
 
-function getWalletBalance() {
-  if (SessionStore.getOrganizationID() === undefined) {
-    return null;
+function getWalletBalance(organizationId) {
+  console.log('organizationId', organizationId);
+  if (!organizationId) {
+    return 0;
   }
   
   return new Promise((resolve, reject) => {
-    WalletStore.getWalletBalance(SessionStore.getOrganizationID(), resp => {
+    
+    WalletStore.getWalletBalance(organizationId, resp => {
       return resolve(resp);
     });
   });
@@ -122,9 +124,10 @@ class TopNav extends Component {
 
   loadData = async () => {
     try {
-      var result = await getWalletBalance();
+      const organizationId = this.props.organizationId;
+      
+      var result = await getWalletBalance(organizationId);
       this.setState({ balance: result.balance });
-
     } catch (error) {
       console.error(error);
       this.setState({ error });

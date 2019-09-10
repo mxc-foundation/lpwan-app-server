@@ -4,7 +4,7 @@
       "title": "wallet.proto",
       "version": "version not set"
     },
-    "host": "https://m2m.demo.supernodes.mxc.org",
+    "host": "m2m.demo.supernodes.mxc.org",
     "schemes": [
       "http",
       "https"
