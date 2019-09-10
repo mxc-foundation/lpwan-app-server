@@ -88,7 +88,6 @@ const styles = {
 };
 
 function getWalletBalance(organizationId) {
-  console.log('organizationId', organizationId);
   if (!organizationId) {
     return 0;
   }
