@@ -152,7 +152,7 @@ class App extends Component {
         drawerOpen: SessionStore.getUser() != null,
       });
     });
-
+    
     this.setState({
       user: SessionStore.getUser(),
       organizationId: SessionStore.getOrganizationID(),
@@ -172,9 +172,9 @@ class App extends Component {
     let topbanner = null;
     
     if (this.state.user !== null) {
-      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
-      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
       sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
+      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
+      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
     }
     
     return (

@@ -107,6 +107,7 @@ class TopNav extends Component {
     this.state = {
       menuAnchor: null,
       balance: null,
+      organizationId: SessionStore.getOrganizationID(),
       search: "",
     };
 
@@ -123,8 +124,18 @@ class TopNav extends Component {
 
   loadData = async () => {
     try {
-      const organizationId = this.props.organizationId;
-      
+      let organizationId = null;
+
+      if(this.state.organizationId !== null){
+        organizationId = this.state.organizationId;
+      }else{
+        if(SessionStore.getOrganizations().length > 0){
+          organizationId = SessionStore.getOrganizations()[0].organizationID;
+        }else{
+          organizationId = null;
+        }
+      }
+
       var result = await getWalletBalance(organizationId);
       this.setState({ balance: result.balance });
     } catch (error) {
