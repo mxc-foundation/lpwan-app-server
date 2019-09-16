@@ -16,7 +16,7 @@
       "application/json"
     ],
     "paths": {
-      "/api/wallet/balance/{org_id}": {
+      "/api/wallet/{orgId}/balance": {
         "get": {
           "operationId": "GetWalletBalance",
           "responses": {
@@ -29,7 +29,7 @@
           },
           "parameters": [
             {
-              "name": "org_id",
+              "name": "orgId",
               "in": "path",
               "required": true,
               "type": "string",
@@ -41,46 +41,6 @@
           ]
         }
       },
-      "/api/wallet/vmxc/tx_history": {
-        "get": {
-          "operationId": "GetVmxcTxHistory",
-          "responses": {
-            "200": {
-              "description": "A successful response.",
-              "schema": {
-                "$ref": "#/definitions/apiGetVmxcTxHistoryResponse"
-              }
-            }
-          },
-          "parameters": [
-            {
-              "name": "orgId",
-              "in": "query",
-              "required": false,
-              "type": "string",
-              "format": "int64"
-            },
-            {
-              "name": "offset",
-              "in": "query",
-              "required": false,
-              "type": "string",
-              "format": "int64"
-            },
-            {
-              "name": "limit",
-              "in": "query",
-              "required": false,
-              "type": "string",
-              "format": "int64"
-            }
-          ],
-          "tags": [
-            "WalletService"
-          ]
-        }
-      }
-    },
     "definitions": {
       "apiGetVmxcTxHistoryResponse": {
         "type": "object",
