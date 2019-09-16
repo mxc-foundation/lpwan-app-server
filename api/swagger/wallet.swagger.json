@@ -16,7 +16,7 @@
       "application/json"
     ],
     "paths": {
-      "/api/wallet/balance/{org_id}": {
+      "/api/wallet/{orgId}/balance": {
         "get": {
           "operationId": "GetWalletBalance",
           "responses": {
@@ -29,7 +29,7 @@
           },
           "parameters": [
             {
-              "name": "org_id",
+              "name": "orgId",
               "in": "path",
               "required": true,
               "type": "string",
