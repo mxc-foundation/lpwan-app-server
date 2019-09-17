@@ -13,10 +13,10 @@ class WalletStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/wallet.swagger.json", sessionStore.getClientOpts());
   }
 
-  getWalletBalance(org_id, callbackFunc) {
+  getWalletBalance(orgId, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WalletService.GetWalletBalance({
-        org_id,
+        orgId,
       })
       .then(checkStatus)
       .then(resp => {

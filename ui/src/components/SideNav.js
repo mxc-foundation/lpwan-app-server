@@ -175,30 +175,30 @@ class SideNav extends Component {
   }
 
   handleOpenM2M = () => {
-    let org_id = this.state.organization.id;
-    let org_name = '';
-    if(!org_id){
+    let orgId = this.state.organization.id;
+    let orgName = '';
+    if(!orgId){
       return false;
     }
     const user = SessionStore.getUser();  
     const org = SessionStore.getOrganizations(); 
     
     if(user.isAdmin){
-      org_id = '0';
-      org_name = 'Super_admin';
+      orgId = '0';
+      orgName = 'Super_admin';
     }else{
       if(org.length > 0){
-        org_name = org[0].organizationName;
+        orgName = org[0].organizationName;
       }else{
-        org_name = '';
+        orgName = '';
       }
     }
     
     const data = {
       jwt: window.localStorage.getItem("jwt"),
-      path: `/withdraw/${org_id}`,
-      org_id,
-      org_name,
+      path: `/withdraw/${orgId}`,
+      orgId,
+      orgName,
       username: user.username,
       loraHostUrl: window.location.origin
     };

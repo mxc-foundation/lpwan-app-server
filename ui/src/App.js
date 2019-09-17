@@ -187,7 +187,7 @@ class App extends Component {
               {topbanner}
               {sideNav}
               <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
-                <Grid container spacing={24}>
+                <Grid container spacing={4}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />
                     <Route exact path="/login" component={Login} />
