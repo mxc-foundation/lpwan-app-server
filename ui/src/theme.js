@@ -135,7 +135,7 @@ const theme = createMuiTheme({
       },
       MuiPaper: {
         root: {
-          backgroundColor: blueBG,
+          backgroundColor: overlayBG,
           padding: 10,
         }
       },
@@ -222,6 +222,9 @@ const theme = createMuiTheme({
         label: {
           color: white,
         },
+        textColorInherit: {
+          color: white,
+        }
       },
       MuiSvgIcon: {
         root: {
@@ -234,6 +237,9 @@ const theme = createMuiTheme({
           color: white,
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
         },
+        paper:{
+          backgroundColor: '#191980'
+        }
       },
       MuiMenu: {
         paper: {

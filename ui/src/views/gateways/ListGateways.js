@@ -54,6 +54,11 @@ class GatewayRow extends Component {
 
   render() {
     const options = {
+      elements: {
+        rectangle: {
+          backgroundColor: 'rgb(0, 255, 217)',
+        }
+      },
       scales: {
         xAxes: [{display: false}],
         yAxes: [{display: false}],

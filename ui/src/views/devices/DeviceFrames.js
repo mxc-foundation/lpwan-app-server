@@ -172,7 +172,7 @@ class DeviceFrames extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.toggleHelpDialog} color="primary">Close</Button>
+            <Button onClick={this.toggleHelpDialog} color="primary.main">Close</Button>
           </DialogActions>
         </Dialog>
 
