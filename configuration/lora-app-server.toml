@@ -87,6 +87,12 @@ port="25"
 #host="mail.smtp2go.com"
 #port="587"
 
+[m2m_server]
+m2m_server="localhost:4000"
+ca_cert=""
+tls_cert=""
+tls_key=""
+
 # Application-server settings.
 [application_server]
 # Application-server identifier.

@@ -1,4 +1,4 @@
-package m2m
+package m2m_client
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	m2m "github.com/brocaar/lora-app-server/api/m2m"
+	m2m "github.com/brocaar/lora-app-server/api/m2m_server"
 	"github.com/brocaar/lora-app-server/internal/config"
 )
 
@@ -22,11 +22,11 @@ var p Pool
 
 // Pool defines the network-server client pool.
 type Pool interface {
-	Get(hostname string, caCert, tlsCert, tlsKey []byte) (m2m.M2MServiceClient, error)
+	Get(hostname string, caCert, tlsCert, tlsKey []byte) (m2m.M2MServerServiceClient, error)
 }
 
 type m2mServiceClient struct {
-	client     m2m.M2MServiceClient
+	client     m2m.M2MServerServiceClient
 	clientConn *grpc.ClientConn
 	caCert     []byte
 	tlsCert    []byte
@@ -54,12 +54,12 @@ type pool struct {
 }
 
 // Get returns a NetworkServerClient for the given server (hostname:ip).
-func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (m2m.M2MServiceClient, error) {
+func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (m2m.M2MServerServiceClient, error) {
 	defer p.Unlock()
 	p.Lock()
 
 	var connect bool
-	c, ok := p.clients[hostname]
+	c, ok := p.m2mServiceClients[hostname]
 	if !ok {
 		connect = true
 	}
@@ -68,29 +68,29 @@ func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (m2m.M2MServ
 	// try to cloe the connection and re-connect
 	if ok && (!bytes.Equal(c.caCert, caCert) || !bytes.Equal(c.tlsCert, tlsCert) || !bytes.Equal(c.tlsKey, tlsKey)) {
 		c.clientConn.Close()
-		delete(p.clients, hostname)
+		delete(p.m2mServiceClients, hostname)
 		connect = true
 	}
 
 	if connect {
 		clientConn, nsClient, err := p.createClient(hostname, caCert, tlsCert, tlsKey)
 		if err != nil {
-			return nil, errors.Wrap(err, "create network-server api client error")
+			return nil, errors.Wrap(err, "create m2m-server api client error")
 		}
-		c = client{
+		c = m2mServiceClient{
 			client:     nsClient,
 			clientConn: clientConn,
 			caCert:     caCert,
 			tlsCert:    tlsCert,
 			tlsKey:     tlsKey,
 		}
-		p.clients[hostname] = c
+		p.m2mServiceClients[hostname] = c
 	}
 
 	return c.client, nil
 }
 
-func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.ClientConn, m2m.M2MServiceClient, error) {
+func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.ClientConn, m2m.M2MServerServiceClient, error) {
 	logrusEntry := log.NewEntry(log.StandardLogger())
 	logrusOpts := []grpc_logrus.Option{
 		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
@@ -135,5 +135,5 @@ func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*g
 		return nil, nil, errors.Wrap(err, "dial m2m-server device service api error")
 	}
 
-	return devServiceClient, m2m.NewM2MDeviceServiceClient(devServiceClient), nil
+	return devServiceClient, m2m.NewM2MServerServiceClient(devServiceClient), nil
 }
