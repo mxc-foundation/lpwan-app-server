@@ -88,7 +88,7 @@ port="25"
 #port="587"
 
 [m2m_server]
-m2m_server="localhost:4000"
+m2m_server="mxprotocol-server:4000"
 ca_cert=""
 tls_cert=""
 tls_key=""

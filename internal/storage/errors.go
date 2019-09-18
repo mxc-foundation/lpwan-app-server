@@ -74,5 +74,5 @@ func handlePSQLEffect(res sql.Result) error {
 	if ra == 0 {
 		return ErrDoesNotExist
 	}
-	return nil;
+	return nil
 }

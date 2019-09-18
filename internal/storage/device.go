@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	uuid "github.com/gofrs/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
@@ -173,7 +173,7 @@ func CreateDevice(db sqlx.Ext, d *Device) error {
 	_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
 		OrgId: app.OrganizationID,
 		DevProfile: &m2m_api.AppServerDeviceProfile{
-			DevEui:        string(d.DevEUI[:]),
+			DevEui:        d.DevEUI.String(),
 			ApplicationId: d.ApplicationID,
 			Name:          d.Name,
 		},
@@ -484,7 +484,7 @@ func DeleteDevice(db sqlx.Ext, devEUI lorawan.EUI64) error {
 	}
 
 	_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
-		DevEui: string(devEUI[:]),
+		DevEui: devEUI.String(),
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
 		log.WithError(err).Error("m2m-server delete device api error")

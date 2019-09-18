@@ -13,8 +13,8 @@ import (
 
 	"github.com/lib/pq"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
 	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
+	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
 	"github.com/brocaar/loraserver/api/ns"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -144,17 +144,16 @@ func CreateGateway(db sqlx.Execer, gw *Gateway) error {
 	_, err = m2mClient.AddGatewayInM2MServer(context.Background(), &m2m_api.AddGatewayInM2MServerRequest{
 		OrgId: gw.OrganizationID,
 		GwProfile: &m2m_api.AppServerGatewayProfile{
-			Mac: string(gw.MAC[:]),
-			OrgId: gw.OrganizationID,
+			Mac:         gw.MAC.String(),
+			OrgId:       gw.OrganizationID,
 			Description: gw.Description,
-			Name: gw.Name,
+			Name:        gw.Name,
 		},
 	})
 	if err != nil {
 		log.WithError(err).Error("m2m server create gateway api error")
 		return handleGrpcError(err, "create gateway error")
 	}
-
 
 	log.WithFields(log.Fields{
 		"mac":  gw.MAC,
@@ -253,7 +252,7 @@ func DeleteGateway(db sqlx.Ext, mac lorawan.EUI64) error {
 	}
 
 	_, err = m2mClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
-		MacAddress: string(mac[:]),
+		MacAddress: mac.String(),
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete gateway error")
