@@ -1,0 +1,19 @@
+#!/bin/sh
+
+echo "running script: sync_env_variables "
+
+APPSERVER_PATH=$(dirname $0)/..
+ENV_CONFIGURATION=$APPSERVER_PATH/ui/.env.production
+echo $ENV_CONFIGURATION
+
+if [ -f $ENV_CONFIGURATION ]; then
+  M2MSERVER=$(cat $ENV_CONFIGURATION | awk -F "=" '/REACT_APP_M2M_SERVER/{print $2}')
+  echo "### m2m-server = $M2MSERVER"
+fi
+
+WALLET_SWAGGER=$APPSERVER_PATH/api/swagger/wallet.swagger.json
+
+if [ -f $CONFIGURATION ]; then
+  echo "### sed -i.bak 's,\"host\":.*$,\"host\":'"$M2MSERVER",',' $WALLET_SWAGGER"
+  sed -i.bak 's,\"host\":.*$,\"host\":'"$M2MSERVER"'\,,' $WALLET_SWAGGER
+fi
