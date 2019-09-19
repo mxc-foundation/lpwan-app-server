@@ -1,4 +1,4 @@
-.PHONY: build clean test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: scripts build clean test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --always |sed -e "s/^v//")
 
@@ -83,3 +83,6 @@ update-vendor:
 
 run-compose-test:
 	docker-compose run --rm appserver make test
+
+scripts:
+	@sh $(shell pwd)/scripts/sync_env_variables

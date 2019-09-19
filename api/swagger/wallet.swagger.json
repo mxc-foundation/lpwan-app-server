@@ -4,7 +4,7 @@
     "title": "wallet.proto",
     "version": "version not set"
   },
-  "host": "localhost:3000",
+  "host":"http://localhost:4000",
   "schemes": [
     "http",
     "https"
