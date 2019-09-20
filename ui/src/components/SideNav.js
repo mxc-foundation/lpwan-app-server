@@ -7,7 +7,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
 
 import Divider from '@material-ui/core/Divider';
 import Domain from "mdi-material-ui/Domain";
@@ -28,7 +27,7 @@ import OrganizationStore from "../stores/OrganizationStore";
 import Admin from "./Admin";
 
 import theme from "../theme";
-
+import { getM2MLink } from "../util/Util";
 
 const styles = {
   drawerPaper: {
@@ -176,40 +175,40 @@ class SideNav extends Component {
   }
 
   handleOpenM2M = () => {
-    let org_id = this.state.organization.id;
-    let org_name = '';
-    if(!org_id){
+    let orgId = this.state.organization.id;
+    let orgName = '';
+    if(!orgId){
       return false;
     }
     const user = SessionStore.getUser();  
     const org = SessionStore.getOrganizations(); 
     
     if(user.isAdmin){
-      org_id = '0';
-      org_name = 'Super_admin';
+      orgId = '0';
+      orgName = 'Super_admin';
     }else{
       if(org.length > 0){
-        org_name = org[0].organizationName;
+        orgName = org[0].organizationName;
       }else{
-        org_name = '';
+        orgName = '';
       }
     }
     
     const data = {
       jwt: window.localStorage.getItem("jwt"),
-      path: `/withdraw/${org_id}`,
-      org_id,
-      org_name,
+      path: `/withdraw/${orgId}`,
+      orgId,
+      orgName,
       username: user.username,
       loraHostUrl: window.location.origin
     };
     
     const dataString = encodeURIComponent(JSON.stringify(data));
-    /* console.log('M2M_DEV_SERVER', process.env.M2M_DEV_SERVER);
-    console.log('M2M_DEV_SERVER', process.env);
-    return false; */
+
+    const host = getM2MLink();
+
     // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(process.env.REACT_APP_M2M_SERVER + `/#/j/${dataString}`);
+    window.location.replace(host + `/#/j/${dataString}`);
   }
 
   render() {
