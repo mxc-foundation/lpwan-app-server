@@ -77,8 +77,8 @@ class CreateMulticastGroup extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`} onClick={this.closeDialog}>Create</Button>
-            <Button color="primary" onClick={this.closeDialog}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`} onClick={this.closeDialog}>Create</Button>
+            <Button color="primary.main" onClick={this.closeDialog}>Dismiss</Button>
           </DialogActions>
         </Dialog>
 

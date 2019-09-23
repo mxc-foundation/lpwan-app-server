@@ -158,8 +158,8 @@ class SetupHelper extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to="/network-servers/create" onClick={this.toggleDialog.bind(this, "nsDialog")}>Add</Button>
-            <Button color="primary" onClick={this.toggleDialog.bind(this, "nsDialog")}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.toggleDialog.bind(this, "nsDialog")}>Add</Button>
+            <Button color="primary.main" onClick={this.toggleDialog.bind(this, "nsDialog")}>Dismiss</Button>
           </DialogActions>
         </Dialog>
 
@@ -178,8 +178,8 @@ class SetupHelper extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to={`/organizations/${orgID}/service-profiles/create`} onClick={this.toggleDialog.bind(this, "spDialog")}>Create</Button>
-            <Button color="primary" onClick={this.toggleDialog.bind(this, "spDialog")}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to={`/organizations/${orgID}/service-profiles/create`} onClick={this.toggleDialog.bind(this, "spDialog")}>Create</Button>
+            <Button color="primary.main" onClick={this.toggleDialog.bind(this, "spDialog")}>Dismiss</Button>
           </DialogActions>
         </Dialog>
 
@@ -198,8 +198,8 @@ class SetupHelper extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to={`/organizations/${orgID}/device-profiles/create`} onClick={this.toggleDialog.bind(this, "dpDialog")}>Create</Button>
-            <Button color="primary" onClick={this.toggleDialog.bind(this, "dpDialog")}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to={`/organizations/${orgID}/device-profiles/create`} onClick={this.toggleDialog.bind(this, "dpDialog")}>Create</Button>
+            <Button color="primary.main" onClick={this.toggleDialog.bind(this, "dpDialog")}>Dismiss</Button>
           </DialogActions>
         </Dialog>
       </div>

@@ -76,8 +76,8 @@ class CreateGatewayProfile extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to="/network-servers/create" onClick={this.closeDialog}>Add</Button>
-            <Button color="primary" onClick={this.closeDialog}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.closeDialog}>Add</Button>
+            <Button color="primary.main" onClick={this.closeDialog}>Dismiss</Button>
           </DialogActions>
         </Dialog>
 

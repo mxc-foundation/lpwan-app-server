@@ -46,7 +46,7 @@ class LoginForm extends FormComponent {
     }
     
     const extraButtons = [
-      <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
+      <Button color="primary.main" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
     ]
     let demoUsername = "";
     let demoPassword = "";
