@@ -29,9 +29,6 @@ const theme = createMuiTheme({
       root: {
         color: white
       },
-      headline: {
-        color: white
-      },
     },
     typography: {
       subheading: {
