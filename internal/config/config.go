@@ -16,7 +16,7 @@ type Config struct {
 		LogLevel               int    `mapstructure:"log_level"`
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
 		HostServer             string `mapstructure:"host_server"`
-		DemoUser			   string `mapstructure:"demo_user"`
+		DemoUser               string `mapstructure:"demo_user"`
 	}
 
 	PostgreSQL struct {
@@ -41,6 +41,13 @@ type Config struct {
 		Host     string `mapstructure:"host"`
 		Port     string `mapstructure:"port"`
 	} `mapstructure:"smtp"`
+
+	M2MServer struct {
+		M2MServer string `mapstructure:"m2m_server"`
+		CACert    string `mapstructure:"ca_cert"`
+		TLSCert   string `mapstructure:"tls_cert"`
+		TLSKey    string `mapstructure:"tls_key"`
+	} `mapstructure:"m2m_server"`
 
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`

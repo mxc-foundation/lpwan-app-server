@@ -1,6 +1,6 @@
 # hidden files
-
-
+.*
+*.bak
 # logs
 *.log
 
