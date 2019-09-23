@@ -55,6 +55,15 @@ const theme = createMuiTheme({
         colorTextSecondary: {
           color: white,
         },
+        overline: {
+          color: white
+        },
+        subtitle1: {
+          color: white
+        },        
+        subtitle2: {
+          color: white
+        },
         caption: {
           color: white
         },
