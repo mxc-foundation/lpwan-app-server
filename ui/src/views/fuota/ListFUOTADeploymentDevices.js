@@ -103,7 +103,7 @@ class FUOTADeploymentDevices extends Component {
             </Table>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" onClick={this.onCloseDialog}>Dismiss</Button>
+            <Button color="primary.main" onClick={this.onCloseDialog}>Dismiss</Button>
           </DialogActions>
         </Dialog>}
 

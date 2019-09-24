@@ -1,8 +1,6 @@
 # hidden files
 .*
 *.bak
-!.env
-
 # logs
 *.log
 

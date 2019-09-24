@@ -7,6 +7,7 @@ services:
     volumes:
       - ./:/lora-app-server
       - ./configuration:/etc/lora-app-server
+      - ./:/lora-app-server
     links:
       - postgresql
       - redis
