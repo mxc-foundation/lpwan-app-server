@@ -5,7 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile-devel
     volumes:
-      - ./:/lora-app-server
       - ./configuration:/etc/lora-app-server
       - ./:/lora-app-server
     links:
