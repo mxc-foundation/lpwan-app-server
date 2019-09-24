@@ -27,7 +27,7 @@ import OrganizationStore from "../stores/OrganizationStore";
 import Admin from "./Admin";
 
 import theme from "../theme";
-
+import { getM2MLink } from "../util/Util";
 
 const styles = {
   drawerPaper: {
@@ -204,11 +204,11 @@ class SideNav extends Component {
     };
     
     const dataString = encodeURIComponent(JSON.stringify(data));
-    /* console.log('M2M_DEV_SERVER', process.env.M2M_DEV_SERVER);
-    console.log('M2M_DEV_SERVER', process.env);
-    return false; */
+
+    const host = getM2MLink();
+
     // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(process.env.REACT_APP_M2M_SERVER + `/#/j/${dataString}`);
+    window.location.replace(host + `/#/j/${dataString}`);
   }
 
   render() {
