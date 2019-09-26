@@ -7,7 +7,7 @@ ENV_CONFIGURATION=$APPSERVER_PATH/ui/.env.production
 echo $ENV_CONFIGURATION
 
 if [ -f $ENV_CONFIGURATION ]; then
-  M2MSERVER=$(cat $ENV_CONFIGURATION | awk -F "=" '/REACT_APP_M2M_SERVER/{print $2}' | sed 's/http.*:\/\///g')
+  M2MSERVER=$(cat $ENV_CONFIGURATION | awk -F "=" '/REACT_APP_M2M_LOCAL_SERVER/{print $2}' | sed 's/http.*:\/\///g')
   echo "### m2m-server = $M2MSERVER"
 fi
 
