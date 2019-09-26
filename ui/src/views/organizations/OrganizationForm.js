@@ -28,7 +28,7 @@ class OrganizationForm extends FormComponent {
           label="Organization name"
           helperText="The name may only contain words, numbers and dashes."
           margin="normal"
-          value={this.state.object.organization.name || ""}
+          value={this.state.object.name || ""}
           onChange={this.onChange}
           inputProps={{
             pattern: "[\\w-]+",
@@ -40,7 +40,7 @@ class OrganizationForm extends FormComponent {
           id="displayName"
           label="Display name"
           margin="normal"
-          value={this.state.object.organization.displayName || ""}
+          value={this.state.object.displayName || ""}
           onChange={this.onChange}
           required
           fullWidth
@@ -54,7 +54,7 @@ class OrganizationForm extends FormComponent {
               control={
                 <Checkbox
                   id="canHaveGateways"
-                  checked={!!this.state.object.organization.canHaveGateways}
+                  checked={!!this.state.object.canHaveGateways}
                   onChange={this.onChange}
                   value="true"
                   color="primary"
