@@ -1,8 +1,8 @@
-.PHONY: build clean test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: scripts build clean test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --always |sed -e "s/^v//")
 
-build: ui/build internal/statics internal/migrations
+build: scripts ui/build internal/statics internal/migrations
 	mkdir -p build
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
 
@@ -83,3 +83,6 @@ update-vendor:
 
 run-compose-test:
 	docker-compose run --rm appserver make test
+
+scripts:
+	@sh $(shell pwd)/scripts/sync_env_variables

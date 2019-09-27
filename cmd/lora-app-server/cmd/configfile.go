@@ -98,7 +98,11 @@ password={{ .SMTP.Password }}
 host={{ .SMTP.Host }}
 port={{ .SMTP.Port }}
 
-
+[m2m_server]
+m2m_server={{ .M2MServer.M2MServer }}
+ca_cert={{ .M2MServer.CACert }}
+tls_cert={{ .M2MServer.TLSCert }}
+tls_key={{ .M2MServer.TLSKey }}
 
 # Application-server settings.
 [application_server]

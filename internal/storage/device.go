@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	uuid "github.com/gofrs/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
+	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
+	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
 	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
 	"github.com/brocaar/lora-app-server/internal/config"
 	"github.com/brocaar/loraserver/api/ns"
@@ -135,6 +137,7 @@ func CreateDevice(db sqlx.Ext, d *Device) error {
 		return errors.Wrap(err, "get network-server error")
 	}
 
+	// add this device to network server
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
@@ -157,6 +160,26 @@ func CreateDevice(db sqlx.Ext, d *Device) error {
 	})
 	if err != nil {
 		log.WithError(err).Error("network-server create device api error")
+		return handleGrpcError(err, "create device error")
+	}
+
+	// add this device to m2m server
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		return errors.Wrap(err, "get m2m-server client error")
+	}
+
+	_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
+		OrgId: app.OrganizationID,
+		DevProfile: &m2m_api.AppServerDeviceProfile{
+			DevEui:        d.DevEUI.String(),
+			ApplicationId: d.ApplicationID,
+			Name:          d.Name,
+		},
+	})
+	if err != nil {
+		log.WithError(err).Error("m2m server create device api error")
 		return handleGrpcError(err, "create device error")
 	}
 
@@ -439,6 +462,7 @@ func DeleteDevice(db sqlx.Ext, devEUI lorawan.EUI64) error {
 		return ErrDoesNotExist
 	}
 
+	// delete device from networkserver
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
@@ -449,6 +473,21 @@ func DeleteDevice(db sqlx.Ext, devEUI lorawan.EUI64) error {
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
 		log.WithError(err).Error("network-server delete device api error")
+		return handleGrpcError(err, "delete device error")
+	}
+
+	// delete device from m2m server
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		return errors.Wrap(err, "get m2m-server client error")
+	}
+
+	_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
+		DevEui: devEUI.String(),
+	})
+	if err != nil && grpc.Code(err) != codes.NotFound {
+		log.WithError(err).Error("m2m-server delete device api error")
 		return handleGrpcError(err, "delete device error")
 	}
 
