@@ -3,7 +3,7 @@ services:
   appserver:
     build: 
       context: .
-      dockerfile: Dockerfile-devel
+      dockerfile: Dockerfile
     volumes:
       - ./configuration:/etc/lora-app-server
       - ./:/lora-app-server
