@@ -158,24 +158,24 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 		return errors.Wrap(err, "create device error")
 	}
 
-	// add this device to m2m server
+	// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
+	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		return errors.Wrap(err, "get m2m-server client error")
-	}
-
-	_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
-		OrgId: app.OrganizationID,
-		DevProfile: &m2m_api.AppServerDeviceProfile{
-			DevEui:        d.DevEUI.String(),
-			ApplicationId: d.ApplicationID,
-			Name:          d.Name,
-		},
-	})
-	if err != nil {
-		log.WithError(err).Error("m2m server create device api error")
-		return handleGrpcError(err, "create device error")
+	if err == nil {
+		_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
+			OrgId: app.OrganizationID,
+			DevProfile: &m2m_api.AppServerDeviceProfile{
+				DevEui:        d.DevEUI.String(),
+				ApplicationId: d.ApplicationID,
+				Name:          d.Name,
+			},
+		})
+		if err != nil {
+			log.WithError(err).Error("m2m server create device api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{
@@ -471,19 +471,19 @@ func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error 
 		return errors.Wrap(err, "delete device error")
 	}
 
-	// delete device from m2m server
+	// delete device from m2m server, this procedure should not block delete device from appserver once it's deleted from
+	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		return errors.Wrap(err, "get m2m-server client error")
-	}
-
-	_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
-		DevEui: devEUI.String(),
-	})
-	if err != nil && grpc.Code(err) != codes.NotFound {
-		log.WithError(err).Error("m2m-server delete device api error")
-		return handleGrpcError(err, "delete device error")
+	if err == nil {
+		_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
+			DevEui: devEUI.String(),
+		})
+		if err != nil && grpc.Code(err) != codes.NotFound {
+			log.WithError(err).Error("m2m-server delete device api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{
