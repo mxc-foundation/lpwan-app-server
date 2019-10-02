@@ -146,33 +146,33 @@ func ValidateUserAccess(userID int64, flag Flag) ValidatorFunc {
 	}
 }
 
-// ValidateIsApplicationAdmin validates if the client has access to
-// administrate the given application.
-func ValidateIsApplicationAdmin(applicationID int64) ValidatorFunc {
-	// global admin
-	// organization admin
-	where := [][]string{
-		{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
-		{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, applicationID)
-	}
-}
-
 // ValidateApplicationsAccess validates if the client has access to the
 // global applications resource.
 func ValidateApplicationsAccess(flag Flag, organizationID int64) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+
 	var where [][]string
 
 	switch flag {
 	case Create:
 		// global admin
 		// organization admin
+		// organization device admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "o.id = $2", "ou.is_admin = true"},
+			{"u.username = $1", "u.is_active = true", "o.id = $2", "ou.is_device_admin = true"},
 		}
 	case List:
 		// global admin
@@ -188,13 +188,26 @@ func ValidateApplicationsAccess(flag Flag, organizationID int64) ValidatorFunc {
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, organizationID)
+		return executeQuery(db, query, where, claims.Username, organizationID)
 	}
 }
 
 // ValidateApplicationAccess validates if the client has access to the given
 // application.
 func ValidateApplicationAccess(applicationID int64, flag Flag) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
@@ -208,112 +221,57 @@ func ValidateApplicationAccess(applicationID int64, flag Flag) ValidatorFunc {
 	case Update:
 		// global admin
 		// organization admin
+		// organization device admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
+			{"u.username = $1", "u.is_active = true", "ou.is_device_admin = true", "a.id = $2"},
 		}
 	case Delete:
 		// global admin
 		// organization admin
+		// organization device admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
+			{"u.username = $1", "u.is_active = true", "ou.is_device_admin = true", "a.id = $2"},
 		}
 	default:
 		panic("unsupported flag")
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, applicationID)
-	}
-}
-
-// ValidateApplicationUsersAccess validates if the client has access to the
-// given application members.
-func ValidateApplicationUsersAccess(applicationID int64, flag Flag) ValidatorFunc {
-	var where = [][]string{}
-
-	switch flag {
-	case Create:
-		if DisableAssignExistingUsers {
-			// global admin
-			where = [][]string{
-				{"u.username = $1", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
-			}
-		} else {
-			// global admin
-			// organization admin
-			where = [][]string{
-				{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
-				{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
-			}
-		}
-	case List:
-		// global admin
-		// organization user
-		where = [][]string{
-			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
-			{"u.username = $1", "u.is_active = true", "a.id = $2"},
-		}
-	default:
-		panic("unsupported flag")
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, applicationID)
-	}
-}
-
-// ValidateApplicationUserAccess validates if the client has access to the
-// given application member.
-func ValidateApplicationUserAccess(applicationID, userID int64, flag Flag) ValidatorFunc {
-	var where = [][]string{}
-
-	switch flag {
-	case Read:
-		// global admin
-		// organization admin
-		// user itself
-		where = [][]string{
-			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
-			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
-			{"u.username = $1", "u.is_active = true", "a.id = $2", "ou.user_id = $3"},
-		}
-	case Update:
-		// global admin
-		// organization admin
-		where = [][]string{
-			{"u.username = $1", "u.is_active = true", "u.is_admin = true", "$3 = $3"},
-			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
-		}
-	case Delete:
-		// global admin
-		// organization admin
-		where = [][]string{
-			{"u.username = $1", "u.is_active = true", "u.is_admin = true", "$3 = $3"},
-			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
-		}
-	default:
-		panic("unsupported flag")
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, applicationID, userID)
+		return executeQuery(db, query, where, claims.Username, applicationID)
 	}
 }
 
 // ValidateNodesAccess validates if the client has access to the global nodes
 // resource.
 func ValidateNodesAccess(applicationID int64, flag Flag) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
 	case Create:
 		// global admin
 		// organization admin
+		// organization device admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
+			{"u.username = $1", "u.is_active = true", "ou.is_device_admin = true", "a.id = $2"},
 		}
 	case List:
 		// global admin
@@ -327,12 +285,27 @@ func ValidateNodesAccess(applicationID int64, flag Flag) ValidatorFunc {
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, applicationID)
+		return executeQuery(db, query, where, claims.Username, applicationID)
 	}
 }
 
 // ValidateNodeAccess validates if the client has access to the given node.
 func ValidateNodeAccess(devEUI lorawan.EUI64, flag Flag) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+		left join device d
+			on a.id = d.application_id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
@@ -346,23 +319,27 @@ func ValidateNodeAccess(devEUI lorawan.EUI64, flag Flag) ValidatorFunc {
 	case Update:
 		// global admin
 		// organization admin
+		// organization device admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "d.dev_eui = $2"},
+			{"u.username = $1", "u.is_active = true", "ou.is_device_admin = true", "d.dev_eui = $2"},
 		}
 	case Delete:
 		// global admin
 		// organization admin
+		// organization device admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "d.dev_eui = $2"},
+			{"u.username = $1", "u.is_active = true", "ou.is_device_admin = true", "d.dev_eui = $2"},
 		}
 	default:
 		panic("unsupported flag")
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, devEUI[:])
+		return executeQuery(db, query, where, claims.Username, devEUI[:])
 	}
 }
 
@@ -390,15 +367,28 @@ func ValidateDeviceQueueAccess(devEUI lorawan.EUI64, flag Flag) ValidatorFunc {
 
 // ValidateGatewaysAccess validates if the client has access to the gateways.
 func ValidateGatewaysAccess(flag Flag, organizationID int64) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
 	case Create:
 		// global admin
 		// organization admin
+		// gateway admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "o.id = $2", "ou.is_admin = true", "o.can_have_gateways = true"},
+			{"u.username = $1", "u.is_active = true", "o.id = $2", "ou.is_gateway_admin = true", "o.can_have_gateways = true"},
 		}
 	case List:
 		// global admin
@@ -414,12 +404,25 @@ func ValidateGatewaysAccess(flag Flag, organizationID int64) ValidatorFunc {
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, organizationID)
+		return executeQuery(db, query, where, claims.Username, organizationID)
 	}
 }
 
 // ValidateGatewayAccess validates if the client has access to the given gateway.
 func ValidateGatewayAccess(flag Flag, mac lorawan.EUI64) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join gateway g
+			on o.id = g.organization_id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
@@ -434,15 +437,17 @@ func ValidateGatewayAccess(flag Flag, mac lorawan.EUI64) ValidatorFunc {
 		where = [][]string{
 			// global admin
 			// organization admin
+			// organization gateway admin
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "g.mac = $2", "ou.is_admin = true"},
+			{"u.username = $1", "u.is_active = true", "g.mac = $2", "ou.is_gateway_admin = true"},
 		}
 	default:
 		panic("unsupported flag")
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, mac[:])
+		return executeQuery(db, query, where, claims.Username, mac[:])
 	}
 }
 
@@ -646,15 +651,32 @@ func ValidateNetworkServersAccess(flag Flag, organizationID int64) ValidatorFunc
 // ValidateNetworkServerAccess validates if the client has access to the
 // given network-server.
 func ValidateNetworkServerAccess(flag Flag, id int64) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join service_profile sp
+			on sp.organization_id = o.id
+		left join network_server ns
+			on ns.id = sp.network_server_id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
 	case Read:
 		// global admin
-		// org. admin
+		// organization admin
+		// organization gateway admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "ou.is_admin = true", "ns.id = $2"},
+			{"u.username = $1", "u.is_active = true", "ou.is_gateway_admin = true", "ns.id = $2"},
 		}
 	case Update, Delete:
 		// global admin
@@ -664,7 +686,7 @@ func ValidateNetworkServerAccess(flag Flag, id int64) ValidatorFunc {
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, id)
+		return executeQuery(db, query, where, claims.Username, id)
 	}
 }
 
@@ -745,15 +767,30 @@ func ValidateServiceProfileAccess(flag Flag, id uuid.UUID) ValidatorFunc {
 // ValidateDeviceProfilesAccess validates if the client has access to the
 // device-profiles.
 func ValidateDeviceProfilesAccess(flag Flag, organizationID, applicationID int64) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
 	case Create:
 		// global admin
 		// organization admin
+		// organization device admin
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "o.id = $2", "ou.is_admin = true", "$3 = 0"},
+			{"u.username = $1", "u.is_active = true", "o.id = $2", "ou.is_device_admin = true", "$3 = 0"},
 		}
 	case List:
 		// global admin
@@ -769,13 +806,28 @@ func ValidateDeviceProfilesAccess(flag Flag, organizationID, applicationID int64
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, organizationID, applicationID)
+		return executeQuery(db, query, where, claims.Username, organizationID, applicationID)
 	}
 }
 
 // ValidateDeviceProfileAccess validates if the client has access to the
 // given device-profile.
 func ValidateDeviceProfileAccess(flag Flag, id uuid.UUID) ValidatorFunc {
+	query := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+		left join device_profile dp
+			on dp.organization_id = o.id
+	`
+
 	var where = [][]string{}
 
 	switch flag {
@@ -789,14 +841,16 @@ func ValidateDeviceProfileAccess(flag Flag, id uuid.UUID) ValidatorFunc {
 	case Update, Delete:
 		// global admin
 		// organization admin users
+		// organization device admin users
 		where = [][]string{
 			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
 			{"u.username = $1", "u.is_active = true", "ou.is_admin=true", "dp.device_profile_id = $2"},
+			{"u.username = $1", "u.is_active = true", "ou.is_device_admin=true", "dp.device_profile_id = $2"},
 		}
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, userQuery, where, claims.Username, id)
+		return executeQuery(db, query, where, claims.Username, id)
 	}
 }
 

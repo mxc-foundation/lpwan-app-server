@@ -22,6 +22,8 @@ type Config struct {
 	PostgreSQL struct {
 		DSN         string `mapstructure:"dsn"`
 		Automigrate bool
+		MaxOpenConnections int               `mapstructure:"max_open_connections"`
+		MaxIdleConnections int               `mapstructure:"max_idle_connections"`
 	} `mapstructure:"postgresql"`
 
 	MxpServer struct {
@@ -128,6 +130,14 @@ type Config struct {
 	} `mapstructure:"join_server"`
 
 	Metrics struct {
+		Timezone string `mapstructure:"timezone"`
+		Redis    struct {
+			AggregationIntervals []string      `mapstructure:"aggregation_intervals"`
+			MinuteAggregationTTL time.Duration `mapstructure:"minute_aggregation_ttl"`
+			HourAggregationTTL   time.Duration `mapstructure:"hour_aggregation_ttl"`
+			DayAggregationTTL    time.Duration `mapstructure:"day_aggregation_ttl"`
+			MonthAggregationTTL  time.Duration `mapstructure:"month_aggregation_ttl"`
+		} `mapstructure:"redis"`
 		Prometheus struct {
 			EndpointEnabled    bool   `mapstructure:"endpoint_enabled"`
 			Bind               string `mapstructure:"bind"`
