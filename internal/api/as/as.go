@@ -10,9 +10,9 @@ import (
 	"time"
 
 	keywrap "github.com/NickBall/go-aes-key-wrap"
+	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -29,6 +29,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/eventlog"
 	"github.com/brocaar/lora-app-server/internal/gwping"
 	"github.com/brocaar/lora-app-server/internal/integration"
+	"github.com/brocaar/lora-app-server/internal/logging"
 	"github.com/brocaar/lora-app-server/internal/storage"
 	"github.com/brocaar/loraserver/api/as"
 	"github.com/brocaar/loraserver/api/common"
@@ -67,7 +68,6 @@ func Setup(conf config.Config) error {
 	}
 	server := grpc.NewServer(grpcOpts...)
 	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI())
-	grpc_prometheus.Register(server)
 
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {
@@ -100,7 +100,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 	copy(devEUI[:], req.DevEui)
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err = storage.GetDevice(tx, devEUI, true, true)
+		d, err = storage.GetDevice(ctx, tx, devEUI, true, true)
 		if err != nil {
 			grpc.Errorf(codes.Internal, "get device error: %s", err)
 		}
@@ -110,7 +110,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 
 		d.LastSeenAt = &now
 		d.DR = &dr
-		err = storage.UpdateDevice(tx, &d, true)
+		err = storage.UpdateDevice(ctx, tx, &d, true)
 		if err != nil {
 			return grpc.Errorf(codes.Internal, "update device error: %s", err)
 		}
@@ -121,26 +121,26 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 		return nil, err
 	}
 
-	app, err := storage.GetApplication(storage.DB(), d.ApplicationID)
+	app, err := storage.GetApplication(ctx, storage.DB(), d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	dp, err := storage.GetDeviceProfile(storage.DB(), d.DeviceProfileID, false, true)
+	dp, err := storage.GetDeviceProfile(ctx, storage.DB(), d.DeviceProfileID, false, true)
 	if err != nil {
 		log.WithError(err).WithField("id", d.DeviceProfileID).Error("get device-profile error")
 		return nil, grpc.Errorf(codes.Internal, "get device-profile error: %s", err)
 	}
 
 	if req.DeviceActivationContext != nil {
-		if err := handleDeviceActivation(d, app, req.DeviceActivationContext); err != nil {
+		if err := handleDeviceActivation(ctx, d, app, req); err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 	}
 
-	da, err := storage.GetLastDeviceActivationForDevEUI(storage.DB(), d.DevEUI)
+	da, err := storage.GetLastDeviceActivationForDevEUI(ctx, storage.DB(), d.DevEUI)
 	if err != nil {
 		errStr := fmt.Sprintf("get device-activation error: %s", err)
 		log.WithField("dev_eui", d.DevEUI).Error(errStr)
@@ -163,12 +163,12 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 		switch req.FPort {
 		case 200:
 			internalApplayer = true
-			if err := multicastsetup.HandleRemoteMulticastSetupCommand(db, d.DevEUI, b); err != nil {
+			if err := multicastsetup.HandleRemoteMulticastSetupCommand(ctx, db, d.DevEUI, b); err != nil {
 				return grpc.Errorf(codes.Internal, "handle remote multicast setup command error: %s", err)
 			}
 		case 201:
 			internalApplayer = true
-			if err := fragmentation.HandleRemoteFragmentationSessionCommand(db, d.DevEUI, b); err != nil {
+			if err := fragmentation.HandleRemoteFragmentationSessionCommand(ctx, db, d.DevEUI, b); err != nil {
 				return grpc.Errorf(codes.Internal, "handle remote fragmentation session command error: %s", err)
 			}
 		case 202:
@@ -202,7 +202,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 				timeSinceGPSEpoch = gps.Time(timeField).TimeSinceGPSEpoch()
 			}
 
-			if err := clocksync.HandleClockSyncCommand(db, d.DevEUI, timeSinceGPSEpoch, b); err != nil {
+			if err := clocksync.HandleClockSyncCommand(ctx, db, d.DevEUI, timeSinceGPSEpoch, b); err != nil {
 				return grpc.Errorf(codes.Internal, "handle clocksync command error: %s", err)
 			}
 		}
@@ -272,7 +272,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 				log.WithError(err).Error("log event for device error")
 			}
 
-			if err := integration.Integration().SendErrorNotification(errNotification); err != nil {
+			if err := integration.Integration().SendErrorNotification(ctx, errNotification); err != nil {
 				log.WithError(err).Error("send error notification to integration error")
 			}
 		} else {
@@ -324,7 +324,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 		copy(mac[:], rxInfo.GatewayId)
 		macs = append(macs, mac)
 	}
-	gws, err := storage.GetGatewaysForMACs(storage.DB(), macs)
+	gws, err := storage.GetGatewaysForMACs(ctx, storage.DB(), macs)
 	if err != nil {
 		return nil, grpc.Errorf(codes.Internal, "get gateways for macs error: %s", err)
 	}
@@ -333,8 +333,12 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 		var mac lorawan.EUI64
 		copy(mac[:], rxInfo.GatewayId)
 
+		var uplinkID uuid.UUID
+		copy(uplinkID[:], rxInfo.UplinkId)
+
 		row := integration.RXInfo{
 			GatewayID: mac,
+			UplinkID:  uplinkID,
 			RSSI:      int(rxInfo.Rssi),
 			LoRaSNR:   rxInfo.LoraSnr,
 		}
@@ -371,7 +375,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 		log.WithError(err).Error("log event for device error")
 	}
 
-	err = integration.Integration().SendDataUp(pl)
+	err = integration.Integration().SendDataUp(ctx, pl)
 	if err != nil {
 		log.WithError(err).Error("send uplink data to integration error")
 		return nil, grpc.Errorf(codes.Internal, err.Error())
@@ -385,13 +389,13 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := storage.GetDevice(storage.DB(), devEUI, false, true)
+	d, err := storage.GetDevice(ctx, storage.DB(), devEUI, false, true)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
-	app, err := storage.GetApplication(storage.DB(), d.ApplicationID)
+	app, err := storage.GetApplication(ctx, storage.DB(), d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -433,7 +437,7 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 		log.WithError(err).Error("log event for device error")
 	}
 
-	err = integration.Integration().SendACKNotification(pl)
+	err = integration.Integration().SendACKNotification(ctx, pl)
 	if err != nil {
 		log.Errorf("send ack notification to integration error: %s", err)
 	}
@@ -446,13 +450,13 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := storage.GetDevice(storage.DB(), devEUI, false, true)
+	d, err := storage.GetDevice(ctx, storage.DB(), devEUI, false, true)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
-	app, err := storage.GetApplication(storage.DB(), d.ApplicationID)
+	app, err := storage.GetApplication(ctx, storage.DB(), d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -497,7 +501,7 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 		log.WithError(err).Error("log event for device error")
 	}
 
-	err = integration.Integration().SendErrorNotification(pl)
+	err = integration.Integration().SendErrorNotification(ctx, pl)
 	if err != nil {
 		errStr := fmt.Sprintf("send error notification to integration error: %s", err)
 		log.Error(errStr)
@@ -513,7 +517,7 @@ func (a *ApplicationServerAPI) HandleProprietaryUplink(ctx context.Context, req 
 		return nil, grpc.Errorf(codes.InvalidArgument, "tx_info must not be nil")
 	}
 
-	err := gwping.HandleReceivedPing(req)
+	err := gwping.HandleReceivedPing(ctx, req)
 	if err != nil {
 		errStr := fmt.Sprintf("handle received ping error: %s", err)
 		log.Error(errStr)
@@ -532,7 +536,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 	var err error
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err = storage.GetDevice(tx, devEUI, true, true)
+		d, err = storage.GetDevice(ctx, tx, devEUI, true, true)
 		if err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "get device error"))
 		}
@@ -551,7 +555,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 			d.DeviceStatusBattery = &req.BatteryLevel
 		}
 
-		if err = storage.UpdateDevice(tx, &d, true); err != nil {
+		if err = storage.UpdateDevice(ctx, tx, &d, true); err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "update device error"))
 		}
 
@@ -561,7 +565,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 		return nil, err
 	}
 
-	app, err := storage.GetApplication(storage.DB(), d.ApplicationID)
+	app, err := storage.GetApplication(ctx, storage.DB(), d.ApplicationID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "get application error"))
 	}
@@ -600,7 +604,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 		log.WithError(err).Error("log event for device error")
 	}
 
-	err = integration.Integration().SendStatusNotification(pl)
+	err = integration.Integration().SendStatusNotification(ctx, pl)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "send status notification to handler error"))
 	}
@@ -621,7 +625,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 	var err error
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err = storage.GetDevice(tx, devEUI, true, true)
+		d, err = storage.GetDevice(ctx, tx, devEUI, true, true)
 		if err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "get device error"))
 		}
@@ -630,7 +634,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 		d.Longitude = &req.Location.Longitude
 		d.Altitude = &req.Location.Altitude
 
-		if err = storage.UpdateDevice(tx, &d, true); err != nil {
+		if err = storage.UpdateDevice(ctx, tx, &d, true); err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "update device error"))
 		}
 
@@ -640,7 +644,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 		return nil, err
 	}
 
-	app, err := storage.GetApplication(storage.DB(), d.ApplicationID)
+	app, err := storage.GetApplication(ctx, storage.DB(), d.ApplicationID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "get application error"))
 	}
@@ -679,9 +683,62 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 		log.WithError(err).Error("log event for device error")
 	}
 
-	err = integration.Integration().SendLocationNotification(pl)
+	err = integration.Integration().SendLocationNotification(ctx, pl)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "send location notification to handler error"))
+	}
+
+	return &empty.Empty{}, nil
+}
+
+// HandleGatewayStats handles the given gateway stats.
+func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.HandleGatewayStatsRequest) (*empty.Empty, error) {
+	var gatewayID lorawan.EUI64
+	copy(gatewayID[:], req.GatewayId)
+
+	ts, err := ptypes.Timestamp(req.Time)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(errors.Wrap(err, "time error"))
+	}
+
+	err = storage.Transaction(func(tx sqlx.Ext) error {
+		gw, err := storage.GetGateway(ctx, tx, gatewayID, true)
+		if err != nil {
+			return helpers.ErrToRPCError(errors.Wrap(err, "get gateway error"))
+		}
+
+		if gw.FirstSeenAt == nil {
+			gw.FirstSeenAt = &ts
+		}
+		gw.LastSeenAt = &ts
+
+		if loc := req.Location; loc != nil {
+			gw.Latitude = loc.Latitude
+			gw.Longitude = loc.Longitude
+			gw.Altitude = loc.Altitude
+		}
+
+		if err := storage.UpdateGateway(ctx, tx, &gw); err != nil {
+			return helpers.ErrToRPCError(errors.Wrap(err, "update gateway error"))
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	metrics := storage.MetricsRecord{
+		Time: ts,
+		Metrics: map[string]float64{
+			"rx_count":    float64(req.RxPacketsReceived),
+			"rx_ok_count": float64(req.RxPacketsReceivedOk),
+			"tx_count":    float64(req.TxPacketsReceived),
+			"tx_ok_count": float64(req.TxPacketsEmitted),
+		},
+	}
+	if err := storage.SaveMetrics(ctx, storage.RedisPool(), fmt.Sprintf("gw:%s", gatewayID), metrics); err != nil {
+		return nil, helpers.ErrToRPCError(errors.Wrap(err, "save metrics error"))
 	}
 
 	return &empty.Empty{}, nil
@@ -735,7 +792,9 @@ func getSKey(typ byte, appkey lorawan.AES128Key, netID lorawan.NetID, appNonce [
 	return key, nil
 }
 
-func handleDeviceActivation(d storage.Device, app storage.Application, daCtx *as.DeviceActivationContext) error {
+func handleDeviceActivation(ctx context.Context, d storage.Device, app storage.Application, req *as.HandleUplinkDataRequest) error {
+	daCtx := req.DeviceActivationContext
+
 	if daCtx.AppSKey == nil {
 		return errors.New("AppSKey must not be nil")
 	}
@@ -751,7 +810,7 @@ func handleDeviceActivation(d storage.Device, app storage.Application, daCtx *as
 	}
 	copy(da.DevAddr[:], daCtx.DevAddr)
 
-	if err = storage.CreateDeviceActivation(storage.DB(), &da); err != nil {
+	if err = storage.CreateDeviceActivation(ctx, storage.DB(), &da); err != nil {
 		return errors.Wrap(err, "create device-activation error")
 	}
 
@@ -761,8 +820,13 @@ func handleDeviceActivation(d storage.Device, app storage.Application, daCtx *as
 		DevEUI:          d.DevEUI,
 		DeviceName:      d.Name,
 		DevAddr:         da.DevAddr,
-		Tags:            make(map[string]string),
-		Variables:       make(map[string]string),
+		RXInfo:          []integration.RXInfo{},
+		TXInfo: integration.TXInfo{
+			Frequency: int(req.TxInfo.Frequency),
+			DR:        int(req.Dr),
+		},
+		Tags:      make(map[string]string),
+		Variables: make(map[string]string),
 	}
 
 	// set tags and variables
@@ -777,15 +841,69 @@ func handleDeviceActivation(d storage.Device, app storage.Application, daCtx *as
 		}
 	}
 
+	// collect gateway data of receiving gateways (e.g. gateway name)
+	var macs []lorawan.EUI64
+	for _, rxInfo := range req.RxInfo {
+		var mac lorawan.EUI64
+		copy(mac[:], rxInfo.GatewayId)
+		macs = append(macs, mac)
+	}
+	gws, err := storage.GetGatewaysForMACs(ctx, storage.DB(), macs)
+	if err != nil {
+		return errors.Wrap(err, "get gateways for macs error")
+	}
+
+	for _, rxInfo := range req.RxInfo {
+		var mac lorawan.EUI64
+		var uplinkID uuid.UUID
+		copy(mac[:], rxInfo.GatewayId)
+		copy(uplinkID[:], rxInfo.UplinkId)
+
+		row := integration.RXInfo{
+			GatewayID: mac,
+			UplinkID:  uplinkID,
+			RSSI:      int(rxInfo.Rssi),
+			LoRaSNR:   rxInfo.LoraSnr,
+		}
+
+		if rxInfo.Location != nil {
+			row.Location = &integration.Location{
+				Latitude:  rxInfo.Location.Latitude,
+				Longitude: rxInfo.Location.Longitude,
+				Altitude:  rxInfo.Location.Altitude,
+			}
+		}
+
+		if gw, ok := gws[mac]; ok {
+			row.Name = gw.Name
+		}
+
+		if rxInfo.Time != nil {
+			ts, err := ptypes.Timestamp(rxInfo.Time)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"dev_eui": d.DevEUI,
+					"ctx_id":  ctx.Value(logging.ContextIDKey),
+				}).WithError(err).Error("parse timestamp error")
+			} else {
+				row.Time = &ts
+			}
+		}
+
+		pl.RXInfo = append(pl.RXInfo, row)
+	}
+
 	err = eventlog.LogEventForDevice(d.DevEUI, eventlog.EventLog{
 		Type:    eventlog.Join,
 		Payload: pl,
 	})
 	if err != nil {
-		log.WithError(err).Error("log event for device error")
+		log.WithError(err).WithFields(log.Fields{
+			"ctx_id": ctx.Value(logging.ContextIDKey),
+		}).Error("log event for device error")
 	}
 
-	err = integration.Integration().SendJoinNotification(pl)
+	err = integration.Integration().SendJoinNotification(ctx, pl)
 	if err != nil {
 		return errors.Wrap(err, "send join notification error")
 	}

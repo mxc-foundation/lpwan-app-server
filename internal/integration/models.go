@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/brocaar/lorawan"
+	"github.com/gofrs/uuid"
 )
 
 func init() {
@@ -27,6 +28,7 @@ type Location struct {
 // RXInfo contains the RX information.
 type RXInfo struct {
 	GatewayID lorawan.EUI64 `json:"gatewayID"`
+	UplinkID  uuid.UUID     `json:"uplinkID"`
 	Name      string        `json:"name"`
 	Time      *time.Time    `json:"time,omitempty"`
 	RSSI      int           `json:"rssi"`
@@ -75,6 +77,8 @@ type JoinNotification struct {
 	DeviceName      string            `json:"deviceName"`
 	DevEUI          lorawan.EUI64     `json:"devEUI"`
 	DevAddr         lorawan.DevAddr   `json:"devAddr"`
+	RXInfo          []RXInfo          `json:"rxInfo,omitempty"`
+	TXInfo          TXInfo            `json:"txInfo"`
 	Tags            map[string]string `json:"tags,omitempty"`
 	Variables       map[string]string `json:"-"`
 }

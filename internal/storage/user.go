@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/sha512"
 	"database/sql"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brocaar/lora-app-server/internal/logging"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -80,24 +82,16 @@ type UserProfileUser struct {
 	UpdatedAt  time.Time `db:"updated_at"`
 }
 
-// UserProfileApplication contains the applications to which the user
-// is linked.
-type UserProfileApplication struct {
-	ID        int64     `db:"application_id"`
-	Name      string    `db:"application_name"`
-	IsAdmin   bool      `db:"is_admin"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
-
 // UserProfileOrganization contains the organizations to which the user
 // is linked.
 type UserProfileOrganization struct {
-	ID        int64     `db:"organization_id"`
-	Name      string    `db:"organization_name"`
-	IsAdmin   bool      `db:"is_admin"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID             int64     `db:"organization_id"`
+	Name           string    `db:"organization_name"`
+	IsAdmin        bool      `db:"is_admin"`
+	IsDeviceAdmin  bool      `db:"is_device_admin"`
+	IsGatewayAdmin bool      `db:"is_gateway_admin"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
 }
 
 // userInternal represents a user as known by the database.
@@ -140,7 +134,10 @@ func ValidateEmail(email string) error {
 }
 
 // CreateUser creates the given user.
-func CreateUser(db sqlx.Queryer, user *User, password string) (int64, error) {
+func CreateUser(ctx context.Context, db sqlx.Queryer, user *User, password string) (int64, error) {
+	if err := ValidateUsername(user.Username); err != nil {
+		return 0, errors.Wrap(err, "validation error")
+	}
 
 	if err := ValidatePassword(password); err != nil {
 		return 0, errors.Wrap(err, "validation error")
@@ -191,6 +188,7 @@ func CreateUser(db sqlx.Queryer, user *User, password string) (int64, error) {
 		"username":    user.Username,
 		"session_ttl": user.SessionTTL,
 		"is_admin":    user.IsAdmin,
+		"ctx_id":      ctx.Value(logging.ContextIDKey),
 	}).Info("user created")
 	return user.ID, nil
 }
@@ -249,7 +247,7 @@ func hashCompare(password string, passwordHash string) bool {
 }
 
 // GetUser returns the User for the given id.
-func GetUser(db sqlx.Queryer, id int64) (User, error) {
+func GetUser(ctx context.Context, db sqlx.Queryer, id int64) (User, error) {
 	var user User
 	err := sqlx.Get(db, &user, "select "+externalUserFields+" from \"user\" where id = $1", id)
 	if err != nil {
@@ -263,7 +261,7 @@ func GetUser(db sqlx.Queryer, id int64) (User, error) {
 }
 
 // GetUserByUsername returns the User for the given username.
-func GetUserByUsername(db sqlx.Queryer, username string) (User, error) {
+func GetUserByUsername(ctx context.Context, db sqlx.Queryer, username string) (User, error) {
 	var user User
 	err := sqlx.Get(db, &user, "select "+externalUserFields+" from \"user\" where username = $1", username)
 	if err != nil {
@@ -277,7 +275,7 @@ func GetUserByUsername(db sqlx.Queryer, username string) (User, error) {
 }
 
 // GetUserCount returns the total number of users.
-func GetUserCount(db sqlx.Queryer, search string) (int32, error) {
+func GetUserCount(ctx context.Context, db sqlx.Queryer, search string) (int32, error) {
 	var count int32
 	if search != "" {
 		search = "%" + search + "%"
@@ -297,7 +295,7 @@ func GetUserCount(db sqlx.Queryer, search string) (int32, error) {
 }
 
 // GetUsers returns a slice of users, respecting the given limit and offset.
-func GetUsers(db sqlx.Queryer, limit, offset int, search string) ([]User, error) {
+func GetUsers(ctx context.Context, db sqlx.Queryer, limit, offset int, search string) ([]User, error) {
 	var users []User
 	if search != "" {
 		search = "%" + search + "%"
@@ -310,7 +308,7 @@ func GetUsers(db sqlx.Queryer, limit, offset int, search string) ([]User, error)
 }
 
 // UpdateUser updates the given User.
-func UpdateUser(db sqlx.Execer, item UserUpdate) error {
+func UpdateUser(ctx context.Context, db sqlx.Execer, item UserUpdate) error {
 	if err := ValidateUsername(item.Username); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -354,13 +352,14 @@ func UpdateUser(db sqlx.Execer, item UserUpdate) error {
 		"username":    item.Username,
 		"is_admin":    item.IsAdmin,
 		"session_ttl": item.SessionTTL,
+		"ctx_id":      ctx.Value(logging.ContextIDKey),
 	}).Info("user updated")
 
 	return nil
 }
 
 // DeleteUser deletes the User record matching the given ID.
-func DeleteUser(db sqlx.Execer, id int64) error {
+func DeleteUser(ctx context.Context, db sqlx.Execer, id int64) error {
 	res, err := db.Exec("delete from \"user\" where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
@@ -374,14 +373,15 @@ func DeleteUser(db sqlx.Execer, id int64) error {
 	}
 
 	log.WithFields(log.Fields{
-		"id": id,
+		"id":     id,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("user deleted")
 	return nil
 }
 
 // LoginUser returns a JWT token for the user matching the given username
 // and password.
-func LoginUser(db sqlx.Queryer, username string, password string) (string, error) {
+func LoginUser(ctx context.Context, db sqlx.Queryer, username string, password string) (string, error) {
 	// Find the user by username
 	var user userInternal
 	err := sqlx.Get(db, &user, "select "+internalUserFields+" from \"user\" where username = $1", username)
@@ -428,7 +428,7 @@ func MakeJWT(username string, sessionTTL int32) (string, error) {
 }
 
 // UpdatePassword updates the user with the new password.
-func UpdatePassword(db sqlx.Execer, id int64, newpassword string) error {
+func UpdatePassword(ctx context.Context, db sqlx.Execer, id int64, newpassword string) error {
 	if err := ValidatePassword(newpassword); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -446,7 +446,8 @@ func UpdatePassword(db sqlx.Execer, id int64, newpassword string) error {
 	}
 
 	log.WithFields(log.Fields{
-		"id": id,
+		"id":     id,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("user password updated")
 	return nil
 
@@ -454,10 +455,10 @@ func UpdatePassword(db sqlx.Execer, id int64, newpassword string) error {
 
 // GetProfile returns the user profile (user, applications and organizations
 // to which the user is linked).
-func GetProfile(db sqlx.Queryer, id int64) (UserProfile, error) {
+func GetProfile(ctx context.Context, db sqlx.Queryer, id int64) (UserProfile, error) {
 	var prof UserProfile
 
-	user, err := GetUser(db, id)
+	user, err := GetUser(ctx, db, id)
 	if err != nil {
 		return prof, errors.Wrap(err, "get user error")
 	}
@@ -476,6 +477,8 @@ func GetProfile(db sqlx.Queryer, id int64) (UserProfile, error) {
 			ou.organization_id as organization_id,
 			o.name as organization_name,
 			ou.is_admin as is_admin,
+			ou.is_device_admin as is_device_admin,
+			ou.is_gateway_admin as is_gateway_admin,
 			ou.created_at as created_at,
 			ou.updated_at as updated_at
 		from
