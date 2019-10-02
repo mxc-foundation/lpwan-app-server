@@ -26,6 +26,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/integration/application"
 	"github.com/brocaar/lora-app-server/internal/integration/multi"
 	"github.com/brocaar/lora-app-server/internal/metrics"
+	"github.com/brocaar/lora-app-server/internal/migrations/code"
 	"github.com/brocaar/lora-app-server/internal/storage"
 )
 
@@ -39,6 +40,7 @@ func run(cmd *cobra.Command, args []string) error {
 		printStartMessage,
 		setupStorage,
 		setupNetworkServer,
+		migrateGatewayStats,
 		setupM2MServer,
 		setupIntegration,
 		setupSMTP,
@@ -153,6 +155,14 @@ func setupNetworkServer() error {
 	if err := networkserver.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup networkserver error")
 	}
+	return nil
+}
+
+func migrateGatewayStats() error {
+	if err := code.Migrate("migrate_gw_stats", code.MigrateGatewayStats); err != nil {
+		return errors.Wrap(err, "migration error")
+	}
+
 	return nil
 }
 
