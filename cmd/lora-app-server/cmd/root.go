@@ -39,6 +39,7 @@ func init() {
 	viper.SetDefault("general.host_server", "lora.demo.cloud.mxc.org")
 	viper.SetDefault("postgresql.dsn", "postgres://localhost/loraserver_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
+	viper.SetDefault("postgresql.max_idle_connections", 2)
 	viper.SetDefault("redis.url", "redis://localhost:6379")
 	viper.SetDefault("redis.max_idle", 10)
 	viper.SetDefault("redis.idle_timeout", 5*time.Minute)
@@ -66,6 +67,13 @@ func init() {
 	viper.SetDefault("application_server.fragmentation_session.sync_interval", time.Second)
 	viper.SetDefault("application_server.fragmentation_session.sync_retries", 3)
 	viper.SetDefault("application_server.fragmentation_session.sync_batch_size", 100)
+
+	viper.SetDefault("metrics.timezone", "Local")
+	viper.SetDefault("metrics.redis.aggregation_intervals", []string{"MINUTE", "HOUR", "DAY", "MONTH"})
+	viper.SetDefault("metrics.redis.minute_aggregation_ttl", time.Hour*2)
+	viper.SetDefault("metrics.redis.hour_aggregation_ttl", time.Hour*48)
+	viper.SetDefault("metrics.redis.day_aggregation_ttl", time.Hour*24*90)
+	viper.SetDefault("metrics.redis.month_aggregation_ttl", time.Hour*24*730)
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)

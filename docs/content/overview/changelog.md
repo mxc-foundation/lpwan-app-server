@@ -10,6 +10,81 @@ description: Lists the changes per LoRa App Server release, including steps how 
 
 # Changelog
 
+## v3.4.0
+
+### Features
+
+#### IDs for correlation
+
+This release implements per context unique IDs that are printed in the
+logs and are returned as header in API responses. This makes it easier to
+correlate log events.
+
+#### Organization admin permissions
+
+Next to the organization admin permission, this release makes it possible
+to also (instead of full organization admin permissions), make an user
+"device admin" or "gateway admin".
+
+#### Migrate gateway stats
+
+This release migrates the gateway stats from LoRa Server into LoRa App Server.
+This also adds new configuration options to the configuration file, to configure
+the timezone for aggregation and metrics retention.
+
+#### Gateway map
+
+In the gateway list page, it is now possible to show a map showing all the
+gateways and their states.
+
+### Improvements
+
+* Add PostgreSQL max open / idle connections settings. ([#360](https://github.com/brocaar/lora-app-server/pull/360)
+
+### Upgrading
+
+This release requires LoRa Server v3.3.0 or later (which will forward the
+gateway stats to the Application Server API). After upgrading LoRa App Server
+and restarting it, it will run a migration to import existing stats from the
+LoRa Server database. Therefore make sure LoRa Server is up and running
+during the upgrade of LoRa App Server.
+
+## v3.3.1
+
+### Improvements
+
+* Add RXInfo and TXInfo to join-notifications. ([#235](https://github.com/brocaar/lora-app-server/pull/347))
+
+### Bugfixes
+
+* Propagate gRPC errors to that the correct HTTP status is returned. ([#349](https://github.com/brocaar/lora-app-server/issues/349))
+* Fix not found UI error when device is inactive. ([#359](https://github.com/brocaar/lora-app-server/issues/359))
+
+## v3.3.0
+
+### Features
+
+#### Multi-frame geolocation
+
+The multi-frame geolocation (implemented by LoRa Server v3.2.0) fields have
+been added to the Device Profile form in the web-interface.
+
+#### Prometheus metrics
+
+Prometheus metics have been implemented for the Join Server API interface.
+
+### Improvements
+
+* Update UI dependencies to their latest versions.
+* Show popup on gateway create when no Service Profile exists. ([#345](https://github.com/brocaar/lora-app-server/issues/345))
+* Remove unused fields when listing users. ([#328](https://github.com/brocaar/lora-app-server/issues/345))
+* Update multicast address and session-key input field widgets.
+* Mention in API description that the organization ID of an application can not be updated after create. ([#343](https://github.com/brocaar/lora-app-server/issues/343))
+
+### Bugfixes
+
+* Trigger organization dropdown reload on organization change. ([#342](https://github.com/brocaar/lora-app-server/issues/342))
+
 ## v3.2.0
 
 ### Features
