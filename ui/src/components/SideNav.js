@@ -20,7 +20,7 @@ import Rss from "mdi-material-ui/Rss";
 import Wallet from "mdi-material-ui/WalletOutline";
 
 import AccountDetails from "mdi-material-ui/AccountDetails";
-
+import ServerInfoStore from "../stores/ServerInfoStore"
 import AutocompleteSelect from "./AutocompleteSelect";
 import SessionStore from "../stores/SessionStore";
 import OrganizationStore from "../stores/OrganizationStore";
@@ -73,6 +73,14 @@ const styles = {
   },
 };
 
+function loadServerVersion() {
+  return new Promise((resolve, reject) => {
+    ServerInfoStore.getAppserverVersion(data=>{
+      resolve(data);
+    });
+  });
+} 
+
 class SideNav extends Component {
   constructor() {
     super();
@@ -81,6 +89,7 @@ class SideNav extends Component {
       open: true,
       organization: null,
       cacheCounter: 0,
+      version: '1.0.0'
     };
 
 
@@ -90,7 +99,28 @@ class SideNav extends Component {
     this.getOrganizationFromLocation = this.getOrganizationFromLocation.bind(this);
   }
 
+  loadData = async () => {
+    try {
+      const organizationID = SessionStore.getOrganizationID();
+      var data = await loadServerVersion();
+      const serverInfo = JSON.parse(data);
+      
+      this.setState({
+        organizationID,
+        version: serverInfo.version.substring(0,5)
+      })
+
+      this.setState({loading: true})
+      
+    } catch (error) {
+      this.setState({loading: false})
+      console.error(error);
+      this.setState({ error });
+    }
+  }
+
   componentDidMount() {
+    this.loadData();
     SessionStore.on("organization.change", () => {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
         this.setState({
@@ -341,8 +371,10 @@ class SideNav extends Component {
                     <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
                   </ListItemIcon>
                 </ListItem>
+                <ListItem>
+                  <ListItemText primary={`Version ${this.state.version}`} />
+                </ListItem>
               </List>
-
         </>}
       </Drawer>
     );
