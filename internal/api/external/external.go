@@ -92,6 +92,7 @@ func setupAPI(conf config.Config) error {
 	api.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(validator))
 	api.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
+	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
@@ -261,6 +262,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	}
 	if err := pb.RegisterFUOTADeploymentServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register fuota deployment handler error")
+	}
+	if err := pb.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register server info handler error")
 	}
 
 	return mux, nil

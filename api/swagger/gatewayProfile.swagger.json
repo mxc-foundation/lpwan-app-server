@@ -83,7 +83,7 @@
         ]
       }
     },
-    "/api/gateway-profiles/{gateway_profile.id}": {
+    "/api/gateway-profiles/{gatewayProfile.id}": {
       "put": {
         "summary": "Update updates the given gateway-profile.",
         "operationId": "Update",
@@ -97,7 +97,7 @@
         },
         "parameters": [
           {
-            "name": "gateway_profile.id",
+            "name": "gatewayProfile.id",
             "description": "Gateway-profile ID (UUID string).",
             "in": "path",
             "required": true,

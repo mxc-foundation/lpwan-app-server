@@ -10,6 +10,8 @@ import (
 	"github.com/brocaar/lora-app-server/internal/integration/postgresql"
 )
 
+var AppserverVersion string
+
 // Config defines the configuration structure.
 type Config struct {
 	General struct {

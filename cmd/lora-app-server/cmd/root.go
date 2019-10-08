@@ -122,6 +122,8 @@ func initConfig() {
 	if config.C.ApplicationServer.Integration.Backend != "" {
 		config.C.ApplicationServer.Integration.Enabled = []string{config.C.ApplicationServer.Integration.Backend}
 	}
+
+	config.AppserverVersion = version
 }
 
 func viperBindEnvs(iface interface{}, parts ...string) {

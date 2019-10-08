@@ -11,6 +11,8 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -1043,6 +1045,26 @@ type FUOTADeploymentServiceServer interface {
 	GetDeploymentDevice(context.Context, *GetFUOTADeploymentDeviceRequest) (*GetFUOTADeploymentDeviceResponse, error)
 	// ListDeploymentDevices lists the devices (and status) for the given fuota deployment ID.
 	ListDeploymentDevices(context.Context, *ListFUOTADeploymentDevicesRequest) (*ListFUOTADeploymentDevicesResponse, error)
+}
+
+// UnimplementedFUOTADeploymentServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedFUOTADeploymentServiceServer struct {
+}
+
+func (*UnimplementedFUOTADeploymentServiceServer) CreateForDevice(ctx context.Context, req *CreateFUOTADeploymentForDeviceRequest) (*CreateFUOTADeploymentForDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateForDevice not implemented")
+}
+func (*UnimplementedFUOTADeploymentServiceServer) Get(ctx context.Context, req *GetFUOTADeploymentRequest) (*GetFUOTADeploymentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedFUOTADeploymentServiceServer) List(ctx context.Context, req *ListFUOTADeploymentRequest) (*ListFUOTADeploymentResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (*UnimplementedFUOTADeploymentServiceServer) GetDeploymentDevice(ctx context.Context, req *GetFUOTADeploymentDeviceRequest) (*GetFUOTADeploymentDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentDevice not implemented")
+}
+func (*UnimplementedFUOTADeploymentServiceServer) ListDeploymentDevices(ctx context.Context, req *ListFUOTADeploymentDevicesRequest) (*ListFUOTADeploymentDevicesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDeploymentDevices not implemented")
 }
 
 func RegisterFUOTADeploymentServiceServer(s *grpc.Server, srv FUOTADeploymentServiceServer) {

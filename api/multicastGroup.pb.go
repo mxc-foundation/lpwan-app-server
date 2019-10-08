@@ -11,6 +11,8 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -1266,6 +1268,41 @@ type MulticastGroupServiceServer interface {
 	FlushQueue(context.Context, *FlushMulticastGroupQueueItemsRequest) (*empty.Empty, error)
 	// ListQueue lists the items in the multicast-group queue.
 	ListQueue(context.Context, *ListMulticastGroupQueueItemsRequest) (*ListMulticastGroupQueueItemsResponse, error)
+}
+
+// UnimplementedMulticastGroupServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedMulticastGroupServiceServer struct {
+}
+
+func (*UnimplementedMulticastGroupServiceServer) Create(ctx context.Context, req *CreateMulticastGroupRequest) (*CreateMulticastGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Get(ctx context.Context, req *GetMulticastGroupRequest) (*GetMulticastGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Update(ctx context.Context, req *UpdateMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Delete(ctx context.Context, req *DeleteMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) List(ctx context.Context, req *ListMulticastGroupRequest) (*ListMulticastGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) AddDevice(ctx context.Context, req *AddDeviceToMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDevice not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) RemoveDevice(ctx context.Context, req *RemoveDeviceFromMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveDevice not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Enqueue(ctx context.Context, req *EnqueueMulticastQueueItemRequest) (*EnqueueMulticastQueueItemResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Enqueue not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) FlushQueue(ctx context.Context, req *FlushMulticastGroupQueueItemsRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlushQueue not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) ListQueue(ctx context.Context, req *ListMulticastGroupQueueItemsRequest) (*ListMulticastGroupQueueItemsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListQueue not implemented")
 }
 
 func RegisterMulticastGroupServiceServer(s *grpc.Server, srv MulticastGroupServiceServer) {

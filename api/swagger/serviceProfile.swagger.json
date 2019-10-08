@@ -133,7 +133,7 @@
         ]
       }
     },
-    "/api/service-profiles/{service_profile.id}": {
+    "/api/service-profiles/{serviceProfile.id}": {
       "put": {
         "summary": "Update updates the given serviceprofile.",
         "operationId": "Update",
@@ -147,7 +147,7 @@
         },
         "parameters": [
           {
-            "name": "service_profile.id",
+            "name": "serviceProfile.id",
             "description": "Service-profile ID (UUID string).\nThis will be automatically set on create.",
             "in": "path",
             "required": true,
