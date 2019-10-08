@@ -169,7 +169,7 @@
         ]
       }
     },
-    "/api/users/{user_id}/password": {
+    "/api/users/{userId}/password": {
       "put": {
         "summary": "UpdatePassword updates a password.",
         "operationId": "UpdatePassword",
@@ -183,7 +183,7 @@
         },
         "parameters": [
           {
-            "name": "user_id",
+            "name": "userId",
             "description": "User ID.",
             "in": "path",
             "required": true,
