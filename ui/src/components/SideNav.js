@@ -107,7 +107,7 @@ class SideNav extends Component {
       
       this.setState({
         organizationID,
-        version: serverInfo.version.substring(0,5)
+        version: serverInfo.version
       })
 
       this.setState({loading: true})
