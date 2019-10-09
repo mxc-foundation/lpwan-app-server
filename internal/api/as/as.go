@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
+	api "github.com/brocaar/lora-app-server/api/m2m_server"
 	"github.com/brocaar/lora-app-server/internal/api/helpers"
 	"github.com/brocaar/lora-app-server/internal/applayer/clocksync"
 	"github.com/brocaar/lora-app-server/internal/applayer/fragmentation"
@@ -85,6 +86,46 @@ type ApplicationServerAPI struct {
 // NewApplicationServerAPI returns a new ApplicationServerAPI.
 func NewApplicationServerAPI() *ApplicationServerAPI {
 	return &ApplicationServerAPI{}
+}
+
+func (a *ApplicationServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDeviceByDevEuiRequest) (*api.GetDeviceByDevEuiResponse, error) {
+	var devEui lorawan.EUI64
+	var resp api.GetDeviceByDevEuiResponse
+	if err := devEui.UnmarshalText([]byte(req.DevEui)); err != nil {
+		return &api.GetDeviceByDevEuiResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "unable to get dev_eui from unmarshal request"))
+	}
+
+	device, err := storage.GetDevice(ctx, storage.DB(), devEui, false, true)
+	if err != nil {
+		return &api.GetDeviceByDevEuiResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "get device by dev_eui error"))
+	}
+
+	resp.DevProfile.DevEui = req.DevEui
+	resp.DevProfile.Name = device.Name
+	resp.DevProfile.ApplicationId = device.ApplicationID
+
+	return &resp, nil
+}
+
+func (a *ApplicationServerAPI) GetGatewayByMac(ctx context.Context, req *api.GetGatewayByMacRequest) (*api.GetGatewayByMacResponse, error) {
+	var mac lorawan.EUI64
+	var resp api.GetGatewayByMacResponse
+	if err := mac.UnmarshalText([]byte(req.Mac)); err != nil {
+		return &api.GetGatewayByMacResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "unable to get mac from unmarshal request"))
+	}
+
+	gateway, err := storage.GetGateway(ctx, storage.DB(), mac, false)
+	if err != nil {
+		return &api.GetGatewayByMacResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "get gateway by mac error"))
+	}
+
+	resp.OrgId = gateway.OrganizationID
+	resp.GwProfile.OrgId = gateway.OrganizationID
+	resp.GwProfile.Mac = req.Mac
+	resp.GwProfile.Name = gateway.Name
+	resp.GwProfile.Description = gateway.Description
+
+	return &resp, nil
 }
 
 // HandleUplinkData handles incoming (uplink) data.

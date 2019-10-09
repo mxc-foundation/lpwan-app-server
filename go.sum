@@ -51,6 +51,8 @@ github.com/brocaar/loraserver v0.0.0-20190917115647-c4da45f52f2b h1:iYgmTmf69flR
 github.com/brocaar/loraserver v0.0.0-20190917115647-c4da45f52f2b/go.mod h1:JTmS0Kk2inKluT1limjm4Xk5FcD70/WV63DMN2lJfVk=
 github.com/brocaar/lorawan v0.0.0-20190814113539-8eb2a8d6da09 h1:hV+axbeTsoTCa1tEkXzDjucdg1GPSX9j1fn95saTKBo=
 github.com/brocaar/lorawan v0.0.0-20190814113539-8eb2a8d6da09/go.mod h1:Fm+51pxK6mZoAQjIaWJqPmnRuXecozsM5Mf9c+kr/ko=
+github.com/brocaar/lorawan v0.0.0-20190925120821-154a30dbdce2 h1:51WcQ+VAc/6jZ/8GBJiQ3B7FrT2aXI+YsUx2iG9tJlw=
+github.com/brocaar/lorawan v0.0.0-20190925120821-154a30dbdce2/go.mod h1:Fm+51pxK6mZoAQjIaWJqPmnRuXecozsM5Mf9c+kr/ko=
 github.com/caarlos0/ctrlc v1.0.0 h1:2DtF8GSIcajgffDFJzyG15vO+1PuBWOMUdFut7NnXhw=
 github.com/caarlos0/ctrlc v1.0.0/go.mod h1:CdXpj4rmq0q/1Eb44M9zi2nKB0QraNKuRGYGrrHhcQw=
 github.com/campoy/unique v0.0.0-20180121183637-88950e537e7e h1:V9a67dfYqPLAvzk5hMQOXYJlZ4SLIXgyKIE+ZiHzgGQ=

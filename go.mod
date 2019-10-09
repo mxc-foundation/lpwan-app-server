@@ -8,7 +8,7 @@ require (
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
 	github.com/aws/aws-sdk-go v1.19.19
 	github.com/brocaar/loraserver v0.0.0-20190917115647-c4da45f52f2b
-	github.com/brocaar/lorawan v0.0.0-20190814113539-8eb2a8d6da09
+	github.com/brocaar/lorawan v0.0.0-20190925120821-154a30dbdce2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/elazarl/go-bindata-assetfs v1.0.0
