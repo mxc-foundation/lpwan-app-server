@@ -112,7 +112,7 @@ class MulticastGroupStore extends EventEmitter {
     this.swagger.then(client => {
       client.apis.MulticastGroupService.RemoveDevice({
         multicast_group_id: multicastGroupID,
-        dev_eui: devEUI,
+        devEui: devEUI,
       })
       .then(checkStatus)
       .then(resp => {
