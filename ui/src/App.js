@@ -152,7 +152,7 @@ class App extends Component {
         drawerOpen: SessionStore.getUser() != null,
       });
     });
-
+    
     this.setState({
       user: SessionStore.getUser(),
       organizationId: SessionStore.getOrganizationID(),
@@ -172,9 +172,9 @@ class App extends Component {
     let topbanner = null;
     
     if (this.state.user !== null) {
-      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
-      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
       sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
+      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
+      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
     }
     
     return (
@@ -187,7 +187,7 @@ class App extends Component {
               {topbanner}
               {sideNav}
               <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
-                <Grid container spacing={24}>
+                <Grid container spacing={4}>
                   <Switch>
                     <Route exact path="/" component={OrganizationRedirect} />
                     <Route exact path="/login" component={Login} />
@@ -214,9 +214,9 @@ class App extends Component {
                     <Route exact path="/organizations/:organizationID(\d+)/device-profiles/create" component={CreateDeviceProfile} />
                     <Route path="/organizations/:organizationID(\d+)/device-profiles/:deviceProfileID([\w-]{36})" component={DeviceProfileLayout} />
 
-                    <Route exact path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
                     <Route exact path="/organizations/:organizationID(\d+)/gateways/create" component={CreateGateway} />
                     <Route path="/organizations/:organizationID(\d+)/gateways/:gatewayID([\w]{16})" component={GatewayLayout} />
+                    <Route path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
 
                     <Route exact path="/organizations/:organizationID(\d+)/applications" component={ListApplications} />
                     <Route exact path="/organizations/:organizationID(\d+)/applications/create" component={CreateApplication} />

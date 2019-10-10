@@ -87,6 +87,12 @@ port="25"
 #host="mail.smtp2go.com"
 #port="587"
 
+[m2m_server]
+m2m_server="mxprotocol-server:4000"
+ca_cert=""
+tls_cert=""
+tls_key=""
+
 # Application-server settings.
 [application_server]
 # Application-server identifier.
@@ -303,7 +309,7 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # Set this to allows cross-domain communication from the browser (CORS).
   # Example value: https://example.com.
   # When left blank (default), CORS will not be used.
-  cors_allow_origin="http://172.18.0.5:8080"
+  cors_allow_origin="http://localhost:3000"
 
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users=false

@@ -10,18 +10,22 @@ import (
 	"github.com/brocaar/lora-app-server/internal/integration/postgresql"
 )
 
+var AppserverVersion string
+
 // Config defines the configuration structure.
 type Config struct {
 	General struct {
 		LogLevel               int    `mapstructure:"log_level"`
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
 		HostServer             string `mapstructure:"host_server"`
-		DemoUser			   string `mapstructure:"demo_user"`
+		DemoUser               string `mapstructure:"demo_user"`
 	}
 
 	PostgreSQL struct {
 		DSN         string `mapstructure:"dsn"`
 		Automigrate bool
+		MaxOpenConnections int               `mapstructure:"max_open_connections"`
+		MaxIdleConnections int               `mapstructure:"max_idle_connections"`
 	} `mapstructure:"postgresql"`
 
 	MxpServer struct {
@@ -41,6 +45,13 @@ type Config struct {
 		Host     string `mapstructure:"host"`
 		Port     string `mapstructure:"port"`
 	} `mapstructure:"smtp"`
+
+	M2MServer struct {
+		M2MServer string `mapstructure:"m2m_server"`
+		CACert    string `mapstructure:"ca_cert"`
+		TLSCert   string `mapstructure:"tls_cert"`
+		TLSKey    string `mapstructure:"tls_key"`
+	} `mapstructure:"m2m_server"`
 
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
@@ -128,6 +139,14 @@ type Config struct {
 	} `mapstructure:"join_server"`
 
 	Metrics struct {
+		Timezone string `mapstructure:"timezone"`
+		Redis    struct {
+			AggregationIntervals []string      `mapstructure:"aggregation_intervals"`
+			MinuteAggregationTTL time.Duration `mapstructure:"minute_aggregation_ttl"`
+			HourAggregationTTL   time.Duration `mapstructure:"hour_aggregation_ttl"`
+			DayAggregationTTL    time.Duration `mapstructure:"day_aggregation_ttl"`
+			MonthAggregationTTL  time.Duration `mapstructure:"month_aggregation_ttl"`
+		} `mapstructure:"redis"`
 		Prometheus struct {
 			EndpointEnabled    bool   `mapstructure:"endpoint_enabled"`
 			Bind               string `mapstructure:"bind"`

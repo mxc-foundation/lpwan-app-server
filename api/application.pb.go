@@ -10,6 +10,8 @@ import (
 	empty "github.com/golang/protobuf/ptypes/empty"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -2068,6 +2070,65 @@ type ApplicationServiceServer interface {
 	DeleteThingsBoardIntegration(context.Context, *DeleteThingsBoardIntegrationRequest) (*empty.Empty, error)
 	// ListIntegrations lists all configured integrations.
 	ListIntegrations(context.Context, *ListIntegrationRequest) (*ListIntegrationResponse, error)
+}
+
+// UnimplementedApplicationServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedApplicationServiceServer struct {
+}
+
+func (*UnimplementedApplicationServiceServer) Create(ctx context.Context, req *CreateApplicationRequest) (*CreateApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedApplicationServiceServer) Get(ctx context.Context, req *GetApplicationRequest) (*GetApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedApplicationServiceServer) Update(ctx context.Context, req *UpdateApplicationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedApplicationServiceServer) Delete(ctx context.Context, req *DeleteApplicationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedApplicationServiceServer) List(ctx context.Context, req *ListApplicationRequest) (*ListApplicationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (*UnimplementedApplicationServiceServer) CreateHTTPIntegration(ctx context.Context, req *CreateHTTPIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateHTTPIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) GetHTTPIntegration(ctx context.Context, req *GetHTTPIntegrationRequest) (*GetHTTPIntegrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHTTPIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) UpdateHTTPIntegration(ctx context.Context, req *UpdateHTTPIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateHTTPIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) DeleteHTTPIntegration(ctx context.Context, req *DeleteHTTPIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteHTTPIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) CreateInfluxDBIntegration(ctx context.Context, req *CreateInfluxDBIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateInfluxDBIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) GetInfluxDBIntegration(ctx context.Context, req *GetInfluxDBIntegrationRequest) (*GetInfluxDBIntegrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInfluxDBIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) UpdateInfluxDBIntegration(ctx context.Context, req *UpdateInfluxDBIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateInfluxDBIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) DeleteInfluxDBIntegration(ctx context.Context, req *DeleteInfluxDBIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteInfluxDBIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) CreateThingsBoardIntegration(ctx context.Context, req *CreateThingsBoardIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateThingsBoardIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) GetThingsBoardIntegration(ctx context.Context, req *GetThingsBoardIntegrationRequest) (*GetThingsBoardIntegrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetThingsBoardIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) UpdateThingsBoardIntegration(ctx context.Context, req *UpdateThingsBoardIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateThingsBoardIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) DeleteThingsBoardIntegration(ctx context.Context, req *DeleteThingsBoardIntegrationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteThingsBoardIntegration not implemented")
+}
+func (*UnimplementedApplicationServiceServer) ListIntegrations(ctx context.Context, req *ListIntegrationRequest) (*ListIntegrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListIntegrations not implemented")
 }
 
 func RegisterApplicationServiceServer(s *grpc.Server, srv ApplicationServiceServer) {

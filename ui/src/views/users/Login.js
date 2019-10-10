@@ -4,7 +4,6 @@ import { withRouter, Link } from "react-router-dom";
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
@@ -47,7 +46,7 @@ class LoginForm extends FormComponent {
     }
     
     const extraButtons = [
-      <Button color="primary" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
+      <Button color="primary.main" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
     ]
     let demoUsername = "";
     let demoPassword = "";

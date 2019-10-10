@@ -29,9 +29,6 @@ const theme = createMuiTheme({
       root: {
         color: white
       },
-      headline: {
-        color: white
-      },
     },
     typography: {
       subheading: {
@@ -58,7 +55,13 @@ const theme = createMuiTheme({
         colorTextSecondary: {
           color: white,
         },
-        headline: {
+        overline: {
+          color: white
+        },
+        subtitle1: {
+          color: white
+        },        
+        subtitle2: {
           color: white
         },
         caption: {
@@ -129,7 +132,7 @@ const theme = createMuiTheme({
       },
       MuiPaper: {
         root: {
-          backgroundColor: blueBG,
+          backgroundColor: overlayBG,
           padding: 10,
         }
       },
@@ -216,6 +219,9 @@ const theme = createMuiTheme({
         label: {
           color: white,
         },
+        textColorInherit: {
+          color: white,
+        }
       },
       MuiSvgIcon: {
         root: {
@@ -228,6 +234,9 @@ const theme = createMuiTheme({
           color: white,
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
         },
+        paper:{
+          backgroundColor: '#191980'
+        }
       },
       MuiMenu: {
         paper: {

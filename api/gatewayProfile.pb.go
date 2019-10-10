@@ -12,6 +12,8 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -786,6 +788,26 @@ type GatewayProfileServiceServer interface {
 	Delete(context.Context, *DeleteGatewayProfileRequest) (*empty.Empty, error)
 	// List returns the existing gateway-profiles.
 	List(context.Context, *ListGatewayProfilesRequest) (*ListGatewayProfilesResponse, error)
+}
+
+// UnimplementedGatewayProfileServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedGatewayProfileServiceServer struct {
+}
+
+func (*UnimplementedGatewayProfileServiceServer) Create(ctx context.Context, req *CreateGatewayProfileRequest) (*CreateGatewayProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedGatewayProfileServiceServer) Get(ctx context.Context, req *GetGatewayProfileRequest) (*GetGatewayProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedGatewayProfileServiceServer) Update(ctx context.Context, req *UpdateGatewayProfileRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedGatewayProfileServiceServer) Delete(ctx context.Context, req *DeleteGatewayProfileRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedGatewayProfileServiceServer) List(ctx context.Context, req *ListGatewayProfilesRequest) (*ListGatewayProfilesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
 
 func RegisterGatewayProfileServiceServer(s *grpc.Server, srv GatewayProfileServiceServer) {

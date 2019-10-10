@@ -7,7 +7,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
 
 import Divider from '@material-ui/core/Divider';
 import Domain from "mdi-material-ui/Domain";
@@ -21,14 +20,14 @@ import Rss from "mdi-material-ui/Rss";
 import Wallet from "mdi-material-ui/WalletOutline";
 
 import AccountDetails from "mdi-material-ui/AccountDetails";
-
+import ServerInfoStore from "../stores/ServerInfoStore"
 import AutocompleteSelect from "./AutocompleteSelect";
 import SessionStore from "../stores/SessionStore";
 import OrganizationStore from "../stores/OrganizationStore";
 import Admin from "./Admin";
 
 import theme from "../theme";
-
+import { getM2MLink } from "../util/Util";
 
 const styles = {
   drawerPaper: {
@@ -74,6 +73,14 @@ const styles = {
   },
 };
 
+function loadServerVersion() {
+  return new Promise((resolve, reject) => {
+    ServerInfoStore.getAppserverVersion(data=>{
+      resolve(data);
+    });
+  });
+} 
+
 class SideNav extends Component {
   constructor() {
     super();
@@ -82,6 +89,7 @@ class SideNav extends Component {
       open: true,
       organization: null,
       cacheCounter: 0,
+      version: '1.0.0'
     };
 
 
@@ -91,7 +99,28 @@ class SideNav extends Component {
     this.getOrganizationFromLocation = this.getOrganizationFromLocation.bind(this);
   }
 
+  loadData = async () => {
+    try {
+      const organizationID = SessionStore.getOrganizationID();
+      var data = await loadServerVersion();
+      const serverInfo = JSON.parse(data);
+      
+      this.setState({
+        organizationID,
+        version: serverInfo.version
+      })
+
+      this.setState({loading: true})
+      
+    } catch (error) {
+      this.setState({loading: false})
+      console.error(error);
+      this.setState({ error });
+    }
+  }
+
   componentDidMount() {
+    this.loadData();
     SessionStore.on("organization.change", () => {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
         this.setState({
@@ -176,40 +205,40 @@ class SideNav extends Component {
   }
 
   handleOpenM2M = () => {
-    let org_id = this.state.organization.id;
-    let org_name = '';
-    if(!org_id){
+    let orgId = this.state.organization.id;
+    let orgName = '';
+    if(!orgId){
       return false;
     }
     const user = SessionStore.getUser();  
     const org = SessionStore.getOrganizations(); 
     
     if(user.isAdmin){
-      org_id = '0';
-      org_name = 'Super_admin';
+      orgId = '0';
+      orgName = 'Super_admin';
     }else{
       if(org.length > 0){
-        org_name = org[0].organizationName;
+        orgName = org[0].organizationName;
       }else{
-        org_name = '';
+        orgName = '';
       }
     }
     
     const data = {
       jwt: window.localStorage.getItem("jwt"),
-      path: `/withdraw/${org_id}`,
-      org_id,
-      org_name,
+      path: `/withdraw/${orgId}`,
+      orgId,
+      orgName,
       username: user.username,
       loraHostUrl: window.location.origin
     };
     
     const dataString = encodeURIComponent(JSON.stringify(data));
-    /* console.log('M2M_DEV_SERVER', process.env.M2M_DEV_SERVER);
-    console.log('M2M_DEV_SERVER', process.env);
-    return false; */
+
+    const host = getM2MLink();
+
     // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(process.env.REACT_APP_M2M_SERVER + `/#/j/${dataString}`);
+    window.location.replace(host + `/#/j/${dataString}`);
   }
 
   render() {
@@ -342,8 +371,10 @@ class SideNav extends Component {
                     <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
                   </ListItemIcon>
                 </ListItem>
+                <ListItem>
+                  <ListItemText primary={`Version ${this.state.version}`} />
+                </ListItem>
               </List>
-
         </>}
       </Drawer>
     );

@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./configuration:/etc/lora-app-server
+      - ./:/lora-app-server
     links:
       - postgresql
       - redis

@@ -12,6 +12,8 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -1920,6 +1922,56 @@ type DeviceServiceServer interface {
 	//   * This endpoint is intended for debugging only.
 	//   * This endpoint does not work from a web-browser.
 	StreamEventLogs(*StreamDeviceEventLogsRequest, DeviceService_StreamEventLogsServer) error
+}
+
+// UnimplementedDeviceServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedDeviceServiceServer struct {
+}
+
+func (*UnimplementedDeviceServiceServer) Create(ctx context.Context, req *CreateDeviceRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedDeviceServiceServer) Get(ctx context.Context, req *GetDeviceRequest) (*GetDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedDeviceServiceServer) List(ctx context.Context, req *ListDeviceRequest) (*ListDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (*UnimplementedDeviceServiceServer) Delete(ctx context.Context, req *DeleteDeviceRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedDeviceServiceServer) Update(ctx context.Context, req *UpdateDeviceRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedDeviceServiceServer) CreateKeys(ctx context.Context, req *CreateDeviceKeysRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateKeys not implemented")
+}
+func (*UnimplementedDeviceServiceServer) GetKeys(ctx context.Context, req *GetDeviceKeysRequest) (*GetDeviceKeysResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetKeys not implemented")
+}
+func (*UnimplementedDeviceServiceServer) UpdateKeys(ctx context.Context, req *UpdateDeviceKeysRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateKeys not implemented")
+}
+func (*UnimplementedDeviceServiceServer) DeleteKeys(ctx context.Context, req *DeleteDeviceKeysRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteKeys not implemented")
+}
+func (*UnimplementedDeviceServiceServer) Activate(ctx context.Context, req *ActivateDeviceRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Activate not implemented")
+}
+func (*UnimplementedDeviceServiceServer) Deactivate(ctx context.Context, req *DeactivateDeviceRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Deactivate not implemented")
+}
+func (*UnimplementedDeviceServiceServer) GetActivation(ctx context.Context, req *GetDeviceActivationRequest) (*GetDeviceActivationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActivation not implemented")
+}
+func (*UnimplementedDeviceServiceServer) GetRandomDevAddr(ctx context.Context, req *GetRandomDevAddrRequest) (*GetRandomDevAddrResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRandomDevAddr not implemented")
+}
+func (*UnimplementedDeviceServiceServer) StreamFrameLogs(req *StreamDeviceFrameLogsRequest, srv DeviceService_StreamFrameLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamFrameLogs not implemented")
+}
+func (*UnimplementedDeviceServiceServer) StreamEventLogs(req *StreamDeviceEventLogsRequest, srv DeviceService_StreamEventLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamEventLogs not implemented")
 }
 
 func RegisterDeviceServiceServer(s *grpc.Server, srv DeviceServiceServer) {

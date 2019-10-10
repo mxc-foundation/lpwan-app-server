@@ -28,6 +28,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Wallet from "mdi-material-ui/WalletOutline";
 
 import SessionStore from "../stores/SessionStore";
+import WalletStore from "../stores/WalletStore";
 import theme from "../theme";
 
 
@@ -86,6 +87,18 @@ const styles = {
   },
 };
 
+function getWalletBalance(organizationId) {
+  if (!organizationId) {
+    return 0;
+  }
+  
+  return new Promise((resolve, reject) => {
+    
+    WalletStore.getWalletBalance(organizationId, resp => {
+      return resolve(resp);
+    });
+  });
+}
 
 class TopNav extends Component {
   constructor() {
@@ -93,6 +106,8 @@ class TopNav extends Component {
 
     this.state = {
       menuAnchor: null,
+      balance: null,
+      organizationId: SessionStore.getOrganizationID(),
       search: "",
     };
 
@@ -101,6 +116,32 @@ class TopNav extends Component {
     this.onLogout = this.onLogout.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
+  }
+  
+  componentDidMount() {
+    this.loadData();
+  }
+
+  loadData = async () => {
+    try {
+      let organizationId = null;
+
+      if(this.state.organizationId !== null){
+        organizationId = this.state.organizationId;
+      }else{
+        if(SessionStore.getOrganizations().length > 0){
+          organizationId = SessionStore.getOrganizations()[0].organizationID;
+        }else{
+          organizationId = null;
+        }
+      }
+
+      var result = await getWalletBalance(organizationId);
+      this.setState({ balance: result.balance });
+    } catch (error) {
+      console.error(error);
+      this.setState({ error });
+    }
   }
 
   onMenuOpen(e) {
@@ -155,7 +196,8 @@ class TopNav extends Component {
                     }
                   />
     }
-    const balance = 6631;
+    const { balance } = this.state;
+    
     const balanceEl = balance === null ? 
       <span className="color-gray">(no org selected)</span> : 
       balance + " MXC";

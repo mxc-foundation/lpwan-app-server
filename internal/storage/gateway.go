@@ -5,13 +5,17 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
+	"github.com/brocaar/lora-app-server/internal/config"
 	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/lib/pq"
 
+	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
 	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
+	"github.com/brocaar/lora-app-server/internal/logging"
 	"github.com/brocaar/loraserver/api/ns"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -29,6 +33,8 @@ type Gateway struct {
 	MAC              lorawan.EUI64 `db:"mac"`
 	CreatedAt        time.Time     `db:"created_at"`
 	UpdatedAt        time.Time     `db:"updated_at"`
+	FirstSeenAt      *time.Time    `db:"first_seen_at"`
+	LastSeenAt       *time.Time    `db:"last_seen_at"`
 	Name             string        `db:"name"`
 	Description      string        `db:"description"`
 	OrganizationID   int64         `db:"organization_id"`
@@ -37,6 +43,9 @@ type Gateway struct {
 	LastPingSentAt   *time.Time    `db:"last_ping_sent_at"`
 	NetworkServerID  int64         `db:"network_server_id"`
 	GatewayProfileID *string       `db:"gateway_profile_id"`
+	Latitude         float64       `db:"latitude"`
+	Longitude        float64       `db:"longitude"`
+	Altitude         float64       `db:"altitude"`
 }
 
 // GatewayPing represents a gateway ping.
@@ -92,7 +101,7 @@ func (g Gateway) Validate() error {
 }
 
 // CreateGateway creates the given Gateway.
-func CreateGateway(db sqlx.Execer, gw *Gateway) error {
+func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -113,8 +122,13 @@ func CreateGateway(db sqlx.Execer, gw *Gateway) error {
 			last_ping_id,
 			last_ping_sent_at,
 			network_server_id,
-			gateway_profile_id
-		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+			gateway_profile_id,
+			first_seen_at,
+			last_seen_at,
+			latitude,
+			longitude,
+			altitude
+		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
 		gw.MAC[:],
 		gw.CreatedAt,
 		gw.UpdatedAt,
@@ -126,20 +140,46 @@ func CreateGateway(db sqlx.Execer, gw *Gateway) error {
 		gw.LastPingSentAt,
 		gw.NetworkServerID,
 		gw.GatewayProfileID,
+		gw.FirstSeenAt,
+		gw.LastSeenAt,
+		gw.Latitude,
+		gw.Longitude,
+		gw.Altitude,
 	)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
 	}
 
+	// add this gateway to m2m server
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.AddGatewayInM2MServer(context.Background(), &m2m_api.AddGatewayInM2MServerRequest{
+			OrgId: gw.OrganizationID,
+			GwProfile: &m2m_api.AppServerGatewayProfile{
+				Mac:         gw.MAC.String(),
+				OrgId:       gw.OrganizationID,
+				Description: gw.Description,
+				Name:        gw.Name,
+			},
+		})
+		if err != nil {
+			log.WithError(err).Error("m2m server create gateway api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
+	}
+
 	log.WithFields(log.Fields{
-		"mac":  gw.MAC,
-		"name": gw.Name,
+		"id":     gw.MAC,
+		"name":   gw.Name,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("gateway created")
 	return nil
 }
 
 // UpdateGateway updates the given Gateway.
-func UpdateGateway(db sqlx.Execer, gw *Gateway) error {
+func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -156,7 +196,12 @@ func UpdateGateway(db sqlx.Execer, gw *Gateway) error {
 			last_ping_id = $7,
 			last_ping_sent_at = $8,
 			network_server_id = $9,
-			gateway_profile_id = $10
+			gateway_profile_id = $10,
+			first_seen_at = $11,
+			last_seen_at = $12,
+			latitude = $13,
+			longitude = $14,
+			altitude = $15
 		where
 			mac = $1`,
 		gw.MAC[:],
@@ -169,6 +214,11 @@ func UpdateGateway(db sqlx.Execer, gw *Gateway) error {
 		gw.LastPingSentAt,
 		gw.NetworkServerID,
 		gw.GatewayProfileID,
+		gw.FirstSeenAt,
+		gw.LastSeenAt,
+		gw.Latitude,
+		gw.Longitude,
+		gw.Altitude,
 	)
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
@@ -183,15 +233,16 @@ func UpdateGateway(db sqlx.Execer, gw *Gateway) error {
 
 	gw.UpdatedAt = now
 	log.WithFields(log.Fields{
-		"mac":  gw.MAC,
-		"name": gw.Name,
+		"id":     gw.MAC,
+		"name":   gw.Name,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("gateway updated")
 	return nil
 }
 
 // DeleteGateway deletes the gateway matching the given MAC.
-func DeleteGateway(db sqlx.Ext, mac lorawan.EUI64) error {
-	n, err := GetNetworkServerForGatewayMAC(db, mac)
+func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
+	n, err := GetNetworkServerForGatewayMAC(ctx, db, mac)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -213,19 +264,36 @@ func DeleteGateway(db sqlx.Ext, mac lorawan.EUI64) error {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.DeleteGateway(context.Background(), &ns.DeleteGatewayRequest{
+	_, err = nsClient.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
 		Id: mac[:],
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete gateway error")
 	}
 
-	log.WithField("mac", mac).Info("gateway deleted")
+	// delete this gateway from m2m-server
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
+			MacAddress: mac.String(),
+		})
+		if err != nil && grpc.Code(err) != codes.NotFound {
+			log.WithError(err).Error("delete gateway from m2m-server error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
+	}
+
+	log.WithFields(log.Fields{
+		"id":     mac,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
+	}).Info("gateway deleted")
 	return nil
 }
 
 // GetGateway returns the gateway for the given mac.
-func GetGateway(db sqlx.Queryer, mac lorawan.EUI64, forUpdate bool) (Gateway, error) {
+func GetGateway(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64, forUpdate bool) (Gateway, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -242,7 +310,7 @@ func GetGateway(db sqlx.Queryer, mac lorawan.EUI64, forUpdate bool) (Gateway, er
 }
 
 // GetGatewayCount returns the total number of gateways.
-func GetGatewayCount(db sqlx.Queryer, search string) (int, error) {
+func GetGatewayCount(ctx context.Context, db sqlx.Queryer, search string) (int, error) {
 	var count int
 	if search != "" {
 		search = "%" + search + "%"
@@ -271,7 +339,7 @@ func GetGatewayCount(db sqlx.Queryer, search string) (int, error) {
 }
 
 // GetGateways returns a slice of gateways sorted by name.
-func GetGateways(db sqlx.Queryer, limit, offset int, search string) ([]Gateway, error) {
+func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search string) ([]Gateway, error) {
 	var gws []Gateway
 	if search != "" {
 		search = "%" + search + "%"
@@ -304,7 +372,7 @@ func GetGateways(db sqlx.Queryer, limit, offset int, search string) ([]Gateway, 
 }
 
 // GetGatewaysForMACs returns a map of gateways given a slice of MACs.
-func GetGatewaysForMACs(db sqlx.Queryer, macs []lorawan.EUI64) (map[lorawan.EUI64]Gateway, error) {
+func GetGatewaysForMACs(ctx context.Context, db sqlx.Queryer, macs []lorawan.EUI64) (map[lorawan.EUI64]Gateway, error) {
 	out := make(map[lorawan.EUI64]Gateway)
 	var macsB [][]byte
 	for i := range macs {
@@ -321,6 +389,7 @@ func GetGatewaysForMACs(db sqlx.Queryer, macs []lorawan.EUI64) (map[lorawan.EUI6
 		log.WithFields(log.Fields{
 			"expected": len(macs),
 			"returned": len(gws),
+			"ctx_id":   ctx.Value(logging.ContextIDKey),
 		}).Warning("requested number of gateways does not match returned")
 	}
 
@@ -333,7 +402,7 @@ func GetGatewaysForMACs(db sqlx.Queryer, macs []lorawan.EUI64) (map[lorawan.EUI6
 
 // GetGatewayCountForOrganizationID returns the total number of gateways
 // given an organization ID.
-func GetGatewayCountForOrganizationID(db sqlx.Queryer, organizationID int64, search string) (int, error) {
+func GetGatewayCountForOrganizationID(ctx context.Context, db sqlx.Queryer, organizationID int64, search string) (int, error) {
 	var count int
 	if search != "" {
 		search = "%" + search + "%"
@@ -366,7 +435,7 @@ func GetGatewayCountForOrganizationID(db sqlx.Queryer, organizationID int64, sea
 
 // GetGatewaysForOrganizationID returns a slice of gateways sorted by name
 // for the given organization ID.
-func GetGatewaysForOrganizationID(db sqlx.Queryer, organizationID int64, limit, offset int, search string) ([]Gateway, error) {
+func GetGatewaysForOrganizationID(ctx context.Context, db sqlx.Queryer, organizationID int64, limit, offset int, search string) ([]Gateway, error) {
 	var gws []Gateway
 	if search != "" {
 		search = "%" + search + "%"
@@ -404,7 +473,7 @@ func GetGatewaysForOrganizationID(db sqlx.Queryer, organizationID int64, limit, 
 
 // GetGatewayCountForUser returns the total number of gateways to which the
 // given user has access.
-func GetGatewayCountForUser(db sqlx.Queryer, username string, search string) (int, error) {
+func GetGatewayCountForUser(ctx context.Context, db sqlx.Queryer, username string, search string) (int, error) {
 	var count int
 	if search != "" {
 		search = "%" + search + "%"
@@ -443,7 +512,7 @@ func GetGatewayCountForUser(db sqlx.Queryer, username string, search string) (in
 
 // GetGatewaysForUser returns a slice of gateways sorted by name to which the
 // given user has access.
-func GetGatewaysForUser(db sqlx.Queryer, username string, limit, offset int, search string) ([]Gateway, error) {
+func GetGatewaysForUser(ctx context.Context, db sqlx.Queryer, username string, limit, offset int, search string) ([]Gateway, error) {
 	var gws []Gateway
 	if search != "" {
 		search = "%" + search + "%"
@@ -486,7 +555,7 @@ func GetGatewaysForUser(db sqlx.Queryer, username string, limit, offset int, sea
 }
 
 // CreateGatewayPing creates the given gateway ping.
-func CreateGatewayPing(db sqlx.Queryer, ping *GatewayPing) error {
+func CreateGatewayPing(ctx context.Context, db sqlx.Queryer, ping *GatewayPing) error {
 	ping.CreatedAt = time.Now()
 
 	err := sqlx.Get(db, &ping.ID, `
@@ -511,13 +580,14 @@ func CreateGatewayPing(db sqlx.Queryer, ping *GatewayPing) error {
 		"frequency":   ping.Frequency,
 		"dr":          ping.DR,
 		"id":          ping.ID,
+		"ctx_id":      ctx.Value(logging.ContextIDKey),
 	}).Info("gateway ping created")
 
 	return nil
 }
 
 // GetGatewayPing returns the ping matching the given id.
-func GetGatewayPing(db sqlx.Queryer, id int64) (GatewayPing, error) {
+func GetGatewayPing(ctx context.Context, db sqlx.Queryer, id int64) (GatewayPing, error) {
 	var ping GatewayPing
 	err := sqlx.Get(db, &ping, "select * from gateway_ping where id = $1", id)
 	if err != nil {
@@ -528,7 +598,7 @@ func GetGatewayPing(db sqlx.Queryer, id int64) (GatewayPing, error) {
 }
 
 // CreateGatewayPingRX creates the received ping.
-func CreateGatewayPingRX(db sqlx.Queryer, rx *GatewayPingRX) error {
+func CreateGatewayPingRX(ctx context.Context, db sqlx.Queryer, rx *GatewayPingRX) error {
 	rx.CreatedAt = time.Now()
 
 	err := sqlx.Get(db, &rx.ID, `
@@ -561,7 +631,7 @@ func CreateGatewayPingRX(db sqlx.Queryer, rx *GatewayPingRX) error {
 
 // DeleteAllGatewaysForOrganizationID deletes all gateways for a given
 // organization id.
-func DeleteAllGatewaysForOrganizationID(db sqlx.Ext, organizationID int64) error {
+func DeleteAllGatewaysForOrganizationID(ctx context.Context, db sqlx.Ext, organizationID int64) error {
 	var gws []Gateway
 	err := sqlx.Select(db, &gws, "select * from gateway where organization_id = $1", organizationID)
 	if err != nil {
@@ -569,7 +639,7 @@ func DeleteAllGatewaysForOrganizationID(db sqlx.Ext, organizationID int64) error
 	}
 
 	for _, gw := range gws {
-		err = DeleteGateway(db, gw.MAC)
+		err = DeleteGateway(ctx, db, gw.MAC)
 		if err != nil {
 			return errors.Wrap(err, "delete gateway error")
 		}
@@ -580,7 +650,7 @@ func DeleteAllGatewaysForOrganizationID(db sqlx.Ext, organizationID int64) error
 
 // GetGatewayPingRXForPingID returns the received gateway pings for the given
 // ping ID.
-func GetGatewayPingRXForPingID(db sqlx.Queryer, pingID int64) ([]GatewayPingRX, error) {
+func GetGatewayPingRXForPingID(ctx context.Context, db sqlx.Queryer, pingID int64) ([]GatewayPingRX, error) {
 	var rx []GatewayPingRX
 
 	err := sqlx.Select(db, &rx, "select * from gateway_ping_rx where ping_id = $1", pingID)
@@ -593,8 +663,8 @@ func GetGatewayPingRXForPingID(db sqlx.Queryer, pingID int64) ([]GatewayPingRX, 
 
 // GetLastGatewayPingAndRX returns the last gateway ping and RX for the given
 // gateway MAC.
-func GetLastGatewayPingAndRX(db sqlx.Queryer, mac lorawan.EUI64) (GatewayPing, []GatewayPingRX, error) {
-	gw, err := GetGateway(db, mac, false)
+func GetLastGatewayPingAndRX(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (GatewayPing, []GatewayPingRX, error) {
+	gw, err := GetGateway(ctx, db, mac, false)
 	if err != nil {
 		return GatewayPing{}, nil, errors.Wrap(err, "get gateway error")
 	}
@@ -603,12 +673,12 @@ func GetLastGatewayPingAndRX(db sqlx.Queryer, mac lorawan.EUI64) (GatewayPing, [
 		return GatewayPing{}, nil, ErrDoesNotExist
 	}
 
-	ping, err := GetGatewayPing(db, *gw.LastPingID)
+	ping, err := GetGatewayPing(ctx, db, *gw.LastPingID)
 	if err != nil {
 		return GatewayPing{}, nil, errors.Wrap(err, "get gateway ping error")
 	}
 
-	rx, err := GetGatewayPingRXForPingID(db, ping.ID)
+	rx, err := GetGatewayPingRXForPingID(ctx, db, ping.ID)
 	if err != nil {
 		return GatewayPing{}, nil, errors.Wrap(err, "get gateway ping rx for ping id error")
 	}
