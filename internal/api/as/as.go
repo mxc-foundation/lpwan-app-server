@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"google.golang.org/grpc/status"
 	"math"
 	"net"
 	"time"
@@ -92,14 +93,22 @@ func (a *ApplicationServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.G
 	var devEui lorawan.EUI64
 	var resp api.GetDeviceByDevEuiResponse
 	if err := devEui.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return &api.GetDeviceByDevEuiResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "unable to get dev_eui from unmarshal request"))
+		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	device, err := storage.GetDevice(ctx, storage.DB(), devEui, false, true)
-	if err != nil {
-		return &api.GetDeviceByDevEuiResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "get device by dev_eui error"))
+	if err == storage.ErrDoesNotExist {
+		return &resp, nil
+	} else if err != nil {
+		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}
 
+	application, err := storage.GetApplication(ctx, storage.DB(), device.ApplicationID)
+	if err != nil {
+		return &resp, status.Errorf(codes.Unknown, err.Error())
+	}
+
+	resp.OrgId = application.OrganizationID
 	resp.DevProfile.DevEui = req.DevEui
 	resp.DevProfile.Name = device.Name
 	resp.DevProfile.ApplicationId = device.ApplicationID
@@ -111,12 +120,14 @@ func (a *ApplicationServerAPI) GetGatewayByMac(ctx context.Context, req *api.Get
 	var mac lorawan.EUI64
 	var resp api.GetGatewayByMacResponse
 	if err := mac.UnmarshalText([]byte(req.Mac)); err != nil {
-		return &api.GetGatewayByMacResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "unable to get mac from unmarshal request"))
+		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	gateway, err := storage.GetGateway(ctx, storage.DB(), mac, false)
-	if err != nil {
-		return &api.GetGatewayByMacResponse{}, helpers.ErrToRPCError(errors.Wrap(err, "get gateway by mac error"))
+	if err == storage.ErrDoesNotExist {
+		return &resp, nil
+	}else if err != nil {
+		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	resp.OrgId = gateway.OrganizationID

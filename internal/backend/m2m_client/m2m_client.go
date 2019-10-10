@@ -20,7 +20,8 @@ import (
 
 var p Pool
 
-// Pool defines the network-server client pool.
+// Pool defines the m2m server client pool.
+// Actually this connection pool is not necessary now for m2m client, because there is only one m2m server.
 type Pool interface {
 	Get(hostname string, caCert, tlsCert, tlsKey []byte) (m2m.M2MServerServiceClient, error)
 }
@@ -53,7 +54,7 @@ type pool struct {
 	m2mServiceClients map[string]m2mServiceClient
 }
 
-// Get returns a NetworkServerClient for the given server (hostname:ip).
+// Get returns a M2MServerServiceClient for the given server (hostname:ip).
 func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (m2m.M2MServerServiceClient, error) {
 	defer p.Unlock()
 	p.Lock()
