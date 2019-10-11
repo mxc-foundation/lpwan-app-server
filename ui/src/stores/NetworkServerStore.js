@@ -45,7 +45,7 @@ class NetworkServerStore extends EventEmitter {
   update(networkServer, callbackFunc) {
     this.swagger.then(client => {
       client.apis.NetworkServerService.Update({
-        "network_server.id": networkServer.id,
+        "networkServer.id": networkServer.id,
         body: {
           networkServer: networkServer,
         },

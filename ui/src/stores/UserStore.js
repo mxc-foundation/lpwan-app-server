@@ -78,7 +78,7 @@ class UserStore extends EventEmitter {
   updatePassword(id, password, callbackFunc) {
     this.swagger.then(client => {
       client.apis.UserService.UpdatePassword({
-        "user_id": id,
+        "userId": id,
         body: {
           password: password,
         },
