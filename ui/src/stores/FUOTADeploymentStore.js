@@ -68,7 +68,7 @@ class FUOTADeploymentStore extends EventEmitter {
   getDeploymentDevice(fuotaDeploymentID, devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.GetDeploymentDevice({
-        fuota_deployment_id: fuotaDeploymentID,
+        fuotaDeploymentId: fuotaDeploymentID,
         devEui: devEUI,
       })
         .then(checkStatus)

@@ -43,7 +43,7 @@ class DeviceQueueStore extends EventEmitter {
   enqueue(item, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceQueueService.Enqueue({
-        "device_queue_item.devEui": item.devEUI,
+        "deviceQueueItem.devEui": item.devEUI,
         body: {
           deviceQueueItem: item,
         },

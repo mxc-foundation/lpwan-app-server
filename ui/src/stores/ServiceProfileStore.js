@@ -45,7 +45,7 @@ class ServiceProfileStore extends EventEmitter {
   update(serviceProfile, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ServiceProfileService.Update({
-        "service_profile.id": serviceProfile.id,
+        "serviceProfile.id": serviceProfile.id,
         body: {
           serviceProfile: serviceProfile,
         },
