@@ -13,6 +13,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
+import GoogleRecaptchaStore from "../../stores/GoogleRecaptchaStore"
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
 import { Divider } from "@material-ui/core";
@@ -41,6 +42,15 @@ class RegistrationForm extends FormComponent {
 
   onReCapChange = (value) => {
     console.log("Captcha value:", value);
+    const req = {
+      secret : process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    GoogleRecaptchaStore.getVerifyingGoogleRecaptcha(req, () => {
+      
+    }); 
   }
   
   render() {
