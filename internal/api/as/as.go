@@ -89,6 +89,21 @@ func NewApplicationServerAPI() *ApplicationServerAPI {
 	return &ApplicationServerAPI{}
 }
 
+func (a *ApplicationServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty) (*api.GetDeviceDevEuiListResponse, error) {
+	devEuiList, err := storage.GetAllDeviceEuis(ctx, storage.DB())
+	if err != nil {
+		return &api.GetDeviceDevEuiListResponse{}, status.Errorf(codes.DataLoss, err.Error())
+	}
+
+	return &api.GetDeviceDevEuiListResponse{DevEui: devEuiList}, nil
+}
+
+func (a *ApplicationServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
+	
+
+	return &api.GetGatewayMacListResponse{}, nil
+}
+
 func (a *ApplicationServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDeviceByDevEuiRequest) (*api.GetDeviceByDevEuiResponse, error) {
 	var devEui lorawan.EUI64
 	var resp api.GetDeviceByDevEuiResponse
@@ -112,6 +127,7 @@ func (a *ApplicationServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.G
 	resp.DevProfile.DevEui = req.DevEui
 	resp.DevProfile.Name = device.Name
 	resp.DevProfile.ApplicationId = device.ApplicationID
+	resp.DevProfile.CreatedAt, _ = ptypes.TimestampProto(device.CreatedAt)
 
 	return &resp, nil
 }
@@ -126,7 +142,7 @@ func (a *ApplicationServerAPI) GetGatewayByMac(ctx context.Context, req *api.Get
 	gateway, err := storage.GetGateway(ctx, storage.DB(), mac, false)
 	if err == storage.ErrDoesNotExist {
 		return &resp, nil
-	}else if err != nil {
+	} else if err != nil {
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
@@ -135,6 +151,7 @@ func (a *ApplicationServerAPI) GetGatewayByMac(ctx context.Context, req *api.Get
 	resp.GwProfile.Mac = req.Mac
 	resp.GwProfile.Name = gateway.Name
 	resp.GwProfile.Description = gateway.Description
+	resp.GwProfile.CreatedAt, _ = ptypes.TimestampProto(gateway.CreatedAt)
 
 	return &resp, nil
 }
