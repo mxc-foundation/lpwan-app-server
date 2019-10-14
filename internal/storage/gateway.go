@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
 	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/golang/protobuf/ptypes"
 	"regexp"
 	"strconv"
 	"time"
@@ -108,6 +109,8 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 
 	now := time.Now()
 	gw.CreatedAt = now
+	timestampCreatedAt, _ := ptypes.TimestampProto(gw.CreatedAt)
+
 	gw.UpdatedAt = now
 
 	_, err := db.Exec(`
@@ -161,6 +164,7 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 				OrgId:       gw.OrganizationID,
 				Description: gw.Description,
 				Name:        gw.Name,
+				CreatedAt:   timestampCreatedAt,
 			},
 		})
 		if err != nil {
