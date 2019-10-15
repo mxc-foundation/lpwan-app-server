@@ -51,6 +51,7 @@ const theme = createMuiTheme({
         },
         body2: {
           color: white,
+          fontSize: '0.7rem'
         },
         colorTextSecondary: {
           color: white,

@@ -372,7 +372,7 @@ class SideNav extends Component {
                   </ListItemIcon>
                 </ListItem>
                 <ListItem>
-                  <ListItemText primary={`Version ${this.state.version}`} />
+                  <ListItemText secondary={`Version ${this.state.version}`} />
                 </ListItem>
               </List>
         </>}
