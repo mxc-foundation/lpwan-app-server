@@ -316,6 +316,11 @@ id="{{ .ApplicationServer.ID }}"
   # above.
   public_host="{{ .ApplicationServer.API.PublicHost }}"
 
+  [application_server.api_for_m2m]
+  bind="{{ .ApplicationServer.APIForM2M.Bind }}"
+  ca_cert="{{ .ApplicationServer.APIForM2M.CACert }}"
+  tls_cert="{{ .ApplicationServer.APIForM2M.TLSCert }}"
+  tls_key="{{ .ApplicationServer.APIForM2M.TLSKey }}"
 
   # Settings for the "external api"
   #

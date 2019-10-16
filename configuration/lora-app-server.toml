@@ -61,7 +61,7 @@ automigrate=true
 #
 # For more information about the Redis URL format, see:
 # https://www.iana.org/assignments/uri-schemes/prov/redis
-url="redis://localhost:6379"
+url="redis://redis:6379"
 
 # Max idle connections in the pool.
 max_idle=10
@@ -286,6 +286,11 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # above.
   public_host="appserver:8001"
 
+  [application_server.api_for_m2m]
+  bind="0.0.0.0:8002"
+  ca_cert=""
+  tls_cert=""
+  tls_key=""
 
   # Settings for the "external api"
   #
