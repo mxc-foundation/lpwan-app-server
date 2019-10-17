@@ -242,7 +242,7 @@ class AutocompleteSelect extends Component {
       <FormControl margin={this.props.margin || ""}  fullWidth={true} 
         className={this.props.className}>
         <Input
-          //fullWidth
+          fullWidth
           className={this.props.classes.marginB}
           inputComponent={SelectWrapped}
           placeholder={this.props.label}
