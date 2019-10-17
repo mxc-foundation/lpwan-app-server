@@ -243,7 +243,7 @@ const theme = createMuiTheme({
         paper: {
           color: white,
           backgroundColor: blueBG,
-          marginTop: '50px',
+          marginTop: '50px'
         }
       },
       MuiMenuItem: {
