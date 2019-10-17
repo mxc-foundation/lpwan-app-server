@@ -99,7 +99,6 @@ func (a *ApplicationServerAPI) GetDeviceDevEuiList(ctx context.Context, req *emp
 }
 
 func (a *ApplicationServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
-	
 
 	return &api.GetGatewayMacListResponse{}, nil
 }

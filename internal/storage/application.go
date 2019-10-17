@@ -6,8 +6,8 @@ import (
 	"regexp"
 
 	"github.com/brocaar/lora-app-server/internal/codec"
-	uuid "github.com/gofrs/uuid"
 	"github.com/brocaar/lora-app-server/internal/logging"
+	uuid "github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

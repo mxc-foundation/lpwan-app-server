@@ -22,10 +22,10 @@ type Config struct {
 	}
 
 	PostgreSQL struct {
-		DSN         string `mapstructure:"dsn"`
-		Automigrate bool
-		MaxOpenConnections int               `mapstructure:"max_open_connections"`
-		MaxIdleConnections int               `mapstructure:"max_idle_connections"`
+		DSN                string `mapstructure:"dsn"`
+		Automigrate        bool
+		MaxOpenConnections int `mapstructure:"max_open_connections"`
+		MaxIdleConnections int `mapstructure:"max_idle_connections"`
 	} `mapstructure:"postgresql"`
 
 	MxpServer struct {

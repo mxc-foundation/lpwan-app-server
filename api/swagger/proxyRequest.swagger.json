@@ -1,10 +1,9 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "wallet.proto",
+    "title": "proxyRequest.proto",
     "version": "version not set"
   },
-  "host":"localhost:7000",
   "schemes": [
     "http",
     "https"
@@ -18,6 +17,7 @@
   "paths": {
     "/api/wallet/{orgId}/balance": {
       "get": {
+        "summary": "redirect to m2m server",
         "operationId": "GetWalletBalance",
         "responses": {
           "200": {
@@ -37,7 +37,7 @@
           }
         ],
         "tags": [
-          "WalletService"
+          "ProxyRequest"
         ]
       }
     }
@@ -49,9 +49,6 @@
         "balance": {
           "type": "number",
           "format": "double"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
         }
       }
     }

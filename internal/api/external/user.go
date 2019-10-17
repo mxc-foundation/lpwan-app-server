@@ -507,7 +507,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 		if err == nil {
 			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
 			if err != nil {
-				log.WithError(err).Error("Insert admin into organization ",org.ID," failed")
+				log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
 			}
 		} else {
 			log.WithError(err).Error("Get user by username 'admin' failed")
@@ -520,7 +520,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 
 		// add service profile for this organization
 		networkServerList, err := storage.GetNetworkServers(ctx, tx, 10, 0)
-		if err == nil && len(networkServerList) >= 1{
+		if err == nil && len(networkServerList) >= 1 {
 			sp := storage.ServiceProfile{
 				OrganizationID:  org.ID,
 				NetworkServerID: networkServerList[0].ID,
@@ -550,7 +550,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 
 			err := storage.CreateServiceProfile(ctx, tx, &sp)
 			if err != nil {
-				log.WithError(err).Error("Add service profile for organization_id = ", org.ID," failed")
+				log.WithError(err).Error("Add service profile for organization_id = ", org.ID, " failed")
 			}
 		} else {
 			log.WithError(err).Error("Get network server for organization_id = 0 failed")
