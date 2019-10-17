@@ -229,7 +229,7 @@ class TopNav extends Component {
           <List>
             <ListItem>
               <ListItemIcon >
-                <Wallet color="primary" className={this.props.classes.iconStyle} />
+                <Wallet className={this.props.classes.iconStyle} />
               </ListItemIcon>
               <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }}/>
             </ListItem>
