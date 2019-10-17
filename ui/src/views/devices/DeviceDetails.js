@@ -178,8 +178,8 @@ class QueueCard extends Component {
       <Card>
         <CardHeader title="Downlink queue" action={
           <div>
-            <Button onClick={this.getQueue}><Refresh color="colorPrimary" /></Button>
-            <Button onClick={this.flushQueue} color="primary.main"><Delete color="colorPrimary"/></Button>
+            <Button onClick={this.getQueue}><Refresh color="primary" /></Button>
+            <Button onClick={this.flushQueue} color="primary.main"><Delete color="primary"/></Button>
           </div>
         } />
         <CardContent>
