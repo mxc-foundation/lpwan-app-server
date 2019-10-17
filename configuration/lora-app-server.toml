@@ -400,3 +400,12 @@ tls_key=""
   # # Key Encryption Key.
   # kek="01020304050607080102030405060708"
 
+[recaptcha]
+  # Each reCAPTCHA user response token is valid for two minutes, and can only 
+  # be verified once to prevent replay attacks. 
+  # If you need a new token, you can re-run the reCAPTCHA verification.
+  #
+  # host_server: The server which provide verifying-recaptcha service.
+  # secret: Required. The shared key between your site and reCAPTCHA. 
+  host_server="https://www.google.com/recaptcha/api/siteverify"
+  secret="6LfUDLgUAAAAANRbVc9H7abuKPFFmPNwuYDINl3q"

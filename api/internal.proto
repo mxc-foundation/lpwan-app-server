@@ -60,6 +60,25 @@ service InternalService {
 		};
 	}
 
+	rpc GetVerifyingGoogleRecaptcha(GoogleRecaptchaRequest) returns (GoogleRecaptchaResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/verify-g-recaptcha"
+			body: "*"
+		};
+	}
+}
+
+message GoogleRecaptchaRequest {
+	string secret = 1;
+	string response = 2;
+	string remoteip = 3;
+}
+
+message GoogleRecaptchaResponse {
+	bool success = 1;
+	string challenge_ts = 2;
+	string hostname = 3;
+	string error_codes = 4;
 }
 
 message ProfileSettings {

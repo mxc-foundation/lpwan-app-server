@@ -219,6 +219,17 @@ class SessionStore extends EventEmitter {
     });
   }
 
+  getVerifyingGoogleRecaptcha(req, callBackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.GetVerifyingGoogleRecaptcha({body: req})
+        .then(checkStatus)
+        .then(resp => {
+          callBackFunc(resp.obj);
+        })
+        .catch(errorHandler);
+    });
+  }
+
   notifyActivation() {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",

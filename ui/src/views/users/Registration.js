@@ -13,11 +13,8 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
-import GoogleRecaptchaStore from "../../stores/GoogleRecaptchaStore"
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
-import { Divider } from "@material-ui/core";
-
 
 const styles = {
   textField: {
@@ -41,15 +38,14 @@ const styles = {
 class RegistrationForm extends FormComponent {
 
   onReCapChange = (value) => {
-    console.log("Captcha value:", value);
     const req = {
       secret : process.env.REACT_APP_PUBLIC_KEY,
       response: value,
       remoteip: window.location.origin
     }
 
-    GoogleRecaptchaStore.getVerifyingGoogleRecaptcha(req, () => {
-      
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.state.object.isVerified = resp.success;
     }); 
   }
   
@@ -87,6 +83,9 @@ class RegistrationForm extends FormComponent {
 class Registration extends Component {
   constructor() {
     super();
+    this.state = {
+      isVerified: false
+    };
 
     this.onSubmit = this.onSubmit.bind(this);
   }
@@ -94,6 +93,11 @@ class Registration extends Component {
   
 
   onSubmit(user) {
+    if(!user.isVerified){
+      alert("Are you a human, please verify yourself.");
+      return false;
+    }
+
     if(isEmail(user.username)){
       SessionStore.register(user, () => {
         this.props.history.push("/");
