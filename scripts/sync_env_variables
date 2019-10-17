@@ -4,16 +4,8 @@ echo "running script: sync_env_variables "
 
 APPSERVER_PATH=$(dirname $0)/..
 ENV_CONFIGURATION=$APPSERVER_PATH/ui/.env.production
-echo $ENV_CONFIGURATION
 
 if [ -f $ENV_CONFIGURATION ]; then
-  M2MSERVER=$(cat $ENV_CONFIGURATION | awk -F "=" '/REACT_APP_M2M_LOCAL_SERVER/{print $2}' | sed 's/http.*:\/\///g')
-  echo "### m2m-server = $M2MSERVER"
-fi
-
-WALLET_SWAGGER=$APPSERVER_PATH/api/swagger/wallet.swagger.json
-
-if [ -f $CONFIGURATION ]; then
-  echo "### sed -i.bak 's,\"host\":.*$,\"host\":'"$M2MSERVER",',' $WALLET_SWAGGER"
-  sed -i.bak 's,\"host\":.*$,\"host\":'"$M2MSERVER"'\,,' $WALLET_SWAGGER
+  echo "### assign paremeter 'REACT_APP_MXPROTOCOL_SERVER' in" $ENV_CONFIGURATION "with" $MXPROTOCOL_SERVER
+  sed -i.bak 's,REACT_APP_MXPROTOCOL_SERVER=.*,REACT_APP_MXPROTOCOL_SERVER="'$MXPROTOCOL_SERVER'",' $ENV_CONFIGURATION
 fi
