@@ -26,6 +26,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Wallet from "mdi-material-ui/WalletOutline";
+import { openM2M } from "../util/Util";
 
 import SessionStore from "../stores/SessionStore";
 import WalletStore from "../stores/WalletStore";
@@ -85,6 +86,12 @@ const styles = {
     color: theme.palette.common.white,
     marginRight: theme.spacing(1),
   },
+  noPadding: {
+    "&:hover": {
+      color: theme.palette.primary.main,
+      cursor: 'pointer'
+    }
+  }
 };
 
 function getWalletBalance(organizationId) {
@@ -168,6 +175,11 @@ class TopNav extends Component {
     });
   }
 
+  handlingExtLink = () => {
+    const orgId = this.props.location.pathname.split('/')[2];
+    openM2M(orgId, '/withdraw');
+  }
+
   onSearchSubmit(e) {
     e.preventDefault();
     this.props.history.push(`/search?search=${encodeURIComponent(this.state.search)}`);
@@ -231,7 +243,7 @@ class TopNav extends Component {
               <ListItemIcon >
                 <Wallet color="primary" className={this.props.classes.iconStyle} />
               </ListItemIcon>
-              <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }}/>
+              <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }} onClick={this.handlingExtLink}/>
             </ListItem>
           </List>
 

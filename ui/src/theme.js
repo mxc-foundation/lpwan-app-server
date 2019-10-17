@@ -226,8 +226,14 @@ const theme = createMuiTheme({
       },
       MuiSvgIcon: {
         root: {
-          fill: '#F9FAFC80',
+          fill: '#F9FAFC80'
         },
+        /* colorPrimary: {
+          fill: tealHighLight,
+        },
+        colorSecondary: {
+          fill: tealHighLight20
+        } */
       },
       MuiDialog: {
         color: white,
