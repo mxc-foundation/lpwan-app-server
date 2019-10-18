@@ -228,12 +228,12 @@ const theme = createMuiTheme({
         root: {
           fill: '#F9FAFC80'
         },
-        /* colorPrimary: {
-          fill: tealHighLight,
+        colorPrimary: {
+          fill: blueBG,
         },
         colorSecondary: {
-          fill: tealHighLight20
-        } */
+          fill: overlayBG
+        }
       },
       MuiDialog: {
         color: white,
