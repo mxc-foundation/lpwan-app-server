@@ -1,5 +1,5 @@
 export function getM2MLink() {
-    let host = process.env.REACT_APP_M2M_LOCAL_SERVER;
+    let host = process.env.REACT_APP_MXPROTOCOL_SERVER;
     const origin = window.location.origin;
     
     if(origin.includes(process.env.REACT_APP_SUBDOM_LORA)){
