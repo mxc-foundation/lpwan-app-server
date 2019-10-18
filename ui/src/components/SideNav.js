@@ -50,15 +50,6 @@ const styles = {
     //fontSize: 'larger', 
     color: theme.palette.primary.white,
   },
-/*   card: {
-    width: '100%',
-    height: 200,
-    position: 'absolute',
-    bottom: 0,
-    backgroundColor: '#09006E',
-    color: '#FFFFFF',
-    marginTop: -20,
-  }, */
   static: {
     position: 'static'
   },
@@ -159,13 +150,13 @@ class SideNav extends Component {
       });
     });
 
-    if (SessionStore.getOrganizationID() !== null) {
+    /* if (SessionStore.getOrganizationID() !== null) {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
         this.setState({
           organization: resp.organization,
         });
       });
-    }
+    } */
 
     this.getOrganizationFromLocation();
   }
@@ -179,6 +170,8 @@ class SideNav extends Component {
   }
 
   onChange(e) {
+    SessionStore.setOrganizationID(e.target.value);
+    
     this.props.history.push(`/organizations/${e.target.value}/applications`);
   }
 
@@ -205,7 +198,15 @@ class SideNav extends Component {
   }
 
   handlingExtLink = () => {
-    openM2M(this.state.organization.id, '/withdraw');
+    const resp = SessionStore.getProfile();
+    resp.then((res) => {
+      let orgId = SessionStore.getOrganizationID();
+      const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
+      
+      OrganizationStore.get(orgId, resp => {
+        openM2M(resp.organization, isBelongToOrg, '/withdraw');
+      });
+    })
   }
 
   render() {

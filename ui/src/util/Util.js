@@ -11,23 +11,17 @@ export function getM2MLink() {
     return host;
 }
 
-export function openM2M(orgId, path) {
-    let orgName = '';
+export function openM2M(org, isBelongToOrg, path) {
+    let orgName = org.name;
+    let orgId = org.id;
     if(!orgId){
       return false;
     }
     const user = SessionStore.getUser();  
-    const org = SessionStore.getOrganizations(); 
     
-    if(user.isAdmin){
+    if(user.isAdmin && !isBelongToOrg){
       orgId = '0';
       orgName = 'Super_admin';
-    }else{
-      if(org.length > 0){
-        orgName = org[0].organizationName;
-      }else{
-        orgName = '';
-      }
     }
     
     const data = {

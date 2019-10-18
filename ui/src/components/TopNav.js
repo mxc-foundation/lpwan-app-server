@@ -132,7 +132,7 @@ class TopNav extends Component {
   loadData = async () => {
     try {
       let organizationId = null;
-
+      
       if(this.state.organizationId !== null){
         organizationId = this.state.organizationId;
       }else{
