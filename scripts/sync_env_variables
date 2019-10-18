@@ -2,8 +2,8 @@
 
 echo "running script: sync_env_variables "
 
-APPSERVER_PATH=$(dirname $0)/..
-ENV_CONFIGURATION=$APPSERVER_PATH/ui/.env.production
+PROJECT_PATH=$(dirname $0)/..
+ENV_CONFIGURATION=$PROJECT_PATH/ui/.env.production
 
 if [ -f $ENV_CONFIGURATION ]; then
   echo "### assign paremeter 'REACT_APP_MXPROTOCOL_SERVER' in" $ENV_CONFIGURATION "with" $MXPROTOCOL_SERVER
