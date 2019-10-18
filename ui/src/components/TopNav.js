@@ -135,17 +135,7 @@ class TopNav extends Component {
 
   loadData = async () => {
     try {
-      let organizationId = this.props.location.pathname.split('/')[2];
-      
-      if(this.state.organizationId !== null){
-        organizationId = this.state.organizationId;
-      }else{
-        if(SessionStore.getOrganizations().length > 0){
-          organizationId = SessionStore.getOrganizations()[0].organizationID;
-        }else{
-          organizationId = null;
-        }
-      }
+      let organizationId = SessionStore.getOrganizationID();
 
       var result = await getWalletBalance(organizationId);
       
