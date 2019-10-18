@@ -8,15 +8,19 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
+import ReCAPTCHA from "react-google-recaptcha";
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
 
+const VERIFY_ERROR_MESSAGE = "Are you a human, please verify yourself.";
 const styles = {
   textField: {
     width: "100%",
+    display: 'flex',
+    justifyContent: 'center'
   },
   link: {
     "& a": {
@@ -34,12 +38,32 @@ const styles = {
     top: 0,
     left: 0,
     backgroundImage: 'url("/img/world-map.png")',
+  },
+  cbody: {
+    width: 388,
+  },
+  bbody: {
+    display: 'flex',
+    justifyContent: 'center'
   }
 };
 
 
 
 class LoginForm extends FormComponent {
+  
+  onReCapChange = (value) => {
+    const req = {
+      secret : process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.state.object.isVerified = resp.success;
+    }); 
+  }
+
   render() {
     if (this.state.object === undefined) {
       return null;
@@ -88,6 +112,11 @@ class LoginForm extends FormComponent {
           fullWidth
           required
         />
+        <ReCAPTCHA
+                sitekey={process.env.REACT_APP_PUBLIC_KEY}
+                onChange={this.onReCapChange}
+                className={this.props.style.textField}
+              />
       </Form>
     );
   }
@@ -100,8 +129,9 @@ class Login extends Component {
 
     this.state = {
       registration: null,
+      isVerified: false
     };
-
+    
     this.onSubmit = this.onSubmit.bind(this);
   }
 
@@ -118,21 +148,32 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    SessionStore.login(login, () => {
-      this.props.history.push("/");
-    });
+    if(login.hasOwnProperty('isVerified')){
+      if(!login.isVerified){
+        alert(VERIFY_ERROR_MESSAGE);
+        return false;
+      }
+      
+      SessionStore.login(login, () => {
+        this.props.history.push("/");
+      });
+    }else{
+      alert(VERIFY_ERROR_MESSAGE);
+      return false;
+    }
   }
 
   render() {
     return(
       <div className={this.props.classes.padd}>
       <Grid container justify="center" className={this.props.classes.padding}>
-        <Grid item xs={6} lg={4}>
-          <Card>
+        <Grid item xs={6} lg={4} className={this.props.classes.bbody}>
+          <Card className={this.props.classes.cbody}>
             <CardContent>
               <LoginForm
                 submitLabel="Login"
                 onSubmit={this.onSubmit}
+                style={this.props.classes}
               />
             </CardContent>
             {this.state.registration && <CardContent>
