@@ -7,6 +7,8 @@ import (
 	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	empty "github.com/golang/protobuf/ptypes/empty"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -25,12 +27,13 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type AppServerDeviceProfile struct {
-	DevEui               string   `protobuf:"bytes,1,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
-	ApplicationId        int64    `protobuf:"varint,2,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-	Name                 string   `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	DevEui               string               `protobuf:"bytes,1,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	ApplicationId        int64                `protobuf:"varint,2,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	Name                 string               `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	CreatedAt            *timestamp.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *AppServerDeviceProfile) Reset()         { *m = AppServerDeviceProfile{} }
@@ -77,6 +80,13 @@ func (m *AppServerDeviceProfile) GetName() string {
 		return m.Name
 	}
 	return ""
+}
+
+func (m *AppServerDeviceProfile) GetCreatedAt() *timestamp.Timestamp {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return nil
 }
 
 type AddDeviceInM2MServerRequest struct {
@@ -244,13 +254,14 @@ func (m *DeleteDeviceInM2MServerResponse) GetStatus() bool {
 }
 
 type AppServerGatewayProfile struct {
-	Mac                  string   `protobuf:"bytes,1,opt,name=mac,proto3" json:"mac,omitempty"`
-	OrgId                int64    `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Description          string   `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Name                 string   `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Mac                  string               `protobuf:"bytes,1,opt,name=mac,proto3" json:"mac,omitempty"`
+	OrgId                int64                `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Description          string               `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Name                 string               `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	CreatedAt            *timestamp.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *AppServerGatewayProfile) Reset()         { *m = AppServerGatewayProfile{} }
@@ -304,6 +315,13 @@ func (m *AppServerGatewayProfile) GetName() string {
 		return m.Name
 	}
 	return ""
+}
+
+func (m *AppServerGatewayProfile) GetCreatedAt() *timestamp.Timestamp {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return nil
 }
 
 type AddGatewayInM2MServerRequest struct {
@@ -470,6 +488,256 @@ func (m *DeleteGatewayInM2MServerResponse) GetStatus() bool {
 	return false
 }
 
+type GetDeviceByDevEuiRequest struct {
+	DevEui               string   `protobuf:"bytes,1,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetDeviceByDevEuiRequest) Reset()         { *m = GetDeviceByDevEuiRequest{} }
+func (m *GetDeviceByDevEuiRequest) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceByDevEuiRequest) ProtoMessage()    {}
+func (*GetDeviceByDevEuiRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{10}
+}
+
+func (m *GetDeviceByDevEuiRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceByDevEuiRequest.Unmarshal(m, b)
+}
+func (m *GetDeviceByDevEuiRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceByDevEuiRequest.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceByDevEuiRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceByDevEuiRequest.Merge(m, src)
+}
+func (m *GetDeviceByDevEuiRequest) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceByDevEuiRequest.Size(m)
+}
+func (m *GetDeviceByDevEuiRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceByDevEuiRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceByDevEuiRequest proto.InternalMessageInfo
+
+func (m *GetDeviceByDevEuiRequest) GetDevEui() string {
+	if m != nil {
+		return m.DevEui
+	}
+	return ""
+}
+
+type GetDeviceByDevEuiResponse struct {
+	OrgId                int64                   `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	DevProfile           *AppServerDeviceProfile `protobuf:"bytes,2,opt,name=dev_profile,json=devProfile,proto3" json:"dev_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
+}
+
+func (m *GetDeviceByDevEuiResponse) Reset()         { *m = GetDeviceByDevEuiResponse{} }
+func (m *GetDeviceByDevEuiResponse) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceByDevEuiResponse) ProtoMessage()    {}
+func (*GetDeviceByDevEuiResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{11}
+}
+
+func (m *GetDeviceByDevEuiResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceByDevEuiResponse.Unmarshal(m, b)
+}
+func (m *GetDeviceByDevEuiResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceByDevEuiResponse.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceByDevEuiResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceByDevEuiResponse.Merge(m, src)
+}
+func (m *GetDeviceByDevEuiResponse) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceByDevEuiResponse.Size(m)
+}
+func (m *GetDeviceByDevEuiResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceByDevEuiResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceByDevEuiResponse proto.InternalMessageInfo
+
+func (m *GetDeviceByDevEuiResponse) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetDeviceByDevEuiResponse) GetDevProfile() *AppServerDeviceProfile {
+	if m != nil {
+		return m.DevProfile
+	}
+	return nil
+}
+
+type GetGatewayByMacRequest struct {
+	Mac                  string   `protobuf:"bytes,1,opt,name=mac,proto3" json:"mac,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetGatewayByMacRequest) Reset()         { *m = GetGatewayByMacRequest{} }
+func (m *GetGatewayByMacRequest) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayByMacRequest) ProtoMessage()    {}
+func (*GetGatewayByMacRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{12}
+}
+
+func (m *GetGatewayByMacRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayByMacRequest.Unmarshal(m, b)
+}
+func (m *GetGatewayByMacRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayByMacRequest.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayByMacRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayByMacRequest.Merge(m, src)
+}
+func (m *GetGatewayByMacRequest) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayByMacRequest.Size(m)
+}
+func (m *GetGatewayByMacRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayByMacRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayByMacRequest proto.InternalMessageInfo
+
+func (m *GetGatewayByMacRequest) GetMac() string {
+	if m != nil {
+		return m.Mac
+	}
+	return ""
+}
+
+type GetGatewayByMacResponse struct {
+	OrgId                int64                    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	GwProfile            *AppServerGatewayProfile `protobuf:"bytes,2,opt,name=gw_profile,json=gwProfile,proto3" json:"gw_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
+	XXX_unrecognized     []byte                   `json:"-"`
+	XXX_sizecache        int32                    `json:"-"`
+}
+
+func (m *GetGatewayByMacResponse) Reset()         { *m = GetGatewayByMacResponse{} }
+func (m *GetGatewayByMacResponse) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayByMacResponse) ProtoMessage()    {}
+func (*GetGatewayByMacResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{13}
+}
+
+func (m *GetGatewayByMacResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayByMacResponse.Unmarshal(m, b)
+}
+func (m *GetGatewayByMacResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayByMacResponse.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayByMacResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayByMacResponse.Merge(m, src)
+}
+func (m *GetGatewayByMacResponse) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayByMacResponse.Size(m)
+}
+func (m *GetGatewayByMacResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayByMacResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayByMacResponse proto.InternalMessageInfo
+
+func (m *GetGatewayByMacResponse) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetGatewayByMacResponse) GetGwProfile() *AppServerGatewayProfile {
+	if m != nil {
+		return m.GwProfile
+	}
+	return nil
+}
+
+type GetDeviceDevEuiListResponse struct {
+	DevEui               []string `protobuf:"bytes,1,rep,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetDeviceDevEuiListResponse) Reset()         { *m = GetDeviceDevEuiListResponse{} }
+func (m *GetDeviceDevEuiListResponse) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceDevEuiListResponse) ProtoMessage()    {}
+func (*GetDeviceDevEuiListResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{14}
+}
+
+func (m *GetDeviceDevEuiListResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceDevEuiListResponse.Unmarshal(m, b)
+}
+func (m *GetDeviceDevEuiListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceDevEuiListResponse.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceDevEuiListResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceDevEuiListResponse.Merge(m, src)
+}
+func (m *GetDeviceDevEuiListResponse) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceDevEuiListResponse.Size(m)
+}
+func (m *GetDeviceDevEuiListResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceDevEuiListResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceDevEuiListResponse proto.InternalMessageInfo
+
+func (m *GetDeviceDevEuiListResponse) GetDevEui() []string {
+	if m != nil {
+		return m.DevEui
+	}
+	return nil
+}
+
+type GetGatewayMacListResponse struct {
+	GatewayMac           []string `protobuf:"bytes,1,rep,name=gateway_mac,json=gatewayMac,proto3" json:"gateway_mac,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetGatewayMacListResponse) Reset()         { *m = GetGatewayMacListResponse{} }
+func (m *GetGatewayMacListResponse) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayMacListResponse) ProtoMessage()    {}
+func (*GetGatewayMacListResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{15}
+}
+
+func (m *GetGatewayMacListResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayMacListResponse.Unmarshal(m, b)
+}
+func (m *GetGatewayMacListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayMacListResponse.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayMacListResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayMacListResponse.Merge(m, src)
+}
+func (m *GetGatewayMacListResponse) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayMacListResponse.Size(m)
+}
+func (m *GetGatewayMacListResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayMacListResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayMacListResponse proto.InternalMessageInfo
+
+func (m *GetGatewayMacListResponse) GetGatewayMac() []string {
+	if m != nil {
+		return m.GatewayMac
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*AppServerDeviceProfile)(nil), "appserver.AppServerDeviceProfile")
 	proto.RegisterType((*AddDeviceInM2MServerRequest)(nil), "appserver.AddDeviceInM2MServerRequest")
@@ -481,42 +749,63 @@ func init() {
 	proto.RegisterType((*AddGatewayInM2MServerResponse)(nil), "appserver.AddGatewayInM2MServerResponse")
 	proto.RegisterType((*DeleteGatewayInM2MServerRequest)(nil), "appserver.DeleteGatewayInM2MServerRequest")
 	proto.RegisterType((*DeleteGatewayInM2MServerResponse)(nil), "appserver.DeleteGatewayInM2MServerResponse")
+	proto.RegisterType((*GetDeviceByDevEuiRequest)(nil), "appserver.GetDeviceByDevEuiRequest")
+	proto.RegisterType((*GetDeviceByDevEuiResponse)(nil), "appserver.GetDeviceByDevEuiResponse")
+	proto.RegisterType((*GetGatewayByMacRequest)(nil), "appserver.GetGatewayByMacRequest")
+	proto.RegisterType((*GetGatewayByMacResponse)(nil), "appserver.GetGatewayByMacResponse")
+	proto.RegisterType((*GetDeviceDevEuiListResponse)(nil), "appserver.GetDeviceDevEuiListResponse")
+	proto.RegisterType((*GetGatewayMacListResponse)(nil), "appserver.GetGatewayMacListResponse")
 }
 
 func init() { proto.RegisterFile("appserver.proto", fileDescriptor_2566523af06a975e) }
 
 var fileDescriptor_2566523af06a975e = []byte{
-	// 468 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x94, 0xdf, 0x6e, 0xd3, 0x30,
-	0x14, 0xc6, 0xd5, 0xb5, 0x2b, 0xf4, 0x54, 0xc0, 0x64, 0xd8, 0x5a, 0x95, 0x3f, 0x2b, 0x96, 0x80,
-	0x02, 0xd2, 0x2e, 0x0a, 0x5c, 0x8c, 0xbb, 0x4e, 0x43, 0x28, 0x17, 0x93, 0x50, 0x78, 0x80, 0xca,
-	0xc4, 0x87, 0xc8, 0xa8, 0x4d, 0x8c, 0x9d, 0x3f, 0xe3, 0x25, 0x79, 0x26, 0x64, 0xc7, 0x4d, 0xb3,
-	0x11, 0xaf, 0xbd, 0xa9, 0x6c, 0xeb, 0xf8, 0xfc, 0xbe, 0xf3, 0x7d, 0x6e, 0xe0, 0x11, 0x93, 0x52,
-	0xa3, 0x2a, 0x50, 0x9d, 0x49, 0x95, 0x66, 0x29, 0x19, 0xd4, 0x07, 0x74, 0x05, 0x27, 0x0b, 0x29,
-	0xbf, 0xdb, 0xcd, 0x25, 0x16, 0x22, 0xc2, 0x6f, 0x2a, 0xfd, 0x29, 0x56, 0x48, 0x46, 0x70, 0x8f,
-	0x63, 0xb1, 0xc4, 0x5c, 0x8c, 0x3b, 0xd3, 0xce, 0x6c, 0x10, 0xf6, 0x39, 0x16, 0x5f, 0x72, 0x41,
-	0x5e, 0xc1, 0x43, 0x26, 0xe5, 0x4a, 0x44, 0x2c, 0x13, 0x69, 0xb2, 0x14, 0x7c, 0x7c, 0x30, 0xed,
-	0xcc, 0xba, 0xe1, 0x83, 0xc6, 0x69, 0xc0, 0x09, 0x81, 0x5e, 0xc2, 0xd6, 0x38, 0xee, 0xda, 0xcb,
-	0x76, 0x4d, 0xaf, 0xe1, 0xe9, 0x82, 0xf3, 0x8a, 0x13, 0x24, 0x57, 0xf3, 0xab, 0x0a, 0x1c, 0xe2,
-	0xef, 0x1c, 0x75, 0x46, 0x8e, 0xa1, 0x9f, 0xaa, 0xd8, 0x74, 0xec, 0xd8, 0x8e, 0x87, 0xa9, 0x8a,
-	0x03, 0x4e, 0x2e, 0x60, 0x68, 0x94, 0xc8, 0x4a, 0x98, 0xa5, 0x0d, 0xe7, 0x2f, 0xcf, 0xb6, 0x53,
-	0xb5, 0x4f, 0x10, 0x02, 0xc7, 0xc2, 0xad, 0xe9, 0x27, 0x78, 0xd6, 0x4e, 0xd6, 0x32, 0x4d, 0x34,
-	0x1a, 0xb4, 0x61, 0x6c, 0xd1, 0x1c, 0x8b, 0x80, 0xd3, 0x73, 0x78, 0x71, 0x89, 0x2b, 0xcc, 0xd0,
-	0xab, 0xd9, 0x67, 0x13, 0x3d, 0x87, 0x53, 0xef, 0x55, 0x07, 0x3d, 0x81, 0xbe, 0xce, 0x58, 0x96,
-	0x6b, 0x7b, 0xf5, 0x7e, 0xe8, 0x76, 0xf4, 0x1a, 0x46, 0xf5, 0x48, 0x5f, 0x59, 0x86, 0x25, 0xfb,
-	0xb3, 0x49, 0xe5, 0x08, 0xba, 0x6b, 0x16, 0x39, 0x94, 0x59, 0x36, 0x4c, 0x3b, 0x68, 0x9a, 0x36,
-	0x35, 0xa6, 0xe9, 0x48, 0x09, 0x69, 0xf2, 0x70, 0x29, 0x34, 0x8f, 0xea, 0x80, 0x7a, 0x37, 0x02,
-	0x32, 0x36, 0x39, 0xe6, 0xfe, 0x09, 0x2d, 0x00, 0xe2, 0xf2, 0x56, 0x40, 0xb4, 0x2d, 0xa0, 0x9b,
-	0xd3, 0x84, 0x83, 0xb8, 0xdc, 0x04, 0xf4, 0x11, 0x9e, 0x7b, 0xc8, 0xce, 0xac, 0xc7, 0x70, 0x18,
-	0x97, 0x5b, 0x72, 0x2f, 0x2e, 0x03, 0x4e, 0x2f, 0x36, 0x26, 0xfb, 0x25, 0x9f, 0xc2, 0x70, 0xcd,
-	0xa2, 0x25, 0xe3, 0x5c, 0xa1, 0xd6, 0x56, 0xdc, 0x20, 0x84, 0x35, 0x8b, 0x16, 0xd5, 0x09, 0xfd,
-	0x0c, 0x53, 0x7f, 0x8f, 0xbb, 0x93, 0x9a, 0xff, 0xed, 0xc2, 0x51, 0x5d, 0x6d, 0x7e, 0x45, 0x84,
-	0x24, 0x86, 0x27, 0x6d, 0x6f, 0x8d, 0xbc, 0x6e, 0x3a, 0xe2, 0xff, 0x1b, 0x4c, 0xde, 0xec, 0xac,
-	0x73, 0xaa, 0x24, 0x8c, 0x3c, 0x4f, 0x8c, 0xbc, 0x6d, 0xf4, 0xb8, 0xfb, 0x05, 0x4f, 0xde, 0xed,
-	0x53, 0xea, 0x88, 0xbf, 0xe0, 0xb8, 0x35, 0x25, 0x72, 0x4b, 0xb3, 0x37, 0x8e, 0xc9, 0x6c, 0x77,
-	0xa1, 0x63, 0x69, 0x18, 0xfb, 0x72, 0x21, 0xff, 0x6b, 0xf6, 0x13, 0xdf, 0xef, 0x55, 0x5b, 0x41,
-	0x7f, 0xf4, 0xed, 0x17, 0xf2, 0xc3, 0xbf, 0x00, 0x00, 0x00, 0xff, 0xff, 0x29, 0x86, 0x44, 0x23,
-	0x34, 0x05, 0x00, 0x00,
+	// 716 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xd1, 0x6e, 0xd3, 0x4a,
+	0x10, 0x95, 0x9b, 0x34, 0xf7, 0x66, 0xa2, 0x7b, 0xdb, 0xbb, 0xbd, 0x4d, 0x82, 0x0b, 0x24, 0x35,
+	0xa5, 0x84, 0x22, 0xa5, 0x52, 0x0a, 0x48, 0x45, 0xbc, 0x24, 0x6a, 0x55, 0x45, 0x22, 0x12, 0x18,
+	0x90, 0x78, 0x22, 0xda, 0x7a, 0xa7, 0x96, 0x51, 0x1c, 0x1b, 0x7b, 0xe3, 0x90, 0x2f, 0xe2, 0x03,
+	0xf8, 0x0f, 0x3e, 0x87, 0x67, 0x64, 0x7b, 0xed, 0x38, 0x89, 0x37, 0x29, 0x12, 0xbc, 0x54, 0xee,
+	0xee, 0xcc, 0x9c, 0x33, 0xe7, 0xcc, 0xac, 0x02, 0x3b, 0xd4, 0x75, 0x7d, 0xf4, 0x02, 0xf4, 0xda,
+	0xae, 0xe7, 0x70, 0x87, 0x94, 0xd3, 0x03, 0xb5, 0x61, 0x3a, 0x8e, 0x39, 0xc2, 0xd3, 0xe8, 0xe2,
+	0x7a, 0x72, 0x73, 0xca, 0x2d, 0x1b, 0x7d, 0x4e, 0x6d, 0x37, 0x8e, 0x55, 0x0f, 0x96, 0x03, 0xd0,
+	0x76, 0xf9, 0x2c, 0xbe, 0xd4, 0xbe, 0x2a, 0x50, 0xed, 0xba, 0xee, 0xdb, 0xa8, 0xd6, 0x05, 0x06,
+	0x96, 0x81, 0xaf, 0x3d, 0xe7, 0xc6, 0x1a, 0x21, 0xa9, 0xc1, 0x5f, 0x0c, 0x83, 0x21, 0x4e, 0xac,
+	0xba, 0xd2, 0x54, 0x5a, 0x65, 0xbd, 0xc4, 0x30, 0xb8, 0x9c, 0x58, 0xe4, 0x21, 0xfc, 0x4b, 0x5d,
+	0x77, 0x64, 0x19, 0x94, 0x5b, 0xce, 0x78, 0x68, 0xb1, 0xfa, 0x56, 0x53, 0x69, 0x15, 0xf4, 0x7f,
+	0x32, 0xa7, 0x7d, 0x46, 0x08, 0x14, 0xc7, 0xd4, 0xc6, 0x7a, 0x21, 0x4a, 0x8e, 0xbe, 0xc9, 0x39,
+	0x80, 0xe1, 0x21, 0xe5, 0xc8, 0x86, 0x94, 0xd7, 0x8b, 0x4d, 0xa5, 0x55, 0xe9, 0xa8, 0xed, 0x98,
+	0x60, 0x3b, 0x21, 0xd8, 0x7e, 0x97, 0x74, 0xa0, 0x97, 0x45, 0x74, 0x97, 0x6b, 0x5f, 0xe0, 0xa0,
+	0xcb, 0x58, 0x4c, 0xb1, 0x3f, 0x1e, 0x74, 0x06, 0x31, 0x67, 0x1d, 0x3f, 0x4f, 0xd0, 0xe7, 0x64,
+	0x1f, 0x4a, 0x8e, 0x67, 0x86, 0x64, 0x94, 0x88, 0xcc, 0xb6, 0xe3, 0x99, 0x7d, 0x46, 0x7a, 0x50,
+	0x09, 0x9b, 0x70, 0xe3, 0x9e, 0x22, 0xa2, 0x95, 0xce, 0x61, 0x7b, 0xae, 0x67, 0x7e, 0xf3, 0x3a,
+	0x30, 0x0c, 0xc4, 0xb7, 0xf6, 0x0c, 0xee, 0xe6, 0x23, 0xfb, 0xae, 0x33, 0xf6, 0x31, 0x84, 0x0e,
+	0x31, 0xe6, 0xd0, 0x0c, 0x83, 0x3e, 0xd3, 0xce, 0xe1, 0xfe, 0x05, 0x8e, 0x90, 0xa3, 0x94, 0xb3,
+	0x4c, 0x61, 0xed, 0x1c, 0x1a, 0xd2, 0x54, 0x01, 0x5a, 0x85, 0x92, 0xcf, 0x29, 0x9f, 0xf8, 0x51,
+	0xea, 0xdf, 0xba, 0xf8, 0x4f, 0xfb, 0xa6, 0x40, 0x2d, 0xed, 0xe9, 0x8a, 0x72, 0x9c, 0xd2, 0x59,
+	0xe2, 0xe8, 0x2e, 0x14, 0x6c, 0x6a, 0x08, 0xac, 0xf0, 0x33, 0xa3, 0xda, 0x56, 0x56, 0xb5, 0x66,
+	0xa8, 0x9a, 0x6f, 0x78, 0x96, 0x1b, 0x7a, 0x29, 0x1c, 0xcc, 0x1e, 0xa5, 0xe6, 0x16, 0xa5, 0xe6,
+	0x6e, 0xff, 0x9a, 0xb9, 0xa1, 0xc4, 0x82, 0xee, 0xed, 0xdd, 0xed, 0x02, 0x98, 0xd3, 0x25, 0x73,
+	0xb5, 0x3c, 0x73, 0x17, 0x85, 0xd0, 0xcb, 0xe6, 0x34, 0x31, 0xf7, 0x29, 0xdc, 0x93, 0x20, 0x0b,
+	0xa1, 0xf7, 0x60, 0xdb, 0x9c, 0xce, 0x91, 0x8b, 0xe6, 0xb4, 0xcf, 0xb4, 0x5e, 0x62, 0x90, 0x9c,
+	0x72, 0x03, 0x2a, 0x36, 0x35, 0x86, 0x94, 0x31, 0x0f, 0x7d, 0x3f, 0x22, 0x57, 0xd6, 0xc1, 0xa6,
+	0x46, 0x37, 0x3e, 0xd1, 0x5e, 0x40, 0x53, 0x5e, 0x63, 0x83, 0xcb, 0x67, 0x50, 0xbf, 0x42, 0x1e,
+	0x4f, 0x47, 0x6f, 0x76, 0x11, 0x4d, 0xcd, 0xc6, 0xa9, 0x0a, 0xe0, 0x4e, 0x4e, 0xd2, 0x7c, 0x88,
+	0xff, 0xd4, 0xfe, 0x9c, 0x40, 0xf5, 0x0a, 0xb9, 0xe8, 0xb2, 0x37, 0x1b, 0x50, 0x23, 0xa1, 0xba,
+	0x32, 0x90, 0x9a, 0x0f, 0xb5, 0x95, 0xd8, 0xf5, 0x0c, 0x7f, 0xc3, 0x0c, 0x3c, 0x87, 0x83, 0x54,
+	0x98, 0x58, 0x96, 0x57, 0x96, 0xcf, 0x53, 0xe0, 0x05, 0x41, 0x0b, 0x19, 0x41, 0x5f, 0x46, 0x82,
+	0x8a, 0xba, 0x03, 0x6a, 0x2c, 0x64, 0x35, 0xa0, 0x62, 0xc6, 0x37, 0xc3, 0xb8, 0xc7, 0x30, 0x13,
+	0xcc, 0x34, 0xb8, 0xf3, 0xbd, 0x00, 0xbb, 0xa9, 0xe3, 0xe1, 0x5f, 0xcb, 0x40, 0x62, 0xc2, 0xff,
+	0x79, 0x6f, 0x0d, 0x39, 0xce, 0x76, 0x24, 0x7f, 0x06, 0xd5, 0x47, 0x1b, 0xe3, 0x04, 0x3d, 0x17,
+	0x6a, 0x92, 0x27, 0x86, 0x3c, 0xce, 0xd4, 0x58, 0xff, 0x82, 0xa9, 0x27, 0xb7, 0x09, 0x15, 0x88,
+	0x9f, 0x60, 0x3f, 0x77, 0xd3, 0xc8, 0x12, 0x67, 0xe9, 0x4a, 0xa9, 0xad, 0xcd, 0x81, 0x02, 0xcb,
+	0x87, 0xba, 0x6c, 0xb7, 0xc8, 0x2a, 0x67, 0x39, 0xe2, 0x93, 0x5b, 0xc5, 0xc6, 0xa0, 0x9d, 0x1f,
+	0x5b, 0xb0, 0x9b, 0x4e, 0x5b, 0x62, 0xe8, 0x47, 0xf8, 0x6f, 0x65, 0xe9, 0xc8, 0x83, 0x4c, 0x59,
+	0xd9, 0x1e, 0xab, 0x47, 0xeb, 0x83, 0x44, 0xa7, 0x1f, 0x60, 0x67, 0x69, 0x61, 0xc8, 0xe1, 0x62,
+	0x62, 0xce, 0xe2, 0xa9, 0xda, 0xba, 0x10, 0x51, 0xf9, 0x3d, 0xec, 0xe5, 0x6c, 0x05, 0xa9, 0xae,
+	0xbc, 0xe8, 0x97, 0xe1, 0xef, 0x09, 0xf5, 0x38, 0x8f, 0x6e, 0xce, 0x36, 0xbd, 0x89, 0x04, 0x59,
+	0x5c, 0x1a, 0x69, 0xd1, 0xa3, 0x5c, 0x9e, 0x4b, 0xab, 0x76, 0x5d, 0x8a, 0xb2, 0xce, 0x7e, 0x06,
+	0x00, 0x00, 0xff, 0xff, 0x1d, 0x46, 0x68, 0xc8, 0x27, 0x09, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -701,6 +990,186 @@ var _M2MServerService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteGatewayInM2MServer",
 			Handler:    _M2MServerService_DeleteGatewayInM2MServer_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "appserver.proto",
+}
+
+// AppServerServiceClient is the client API for AppServerService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type AppServerServiceClient interface {
+	GetDeviceByDevEui(ctx context.Context, in *GetDeviceByDevEuiRequest, opts ...grpc.CallOption) (*GetDeviceByDevEuiResponse, error)
+	GetGatewayByMac(ctx context.Context, in *GetGatewayByMacRequest, opts ...grpc.CallOption) (*GetGatewayByMacResponse, error)
+	GetDeviceDevEuiList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetDeviceDevEuiListResponse, error)
+	GetGatewayMacList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetGatewayMacListResponse, error)
+}
+
+type appServerServiceClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewAppServerServiceClient(cc *grpc.ClientConn) AppServerServiceClient {
+	return &appServerServiceClient{cc}
+}
+
+func (c *appServerServiceClient) GetDeviceByDevEui(ctx context.Context, in *GetDeviceByDevEuiRequest, opts ...grpc.CallOption) (*GetDeviceByDevEuiResponse, error) {
+	out := new(GetDeviceByDevEuiResponse)
+	err := c.cc.Invoke(ctx, "/appserver.AppServerService/GetDeviceByDevEui", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServerServiceClient) GetGatewayByMac(ctx context.Context, in *GetGatewayByMacRequest, opts ...grpc.CallOption) (*GetGatewayByMacResponse, error) {
+	out := new(GetGatewayByMacResponse)
+	err := c.cc.Invoke(ctx, "/appserver.AppServerService/GetGatewayByMac", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServerServiceClient) GetDeviceDevEuiList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetDeviceDevEuiListResponse, error) {
+	out := new(GetDeviceDevEuiListResponse)
+	err := c.cc.Invoke(ctx, "/appserver.AppServerService/GetDeviceDevEuiList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServerServiceClient) GetGatewayMacList(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetGatewayMacListResponse, error) {
+	out := new(GetGatewayMacListResponse)
+	err := c.cc.Invoke(ctx, "/appserver.AppServerService/GetGatewayMacList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AppServerServiceServer is the server API for AppServerService service.
+type AppServerServiceServer interface {
+	GetDeviceByDevEui(context.Context, *GetDeviceByDevEuiRequest) (*GetDeviceByDevEuiResponse, error)
+	GetGatewayByMac(context.Context, *GetGatewayByMacRequest) (*GetGatewayByMacResponse, error)
+	GetDeviceDevEuiList(context.Context, *empty.Empty) (*GetDeviceDevEuiListResponse, error)
+	GetGatewayMacList(context.Context, *empty.Empty) (*GetGatewayMacListResponse, error)
+}
+
+// UnimplementedAppServerServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedAppServerServiceServer struct {
+}
+
+func (*UnimplementedAppServerServiceServer) GetDeviceByDevEui(ctx context.Context, req *GetDeviceByDevEuiRequest) (*GetDeviceByDevEuiResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceByDevEui not implemented")
+}
+func (*UnimplementedAppServerServiceServer) GetGatewayByMac(ctx context.Context, req *GetGatewayByMacRequest) (*GetGatewayByMacResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGatewayByMac not implemented")
+}
+func (*UnimplementedAppServerServiceServer) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty) (*GetDeviceDevEuiListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceDevEuiList not implemented")
+}
+func (*UnimplementedAppServerServiceServer) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*GetGatewayMacListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGatewayMacList not implemented")
+}
+
+func RegisterAppServerServiceServer(s *grpc.Server, srv AppServerServiceServer) {
+	s.RegisterService(&_AppServerService_serviceDesc, srv)
+}
+
+func _AppServerService_GetDeviceByDevEui_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceByDevEuiRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServerServiceServer).GetDeviceByDevEui(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.AppServerService/GetDeviceByDevEui",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServerServiceServer).GetDeviceByDevEui(ctx, req.(*GetDeviceByDevEuiRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppServerService_GetGatewayByMac_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGatewayByMacRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServerServiceServer).GetGatewayByMac(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.AppServerService/GetGatewayByMac",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServerServiceServer).GetGatewayByMac(ctx, req.(*GetGatewayByMacRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppServerService_GetDeviceDevEuiList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServerServiceServer).GetDeviceDevEuiList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.AppServerService/GetDeviceDevEuiList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServerServiceServer).GetDeviceDevEuiList(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppServerService_GetGatewayMacList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServerServiceServer).GetGatewayMacList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.AppServerService/GetGatewayMacList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServerServiceServer).GetGatewayMacList(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _AppServerService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "appserver.AppServerService",
+	HandlerType: (*AppServerServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetDeviceByDevEui",
+			Handler:    _AppServerService_GetDeviceByDevEui_Handler,
+		},
+		{
+			MethodName: "GetGatewayByMac",
+			Handler:    _AppServerService_GetGatewayByMac_Handler,
+		},
+		{
+			MethodName: "GetDeviceDevEuiList",
+			Handler:    _AppServerService_GetDeviceDevEuiList_Handler,
+		},
+		{
+			MethodName: "GetGatewayMacList",
+			Handler:    _AppServerService_GetGatewayMacList_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

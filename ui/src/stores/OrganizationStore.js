@@ -95,7 +95,7 @@ class OrganizationStore extends EventEmitter {
   addUser(organizationID, user, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.AddUser({
-        "organization_user.organization_id": organizationID,
+        "organizationUser.organizationId": organizationID,
         body: {
           organizationUser: user,
         },
@@ -111,8 +111,8 @@ class OrganizationStore extends EventEmitter {
   getUser(organizationID, userID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.GetUser({
-        organization_id: organizationID,
-        user_id: userID,
+        organizationId: organizationID,
+        userId: userID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -125,8 +125,8 @@ class OrganizationStore extends EventEmitter {
   deleteUser(organizationID, userID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.DeleteUser({
-        organization_id: organizationID,
-        user_id: userID,
+        organizationId: organizationID,
+        userId: userID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -139,8 +139,8 @@ class OrganizationStore extends EventEmitter {
   updateUser(organizationUser, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.UpdateUser({
-        "organization_user.organization_id": organizationUser.organizationID,
-        "organization_user.user_id": organizationUser.userID,
+        "organizationUser.organizationId": organizationUser.organizationID,
+        "organizationUser.userId": organizationUser.userID,
         body: {
           organizationUser: organizationUser,
         },
@@ -156,7 +156,7 @@ class OrganizationStore extends EventEmitter {
   listUsers(organizationID, limit, offset, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.ListUsers({
-        organization_id: organizationID,
+        organizationId: organizationID,
         limit: limit,
         offset: offset,
       })
