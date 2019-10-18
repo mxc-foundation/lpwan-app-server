@@ -38,13 +38,22 @@ const customStyles = {
     // override border radius to match the box
     borderRadius: 0,
     // kill the gap
-    marginTop: 28
+    marginTop: 28,
   }),
   menuList: base => ({
     ...base,
     background:'#1a2d6e',
     // kill the white space on first and last option
-    padding: 0
+    padding: 0,
+  }),
+  option: base => ({
+    ...base,
+    // kill the white space on first and last option
+    padding: '10px',
+    maxWidth: 221,
+    whiteSpace: 'nowrap', 
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   }),
 };
 // taken from react-select example
