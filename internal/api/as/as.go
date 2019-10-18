@@ -131,7 +131,8 @@ func (a *AppServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) 
 
 func (a *AppServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDeviceByDevEuiRequest) (*api.GetDeviceByDevEuiResponse, error) {
 	var devEui lorawan.EUI64
-	var resp api.GetDeviceByDevEuiResponse
+	resp := api.GetDeviceByDevEuiResponse{DevProfile: &api.AppServerDeviceProfile{}}
+
 	if err := devEui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -159,7 +160,8 @@ func (a *AppServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDevice
 
 func (a *AppServerAPI) GetGatewayByMac(ctx context.Context, req *api.GetGatewayByMacRequest) (*api.GetGatewayByMacResponse, error) {
 	var mac lorawan.EUI64
-	var resp api.GetGatewayByMacResponse
+	resp := api.GetGatewayByMacResponse{GwProfile: &api.AppServerGatewayProfile{}}
+
 	if err := mac.UnmarshalText([]byte(req.Mac)); err != nil {
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
