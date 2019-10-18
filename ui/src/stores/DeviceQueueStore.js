@@ -16,7 +16,7 @@ class DeviceQueueStore extends EventEmitter {
   flush(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceQueueService.Flush({
-        dev_eui: devEUI,
+        devEui: devEUI,
       })
         .then(checkStatus)
         .then(resp => {
@@ -30,7 +30,7 @@ class DeviceQueueStore extends EventEmitter {
   list(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceQueueService.List({
-        dev_eui: devEUI,
+        devEui: devEUI,
       })
         .then(checkStatus)
         .then(resp => {
@@ -43,7 +43,7 @@ class DeviceQueueStore extends EventEmitter {
   enqueue(item, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceQueueService.Enqueue({
-        "device_queue_item.dev_eui": item.devEUI,
+        "deviceQueueItem.devEui": item.devEUI,
         body: {
           deviceQueueItem: item,
         },

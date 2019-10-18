@@ -92,7 +92,7 @@ class ApplicationStore extends EventEmitter {
   listIntegrations(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.ListIntegrations({
-        application_id: applicationID,
+        applicationId: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -105,7 +105,7 @@ class ApplicationStore extends EventEmitter {
   createHTTPIntegration(integration, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.CreateHTTPIntegration({
-        "integration.application_id": integration.applicationID,
+        "integration.applicationId": integration.applicationID,
         body: {
           integration: integration,
         },
@@ -122,7 +122,7 @@ class ApplicationStore extends EventEmitter {
   getHTTPIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.GetHTTPIntegration({
-        application_id: applicationID,
+        applicationId: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -135,7 +135,7 @@ class ApplicationStore extends EventEmitter {
   updateHTTPIntegration(integration, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.UpdateHTTPIntegration({
-        "integration.application_id": integration.applicationID,
+        "integration.applicationId": integration.applicationID,
         body: {
           integration: integration,
         },
@@ -152,7 +152,7 @@ class ApplicationStore extends EventEmitter {
   deleteHTTPIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.DeleteHTTPIntegration({
-        application_id: applicationID,
+        applicationId: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -167,7 +167,7 @@ class ApplicationStore extends EventEmitter {
   createInfluxDBIntegration(integration, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.CreateInfluxDBIntegration({
-        "integration.application_id": integration.applicationID,
+        "integration.applicationId": integration.applicationID,
         body: {
           integration: integration,
         },
@@ -184,7 +184,7 @@ class ApplicationStore extends EventEmitter {
   getInfluxDBIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.GetInfluxDBIntegration({
-        application_id: applicationID,
+        applicationId: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -197,7 +197,7 @@ class ApplicationStore extends EventEmitter {
   updateInfluxDBIntegration(integration, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.UpdateInfluxDBIntegration({
-        "integration.application_id": integration.applicationID,
+        "integration.applicationId": integration.applicationID,
         body: {
           integration: integration,
         },
@@ -214,7 +214,7 @@ class ApplicationStore extends EventEmitter {
   deleteInfluxDBIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.DeleteInfluxDBIntegration({
-        application_id: applicationID,
+        applicationId: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -228,7 +228,7 @@ class ApplicationStore extends EventEmitter {
   createThingsBoardIntegration(integration, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.CreateThingsBoardIntegration({
-        "integration.application_id": integration.applicationID,
+        "integration.applicationId": integration.applicationID,
         body: {
           integration: integration,
         },
@@ -245,7 +245,7 @@ class ApplicationStore extends EventEmitter {
   getThingsBoardIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.GetThingsBoardIntegration({
-        application_id: applicationID, 
+        applicationId: applicationID,
       })
         .then(checkStatus)
         .then(resp => {
@@ -258,7 +258,7 @@ class ApplicationStore extends EventEmitter {
   updateThingsBoardIntegration(integration, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.UpdateThingsBoardIntegration({
-        "integration.application_id": integration.applicationID,
+        "integration.applicationId": integration.applicationID,
         body: {
           integration: integration,
         },
@@ -275,7 +275,7 @@ class ApplicationStore extends EventEmitter {
   deleteThingsBoardIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.DeleteThingsBoardIntegration({
-        application_id: applicationID,
+        applicationId: applicationID,
       })
       .then(checkStatus)
       .then(resp => {

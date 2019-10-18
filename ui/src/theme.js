@@ -51,6 +51,7 @@ const theme = createMuiTheme({
         },
         body2: {
           color: white,
+          fontSize: '0.7rem'
         },
         colorTextSecondary: {
           color: white,
@@ -227,6 +228,12 @@ const theme = createMuiTheme({
         root: {
           fill: '#F9FAFC80',
         },
+        colorPrimary: {
+          fill: blueBG,
+        },
+        colorSecondary: {
+          fill: overlayBG
+        }
       },
       MuiDialog: {
         color: white,

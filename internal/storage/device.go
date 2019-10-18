@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"github.com/golang/protobuf/ptypes"
 	"strings"
 	"time"
 
@@ -84,6 +85,8 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 
 	now := time.Now()
 	d.CreatedAt = now
+	timestampCreatedAt, _ := ptypes.TimestampProto(d.CreatedAt)
+
 	d.UpdatedAt = now
 
 	_, err := db.Exec(`
@@ -169,6 +172,7 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 				DevEui:        d.DevEUI.String(),
 				ApplicationId: d.ApplicationID,
 				Name:          d.Name,
+				CreatedAt:     timestampCreatedAt,
 			},
 		})
 		if err != nil {
@@ -298,6 +302,22 @@ func GetDeviceCount(ctx context.Context, db sqlx.Queryer, filters DeviceFilters)
 	}
 
 	return count, nil
+}
+
+// GetDevices returns a slice of devices.
+func GetAllDeviceEuis(ctx context.Context, db sqlx.Queryer) ([]string, error) {
+	var devEuiList []string
+	var list []lorawan.EUI64
+	err := sqlx.Select(db, &list, "select dev_eui from device ORDER BY created_at DESC")
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	for _, devEui := range list {
+		devEuiList = append(devEuiList, devEui.String())
+	}
+
+	return devEuiList, nil
 }
 
 // GetDevices returns a slice of devices.
