@@ -34,7 +34,7 @@ func Setup(c config.Config) error {
 	password = c.SMTP.Password
 	smtpServer = c.SMTP.Host
 	smtpPort = c.SMTP.Port
-	host = c.General.HostServer
+	host = os.Getenv("HOST_SERVER")
 	disable = false
 
 	base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
@@ -80,13 +80,7 @@ func SendInvite(user string, token string) error {
 		return errors.New("Unable to send confirmation email")
 	}
 
-	localHostAddr := os.Getenv("LOCAL_HOST_ADDRESS")
-	var link string
-	if localHostAddr != "" {
-		link = localHostAddr + mailTemplateNames[sendInvite].url + token
-	} else {
-		link = "https://" + host + mailTemplateNames[sendInvite].url + token
-	}
+	link := host + mailTemplateNames[sendInvite].url + token
 
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
