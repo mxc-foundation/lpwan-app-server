@@ -1,3 +1,5 @@
+import SessionStore from "../stores/SessionStore";
+
 export function getM2MLink() {
     let host = process.env.REACT_APP_M2M_LOCAL_SERVER;
     const origin = window.location.origin;
@@ -8,3 +10,33 @@ export function getM2MLink() {
     
     return host;
 }
+
+export function openM2M(org, isBelongToOrg, path) {
+    let orgName = org.name;
+    let orgId = org.id;
+    if(!orgId){
+      return false;
+    }
+    const user = SessionStore.getUser();  
+    
+    if(user.isAdmin && !isBelongToOrg){
+      orgId = '0';
+      orgName = 'Super_admin';
+    }
+    
+    const data = {
+      jwt: window.localStorage.getItem("jwt"),
+      path: `${path}/${orgId}`,
+      orgId,
+      orgName,
+      username: user.username,
+      loraHostUrl: window.location.origin
+    };
+    
+    const dataString = encodeURIComponent(JSON.stringify(data));
+
+    const host = getM2MLink();
+
+    // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
+    window.location.replace(host + `/#/j/${dataString}`);
+  }
