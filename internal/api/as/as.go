@@ -53,13 +53,6 @@ func Setup(conf config.Config) error {
 	tlsCert = conf.ApplicationServer.API.TLSCert
 	tlsKey = conf.ApplicationServer.API.TLSKey
 
-	log.WithFields(log.Fields{
-		"bind":     bind,
-		"ca_cert":  caCert,
-		"tls_cert": tlsCert,
-		"tls_key":  tlsKey,
-	}).Info("api/as: starting application-server api")
-
 	grpcOpts := helpers.GetgRPCServerOptions()
 	if caCert != "" && tlsCert != "" && tlsKey != "" {
 		creds, err := helpers.GetTransportCredentials(caCert, tlsCert, tlsKey, true)
@@ -68,28 +61,60 @@ func Setup(conf config.Config) error {
 		}
 		grpcOpts = append(grpcOpts, grpc.Creds(creds))
 	}
+
 	server := grpc.NewServer(grpcOpts...)
 	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI())
-
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {
 		return errors.Wrap(err, "start application-server api listener error")
 	}
 	go server.Serve(ln)
 
+	log.WithFields(log.Fields{
+		"bind":     bind,
+		"ca_cert":  caCert,
+		"tls_cert": tlsCert,
+		"tls_key":  tlsKey,
+	}).Info("api/as: starting application-server api")
+
+	// listen to m2m server requsts
+	grpcOptsM2M := helpers.GetgRPCServerOptions()
+	if conf.ApplicationServer.APIForM2M.CACert != "" && conf.ApplicationServer.APIForM2M.TLSCert != "" && conf.ApplicationServer.APIForM2M.TLSKey != "" {
+		creds, err := helpers.GetTransportCredentials(conf.ApplicationServer.APIForM2M.CACert,
+			conf.ApplicationServer.APIForM2M.TLSCert, conf.ApplicationServer.APIForM2M.TLSKey, true)
+		if err != nil {
+			return errors.Wrap(err, "get transport credentials error")
+		}
+		grpcOptsM2M = append(grpcOptsM2M, grpc.Creds(creds))
+	}
+
+	appserver := grpc.NewServer(grpcOptsM2M...)
+	api.RegisterAppServerServiceServer(appserver, NewAppServerAPI())
+	appLn, err := net.Listen("tcp", conf.ApplicationServer.APIForM2M.Bind)
+	if err != nil {
+		return errors.Wrap(err, "start application-server api listener error")
+	}
+	go appserver.Serve(appLn)
+
+	log.WithFields(log.Fields{
+		"bind":     conf.ApplicationServer.APIForM2M.Bind,
+		"ca_cert":  conf.ApplicationServer.APIForM2M.CACert,
+		"tls_cert": conf.ApplicationServer.APIForM2M.TLSCert,
+		"tls_key":  conf.ApplicationServer.APIForM2M.TLSKey,
+	}).Info("api/as: starting appserver api for m2m-server")
+
 	return nil
 }
 
-// ApplicationServerAPI implements the as.ApplicationServerServer interface.
-type ApplicationServerAPI struct {
+
+type AppServerAPI struct {
 }
 
-// NewApplicationServerAPI returns a new ApplicationServerAPI.
-func NewApplicationServerAPI() *ApplicationServerAPI {
-	return &ApplicationServerAPI{}
+func NewAppServerAPI() *AppServerAPI {
+	return &AppServerAPI{}
 }
 
-func (a *ApplicationServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty) (*api.GetDeviceDevEuiListResponse, error) {
+func (a *AppServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty) (*api.GetDeviceDevEuiListResponse, error) {
 	devEuiList, err := storage.GetAllDeviceEuis(ctx, storage.DB())
 	if err != nil {
 		return &api.GetDeviceDevEuiListResponse{}, status.Errorf(codes.DataLoss, err.Error())
@@ -98,15 +123,16 @@ func (a *ApplicationServerAPI) GetDeviceDevEuiList(ctx context.Context, req *emp
 	return &api.GetDeviceDevEuiListResponse{DevEui: devEuiList}, nil
 }
 
-func (a *ApplicationServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
+func (a *AppServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
 	
 
 	return &api.GetGatewayMacListResponse{}, nil
 }
 
-func (a *ApplicationServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDeviceByDevEuiRequest) (*api.GetDeviceByDevEuiResponse, error) {
+func (a *AppServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDeviceByDevEuiRequest) (*api.GetDeviceByDevEuiResponse, error) {
 	var devEui lorawan.EUI64
-	var resp api.GetDeviceByDevEuiResponse
+	resp := api.GetDeviceByDevEuiResponse{DevProfile: &api.AppServerDeviceProfile{}}
+
 	if err := devEui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -132,9 +158,10 @@ func (a *ApplicationServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.G
 	return &resp, nil
 }
 
-func (a *ApplicationServerAPI) GetGatewayByMac(ctx context.Context, req *api.GetGatewayByMacRequest) (*api.GetGatewayByMacResponse, error) {
+func (a *AppServerAPI) GetGatewayByMac(ctx context.Context, req *api.GetGatewayByMacRequest) (*api.GetGatewayByMacResponse, error) {
 	var mac lorawan.EUI64
-	var resp api.GetGatewayByMacResponse
+	resp := api.GetGatewayByMacResponse{GwProfile: &api.AppServerGatewayProfile{}}
+
 	if err := mac.UnmarshalText([]byte(req.Mac)); err != nil {
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
@@ -154,6 +181,15 @@ func (a *ApplicationServerAPI) GetGatewayByMac(ctx context.Context, req *api.Get
 	resp.GwProfile.CreatedAt, _ = ptypes.TimestampProto(gateway.CreatedAt)
 
 	return &resp, nil
+}
+
+// ApplicationServerAPI implements the as.ApplicationServerServer interface.
+type ApplicationServerAPI struct {
+}
+
+// NewApplicationServerAPI returns a new ApplicationServerAPI.
+func NewApplicationServerAPI() *ApplicationServerAPI {
+	return &ApplicationServerAPI{}
 }
 
 // HandleUplinkData handles incoming (uplink) data.
