@@ -20,14 +20,14 @@ import Rss from "mdi-material-ui/Rss";
 import Wallet from "mdi-material-ui/WalletOutline";
 
 import AccountDetails from "mdi-material-ui/AccountDetails";
-
+import ServerInfoStore from "../stores/ServerInfoStore"
 import AutocompleteSelect from "./AutocompleteSelect";
 import SessionStore from "../stores/SessionStore";
 import OrganizationStore from "../stores/OrganizationStore";
 import Admin from "./Admin";
 
 import theme from "../theme";
-import { getM2MLink } from "../util/Util";
+import { openM2M } from "../util/Util";
 
 const styles = {
   drawerPaper: {
@@ -50,15 +50,6 @@ const styles = {
     //fontSize: 'larger', 
     color: theme.palette.primary.white,
   },
-/*   card: {
-    width: '100%',
-    height: 200,
-    position: 'absolute',
-    bottom: 0,
-    backgroundColor: '#09006E',
-    color: '#FFFFFF',
-    marginTop: -20,
-  }, */
   static: {
     position: 'static'
   },
@@ -73,6 +64,14 @@ const styles = {
   },
 };
 
+function loadServerVersion() {
+  return new Promise((resolve, reject) => {
+    ServerInfoStore.getAppserverVersion(data=>{
+      resolve(data);
+    });
+  });
+} 
+
 class SideNav extends Component {
   constructor() {
     super();
@@ -81,6 +80,7 @@ class SideNav extends Component {
       open: true,
       organization: null,
       cacheCounter: 0,
+      version: '1.0.0'
     };
 
 
@@ -90,7 +90,28 @@ class SideNav extends Component {
     this.getOrganizationFromLocation = this.getOrganizationFromLocation.bind(this);
   }
 
+  loadData = async () => {
+    try {
+      const organizationID = SessionStore.getOrganizationID();
+      var data = await loadServerVersion();
+      const serverInfo = JSON.parse(data);
+      
+      this.setState({
+        organizationID,
+        version: serverInfo.version
+      })
+
+      this.setState({loading: true})
+      
+    } catch (error) {
+      this.setState({loading: false})
+      console.error(error);
+      this.setState({ error });
+    }
+  }
+
   componentDidMount() {
+    this.loadData();
     SessionStore.on("organization.change", () => {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
         this.setState({
@@ -129,13 +150,13 @@ class SideNav extends Component {
       });
     });
 
-    if (SessionStore.getOrganizationID() !== null) {
+    /* if (SessionStore.getOrganizationID() !== null) {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
         this.setState({
           organization: resp.organization,
         });
       });
-    }
+    } */
 
     this.getOrganizationFromLocation();
   }
@@ -149,6 +170,8 @@ class SideNav extends Component {
   }
 
   onChange(e) {
+    SessionStore.setOrganizationID(e.target.value);
+    
     this.props.history.push(`/organizations/${e.target.value}/applications`);
   }
 
@@ -174,41 +197,16 @@ class SideNav extends Component {
     });
   }
 
-  handleOpenM2M = () => {
-    let orgId = this.state.organization.id;
-    let orgName = '';
-    if(!orgId){
-      return false;
-    }
-    const user = SessionStore.getUser();  
-    const org = SessionStore.getOrganizations(); 
-    
-    if(user.isAdmin){
-      orgId = '0';
-      orgName = 'Super_admin';
-    }else{
-      if(org.length > 0){
-        orgName = org[0].organizationName;
-      }else{
-        orgName = '';
-      }
-    }
-    
-    const data = {
-      jwt: window.localStorage.getItem("jwt"),
-      path: `/withdraw/${orgId}`,
-      orgId,
-      orgName,
-      username: user.username,
-      loraHostUrl: window.location.origin
-    };
-    
-    const dataString = encodeURIComponent(JSON.stringify(data));
-
-    const host = getM2MLink();
-
-    // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(host + `/#/j/${dataString}`);
+  handlingExtLink = () => {
+    const resp = SessionStore.getProfile();
+    resp.then((res) => {
+      let orgId = SessionStore.getOrganizationID();
+      const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
+      
+      OrganizationStore.get(orgId, resp => {
+        openM2M(resp.organization, isBelongToOrg, '/withdraw');
+      });
+    })
   }
 
   render() {
@@ -329,7 +327,7 @@ class SideNav extends Component {
         </List>
         <Divider />
               <List className={this.props.classes.static}>
-                <ListItem button onClick={this.handleOpenM2M} >
+                <ListItem button onClick={this.handlingExtLink} >
                   <ListItemIcon>
                     <Wallet />
                   </ListItemIcon>
@@ -341,8 +339,10 @@ class SideNav extends Component {
                     <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
                   </ListItemIcon>
                 </ListItem>
+                <ListItem>
+                  <ListItemText secondary={`Version ${this.state.version}`} />
+                </ListItem>
               </List>
-
         </>}
       </Drawer>
     );

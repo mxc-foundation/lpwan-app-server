@@ -98,7 +98,7 @@ class GatewayStore extends EventEmitter {
   getStats(gatewayID, start, end, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.GetStats({
-        gateway_id: gatewayID,
+        gatewayId: gatewayID,
         interval: "DAY",
         startTimestamp: start,
         endTimestamp: end,
@@ -114,7 +114,7 @@ class GatewayStore extends EventEmitter {
   getLastPing(gatewayID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.GetLastPing({
-        gateway_id: gatewayID,
+        gatewayId: gatewayID,
       })
       .then(checkStatus)
       .then(resp => {

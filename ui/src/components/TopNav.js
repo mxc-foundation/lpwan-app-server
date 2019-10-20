@@ -26,6 +26,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Wallet from "mdi-material-ui/WalletOutline";
+import { openM2M } from "../util/Util";
 
 import SessionStore from "../stores/SessionStore";
 import WalletStore from "../stores/WalletStore";
@@ -85,6 +86,12 @@ const styles = {
     color: theme.palette.common.white,
     marginRight: theme.spacing(1),
   },
+  noPadding: {
+    "&:hover": {
+      color: theme.palette.primary.main,
+      cursor: 'pointer'
+    }
+  }
 };
 
 function getWalletBalance(organizationId) {
@@ -120,23 +127,18 @@ class TopNav extends Component {
   
   componentDidMount() {
     this.loadData();
+
+    SessionStore.on("organization.change", () => {
+      this.loadData();
+    });
   }
 
   loadData = async () => {
     try {
-      let organizationId = null;
-
-      if(this.state.organizationId !== null){
-        organizationId = this.state.organizationId;
-      }else{
-        if(SessionStore.getOrganizations().length > 0){
-          organizationId = SessionStore.getOrganizations()[0].organizationID;
-        }else{
-          organizationId = null;
-        }
-      }
+      let organizationId = SessionStore.getOrganizationID();
 
       var result = await getWalletBalance(organizationId);
+      
       this.setState({ balance: result.balance });
     } catch (error) {
       console.error(error);
@@ -166,6 +168,11 @@ class TopNav extends Component {
     this.setState({
       search: e.target.value,
     });
+  }
+
+  handlingExtLink = () => {
+    const orgId = this.props.location.pathname.split('/')[2];
+    openM2M(orgId, '/withdraw');
   }
 
   onSearchSubmit(e) {
@@ -229,9 +236,9 @@ class TopNav extends Component {
           <List>
             <ListItem>
               <ListItemIcon >
-                <Wallet color="primary" className={this.props.classes.iconStyle} />
+                <Wallet className={this.props.classes.iconStyle} />
               </ListItemIcon>
-              <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }}/>
+              <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }} onClick={this.handlingExtLink}/>
             </ListItem>
           </List>
 

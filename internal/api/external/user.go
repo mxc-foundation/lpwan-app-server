@@ -3,7 +3,7 @@ package external
 import (
 	"errors"
 	"fmt"
-
+	"github.com/brocaar/loraserver/api/ns"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -502,13 +502,63 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			return helpers.ErrToRPCError(err)
 		}
 
+		// add admin user into this organization
+		adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
+		if err == nil {
+			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
+			if err != nil {
+				log.WithError(err).Error("Insert admin into organization ",org.ID," failed")
+			}
+		} else {
+			log.WithError(err).Error("Get user by username 'admin' failed")
+		}
+
 		err = storage.CreateOrganizationUser(ctx, tx, org.ID, req.UserId, true, false, false)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
+		// add service profile for this organization
+		networkServerList, err := storage.GetNetworkServers(ctx, tx, 10, 0)
+		if err == nil && len(networkServerList) >= 1{
+			sp := storage.ServiceProfile{
+				OrganizationID:  org.ID,
+				NetworkServerID: networkServerList[0].ID,
+				Name:            "service_profile_" + org.Name,
+				ServiceProfile: ns.ServiceProfile{
+					UlRate:                 0,
+					UlBucketSize:           0,
+					DlRate:                 0,
+					DlBucketSize:           0,
+					AddGwMetadata:          true,
+					DevStatusReqFreq:       0,
+					ReportDevStatusBattery: true,
+					ReportDevStatusMargin:  true,
+					DrMin:                  0,
+					DrMax:                  0,
+					ChannelMask:            []byte(""),
+					PrAllowed:              true,
+					HrAllowed:              true,
+					RaAllowed:              true,
+					NwkGeoLoc:              true,
+					TargetPer:              0,
+					MinGwDiversity:         0,
+					UlRatePolicy:           ns.RatePolicy_DROP,
+					DlRatePolicy:           ns.RatePolicy_DROP,
+				},
+			}
+
+			err := storage.CreateServiceProfile(ctx, tx, &sp)
+			if err != nil {
+				log.WithError(err).Error("Add service profile for organization_id = ", org.ID," failed")
+			}
+		} else {
+			log.WithError(err).Error("Get network server for organization_id = 0 failed")
+		}
+
 		return nil
 	})
+
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

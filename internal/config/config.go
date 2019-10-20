@@ -10,13 +10,15 @@ import (
 	"github.com/brocaar/lora-app-server/internal/integration/postgresql"
 )
 
+var AppserverVersion string
+
 // Config defines the configuration structure.
 type Config struct {
 	General struct {
 		LogLevel               int    `mapstructure:"log_level"`
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
 		HostServer             string `mapstructure:"host_server"`
-		DemoUser			   string `mapstructure:"demo_user"`
+		DemoUser               string `mapstructure:"demo_user"`
 	}
 
 	PostgreSQL struct {
@@ -44,6 +46,13 @@ type Config struct {
 		Port     string `mapstructure:"port"`
 	} `mapstructure:"smtp"`
 
+	M2MServer struct {
+		M2MServer string `mapstructure:"m2m_server"`
+		CACert    string `mapstructure:"ca_cert"`
+		TLSCert   string `mapstructure:"tls_cert"`
+		TLSKey    string `mapstructure:"tls_key"`
+	} `mapstructure:"m2m_server"`
+
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
 
@@ -70,6 +79,13 @@ type Config struct {
 			TLSKey     string `mapstructure:"tls_key"`
 			PublicHost string `mapstructure:"public_host"`
 		} `mapstructure:"api"`
+
+		APIForM2M struct {
+			Bind       string
+			CACert     string `mapstructure:"ca_cert"`
+			TLSCert    string `mapstructure:"tls_cert"`
+			TLSKey     string `mapstructure:"tls_key"`
+		} `mapstructure:"api_for_m2m"`
 
 		ExternalAPI struct {
 			Bind                       string

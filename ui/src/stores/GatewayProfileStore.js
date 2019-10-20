@@ -45,7 +45,7 @@ class GatewayProfileStore extends EventEmitter {
   update(gatewayProfile, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayProfileService.Update({
-        "gateway_profile.id": gatewayProfile.id,
+        "gatewayProfile.id": gatewayProfile.id,
         body: {
           gatewayProfile: gatewayProfile,
         },

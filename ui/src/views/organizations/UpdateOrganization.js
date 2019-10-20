@@ -29,7 +29,7 @@ class UpdateOrganization extends Component {
             <CardContent>
               <OrganizationForm
                 submitLabel="Update"
-                object={this.props.organization}
+                object={this.props.organization.organization}
                 onSubmit={this.onSubmit}
               />
             </CardContent>

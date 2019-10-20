@@ -17,7 +17,6 @@ class OrganizationForm extends FormComponent {
     if (this.state.object === undefined) {
       return(<div></div>);
     }
-
     return(
       <Form
         submitLabel={this.props.submitLabel}

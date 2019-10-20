@@ -154,7 +154,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicast_group.id}": {
+    "/api/multicast-groups/{multicastGroup.id}": {
       "put": {
         "summary": "Update updates the given multicast-group.",
         "operationId": "Update",
@@ -168,7 +168,7 @@
         },
         "parameters": [
           {
-            "name": "multicast_group.id",
+            "name": "multicastGroup.id",
             "description": "ID (string formatted UUID).\nThis will be generated automatically on create.",
             "in": "path",
             "required": true,
@@ -188,7 +188,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicast_group_id}/devices": {
+    "/api/multicast-groups/{multicastGroupId}/devices": {
       "post": {
         "summary": "AddDevice adds the given device to the multicast-group.",
         "operationId": "AddDevice",
@@ -202,7 +202,7 @@
         },
         "parameters": [
           {
-            "name": "multicast_group_id",
+            "name": "multicastGroupId",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
@@ -222,7 +222,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicast_group_id}/devices/{dev_eui}": {
+    "/api/multicast-groups/{multicastGroupId}/devices/{devEui}": {
       "delete": {
         "summary": "RemoveDevice removes the given device from the multicast-group.",
         "operationId": "RemoveDevice",
@@ -236,14 +236,14 @@
         },
         "parameters": [
           {
-            "name": "multicast_group_id",
+            "name": "multicastGroupId",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "dev_eui",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded string).",
             "in": "path",
             "required": true,
@@ -255,7 +255,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicast_group_id}/queue": {
+    "/api/multicast-groups/{multicastGroupId}/queue": {
       "get": {
         "summary": "ListQueue lists the items in the multicast-group queue.",
         "operationId": "ListQueue",
@@ -269,7 +269,7 @@
         },
         "parameters": [
           {
-            "name": "multicast_group_id",
+            "name": "multicastGroupId",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
@@ -293,7 +293,7 @@
         },
         "parameters": [
           {
-            "name": "multicast_group_id",
+            "name": "multicastGroupId",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
@@ -305,7 +305,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicast_queue_item.multicast_group_id}/queue": {
+    "/api/multicast-groups/{multicastQueueItem.multicastGroupId}/queue": {
       "post": {
         "summary": "Enqueue adds the given item to the multicast-queue.",
         "operationId": "Enqueue",
@@ -319,7 +319,7 @@
         },
         "parameters": [
           {
-            "name": "multicast_queue_item.multicast_group_id",
+            "name": "multicastQueueItem.multicastGroupId",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,

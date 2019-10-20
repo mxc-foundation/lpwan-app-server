@@ -12,6 +12,8 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -1428,6 +1430,35 @@ type GatewayServiceServer interface {
 	//   * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.
 	//   * This endpoint does not work from a web-browser.
 	StreamFrameLogs(*StreamGatewayFrameLogsRequest, GatewayService_StreamFrameLogsServer) error
+}
+
+// UnimplementedGatewayServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedGatewayServiceServer struct {
+}
+
+func (*UnimplementedGatewayServiceServer) Create(ctx context.Context, req *CreateGatewayRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedGatewayServiceServer) Get(ctx context.Context, req *GetGatewayRequest) (*GetGatewayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedGatewayServiceServer) Update(ctx context.Context, req *UpdateGatewayRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedGatewayServiceServer) Delete(ctx context.Context, req *DeleteGatewayRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedGatewayServiceServer) List(ctx context.Context, req *ListGatewayRequest) (*ListGatewayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (*UnimplementedGatewayServiceServer) GetStats(ctx context.Context, req *GetGatewayStatsRequest) (*GetGatewayStatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStats not implemented")
+}
+func (*UnimplementedGatewayServiceServer) GetLastPing(ctx context.Context, req *GetLastPingRequest) (*GetLastPingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLastPing not implemented")
+}
+func (*UnimplementedGatewayServiceServer) StreamFrameLogs(req *StreamGatewayFrameLogsRequest, srv GatewayService_StreamFrameLogsServer) error {
+	return status.Errorf(codes.Unimplemented, "method StreamFrameLogs not implemented")
 }
 
 func RegisterGatewayServiceServer(s *grpc.Server, srv GatewayServiceServer) {

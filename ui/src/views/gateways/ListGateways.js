@@ -303,7 +303,6 @@ class ListGateways extends Component {
             className={this.props.classes.tabs}
           >
             <Tab label="List" component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways`} />
-            <Tab label="Map" component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/map`} />
           </Tabs>
         </Grid>
 

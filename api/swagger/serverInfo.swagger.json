@@ -1,0 +1,46 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "serverInfo.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/server-info/appserver-version": {
+      "get": {
+        "summary": "get version",
+        "operationId": "GetAppserverVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetAppserverVersionResponse"
+            }
+          }
+        },
+        "tags": [
+          "ServerInfoService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiGetAppserverVersionResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -15,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/devices/{dev_eui}/queue": {
+    "/api/devices/{devEui}/queue": {
       "get": {
         "summary": "List lists the items in the device-queue.",
         "operationId": "List",
@@ -29,7 +29,7 @@
         },
         "parameters": [
           {
-            "name": "dev_eui",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -53,7 +53,7 @@
         },
         "parameters": [
           {
-            "name": "dev_eui",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -65,7 +65,7 @@
         ]
       }
     },
-    "/api/devices/{device_queue_item.dev_eui}/queue": {
+    "/api/devices/{deviceQueueItem.devEui}/queue": {
       "post": {
         "summary": "Enqueue adds the given item to the device-queue.",
         "operationId": "Enqueue",
@@ -79,7 +79,7 @@
         },
         "parameters": [
           {
-            "name": "device_queue_item.dev_eui",
+            "name": "deviceQueueItem.devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,

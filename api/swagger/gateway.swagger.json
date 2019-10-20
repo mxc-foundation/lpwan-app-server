@@ -124,7 +124,7 @@
         ]
       }
     },
-    "/api/gateways/{gateway_id}/frames": {
+    "/api/gateways/{gatewayId}/frames": {
       "get": {
         "summary": "StreamFrameLogs streams the uplink and downlink frame-logs for the given gateway ID.\nNotes:\n  * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.\n  * This endpoint does not work from a web-browser.",
         "operationId": "StreamFrameLogs",
@@ -138,7 +138,7 @@
         },
         "parameters": [
           {
-            "name": "gateway_id",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -150,7 +150,7 @@
         ]
       }
     },
-    "/api/gateways/{gateway_id}/pings/last": {
+    "/api/gateways/{gatewayId}/pings/last": {
       "get": {
         "summary": "GetLastPing returns the last emitted ping and gateways receiving this ping.",
         "operationId": "GetLastPing",
@@ -164,7 +164,7 @@
         },
         "parameters": [
           {
-            "name": "gateway_id",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -176,7 +176,7 @@
         ]
       }
     },
-    "/api/gateways/{gateway_id}/stats": {
+    "/api/gateways/{gatewayId}/stats": {
       "get": {
         "summary": "GetStats lists the gateway stats given the query parameters.",
         "operationId": "GetStats",
@@ -190,7 +190,7 @@
         },
         "parameters": [
           {
-            "name": "gateway_id",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,

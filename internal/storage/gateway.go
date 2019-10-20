@@ -5,12 +5,16 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
+	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/golang/protobuf/ptypes"
 	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/lib/pq"
 
+	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
 	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
 	"github.com/brocaar/lora-app-server/internal/logging"
 	"github.com/brocaar/loraserver/api/ns"
@@ -105,6 +109,8 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 
 	now := time.Now()
 	gw.CreatedAt = now
+	timestampCreatedAt, _ := ptypes.TimestampProto(gw.CreatedAt)
+
 	gw.UpdatedAt = now
 
 	_, err := db.Exec(`
@@ -145,6 +151,27 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 	)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
+	}
+
+	// add this gateway to m2m server
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.AddGatewayInM2MServer(context.Background(), &m2m_api.AddGatewayInM2MServerRequest{
+			OrgId: gw.OrganizationID,
+			GwProfile: &m2m_api.AppServerGatewayProfile{
+				Mac:         gw.MAC.String(),
+				OrgId:       gw.OrganizationID,
+				Description: gw.Description,
+				Name:        gw.Name,
+				CreatedAt:   timestampCreatedAt,
+			},
+		})
+		if err != nil {
+			log.WithError(err).Error("m2m server create gateway api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{
@@ -246,6 +273,20 @@ func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete gateway error")
+	}
+
+	// delete this gateway from m2m-server
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
+			MacAddress: mac.String(),
+		})
+		if err != nil && grpc.Code(err) != codes.NotFound {
+			log.WithError(err).Error("delete gateway from m2m-server error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{

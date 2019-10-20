@@ -306,7 +306,6 @@ class GatewayProfileForm extends FormComponent {
             label="Select network-server"
             value={this.state.object.networkServerID || ""}
             onChange={this.onChange}
-            getOption={this.getNetworkServerOption}
             getOptions={this.getNetworkServerOptions}
           />
         </FormControlOrig>}

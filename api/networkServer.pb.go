@@ -11,6 +11,8 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -797,6 +799,26 @@ type NetworkServerServiceServer interface {
 	Delete(context.Context, *DeleteNetworkServerRequest) (*empty.Empty, error)
 	// List lists the available network-servers.
 	List(context.Context, *ListNetworkServerRequest) (*ListNetworkServerResponse, error)
+}
+
+// UnimplementedNetworkServerServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedNetworkServerServiceServer struct {
+}
+
+func (*UnimplementedNetworkServerServiceServer) Create(ctx context.Context, req *CreateNetworkServerRequest) (*CreateNetworkServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedNetworkServerServiceServer) Get(ctx context.Context, req *GetNetworkServerRequest) (*GetNetworkServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedNetworkServerServiceServer) Update(ctx context.Context, req *UpdateNetworkServerRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedNetworkServerServiceServer) Delete(ctx context.Context, req *DeleteNetworkServerRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedNetworkServerServiceServer) List(ctx context.Context, req *ListNetworkServerRequest) (*ListNetworkServerResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
 
 func RegisterNetworkServerServiceServer(s *grpc.Server, srv NetworkServerServiceServer) {

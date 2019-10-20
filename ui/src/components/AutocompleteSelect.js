@@ -38,13 +38,22 @@ const customStyles = {
     // override border radius to match the box
     borderRadius: 0,
     // kill the gap
-    marginTop: 28
+    marginTop: 28,
   }),
   menuList: base => ({
     ...base,
     background:'#1a2d6e',
     // kill the white space on first and last option
-    padding: 0
+    padding: 0,
+  }),
+  option: base => ({
+    ...base,
+    // kill the white space on first and last option
+    padding: '10px',
+    maxWidth: 221,
+    whiteSpace: 'nowrap', 
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
   }),
 };
 // taken from react-select example
@@ -75,8 +84,13 @@ class Option extends Component {
 }
 
 function SelectWrapped(props) {
-  const { classes, ...other } = props;
+  const { classes, inputRef, ...other } = props;
 
+  React.useImperativeHandle(inputRef, () => ({
+    focus: () => {
+    },
+  }));
+  
   const components = {
     option: Option,
     value: (valueProps) => {
@@ -206,8 +220,10 @@ class AutocompleteSelect extends Component {
 
   onChange(v) {
     let value = null;
+    let label = null;
     if (v !== null) {
       value = v.value;
+      label = v.label;
     }
 
     this.setState({
@@ -217,7 +233,8 @@ class AutocompleteSelect extends Component {
     this.props.onChange({
       target: {
         id: this.props.id,
-        value: value,
+        value,
+        label
       },
     });
   }

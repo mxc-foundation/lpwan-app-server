@@ -14,6 +14,7 @@ import (
 	"github.com/brocaar/lora-app-server/internal/api"
 	"github.com/brocaar/lora-app-server/internal/applayer/fragmentation"
 	"github.com/brocaar/lora-app-server/internal/applayer/multicastsetup"
+	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
 	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
 	"github.com/brocaar/lora-app-server/internal/codec"
 	"github.com/brocaar/lora-app-server/internal/config"
@@ -40,6 +41,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupStorage,
 		setupNetworkServer,
 		migrateGatewayStats,
+		setupM2MServer,
 		setupIntegration,
 		setupSMTP,
 		setupCodec,
@@ -161,6 +163,13 @@ func migrateGatewayStats() error {
 		return errors.Wrap(err, "migration error")
 	}
 
+	return nil
+}
+
+func setupM2MServer() error {
+	if err := m2m_client.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup m2m-server error")
+	}
 	return nil
 }
 

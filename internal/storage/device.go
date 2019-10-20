@@ -2,10 +2,11 @@ package storage
 
 import (
 	"context"
+	"github.com/golang/protobuf/ptypes"
 	"strings"
 	"time"
 
-	uuid "github.com/gofrs/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
@@ -13,6 +14,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
+	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
+	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
 	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
 	"github.com/brocaar/lora-app-server/internal/config"
 	"github.com/brocaar/lora-app-server/internal/logging"
@@ -82,6 +85,8 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 
 	now := time.Now()
 	d.CreatedAt = now
+	timestampCreatedAt, _ := ptypes.TimestampProto(d.CreatedAt)
+
 	d.UpdatedAt = now
 
 	_, err := db.Exec(`
@@ -136,6 +141,7 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 		return errors.Wrap(err, "get network-server error")
 	}
 
+	// add this device to network server
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
@@ -153,6 +159,27 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 	})
 	if err != nil {
 		return errors.Wrap(err, "create device error")
+	}
+
+	// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
+	// network server successfully
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
+			OrgId: app.OrganizationID,
+			DevProfile: &m2m_api.AppServerDeviceProfile{
+				DevEui:        d.DevEUI.String(),
+				ApplicationId: d.ApplicationID,
+				Name:          d.Name,
+				CreatedAt:     timestampCreatedAt,
+			},
+		})
+		if err != nil {
+			log.WithError(err).Error("m2m server create device api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{
@@ -275,6 +302,22 @@ func GetDeviceCount(ctx context.Context, db sqlx.Queryer, filters DeviceFilters)
 	}
 
 	return count, nil
+}
+
+// GetDevices returns a slice of devices.
+func GetAllDeviceEuis(ctx context.Context, db sqlx.Queryer) ([]string, error) {
+	var devEuiList []string
+	var list []lorawan.EUI64
+	err := sqlx.Select(db, &list, "select dev_eui from device ORDER BY created_at DESC")
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	for _, devEui := range list {
+		devEuiList = append(devEuiList, devEui.String())
+	}
+
+	return devEuiList, nil
 }
 
 // GetDevices returns a slice of devices.
@@ -435,6 +478,7 @@ func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error 
 		return ErrDoesNotExist
 	}
 
+	// delete device from networkserver
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
@@ -445,6 +489,21 @@ func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error 
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete device error")
+	}
+
+	// delete device from m2m server, this procedure should not block delete device from appserver once it's deleted from
+	// network server successfully
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
+			DevEui: devEUI.String(),
+		})
+		if err != nil && grpc.Code(err) != codes.NotFound {
+			log.WithError(err).Error("m2m-server delete device api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{

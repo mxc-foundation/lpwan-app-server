@@ -11,6 +11,8 @@ import (
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -1314,6 +1316,41 @@ type OrganizationServiceServer interface {
 	UpdateUser(context.Context, *UpdateOrganizationUserRequest) (*empty.Empty, error)
 	// Delete a user from an organization.
 	DeleteUser(context.Context, *DeleteOrganizationUserRequest) (*empty.Empty, error)
+}
+
+// UnimplementedOrganizationServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedOrganizationServiceServer struct {
+}
+
+func (*UnimplementedOrganizationServiceServer) List(ctx context.Context, req *ListOrganizationRequest) (*ListOrganizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) Get(ctx context.Context, req *GetOrganizationRequest) (*GetOrganizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) Create(ctx context.Context, req *CreateOrganizationRequest) (*CreateOrganizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) Update(ctx context.Context, req *UpdateOrganizationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) Delete(ctx context.Context, req *DeleteOrganizationRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) ListUsers(ctx context.Context, req *ListOrganizationUsersRequest) (*ListOrganizationUsersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUsers not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) GetUser(ctx context.Context, req *GetOrganizationUserRequest) (*GetOrganizationUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUser not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) AddUser(ctx context.Context, req *AddOrganizationUserRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) UpdateUser(ctx context.Context, req *UpdateOrganizationUserRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUser not implemented")
+}
+func (*UnimplementedOrganizationServiceServer) DeleteUser(ctx context.Context, req *DeleteOrganizationUserRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUser not implemented")
 }
 
 func RegisterOrganizationServiceServer(s *grpc.Server, srv OrganizationServiceServer) {

@@ -91,7 +91,7 @@
         ]
       }
     },
-    "/api/device-profiles/{device_profile.id}": {
+    "/api/device-profiles/{deviceProfile.id}": {
       "put": {
         "summary": "Update updates the given device-profile.",
         "operationId": "Update",
@@ -105,7 +105,7 @@
         },
         "parameters": [
           {
-            "name": "device_profile.id",
+            "name": "deviceProfile.id",
             "description": "Device-profile ID (UUID string).",
             "in": "path",
             "required": true,
