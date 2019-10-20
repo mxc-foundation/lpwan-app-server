@@ -220,8 +220,10 @@ class AutocompleteSelect extends Component {
 
   onChange(v) {
     let value = null;
+    let label = null;
     if (v !== null) {
       value = v.value;
+      label = v.label;
     }
 
     this.setState({
@@ -231,7 +233,8 @@ class AutocompleteSelect extends Component {
     this.props.onChange({
       target: {
         id: this.props.id,
-        value: value,
+        value,
+        label
       },
     });
   }

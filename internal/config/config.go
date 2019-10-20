@@ -75,6 +75,13 @@ type Config struct {
 			PublicHost string `mapstructure:"public_host"`
 		} `mapstructure:"api"`
 
+		APIForM2M struct {
+			Bind       string
+			CACert     string `mapstructure:"ca_cert"`
+			TLSCert    string `mapstructure:"tls_cert"`
+			TLSKey     string `mapstructure:"tls_key"`
+		} `mapstructure:"api_for_m2m"`
+
 		ExternalAPI struct {
 			Bind                       string
 			TLSCert                    string `mapstructure:"tls_cert"`
