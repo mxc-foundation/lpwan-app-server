@@ -13,6 +13,7 @@
 # builds
 /dist
 /build
+/cache
 /internal/static/static_gen.go
 /internal/migrations/migrations_gen.go
 /static/logo

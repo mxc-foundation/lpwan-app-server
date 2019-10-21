@@ -21,6 +21,8 @@ import (
 	"github.com/brocaar/lorawan"
 )
 
+const GatewayLocationsFileName = "gateway_locations.json"
+
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
 	validator auth.Validator
@@ -133,6 +135,8 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 	if err != nil {
 		return nil, err
 	}
+
+	helpers.ClearFileCache(GatewayLocationsFileName)
 
 	return &empty.Empty{}, nil
 }
@@ -340,9 +344,20 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 
 // ListLocations lists the gateway locations.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
-	gws, err := storage.GetGateways(ctx, storage.DB(), 1000, 0, "")
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+	var (
+		err error
+		gws []storage.Gateway
+	)
+
+	helpers.GetFromFileCache(GatewayLocationsFileName, &gws)
+
+	if len(gws) == 0 {
+		gws, err = storage.GetGateways(ctx, storage.DB(), 1000, 0, "")
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		helpers.SaveToFileCache(GatewayLocationsFileName, &gws)
 	}
 
 	result := make([]*pb.GatewayLocationListItem, len(gws))
@@ -459,6 +474,8 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		return nil, err
 	}
 
+	helpers.ClearFileCache(GatewayLocationsFileName)
+
 	return &empty.Empty{}, nil
 }
 
@@ -485,6 +502,8 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 	if err != nil {
 		return nil, err
 	}
+
+	helpers.ClearFileCache(GatewayLocationsFileName)
 
 	return &empty.Empty{}, nil
 }
