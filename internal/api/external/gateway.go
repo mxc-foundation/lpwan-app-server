@@ -338,6 +338,32 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 	return &resp, nil
 }
 
+// ListLocations lists the gateway locations.
+func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
+	gws, err := storage.GetGateways(ctx, storage.DB(), 1000, 0, "")
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	result := make([]*pb.GatewayLocationListItem, len(gws))
+
+	for index, gw := range gws {
+		result[index] = &pb.GatewayLocationListItem{
+			Location: &common.Location{
+				Latitude:  gw.Latitude,
+				Longitude: gw.Longitude,
+				Altitude:  gw.Altitude,
+			},
+		}
+	}
+
+	resp := pb.ListGatewayLocationsResponse{
+		Result: result,
+	}
+
+	return &resp, nil
+}
+
 // Update updates the given gateway.
 func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (*empty.Empty, error) {
 	if req.Gateway == nil {
