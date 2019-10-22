@@ -352,7 +352,7 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocat
 	helpers.GetFromFileCache(GatewayLocationsFileName, &gws)
 
 	if len(gws) == 0 {
-		gws, err = storage.GetGateways(ctx, storage.DB(), 1000, 0, "")
+		gws, err = storage.GetGateways(ctx, storage.DB(), 7000, 0, "")
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
