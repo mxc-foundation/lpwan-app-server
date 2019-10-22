@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/golang/protobuf/ptypes"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
+	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/golang/protobuf/ptypes"
 
 	"github.com/lib/pq"
 
@@ -47,6 +48,13 @@ type Gateway struct {
 	Latitude         float64       `db:"latitude"`
 	Longitude        float64       `db:"longitude"`
 	Altitude         float64       `db:"altitude"`
+}
+
+// GatewayLocation represents a gateway location.
+type GatewayLocation struct {
+	Latitude  float64 `db:"latitude"`
+	Longitude float64 `db:"longitude"`
+	Altitude  float64 `db:"altitude"`
 }
 
 // GatewayPing represents a gateway ping.
@@ -373,6 +381,25 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search
 		return nil, errors.Wrap(err, "select error")
 	}
 	return gws, nil
+}
+
+// GetGatewaysLoc returns a slice of gateways locations.
+func GetGatewaysLoc(ctx context.Context, db sqlx.Queryer, limit int) ([]GatewayLocation, error) {
+	var gwsLoc []GatewayLocation
+
+	err := sqlx.Select(db, &gwsLoc, `
+		select
+			latitude,
+			longitude,
+			altitude
+		from gateway
+		limit $1`,
+		limit,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "select error")
+	}
+	return gwsLoc, nil
 }
 
 // GetGatewaysForMACs returns a map of gateways given a slice of MACs.
