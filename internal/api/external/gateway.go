@@ -344,32 +344,27 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 
 // ListLocations lists the gateway locations.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
-	var (
-		err error
-		gws []storage.Gateway
-	)
+	var result []*pb.GatewayLocationListItem
 
-	helpers.GetFromFileCache(GatewayLocationsFileName, &gws)
+	helpers.GetFromFileCache(GatewayLocationsFileName, &result)
 
-	if len(gws) == 0 {
-		gws, err = storage.GetGateways(ctx, storage.DB(), 1000, 0, "")
+	if len(result) == 0 {
+		gwsLoc, err := storage.GetGatewaysLoc(ctx, storage.DB(), 1000)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 
-		helpers.SaveToFileCache(GatewayLocationsFileName, &gws)
-	}
-
-	result := make([]*pb.GatewayLocationListItem, len(gws))
-
-	for index, gw := range gws {
-		result[index] = &pb.GatewayLocationListItem{
-			Location: &common.Location{
-				Latitude:  gw.Latitude,
-				Longitude: gw.Longitude,
-				Altitude:  gw.Altitude,
-			},
+		for _, loc := range gwsLoc {
+			result = append(result, &pb.GatewayLocationListItem{
+				Location: &pb.GatewayLocation{
+					Latitude:  loc.Latitude,
+					Longitude: loc.Longitude,
+					Altitude:  loc.Altitude,
+				},
+			})
 		}
+
+		helpers.SaveToFileCache(GatewayLocationsFileName, &result)
 	}
 
 	resp := pb.ListGatewayLocationsResponse{

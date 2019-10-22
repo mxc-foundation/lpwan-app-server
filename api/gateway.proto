@@ -204,9 +204,18 @@ message GatewayListItem {
 	common.Location location = 10;
 }
 
+message GatewayLocation {
+	// Latitude of the gateway -90.0 to 90.0.
+	double latitude = 1;
+	// Longitude of the gateway -180.0 to 180.0.
+	double longitude = 2;
+	// Altitude of the gateway in meters.
+	double altitude = 3;
+}
+
 message GatewayLocationListItem {
 	// Location.
-	common.Location location = 10;
+	GatewayLocation location = 10;
 }
 
 message ListGatewayResponse {
