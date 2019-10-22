@@ -50,6 +50,13 @@ service GatewayService {
 		};
 	}
 
+	// ListLocations lists the gateways locations.
+	rpc ListLocations(ListGatewayLocationsRequest) returns (ListGatewayLocationsResponse) {
+		option (google.api.http) = {
+			get: "/api/gateways-loc"
+		};
+	}
+
 	// GetStats lists the gateway stats given the query parameters.
 	rpc GetStats(GetGatewayStatsRequest) returns (GetGatewayStatsResponse) {
 		option (google.api.http) = {
@@ -163,6 +170,8 @@ message ListGatewayRequest {
 	string search = 4;
 }
 
+message ListGatewayLocationsRequest {}
+
 message GatewayListItem {
 	// Gateway ID (HEX encoded).
 	string id = 1;
@@ -191,8 +200,13 @@ message GatewayListItem {
 	// Network-server ID.
 	int64 network_server_id = 7 [json_name = "networkServerID"];
 
-    // Location.
-    common.Location location = 10;
+	// Location.
+	common.Location location = 10;
+}
+
+message GatewayLocationListItem {
+	// Location.
+	common.Location location = 10;
 }
 
 message ListGatewayResponse {
@@ -201,6 +215,11 @@ message ListGatewayResponse {
 
 	// Nodes within this result-set.
 	repeated GatewayListItem result = 2;
+}
+
+message ListGatewayLocationsResponse {
+	// Nodes within this result-set.
+	repeated GatewayLocationListItem result = 1;
 }
 
 
