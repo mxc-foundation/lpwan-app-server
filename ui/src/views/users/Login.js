@@ -165,39 +165,24 @@ class Login extends Component {
     let position = [];
     
     position = [51,13];
-    const markers = [];
     
-
     return(
-    <>
-      <Map center={position} zoom={6} style={style} animate={true} scrollWheelZoom={false}>
-        <MapTileLayerCluster />
-        <LayersControl position="bottomleft">
-          <LayersControl.Overlay name="Markers" checked>
-            <LayerGroup>
-              {markers.map((position, index) => {
-                return (
-                  <Marker key={index} position={position} radius={10}>
-                    <Popup>{position.text}</Popup>
-                  </Marker>
-                );
-              })}
-            </LayerGroup>
-          </LayersControl.Overlay>
-        </LayersControl>
-      </Map>
-          <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
-            <div className={this.props.classes.loginFormStyle}>
-              <LoginForm
-                submitLabel="Login"
-                onSubmit={this.onSubmit}
-                logo={this.props.classes.logo}
-              />
-            </div>
-            {this.state.registration && <div>
-              <Typography className={this.props.classes.link} dangerouslySetInnerHTML={{__html: this.state.registration}}></Typography>
-             </div>}
+      <>
+        <Map center={position} zoom={6} style={style} animate={true} scrollWheelZoom={false}>
+          <MapTileLayerCluster />
+        </Map>
+        <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
+          <div className={this.props.classes.loginFormStyle}>
+            <LoginForm
+              submitLabel="Login"
+              onSubmit={this.onSubmit}
+              logo={this.props.classes.logo}
+            />
           </div>
+          {this.state.registration && <div>
+            <Typography className={this.props.classes.link} dangerouslySetInnerHTML={{__html: this.state.registration}}></Typography>
+          </div>}
+        </div>
       </>
     );
   }
