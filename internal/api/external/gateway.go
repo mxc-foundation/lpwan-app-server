@@ -1,11 +1,13 @@
 package external
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -21,7 +23,7 @@ import (
 	"github.com/brocaar/lorawan"
 )
 
-const GatewayLocationsFileName = "gateway_locations.json"
+const GatewayLocationsRedisKey = "gateway_locations"
 
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
@@ -136,7 +138,10 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 		return nil, err
 	}
 
-	helpers.ClearFileCache(GatewayLocationsFileName)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
 
 	return &empty.Empty{}, nil
 }
@@ -346,7 +351,13 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
 	var result []*pb.GatewayLocationListItem
 
-	helpers.GetFromFileCache(GatewayLocationsFileName, &result)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	resultJSON, err := redis.Bytes(redisConn.Do("GET", GatewayLocationsRedisKey))
+	if err == nil {
+		json.Unmarshal(resultJSON, &result)
+	}
 
 	if len(result) == 0 {
 		gwsLoc, err := storage.GetGatewaysLoc(ctx, storage.DB(), 1000)
@@ -364,7 +375,10 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocat
 			})
 		}
 
-		helpers.SaveToFileCache(GatewayLocationsFileName, &result)
+		bytes, err := json.Marshal(&result)
+		if err == nil {
+			redisConn.Do("SET", GatewayLocationsRedisKey, bytes)
+		}
 	}
 
 	resp := pb.ListGatewayLocationsResponse{
@@ -469,7 +483,10 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		return nil, err
 	}
 
-	helpers.ClearFileCache(GatewayLocationsFileName)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
 
 	return &empty.Empty{}, nil
 }
@@ -498,7 +515,10 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 		return nil, err
 	}
 
-	helpers.ClearFileCache(GatewayLocationsFileName)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
 
 	return &empty.Empty{}, nil
 }

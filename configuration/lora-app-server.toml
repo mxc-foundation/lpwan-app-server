@@ -102,8 +102,6 @@ tls_key=""
 # For now it is recommended to not change this id.
 id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
 
-cache_dir="cache"
-
   # JavaScript codec settings.
   [application_server.codec.js]
   # Maximum execution time.

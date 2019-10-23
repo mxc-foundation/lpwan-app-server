@@ -3,7 +3,7 @@ PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | g
 VERSION := $(shell git describe --tags |sed -e "s/^v//")
 
 build: scripts ui/build internal/statics internal/migrations
-	mkdir -p build cache
+	mkdir -p build
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
 
 clean:
@@ -15,7 +15,6 @@ clean:
 	@rm -f static/swagger/*.json
 	@rm -rf docs/public
 	@rm -rf dist
-	@rm -rf cache
 
 test: internal/statics internal/migrations
 	@echo "Running tests"

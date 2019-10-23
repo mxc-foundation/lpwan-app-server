@@ -3,10 +3,7 @@ package helpers
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"os"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
@@ -14,7 +11,6 @@ import (
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -70,42 +66,4 @@ func GetTransportCredentials(caCert, tlsCert, tlsKey string, verifyClientCert bo
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,
 	}), nil
-}
-
-// GetFromFileCache return data from file cache
-func GetFromFileCache(fileName string, data interface{}) error {
-	cacheFilePath := fmt.Sprintf("%s/%s", viper.GetString("application_server.cache_dir"), fileName)
-	jsonFile, err := os.Open(cacheFilePath)
-	defer jsonFile.Close()
-
-	if err != nil {
-		return nil
-	}
-
-	// return ioutil.ReadAll(jsonFile)
-	byteValue, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(byteValue, data)
-}
-
-// SaveToFileCache save data to file cache
-func SaveToFileCache(fileName string, data interface{}) error {
-	cacheFilePath := fmt.Sprintf("%s/%s", viper.GetString("application_server.cache_dir"), fileName)
-
-	byteData, err := json.Marshal(data)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(cacheFilePath, byteData, 0644)
-}
-
-// ClearFileCache clear data from file cache
-func ClearFileCache(fileName string) error {
-	cacheFilePath := fmt.Sprintf("%s/%s", viper.GetString("application_server.cache_dir"), fileName)
-
-	return os.Remove(cacheFilePath)
 }
