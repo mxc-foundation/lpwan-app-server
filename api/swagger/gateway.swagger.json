@@ -90,6 +90,23 @@
         ]
       }
     },
+    "/api/gateways-loc": {
+      "get": {
+        "summary": "ListLocations lists the gateways locations.",
+        "operationId": "ListLocations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListGatewayLocationsResponse"
+            }
+          }
+        },
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/{gateway.id}": {
       "put": {
         "summary": "Update updates the gateway matching the given mac address.",
@@ -497,6 +514,15 @@
         }
       }
     },
+    "apiGatewayLocationListItem": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "$ref": "#/definitions/commonLocation",
+          "description": "Location."
+        }
+      }
+    },
     "apiGatewayStats": {
       "type": "object",
       "properties": {
@@ -591,6 +617,18 @@
             "$ref": "#/definitions/apiPingRX"
           },
           "description": "Gateways and meta-data of reception."
+        }
+      }
+    },
+    "apiListGatewayLocationsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGatewayLocationListItem"
+          },
+          "description": "Nodes within this result-set."
         }
       }
     },
