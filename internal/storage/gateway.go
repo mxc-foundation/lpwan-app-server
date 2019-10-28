@@ -393,6 +393,7 @@ func GetGatewaysLoc(ctx context.Context, db sqlx.Queryer, limit int) ([]GatewayL
 			longitude,
 			altitude
 		from gateway
+		where latitude > 0 and longitude > 0
 		limit $1`,
 		limit,
 	)
