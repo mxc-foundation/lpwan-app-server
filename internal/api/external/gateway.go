@@ -9,6 +9,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -360,7 +361,7 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocat
 	}
 
 	if len(result) == 0 {
-		gwsLoc, err := storage.GetGatewaysLoc(ctx, storage.DB(), 1000)
+		gwsLoc, err := storage.GetGatewaysLoc(ctx, storage.DB(), viper.GetInt("application_server.gateways_locations_limit"))
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
