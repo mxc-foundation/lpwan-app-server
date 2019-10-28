@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# service name should be the same as binary file
+SERVICE_NAME=lora-app-server
+CONFIG_FILE=lora-app-server.toml
+CONFIG_PATH=/etc/lora-app-server
+
+if [ -f $CONFIG_PATH/$CONFIG_FILE ]; then
+  echo "$CONFIG_PATH/$CONFIG_FILE exists"
+  ./$SERVICE_NAME -c $CONFIG_PATH/$CONFIG_FILE
+  # very important to exit here
+  exit 0
+fi
+
+echo "cp ./$CONFIG_FILE $CONFIG_PATH/$CONFIG_FILE "
+cp ./$CONFIG_FILE $CONFIG_PATH
+./$SERVICE_NAME -c $CONFIG_PATH/$CONFIG_FILE

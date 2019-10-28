@@ -34,7 +34,7 @@ func Setup(c config.Config) error {
 	password = c.SMTP.Password
 	smtpServer = c.SMTP.Host
 	smtpPort = c.SMTP.Port
-	host = os.Getenv("HOST_SERVER")
+	host = os.Getenv("APPSERVER")
 	disable = false
 
 	base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
