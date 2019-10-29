@@ -17,9 +17,9 @@ import (
 )
 
 var (
-	jwtsecret      []byte
-	HashIterations = 100000
-	DemoUser       = ""
+	jwtsecret           []byte
+	HashIterations      = 100000
+	DemoUser            = ""
 	applicationServerID uuid.UUID
 )
 
