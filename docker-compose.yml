@@ -28,7 +28,7 @@ services:
       - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
 
   redis:
-    image: redis:4-alpine
+    image: redis:5-alpine
 
   mosquitto:
     image: eclipse-mosquitto
