@@ -4,7 +4,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"

@@ -3,7 +3,7 @@ package external
 import (
 	"testing"
 
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 

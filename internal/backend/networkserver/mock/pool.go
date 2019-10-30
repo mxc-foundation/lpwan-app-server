@@ -2,7 +2,7 @@ package mock
 
 import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // Pool is a network-server pool for testing.

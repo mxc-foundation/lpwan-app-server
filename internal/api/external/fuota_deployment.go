@@ -14,7 +14,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/brocaar/loraserver/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/band"
 )

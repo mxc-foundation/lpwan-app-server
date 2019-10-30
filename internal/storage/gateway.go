@@ -17,7 +17,7 @@ import (
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 

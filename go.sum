@@ -48,8 +48,6 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/blakesmith/ar v0.0.0-20150311145944-8bd4349a67f2 h1:oMCHnXa6CCCafdPDbMh/lWRhRByN0VFLvv+g+ayx1SI=
 github.com/blakesmith/ar v0.0.0-20150311145944-8bd4349a67f2/go.mod h1:PkYb9DJNAwrSvRx5DYA+gUcOIgTGVMNkfSCbZM8cWpI=
 github.com/brocaar/lora-app-server v2.5.1+incompatible h1:F//0TncqDS9uKC4yTrJTTnlwfvM9Ie/KgRDSgWPA6as=
-github.com/brocaar/loraserver v0.0.0-20190917115647-c4da45f52f2b h1:iYgmTmf69flRZY5Xb1WxKNzymSSzfY9LHc6eYQYuSjA=
-github.com/brocaar/loraserver v0.0.0-20190917115647-c4da45f52f2b/go.mod h1:JTmS0Kk2inKluT1limjm4Xk5FcD70/WV63DMN2lJfVk=
 github.com/brocaar/lorawan v0.0.0-20190814113539-8eb2a8d6da09 h1:hV+axbeTsoTCa1tEkXzDjucdg1GPSX9j1fn95saTKBo=
 github.com/brocaar/lorawan v0.0.0-20190814113539-8eb2a8d6da09/go.mod h1:Fm+51pxK6mZoAQjIaWJqPmnRuXecozsM5Mf9c+kr/ko=
 github.com/brocaar/lorawan v0.0.0-20190925120821-154a30dbdce2 h1:51WcQ+VAc/6jZ/8GBJiQ3B7FrT2aXI+YsUx2iG9tJlw=
@@ -459,6 +457,8 @@ github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742/go.mod h1:bx2lN
 github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3RllmbCylyMrvgv0=
 github.com/monoculum/formam v0.0.0-20180901015400-4e68be1d79ba/go.mod h1:RKgILGEJq24YyJ2ban8EO0RUVSJlF1pGsEvoLEACr/Q=
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
+github.com/mxc-foundation/lpwan-server v0.0.2 h1:JSVhOowHRcj/EmQlPAaTBZmikDL6tOPNtNZpib0y6+w=
+github.com/mxc-foundation/lpwan-server v0.0.2/go.mod h1:ZuVSDDOgmWY9YFnJQ2cGPb3UnCS0QbKVrH/CbwACJfg=
 github.com/nicksnyder/go-i18n v1.10.0/go.mod h1:HrK7VCrbOvQoUAQ7Vpy7i87N7JZZZ7R2xBGjv0j365Q=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
@@ -814,6 +814,7 @@ honnef.co/go/tools v0.0.0-20190106161140-3f1c8253044a/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190418001031-e561f6794a2a/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 pack.ag/amqp v0.8.0/go.mod h1:4/cbmt4EJXSKlG6LCfWHoqmN0uFdy5i/+YFz+fTfhV4=
+pack.ag/amqp v0.11.2 h1:cuNDWLUTbKRtEZwhB0WQBXf9pGbm87pUBXQhvcFxBWg=
 pack.ag/amqp v0.11.2/go.mod h1:4/cbmt4EJXSKlG6LCfWHoqmN0uFdy5i/+YFz+fTfhV4=
 pack.ag/amqp v0.12.1 h1:Q/0cS8lXAT2CFu6ngcOs6Rr9j2nD67/4X3hUA3u9s0s=
 pack.ag/amqp v0.12.1/go.mod h1:4/cbmt4EJXSKlG6LCfWHoqmN0uFdy5i/+YFz+fTfhV4=

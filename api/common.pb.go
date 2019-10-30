@@ -5,11 +5,11 @@ package api
 
 import (
 	fmt "fmt"
-	common "github.com/brocaar/loraserver/api/common"
-	gw "github.com/brocaar/loraserver/api/gw"
 	proto "github.com/golang/protobuf/proto"
 	duration "github.com/golang/protobuf/ptypes/duration"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	common "github.com/mxc-foundation/lpwan-server/api/common"
+	gw "github.com/mxc-foundation/lpwan-server/api/gw"
 	math "math"
 )
 
