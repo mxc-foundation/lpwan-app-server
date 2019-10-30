@@ -1,27 +1,30 @@
 package external
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/api/external/auth"
-	"github.com/brocaar/lora-app-server/internal/api/helpers"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/loraserver/api/common"
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
-const GatewayLocationsFileName = "gateway_locations.json"
+const GatewayLocationsRedisKey = "gateway_locations"
 
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
@@ -136,7 +139,10 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 		return nil, err
 	}
 
-	helpers.ClearFileCache(GatewayLocationsFileName)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
 
 	return &empty.Empty{}, nil
 }
@@ -344,31 +350,35 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 
 // ListLocations lists the gateway locations.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
-	var (
-		err error
-		gws []storage.Gateway
-	)
+	var result []*pb.GatewayLocationListItem
 
-	helpers.GetFromFileCache(GatewayLocationsFileName, &gws)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
 
-	if len(gws) == 0 {
-		gws, err = storage.GetGateways(ctx, storage.DB(), 1000, 0, "")
+	resultJSON, err := redis.Bytes(redisConn.Do("GET", GatewayLocationsRedisKey))
+	if err == nil {
+		json.Unmarshal(resultJSON, &result)
+	}
+
+	if len(result) == 0 {
+		gwsLoc, err := storage.GetGatewaysLoc(ctx, storage.DB(), viper.GetInt("application_server.gateways_locations_limit"))
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 
-		helpers.SaveToFileCache(GatewayLocationsFileName, &gws)
-	}
+		for _, loc := range gwsLoc {
+			result = append(result, &pb.GatewayLocationListItem{
+				Location: &pb.GatewayLocation{
+					Latitude:  loc.Latitude,
+					Longitude: loc.Longitude,
+					Altitude:  loc.Altitude,
+				},
+			})
+		}
 
-	result := make([]*pb.GatewayLocationListItem, len(gws))
-
-	for index, gw := range gws {
-		result[index] = &pb.GatewayLocationListItem{
-			Location: &common.Location{
-				Latitude:  gw.Latitude,
-				Longitude: gw.Longitude,
-				Altitude:  gw.Altitude,
-			},
+		bytes, err := json.Marshal(&result)
+		if err == nil {
+			redisConn.Do("SET", GatewayLocationsRedisKey, bytes)
 		}
 	}
 
@@ -474,7 +484,10 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		return nil, err
 	}
 
-	helpers.ClearFileCache(GatewayLocationsFileName)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
 
 	return &empty.Empty{}, nil
 }
@@ -503,7 +516,10 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 		return nil, err
 	}
 
-	helpers.ClearFileCache(GatewayLocationsFileName)
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
 
 	return &empty.Empty{}, nil
 }

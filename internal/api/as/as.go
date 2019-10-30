@@ -21,22 +21,22 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	api "github.com/brocaar/lora-app-server/api/m2m_server"
-	"github.com/brocaar/lora-app-server/internal/api/helpers"
-	"github.com/brocaar/lora-app-server/internal/applayer/clocksync"
-	"github.com/brocaar/lora-app-server/internal/applayer/fragmentation"
-	"github.com/brocaar/lora-app-server/internal/applayer/multicastsetup"
-	"github.com/brocaar/lora-app-server/internal/codec"
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/eventlog"
-	"github.com/brocaar/lora-app-server/internal/gwping"
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/logging"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/loraserver/api/as"
-	"github.com/brocaar/loraserver/api/common"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
+	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
+	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-server/api/as"
+	"github.com/mxc-foundation/lpwan-server/api/common"
 )
 
 var (
@@ -106,7 +106,6 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
-
 type AppServerAPI struct {
 }
 
@@ -124,7 +123,6 @@ func (a *AppServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty
 }
 
 func (a *AppServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
-	
 
 	return &api.GetGatewayMacListResponse{}, nil
 }

@@ -1,11 +1,11 @@
 package external
 
 import (
-	pb "github.com/brocaar/lora-app-server/api"
-	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
-	"github.com/brocaar/lora-app-server/internal/api/external/auth"
-	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
-	"github.com/brocaar/lora-app-server/internal/config"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"

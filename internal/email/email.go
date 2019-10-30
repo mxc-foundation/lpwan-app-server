@@ -10,8 +10,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/static"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	log "github.com/sirupsen/logrus"
 )
 
