@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	Short: "LoRa Server project application-server",
 	Long: `LoRa App Server is an open-source application-server, part of the LoRa Server project
 	> documentation & support: https://www.loraserver.io/lora-app-server
-	> source & copyright information: https://github.com/brocaar/lora-app-server`,
+	> source & copyright information: https://github.com/mxc-foundation/lpwan-app-server`,
 	RunE: run,
 }
 

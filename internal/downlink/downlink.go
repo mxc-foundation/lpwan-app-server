@@ -10,12 +10,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/codec"
-	"github.com/brocaar/lora-app-server/internal/eventlog"
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/logging"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
 )

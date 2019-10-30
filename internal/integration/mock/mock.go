@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"github.com/brocaar/lora-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 )
 
 // Integration implements a mock integration.

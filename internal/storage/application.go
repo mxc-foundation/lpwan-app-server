@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/brocaar/lora-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	uuid "github.com/gofrs/uuid"
-	"github.com/brocaar/lora-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

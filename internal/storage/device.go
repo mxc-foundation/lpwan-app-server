@@ -14,11 +14,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
-	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/logging"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
 )

@@ -7,7 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/brocaar/loraserver/api/ns"
 )
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/test"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 	"github.com/stretchr/testify/require"
 )
 

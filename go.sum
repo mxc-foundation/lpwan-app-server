@@ -47,6 +47,7 @@ github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/blakesmith/ar v0.0.0-20150311145944-8bd4349a67f2 h1:oMCHnXa6CCCafdPDbMh/lWRhRByN0VFLvv+g+ayx1SI=
 github.com/blakesmith/ar v0.0.0-20150311145944-8bd4349a67f2/go.mod h1:PkYb9DJNAwrSvRx5DYA+gUcOIgTGVMNkfSCbZM8cWpI=
+github.com/brocaar/lora-app-server v2.5.1+incompatible h1:F//0TncqDS9uKC4yTrJTTnlwfvM9Ie/KgRDSgWPA6as=
 github.com/brocaar/loraserver v0.0.0-20190917115647-c4da45f52f2b h1:iYgmTmf69flRZY5Xb1WxKNzymSSzfY9LHc6eYQYuSjA=
 github.com/brocaar/loraserver v0.0.0-20190917115647-c4da45f52f2b/go.mod h1:JTmS0Kk2inKluT1limjm4Xk5FcD70/WV63DMN2lJfVk=
 github.com/brocaar/lorawan v0.0.0-20190814113539-8eb2a8d6da09 h1:hV+axbeTsoTCa1tEkXzDjucdg1GPSX9j1fn95saTKBo=

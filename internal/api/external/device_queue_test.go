@@ -7,11 +7,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/codec"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
 )
