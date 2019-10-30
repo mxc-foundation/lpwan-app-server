@@ -11,6 +11,8 @@ import (
 	"github.com/gofrs/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 
+	"github.com/brocaar/lorawan"
+	"github.com/brocaar/lorawan/backend"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -18,8 +20,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/test"
-	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/backend"
 )
 
 func TestJoinServerAPI(t *testing.T) {

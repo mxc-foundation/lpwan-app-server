@@ -11,9 +11,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/option"
 
+	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/brocaar/lorawan"
 )
 
 // Config holds the GCP Pub/Sub integration configuration.

@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
+	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
@@ -17,7 +18,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
-	"github.com/brocaar/lorawan"
 )
 
 // HandleDataDownPayloads handles received downlink payloads to be emitted to the

@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/gomodule/redigo/redis"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
