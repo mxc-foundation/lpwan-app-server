@@ -47,7 +47,7 @@ require (
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 	golang.org/x/tools v0.0.0-20190820033707-85edb9ef3283
 	google.golang.org/api v0.9.0
-	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55
+	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
 	google.golang.org/grpc v1.23.1
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 )

@@ -6,8 +6,10 @@ GRPC_GW_PATH="${GRPC_GW_PATH}/../third_party/googleapis"
 LS_PATH=`go list -f '{{ .Dir }}' github.com/mxc-foundation/lpwan-server/api/ns`
 LS_PATH="${LS_PATH}/../.."
 
+PROTOBUF_PATH=`go list -f '{{ .Dir }}' github.com/golang/protobuf/ptypes`
+
 # generate the gRPC code
-protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} --go_out=plugins=grpc:. \
+protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=plugins=grpc:. \
     device.proto \
     application.proto \
     deviceQueue.proto \
@@ -26,7 +28,7 @@ protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} --go_out=plugins=grpc:. \
     serverInfo.proto
 
 # generate the JSON interface code
-protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} --grpc-gateway_out=logtostderr=true:. \
+protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=logtostderr=true:. \
     device.proto \
     application.proto \
     deviceQueue.proto \
@@ -45,7 +47,7 @@ protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} --grpc-gateway_out=logtostderr=true:. 
     serverInfo.proto
 
 # generate the swagger definitions
-protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} --swagger_out=json_names_for_fields=true:./swagger \
+protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_names_for_fields=true:./swagger \
     device.proto \
     application.proto \
     deviceQueue.proto \
