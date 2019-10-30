@@ -2,8 +2,8 @@ package external
 
 import (
 	"context"
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/config"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/golang/protobuf/ptypes/empty"
 )
 

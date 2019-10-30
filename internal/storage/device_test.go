@@ -10,9 +10,9 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/stretchr/testify/require"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend"
 )

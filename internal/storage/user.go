@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"

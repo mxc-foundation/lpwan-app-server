@@ -3,14 +3,14 @@ package external
 import (
 	"testing"
 
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func (ts *APITestSuite) TestUser() {
