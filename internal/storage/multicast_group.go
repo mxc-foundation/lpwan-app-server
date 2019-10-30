@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // MulticastGroup defines the multicast-group.

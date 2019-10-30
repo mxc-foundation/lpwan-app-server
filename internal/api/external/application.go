@@ -12,15 +12,15 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/api/external/auth"
-	"github.com/brocaar/lora-app-server/internal/api/helpers"
-	"github.com/brocaar/lora-app-server/internal/codec"
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/integration/http"
-	"github.com/brocaar/lora-app-server/internal/integration/influxdb"
-	"github.com/brocaar/lora-app-server/internal/integration/thingsboard"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/influxdb"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/thingsboard"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // ApplicationAPI exports the Application related functions.

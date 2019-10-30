@@ -3,7 +3,7 @@ package external
 import (
 	"errors"
 	"fmt"
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -11,12 +11,12 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/api/external/auth"
-	"github.com/brocaar/lora-app-server/internal/api/helpers"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	"github.com/brocaar/lora-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/gofrs/uuid"
 	log "github.com/sirupsen/logrus"
 )

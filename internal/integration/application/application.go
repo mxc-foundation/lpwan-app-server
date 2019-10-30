@@ -9,12 +9,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/integration/http"
-	"github.com/brocaar/lora-app-server/internal/integration/influxdb"
-	"github.com/brocaar/lora-app-server/internal/integration/multi"
-	"github.com/brocaar/lora-app-server/internal/integration/thingsboard"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/influxdb"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/multi"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/thingsboard"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // Integration implements the application integration wrapper.

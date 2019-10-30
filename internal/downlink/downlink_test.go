@@ -12,13 +12,13 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"golang.org/x/net/context"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/codec"
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/brocaar/lorawan"
 )
 

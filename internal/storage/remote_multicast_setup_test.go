@@ -8,8 +8,8 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	nsmock "github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/brocaar/lorawan"
 )
 

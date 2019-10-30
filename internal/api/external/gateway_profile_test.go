@@ -3,18 +3,18 @@ package external
 import (
 	"testing"
 
-	"github.com/brocaar/loraserver/api/common"
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func (ts *APITestSuite) TestGatewayProfile() {

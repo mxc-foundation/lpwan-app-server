@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/brocaar/lora-app-server/internal/test"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 func TestUser(t *testing.T) {
