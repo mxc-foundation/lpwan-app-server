@@ -9,8 +9,8 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/brocaar/lorawan"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // RemoteMulticastClassCSession defines a remote multicast-setup Class-C session record.
