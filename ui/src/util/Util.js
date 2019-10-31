@@ -1,7 +1,7 @@
 import SessionStore from "../stores/SessionStore";
 
 export function getM2MLink() {
-    let host = process.env.REACT_APP_M2M_LOCAL_SERVER;
+    let host = process.env.REACT_APP_MXPROTOCOL_SERVER;
     const origin = window.location.origin;
     
     if(origin.includes(process.env.REACT_APP_SUBDOM_LORA)){
@@ -17,13 +17,13 @@ export function openM2M(org, isBelongToOrg, path) {
     if(!orgId){
       return false;
     }
-    const user = SessionStore.getUser();  
-    
+    const user = SessionStore.getUser();
+
     if(user.isAdmin && !isBelongToOrg){
       orgId = '0';
       orgName = 'Super_admin';
     }
-    
+
     const data = {
       jwt: window.localStorage.getItem("jwt"),
       path: `${path}/${orgId}`,
@@ -32,7 +32,7 @@ export function openM2M(org, isBelongToOrg, path) {
       username: user.username,
       loraHostUrl: window.location.origin
     };
-    
+
     const dataString = encodeURIComponent(JSON.stringify(data));
 
     const host = getM2MLink();

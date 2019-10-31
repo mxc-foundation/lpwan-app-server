@@ -10,6 +10,7 @@ import (
 )
 
 func Setup(conf config.Config) error {
+
 	if err := as.Setup(conf); err != nil {
 		return errors.Wrap(err, "setup application-server api error")
 	}

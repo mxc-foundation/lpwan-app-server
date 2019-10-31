@@ -11,13 +11,15 @@ services:
       - postgresql
       - redis
       - mosquitto
-    environment:
-      - TEST_POSTGRES_DSN=postgres://loraserver_as:loraserver_as@postgres/loraserver_as?sslmode=disable
-      - TEST_REDIS_URL=redis://redis:6379
-      - TEST_MQTT_SERVER=tcp://mosquitto:1883
-      - LOCAL_HOST_ADDRESS=http://localhost:8080
     ports:
       - 8080:8080
+    environment:
+      - APPSERVER=http://localhost:8080
+      - MXPROTOCOL_SERVER=http://localhost:4000
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
     tty: true
 
   postgresql:
@@ -26,7 +28,7 @@ services:
       - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
 
   redis:
-    image: redis:4-alpine
+    image: redis:5-alpine
 
   mosquitto:
     image: eclipse-mosquitto

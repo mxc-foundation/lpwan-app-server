@@ -25,7 +25,8 @@ protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=plugins=gr
     multicastGroup.proto \
 	fuotaDeployment.proto \
     internal.proto \
-    serverInfo.proto
+    serverInfo.proto \
+    proxyRequest.proto
 
 # generate the JSON interface code
 protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=logtostderr=true:. \
@@ -44,7 +45,8 @@ protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=
     multicastGroup.proto \
 	fuotaDeployment.proto \
     internal.proto \
-    serverInfo.proto
+    serverInfo.proto \
+    proxyRequest.proto
 
 # generate the swagger definitions
 protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_names_for_fields=true:./swagger \
@@ -63,7 +65,8 @@ protoc -I. -I${LS_PATH} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_
     multicastGroup.proto \
 	fuotaDeployment.proto \
     internal.proto \
-    serverInfo.proto
+    serverInfo.proto \
+    proxyRequest.proto
 
 # merge the swagger code into one file
 go run swagger/main.go swagger > ../static/swagger/api.swagger.json
