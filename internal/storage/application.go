@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	uuid "github.com/gofrs/uuid"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/jmoiron/sqlx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )

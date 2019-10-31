@@ -6,12 +6,12 @@ import (
 
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 
+	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/jmoiron/sqlx"
 	pb "github.com/mxc-foundation/lpwan-app-server/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
+	"github.com/brocaar/lorawan"
 	pb "github.com/mxc-foundation/lpwan-app-server/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -26,7 +27,6 @@ import (
 	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/mxc-foundation/lpwan-server/api/gw"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
-	"github.com/brocaar/lorawan"
 )
 
 // DeviceAPI exports the Node related functions.

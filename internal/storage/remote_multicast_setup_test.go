@@ -8,9 +8,9 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 
+	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lorawan"
 )
 
 func (ts *StorageTestSuite) TestRemoteMulticastSetup() {

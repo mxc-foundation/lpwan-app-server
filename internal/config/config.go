@@ -22,10 +22,10 @@ type Config struct {
 	}
 
 	PostgreSQL struct {
-		DSN         string `mapstructure:"dsn"`
-		Automigrate bool
-		MaxOpenConnections int               `mapstructure:"max_open_connections"`
-		MaxIdleConnections int               `mapstructure:"max_idle_connections"`
+		DSN                string `mapstructure:"dsn"`
+		Automigrate        bool
+		MaxOpenConnections int `mapstructure:"max_open_connections"`
+		MaxIdleConnections int `mapstructure:"max_idle_connections"`
 	} `mapstructure:"postgresql"`
 
 	MxpServer struct {
@@ -81,10 +81,10 @@ type Config struct {
 		} `mapstructure:"api"`
 
 		APIForM2M struct {
-			Bind       string
-			CACert     string `mapstructure:"ca_cert"`
-			TLSCert    string `mapstructure:"tls_cert"`
-			TLSKey     string `mapstructure:"tls_key"`
+			Bind    string
+			CACert  string `mapstructure:"ca_cert"`
+			TLSCert string `mapstructure:"tls_cert"`
+			TLSKey  string `mapstructure:"tls_key"`
 		} `mapstructure:"api_for_m2m"`
 
 		ExternalAPI struct {

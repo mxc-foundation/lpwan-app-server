@@ -12,12 +12,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	httpint "github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
 	mqttint "github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/test"
-	"github.com/brocaar/lorawan"
 )
 
 type testHTTPHandler struct {

@@ -21,6 +21,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
+	"github.com/brocaar/lorawan"
+	"github.com/brocaar/lorawan/gps"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
@@ -35,8 +37,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-server/api/as"
 	"github.com/mxc-foundation/lpwan-server/api/common"
-	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/gps"
 )
 
 var (
@@ -106,7 +106,6 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
-
 type AppServerAPI struct {
 }
 
@@ -124,7 +123,6 @@ func (a *AppServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty
 }
 
 func (a *AppServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
-	
 
 	return &api.GetGatewayMacListResponse{}, nil
 }
