@@ -15,7 +15,6 @@ clean:
 	@rm -f static/swagger/*.json
 	@rm -rf docs/public
 	@rm -rf dist
-	@rm -rf cache
 
 test: internal/statics internal/migrations
 	@echo "Running tests"
