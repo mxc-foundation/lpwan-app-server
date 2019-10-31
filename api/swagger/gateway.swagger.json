@@ -90,6 +90,23 @@
         ]
       }
     },
+    "/api/gateways-loc": {
+      "get": {
+        "summary": "ListLocations lists the gateways locations.",
+        "operationId": "ListLocations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListGatewayLocationsResponse"
+            }
+          }
+        },
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/{gateway.id}": {
       "put": {
         "summary": "Update updates the gateway matching the given mac address.",
@@ -497,6 +514,35 @@
         }
       }
     },
+    "apiGatewayLocation": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Latitude of the gateway -90.0 to 90.0."
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Longitude of the gateway -180.0 to 180.0."
+        },
+        "altitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Altitude of the gateway in meters."
+        }
+      }
+    },
+    "apiGatewayLocationListItem": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "$ref": "#/definitions/apiGatewayLocation",
+          "description": "Location."
+        }
+      }
+    },
     "apiGatewayStats": {
       "type": "object",
       "properties": {
@@ -591,6 +637,18 @@
             "$ref": "#/definitions/apiPingRX"
           },
           "description": "Gateways and meta-data of reception."
+        }
+      }
+    },
+    "apiListGatewayLocationsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGatewayLocationListItem"
+          },
+          "description": "Nodes within this result-set."
         }
       }
     },

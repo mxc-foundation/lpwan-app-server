@@ -3,7 +3,7 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
+import "empty/empty.proto";
 
 // ApplicationService is the service managing applications.
 service ApplicationService {

@@ -3,8 +3,8 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
+import "timestamp/timestamp.proto";
+import "empty/empty.proto";
 import "common.proto";
 
 // from loraserver
@@ -47,6 +47,13 @@ service GatewayService {
 	rpc List(ListGatewayRequest) returns (ListGatewayResponse) {
 		option (google.api.http) = {
 			get: "/api/gateways"
+		};
+	}
+
+	// ListLocations lists the gateways locations.
+	rpc ListLocations(ListGatewayLocationsRequest) returns (ListGatewayLocationsResponse) {
+		option (google.api.http) = {
+			get: "/api/gateways-loc"
 		};
 	}
 
@@ -163,6 +170,8 @@ message ListGatewayRequest {
 	string search = 4;
 }
 
+message ListGatewayLocationsRequest {}
+
 message GatewayListItem {
 	// Gateway ID (HEX encoded).
 	string id = 1;
@@ -191,8 +200,22 @@ message GatewayListItem {
 	// Network-server ID.
 	int64 network_server_id = 7 [json_name = "networkServerID"];
 
-    // Location.
-    common.Location location = 10;
+	// Location.
+	common.Location location = 10;
+}
+
+message GatewayLocation {
+	// Latitude of the gateway -90.0 to 90.0.
+	double latitude = 1;
+	// Longitude of the gateway -180.0 to 180.0.
+	double longitude = 2;
+	// Altitude of the gateway in meters.
+	double altitude = 3;
+}
+
+message GatewayLocationListItem {
+	// Location.
+	GatewayLocation location = 10;
 }
 
 message ListGatewayResponse {
@@ -201,6 +224,11 @@ message ListGatewayResponse {
 
 	// Nodes within this result-set.
 	repeated GatewayListItem result = 2;
+}
+
+message ListGatewayLocationsResponse {
+	// Nodes within this result-set.
+	repeated GatewayLocationListItem result = 1;
 }
 
 
