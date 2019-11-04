@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	Short: "LoRa Server project application-server",
 	Long: `LoRa App Server is an open-source application-server, part of the LoRa Server project
 	> documentation & support: https://www.loraserver.io/lora-app-server
-	> source & copyright information: https://github.com/brocaar/lora-app-server`,
+	> source & copyright information: https://github.com/mxc-foundation/lpwan-app-server`,
 	RunE: run,
 }
 
@@ -43,9 +43,11 @@ func init() {
 	viper.SetDefault("redis.url", "redis://localhost:6379")
 	viper.SetDefault("redis.max_idle", 10)
 	viper.SetDefault("redis.idle_timeout", 5*time.Minute)
+	viper.SetDefault("application_server.gateways_locations_limit", 100000)
 	viper.SetDefault("application_server.integration.mqtt.server", "tcp://localhost:1883")
 	viper.SetDefault("application_server.api.public_host", "localhost:8080")
 	viper.SetDefault("application_server.id", "6d5db27e-4ce2-4b2b-b5d7-91f069397978")
+	viper.SetDefault("application_server.cache_dir", "cache")
 	viper.SetDefault("application_server.api.bind", "0.0.0.0:8080")
 	viper.SetDefault("application_server.external_api.bind", "0.0.0.0:8080")
 	viper.SetDefault("join_server.bind", "0.0.0.0:8003")
@@ -100,6 +102,7 @@ func initConfig() {
 	} else {
 		viper.SetConfigName("lora-app-server")
 		viper.AddConfigPath(".")
+		viper.AddConfigPath("./configuration")
 		viper.AddConfigPath("$HOME/.config/lora-app-server")
 		viper.AddConfigPath("/etc/lora-app-server")
 		if err := viper.ReadInConfig(); err != nil {

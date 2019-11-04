@@ -14,8 +14,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	m2m "github.com/brocaar/lora-app-server/api/m2m_server"
-	"github.com/brocaar/lora-app-server/internal/config"
+	m2m "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 var p Pool

@@ -226,7 +226,7 @@ const theme = createMuiTheme({
       },
       MuiSvgIcon: {
         root: {
-          fill: '#F9FAFC80',
+          fill: '#F9FAFC80'
         },
         colorPrimary: {
           fill: blueBG,
@@ -249,7 +249,7 @@ const theme = createMuiTheme({
         paper: {
           color: white,
           backgroundColor: blueBG,
-          marginTop: '50px',
+          marginTop: '50px'
         }
       },
       MuiMenuItem: {

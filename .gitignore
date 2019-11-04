@@ -3,16 +3,14 @@
 *.bak
 # logs
 *.log
-
 # config files
 /*.toml
-
 # coverage file
 /coverage.out
-
 # builds
 /dist
 /build
+/cache
 /internal/static/static_gen.go
 /internal/migrations/migrations_gen.go
 /static/logo

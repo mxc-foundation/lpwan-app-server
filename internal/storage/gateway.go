@@ -5,19 +5,19 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"github.com/brocaar/lora-app-server/internal/backend/m2m_client"
-	"github.com/brocaar/lora-app-server/internal/config"
 	"github.com/golang/protobuf/ptypes"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/lib/pq"
 
-	m2m_api "github.com/brocaar/lora-app-server/api/m2m_server"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/logging"
-	"github.com/brocaar/loraserver/api/ns"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
@@ -47,6 +47,13 @@ type Gateway struct {
 	Latitude         float64       `db:"latitude"`
 	Longitude        float64       `db:"longitude"`
 	Altitude         float64       `db:"altitude"`
+}
+
+// GatewayLocation represents a gateway location.
+type GatewayLocation struct {
+	Latitude  float64 `db:"latitude"`
+	Longitude float64 `db:"longitude"`
+	Altitude  float64 `db:"altitude"`
 }
 
 // GatewayPing represents a gateway ping.
@@ -373,6 +380,26 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search
 		return nil, errors.Wrap(err, "select error")
 	}
 	return gws, nil
+}
+
+// GetGatewaysLoc returns a slice of gateways locations.
+func GetGatewaysLoc(ctx context.Context, db sqlx.Queryer, limit int) ([]GatewayLocation, error) {
+	var gwsLoc []GatewayLocation
+
+	err := sqlx.Select(db, &gwsLoc, `
+		select
+			latitude,
+			longitude,
+			altitude
+		from gateway
+		where latitude > 0 and longitude > 0
+		limit $1`,
+		limit,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "select error")
+	}
+	return gwsLoc, nil
 }
 
 // GetGatewaysForMACs returns a map of gateways given a slice of MACs.

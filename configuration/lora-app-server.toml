@@ -46,7 +46,7 @@ dsn="postgres://loraserver_as:loraserver_as@postgresql:5432/loraserver_as?sslmod
 # Automatically apply database migrations.
 #
 # It is possible to apply the database-migrations by hand
-# (see https://github.com/brocaar/lora-app-server/tree/master/migrations)
+# (see https://github.com/mxc-foundation/lpwan-app-server/tree/master/migrations)
 # or let LoRa App Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading Lora
 # App Server and / or applying migrations.
@@ -61,7 +61,7 @@ automigrate=true
 #
 # For more information about the Redis URL format, see:
 # https://www.iana.org/assignments/uri-schemes/prov/redis
-url="redis://localhost:6379"
+url="redis://redis:6379"
 
 # Max idle connections in the pool.
 max_idle=10
@@ -102,6 +102,8 @@ tls_key=""
 # For now it is recommended to not change this id.
 id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
 
+# restriction for receiving gateways locations
+gateways_locations_limit=100000
 
   # JavaScript codec settings.
   [application_server.codec.js]
@@ -286,6 +288,11 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # above.
   public_host="appserver:8001"
 
+  [application_server.api_for_m2m]
+  bind="0.0.0.0:8002"
+  ca_cert=""
+  tls_cert=""
+  tls_key=""
 
   # Settings for the "external api"
   #

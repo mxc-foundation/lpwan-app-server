@@ -121,6 +121,18 @@ class SessionStore extends EventEmitter {
     callBackFunc();
   }
 
+  async getProfile(){
+    try {
+      const client = await this.swagger.then((client) => client);
+      let resp = await client.apis.InternalService.Profile();
+
+      resp = await checkStatus(resp);
+      return resp;
+    } catch (error) {
+      errorHandler(error);
+    }
+  }
+
   fetchProfile(callBackFunc) {
     this.swagger.then(client => {
       client.apis.InternalService.Profile({})

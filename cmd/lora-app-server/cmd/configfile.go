@@ -4,7 +4,7 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -58,7 +58,7 @@ dsn="{{ .PostgreSQL.DSN }}"
 # Automatically apply database migrations.
 #
 # It is possible to apply the database-migrations by hand
-# (see https://github.com/brocaar/lora-app-server/tree/master/migrations)
+# (see https://github.com/mxc-foundation/lpwan-app-server/tree/master/migrations)
 # or let LoRa App Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading Lora
 # App Server and / or applying migrations.
@@ -96,11 +96,6 @@ max_idle={{ .Redis.MaxIdle }}
 # is zero, then idle connections are not closed. You should set
 # the timeout to a value less than the server's timeout.
 idle_timeout="{{ .Redis.IdleTimeout }}"
-
-# Mxprotocol-server settings
-[mxprotocol_server]
-mxp_server="{{ .MxpServer.MxpServer }}"
-mxp_server_development="{{ .MxpServer.MxpServerDevelopment }}"
 
 # SMTP settings
 #
@@ -316,6 +311,11 @@ id="{{ .ApplicationServer.ID }}"
   # above.
   public_host="{{ .ApplicationServer.API.PublicHost }}"
 
+  [application_server.api_for_m2m]
+  bind="{{ .ApplicationServer.APIForM2M.Bind }}"
+  ca_cert="{{ .ApplicationServer.APIForM2M.CACert }}"
+  tls_cert="{{ .ApplicationServer.APIForM2M.TLSCert }}"
+  tls_key="{{ .ApplicationServer.APIForM2M.TLSKey }}"
 
   # Settings for the "external api"
   #
