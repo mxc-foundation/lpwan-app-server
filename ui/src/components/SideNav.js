@@ -171,7 +171,7 @@ class SideNav extends Component {
 
   onChange(e) {
     SessionStore.setOrganizationID(e.target.value);
-    
+
     this.props.history.push(`/organizations/${e.target.value}/applications`);
   }
 
@@ -202,7 +202,7 @@ class SideNav extends Component {
     resp.then((res) => {
       let orgId = SessionStore.getOrganizationID();
       const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
-      
+
       OrganizationStore.get(orgId, resp => {
         openM2M(resp.organization, isBelongToOrg, '/withdraw');
       });

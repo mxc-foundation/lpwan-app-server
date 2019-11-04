@@ -514,11 +514,31 @@
         }
       }
     },
+    "apiGatewayLocation": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Latitude of the gateway -90.0 to 90.0."
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Longitude of the gateway -180.0 to 180.0."
+        },
+        "altitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Altitude of the gateway in meters."
+        }
+      }
+    },
     "apiGatewayLocationListItem": {
       "type": "object",
       "properties": {
         "location": {
-          "$ref": "#/definitions/commonLocation",
+          "$ref": "#/definitions/apiGatewayLocation",
           "description": "Location."
         }
       }

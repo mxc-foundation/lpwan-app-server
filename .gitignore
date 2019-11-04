@@ -3,13 +3,10 @@
 *.bak
 # logs
 *.log
-
 # config files
 /*.toml
-
 # coverage file
 /coverage.out
-
 # builds
 /dist
 /build

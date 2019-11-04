@@ -3,7 +3,7 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
+import "empty/empty.proto";
 
 // DeviceQueueService is the service managing the downlink data queue.
 service DeviceQueueService {
