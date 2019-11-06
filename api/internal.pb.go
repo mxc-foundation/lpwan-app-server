@@ -27,6 +27,124 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type GoogleRecaptchaRequest struct {
+	Secret               string   `protobuf:"bytes,1,opt,name=secret,proto3" json:"secret,omitempty"`
+	Response             string   `protobuf:"bytes,2,opt,name=response,proto3" json:"response,omitempty"`
+	Remoteip             string   `protobuf:"bytes,3,opt,name=remoteip,proto3" json:"remoteip,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GoogleRecaptchaRequest) Reset()         { *m = GoogleRecaptchaRequest{} }
+func (m *GoogleRecaptchaRequest) String() string { return proto.CompactTextString(m) }
+func (*GoogleRecaptchaRequest) ProtoMessage()    {}
+func (*GoogleRecaptchaRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_41f4a519b878ee3b, []int{0}
+}
+
+func (m *GoogleRecaptchaRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GoogleRecaptchaRequest.Unmarshal(m, b)
+}
+func (m *GoogleRecaptchaRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GoogleRecaptchaRequest.Marshal(b, m, deterministic)
+}
+func (m *GoogleRecaptchaRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GoogleRecaptchaRequest.Merge(m, src)
+}
+func (m *GoogleRecaptchaRequest) XXX_Size() int {
+	return xxx_messageInfo_GoogleRecaptchaRequest.Size(m)
+}
+func (m *GoogleRecaptchaRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GoogleRecaptchaRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GoogleRecaptchaRequest proto.InternalMessageInfo
+
+func (m *GoogleRecaptchaRequest) GetSecret() string {
+	if m != nil {
+		return m.Secret
+	}
+	return ""
+}
+
+func (m *GoogleRecaptchaRequest) GetResponse() string {
+	if m != nil {
+		return m.Response
+	}
+	return ""
+}
+
+func (m *GoogleRecaptchaRequest) GetRemoteip() string {
+	if m != nil {
+		return m.Remoteip
+	}
+	return ""
+}
+
+type GoogleRecaptchaResponse struct {
+	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	ChallengeTs          string   `protobuf:"bytes,2,opt,name=challenge_ts,json=challengeTs,proto3" json:"challenge_ts,omitempty"`
+	Hostname             string   `protobuf:"bytes,3,opt,name=hostname,proto3" json:"hostname,omitempty"`
+	ErrorCodes           string   `protobuf:"bytes,4,opt,name=error_codes,json=errorCodes,proto3" json:"error_codes,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GoogleRecaptchaResponse) Reset()         { *m = GoogleRecaptchaResponse{} }
+func (m *GoogleRecaptchaResponse) String() string { return proto.CompactTextString(m) }
+func (*GoogleRecaptchaResponse) ProtoMessage()    {}
+func (*GoogleRecaptchaResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_41f4a519b878ee3b, []int{1}
+}
+
+func (m *GoogleRecaptchaResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GoogleRecaptchaResponse.Unmarshal(m, b)
+}
+func (m *GoogleRecaptchaResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GoogleRecaptchaResponse.Marshal(b, m, deterministic)
+}
+func (m *GoogleRecaptchaResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GoogleRecaptchaResponse.Merge(m, src)
+}
+func (m *GoogleRecaptchaResponse) XXX_Size() int {
+	return xxx_messageInfo_GoogleRecaptchaResponse.Size(m)
+}
+func (m *GoogleRecaptchaResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GoogleRecaptchaResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GoogleRecaptchaResponse proto.InternalMessageInfo
+
+func (m *GoogleRecaptchaResponse) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *GoogleRecaptchaResponse) GetChallengeTs() string {
+	if m != nil {
+		return m.ChallengeTs
+	}
+	return ""
+}
+
+func (m *GoogleRecaptchaResponse) GetHostname() string {
+	if m != nil {
+		return m.Hostname
+	}
+	return ""
+}
+
+func (m *GoogleRecaptchaResponse) GetErrorCodes() string {
+	if m != nil {
+		return m.ErrorCodes
+	}
+	return ""
+}
+
 type ProfileSettings struct {
 	// Existing users in the system can not be assigned to organizations and
 	// application and can not be listed by non global admin users.
@@ -40,7 +158,7 @@ func (m *ProfileSettings) Reset()         { *m = ProfileSettings{} }
 func (m *ProfileSettings) String() string { return proto.CompactTextString(m) }
 func (*ProfileSettings) ProtoMessage()    {}
 func (*ProfileSettings) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{0}
+	return fileDescriptor_41f4a519b878ee3b, []int{2}
 }
 
 func (m *ProfileSettings) XXX_Unmarshal(b []byte) error {
@@ -95,7 +213,7 @@ func (m *OrganizationLink) Reset()         { *m = OrganizationLink{} }
 func (m *OrganizationLink) String() string { return proto.CompactTextString(m) }
 func (*OrganizationLink) ProtoMessage()    {}
 func (*OrganizationLink) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{1}
+	return fileDescriptor_41f4a519b878ee3b, []int{3}
 }
 
 func (m *OrganizationLink) XXX_Unmarshal(b []byte) error {
@@ -179,7 +297,7 @@ func (m *LoginRequest) Reset()         { *m = LoginRequest{} }
 func (m *LoginRequest) String() string { return proto.CompactTextString(m) }
 func (*LoginRequest) ProtoMessage()    {}
 func (*LoginRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{2}
+	return fileDescriptor_41f4a519b878ee3b, []int{4}
 }
 
 func (m *LoginRequest) XXX_Unmarshal(b []byte) error {
@@ -226,7 +344,7 @@ func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
 func (m *LoginResponse) String() string { return proto.CompactTextString(m) }
 func (*LoginResponse) ProtoMessage()    {}
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{3}
+	return fileDescriptor_41f4a519b878ee3b, []int{5}
 }
 
 func (m *LoginResponse) XXX_Unmarshal(b []byte) error {
@@ -270,7 +388,7 @@ func (m *ProfileResponse) Reset()         { *m = ProfileResponse{} }
 func (m *ProfileResponse) String() string { return proto.CompactTextString(m) }
 func (*ProfileResponse) ProtoMessage()    {}
 func (*ProfileResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{4}
+	return fileDescriptor_41f4a519b878ee3b, []int{6}
 }
 
 func (m *ProfileResponse) XXX_Unmarshal(b []byte) error {
@@ -328,7 +446,7 @@ func (m *GlobalSearchRequest) Reset()         { *m = GlobalSearchRequest{} }
 func (m *GlobalSearchRequest) String() string { return proto.CompactTextString(m) }
 func (*GlobalSearchRequest) ProtoMessage()    {}
 func (*GlobalSearchRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{5}
+	return fileDescriptor_41f4a519b878ee3b, []int{7}
 }
 
 func (m *GlobalSearchRequest) XXX_Unmarshal(b []byte) error {
@@ -381,7 +499,7 @@ func (m *GlobalSearchResponse) Reset()         { *m = GlobalSearchResponse{} }
 func (m *GlobalSearchResponse) String() string { return proto.CompactTextString(m) }
 func (*GlobalSearchResponse) ProtoMessage()    {}
 func (*GlobalSearchResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{6}
+	return fileDescriptor_41f4a519b878ee3b, []int{8}
 }
 
 func (m *GlobalSearchResponse) XXX_Unmarshal(b []byte) error {
@@ -439,7 +557,7 @@ func (m *GlobalSearchResult) Reset()         { *m = GlobalSearchResult{} }
 func (m *GlobalSearchResult) String() string { return proto.CompactTextString(m) }
 func (*GlobalSearchResult) ProtoMessage()    {}
 func (*GlobalSearchResult) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{7}
+	return fileDescriptor_41f4a519b878ee3b, []int{9}
 }
 
 func (m *GlobalSearchResult) XXX_Unmarshal(b []byte) error {
@@ -546,7 +664,7 @@ func (m *BrandingResponse) Reset()         { *m = BrandingResponse{} }
 func (m *BrandingResponse) String() string { return proto.CompactTextString(m) }
 func (*BrandingResponse) ProtoMessage()    {}
 func (*BrandingResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{8}
+	return fileDescriptor_41f4a519b878ee3b, []int{10}
 }
 
 func (m *BrandingResponse) XXX_Unmarshal(b []byte) error {
@@ -599,7 +717,7 @@ func (m *RegisterUserRequest) Reset()         { *m = RegisterUserRequest{} }
 func (m *RegisterUserRequest) String() string { return proto.CompactTextString(m) }
 func (*RegisterUserRequest) ProtoMessage()    {}
 func (*RegisterUserRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{9}
+	return fileDescriptor_41f4a519b878ee3b, []int{11}
 }
 
 func (m *RegisterUserRequest) XXX_Unmarshal(b []byte) error {
@@ -638,7 +756,7 @@ func (m *ConfirmRegistrationRequest) Reset()         { *m = ConfirmRegistrationR
 func (m *ConfirmRegistrationRequest) String() string { return proto.CompactTextString(m) }
 func (*ConfirmRegistrationRequest) ProtoMessage()    {}
 func (*ConfirmRegistrationRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{10}
+	return fileDescriptor_41f4a519b878ee3b, []int{12}
 }
 
 func (m *ConfirmRegistrationRequest) XXX_Unmarshal(b []byte) error {
@@ -682,7 +800,7 @@ func (m *ConfirmRegistrationResponse) Reset()         { *m = ConfirmRegistration
 func (m *ConfirmRegistrationResponse) String() string { return proto.CompactTextString(m) }
 func (*ConfirmRegistrationResponse) ProtoMessage()    {}
 func (*ConfirmRegistrationResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{11}
+	return fileDescriptor_41f4a519b878ee3b, []int{13}
 }
 
 func (m *ConfirmRegistrationResponse) XXX_Unmarshal(b []byte) error {
@@ -759,7 +877,7 @@ func (m *FinishRegistrationRequest) Reset()         { *m = FinishRegistrationReq
 func (m *FinishRegistrationRequest) String() string { return proto.CompactTextString(m) }
 func (*FinishRegistrationRequest) ProtoMessage()    {}
 func (*FinishRegistrationRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_41f4a519b878ee3b, []int{12}
+	return fileDescriptor_41f4a519b878ee3b, []int{14}
 }
 
 func (m *FinishRegistrationRequest) XXX_Unmarshal(b []byte) error {
@@ -809,6 +927,8 @@ func (m *FinishRegistrationRequest) GetPassword() string {
 }
 
 func init() {
+	proto.RegisterType((*GoogleRecaptchaRequest)(nil), "api.GoogleRecaptchaRequest")
+	proto.RegisterType((*GoogleRecaptchaResponse)(nil), "api.GoogleRecaptchaResponse")
 	proto.RegisterType((*ProfileSettings)(nil), "api.ProfileSettings")
 	proto.RegisterType((*OrganizationLink)(nil), "api.OrganizationLink")
 	proto.RegisterType((*LoginRequest)(nil), "api.LoginRequest")
@@ -922,6 +1042,7 @@ type InternalServiceClient interface {
 	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	ConfirmRegistration(ctx context.Context, in *ConfirmRegistrationRequest, opts ...grpc.CallOption) (*ConfirmRegistrationResponse, error)
 	FinishRegistration(ctx context.Context, in *FinishRegistrationRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	GetVerifyingGoogleRecaptcha(ctx context.Context, in *GoogleRecaptchaRequest, opts ...grpc.CallOption) (*GoogleRecaptchaResponse, error)
 }
 
 type internalServiceClient struct {
@@ -995,6 +1116,15 @@ func (c *internalServiceClient) FinishRegistration(ctx context.Context, in *Fini
 	return out, nil
 }
 
+func (c *internalServiceClient) GetVerifyingGoogleRecaptcha(ctx context.Context, in *GoogleRecaptchaRequest, opts ...grpc.CallOption) (*GoogleRecaptchaResponse, error) {
+	out := new(GoogleRecaptchaResponse)
+	err := c.cc.Invoke(ctx, "/api.InternalService/GetVerifyingGoogleRecaptcha", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // InternalServiceServer is the server API for InternalService service.
 type InternalServiceServer interface {
 	// Log in a user
@@ -1008,6 +1138,7 @@ type InternalServiceServer interface {
 	RegisterUser(context.Context, *RegisterUserRequest) (*empty.Empty, error)
 	ConfirmRegistration(context.Context, *ConfirmRegistrationRequest) (*ConfirmRegistrationResponse, error)
 	FinishRegistration(context.Context, *FinishRegistrationRequest) (*empty.Empty, error)
+	GetVerifyingGoogleRecaptcha(context.Context, *GoogleRecaptchaRequest) (*GoogleRecaptchaResponse, error)
 }
 
 // UnimplementedInternalServiceServer can be embedded to have forward compatible implementations.
@@ -1034,6 +1165,9 @@ func (*UnimplementedInternalServiceServer) ConfirmRegistration(ctx context.Conte
 }
 func (*UnimplementedInternalServiceServer) FinishRegistration(ctx context.Context, req *FinishRegistrationRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FinishRegistration not implemented")
+}
+func (*UnimplementedInternalServiceServer) GetVerifyingGoogleRecaptcha(ctx context.Context, req *GoogleRecaptchaRequest) (*GoogleRecaptchaResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVerifyingGoogleRecaptcha not implemented")
 }
 
 func RegisterInternalServiceServer(s *grpc.Server, srv InternalServiceServer) {
@@ -1166,6 +1300,24 @@ func _InternalService_FinishRegistration_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _InternalService_GetVerifyingGoogleRecaptcha_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GoogleRecaptchaRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(InternalServiceServer).GetVerifyingGoogleRecaptcha(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.InternalService/GetVerifyingGoogleRecaptcha",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(InternalServiceServer).GetVerifyingGoogleRecaptcha(ctx, req.(*GoogleRecaptchaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _InternalService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "api.InternalService",
 	HandlerType: (*InternalServiceServer)(nil),
@@ -1197,6 +1349,10 @@ var _InternalService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FinishRegistration",
 			Handler:    _InternalService_FinishRegistration_Handler,
+		},
+		{
+			MethodName: "GetVerifyingGoogleRecaptcha",
+			Handler:    _InternalService_GetVerifyingGoogleRecaptcha_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

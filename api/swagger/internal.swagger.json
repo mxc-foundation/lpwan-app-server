@@ -195,6 +195,32 @@
           "InternalService"
         ]
       }
+    },
+    "/api/internal/verify-g-recaptcha": {
+      "post": {
+        "operationId": "GetVerifyingGoogleRecaptcha",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGoogleRecaptchaResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiGoogleRecaptchaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -324,6 +350,38 @@
         "gatewayName": {
           "type": "string",
           "description": "Gateway name."
+        }
+      }
+    },
+    "apiGoogleRecaptchaRequest": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string"
+        },
+        "response": {
+          "type": "string"
+        },
+        "remoteip": {
+          "type": "string"
+        }
+      }
+    },
+    "apiGoogleRecaptchaResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "challengeTs": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "errorCodes": {
+          "type": "string"
         }
       }
     },
