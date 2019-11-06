@@ -141,7 +141,7 @@ class LoginForm extends FormComponent {
           fullWidth
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText}/>
-        <TitleBarTitle component={Link} to={`#`} title="FORGOT MY PASSWORD" />
+        {/* <TitleBarTitle component={Link} to={`#`} title="FORGOT MY PASSWORD" /> */}
       </Form>
     );
   }
