@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/url"
 
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -22,7 +21,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/gofrs/uuid"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
