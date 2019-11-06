@@ -15,6 +15,7 @@ const theme = createMuiTheme({
     palette: {
       primary: { main: tealHighLight, secondary: tealHighLight20 }, 
       secondary: { main: blueMxcBrand, secondary: overlayBG }, 
+      default: {main: white },
       darkBG: { main: blueBG }, 
       textPrimary: { main: white }, 
       textSecondary: { main: linkTextColor } 
@@ -168,6 +169,13 @@ const theme = createMuiTheme({
             backgroundColor: tealHighLight20,
             borderColor: "#00CCAE",
             color: "#00CCAE",
+          },
+        },
+        colorInherit: {
+          color: white,
+          "&:hover": {
+            borderColor: white,
+            color: white,
           },
         },
         /*         link: {
