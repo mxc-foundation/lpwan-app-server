@@ -8,16 +8,23 @@ import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from "@material-ui/core/styles";
+import ReCAPTCHA from "react-google-recaptcha";
+
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
 
-
 const styles = {
   textField: {
     width: "100%",
+    display: 'flex',
+    justifyContent: 'center'
+
+  },
+  formWidth: {
+    width: 352,
   },
   link: {
     "& a": {
@@ -29,6 +36,19 @@ const styles = {
 
 
 class RegistrationForm extends FormComponent {
+
+  onReCapChange = (value) => {
+    const req = {
+      secret : process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.state.object.isVerified = resp.success;
+    }); 
+  }
+  
   render() {
     if (this.state.object === undefined) {
       return null;
@@ -49,6 +69,11 @@ class RegistrationForm extends FormComponent {
           fullWidth
           required
         />
+        <ReCAPTCHA
+                sitekey={process.env.REACT_APP_PUBLIC_KEY}
+                onChange={this.onReCapChange}
+                className={this.props.style.textField}
+              />
       </Form>
     );
   }
@@ -58,11 +83,21 @@ class RegistrationForm extends FormComponent {
 class Registration extends Component {
   constructor() {
     super();
+    this.state = {
+      isVerified: false
+    };
 
     this.onSubmit = this.onSubmit.bind(this);
   }
+  
+  
 
   onSubmit(user) {
+    if(!user.isVerified){
+      alert("Are you a human, please verify yourself.");
+      return false;
+    }
+
     if(isEmail(user.username)){
       SessionStore.register(user, () => {
         this.props.history.push("/");
@@ -84,7 +119,10 @@ class Registration extends Component {
               <RegistrationForm
                 submitLabel="Register"
                 onSubmit={this.onSubmit}
+                style={this.props.classes}
+                className={this.props.classes.formWidth}
               />
+              
             </CardContent>
           </Card>
         </Grid>

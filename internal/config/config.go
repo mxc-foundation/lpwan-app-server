@@ -48,6 +48,11 @@ type Config struct {
 		TLSKey    string `mapstructure:"tls_key"`
 	} `mapstructure:"m2m_server"`
 
+	Recaptcha struct {
+		HostServer string `mapstructure:"host_server"`
+		Secret 	   string `mapstructure:"secret"`
+	} `mapstructure:"recaptcha"`
+
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
 

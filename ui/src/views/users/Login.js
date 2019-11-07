@@ -31,9 +31,12 @@ import MapTileLayerCluster from "../../components/MapTileLayerCluster";
 //const DURATION = 550;
 //const COLOR = 'rgba(121,244,218,0.5)';
 
+const VERIFY_ERROR_MESSAGE = "Are you a human, please verify yourself.";
 const styles = {
   textField: {
     width: "100%",
+    display: 'flex',
+    justifyContent: 'center'
   },
   link: {
     "& a": {
@@ -100,6 +103,20 @@ class LoginForm extends FormComponent {
     this.state.object.password = event;
   };
 
+class LoginForm extends FormComponent {
+  
+  onReCapChange = (value) => {
+    const req = {
+      secret : process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.state.object.isVerified = resp.success;
+    }); 
+  }
+
   render() {
     if (this.state.object === undefined) {
       return null;
@@ -157,7 +174,7 @@ class Login extends Component {
       open: true,
       accessOn: false
     };
-
+    
     this.onSubmit = this.onSubmit.bind(this);
   }
 
@@ -174,9 +191,19 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    SessionStore.login(login, () => {
-      this.props.history.push("/");
-    });
+    if(login.hasOwnProperty('isVerified')){
+      if(!login.isVerified){
+        alert(VERIFY_ERROR_MESSAGE);
+        return false;
+      }
+      
+      SessionStore.login(login, () => {
+        this.props.history.push("/");
+      });
+    }else{
+      alert(VERIFY_ERROR_MESSAGE);
+      return false;
+    }
   }
 
   onClick = () => {

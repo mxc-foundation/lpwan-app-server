@@ -510,6 +510,16 @@ timezone="{{ .Metrics.Timezone }}"
   # By setting this to true, the API request timing histogram will be enabled.
   # See also: https://github.com/grpc-ecosystem/go-grpc-prometheus#histograms
   api_timing_histogram={{ .Metrics.Prometheus.APITimingHistogram }}
+
+  [recaptcha]
+  # Each reCAPTCHA user response token is valid for two minutes, and can only 
+  # be verified once to prevent replay attacks. 
+  # If you need a new token, you can re-run the reCAPTCHA verification.
+  #
+  # host_server: The server which provide verifying-recaptcha service.
+  # secret: Required. The shared key between your site and reCAPTCHA.  
+  host_server={{ .Recaptcha.HostServer }}
+	secret={{ .Recaptcha.Secret }}
 `
 
 var configCmd = &cobra.Command{

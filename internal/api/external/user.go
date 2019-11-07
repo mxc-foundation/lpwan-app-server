@@ -3,6 +3,11 @@ package external
 import (
 	"errors"
 	"fmt"
+	"encoding/json"
+	"net/http"
+	"io/ioutil"
+	"net/url"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -16,6 +21,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/gofrs/uuid"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
@@ -266,6 +272,51 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	}
 
 	return &pb.LoginResponse{Jwt: jwt}, nil
+}
+
+func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
+	secret := config.C.Recaptcha.Secret
+	postURL := config.C.Recaptcha.HostServer 
+
+	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
+	responsePost, err := http.PostForm(postURL, postStr)
+
+	if err != nil {
+		log.Warn(err)
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	defer func() {
+        err := responsePost.Body.Close()
+        if err != nil {
+            log.WithError(err).Error("cannot close the responsePost body.")
+        }
+    }()
+
+	body, err := ioutil.ReadAll(responsePost.Body)
+
+	if err != nil {
+		log.Warn(err)
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	g_response := &pb.GoogleRecaptchaResponse{}
+	err = json.Unmarshal(body, &g_response)
+	if err != nil {
+		fmt.Println("unmarshal response", err)
+	}
+
+	return g_response, nil
+} 
+
+func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *pb.GoogleRecaptchaRequest) (*pb.GoogleRecaptchaResponse, error) {
+	res, err := IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
+	if err != nil {
+		log.WithError(err).Error("Cannot verify from google recaptcha")
+        return &pb.GoogleRecaptchaResponse{}, err
+	}             
+	
+	return &pb.GoogleRecaptchaResponse{Success: res.Success, ChallengeTs: res.ChallengeTs, Hostname: res.Hostname}, nil
 }
 
 type claims struct {
