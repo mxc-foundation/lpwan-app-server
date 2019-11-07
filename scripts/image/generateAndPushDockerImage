@@ -7,7 +7,7 @@ if [ $# -ne 3 ]; then
 fi
 
 TAG=$(git describe --tags)
-# SERVICENAME should always be consistent with service name in docker-compose.yml file
+# SERVICENAME should always be consistent with service name in docker-compose-create-image.yml file
 SERVICENAME=appserver
 # docker hub settings
 DOCKER_HUB_USERNAME=$1
@@ -29,15 +29,43 @@ if [ x"$DOCKER_HUB_REPOSITORY" == x ]; then
   exit 1
 fi
 
-# build image
-docker-compose -f docker-compose-create-image.yml build $SERVICENAME|tee out.txt
-IMAGE_ID=$(cat out.txt |grep "Successfully built" |awk '{print $NF}')
+build_image()
+{
+  rm -f out.txt error.txt
+  # build image
+  docker-compose -f docker-compose-create-image.yml build $SERVICENAME 2>>error.txt 1>>out.txt|tee
+  # it error.txt contains error, exit
+  ERROR=$(cat error.txt| awk '/^Building /{next}{print "error occurs"; exit}')
+  if [ "$ERROR"x = "error occurs"x ]; then
+    echo "Failed to build image, error occurs..."
+    return
+  fi
 
-# push image to docker hub
-docker logout
-docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD docker.io
-docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
-docker push $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+  IMAGE_ID=$(cat out.txt |awk '/ *Successfully built */{print $NF}')
+  if [ "$IMAGE_ID"x = x ]; then
+    echo "Failed to build image, unable to get image_id..."
+    return
+  else
+    echo "Successfully built image $IMAGE_ID"
+  fi
 
-# before exit
+  echo "re-login docker.io"
+  # push image to docker hub
+  docker logout
+  docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD docker.io
+
+  echo "docker push image"
+  docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
+  docker push $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
+
+  echo "Build image successfully, rm error.txt"
+  # delete error message only when everything is done successfully
+  rm error.txt
+}
+
+echo "build image with version $TAG"
+build_image $TAG
+
+echo "Before exit, rm out.txt"
 rm out.txt
+
