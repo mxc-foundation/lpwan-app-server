@@ -5,7 +5,7 @@ import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import TitleBarTitle from '../../components/TitleBarTitle';
+import ReCAPTCHA from "react-google-recaptcha";
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -103,8 +103,6 @@ class LoginForm extends FormComponent {
     this.state.object.password = event;
   };
 
-class LoginForm extends FormComponent {
-  
   onReCapChange = (value) => {
     const req = {
       secret : process.env.REACT_APP_PUBLIC_KEY,
@@ -159,6 +157,12 @@ class LoginForm extends FormComponent {
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText}/>
         {/* <TitleBarTitle component={Link} to={`#`} title="FORGOT MY PASSWORD" /> */}
+        <ReCAPTCHA
+                sitekey={process.env.REACT_APP_PUBLIC_KEY}
+                onChange={this.onReCapChange}
+                className={this.props.style.textField}
+              />
+
       </Form>
     );
   }
@@ -172,7 +176,8 @@ class Login extends Component {
     this.state = {
       registration: null,
       open: true,
-      accessOn: false
+      accessOn: false,
+      isVerified: false
     };
     
     this.onSubmit = this.onSubmit.bind(this);
@@ -253,7 +258,7 @@ class Login extends Component {
             <LoginForm
               submitLabel="Login"
               onSubmit={this.onSubmit}
-              logo={this.props.classes.logo}
+              style={this.props.classes}
             />
           </div>
           {this.state.registration && <div>
