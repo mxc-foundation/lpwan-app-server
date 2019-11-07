@@ -95,6 +95,17 @@ class GatewayStore extends EventEmitter {
     });
   }
 
+  listLocations(callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.ListLocations()
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
   getStats(gatewayID, start, end, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.GetStats({
