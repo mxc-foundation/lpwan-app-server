@@ -275,7 +275,6 @@ class SideNav extends Component {
             placeHolder="Change Organization"
           />
         </div>
-        <Divider />
         {this.state.organization && <>
         <List className={this.props.classes.static}>
            <Admin>
