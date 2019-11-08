@@ -18,6 +18,7 @@ import Tune from "mdi-material-ui/Tune";
 import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
 import Wallet from "mdi-material-ui/WalletOutline";
+import AccessPoint from "mdi-material-ui/AccessPoint";
 
 import AccountDetails from "mdi-material-ui/AccountDetails";
 import ServerInfoStore from "../stores/ServerInfoStore"
@@ -247,7 +248,6 @@ class SideNav extends Component {
               </ListItemIcon>
               <ListItemText classes={selected('/gateway-profiles')} primary="Gateway-profiles" />
             </ListItem>
-            <Divider />
             <ListItem selected={active('/organizations')} button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
@@ -332,6 +332,12 @@ class SideNav extends Component {
                     <Wallet />
                   </ListItemIcon>
                   <ListItemText primary="M2M Wallet" />
+                </ListItem>
+                <ListItem button className={this.props.classes.static}>  
+                  <ListItemIcon>
+                    <AccessPoint />
+                  </ListItemIcon>
+                  <ListItemText primary="NB-IoT Server" />
                 </ListItem>
                 <ListItem>
                   <ListItemText primary="Powered by" />
