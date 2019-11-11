@@ -53,7 +53,7 @@ export default function InputAdornments(props) {
   return (
     <div className={classes.root}>
         <FormControl className={clsx(classes.margin, classes.textField)}>
-          <InputLabel htmlFor="standard-adornment-password">Password</InputLabel>
+          <InputLabel htmlFor="standard-adornment-password">{props.label}</InputLabel>
           <Input
             id="standard-adornment-password"
             type={values.showPassword ? 'text' : 'password'}

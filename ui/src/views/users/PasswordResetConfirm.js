@@ -8,14 +8,15 @@ import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import TitleBarTitle from "../../components/TitleBarTitle";
 import { withStyles } from "@material-ui/core/styles";
-import ReCAPTCHA from "react-google-recaptcha";
-import { PASSWORD_RECOVERY_DESCRIPTION_001 } from "../../util/Messages";
+//import ReCAPTCHA from "react-google-recaptcha";
+import { PASSWORD_RECOVERY_DESCRIPTION_002, PASSWORD_RECOVERY_ERROR_MINIMUM_LENGTH, PASSWORD_RECOVERY_ERROR_MISMATCH  } from "../../util/Messages";
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
+import Password from '../../components/TextfileForPassword'
 import theme from "../../theme";
 
 const styles = {
@@ -75,63 +76,58 @@ const styles = {
 };
 
 
-class PasswordRecoveryForm extends FormComponent {
+class PasswordResetConfirmForm extends FormComponent {
 
-  onReCapChange = (value) => {
-    const req = {
-      secret : process.env.REACT_APP_PUBLIC_KEY,
-      response: value,
-      remoteip: window.location.origin
+    handlePassword = (event) => {
+        this.state.object.password = event;
+    };
+
+    handlePasswordConfirm = (event) => {
+        this.state.object.passwordConfirm = event;
+    };
+
+    onReCapChange = (value) => {
+        const req = {
+        secret : process.env.REACT_APP_PUBLIC_KEY,
+        response: value,
+        remoteip: window.location.origin
+        }
+
+        SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+        this.state.object.isVerified = resp.success;
+        }); 
     }
-
-    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
-      this.state.object.isVerified = resp.success;
-    }); 
-  }
   
-  render() {
-    if (this.state.object === undefined) {
-      return null;
+    render() {
+        if (this.state.object === undefined) {
+        return null;
+        }
+
+        const extraButtons = [
+            <Button 
+            variant="outlined"
+            color="inherit"
+            component={Link} 
+            to={`/login`} 
+            type="button" 
+            disabled={false}>Canceled</Button>
+        ]
+
+        return(
+        <Form
+            submitLabel={this.props.submitLabel}
+            extraButtons={extraButtons}
+            onSubmit={this.onSubmit}
+        >
+            <Password handleChange={this.handlePassword} label={'Password'} />
+            <Password handleChange={this.handlePasswordConfirm} label={'Password Confirmation'} />
+        </Form>
+        );
     }
-
-    const extraButtons = [
-        <Button 
-          variant="outlined"
-          color="inherit"
-          component={Link} 
-          to={`/login`} 
-          type="button" 
-          disabled={false}>Canceled</Button>
-      ]
-
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        extraButtons={extraButtons}
-        onSubmit={this.onSubmit}
-      >
-        <TextField
-          id="username"
-          label="Email"
-          margin="normal"
-          type="email"
-          value={this.state.object.username || ""}
-          onChange={this.onChange}
-          fullWidth
-          required
-        />
-        {/* <ReCAPTCHA
-                sitekey={process.env.REACT_APP_PUBLIC_KEY}
-                onChange={this.onReCapChange}
-                className={this.props.style.textField}
-              /> */}
-      </Form>
-    );
-  }
 }
 
 
-class PasswordRecovery extends Component {
+class PasswordResetConfirm extends Component {
   constructor() {
     super();
     this.state = {
@@ -141,8 +137,17 @@ class PasswordRecovery extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  onSubmit(email) {
-    console.log('pass word recovery: ', email);
+  onSubmit(passwords) {
+    if(passwords.password.length < 6){
+        alert(PASSWORD_RECOVERY_ERROR_MINIMUM_LENGTH);
+        return false;
+    }
+
+    if(passwords.password !== passwords.passwordConfirm){
+        alert(PASSWORD_RECOVERY_ERROR_MISMATCH);
+        return false;
+    }  
+    console.log('user', passwords);
   }
 
   render() {
@@ -170,9 +175,9 @@ class PasswordRecovery extends Component {
             </div>
             <Divider light={true}/>
             <Typography variant="body1" className={this.props.classes.title}>
-                {PASSWORD_RECOVERY_DESCRIPTION_001}
+                {PASSWORD_RECOVERY_DESCRIPTION_002}
             </Typography>
-            <PasswordRecoveryForm
+            <PasswordResetConfirmForm
                 submitLabel="Reset Password"
                 onSubmit={this.onSubmit}
                 style={this.props.classes}
@@ -187,4 +192,4 @@ class PasswordRecovery extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(PasswordRecovery));
+export default withStyles(styles)(withRouter(PasswordResetConfirm));

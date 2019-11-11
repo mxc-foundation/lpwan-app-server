@@ -63,11 +63,6 @@ const styles = {
     alignItems: 'center',
     height: 400,
   },
-  logo: {
-    height: 90,
-    marginLeft: 'auto',
-    opacity: '0.7',
-  },
   logoSection: {
     display: 'flex'
   },
@@ -156,7 +151,7 @@ class LoginForm extends FormComponent {
           onChange={this.onChange}
           fullWidth
         />
-        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText}/>
+        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
         <TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />
         <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
