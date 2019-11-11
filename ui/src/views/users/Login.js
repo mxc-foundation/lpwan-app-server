@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
+import TitleBarTitle from "../../components/TitleBarTitle";
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -61,11 +62,6 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     height: 400,
-  },
-  logo: {
-    height: 90,
-    marginLeft: 'auto',
-    opacity: '0.7',
   },
   logoSection: {
     display: 'flex'
@@ -155,8 +151,8 @@ class LoginForm extends FormComponent {
           onChange={this.onChange}
           fullWidth
         />
-        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText}/>
-        {/* <TitleBarTitle component={Link} to={`#`} title="FORGOT MY PASSWORD" /> */}
+        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
+        <TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />
         <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}

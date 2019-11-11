@@ -14,6 +14,7 @@ export function getM2MLink() {
 export function openM2M(org, isBelongToOrg, path) {
     let orgName = org.name;
     let orgId = org.id;
+    console.log(org);
     if(!orgId){
       return false;
     }

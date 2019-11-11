@@ -44,6 +44,8 @@ import ListUsers from "./views/users/ListUsers";
 import CreateUser from "./views/users/CreateUser";
 import UserLayout from "./views/users/UserLayout";
 import ChangeUserPassword from "./views/users/ChangeUserPassword";
+import PasswordRecovery from "./views/users/PasswordRecovery";
+import PasswordResetConfirm from "./views/users/PasswordResetConfirm";
 
 // service-profile
 import ListServiceProfiles from "./views/service-profiles/ListServiceProfiles";
@@ -196,6 +198,8 @@ class App extends Component {
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />
                     <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
                     <Route exact path="/registration" component={Registration} />
+                    <Route exact path="/password-recovery" component={PasswordRecovery} />
+                    <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
                     <Route exact path="/registration-confirm/:securityToken" component={RegistrationConfirm} />
 
                     <Route exact path="/network-servers" component={ListNetworkServers} />
