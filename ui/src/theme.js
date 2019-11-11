@@ -9,7 +9,7 @@ const blueMxcBrand = '#09006E';
 const blueBG = '#090046';
 const overlayBG = '#0C027060';
 const white = '#F9FAFC';
-const linkTextColor = '#216CDF';
+const linkTextColor = '#BBE9E8';
 
 const theme = createMuiTheme({
     palette: {
@@ -49,6 +49,7 @@ const theme = createMuiTheme({
         },
         body1: {
           color: white,
+          fontSize: '0.8rem'
         },
         body2: {
           color: white,
@@ -69,11 +70,6 @@ const theme = createMuiTheme({
         caption: {
           color: white
         },
-      },
-      MuiListItem: {
-        root: {
-          padding: '5px 0',
-        }
       },
       MuiInput: {
         root: {
@@ -117,21 +113,48 @@ const theme = createMuiTheme({
       MuiDivider: {
         root: {
           backgroundColor: '#00000040',
-          margin: '5px 10px',
+          margin: '5px 0px 5px 0px',
         },
         light: {
-          backgroundColor: '#FFFFFF40',
-          padding: 0,
-          margin: 0,
+          backgroundColor: '#FFFFFF50',
+        }
+      },
+      MuiTable: {
+        root: {
+          background: 'transparent',
+          //minWidth: 840,
         }
       },
       MuiTableCell: {
         head: {
           color: white,
-          fontWeight: 'bold'
+          fontWeight: '800',
+          fontSize: '1em',
+          padding: 10, 
         },
         body: {
+          background: 'none',
           color: white,
+          //maxWidth: 140,
+          whiteSpace: 'nowrap', 
+          //overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          fontWeight: '400', 
+        },
+        root: {
+          padding: '4px 5px',
+          //maxWidth: 140,
+          whiteSpace: 'nowrap', 
+          //overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          borderBottom: 'solid 1px #070033',
+          lineHeight: '40px',
+          textAlign: 'left',
+        }
+      },
+      MuiTableCellLink: {
+        root: {
+          color: linkTextColor,
         },
       },
       MuiPaper: {
@@ -143,6 +166,7 @@ const theme = createMuiTheme({
       MuiTablePagination: {
         root: {
           color: white,
+          background: 'none',
         }
       },
       MuiButton: { 
@@ -156,21 +180,20 @@ const theme = createMuiTheme({
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
           "&:hover": {
             backgroundColor: "#00CCAE",
-            fontSize: '1rem'
           },
         },
         outlined: {
           backgroundColor: 'transparent',
-          color: tealHighLight,
+          color: white,
           //padding: 30,
           fontWeight: 900,
           lineHeight: 1.5,
           borderWidth: 2,
-          borderColor: tealHighLight,
+          borderColor: white,
           "&:hover": {
             backgroundColor: tealHighLight20,
             borderColor: "#00CCAE",
-            color: "#00CCAE",
+            color: white,
           },
         },
         colorInherit: {
@@ -191,7 +214,6 @@ const theme = createMuiTheme({
         }, */
         text: { 
           color: blueMxcBrand, 
-          marginBottom: 24,
         },
         textPrimary: {
           color: blueMxcBrand,

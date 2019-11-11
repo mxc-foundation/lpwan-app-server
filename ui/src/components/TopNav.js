@@ -56,7 +56,7 @@ const styles = {
   search: {
     marginRight: 3 * theme.spacing.unit,
     color: theme.palette.textPrimary.main,
-    backgroundColor: theme.palette.primary.secondary,
+    backgroundColor: '#08005C',
     width: 480,
     padding: 5,
     borderRadius: 3,
@@ -189,7 +189,7 @@ class TopNav extends Component {
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
+      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LPWAN Server" />
       searchbar = <Input
                     placeholder="Search organization, application, gateway or device"
                     className={this.props.classes.search}
