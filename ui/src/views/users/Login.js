@@ -52,16 +52,23 @@ const styles = {
     zIndex: 1000
   },
   loginFormStyle: {
-    backgroundColor: '#09006E',
+    backgroundColor: '#10337b50',
     padding: '24px',
     position: 'absolute',
-    width: 400,
-    top: 90,
-    right: 40,
+    width: 380,
+    top: '0',
+    right: '0',
+    background:'linear-gradient(rgba(121,244,218,0.5),transparent)',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: 400,
+    minHeight: '100%',
+  },
+  logo: {
+    height: 90,
+    marginLeft: 'auto',
+    opacity: '0.7',
+    marginLeft: 0,
   },
   logoSection: {
     display: 'flex'
@@ -84,9 +91,6 @@ const styles = {
   appBar: {
     backgroundColor: theme.palette.secondary.main,
   },
-  logo:{
-    height: 50 
-  }
 };
 
 class LoginForm extends FormComponent {
@@ -140,6 +144,9 @@ class LoginForm extends FormComponent {
         extraButtons={extraButtons}
         onSubmit={this.onSubmit}
       >
+        <div className={this.props.style.logoSection}>
+          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LoRa Server" />
+        </div>
         <TextField
           id="username"
           label="E-Mail"
@@ -216,7 +223,7 @@ class Login extends Component {
   render() {
     const style = {
       position: 'absolute',
-      top: 84,
+      top: 0,
       bottom: 0,
       left: 0,
       right: 0,
@@ -229,27 +236,10 @@ class Login extends Component {
     
     return(
       <>
-      <div className={this.props.classes.root}>
-        <AppBar position="static" className={this.props.classes.appBar}>
-          <Toolbar>
-            <div className={this.props.logoSection}>
-              <img src="/logo/logo_mx.png" className={this.props.classes.logo} alt="LoRa Server" />
-            </div>
-            <IconButton edge="start" className={this.props.classes.menuButton} color="inherit" aria-label="menu">
-              {/* <MenuIcon /> */}
-            </IconButton>
-            <Typography variant="h6" className={this.props.classes.title}></Typography>
-            <Button variant="outlined"
-                    color="inherit"
-                    onClick={this.onClick}
-            >ACCESS</Button>
-          </Toolbar>
-        </AppBar>
-      </div>
         <Map center={position} zoom={6} style={style} animate={true} scrollWheelZoom={false}>
           <MapTileLayerCluster />
         </Map>
-        {this.state.accessOn && <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
+        <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
           <div className={this.props.classes.loginFormStyle}>
             <LoginForm
               submitLabel="Login"
@@ -260,7 +250,7 @@ class Login extends Component {
           {this.state.registration && <div>
             <Typography className={this.props.classes.link} dangerouslySetInnerHTML={{__html: this.state.registration}}></Typography>
           </div>}
-        </div>}
+        </div>
       </>
     );
   }
