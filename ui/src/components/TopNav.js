@@ -28,6 +28,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Wallet from "mdi-material-ui/WalletOutline";
 import { openM2M } from "../util/Util";
 
+import OrganizationStore from "../stores/OrganizationStore"
 import SessionStore from "../stores/SessionStore";
 import WalletStore from "../stores/WalletStore";
 import theme from "../theme";
@@ -171,8 +172,15 @@ class TopNav extends Component {
   }
 
   handlingExtLink = () => {
-    const orgId = this.props.location.pathname.split('/')[2];
-    openM2M(orgId, '/withdraw');
+    const resp = SessionStore.getProfile();
+    resp.then((res) => {
+      let orgId = this.props.location.pathname.split('/')[2];
+      const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
+
+      OrganizationStore.get(orgId, resp => {
+        openM2M(resp.organization, isBelongToOrg, '/withdraw');
+      });
+    })
   }
 
   onSearchSubmit(e) {
