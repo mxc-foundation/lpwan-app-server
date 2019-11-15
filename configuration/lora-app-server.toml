@@ -309,7 +309,7 @@ gateways_locations_limit=100000
 
   # JWT secret used for api authentication / authorization
   # You could generate this by executing 'openssl rand -base64 32' for example
-  jwt_secret="DOE1KiNzpQ82elRQ9HMWyxmADQ5f2B2TBAgOjL7ZZWA="
+  jwt_secret="zPWZAeRHJ8aCzrJDr4VuY/isoVnLZ0nNQIgHBbE7nMA="
 
   # Allow origin header (CORS).
   #cross
