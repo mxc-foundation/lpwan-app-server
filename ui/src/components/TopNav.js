@@ -26,13 +26,14 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Wallet from "mdi-material-ui/WalletOutline";
+import i18n, { packageNS } from '../i18n';
 import { openM2M } from "../util/Util";
 
 import OrganizationStore from "../stores/OrganizationStore"
 import SessionStore from "../stores/SessionStore";
 import WalletStore from "../stores/WalletStore";
 import theme from "../theme";
-
+import DropdownMenuLanguage from "./DropdownMenuLanguage";
 
 const styles = {
   appBar: {
@@ -119,9 +120,9 @@ class TopNav extends Component {
       search: "",
     };
 
+    this.onLogout = this.onLogout.bind(this);
     this.onMenuOpen = this.onMenuOpen.bind(this);
     this.onMenuClose = this.onMenuClose.bind(this);
-    this.onLogout = this.onLogout.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
@@ -145,6 +146,10 @@ class TopNav extends Component {
       console.error(error);
       this.setState({ error });
     }
+  }
+
+  onChangeLanguage = (newLanguageState) => {
+    this.props.onChangeLanguage(newLanguageState);
   }
 
   onMenuOpen(e) {
@@ -263,6 +268,11 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
+
+          <DropdownMenuLanguage
+            onChangeLanguage={this.onChangeLanguage}
+          />
+
           <a href="https://www.mxc.org/support" target="mxc-support">
             <IconButton className={this.props.classes.iconButton}>
               <HelpCircle />

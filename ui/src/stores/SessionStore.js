@@ -43,6 +43,22 @@ class SessionStore extends EventEmitter {
     return localStorage.getItem("jwt");
   }
 
+  setSupportedLanguages(languages) {
+    localStorage.setItem("languages-supported", JSON.stringify(languages));
+  }
+
+  getSupportedLanguages() {
+    return JSON.parse(localStorage.getItem("languages-supported"));
+  }
+
+  setLanguage(language) {
+    localStorage.setItem("language", JSON.stringify(language));
+  }
+
+  getLanguage() {
+    return JSON.parse(localStorage.getItem("language"));
+  }
+
   getOrganizationID() {
     const orgID = localStorage.getItem("organizationID");
     if (!orgID) {

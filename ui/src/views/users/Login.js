@@ -6,12 +6,15 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
-import TitleBarTitle from "../../components/TitleBarTitle";
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 //import MenuIcon from 'mdi-material-ui/Server';
+
+import i18n, { packageNS } from '../../i18n';
+import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
+import TitleBarTitle from "../../components/TitleBarTitle";
 import Password from '../../components/TextfileForPassword'
 import { 
   Map,
@@ -96,12 +99,23 @@ const styles = {
 class LoginForm extends FormComponent {
   constructor(props) {
     super(props);
+
     this.handleChange = this.handleChange.bind(this);
   }
 
   handleChange = (event) => {
     this.state.object.password = event;
   };
+
+  onChangeLanguage = e => {
+    const newLanguage = {
+      label: e.label,
+      value: e.value,
+      code: e.code
+    }
+
+    this.props.onChangeLanguage(newLanguage);
+  }
 
   onReCapChange = (value) => {
     const req = {
@@ -147,6 +161,10 @@ class LoginForm extends FormComponent {
         <div className={this.props.style.logoSection}>
           <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LoRa Server" />
         </div>
+
+        {i18n.t(`${packageNS}:top.m2m_wallet`)}
+        <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+
         <TextField
           id="username"
           label="E-Mail"
@@ -198,13 +216,17 @@ class Login extends Component {
     });
   }
 
+  onChangeLanguage = (newLanguageState) => {
+    this.props.onChangeLanguage(newLanguageState);
+  }
+
   onSubmit(login) {
     if(login.hasOwnProperty('isVerified')){
       if(!login.isVerified){
         alert(VERIFY_ERROR_MESSAGE);
         return false;
       }
-      
+
       SessionStore.login(login, () => {
         this.props.history.push("/");
       });
@@ -242,8 +264,9 @@ class Login extends Component {
         <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
           <div className={this.props.classes.loginFormStyle}>
             <LoginForm
-              submitLabel="Login"
+              onChangeLanguage={this.onChangeLanguage}
               onSubmit={this.onSubmit}
+              submitLabel="Login"
               style={this.props.classes}
             />
           </div>
