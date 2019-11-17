@@ -1,5 +1,36 @@
 {
-  "top": {
-    "m2m_wallet": "Korean"
+  "common": {
+    "email": "이메일 주소",
+    "password": "비밀번호",
+    "human": "당신은 인간, 자신을 확인하십시오",
+    "lora_server": "LoRa 서버",
+    "confirm": "확인"
+  },
+  "login": {
+    "login": "로그인",
+    "forgot_password": "비밀번호를 잊어 버렸습니다",
+    "access_now": "지금 데모 사용자로 액세스 할 수 있습니다"
+  },
+  "registration": {
+    "password_repeat": "비밀번호 반복",
+    "valid_email": "사용할 유효한 이메일 주소를 입력하십시오.",
+    "register": "레지스터",
+    "registration": "기재",
+    "registration_confirmation": "등록 확인",
+    "organization_name": "조직 이름",
+    "organization_display_name": "조직 표시 이름",
+    "password_mismatch": "비밀번호가 일치하지 않습니다"
+  },
+  "password_recovery": {
+    "password_recovery": "비밀번호 복구",
+    "reset_password": "암호를 재설정",
+    "cancelled": "취소 된",
+    "email_reset_info": "아래에 이메일 주소를 입력하면 비밀번호 재설정 지침을 보내드립니다.",
+    "enter_new_password": "아래에 새 비밀번호를 입력하십시오.",
+    "password_min_length": "비밀번호는 6 자 이상이어야합니다.",
+    "password_confirmation_mismatch": "비밀번호와 확인이 일치하지 않습니다."
+  },
+  "session": {
+    "email_confirmation_sent": "확인 이메일이 발송되었습니다."
   }
 }

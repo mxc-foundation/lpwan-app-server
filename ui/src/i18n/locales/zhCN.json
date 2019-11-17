@@ -1,5 +1,36 @@
 {
-  "top": {
-    "m2m_wallet": "Chinese Simplified"
+  "common": {
+    "email": "电子邮件",
+    "password": "密码",
+    "human": "你是人类吗，请验证自己",
+    "lora_server": "LoRa 服务器",
+    "confirm": "确认"
+  },
+  "login": {
+    "login": "登录",
+    "forgot_password": "忘了我的密码",
+    "access_now": "您现在可以以演示用户身份访问"
+  },
+  "registration": {
+    "password_repeat": "密码重复",
+    "valid_email": "请输入有效的电子邮件地址以供使用.",
+    "register": "寄存器",
+    "registration": "注册",
+    "registration_confirmation": "注册确认",
+    "organization_name": "机构名称",
+    "organization_display_name": "组织显示名称",
+    "password_mismatch": "密码不匹配"
+  },
+  "password_recovery": {
+    "password_recovery": "找回密码",
+    "reset_password": "重设密码",
+    "cancelled": "取消",
+    "email_reset_info": "在下面输入您的电子邮件地址，我们将向您发送密码重置说明",
+    "enter_new_password": "请在下面输入您的新密码.",
+    "password_min_length": "密码必须至少包含6个字符.",
+    "password_confirmation_mismatch": "密码和确认不匹配."
+  },
+  "session": {
+    "email_confirmation_sent": "确认电子邮件已发送."
   }
 }

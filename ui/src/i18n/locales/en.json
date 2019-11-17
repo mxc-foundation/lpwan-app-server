@@ -1,5 +1,36 @@
 {
-  "top": {
-    "m2m_wallet": "M2M Wallet"
+  "common": {
+    "email": "E-Mail",
+    "password": "Password",
+    "human": "Are you a human, please verify yourself",
+    "lora_server": "LoRa Server",
+    "confirm": "Confirm"
+  },
+  "login": {
+    "login": "Login",
+    "forgot_password": "FORGOT MY PASSWORD",
+    "access_now": "You can access right now as a demo user"
+  },
+  "registration": {
+    "password_repeat": "Password repeat",
+    "valid_email": "Please, enter a valid email address to use.",
+    "register": "Register",
+    "registration": "Registration",
+    "registration_confirmation": "Registration confirmation",
+    "organization_name": "Organization name",
+    "organization_display_name": "Organization display name",
+    "password_mismatch": "Passwords doesn't match"
+  },
+  "password_recovery": {
+    "password_recovery": "Password Recovery",
+    "reset_password": "Reset Password",
+    "cancelled": "Cancelled",
+    "email_reset_info": "Type your e-mail address below and we'll send you password reset instructions",
+    "enter_new_password": "Please type your new password below.",
+    "password_min_length": "Passwords must be at least 6 characters long.",
+    "password_confirmation_mismatch": "Password and confirmation don't match."
+  },
+  "session": {
+    "email_confirmation_sent": "Confirmation email has been sent."
   }
 }

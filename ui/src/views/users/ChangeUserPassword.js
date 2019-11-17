@@ -11,6 +11,7 @@ import TitleBarTitle from "../../components/TitleBarTitle";
 import UserStore from "../../stores/UserStore";
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
+import i18n, { packageNS } from '../../i18n';
 
 
 class PasswordForm  extends FormComponent {
@@ -26,7 +27,7 @@ class PasswordForm  extends FormComponent {
       >
         <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:common.password`)}
           type="password"
           margin="normal"
           value={this.state.object.password || ""}
@@ -81,7 +82,7 @@ class ChangeUserPassword extends Component {
           <Card>
             <CardContent>
               <PasswordForm
-                submitLabel="Confirm"
+                submitLabel={i18n.t(`${packageNS}:common.confirm`)}
                 onSubmit={this.onSubmit}
               />
             </CardContent>

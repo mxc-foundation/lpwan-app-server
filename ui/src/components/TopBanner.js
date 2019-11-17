@@ -16,6 +16,7 @@ import HelpCircle from "mdi-material-ui/HelpCircle";
 
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
+import i18n, { packageNS } from '../i18n';
 
 
 const styles = {
@@ -129,7 +130,7 @@ class TopBanner extends Component {
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
+      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:common.lora_server`)} />
       searchbar = <Input
                     placeholder="Search organization, application, gateway or device"
                     className={this.props.classes.search}

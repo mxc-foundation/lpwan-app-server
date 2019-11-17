@@ -1,5 +1,36 @@
 {
-  "top": {
-    "m2m_wallet": "Chinese Traditional"
+  "common": {
+    "email": "電子郵件地址",
+    "password": "密碼",
+    "human": "你是人類嗎，請驗證自己",
+    "lora_server": "LoRa 伺服器",
+    "confirm": "確認"
+  },
+  "login": {
+    "login": "登錄",
+    "forgot_password": "忘了我的密碼",
+    "access_now": "您現在可以以演示用戶身份訪問"
+  },
+  "registration": {
+    "password_repeat": "密碼重複",
+    "valid_email": "請輸入有效的電子郵件地址以供使用.",
+    "register": "寄存器",
+    "registration": "註冊",
+    "registration_confirmation": "註冊確認",
+    "organization_name": "機構名稱",
+    "organization_display_name": "組織顯示名稱",
+    "password_mismatch": "密碼不匹配"
+  },
+  "password_recovery": {
+    "password_recovery": "找回密碼",
+    "reset_password": "重設密碼",
+    "cancelled": "取消",
+    "email_reset_info": "在下面輸入您的電子郵件地址，我們將向您發送密碼重置說明",
+    "enter_new_password": "請在下面輸入您的新密碼.",
+    "password_min_length": "密碼必須至少包含6個字符.",
+    "password_confirmation_mismatch": "密碼和確認不匹配"
+  },
+  "session": {
+    "email_confirmation_sent": "確認電子郵件已發送."
   }
 }

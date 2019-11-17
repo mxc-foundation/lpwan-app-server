@@ -8,6 +8,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormComponent from "../../classes/FormComponent";
 import FormControl from "../../components/FormControl";
 import Form from "../../components/Form";
+import i18n, { packageNS } from '../../i18n';
 
 
 class UserForm extends FormComponent {
@@ -52,7 +53,7 @@ class UserForm extends FormComponent {
         />
         {this.state.object.id === undefined && <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:common.password`)}
           type="password"
           margin="normal"
           value={this.state.object.password || ""}

@@ -15,6 +15,7 @@ import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
@@ -250,7 +251,7 @@ class InfluxDBIntegrationForm extends FormComponent {
         />
         <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:common.password`)}
           value={this.state.object.password || ""}
           type="password"
           onChange={this.onChange}

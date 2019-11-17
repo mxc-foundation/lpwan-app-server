@@ -17,6 +17,7 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 const styles = {
   textField: {
@@ -101,7 +102,7 @@ class PasswordRecoveryForm extends FormComponent {
           component={Link} 
           to={`/login`} 
           type="button" 
-          disabled={false}>Canceled</Button>
+          disabled={false}>{i18n.t(`${packageNS}:password_recovery.cancelled`)}</Button>
       ]
 
     return(
@@ -112,7 +113,7 @@ class PasswordRecoveryForm extends FormComponent {
       >
         <TextField
           id="username"
-          label="Email"
+          label={i18n.t(`${packageNS}:common.email`)}
           margin="normal"
           type="email"
           value={this.state.object.username || ""}
@@ -152,7 +153,7 @@ class PasswordRecovery extends Component {
           <AppBar position="static" className={this.props.classes.appBar}>
             <Toolbar>
               <div className={this.props.logoSection}>
-                <img src="/logo/logo_mx.png" className={this.props.classes.logo} alt="LoRa Server" />
+                <img src="/logo/logo_mx.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:common.lora_server`)} />
               </div>
               <IconButton edge="start" className={this.props.classes.menuButton} color="inherit" aria-label="menu">
                 {/* <MenuIcon /> */}
@@ -166,14 +167,14 @@ class PasswordRecovery extends Component {
           </Grid>
           <Grid item xs={12} lg={3} className={this.props.classes.flexCol}>
             <div className={this.props.classes.TitleBar}>
-              <TitleBarTitle title="Password Recovery" />
+              <TitleBarTitle title={i18n.t(`${packageNS}:password_recovery.password_recovery`)} />
             </div>
             <Divider light={true}/>
             <Typography variant="body1" className={this.props.classes.title}>
                 {PASSWORD_RECOVERY_DESCRIPTION_001}
             </Typography>
             <PasswordRecoveryForm
-                submitLabel="Reset Password"
+                submitLabel={i18n.t(`${packageNS}:password_recovery.reset_password`)}
                 onSubmit={this.onSubmit}
                 style={this.props.classes}
                 className={this.props.classes.formWidth}

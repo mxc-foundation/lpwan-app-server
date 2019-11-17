@@ -24,6 +24,7 @@ import UserStore from "../../stores/UserStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
@@ -175,7 +176,7 @@ class CreateUserForm extends FormComponent {
         />
         <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:common.password`)}
           type="password"
           margin="normal"
           value={this.state.object.password || ""}

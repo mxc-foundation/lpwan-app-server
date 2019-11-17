@@ -12,7 +12,6 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 //import MenuIcon from 'mdi-material-ui/Server';
 
-import i18n, { packageNS } from '../../i18n';
 import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import Password from '../../components/TextfileForPassword'
@@ -34,8 +33,9 @@ import MapTileLayerCluster from "../../components/MapTileLayerCluster";
 //import { relative } from "path";
 //const DURATION = 550;
 //const COLOR = 'rgba(121,244,218,0.5)';
+import i18n, { packageNS } from '../../i18n';
 
-const VERIFY_ERROR_MESSAGE = "Are you a human, please verify yourself.";
+const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:common.human`);
 const styles = {
   textField: {
     width: "100%",
@@ -141,7 +141,7 @@ class LoginForm extends FormComponent {
         component={Link} 
         to={`/registration`} 
         type="button" 
-        disabled={false}>Register</Button>
+        disabled={false}>{i18n.t(`${packageNS}:registration.register`)}</Button>
     ]
     let demoUsername = "";
     let demoPassword = "";
@@ -149,7 +149,7 @@ class LoginForm extends FormComponent {
     if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
       demoUsername = process.env.REACT_APP_DEMO_USER;
       demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
-      helpText = "You can access right now as a demo user.";
+      helpText = i18n.t(`${packageNS}:login.access_now`);
     }
 
     return(
@@ -159,15 +159,14 @@ class LoginForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
         <div className={this.props.style.logoSection}>
-          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LoRa Server" />
+          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt={i18n.t(`${packageNS}:common.lora_server`)} />
         </div>
 
-        {i18n.t(`${packageNS}:top.m2m_wallet`)}
         <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
 
         <TextField
           id="username"
-          label="E-Mail"
+          label={i18n.t(`${packageNS}:common.email`)}
           margin="normal"
           value={this.state.object.username === undefined 
             ? this.state.object.username = demoUsername 
@@ -176,8 +175,8 @@ class LoginForm extends FormComponent {
           onChange={this.onChange}
           fullWidth
         />
-        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
-        <TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />
+        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:common.password`)} />
+        <TitleBarTitle component={Link} to={`/password-recovery`} title={i18n.t(`${packageNS}:login.forgot_password`)} />
         <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}
@@ -266,7 +265,7 @@ class Login extends Component {
             <LoginForm
               onChangeLanguage={this.onChangeLanguage}
               onSubmit={this.onSubmit}
-              submitLabel="Login"
+              submitLabel={i18n.t(`${packageNS}:login.login`)}
               style={this.props.classes}
             />
           </div>

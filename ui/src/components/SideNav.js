@@ -29,6 +29,7 @@ import Admin from "./Admin";
 
 import theme from "../theme";
 import { openM2M } from "../util/Util";
+import i18n, { packageNS } from '../i18n';
 
 const styles = {
   drawerPaper: {
@@ -341,7 +342,7 @@ class SideNav extends Component {
                 <ListItem>
                   <ListItemText primary="Powered by" />
                   <ListItemIcon>
-                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
+                    <img src="/logo/mxc_logo.png" className="iconStyle" alt={i18n.t(`${packageNS}:common.lora_server`)} onClick={this.handleMXC} />
                   </ListItemIcon>
                 </ListItem>
                 <ListItem>

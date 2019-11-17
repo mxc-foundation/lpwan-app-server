@@ -15,6 +15,7 @@ import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 const styles = {
   textField: {
@@ -61,7 +62,7 @@ class RegistrationForm extends FormComponent {
       >
         <TextField
           id="username"
-          label="Email"
+          label={i18n.t(`${packageNS}:common.email`)}
           margin="normal"
           type="email"
           value={this.state.object.username || ""}
@@ -94,7 +95,7 @@ class Registration extends Component {
 
   onSubmit(user) {
     if(!user.isVerified){
-      alert("Are you a human, please verify yourself.");
+      alert(i18n.t(`${packageNS}:common.human`));
       return false;
     }
 
@@ -103,7 +104,7 @@ class Registration extends Component {
         this.props.history.push("/");
       });
     }else{
-      alert("Please, enter a valid email address to use.");
+      alert(i18n.t(`${packageNS}:registration.valid_email`));
     }
   }
 
@@ -113,11 +114,11 @@ class Registration extends Component {
         <Grid item xs={6} lg={4}>
           <Card>
             <CardHeader
-              title="Registration"
+              title={i18n.t(`${packageNS}:registration.registration`)}
             />
             <CardContent>
               <RegistrationForm
-                submitLabel="Register"
+                submitLabel={i18n.t(`${packageNS}:registration.register`)}
                 onSubmit={this.onSubmit}
                 style={this.props.classes}
                 className={this.props.classes.formWidth}
