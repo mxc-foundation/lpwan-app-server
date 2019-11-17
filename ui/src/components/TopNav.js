@@ -269,9 +269,7 @@ class TopNav extends Component {
             }}
           />
 
-          <DropdownMenuLanguage
-            onChangeLanguage={this.onChangeLanguage}
-          />
+          <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
 
           <a href="https://www.mxc.org/support" target="mxc-support">
             <IconButton className={this.props.classes.iconButton}>

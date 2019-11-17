@@ -5,7 +5,6 @@ import classNames from "classnames";
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "../i18n";
 import SessionStore from "../stores/SessionStore";
 import FlagIcon from "./FlagIcon";
-import { lang } from "moment";
 
 const styles = {
   languageWrapper: {
@@ -91,7 +90,7 @@ class WithPromises extends Component {
     this.setState({
       selectedOption,
       options: SUPPORTED_LANGUAGES
-    })
+    });
   }
 
   onChangeLanguage = selectedOption => {
