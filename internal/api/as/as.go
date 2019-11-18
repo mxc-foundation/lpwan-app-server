@@ -259,7 +259,7 @@ func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.Han
 		return nil, grpc.Errorf(codes.Internal, "decrypt payload error: %s", err)
 	}
 
-	// payload is handled by the LoRa App Server internal applayer
+	// payload is handled by the LPWAN App Server internal applayer
 	var internalApplayer bool
 
 	if err := storage.Transaction(func(db sqlx.Ext) error {

@@ -34,7 +34,7 @@ const styles = {
   drawerPaper: {
     position: "fixed",
     width: 270,
-    paddingTop: theme.spacing.unit * 10,
+    paddingTop: 94,
     paddingRight: 0,
     paddingLeft: 0,
     backgroundColor: theme.palette.secondary.secondary,
@@ -341,7 +341,7 @@ class SideNav extends Component {
                 <ListItem>
                   <ListItemText primary="Powered by" />
                   <ListItemIcon>
-                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
+                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LPWAN Server" onClick={this.handleMXC} />
                   </ListItemIcon>
                 </ListItem>
                 <ListItem>

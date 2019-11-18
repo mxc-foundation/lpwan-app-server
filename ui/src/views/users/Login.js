@@ -68,7 +68,6 @@ const styles = {
     height: 90,
     marginLeft: 'auto',
     opacity: '0.7',
-    marginLeft: 0,
   },
   logoSection: {
     display: 'flex'
@@ -145,7 +144,7 @@ class LoginForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
         <div className={this.props.style.logoSection}>
-          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LoRa Server" />
+          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LPWAN Server" />
         </div>
         <TextField
           id="username"
@@ -159,7 +158,7 @@ class LoginForm extends FormComponent {
           fullWidth
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
-        <TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />
+        {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
         <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}
