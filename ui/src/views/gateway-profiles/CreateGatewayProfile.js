@@ -68,8 +68,8 @@ class CreateGatewayProfile extends Component {
           <DialogTitle>Add a network-server?</DialogTitle>
           <DialogContent>
             <DialogContentText paragraph>
-              LoRa App Server isn't connected to a LoRa Server network-server.
-              Did you know that LoRa App Server can connect to multiple LoRa Server instances, e.g. to support multiple regions?
+              LPWAN App Server isn't connected to a LPWAN Server network-server.
+              Did you know that LPWAN App Server can connect to multiple LPWAN Server instances, e.g. to support multiple regions?
             </DialogContentText>
             <DialogContentText>
               Would you like to connect to a network-server now?
