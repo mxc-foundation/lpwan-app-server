@@ -77,10 +77,10 @@ idle_timeout="5m0s"
 #
 [smtp]
 
-email="registration-bounce@mxc.org"
-password="OhPZKM1SIfh3wZJoUzNgJx1DGz+sorcv"
-host="lora-test-srv.matchx.io"
-port="25"
+email="admin@mail.hunanhuaweikeji.com"
+password="juD4wPjO10jafi"
+host="smtpdm.aliyun.com"
+port="465"
 
 #email="namgyeong.cho@mxc.org"
 #password="3abASYMQ79ngB26"
