@@ -34,7 +34,7 @@ const styles = {
   drawerPaper: {
     position: "fixed",
     width: 270,
-    paddingTop: 94,
+    paddingTop: theme.spacing.unit * 10,
     paddingRight: 0,
     paddingLeft: 0,
     backgroundColor: theme.palette.secondary.secondary,
