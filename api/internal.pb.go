@@ -27,34 +27,34 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type Languange int32
+type Language int32
 
 const (
-	Languange_en   Languange = 0
-	Languange_ko   Languange = 1
-	Languange_zhcn Languange = 2
-	Languange_zhtw Languange = 3
+	Language_en   Language = 0
+	Language_ko   Language = 1
+	Language_zhcn Language = 2
+	Language_zhtw Language = 3
 )
 
-var Languange_name = map[int32]string{
+var Language_name = map[int32]string{
 	0: "en",
 	1: "ko",
 	2: "zhcn",
 	3: "zhtw",
 }
 
-var Languange_value = map[string]int32{
+var Language_value = map[string]int32{
 	"en":   0,
 	"ko":   1,
 	"zhcn": 2,
 	"zhtw": 3,
 }
 
-func (x Languange) String() string {
-	return proto.EnumName(Languange_name, int32(x))
+func (x Language) String() string {
+	return proto.EnumName(Language_name, int32(x))
 }
 
-func (Languange) EnumDescriptor() ([]byte, []int) {
+func (Language) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_41f4a519b878ee3b, []int{0}
 }
 
@@ -739,7 +739,7 @@ func (m *BrandingResponse) GetFooter() string {
 
 type RegisterUserRequest struct {
 	Email                string    `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	Language             Languange `protobuf:"varint,2,opt,name=language,proto3,enum=api.Languange" json:"language,omitempty"`
+	Language             Language `protobuf:"varint,2,opt,name=language,proto3,enum=api.Language" json:"language,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
 	XXX_unrecognized     []byte    `json:"-"`
 	XXX_sizecache        int32     `json:"-"`
@@ -777,11 +777,11 @@ func (m *RegisterUserRequest) GetEmail() string {
 	return ""
 }
 
-func (m *RegisterUserRequest) GetLanguage() Languange {
+func (m *RegisterUserRequest) GetLanguage() Language {
 	if m != nil {
 		return m.Language
 	}
-	return Languange_en
+	return Language_en
 }
 
 type ConfirmRegistrationRequest struct {
@@ -966,7 +966,7 @@ func (m *FinishRegistrationRequest) GetPassword() string {
 }
 
 func init() {
-	proto.RegisterEnum("api.Languange", Languange_name, Languange_value)
+	proto.RegisterEnum("api.Language", Language_name, Language_value)
 	proto.RegisterType((*GoogleRecaptchaRequest)(nil), "api.GoogleRecaptchaRequest")
 	proto.RegisterType((*GoogleRecaptchaResponse)(nil), "api.GoogleRecaptchaResponse")
 	proto.RegisterType((*ProfileSettings)(nil), "api.ProfileSettings")

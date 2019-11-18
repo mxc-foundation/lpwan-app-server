@@ -385,7 +385,7 @@
         }
       }
     },
-    "apiLanguange": {
+    "apiLanguage": {
       "type": "string",
       "enum": [
         "en",
@@ -494,7 +494,7 @@
           "type": "string"
         },
         "language": {
-          "$ref": "#/definitions/apiLanguange"
+          "$ref": "#/definitions/apiLanguage"
         }
       }
     },

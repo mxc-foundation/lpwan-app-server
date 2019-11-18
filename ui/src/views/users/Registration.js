@@ -99,10 +99,10 @@ class Registration extends Component {
       return false;
     }
 
-    if(SessionStore.getLanguage().label){
-      user.language = 'en';
+    if(SessionStore.getLanguage().id){
+      user.language = SessionStore.getLanguage().id.toLowerCase();
     }else {
-      user.language = SessionStore.getLanguage().label.toLowerCase();
+      user.language = 'en';
     }
     
     if(isEmail(user.username)){

@@ -195,7 +195,7 @@ message BrandingResponse {
 	string footer = 3;
 }
 
-enum Languange {
+enum Language {
 	en = 0;
 	ko = 1;
 	zhcn = 2;
@@ -204,7 +204,7 @@ enum Languange {
 
 message RegisterUserRequest {
     string email = 1;
-	Languange language = 2;
+	Language language = 2;
 }
 
 message ConfirmRegistrationRequest {
