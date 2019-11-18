@@ -145,7 +145,7 @@ class LoginForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
         <div className={this.props.style.logoSection}>
-          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LoRa Server" />
+          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LPWAN Server" />
         </div>
         <TextField
           id="username"

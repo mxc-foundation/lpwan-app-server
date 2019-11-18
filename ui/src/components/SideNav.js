@@ -341,7 +341,7 @@ class SideNav extends Component {
                 <ListItem>
                   <ListItemText primary="Powered by" />
                   <ListItemIcon>
-                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LoRa Server" onClick={this.handleMXC} />
+                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LPWAN Server" onClick={this.handleMXC} />
                   </ListItemIcon>
                 </ListItem>
                 <ListItem>
