@@ -31,7 +31,7 @@ class Item extends Component {
         }}
         open={true}
         message={<span>{this.props.notification.message}</span>}
-        autoHideDuration={3000}
+        autoHideDuration={6000}
         onClose={this.onClose}
         action={[
           <IconButton

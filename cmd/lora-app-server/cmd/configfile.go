@@ -59,7 +59,7 @@ dsn="{{ .PostgreSQL.DSN }}"
 #
 # It is possible to apply the database-migrations by hand
 # (see https://github.com/mxc-foundation/lpwan-app-server/tree/master/migrations)
-# or let LoRa App Server migrate to the latest state automatically, by using
+# or let LPWAN App Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading Lora
 # App Server and / or applying migrations.
 automigrate={{ .PostgreSQL.Automigrate }}
@@ -116,7 +116,7 @@ tls_key={{ .M2MServer.TLSKey }}
 # Application-server identifier.
 #
 # Random UUID defining the id of the application-server installation (used by
-# LoRa Server as routing-profile id).
+# LPWAN Server as routing-profile id).
 # For now it is recommended to not change this id.
 id="{{ .ApplicationServer.ID }}"
 
@@ -287,7 +287,7 @@ id="{{ .ApplicationServer.ID }}"
 
   # Settings for the "internal api"
   #
-  # This is the API used by LoRa Server to communicate with LoRa App Server
+  # This is the API used by LPWAN Server to communicate with LPWAN App Server
   # and should not be exposed to the end-user.
   [application_server.api]
   # ip:port to bind the api server
@@ -304,9 +304,9 @@ id="{{ .ApplicationServer.ID }}"
 
   # Public ip:port of the application-server API.
   #
-  # This is used by LoRa Server to connect to LoRa App Server. When running
-  # LoRa App Server on a different host than LoRa Server, make sure to set
-  # this to the host:ip on which LoRa Server can reach LoRa App Server.
+  # This is used by LPWAN Server to connect to LPWAN App Server. When running
+  # LPWAN App Server on a different host than LPWAN Server, make sure to set
+  # this to the host:ip on which LPWAN Server can reach LPWAN App Server.
   # The port must be equal to the port configured by the 'bind' flag
   # above.
   public_host="{{ .ApplicationServer.API.PublicHost }}"
@@ -383,8 +383,8 @@ id="{{ .ApplicationServer.ID }}"
 
 # Join-server configuration.
 #
-# LoRa App Server implements a (subset) of the join-api specified by the
-# LoRaWAN Backend Interfaces specification. This API is used by LoRa Server
+# LPWAN App Server implements a (subset) of the join-api specified by the
+# LoRaWAN Backend Interfaces specification. This API is used by LPWAN Server
 # to handle join-requests.
 [join_server]
 # ip:port to bind the join-server api interface to
@@ -412,7 +412,7 @@ tls_key="{{ .JoinServer.TLSKey }}"
 # The KEK mechanism is used to encrypt the session-keys sent from the
 # join-server to the network-server.
 #
-# The LoRa App Server join-server will use the NetID of the requesting
+# The LPWAN App Server join-server will use the NetID of the requesting
 # network-server as the KEK label. When no such label exists in the set,
 # the session-keys will be sent unencrypted (which can be fine for
 # private networks).
@@ -495,7 +495,7 @@ timezone="{{ .Metrics.Timezone }}"
 
   # Metrics stored in Prometheus.
   #
-  # These metrics expose information about the state of the LoRa Server
+  # These metrics expose information about the state of the LPWAN Server
   # instance.
   [metrics.prometheus]
   # Enable Prometheus metrics endpoint.

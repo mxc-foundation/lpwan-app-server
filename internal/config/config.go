@@ -50,7 +50,7 @@ type Config struct {
 
 	Recaptcha struct {
 		HostServer string `mapstructure:"host_server"`
-		Secret 	   string `mapstructure:"secret"`
+		Secret     string `mapstructure:"secret"`
 	} `mapstructure:"recaptcha"`
 
 	ApplicationServer struct {

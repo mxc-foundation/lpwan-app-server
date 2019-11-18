@@ -95,7 +95,7 @@ url="redis://localhost:6379"
 
     # Settings for the "internal api"
     #
-    # This is the API used by LoRa Server to communicate with LoRa App Server
+    # This is the API used by LPWAN Server to communicate with LPWAN App Server
     # and should not be exposed to the end-user.
     [application_server.api]
     # ip:port to bind the api server
@@ -103,9 +103,9 @@ url="redis://localhost:6379"
 
     # Public ip:port of the application-server API.
     #
-    # This is used by LoRa Server to connect to LoRa App Server. When running
-    # LoRa App Server on a different host than LoRa Server, make sure to set
-    # this to the host:ip on which LoRa Server can reach LoRa App Server.
+    # This is used by LPWAN Server to connect to LPWAN App Server. When running
+    # LPWAN App Server on a different host than LPWAN Server, make sure to set
+    # this to the host:ip on which LPWAN Server can reach LPWAN App Server.
     # The port must be equal to the port configured by the 'bind' flag
     # above.
     public_host="localhost:8001"
@@ -131,8 +131,8 @@ url="redis://localhost:6379"
 
 # Join-server configuration.
 #
-# LoRa App Server implements a (subset) of the join-api specified by the
-# LoRaWAN Backend Interfaces specification. This API is used by LoRa Server
+# LPWAN App Server implements a (subset) of the join-api specified by the
+# LoRaWAN Backend Interfaces specification. This API is used by LPWAN Server
 # to handle join-requests.
 [join_server]
 # ip:port to bind the join-server api interface to

@@ -74,7 +74,7 @@ ui-requirements:
 	@cd ui && npm install
 
 serve: build
-	@echo "Starting Lora App Server"
+	@echo "Starting LPWAN App Server"
 	./build/lora-app-server
 
 update-vendor:

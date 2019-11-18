@@ -87,7 +87,7 @@ func printStartMessage() error {
 	log.WithFields(log.Fields{
 		"version": version,
 		"docs":    "https://www.loraserver.io/",
-	}).Info("starting LoRa App Server")
+	}).Info("starting LPWAN App Server")
 	return nil
 }
 

@@ -19,8 +19,8 @@ var version string
 
 var rootCmd = &cobra.Command{
 	Use:   "lora-app-server",
-	Short: "LoRa Server project application-server",
-	Long: `LoRa App Server is an open-source application-server, part of the LoRa Server project
+	Short: "LPWAN Server project application-server",
+	Long: `LPWAN App Server is an open-source application-server, part of the LPWAN Server project
 	> documentation & support: https://www.loraserver.io/lora-app-server
 	> source & copyright information: https://github.com/mxc-foundation/lpwan-app-server`,
 	RunE: run,
