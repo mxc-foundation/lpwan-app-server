@@ -14,8 +14,8 @@
   "registration": {
     "password_repeat": "비밀번호 반복",
     "valid_email": "사용할 유효한 이메일 주소를 입력하십시오.",
-    "register": "레지스터",
-    "registration": "기재",
+    "register": "회원가입",
+    "registration": "등록",
     "registration_confirmation": "등록 확인",
     "organization_name": "조직 이름",
     "organization_display_name": "조직 표시 이름",
