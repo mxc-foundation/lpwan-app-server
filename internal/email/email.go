@@ -103,8 +103,9 @@ func SendInvite(user string, token string) error {
 		return err
 	}
 
-	err = smtp.SendMail(smtpServer+":"+smtpPort,
-		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
+	auth := smtp.PlainAuth("APPSERVER", "admin@mail.hunanhuaweikeji.com", "juD4wPjO10jafi", "smtpdm.aliyun.com")
+
+	err = smtp.SendMail(smtpServer+":"+smtpPort, auth, senderID, []string{user}, msg.Bytes())
 
 	if err != nil {
 		return err
