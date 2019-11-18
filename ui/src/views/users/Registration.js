@@ -99,6 +99,12 @@ class Registration extends Component {
       return false;
     }
 
+    if(SessionStore.getLanguage().id){
+      user.language = SessionStore.getLanguage().id.toLowerCase();
+    }else {
+      user.language = 'en';
+    }
+    
     if(isEmail(user.username)){
       SessionStore.register(user, () => {
         this.props.history.push("/");

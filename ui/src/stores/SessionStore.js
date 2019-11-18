@@ -203,6 +203,7 @@ class SessionStore extends EventEmitter {
       client.apis.InternalService.RegisterUser({
         body: {
           email: data.username,
+          language: data.language
         },
       })
       .then(checkStatus)
