@@ -10,6 +10,7 @@ import (
 	"text/template"
 	"time"
 
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	log "github.com/sirupsen/logrus"
@@ -25,7 +26,10 @@ var (
 )
 
 const (
-	sendInvite = iota
+	English = pb.Languange_en
+	Korean = pb.Languange_ko
+	SimplifiedChinese = pb.Languange_zhcn
+	TraditionalChiense = pb.Languange_zhtw
 )
 
 // Setup configures the package.
@@ -60,15 +64,27 @@ var (
 		templatePath string
 		url          string
 	}{
-		sendInvite: {
-			templatePath: "templates/registration-confirm",
-			url:          "/#/registration-confirm/",
+		English: {
+			templatePath: "templates/registration-confirm-en",
+			url:          "/#/registration-confirm-en/",
+		},
+		Korean: {
+			templatePath: "templates/registration-confirm-ko",
+			url:          "/#/registration-confirm-ko/",
+		},
+		SimplifiedChinese: {
+			templatePath: "templates/registration-confirm-zhcn",
+			url:          "/#/registration-confirm-zhcn/",
+		},
+		TraditionalChiense: {
+			templatePath: "templates/registration-confirm-zhtw",
+			url:          "/#/registration-confirm-zhtw/",
 		},
 	}
 )
 
 // SendInvite ...
-func SendInvite(user string, token string) error {
+func SendInvite(user string, token string, language int32) error {
 	var err error
 
 	if disable == true {
@@ -80,7 +96,7 @@ func SendInvite(user string, token string) error {
 		return errors.New("Unable to send confirmation email")
 	}
 
-	link := host + mailTemplateNames[sendInvite].url + token
+	link := host + mailTemplateNames[language].url + token
 
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {

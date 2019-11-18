@@ -1,0 +1,106 @@
+From: MXC <{{ .From }}>
+To: {{ .To }}
+Subject: 請確認此連結到您的MXC極域協議超級節點的電子郵件
+Message-Id: <{{ .MsgId }}>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="{{ .Boundary }}"
+
+--{{ .Boundary }}
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: text-body
+
+您已經創建了對MXC極域協議的新用戶存取權。這是一項安全措施。請點選下面的連結以驗證您的電子郵件
+地址。如果無法點選連結，請複製並黏貼此網址
+進入您的瀏覽器。
+
+{{ .Link }}
+
+--{{ .Boundary }}
+Content-Type: text/html;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: html-body
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>MXC E-Mail</title>
+</head>
+<body>
+
+<style>
+	@import url('https://fonts.googleapis.com/css?family=3DMontserrat:200,700');
+</style>
+
+<!-- wrap starts -->
+<table align=3D"center">
+	<tbody>
+		<tr>
+			<td align=3D"center">
+				
+				<!-- head starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; width: 100%; max-width: 650px; position: relative;background-color:#09006e; font-weight: bold; font-size: 10px;">
+					<tbody>
+						<tr>
+							<td>
+								<img style=3D"font-family: Montserrat, Helvetica; width: 100px !important; margin: 15px;" class=3D"logo" src=3D"https://cdn2.hubspot.net/hubfs/4475127/web-assets/mxc_logo_02.png">
+							</td>
+							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
+								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/">
+									MXC.org
+								</a>
+							</td>
+							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
+								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/about">
+									關於
+								</a>
+							</td>
+							</tr>
+							<tr>
+						</tr>
+					</tbody>
+				</table>
+				<!-- head ends indeed -->
+				<!-- title starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; width: 100%; max-width: 650px; text-align: center; color: #000000; padding: 30px 0 0;border: solid #09006e;
+				    border-width: 0 10px; ">
+					<tr>
+					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 30px; font-weight: 700; line-height: 37px; padding: 0 15%;">
+							歡迎來到您的超級節點存取權。
+					    </td>
+					</tr>
+				</table>
+				<!-- title ends -->
+				<!-- msg starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; width: 100%; max-width: 650px; color: #000000; padding: 30px;border: solid #09006e;
+				    border-width: 0 10px 10px 10px; ">
+					<tr>
+					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 14px; font-weight: 300; line-height: 140%;">
+							<p>您已經創建了對MXC極域協議超級節點的新用戶存取權。 請點選下面的連結以驗證您的電子郵件地址。 如果您無法點選該連結，請將此網址複製並黏貼到瀏覽器中</p>
+							<p><a target=3D"_blank" href=3D"{{ .Link }}">{{ .Link }}</a></p>
+					    </td>
+					</tr>
+				</table>
+				<!-- msg ends -->
+				<!-- footer starts -->
+				<table style=3D"font-family: Montserrat, Helvetica; font-size: 10px; padding: 10px;">
+					<tbody>
+						<tr>
+							<td>
+								MXC極域基金會&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 柏林&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;德國&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<!-- footer ends -->
+			</td>
+		</tr>
+	</tbody>
+</table>
+<!-- wrap ends -->
+
+</body>
+</html>
+
+--{{ .Boundary }}--

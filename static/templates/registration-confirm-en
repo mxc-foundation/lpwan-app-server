@@ -1,6 +1,6 @@
 From: MXC <{{ .From }}>
 To: {{ .To }}
-Subject: Please confirm the e-mail linked to your Your MXProtocol server provider 
+Subject: Subject: Please confirm the e-mail linked to your Mxprotocol Super Node Server provider
 Message-Id: <{{ .MsgId }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -11,7 +11,7 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-You have created a new user access to MXProtocol. This is a security measure. Please click the link below to verify your email
+You have created a new user access to Super Node Server. Please click the link below to verify your email
 address. If you are unable to click the link, copy and paste this URL
 into your browser.
 
@@ -77,7 +77,9 @@ Content-ID: html-body
 				    border-width: 0 10px 10px 10px; ">
 					<tr>
 					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 14px; font-weight: 300; line-height: 140%;">
-							<p>You have created a new user access to MXProtocol Server. Please click the link below to verify your email address. If you are unable to click the link, copy and paste this URL into your browser.</p>
+							<p>You have created a new user access to Super Node Server. Please click the link below to verify your email
+                               address. If you are unable to click the link, copy and paste this URL
+                               into your browser.</p>
 							<p><a target=3D"_blank" href=3D"{{ .Link }}">{{ .Link }}</a></p>
 					    </td>
 					</tr>
@@ -88,7 +90,7 @@ Content-ID: html-body
 					<tbody>
 						<tr>
 							<td>
-								MXC Foundation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
+								MXC Foundation gGmbH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
 							</td>
 						</tr>
 					</tbody>
