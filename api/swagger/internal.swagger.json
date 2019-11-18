@@ -385,6 +385,16 @@
         }
       }
     },
+    "apiLanguange": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ko",
+        "zhcn",
+        "zhtw"
+      ],
+      "default": "en"
+    },
     "apiLoginRequest": {
       "type": "object",
       "properties": {
@@ -482,6 +492,9 @@
       "properties": {
         "email": {
           "type": "string"
+        },
+        "language": {
+          "$ref": "#/definitions/apiLanguange"
         }
       }
     },
