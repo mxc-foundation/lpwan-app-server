@@ -26,10 +26,10 @@ var (
 )
 
 const (
-	English = pb.Languange_en
-	Korean = pb.Languange_ko
-	SimplifiedChinese = pb.Languange_zhcn
-	TraditionalChiense = pb.Languange_zhtw
+	English = pb.Language_en
+	Korean = pb.Language_ko
+	SimplifiedChinese = pb.Language_zhcn
+	TraditionalChinese = pb.Language_zhtw
 )
 
 // Setup configures the package.
@@ -76,7 +76,7 @@ var (
 			templatePath: "templates/registration-confirm-zhcn",
 			url:          "/#/registration-confirm-zhcn/",
 		},
-		TraditionalChiense: {
+		TraditionalChinese: {
 			templatePath: "templates/registration-confirm-zhtw",
 			url:          "/#/registration-confirm-zhtw/",
 		},
