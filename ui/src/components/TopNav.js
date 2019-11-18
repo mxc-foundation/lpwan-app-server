@@ -50,6 +50,10 @@ const styles = {
     flex: 1,
     paddingLeft: 40,
   },
+    brandLogo: {
+      height: 32,
+      marginLeft: 20
+    },
   logo: {
     height: 32,
     marginLeft: -45,
@@ -191,6 +195,7 @@ class TopNav extends Component {
   render() {
     //let drawerIcon;
     let logoIcon;
+    let brandingLogoIcon;
     let searchbar;
     if (!this.props.drawerOpen) {
       //drawerIcon = <Wallet />;
@@ -198,6 +203,7 @@ class TopNav extends Component {
     } else {
       //drawerIcon = <MenuIcon />;
       logoIcon = <img src="/logo/logo_LP.png" className={this.props.classes.logo} alt="LPWAN Server" />
+      brandingLogoIcon = <img src="/logo/branding.png" className={this.props.classes.brandLogo} alt="LPWAN Server" />
       searchbar = <Input
                     placeholder="Search organization, application, gateway or device"
                     className={this.props.classes.search}
@@ -234,7 +240,7 @@ class TopNav extends Component {
           </IconButton> */}
 
           <div className={this.props.classes.flex}>
-            {logoIcon}
+            {logoIcon}{brandingLogoIcon}
           </div>
 
           <form onSubmit={this.onSearchSubmit}>

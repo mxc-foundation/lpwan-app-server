@@ -100,7 +100,7 @@ class NetworkServerForm extends FormComponent {
               margin="normal"
               value={this.state.object.gatewayDiscoveryInterval}
               onChange={this.onChange}
-              helperText="The number of gateway discovery 'pings' per day that LoRa App Server will broadcast through each gateway."
+              helperText="The number of gateway discovery 'pings' per day that LPWAN App Server will broadcast through each gateway."
               required={true}
             />}
             {this.state.object.gatewayDiscoveryEnabled && <TextField
@@ -128,7 +128,7 @@ class NetworkServerForm extends FormComponent {
           </div>}
           {this.state.tab === 2 && <div>
             <FormControl
-              label="Certificates for LoRa App Server to LoRa Server connection"
+              label="Certificates for LPWAN App Server to LPWAN Server connection"
             >
               <FormGroup>
                 <TextField
@@ -168,7 +168,7 @@ class NetworkServerForm extends FormComponent {
             </FormControl>
 
             <FormControl
-              label="Certificates for LoRa Server to LoRa App Server connection"
+              label="Certificates for LPWAN Server to LPWAN App Server connection"
             >
               <FormGroup>
                 <TextField
