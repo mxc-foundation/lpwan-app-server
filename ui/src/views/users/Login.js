@@ -109,6 +109,7 @@ class LoginForm extends FormComponent {
 
   onChangeLanguage = e => {
     const newLanguage = {
+      id: e.id,
       label: e.label,
       value: e.value,
       code: e.code

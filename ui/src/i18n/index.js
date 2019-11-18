@@ -8,7 +8,8 @@ import SessionStore from "../stores/SessionStore";
 import { en, ko, zhCN, zhTW } from "./locales";
 
 const DEFAULT_LANGUAGE = {
-  label: "en",
+  id: "en",
+  label: "English",
   value: "English",
   code: "gb"
 };
@@ -16,10 +17,10 @@ const DEFAULT_LANGUAGE = {
 // Labels must match JSON filenames in locales directory
 // Code attribute value must is from react-flag-icon-css http://flag-icon-css.lip.is/
 const SUPPORTED_LANGUAGES = [
-  { label: "en", value: "English", code: "gb" },
-  { label: "ko", value: "Korean", code: "kr" },
-  { label: "zhCN", value: "Chinese (Simplified)", code: "cn" },
-  { label: "zhTW", value: "Chinese (Traditional)", code: "cn" }
+  { id: "en", label: "English", value: "English", code: "gb" },
+  { id: "ko", label: "한국어", value: "Korean", code: "kr" },
+  { id: "zhCN", label: "简中", value: "Chinese (Simplified)", code: "cn" },
+  { id: "zhTW", label: "繁中", value: "Chinese (Traditional)", code: "cn" }
 ];
 let resourceEnglishNS = {};
 let resourceKoreanNS = {};
@@ -44,7 +45,7 @@ i18n
     interpolation: {
       escapeValue: false
     },
-    lng: SessionStore.getLanguage() && SessionStore.getLanguage().label || "en",
+    lng: SessionStore.getLanguage() && SessionStore.getLanguage().id || "en",
     ns: [packageNS],
     // https://react.i18next.com/misc/using-with-icu-format
     react: {

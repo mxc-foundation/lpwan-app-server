@@ -77,10 +77,11 @@ class WithPromises extends Component {
 
     const language = SessionStore.getLanguage();
 
-    if (!language || !language.label) {
+    if (!language || !language.id) {
       selectedOption = DEFAULT_LANGUAGE;
-    } else if (language.label && language.value && language.code) {
+    } else if (language.id && language.label && language.value && language.code) {
       selectedOption = {
+        id: language.id,
         label: language.label,
         value: language.value,
         code: language.code
@@ -95,7 +96,7 @@ class WithPromises extends Component {
 
   onChangeLanguage = selectedOption => {
     if (
-      selectedOption !== null && selectedOption.label !== null &&
+      selectedOption !== null && selectedOption.id !== null && selectedOption.label !== null &&
       selectedOption.value !== null && selectedOption.code !== null
     ) {
       this.setState({
@@ -103,6 +104,7 @@ class WithPromises extends Component {
       });
   
       this.props.onChangeLanguage({
+        id: selectedOption.id,
         label: selectedOption.label,
         value: selectedOption.value,
         code: selectedOption.code

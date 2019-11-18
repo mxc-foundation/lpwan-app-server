@@ -158,28 +158,28 @@ class App extends Component {
       });
     });
 
-    const storedLanguageLabel = SessionStore.getLanguage() && SessionStore.getLanguage().label;
+    const storedLanguageID = SessionStore.getLanguage() && SessionStore.getLanguage().id;
 
-    if (!storedLanguageLabel && !i18n.language) {
-      i18n.changeLanguage(DEFAULT_LANGUAGE.label, (err, t) => {
+    if (!storedLanguageID && !i18n.language) {
+      i18n.changeLanguage(DEFAULT_LANGUAGE.id, (err, t) => {
         if (err) {
           console.error(`Error setting default language to English: `, err);
         }
       });
     }
 
-    const i18nLanguage = SUPPORTED_LANGUAGES.find(el => el.label === i18n.language);
+    const i18nLanguage = SUPPORTED_LANGUAGES.find(el => el.id === i18n.language);
 
     // Add the saved i18n language back into Local Storage if it is lost after a page refresh on Login component
-    if (!storedLanguageLabel && i18n.language) {
+    if (!storedLanguageID && i18n.language) {
       SessionStore.setLanguage(i18nLanguage);
     }
 
     // Language stored in Local Storage persists and takes precedence over i18n language
-    if (storedLanguageLabel && i18n.language !== storedLanguageLabel) {
-      i18n.changeLanguage(storedLanguageLabel, (err, t) => {
+    if (storedLanguageID && i18n.language !== storedLanguageID) {
+      i18n.changeLanguage(storedLanguageID, (err, t) => {
         if (err) {
-          console.error(`Error loading language ${storedLanguageLabel}: `, err);
+          console.error(`Error loading language ${storedLanguageID}: `, err);
         }
       });
     }
@@ -188,16 +188,16 @@ class App extends Component {
       user: SessionStore.getUser(),
       organizationId: SessionStore.getOrganizationID(),
       drawerOpen: SessionStore.getUser() != null,
-      language: storedLanguageLabel ? SessionStore.getLanguage() : i18nLanguage
+      language: storedLanguageID ? SessionStore.getLanguage() : i18nLanguage
     });
   }
 
   onChangeLanguage = (newLanguage) => {
     SessionStore.setLanguage(newLanguage);
 
-    i18n.changeLanguage(newLanguage.label, (err, t) => {
+    i18n.changeLanguage(newLanguage.id, (err, t) => {
       if (err) {
-        console.error(`Error loading language ${newLanguage.label}: `, err);
+        console.error(`Error loading language ${newLanguage.id}: `, err);
       }
     });
 
