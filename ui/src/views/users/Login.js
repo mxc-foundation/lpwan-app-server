@@ -68,7 +68,6 @@ const styles = {
     height: 90,
     marginLeft: 'auto',
     opacity: '0.7',
-    marginLeft: 0,
   },
   logoSection: {
     display: 'flex'
@@ -159,7 +158,7 @@ class LoginForm extends FormComponent {
           fullWidth
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
-        <TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />
+        {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
         <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}
