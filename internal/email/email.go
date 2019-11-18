@@ -105,7 +105,7 @@ func SendInvite(user string, token string, language int32) error {
 	messageID := time.Now().Format("20060102150405.") + base32endocoding.EncodeToString(b)
 
 	var msg bytes.Buffer
-	if err := mailTemplates[sendInvite].Execute(&msg, struct {
+	if err := mailTemplates[language].Execute(&msg, struct {
 		From, To, Host, MsgId, Boundary, Link string
 	}{
 		From:     senderID,
