@@ -38,7 +38,6 @@ const styles = {
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.secondary.main,
-    height: 98
   },
   menuButton: {
     marginLeft: -12,
@@ -56,7 +55,7 @@ const styles = {
       marginLeft: 20
     },
   logo: {
-    height: 48,
+    height: 32,
     marginLeft: -45,
   },
   search: {
