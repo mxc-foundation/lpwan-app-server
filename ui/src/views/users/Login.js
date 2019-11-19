@@ -103,7 +103,7 @@ class LoginForm extends FormComponent {
     this.state.object.password = event;
   };
 
-  onReCapChange = (value) => {
+  /* onReCapChange = (value) => {
     const req = {
       secret : process.env.REACT_APP_PUBLIC_KEY,
       response: value,
@@ -113,12 +113,12 @@ class LoginForm extends FormComponent {
     SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
       this.state.object.isVerified = resp.success;
     }); 
-  }
+  } */
 
   onCallback = (value) => {
     console.log(value);
 
-    const req = {
+    /* const req = {
       csessionid : value.csessionid,
       sig: value.sig,
       token: value.token,
@@ -128,7 +128,7 @@ class LoginForm extends FormComponent {
 
     SessionStore.getVerifyingRecaptcha(req, resp => {
       this.state.object.isVerified = resp.success;
-    });
+    }); */
   }
 
   render() {
@@ -176,11 +176,11 @@ class LoginForm extends FormComponent {
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
         {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
-        <ReCAPTCHA
+        {/* <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}
                 className={this.props.style.textField}
-              />
+              /> */}
         <ALiYunCaptcha
               appKey="FFFF0N000000000087AA"
               scene="nc_login"
