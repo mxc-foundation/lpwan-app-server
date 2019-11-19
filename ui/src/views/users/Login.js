@@ -117,6 +117,18 @@ class LoginForm extends FormComponent {
 
   onCallback = (value) => {
     console.log(value);
+
+    const req = {
+      csessionid : value.csessionid,
+      sig: value.sig,
+      token: value.token,
+      value: value.value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingRecaptcha(req, resp => {
+      this.state.object.isVerified = resp.success;
+    });
   }
 
   render() {
