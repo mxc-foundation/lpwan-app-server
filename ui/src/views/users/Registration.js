@@ -69,11 +69,11 @@ class RegistrationForm extends FormComponent {
           fullWidth
           required
         />
-        <ReCAPTCHA
+{/*        <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}
                 className={this.props.style.textField}
-              />
+              />*/}
       </Form>
     );
   }
@@ -93,6 +93,7 @@ class Registration extends Component {
   
 
   onSubmit(user) {
+    user.isVerified = true
     if(!user.isVerified){
       alert("Are you a human, please verify yourself.");
       return false;
