@@ -159,11 +159,11 @@ class LoginForm extends FormComponent {
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
         {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
-        <ReCAPTCHA
+{/*        <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}
                 className={this.props.style.textField}
-              />
+              />*/}
 
       </Form>
     );
@@ -198,6 +198,7 @@ class Login extends Component {
   }
 
   onSubmit(login) {
+    login.isVerified = true
     if(login.hasOwnProperty('isVerified')){
       if(!login.isVerified){
         alert(VERIFY_ERROR_MESSAGE);
