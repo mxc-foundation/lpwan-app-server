@@ -7,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
 import TitleBarTitle from "../../components/TitleBarTitle";
+import ALiYunCaptcha from 'react-aliyun-captcha';
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -114,6 +115,10 @@ class LoginForm extends FormComponent {
     }); 
   }
 
+  onCallback = (value) => {
+    console.log(value);
+  }
+
   render() {
     if (this.state.object === undefined) {
       return null;
@@ -164,7 +169,11 @@ class LoginForm extends FormComponent {
                 onChange={this.onReCapChange}
                 className={this.props.style.textField}
               />
-
+        <ALiYunCaptcha
+              appKey="FFFF0N000000000087AA"
+              scene="nc_login"
+              onCallback={this.onCallback}
+            />
       </Form>
     );
   }
