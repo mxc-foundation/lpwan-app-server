@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -61,7 +62,7 @@ class DeviceProfileLayout extends Component {
     if (this.state.admin) {
       buttons = [
           <TitleBarButton
-            label="Delete"
+            label={i18n.t(`${packageNS}:tr000061`)}
             icon={<Delete />}
             color="secondary"
             onClick={this.deleteDeviceProfile}
@@ -74,7 +75,7 @@ class DeviceProfileLayout extends Component {
         <TitleBar
           buttons={buttons}
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/device-profiles`} title="Device-profiles" />
+          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/device-profiles`} title={i18n.t(`${packageNS}:tr000070`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.deviceProfile.deviceProfile.name} />
         </TitleBar>

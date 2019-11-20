@@ -3,6 +3,7 @@ import { EventEmitter } from "events";
 import Swagger from "swagger-client";
 import { checkStatus, errorHandler, errorHandlerLogin } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
 
 class SessionStore extends EventEmitter {
   constructor() {
@@ -41,6 +42,22 @@ class SessionStore extends EventEmitter {
 
   getToken() {
     return localStorage.getItem("jwt");
+  }
+
+  setSupportedLanguages(languages) {
+    localStorage.setItem("languages-supported", JSON.stringify(languages));
+  }
+
+  getSupportedLanguages() {
+    return JSON.parse(localStorage.getItem("languages-supported"));
+  }
+
+  setLanguage(language) {
+    localStorage.setItem("language", JSON.stringify(language));
+  }
+
+  getLanguage() {
+    return JSON.parse(localStorage.getItem("language"));
   }
 
   getOrganizationID() {
@@ -186,6 +203,7 @@ class SessionStore extends EventEmitter {
       client.apis.InternalService.RegisterUser({
         body: {
           email: data.username,
+          language: data.language
         },
       })
       .then(checkStatus)
@@ -247,7 +265,7 @@ class SessionStore extends EventEmitter {
       type: "CREATE_NOTIFICATION",
       notification: {
         type: "success",
-        message: "Confirmation email has been sent.",
+        message: i18n.t(`${packageNS}:tr000018`),
       },
     });
   }

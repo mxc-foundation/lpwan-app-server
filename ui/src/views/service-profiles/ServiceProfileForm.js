@@ -9,6 +9,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import FormControl from "@material-ui/core/FormControl";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
@@ -53,31 +54,31 @@ class ServiceProfileForm extends FormComponent {
       >
         <TextField
           id="name"
-          label="Service-profile name"
+          label={i18n.t(`${packageNS}:tr000149`)}
           margin="normal"
           value={this.state.object.name || ""}
           onChange={this.onChange}
-          helperText="A name to identify the service-profile."
+          helperText={i18n.t(`${packageNS}:tr000150`)}
           required
           fullWidth
         />
         {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.FormLabel} required>Network-server</FormLabel>
+          <FormLabel className={this.props.classes.FormLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
           <AutocompleteSelect
             id="networkServerID"
-            label="Network-server"
+            label={i18n.t(`${packageNS}:tr000047`)}
             value={this.state.object.networkServerID || null}
             onChange={this.onChange}
             getOption={this.getNetworkServerOption}
             getOptions={this.getNetworkServerOptions}
           />
           <FormHelperText>
-            The network-server on which this service-profile will be provisioned. After creating the service-profile, this value can't be changed.
+            {i18n.t(`${packageNS}:tr000171`)}
           </FormHelperText>
         </FormControl>}
         <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="Add gateway meta-data"
+            label={i18n.t(`${packageNS}:tr000151`)}
             control={
               <Checkbox
                 id="addGWMetaData"
@@ -88,12 +89,12 @@ class ServiceProfileForm extends FormComponent {
             }
           />
           <FormHelperText>
-            GW metadata (RSSI, SNR, GW geoloc., etc.) are added to the packet sent to the application-server.
+            {i18n.t(`${packageNS}:tr000152`)}
           </FormHelperText>
         </FormControl>
         <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="Enable network geolocation"
+            label={i18n.t(`${packageNS}:tr000153`)}
             control={
               <Checkbox
                 id="nwkGeoLoc"
@@ -104,25 +105,23 @@ class ServiceProfileForm extends FormComponent {
             }
           />
           <FormHelperText>
-            When enabled, the network-server will try to resolve the location of the devices under this service-profile.
-            Please note that you need to have gateways supporting the fine-timestamp feature and that the network-server
-            needs to be configured in order to provide geolocation support.
+            {i18n.t(`${packageNS}:tr000154`)}
           </FormHelperText>
         </FormControl>
         <TextField
           id="devStatusReqFreq"
-          label="Device-status request frequency"
+          label={i18n.t(`${packageNS}:tr000155`)}
           margin="normal"
           type="number"
           value={this.state.object.devStatusReqFreq || 0}
           onChange={this.onChange}
-          helperText="Frequency to initiate an End-Device status request (request/day). Set to 0 to disable."
+          helperText={i18n.t(`${packageNS}:tr000156`)}
           fullWidth
         />
         {this.state.object.devStatusReqFreq > 0 && <FormControl fullWidth margin="normal">
           <FormGroup>
             <FormControlLabel
-              label="Report device battery level to application-server"
+              label={i18n.t(`${packageNS}:tr000157`)}
               control={
                 <Checkbox
                   id="reportDevStatusBattery"
@@ -133,7 +132,7 @@ class ServiceProfileForm extends FormComponent {
               }
             />
             <FormControlLabel
-              label="Report device link margin to application-server"
+              label={i18n.t(`${packageNS}:tr000158`)}
               control={
                 <Checkbox
                   id="reportDevStatusMargin"
@@ -147,12 +146,12 @@ class ServiceProfileForm extends FormComponent {
         </FormControl>}
         <TextField
           id="drMin"
-          label="Minimum allowed data-rate"
+          label={i18n.t(`${packageNS}:tr000159`)}
           margin="normal"
           type="number"
           value={this.state.object.drMin || 0}
           onChange={this.onChange}
-          helperText="Minimum allowed data rate. Used for ADR."
+          helperText={i18n.t(`${packageNS}:tr000160`)}
           fullWidth
           required
         />

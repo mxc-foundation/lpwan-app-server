@@ -12,6 +12,7 @@ import moment from "moment";
 import { Map, Marker } from 'react-leaflet';
 import { Line } from "react-chartjs-2";
 
+import i18n, { packageNS } from '../../i18n';
 import MapTileLayer from "../../components/MapTileLayer";
 import GatewayStore from "../../stores/GatewayStore";
 
@@ -125,7 +126,7 @@ class GatewayDetails extends Component {
             />
             <CardContent>
               <Typography variant="subtitle1" color="primary">
-                Gateway ID
+                {i18n.t(`${packageNS}:tr000074`)}
               </Typography>
               <Typography variant="body1" gutterBottom>
                 {this.props.gateway.id}
@@ -137,13 +138,13 @@ class GatewayDetails extends Component {
                 {this.props.gateway.location.altitude} meters
               </Typography>
               <Typography variant="subtitle1" color="primary">
-                GPS coordinates
+                {i18n.t(`${packageNS}:tr000241`)}
               </Typography>
               <Typography variant="body1" gutterBottom>
                 {this.props.gateway.location.latitude}, {this.props.gateway.location.longitude}
               </Typography>
               <Typography variant="subtitle1" color="primary">
-                Last seen
+                {i18n.t(`${packageNS}:tr000242`)}
               </Typography>
               <Typography variant="body1" gutterBottom>
                 {lastseen}
@@ -161,7 +162,7 @@ class GatewayDetails extends Component {
         </Grid>
         <Grid item xs={12}>
           <Card>
-            <CardHeader title="Frames received" />
+            <CardHeader title={i18n.t(`${packageNS}:tr000243`)} />
             <CardContent className={this.props.classes.chart}>
               <Line height={75} options={statsOptions} data={this.state.statsDown} redraw />
             </CardContent>
@@ -169,7 +170,7 @@ class GatewayDetails extends Component {
         </Grid>
         <Grid item xs={12}>
           <Card>
-            <CardHeader title="Frames transmitted" />
+            <CardHeader title={i18n.t(`${packageNS}:tr000244`)} />
             <CardContent className={this.props.classes.chart}>
               <Line height={75} options={statsOptions} data={this.state.statsUp} redraw />
             </CardContent>

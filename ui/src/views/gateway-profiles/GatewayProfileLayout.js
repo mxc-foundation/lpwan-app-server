@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 
 import Delete from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -48,13 +49,13 @@ class GatewayProfileLayout extends Component {
           buttons={[
             <TitleBarButton
               key={1}
-              label="Delete"
+              label={i18n.t(`${packageNS}:tr000061`)}
               icon={<Delete />}
               onClick={this.deleteGatewayProfile}
             />,
           ]}
         >
-          <TitleBarTitle to="/gateway-profiles" title="Gateway-profiles" />
+          <TitleBarTitle to="/gateway-profiles" title={i18n.t(`${packageNS}:tr000046`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.gatewayProfile.gatewayProfile.name} />
         </TitleBar>

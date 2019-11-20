@@ -29,6 +29,7 @@ import Admin from "./Admin";
 
 import theme from "../theme";
 import { openM2M } from "../util/Util";
+import i18n, { packageNS } from '../i18n';
 
 const styles = {
   drawerPaper: {
@@ -240,25 +241,25 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Server />
               </ListItemIcon>
-              <ListItemText classes={selected('/network-servers')} primary="Network-servers" />
+              <ListItemText classes={selected('/network-servers')} primary={i18n.t(`${packageNS}:tr000040`)} />
             </ListItem>
             <ListItem selected={active('/gateway-profiles')} button component={Link} to="/gateway-profiles">
               <ListItemIcon>
                 <RadioTower />
               </ListItemIcon>
-              <ListItemText classes={selected('/gateway-profiles')} primary="Gateway-profiles" />
+              <ListItemText classes={selected('/gateway-profiles')} primary={i18n.t(`${packageNS}:tr000046`)} />
             </ListItem>
             <ListItem selected={active('/organizations')} button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
               </ListItemIcon>
-              <ListItemText classes={selected('/organizations')} primary="Organizations" />
+              <ListItemText classes={selected('/organizations')} primary={i18n.t(`${packageNS}:tr000049`)} />
             </ListItem>
             <ListItem selected={active('/users')} button component={Link} to="/users">
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText classes={selected('/users')} primary="All users" />
+              <ListItemText classes={selected('/users')} primary={i18n.t(`${packageNS}:tr000055`)} />
             </ListItem>
           </List>
         </Admin>
@@ -272,7 +273,7 @@ class SideNav extends Component {
             getOptions={this.getOrganizationOptions}
             className={this.props.classes.select}
             triggerReload={this.state.cacheCounter}
-            placeHolder="Change Organization"
+            placeHolder={i18n.t(`${packageNS}:tr000358`)}
           />
         </div>
         {this.state.organization && <>
@@ -282,7 +283,7 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              <ListItemText classes={selected(`edit`)} primary="Org. settings" />
+              <ListItemText classes={selected(`edit`)} primary={i18n.t(`${packageNS}:tr000060`)} />
             </ListItem>
           </Admin>
           <Admin organizationID={this.state.organization.id}>
@@ -290,38 +291,38 @@ class SideNav extends Component {
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText classes={selected(`users`)} primary="Org. users" />
+              <ListItemText classes={selected(`users`)} primary={i18n.t(`${packageNS}:tr000067`)} />
             </ListItem>
           </Admin>
           <ListItem selected={active(`service-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
             </ListItemIcon>
-            <ListItemText classes={selected(`service-profiles`)} primary="Service-profiles" />
+            <ListItemText classes={selected(`service-profiles`)} primary={i18n.t(`${packageNS}:tr000069`)} />
           </ListItem>
           <ListItem selected={active(`device-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
             <ListItemIcon>
               <Tune />
             </ListItemIcon>
-            <ListItemText classes={selected(`device-profiles`)} primary="Device-profiles" />
+            <ListItemText classes={selected(`device-profiles`)} primary={i18n.t(`${packageNS}:tr000070`)} />
           </ListItem>
           {this.state.organization.canHaveGateways && <ListItem selected={active(`gateways`)} button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
             <ListItemIcon>
               <RadioTower />
             </ListItemIcon>
-            <ListItemText classes={selected(`gateways`)} primary="Gateways" />
+            <ListItemText classes={selected(`gateways`)} primary={i18n.t(`${packageNS}:tr000072`)} />
           </ListItem>}
           <ListItem selected={active(`applications`)} button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
             <ListItemIcon>
               <Apps />
             </ListItemIcon>
-            <ListItemText classes={selected(`applications`)} primary="Applications" />
+            <ListItemText classes={selected(`applications`)} primary={i18n.t(`${packageNS}:tr000076`)} />
           </ListItem>
           <ListItem selected={active(`multicast-groups`)} button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
             <ListItemIcon>
               <Rss />
             </ListItemIcon>
-            <ListItemText classes={selected(`multicast-groups`)} primary="Multicast-groups" />
+            <ListItemText classes={selected(`multicast-groups`)} primary={i18n.t(`${packageNS}:tr000083`)} />
           </ListItem>
         </List>
         <Divider />
@@ -330,22 +331,22 @@ class SideNav extends Component {
                   <ListItemIcon>
                     <Wallet />
                   </ListItemIcon>
-                  <ListItemText primary="M2M Wallet" />
+                  <ListItemText primary={i18n.t(`${packageNS}:tr000084`)} />
                 </ListItem>
                 <ListItem button className={this.props.classes.static}>  
                   <ListItemIcon>
                     <AccessPoint />
                   </ListItemIcon>
-                  <ListItemText primary="NB-IoT Server" />
+                  <ListItemText primary={i18n.t(`${packageNS}:tr000085`)} />
                 </ListItem>
                 <ListItem>
-                  <ListItemText primary="Powered by" />
+                  <ListItemText primary={i18n.t(`${packageNS}:tr000086`)} />
                   <ListItemIcon>
-                    <img src="/logo/mxc_logo.png" className="iconStyle" alt="LPWAN Server" onClick={this.handleMXC} />
+                    <img src="/logo/mxc_logo.png" className="iconStyle" alt={i18n.t(`${packageNS}:tr000051`)} onClick={this.handleMXC} />
                   </ListItemIcon>
                 </ListItem>
                 <ListItem>
-                  <ListItemText secondary={`Version ${this.state.version}`} />
+                  <ListItemText secondary={`${i18n.t(`${packageNS}:tr000087`)} ${this.state.version}`} />
                 </ListItem>
               </List>
         </>}

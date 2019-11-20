@@ -6,12 +6,14 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
-import TitleBarTitle from "../../components/TitleBarTitle";
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 //import MenuIcon from 'mdi-material-ui/Server';
+
+import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
+import TitleBarTitle from "../../components/TitleBarTitle";
 import Password from '../../components/TextfileForPassword'
 import { 
   Map,
@@ -31,8 +33,9 @@ import MapTileLayerCluster from "../../components/MapTileLayerCluster";
 //import { relative } from "path";
 //const DURATION = 550;
 //const COLOR = 'rgba(121,244,218,0.5)';
+import i18n, { packageNS } from '../../i18n';
 
-const VERIFY_ERROR_MESSAGE = "Are you a human, please verify yourself.";
+const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 const styles = {
   textField: {
     width: "100%",
@@ -66,7 +69,7 @@ const styles = {
   },
   logo: {
     height: 90,
-    marginLeft: 0,
+    marginLeft: 'auto',
     opacity: '0.7',
   },
   logoSection: {
@@ -95,12 +98,24 @@ const styles = {
 class LoginForm extends FormComponent {
   constructor(props) {
     super(props);
+
     this.handleChange = this.handleChange.bind(this);
   }
 
   handleChange = (event) => {
     this.state.object.password = event;
   };
+
+  onChangeLanguage = e => {
+    const newLanguage = {
+      id: e.id,
+      label: e.label,
+      value: e.value,
+      code: e.code
+    }
+
+    this.props.onChangeLanguage(newLanguage);
+  }
 
   onReCapChange = (value) => {
     const req = {
@@ -126,7 +141,7 @@ class LoginForm extends FormComponent {
         component={Link} 
         to={`/registration`} 
         type="button" 
-        disabled={false}>Register</Button>
+        disabled={false}>{i18n.t(`${packageNS}:tr000020`)}</Button>
     ]
     let demoUsername = "";
     let demoPassword = "";
@@ -134,7 +149,7 @@ class LoginForm extends FormComponent {
     if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
       demoUsername = process.env.REACT_APP_DEMO_USER;
       demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
-      helpText = "You can access right now as a demo user.";
+      helpText = i18n.t(`${packageNS}:tr000010`);
     }
 
     return(
@@ -144,11 +159,14 @@ class LoginForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
         <div className={this.props.style.logoSection}>
-          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt="LPWAN Server" />
+          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt={i18n.t(`${packageNS}:tr000051`)} />
         </div>
+
+        <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+
         <TextField
           id="username"
-          label="E-Mail"
+          label={i18n.t(`${packageNS}:tr000003`)}
           margin="normal"
           value={this.state.object.username === undefined 
             ? this.state.object.username = demoUsername 
@@ -157,14 +175,13 @@ class LoginForm extends FormComponent {
           onChange={this.onChange}
           fullWidth
         />
-        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={'Password'}/>
-        {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
-{/*        <ReCAPTCHA
-                sitekey={process.env.REACT_APP_PUBLIC_KEY}
-                onChange={this.onReCapChange}
-                className={this.props.style.textField}
-              />*/}
-
+        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:tr000004`)} />
+        {/* <TitleBarTitle component={Link} to={`/password-recovery`} title={i18n.t(`${packageNS}:tr000009`)} /> */}
+          {/*<ReCAPTCHA
+          sitekey={process.env.REACT_APP_PUBLIC_KEY}
+          onChange={this.onReCapChange}
+          className={this.props.style.textField}
+        />*/}
       </Form>
     );
   }
@@ -195,11 +212,11 @@ class Login extends Component {
         });
       }
     });
-
-    
   }
 
-  
+  onChangeLanguage = (newLanguageState) => {
+    this.props.onChangeLanguage(newLanguageState);
+  }
 
   onSubmit(login) {
     login.isVerified = true
@@ -208,7 +225,7 @@ class Login extends Component {
         alert(VERIFY_ERROR_MESSAGE);
         return false;
       }
-      
+
       SessionStore.login(login, () => {
         this.props.history.push("/");
       });
@@ -246,8 +263,9 @@ class Login extends Component {
         <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
           <div className={this.props.classes.loginFormStyle}>
             <LoginForm
-              submitLabel="Login"
+              onChangeLanguage={this.onChangeLanguage}
               onSubmit={this.onSubmit}
+              submitLabel={i18n.t(`${packageNS}:tr000011`)}
               style={this.props.classes}
             />
           </div>

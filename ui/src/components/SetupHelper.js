@@ -8,6 +8,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from "@material-ui/core/Button";
 
+import i18n, { packageNS } from '../i18n';
 import SessionStore from "../stores/SessionStore";
 import NetworkServerStore from "../stores/NetworkServerStore";
 import ServiceProfileStore from "../stores/ServiceProfileStore";
@@ -147,18 +148,18 @@ class SetupHelper extends Component {
           open={this.state.nsDialog}
           onClose={this.toggleDialog.bind(this, "nsDialog")}
         >
-          <DialogTitle>Add a network-server?</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000394`)}</DialogTitle>
           <DialogContent>
             <DialogContentText paragraph>
-              LPWAN App Server isn't connected to a LPWAN Server network-server.
-              Did you know that LPWAN App Server can connect to multiple LPWAN Server instances, e.g. to support multiple regions?
+              {i18n.t(`${packageNS}:tr000377`)}
+              {i18n.t(`${packageNS}:tr000378`)}
             </DialogContentText>
             <DialogContentText>
-              Would you like to connect to a network-server now?
+              {i18n.t(`${packageNS}:tr000379`)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.toggleDialog.bind(this, "nsDialog")}>Add</Button>
+            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.toggleDialog.bind(this, "nsDialog")}>{i18n.t(`${packageNS}:tr000041`)}</Button>
             <Button color="primary.main" onClick={this.toggleDialog.bind(this, "nsDialog")}>Dismiss</Button>
           </DialogActions>
         </Dialog>
@@ -167,18 +168,18 @@ class SetupHelper extends Component {
           open={this.state.spDialog}
           onClose={this.toggleDialog.bind(this, "spDialog")}
         >
-          <DialogTitle>Add a service-profile?</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000164`)}</DialogTitle>
           <DialogContent>
             <DialogContentText paragraph>
-              The selected organization does not have a service-profile yet.
-              A service-profile connects an organization to a network-server and defines the features that an organization can use on this network-server.
+              {i18n.t(`${packageNS}:tr000165`)}
+              {i18n.t(`${packageNS}:tr000326`)}
             </DialogContentText>
             <DialogContentText>
-              Would you like to create a service-profile?
+              {i18n.t(`${packageNS}:tr000327`)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary.main" component={Link} to={`/organizations/${orgID}/service-profiles/create`} onClick={this.toggleDialog.bind(this, "spDialog")}>Create</Button>
+            <Button color="primary.main" component={Link} to={`/organizations/${orgID}/service-profiles/create`} onClick={this.toggleDialog.bind(this, "spDialog")}>{i18n.t(`${packageNS}:tr000277`)}</Button>
             <Button color="primary.main" onClick={this.toggleDialog.bind(this, "spDialog")}>Dismiss</Button>
           </DialogActions>
         </Dialog>
@@ -198,7 +199,7 @@ class SetupHelper extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary.main" component={Link} to={`/organizations/${orgID}/device-profiles/create`} onClick={this.toggleDialog.bind(this, "dpDialog")}>Create</Button>
+            <Button color="primary.main" component={Link} to={`/organizations/${orgID}/device-profiles/create`} onClick={this.toggleDialog.bind(this, "dpDialog")}>{i18n.t(`${packageNS}:tr000277`)}</Button>
             <Button color="primary.main" onClick={this.toggleDialog.bind(this, "dpDialog")}>Dismiss</Button>
           </DialogActions>
         </Dialog>

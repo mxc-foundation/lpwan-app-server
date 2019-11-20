@@ -7,6 +7,7 @@ import TableRow from "@material-ui/core/TableRow";
 
 import moment from "moment";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
@@ -65,9 +66,9 @@ class ListFUOTADeploymentsForApplication extends Component {
           <DataTable
             header={
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Created at</TableCell>
-                <TableCell>Updated at</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
                 <TableCell>State</TableCell>
               </TableRow>
             }

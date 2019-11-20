@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Delete from "mdi-material-ui/Delete";
 import KeyVariant from "mdi-material-ui/KeyVariant";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -51,20 +52,20 @@ class UserLayout extends Component {
           buttons={[
             <TitleBarButton
               key={1}
-              label="Change password"
+              label={i18n.t(`${packageNS}:tr000038`)}
               icon={<KeyVariant />}
               to={`/users/${this.props.match.params.userID}/password`}
               disabled={isDisabled}
             />,
             <TitleBarButton
               key={2}
-              label="Delete"
+              label={i18n.t(`${packageNS}:tr000061`)}
               icon={<Delete />}
               onClick={this.deleteUser}
             />,
           ]}
         >
-          <TitleBarTitle to="/users" title="Users" />
+          <TitleBarTitle to="/users" title={i18n.t(`${packageNS}:tr000036`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.user.user.username} />
         </TitleBar>

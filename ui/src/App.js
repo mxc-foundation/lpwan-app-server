@@ -9,6 +9,7 @@ import Grid from '@material-ui/core/Grid';
 
 import history from "./history";
 import theme from "./theme";
+import i18n, { packageNS, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./i18n";
 
 import TopNav from "./components/TopNav";
 import SideNav from "./components/SideNav";
@@ -141,6 +142,7 @@ class App extends Component {
       user: null,
       organizationId: null,
       drawerOpen: false,
+      language: null
     };
 
     this.setDrawerOpen = this.setDrawerOpen.bind(this);
@@ -152,13 +154,55 @@ class App extends Component {
         user: SessionStore.getUser(),
         organizationId: SessionStore.getOrganizationID(),
         drawerOpen: SessionStore.getUser() != null,
+        language: SessionStore.getLanguage()
       });
     });
+
+    const storedLanguageID = SessionStore.getLanguage() && SessionStore.getLanguage().id;
+
+    if (!storedLanguageID && !i18n.language) {
+      i18n.changeLanguage(DEFAULT_LANGUAGE.id, (err, t) => {
+        if (err) {
+          console.error(`Error setting default language to English: `, err);
+        }
+      });
+    }
+
+    const i18nLanguage = SUPPORTED_LANGUAGES.find(el => el.id === i18n.language);
+
+    // Add the saved i18n language back into Local Storage if it is lost after a page refresh on Login component
+    if (!storedLanguageID && i18n.language) {
+      SessionStore.setLanguage(i18nLanguage);
+    }
+
+    // Language stored in Local Storage persists and takes precedence over i18n language
+    if (storedLanguageID && i18n.language !== storedLanguageID) {
+      i18n.changeLanguage(storedLanguageID, (err, t) => {
+        if (err) {
+          console.error(`Error loading language ${storedLanguageID}: `, err);
+        }
+      });
+    }
     
     this.setState({
       user: SessionStore.getUser(),
       organizationId: SessionStore.getOrganizationID(),
       drawerOpen: SessionStore.getUser() != null,
+      language: storedLanguageID ? SessionStore.getLanguage() : i18nLanguage
+    });
+  }
+
+  onChangeLanguage = (newLanguage) => {
+    SessionStore.setLanguage(newLanguage);
+
+    i18n.changeLanguage(newLanguage.id, (err, t) => {
+      if (err) {
+        console.error(`Error loading language ${newLanguage.id}: `, err);
+      }
+    });
+
+    this.setState({
+      language: newLanguage
     });
   }
 
@@ -169,6 +213,7 @@ class App extends Component {
   }
 
   render() {
+    const { language } = this.state;
     let topNav = null;
     let sideNav = null;
     let topbanner = null;
@@ -176,7 +221,16 @@ class App extends Component {
     if (this.state.user !== null) {
       sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
       topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
-      topNav = <TopNav setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
+      topNav = (
+        <TopNav
+          drawerOpen={this.state.drawerOpen}
+          language={language}
+          onChangeLanguage={this.onChangeLanguage}
+          organizationId={this.state.organizationId}
+          setDrawerOpen={this.setDrawerOpen}
+          user={this.state.user}
+        />
+      );
     }
     
     return (
@@ -191,8 +245,15 @@ class App extends Component {
               <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={4}>
                   <Switch>
-                    <Route exact path="/" component={OrganizationRedirect} />
-                    <Route exact path="/login" component={Login} />
+                    <Route exact path="/login"
+                      render={props =>
+                        <Login {...props}
+                          language={language}
+                          onChangeLanguage={this.onChangeLanguage}
+                        />
+                      }
+                    />
+                    {/* <Route exact path="/login" component={Login} /> */}
                     <Route exact path="/users" component={ListUsers} />
                     <Route exact path="/users/create" component={CreateUser} />
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />

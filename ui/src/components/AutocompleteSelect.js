@@ -168,7 +168,6 @@ class AutocompleteSelect extends Component {
 
   setInitialOptions(callbackFunc) {
     this.props.getOptions("", options => {
-      
       this.setState({
         options: options,
       }, callbackFunc);
@@ -203,6 +202,19 @@ class AutocompleteSelect extends Component {
         });
       }
     }
+
+    // If there are any organizations listed, then choose the first one by default
+    this.props.getOptions("", options => {
+      if (options.length > 0) {
+        this.setState({
+          selectedOption: options[0],
+        });
+
+        this.props.onChange({
+          target: options[0]
+        });
+      }
+    });
   }
 
   onAutocomplete(input) {
@@ -241,6 +253,7 @@ class AutocompleteSelect extends Component {
 
   render() {
     const inputProps = this.props.inputProps || {};
+
     return(
       <FormControl margin={this.props.margin || ""}  fullWidth={true} 
         className={this.props.className}>

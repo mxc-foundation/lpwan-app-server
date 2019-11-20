@@ -18,6 +18,7 @@ import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
 import "leaflet.awesome-markers";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
@@ -139,9 +140,9 @@ class ListGatewaysTable extends Component {
       <DataTable
         header={
           <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Gateway ID</TableCell>
-            <TableCell className={this.props.classes.chart}>Gateway activity (30d)</TableCell>
+            <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+            <TableCell>{i18n.t(`${packageNS}:tr000074`)}</TableCell>
+            <TableCell className={this.props.classes.chart}>{i18n.t(`${packageNS}:tr000075`)}</TableCell>
           </TableRow>
         }
         getPage={this.getPage}
@@ -285,14 +286,14 @@ class ListGateways extends Component {
             <GatewayAdmin organizationID={this.props.match.params.organizationID}>
               <TitleBarButton
                 key={1}
-                label="Create"
+                label={i18n.t(`${packageNS}:tr000277`)}
                 icon={<Plus />}
                 to={`/organizations/${this.props.match.params.organizationID}/gateways/create`}
               />
             </GatewayAdmin>
           }
         >
-          <TitleBarTitle title="Gateways" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000063`)} />
         </TitleBar>
 
         <Grid item xs={12}>

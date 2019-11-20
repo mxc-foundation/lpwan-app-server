@@ -31,7 +31,8 @@ export function openM2M(org, isBelongToOrg, path) {
       orgId,
       orgName,
       username: user.username,
-      loraHostUrl: window.location.origin
+      loraHostUrl: window.location.origin,
+      language: SessionStore.getLanguage()
     };
 
     const dataString = encodeURIComponent(JSON.stringify(data));

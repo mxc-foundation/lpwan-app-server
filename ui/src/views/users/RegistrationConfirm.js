@@ -12,6 +12,7 @@ import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
@@ -56,7 +57,7 @@ class RegistrationConfirmForm extends FormComponent {
       >
         <TextField
           id="username"
-          label="Email"
+          label={i18n.t(`${packageNS}:tr000003`)}
           margin="normal"
           value={this.state.object.username || ""}
           onChange={this.onChange}
@@ -68,7 +69,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:tr000004`)}
           type="password"
           minLength="6"
           margin="normal"
@@ -79,7 +80,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="passwordConfirmation"
-          label="Password repeat"
+          label={i18n.t(`${packageNS}:tr000023`)}
           type="password"
           minLength="6"
           margin="normal"
@@ -90,7 +91,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="organizationName"
-          label="Organization name"
+          label={i18n.t(`${packageNS}:tr000030`)}
           pattern="[\w-]+"
           margin="normal"
           value={this.state.object.organizationName || ""}
@@ -100,7 +101,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="organizationDisplayName"
-          label="Organization display name"
+          label={i18n.t(`${packageNS}:tr000031`)}
           margin="normal"
           value={this.state.object.organizationDisplayName || ""}
           onChange={this.onChange}
@@ -157,14 +158,14 @@ class RegistrationConfirm extends Component {
           <Grid item xs={6} lg={4}>
             <Card>
               <CardHeader
-                title="Registration confirmation"
+                title={i18n.t(`${packageNS}:tr000019_confirmation`)}
               />
               <CardContent>
                 {this.state.isPwdMatch !== null && this.state.isPwdMatch === false &&
-                  <p style={{color: 'Red', textAlign: 'center'}}>Passwords doesn't match.</p>
+                  <p style={{color: 'Red', textAlign: 'center'}}>{i18n.t(`${packageNS}:tr000025`)}</p>
                 }
                 <RegistrationConfirmForm
-                  submitLabel="Confirm"
+                  submitLabel={i18n.t(`${packageNS}:tr000022`)}
                   onSubmit={this.onSubmit}
                   securityToken={this.props.match.params.securityToken}
                 />

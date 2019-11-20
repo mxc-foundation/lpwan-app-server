@@ -27,6 +27,7 @@ import AlertCircleOutline from "mdi-material-ui/AlertCircleOutline";
 import moment from "moment";
 import fileDownload from "js-file-download";
 
+import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
 import JSONTree from "../../components/JSONTree";
@@ -191,10 +192,10 @@ class DeviceData extends Component {
           aria-labelledby="help-dialog-title"
           aria-describedby="help-dialog-description"
         >
-          <DialogTitle id="help-dialog-title">Help</DialogTitle>
+          <DialogTitle id="help-dialog-title">{i18n.t(`${packageNS}:tr000248`)}</DialogTitle>
           <DialogContent>
             <DialogContentText id="help-dialog-description">
-              These are the events as published to the application. Please refer to data integrations (documentation) for more information on integrating this with your application.
+              {i18n.t(`${packageNS}:tr000354`)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -205,30 +206,30 @@ class DeviceData extends Component {
         <Grid item xs={12} className={this.props.classes.buttons}>
           <Button variant="outlined" className={this.props.classes.button} onClick={this.toggleHelpDialog}>
             <HelpCircleOutline className={this.props.classes.icon} />
-            Help
+            {i18n.t(`${packageNS}:tr000248`)}
           </Button>
           {!this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
             <Pause className={this.props.classes.icon} />
-            Pause
+            {i18n.t(`${packageNS}:tr000250`)}
           </Button>}
           {this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
             <Play className={this.props.classes.icon} />
-            Resume
+            {i18n.t(`${packageNS}:tr000355`)}
           </Button>}
           <Button variant="outlined" className={this.props.classes.button} onClick={this.onDownload}>
             <Download className={this.props.classes.icon} />
-            Download
+            {i18n.t(`${packageNS}:tr000251`)}
           </Button>
           <Button variant="outlined" className={this.props.classes.button} color="secondary" onClick={this.onClear}>
             <Delete className={this.props.classes.icon} />
-            Clear
+            {i18n.t(`${packageNS}:tr000252`)}
           </Button>
         </Grid>
         <Grid item xs={12}>
           {!this.state.connected && <div className={this.props.classes.center}>
             <Chip
               color="secondary"
-              label="Not connected to Websocket API"
+              label={i18n.t(`${packageNS}:tr000392`)}
               avatar={<Avatar><AlertCircleOutline /></Avatar>}
             />
           </div>}
