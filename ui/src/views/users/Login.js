@@ -66,7 +66,7 @@ const styles = {
   },
   logo: {
     height: 90,
-    marginLeft: 'auto',
+    marginLeft: 0,
     opacity: '0.7',
   },
   logoSection: {
