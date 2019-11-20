@@ -17,6 +17,7 @@ import Delete from "mdi-material-ui/Delete";
 
 import moment from "moment";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DeviceQueueItemForm from "./DeviceQueueItemForm";
 import DeviceQueueStore from "../../stores/DeviceQueueStore";
@@ -27,20 +28,20 @@ class DetailsCard extends Component {
   render() {
     return(
       <Card>
-        <CardHeader title="Details" />
+        <CardHeader title={i18n.t(`${packageNS}:tr000280`)} />
         <CardContent>
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell>Name</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
                 <TableCell>{this.props.device.device.name}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Description</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000079`)}</TableCell>
                 <TableCell>{this.props.device.device.description}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Device-profile</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000281`)}</TableCell>
                 <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/device-profiles/${this.props.deviceProfile.deviceProfile.id}`}>{this.props.deviceProfile.deviceProfile.name}</TableCellLink>
               </TableRow>
             </TableBody>
@@ -62,12 +63,12 @@ class StatusCard extends Component {
 
     return(
       <Card>
-        <CardHeader title="Status" />
+        <CardHeader title={i18n.t(`${packageNS}:tr000282`)} />
         <CardContent>
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell>Last seen at</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000283`)}</TableCell>
                 <TableCell>{lastSeenAt}</TableCell>
               </TableRow>
             </TableBody>
@@ -101,10 +102,10 @@ class EnqueueCard extends Component {
   render() {
     return(
       <Card>
-        <CardHeader title="Enqueue downlink payload" />
+        <CardHeader title={i18n.t(`${packageNS}:tr000284`)} />
         <CardContent>
           <DeviceQueueItemForm
-            submitLabel="Enqueue payload"
+            submitLabel={i18n.t(`${packageNS}:tr000292`)}
             onSubmit={this.onSubmit}
             object={this.state.object}
           />
@@ -176,7 +177,7 @@ class QueueCard extends Component {
 
     return(
       <Card>
-        <CardHeader title="Downlink queue" action={
+        <CardHeader title={i18n.t(`${packageNS}:tr000293`)} action={
           <div>
             <Button onClick={this.getQueue}><Refresh color="primary" /></Button>
             <Button onClick={this.flushQueue} color="primary.main"><Delete color="primary"/></Button>
@@ -186,10 +187,10 @@ class QueueCard extends Component {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>FCnt</TableCell>
-                <TableCell>FPort</TableCell>
-                <TableCell>Confirmed</TableCell>
-                <TableCell>Base64 encoded payload</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000294`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000295`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000296`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000297`)}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

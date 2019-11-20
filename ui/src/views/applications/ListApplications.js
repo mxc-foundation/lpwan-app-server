@@ -6,6 +6,7 @@ import TableRow from "@material-ui/core/TableRow";
 
 import Plus from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
@@ -44,23 +45,23 @@ class ListApplications extends Component {
           buttons={
             <Admin organizationID={this.props.match.params.organizationID}>
               <TitleBarButton
-                label="Create"
+                label={i18n.t(`${packageNS}:tr000277`)}
                 icon={<Plus />}
                 to={`/organizations/${this.props.match.params.organizationID}/applications/create`}
               />
             </Admin>
           }
         >
-          <TitleBarTitle title="Applications" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} />
         </TitleBar>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Service-profile</TableCell>
-                <TableCell>Description</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000077`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000078`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000079`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

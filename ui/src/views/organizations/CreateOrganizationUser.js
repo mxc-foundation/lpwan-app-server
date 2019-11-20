@@ -66,27 +66,25 @@ class AssignUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Add"
+        submitLabel={i18n.t(`${packageNS}:tr000041`)}
         onSubmit={this.onSubmit}
       >
         <FormControl margin="normal" fullWidth>
-          <FormLabel className={this.props.classes.formLabel} required>Username</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000056`)}</FormLabel>
           <AutocompleteSelect
             id="userID"
-            label="Select username"
+            label={i18n.t(`${packageNS}:tr000137`)}
             value={this.state.object.userID || null}
             onChange={this.onChange}
             getOptions={this.getUserOptions}
           />
         </FormControl>
         <Typography variant="body1">
-          An user without additional permissions will be able to see all
-          resources under this organization and will be able to send and
-          receive device payloads.
+          {i18n.t(`${packageNS}:tr000138`)}
         </Typography>
         <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="User is organization admin"
+            label={i18n.t(`${packageNS}:tr000139`)}
             control={
               <Checkbox
                 id="isAdmin"
@@ -96,11 +94,11 @@ class AssignUserForm extends FormComponent {
               />
             }
           />
-          <FormHelperText>An organization admin user is able to add and modify resources part of the organization.</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000140`)}</FormHelperText>
         </FormControl>
         {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="User is device admin"
+            label={i18n.t(`${packageNS}:tr000141`)}
             control={
               <Checkbox
                 id="isDeviceAdmin"
@@ -110,11 +108,11 @@ class AssignUserForm extends FormComponent {
               />
             }
           />
-          <FormHelperText>A device admin user is able to add and modify resources part of the organization that are related to devices.</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000142`)}</FormHelperText>
         </FormControl>}
         {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="User is gateway admin"
+            label={i18n.t(`${packageNS}:tr000143`)}
             control={
               <Checkbox
                 id="isGatewayAdmin"
@@ -124,7 +122,7 @@ class AssignUserForm extends FormComponent {
               />
             }
           />
-          <FormHelperText>A gateway admin user is able to add and modify gateways part of the organization.</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000144`)}</FormHelperText>
         </FormControl>}
       </Form>
     );
@@ -142,12 +140,12 @@ class CreateUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Create"
+        submitLabel={i18n.t(`${packageNS}:tr000277`)}
         onSubmit={this.onSubmit}
       >
         <TextField
           id="username"
-          label="Username"
+          label={i18n.t(`${packageNS}:tr000056`)}
           margin="normal"
           value={this.state.object.username || ""}
           onChange={this.onChange}
@@ -156,7 +154,7 @@ class CreateUserForm extends FormComponent {
         />
         <TextField
           id="email"
-          label="E-mail address"
+          label={i18n.t(`${packageNS}:tr000147`)}
           margin="normal"
           value={this.state.object.email || ""}
           onChange={this.onChange}
@@ -165,8 +163,8 @@ class CreateUserForm extends FormComponent {
         />
         <TextField
           id="note"
-          label="Optional note"
-          helperText="Optional note, e.g. a phone number, address, comment..."
+          label={i18n.t(`${packageNS}:tr000129`)}
+          helperText={i18n.t(`${packageNS}:tr000130`)}
           margin="normal"
           value={this.state.object.note || ""}
           onChange={this.onChange}
@@ -176,7 +174,7 @@ class CreateUserForm extends FormComponent {
         />
         <TextField
           id="password"
-          label={i18n.t(`${packageNS}:common.password`)}
+          label={i18n.t(`${packageNS}:tr000004`)}
           type="password"
           margin="normal"
           value={this.state.object.password || ""}
@@ -185,13 +183,11 @@ class CreateUserForm extends FormComponent {
           fullWidth
         />
         <Typography variant="body1">
-          An user without additional permissions will be able to see all
-          resources under this organization and will be able to send and
-          receive device payloads.
+          {i18n.t(`${packageNS}:tr000138`)}
         </Typography>
         <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="User is organization admin"
+            label={i18n.t(`${packageNS}:tr000139`)}
             control={
               <Checkbox
                 id="isAdmin"
@@ -201,11 +197,11 @@ class CreateUserForm extends FormComponent {
               />
             }
           />
-          <FormHelperText>An organization admin user is able to add and modify resources part of the organization.</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000140`)}</FormHelperText>
         </FormControl>
         {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="User is device admin"
+            label={i18n.t(`${packageNS}:tr000141`)}
             control={
               <Checkbox
                 id="isDeviceAdmin"
@@ -215,11 +211,11 @@ class CreateUserForm extends FormComponent {
               />
             }
           />
-          <FormHelperText>A device admin user is able to add and modify resources part of the organization that are related to devices.</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000142`)}</FormHelperText>
         </FormControl>}
         {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="User is gateway admin"
+            label={i18n.t(`${packageNS}:tr000143`)}
             control={
               <Checkbox
                 id="isGatewayAdmin"
@@ -229,7 +225,7 @@ class CreateUserForm extends FormComponent {
               />
             }
           />
-          <FormHelperText>A gateway admin user is able to add and modify gateways part of the organization.</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000144`)}</FormHelperText>
         </FormControl>}
       </Form>
     );
@@ -302,15 +298,15 @@ class CreateOrganizationUser extends Component {
     return(
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Organization users" to={`/organizations/${this.props.match.params.organizationID}/users`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000068`)} to={`/organizations/${this.props.match.params.organizationID}/users`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Tabs value={this.state.tab} onChange={this.onChangeTab} indicatorColor="primary" className={this.props.classes.tabs}>
-            {this.state.assignUser && <Tab label="Assign existing user" />}
-            <Tab label="Create and assign user" />
+            {this.state.assignUser && <Tab label={i18n.t(`${packageNS}:tr000136`)} />}
+            <Tab label={i18n.t(`${packageNS}:tr000146`)} />
           </Tabs>
         </Grid>
 

@@ -8,6 +8,7 @@ import Tab from '@material-ui/core/Tab';
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -121,14 +122,14 @@ class GatewayLayout extends Component {
             <GatewayAdmin organizationID={this.props.match.params.organizationID}>
               <TitleBarButton
                 key={1}
-                label="Delete"
+                label={i18n.t(`${packageNS}:tr000061`)}
                 icon={<Delete />}
                 onClick={this.deleteGateway}
               />
             </GatewayAdmin>
           }
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/gateways`} title="Gateways" />
+          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/gateways`} title={i18n.t(`${packageNS}:tr000063`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.gateway.gateway.name} />
         </TitleBar>
@@ -142,9 +143,9 @@ class GatewayLayout extends Component {
           >
             <Tab label="Gateway details" component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}`} />
             {this.state.admin && <Tab label="Gateway configuration" component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/edit`} />}
-            <Tab label="Gateway discovery" disabled={!this.state.gateway.gateway.discoveryEnabled} component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/discovery`} />
+            <Tab label={i18n.t(`${packageNS}:tr000095`)} disabled={!this.state.gateway.gateway.discoveryEnabled} component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/discovery`} />
             <Tab
-              label="Live LoRaWAN frames"
+              label={i18n.t(`${packageNS}:tr000247`)}
               component={Link}
               to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/frames`}
             />

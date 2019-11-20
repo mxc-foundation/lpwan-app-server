@@ -204,7 +204,7 @@ class TopNav extends Component {
       //drawerIcon = <MenuIcon />;
       logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LPWAN Server" />
       searchbar = <Input
-                    placeholder="Search organization, application, gateway or device"
+                    placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
                     disableUnderline={true}
                     value={this.state.search || ""}
@@ -291,8 +291,8 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem> :
-            <MenuItem onClick={this.onLogout}>Logout</MenuItem>
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem> :
+            <MenuItem onClick={this.onLogout}>{i18n.t(`${packageNS}:tr000035`)}</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

@@ -7,6 +7,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 import TextField from "@material-ui/core/TextField";
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import AESKeyField from "../../components/AESKeyField";
 import DevAddrField from "../../components/DevAddrField";
@@ -46,7 +47,7 @@ class LW10DeviceActivationForm extends FormComponent {
       >
         <DevAddrField
           id="devAddr"
-          label="Device address"
+          label={i18n.t(`${packageNS}:tr000312`)}
           margin="normal"
           value={this.state.object.devAddr || ""}
           onChange={this.onChange}
@@ -58,7 +59,7 @@ class LW10DeviceActivationForm extends FormComponent {
         />
         <AESKeyField
           id="nwkSEncKey"
-          label="Network session key (LoRaWAN 1.0)"
+          label={i18n.t(`${packageNS}:tr000313`)}
           margin="normal"
           value={this.state.object.nwkSEncKey || ""}
           onChange={this.onChange}
@@ -69,7 +70,7 @@ class LW10DeviceActivationForm extends FormComponent {
         />
         <AESKeyField
           id="appSKey"
-          label="Application session key (LoRaWAN 1.0)"
+          label={i18n.t(`${packageNS}:tr000314`)}
           margin="normal"
           value={this.state.object.appSKey || ""}
           onChange={this.onChange}
@@ -80,7 +81,7 @@ class LW10DeviceActivationForm extends FormComponent {
         />
         <TextField
           id="fCntUp"
-          label="Uplink frame-counter"
+          label={i18n.t(`${packageNS}:tr000315`)}
           margin="normal"
           type="number"
           value={this.state.object.fCntUp || 0}
@@ -91,7 +92,7 @@ class LW10DeviceActivationForm extends FormComponent {
         />
         <TextField
           id="nFCntDown"
-          label="Downlink frame-counter (network)"
+          label={i18n.t(`${packageNS}:tr000316`)}
           margin="normal"
           type="number"
           value={this.state.object.nFCntDown || 0}
@@ -130,7 +131,7 @@ class LW11DeviceActivationForm extends FormComponent {
       >
         <DevAddrField
           id="devAddr"
-          label="Device address"
+          label={i18n.t(`${packageNS}:tr000312`)}
           margin="normal"
           value={this.state.object.devAddr || ""}
           onChange={this.onChange}

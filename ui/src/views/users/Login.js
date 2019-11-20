@@ -35,7 +35,7 @@ import MapTileLayerCluster from "../../components/MapTileLayerCluster";
 //const COLOR = 'rgba(121,244,218,0.5)';
 import i18n, { packageNS } from '../../i18n';
 
-const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:common.human`);
+const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 const styles = {
   textField: {
     width: "100%",
@@ -142,7 +142,7 @@ class LoginForm extends FormComponent {
         component={Link} 
         to={`/registration`} 
         type="button" 
-        disabled={false}>{i18n.t(`${packageNS}:registration.register`)}</Button>
+        disabled={false}>{i18n.t(`${packageNS}:tr000020`)}</Button>
     ]
     let demoUsername = "";
     let demoPassword = "";
@@ -150,7 +150,7 @@ class LoginForm extends FormComponent {
     if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
       demoUsername = process.env.REACT_APP_DEMO_USER;
       demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
-      helpText = i18n.t(`${packageNS}:login.access_now`);
+      helpText = i18n.t(`${packageNS}:tr000010`);
     }
 
     return(
@@ -160,14 +160,14 @@ class LoginForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
         <div className={this.props.style.logoSection}>
-          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt={i18n.t(`${packageNS}:common.lora_server`)} />
+          <img src="/logo/mxc_logo-social.png" className={this.props.style.logo} alt={i18n.t(`${packageNS}:tr000051`)} />
         </div>
 
         <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
 
         <TextField
           id="username"
-          label={i18n.t(`${packageNS}:common.email`)}
+          label={i18n.t(`${packageNS}:tr000003`)}
           margin="normal"
           value={this.state.object.username === undefined 
             ? this.state.object.username = demoUsername 
@@ -176,8 +176,8 @@ class LoginForm extends FormComponent {
           onChange={this.onChange}
           fullWidth
         />
-        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:common.password`)} />
-        <TitleBarTitle component={Link} to={`/password-recovery`} title={i18n.t(`${packageNS}:login.forgot_password`)} />
+        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:tr000004`)} />
+        <TitleBarTitle component={Link} to={`/password-recovery`} title={i18n.t(`${packageNS}:tr000009`)} />
         <ReCAPTCHA
                 sitekey={process.env.REACT_APP_PUBLIC_KEY}
                 onChange={this.onReCapChange}
@@ -266,7 +266,7 @@ class Login extends Component {
             <LoginForm
               onChangeLanguage={this.onChangeLanguage}
               onSubmit={this.onSubmit}
-              submitLabel={i18n.t(`${packageNS}:login.login`)}
+              submitLabel={i18n.t(`${packageNS}:tr000011`)}
               style={this.props.classes}
             />
           </div>

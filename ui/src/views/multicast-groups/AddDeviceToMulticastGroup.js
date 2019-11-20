@@ -9,6 +9,7 @@ import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
+import i18n, { packageNS } from '../../i18n';
 import Form from "../../components/Form";
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -109,7 +110,7 @@ class AddDeviceToMulticastGroup extends Component {
     return(
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Multicast-groups" to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000083`)} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.multicastGroup.name} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${this.state.multicastGroup.id}`} />
           <TitleBarTitle title="/" />

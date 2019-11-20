@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
+
 import TitleBarTitle from "../../components/TitleBarTitle";
 import { withStyles } from "@material-ui/core/styles";
 //import ReCAPTCHA from "react-google-recaptcha";
@@ -111,7 +112,7 @@ class PasswordResetConfirmForm extends FormComponent {
             component={Link} 
             to={`/login`} 
             type="button" 
-            disabled={false}>{i18n.t(`${packageNS}:password_recovery.cancelled`)}</Button>
+            disabled={false}>{i18n.t(`${packageNS}:tr000014`)}</Button>
         ]
 
         return(
@@ -120,7 +121,7 @@ class PasswordResetConfirmForm extends FormComponent {
             extraButtons={extraButtons}
             onSubmit={this.onSubmit}
         >
-            <Password handleChange={this.handlePassword} label={i18n.t(`${packageNS}:common.password`)} />
+            <Password handleChange={this.handlePassword} label={i18n.t(`${packageNS}:tr000004`)} />
             <Password handleChange={this.handlePasswordConfirm} label={'Password Confirmation'} />
         </Form>
         );
@@ -158,7 +159,7 @@ class PasswordResetConfirm extends Component {
           <AppBar position="static" className={this.props.classes.appBar}>
             <Toolbar>
               <div className={this.props.logoSection}>
-                <img src="/logo/logo_mx.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:common.lora_server`)} />
+                <img src="/logo/logo_mx.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:tr000051`)} />
               </div>
               <IconButton edge="start" className={this.props.classes.menuButton} color="inherit" aria-label="menu">
                 {/* <MenuIcon /> */}
@@ -172,14 +173,14 @@ class PasswordResetConfirm extends Component {
           </Grid>
           <Grid item xs={12} lg={3} className={this.props.classes.flexCol}>
             <div className={this.props.classes.TitleBar}>
-              <TitleBarTitle title={i18n.t(`${packageNS}:password_recovery.password_recovery`)} />
+              <TitleBarTitle title={i18n.t(`${packageNS}:tr000012`)} />
             </div>
             <Divider light={true}/>
             <Typography variant="body1" className={this.props.classes.title}>
                 {PASSWORD_RECOVERY_DESCRIPTION_002}
             </Typography>
             <PasswordResetConfirmForm
-                submitLabel={i18n.t(`${packageNS}:password_recovery.reset_password`)}
+                submitLabel={i18n.t(`${packageNS}:tr000325`)}
                 onSubmit={this.onSubmit}
                 style={this.props.classes}
                 className={this.props.classes.formWidth}

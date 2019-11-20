@@ -6,6 +6,7 @@ import FormGroup from "@material-ui/core/FormGroup";
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
 
+import i18n, { packageNS } from '../../i18n';
 import FormControl from "../../components/FormControl";
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
@@ -24,8 +25,8 @@ class OrganizationForm extends FormComponent {
       >
         <TextField
           id="name"
-          label="Organization name"
-          helperText="The name may only contain words, numbers and dashes."
+          label={i18n.t(`${packageNS}:tr000030`)}
+          helperText={i18n.t(`${packageNS}:tr000062`)}
           margin="normal"
           value={this.state.object.name || ""}
           onChange={this.onChange}
@@ -37,7 +38,7 @@ class OrganizationForm extends FormComponent {
         />
         <TextField
           id="displayName"
-          label="Display name"
+          label={i18n.t(`${packageNS}:tr000126`)}
           margin="normal"
           value={this.state.object.displayName || ""}
           onChange={this.onChange}
@@ -45,11 +46,11 @@ class OrganizationForm extends FormComponent {
           fullWidth
         />
         <FormControl
-          label="Gateways"
+          label={i18n.t(`${packageNS}:tr000063`)}
         >
           <FormGroup>
             <FormControlLabel
-              label="Organization can have gateways"
+              label={i18n.t(`${packageNS}:tr000064`)}
               control={
                 <Checkbox
                   id="canHaveGateways"
@@ -61,7 +62,7 @@ class OrganizationForm extends FormComponent {
               }
             />
           </FormGroup>
-          <FormHelperText>When checked, it means that organization administrators are able to add their own gateways to the network. Note that the usage of the gateways is not limited to this organization.</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000065`)}</FormHelperText>
         </FormControl>
       </Form>
     );

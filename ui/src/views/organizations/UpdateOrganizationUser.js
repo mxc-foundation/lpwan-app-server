@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 
+import i18n, { packageNS } from '../../i18n';
 import OrganizationStore from "../../stores/OrganizationStore";
 import OrganizationUserForm from "./OrganizationUserForm";
 
@@ -28,7 +29,7 @@ class UpdateOrganizationUser extends Component {
           <Card>
             <CardContent>
               <OrganizationUserForm
-                submitLabel="Update"
+                submitLabel={i18n.t(`${packageNS}:tr000066`)}
                 object={this.props.organizationUser}
                 onSubmit={this.onSubmit}
               />

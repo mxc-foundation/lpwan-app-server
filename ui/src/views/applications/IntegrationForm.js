@@ -243,7 +243,7 @@ class InfluxDBIntegrationForm extends FormComponent {
         />
         <TextField
           id="username"
-          label="Username"
+          label={i18n.t(`${packageNS}:tr000056`)}
           value={this.state.object.username || ""}
           onChange={this.onChange}
           margin="normal"
@@ -251,7 +251,7 @@ class InfluxDBIntegrationForm extends FormComponent {
         />
         <TextField
           id="password"
-          label={i18n.t(`${packageNS}:common.password`)}
+          label={i18n.t(`${packageNS}:tr000004`)}
           value={this.state.object.password || ""}
           type="password"
           onChange={this.onChange}

@@ -6,6 +6,7 @@ import TableRow from '@material-ui/core/TableRow';
 
 import Plus from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
@@ -37,19 +38,19 @@ class ListNetworkServers extends Component {
             <TitleBarButton
               key={1}
               icon={<Plus />}
-              label="Add"
+              label={i18n.t(`${packageNS}:tr000041`)}
               to={`/network-servers/create`}
             />,
           ]}
         >
-          <TitleBarTitle title="Network-servers" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000040`)} />
         </TitleBar>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Server</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000043`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

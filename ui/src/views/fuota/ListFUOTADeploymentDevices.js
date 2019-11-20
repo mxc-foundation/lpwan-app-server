@@ -13,6 +13,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 
 import moment from "moment";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
 
@@ -103,7 +104,7 @@ class FUOTADeploymentDevices extends Component {
             </Table>
           </DialogContent>
           <DialogActions>
-            <Button color="primary.main" onClick={this.onCloseDialog}>Dismiss</Button>
+            <Button color="primary.main" onClick={this.onCloseDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
           </DialogActions>
         </Dialog>}
 
@@ -112,10 +113,10 @@ class FUOTADeploymentDevices extends Component {
           <DataTable
             header={
               <TableRow>
-                <TableCell>Device name</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000300`)}</TableCell>
                 <TableCell>Device EUI</TableCell>
-                <TableCell>Created at</TableCell>
-                <TableCell>Updated at</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
                 <TableCell>State</TableCell>
               </TableRow>
             }

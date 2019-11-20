@@ -8,6 +8,7 @@ import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
 import Plus from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
@@ -53,21 +54,21 @@ class ListOrganizationUsers extends Component {
           buttons={[
             <TitleBarButton
               key={1}
-              label="Add"
+              label={i18n.t(`${packageNS}:tr000041`)}
               icon={<Plus />}
               to={`/organizations/${this.props.match.params.organizationID}/users/create`}
             />,
           ]}
         >
-          <TitleBarTitle title="Organization users" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000068`)} />
         </TitleBar>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Username</TableCell>
-                <TableCell>Admin</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000077`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000056`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000058`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

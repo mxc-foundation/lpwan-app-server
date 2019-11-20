@@ -8,6 +8,7 @@ import Tab from '@material-ui/core/Tab';
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -108,14 +109,14 @@ class MulticastGroupLayout extends Component {
           buttons={
             <DeviceAdmin organizationID={this.props.match.params.organizationID}>
               <TitleBarButton
-                label="Delete"
+                label={i18n.t(`${packageNS}:tr000061`)}
                 icon={<Delete />}
                 onClick={this.deleteMulticastGroup}
               />
             </DeviceAdmin>
           }
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} title="Multicast-groups" />
+          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} title={i18n.t(`${packageNS}:tr000083`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.multicastGroup.multicastGroup.name} />
         </TitleBar>
@@ -127,8 +128,8 @@ class MulticastGroupLayout extends Component {
             indicatorColor="primary"
             className={this.props.classes.tabs}
           >
-            <Tab label="Devices" component={Link} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${this.props.match.params.multicastGroupID}`} />
-            {this.state.admin && <Tab label="Configuration" component={Link} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${this.props.match.params.multicastGroupID}/edit`} />}
+            <Tab label={i18n.t(`${packageNS}:tr000278`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${this.props.match.params.multicastGroupID}`} />
+            {this.state.admin && <Tab label={i18n.t(`${packageNS}:tr000298`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${this.props.match.params.multicastGroupID}/edit`} />}
           </Tabs>
         </Grid>
 

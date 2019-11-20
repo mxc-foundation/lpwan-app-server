@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import { CardContent } from "@material-ui/core";
 
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import NetworkServerForm from "./NetworkServerForm";
 
@@ -29,7 +30,7 @@ class UpdateNetworkServer extends Component {
           <Card>
             <CardContent>
               <NetworkServerForm
-                submitLabel="Update"
+                submitLabel={i18n.t(`${packageNS}:tr000066`)}
                 object={this.props.networkServer}
                 onSubmit={this.onSubmit}
               />

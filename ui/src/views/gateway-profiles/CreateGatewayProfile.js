@@ -12,6 +12,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from "@material-ui/core/Button";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import GatewayProfileForm from "./GatewayProfileForm";
@@ -76,22 +77,22 @@ class CreateGatewayProfile extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.closeDialog}>Add</Button>
-            <Button color="primary.main" onClick={this.closeDialog}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000041`)}</Button>
+            <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
           </DialogActions>
         </Dialog>
 
         <TitleBar>
-          <TitleBarTitle title="Gateway-profiles" to="/gateway-profiles" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000046`)} to="/gateway-profiles" />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Card className={this.props.classes.card}>
             <CardContent>
               <GatewayProfileForm
-                submitLabel="Create"
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
                 onSubmit={this.onSubmit}
               />
             </CardContent>

@@ -130,9 +130,9 @@ class TopBanner extends Component {
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:common.lora_server`)} />
+      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:tr000051`)} />
       searchbar = <Input
-                    placeholder="Search organization, application, gateway or device"
+                    placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
                     disableUnderline={true}
                     value={this.state.search || ""}

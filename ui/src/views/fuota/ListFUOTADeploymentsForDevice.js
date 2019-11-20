@@ -16,6 +16,7 @@ import TableBody from '@material-ui/core/TableBody';
 import moment from "moment";
 import CloudUpload from "mdi-material-ui/CloudUpload";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
 import DeviceAdmin from "../../components/DeviceAdmin";
@@ -121,7 +122,7 @@ class ListFUOTADeploymentsForDevice extends Component {
             </Table>
           </DialogContent>
           <DialogActions>
-            <Button color="primary.main" onClick={this.onCloseDialog}>Dismiss</Button>
+            <Button color="primary.main" onClick={this.onCloseDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
           </DialogActions>
         </Dialog>}
 
@@ -138,11 +139,11 @@ class ListFUOTADeploymentsForDevice extends Component {
           <DataTable
             header={
               <TableRow>
-                <TableCell>Job name</TableCell>
-                <TableCell>Created at</TableCell>
-                <TableCell>Updated at</TableCell>
-                <TableCell>Job state</TableCell>
-                <TableCell>Device state</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000320`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000323`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -50,12 +51,12 @@ class NetworkServerLayout extends Component {
             <TitleBarButton
               key={1}
               icon={<Delete />}
-              label="Delete"
+              label={i18n.t(`${packageNS}:tr000061`)}
               onClick={this.deleteNetworkServer}
             />,
           ]}
         >
-          <TitleBarTitle to="/network-servers" title="Network-servers" />
+          <TitleBarTitle to="/network-servers" title={i18n.t(`${packageNS}:tr000040`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={`${this.state.networkServer.networkServer.name} (${this.state.networkServer.region} @ ${this.state.networkServer.version})`} />
         </TitleBar>

@@ -10,6 +10,8 @@ import Refresh from "mdi-material-ui/Refresh";
 
 import MaskedInput from "react-text-mask";
 
+import i18n, { packageNS } from '../i18n';
+
 
 class DevAddrMask extends Component {
   render() {
@@ -126,7 +128,7 @@ class DevAddrField extends Component {
                 aria-label="Toggle byte order"
                 onClick={this.toggleByteOrder}
               >
-                {this.state.msb ? "MSB": "LSB"}
+                {this.state.msb ? i18n.t(`${packageNS}:tr000220`): i18n.t(`${packageNS}:tr000221`)}
               </Button>
             </Tooltip>
             {this.props.random && !this.props.disabled && <Tooltip title="Generate random device address.">

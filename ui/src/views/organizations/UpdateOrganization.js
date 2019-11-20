@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 
+import i18n, { packageNS } from '../../i18n';
 import OrganzationStore from "../../stores/OrganizationStore";
 import OrganizationForm from "./OrganizationForm";
 
@@ -28,7 +29,7 @@ class UpdateOrganization extends Component {
           <Card>
             <CardContent>
               <OrganizationForm
-                submitLabel="Update"
+                submitLabel={i18n.t(`${packageNS}:tr000066`)}
                 object={this.props.organization.organization}
                 onSubmit={this.onSubmit}
               />

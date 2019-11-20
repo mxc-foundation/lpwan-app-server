@@ -6,6 +6,7 @@ import Grid from "@material-ui/core/Grid";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import DataTable from "../../components/DataTable";
@@ -136,9 +137,9 @@ class Search extends Component {
             header={
               <TableRow>
                 <TableCell>Kind</TableCell>
-                <TableCell>Name</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
                 <TableCell></TableCell>
-                <TableCell>ID</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000077`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

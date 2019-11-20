@@ -4,6 +4,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -120,12 +121,12 @@ class UpdateIntegration extends Component {
           buttons={[
             <TitleBarButton
               key={1}
-              label="Delete"
+              label={i18n.t(`${packageNS}:tr000061`)}
               onClick={this.deleteIntegration}
             />,
           ]}
         >
-          <TitleBarTitle title="Applications" to={`/organizations/${this.props.match.params.organizationID}/applications`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${this.props.match.params.organizationID}/applications`} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.application.application.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
           <TitleBarTitle title="/" />
@@ -137,7 +138,7 @@ class UpdateIntegration extends Component {
           <Card>
             <CardContent>
               <IntegrationForm
-                submitLabel="Update"
+                submitLabel={i18n.t(`${packageNS}:tr000066`)}
                 object={this.state.integration}
                 onSubmit={this.onSubmit}
                 update={true}

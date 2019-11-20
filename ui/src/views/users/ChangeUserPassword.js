@@ -27,7 +27,7 @@ class PasswordForm  extends FormComponent {
       >
         <TextField
           id="password"
-          label={i18n.t(`${packageNS}:common.password`)}
+          label={i18n.t(`${packageNS}:tr000004`)}
           type="password"
           margin="normal"
           value={this.state.object.password || ""}
@@ -71,18 +71,18 @@ class ChangeUserPassword extends Component {
     return(
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Users" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000036`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.user.user.username} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Change password" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000038`)} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Card>
             <CardContent>
               <PasswordForm
-                submitLabel={i18n.t(`${packageNS}:common.confirm`)}
+                submitLabel={i18n.t(`${packageNS}:tr000022`)}
                 onSubmit={this.onSubmit}
               />
             </CardContent>

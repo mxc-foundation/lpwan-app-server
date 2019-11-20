@@ -12,6 +12,7 @@ import Tab from '@material-ui/core/Tab';
 import {Controlled as CodeMirror} from "react-codemirror2";
 import "codemirror/mode/javascript/javascript";
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
@@ -75,14 +76,14 @@ class DeviceProfileForm extends FormComponent {
 
   getPingSlotPeriodOptions(search, callbackFunc) {
     const pingSlotPeriodOptions = [
-      {value: 32 * 1, label: "every second"},
-      {value: 32 * 2, label: "every 2 seconds"},
-      {value: 32 * 4, label: "every 4 seconds"},
-      {value: 32 * 8, label: "every 8 seconds"},
-      {value: 32 * 16, label: "every 16 seconds"},
-      {value: 32 * 32, label: "every 32 seconds"},
-      {value: 32 * 64, label: "every 64 seconds"},
-      {value: 32 * 128, label: "every 128 seconds"},
+      {value: 32 * 1, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '' })},
+      {value: 32 * 2, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '2' })},
+      {value: 32 * 4, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '4' })},
+      {value: 32 * 8, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '8' })},
+      {value: 32 * 16, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '16' })},
+      {value: 32 * 32, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '32' })},
+      {value: 32 * 64, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '64' })},
+      {value: 32 * 128, label: i18n.t(`${packageNS}:tr000200`,  { frequency: '128' })},
     ];
 
     callbackFunc(pingSlotPeriodOptions);
@@ -90,9 +91,9 @@ class DeviceProfileForm extends FormComponent {
 
   getPayloadCodecOptions(search, callbackFunc) {
     const payloadCodecOptions = [
-      {value: "", label: "None"},
-      {value: "CAYENNE_LPP", label: "Cayenne LPP"},
-      {value: "CUSTOM_JS", label: "Custom JavaScript codec functions"},
+      {value: "", label: i18n.t(`${packageNS}:tr000211`)},
+      {value: "CAYENNE_LPP", label: i18n.t(`${packageNS}:tr000212`)},
+      {value: "CUSTOM_JS", label: i18n.t(`${packageNS}:tr000213`)},
     ];
 
     callbackFunc(payloadCodecOptions);
@@ -173,92 +174,92 @@ function Decode(fPort, bytes) {
         disabled={this.props.disabled}
       >
         <Tabs value={this.state.tab} onChange={this.onTabChange} indicatorColor="primary">
-          <Tab label="General" />
-          <Tab label="Join (OTAA / ABP)" />
-          <Tab label="Class-B" />
-          <Tab label="Class-C" />
-          <Tab label="Codec" />
+          <Tab label={i18n.t(`${packageNS}:tr000167`)} />
+          <Tab label={i18n.t(`${packageNS}:tr000184`)} />
+          <Tab label={i18n.t(`${packageNS}:tr000194`)} />
+          <Tab label={i18n.t(`${packageNS}:tr000203`)} />
+          <Tab label={i18n.t(`${packageNS}:tr000208`)} />
         </Tabs>
 
         {this.state.tab === 0 && <div>
           <TextField
             id="name"
-            label="Device-profile name"
+            label={i18n.t(`${packageNS}:tr000168`)}
             margin="normal"
             value={this.state.object.name || ""}
             onChange={this.onChange}
-            helperText="A name to identify the device-profile."
+            helperText={i18n.t(`${packageNS}:tr000169`)}
             required
             fullWidth
           />
           {!this.props.update && <FormControl fullWidth margin="normal">
-            <FormLabel className={this.props.classes.formLabel} required>Network-server</FormLabel>
+            <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
             <AutocompleteSelect
               id="networkServerID"
-              label="Select network-server"
+              label={i18n.t(`${packageNS}:tr000115`)}
               value={this.state.object.networkServerID || ""}
               onChange={this.onChange}
               getOptions={this.getNetworkServerOptions}
             />
             <FormHelperText>
-              The network-server on which this device-profile will be provisioned. After creating the device-profile, this value can't be changed.
+              {i18n.t(`${packageNS}:tr000171`)}
             </FormHelperText>
           </FormControl>}
           <FormControl fullWidth margin="normal">
-            <FormLabel className={this.props.classes.formLabel} required>LoRaWAN MAC version</FormLabel>
+            <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000172`)}</FormLabel>
             <AutocompleteSelect
               id="macVersion"
-              label="Select LoRaWAN MAC version"
+              label={i18n.t(`${packageNS}:tr000173`)}
               value={this.state.object.macVersion || ""}
               onChange={this.onChange}
               getOptions={this.getMACVersionOptions}
             />
             <FormHelperText>
-              The LoRaWAN MAC version supported by the device.
+              {i18n.t(`${packageNS}:tr000174`)}
             </FormHelperText>
           </FormControl>
           <FormControl fullWidth margin="normal">
-            <FormLabel className={this.props.classes.formLabel} required>LoRaWAN Regional Parameters revision</FormLabel>
+            <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000175`)}</FormLabel>
             <AutocompleteSelect
               id="regParamsRevision"
-              label="Select LoRaWAN Regional Parameters revision"
+              label={i18n.t(`${packageNS}:tr000176`)}
               value={this.state.object.regParamsRevision || ""}
               onChange={this.onChange}
               getOptions={this.getRegParamsOptions}
             />
             <FormHelperText>
-                Revision of the Regional Parameters specification supported by the device.
+              {i18n.t(`${packageNS}:tr000177`)}
             </FormHelperText>
           </FormControl>
           <TextField
             id="maxEIRP"
-            label="Max EIRP"
+            label={i18n.t(`${packageNS}:tr000178`)}
             type="number"
             margin="normal"
             value={this.state.object.maxEIRP || 0}
             onChange={this.onChange}
-            helperText="Maximum EIRP supported by the device."
+            helperText={i18n.t(`${packageNS}:tr000179`)}
             required
             fullWidth
           />
           <TextField
             id="geolocBufferTTL"
-            label="Geolocation buffer TTL (seconds)"
+            label={i18n.t(`${packageNS}:tr000180`)}
             type="number"
             margin="normal"
             value={this.state.object.geolocBufferTTL || 0}
             onChange={this.onChange}
-            helperText="The time in seconds that historical uplinks will be stored in the geolocation buffer."
+            helperText={i18n.t(`${packageNS}:tr000181`)}
             fullWidth
           />
           <TextField
             id="geolocMinBufferSize"
-            label="Geolocation minimum buffer size"
+            label={i18n.t(`${packageNS}:tr000182`)}
             type="number"
             margin="normal"
             value={this.state.object.geolocMinBufferSize || 0}
             onChange={this.onChange}
-            helperText="The minimum buffer size required before using geolocation (when enabled in the Service Profile). Using multiple uplinks for geolocation can increase the accuracy of the geolocation results."
+            helperText={i18n.t(`${packageNS}:tr000183`)}
             fullWidth
           />
         </div>}
@@ -266,7 +267,7 @@ function Decode(fPort, bytes) {
         {this.state.tab === 1 && <div>
           <FormControl fullWidth margin="normal">
             <FormControlLabel
-              label="Device supports OTAA"
+              label={i18n.t(`${packageNS}:tr000185`)}
               control={
                 <Checkbox
                   id="supportsJoin"
@@ -279,40 +280,40 @@ function Decode(fPort, bytes) {
           </FormControl>
           {!this.state.object.supportsJoin && <TextField
             id="rxDelay1"
-            label="RX1 delay"
+            label={i18n.t(`${packageNS}:tr000186`)}
             type="number"
             margin="normal"
             value={this.state.object.rxDelay1 || 0}
             onChange={this.onChange}
-            helperText="RX1 delay (valid values are 0 - 15)."
+            helperText={i18n.t(`${packageNS}:tr000187`)}
             required
             fullWidth
           />}
           {!this.state.object.supportsJoin && <TextField
             id="rxDROffset1"
-            label="RX1 data-rate offset"
+            label={i18n.t(`${packageNS}:tr000188`)}
             type="number"
             margin="normal"
             value={this.state.object.rxDROffset1 || 0}
             onChange={this.onChange}
-            helperText="Please refer the LoRaWAN Regional Parameters specification for valid values."
+            helperText={i18n.t(`${packageNS}:tr000189`)}
             required
             fullWidth
           />}
           {!this.state.object.supportsJoin && <TextField
             id="rxDataRate2"
-            label="RX2 data-rate"
+            label={i18n.t(`${packageNS}:tr000190`)}
             type="number"
             margin="normal"
             value={this.state.object.rxDataRate2 || 0}
             onChange={this.onChange}
-            helperText="Please refer the LoRaWAN Regional Parameters specification for valid values."
+            helperText={i18n.t(`${packageNS}:tr000189`)}
             required
             fullWidth
           />}
           {!this.state.object.supportsJoin && <TextField
             id="rxFreq2"
-            label="RX2 channel frequency (Hz)"
+            label={i18n.t(`${packageNS}:tr000191`)}
             type="number"
             margin="normal"
             value={this.state.object.rxFreq2 || 0}
@@ -322,11 +323,11 @@ function Decode(fPort, bytes) {
           />}
           {!this.state.object.supportsJoin && <TextField
             id="factoryPresetFreqsStr"
-            label="Factory-preset frequencies (Hz)"
+            label={i18n.t(`${packageNS}:tr000192`)}
             margin="normal"
             value={factoryPresetFreqsStr}
             onChange={this.onChange}
-            helperText="List of factory-preset frequencies (Hz), comma separated."
+            helperText={i18n.t(`${packageNS}:tr000193`)}
             required
             fullWidth
           />}
@@ -335,7 +336,7 @@ function Decode(fPort, bytes) {
         {this.state.tab === 2 && <div>
           <FormControl fullWidth margin="normal">
             <FormControlLabel
-              label="Device supports Class-B"
+              label={i18n.t(`${packageNS}:tr000195`)}
               control={
                 <Checkbox
                   id="supportsClassB"
@@ -349,12 +350,12 @@ function Decode(fPort, bytes) {
 
           {this.state.object.supportsClassB && <TextField
             id="classBTimeout"
-            label="Class-B confirmed downlink timeout"
+            label={i18n.t(`${packageNS}:tr000196`)}
             type="number"
             margin="normal"
             value={this.state.object.classBTimeout || 0}
             onChange={this.onChange}
-            helperText="Class-B timeout (in seconds) for confirmed downlink transmissions."
+            helperText={i18n.t(`${packageNS}:tr000197`)}
             required
             fullWidth
           />}
@@ -362,19 +363,19 @@ function Decode(fPort, bytes) {
               fullWidth
               margin="normal"
             >
-              <FormLabel className={this.props.classes.formLabel} required>Class-B ping-slot periodicity</FormLabel>
+              <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000198`)}</FormLabel>
               <AutocompleteSelect
                 id="pingSlotPeriod"
-                label="Select Class-B ping-slot periodicity"
+                label={i18n.t(`${packageNS}:tr000199`)}
                 value={this.state.object.pingSlotPeriod || ""}
                 onChange={this.onChange}
                 getOptions={this.getPingSlotPeriodOptions}
               />
-              <FormHelperText>Class-B ping-slot periodicity.</FormHelperText>
+              <FormHelperText>{i18n.t(`${packageNS}:tr000198`)}</FormHelperText>
           </FormControl>}
           {this.state.object.supportsClassB && <TextField
             id="pingSlotDR"
-            label="Class-B ping-slot data-rate"
+            label={i18n.t(`${packageNS}:tr000201`)}
             type="number"
             margin="normal"
             value={this.state.object.pingSlotDR || 0}
@@ -384,7 +385,7 @@ function Decode(fPort, bytes) {
           />}
           {this.state.object.supportsClassB && <TextField
             id="pingSlotFreq"
-            label="Class-B ping-slot frequency (Hz)"
+            label={i18n.t(`${packageNS}:tr000202`)}
             type="number"
             margin="normal"
             value={this.state.object.pingSlotFreq || 0}
@@ -397,7 +398,7 @@ function Decode(fPort, bytes) {
         {this.state.tab === 3 && <div>
           <FormControl fullWidth margin="normal">
             <FormControlLabel
-              label="Device supports Class-C"
+              label={i18n.t(`${packageNS}:tr000204`)}
               control={
                 <Checkbox
                   id="supportsClassC"
@@ -407,17 +408,17 @@ function Decode(fPort, bytes) {
                 />
               }
             />
-            <FormHelperText>Select this option when the device will operate as Class-C device immediately after activation. In case it sends a DeviceModeInd mac-command when it changes to Class-C, do not select this option.</FormHelperText>
+            <FormHelperText>{i18n.t(`${packageNS}:tr000205`)}</FormHelperText>
           </FormControl>
 
           <TextField
             id="classCTimeout"
-            label="Class-C confirmed downlink timeout"
+            label={i18n.t(`${packageNS}:tr000206`)}
             type="number"
             margin="normal"
             value={this.state.object.classCTimeout || 0}
             onChange={this.onChange}
-            helperText="Class-C timeout (in seconds) for confirmed downlink transmissions."
+            helperText={i18n.t(`${packageNS}:tr000207`)}
             required
             fullWidth
           />
@@ -425,16 +426,16 @@ function Decode(fPort, bytes) {
 
         {this.state.tab === 4 && <div>
           <FormControl fullWidth margin="normal">
-            <FormLabel className={this.props.classes.formLabel}>Payload codec</FormLabel>
+            <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000209`)}</FormLabel>
             <AutocompleteSelect
               id="payloadCodec"
-              label="Select payload codec"
+              label={i18n.t(`${packageNS}:tr000210`)}
               value={this.state.object.payloadCodec || ""}
               onChange={this.onChange}
               getOptions={this.getPayloadCodecOptions}
             />
             <FormHelperText>
-              By defining a payload codec, LoRa App Server can encode and decode the binary device payload for you.
+              {i18n.t(`${packageNS}:tr000214`)}
             </FormHelperText>
           </FormControl>
 
@@ -446,8 +447,7 @@ function Decode(fPort, bytes) {
               className={this.props.classes.codeMirror}
             />
             <FormHelperText>
-              The function must have the signature <strong>function Decode(fPort, bytes)</strong> and must return an object.
-              LoRa App Server will convert this object to JSON.
+              {i18n.t(`${packageNS}:tr000215`)}
             </FormHelperText>
           </FormControl>}
           {this.state.object.payloadCodec === "CUSTOM_JS" && <FormControl fullWidth margin="normal">
@@ -458,8 +458,7 @@ function Decode(fPort, bytes) {
               className={this.props.classes.codeMirror}
             />
             <FormHelperText>
-              The function must have the signature <strong>function Encode(fPort, obj)</strong> and must return an array
-              of bytes.
+              {i18n.t(`${packageNS}:tr000216`)}
             </FormHelperText>
           </FormControl>}
         </div>}

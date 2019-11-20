@@ -10,7 +10,6 @@ import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from "@material-ui/core/styles";
 import ReCAPTCHA from "react-google-recaptcha";
 
-
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
@@ -62,7 +61,7 @@ class RegistrationForm extends FormComponent {
       >
         <TextField
           id="username"
-          label={i18n.t(`${packageNS}:common.email`)}
+          label={i18n.t(`${packageNS}:tr000003`)}
           margin="normal"
           type="email"
           value={this.state.object.username || ""}
@@ -95,7 +94,7 @@ class Registration extends Component {
 
   onSubmit(user) {
     if(!user.isVerified){
-      alert(i18n.t(`${packageNS}:common.human`));
+      alert(i18n.t(`${packageNS}:tr000021`));
       return false;
     }
 
@@ -110,7 +109,7 @@ class Registration extends Component {
         this.props.history.push("/");
       });
     }else{
-      alert(i18n.t(`${packageNS}:registration.valid_email`));
+      alert(i18n.t(`${packageNS}:tr000024`));
     }
   }
 
@@ -120,11 +119,11 @@ class Registration extends Component {
         <Grid item xs={6} lg={4}>
           <Card>
             <CardHeader
-              title={i18n.t(`${packageNS}:registration.registration`)}
+              title={i18n.t(`${packageNS}:tr000019`)}
             />
             <CardContent>
               <RegistrationForm
-                submitLabel={i18n.t(`${packageNS}:registration.register`)}
+                submitLabel={i18n.t(`${packageNS}:tr000020`)}
                 onSubmit={this.onSubmit}
                 style={this.props.classes}
                 className={this.props.classes.formWidth}

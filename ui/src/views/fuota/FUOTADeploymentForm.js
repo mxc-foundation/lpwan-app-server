@@ -7,6 +7,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Button from "@material-ui/core/Button";
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import DurationField from "../../components/DurationField";
@@ -29,7 +30,7 @@ class FUOTADeploymentForm extends FormComponent {
 
   getGroupTypeOptions(search, callbackFunc) {
     const options = [
-      {value: "CLASS_C", label: "Class-C"},
+      {value: "CLASS_C", label: i18n.t(`${packageNS}:tr000203`)},
     ];
 
     callbackFunc(options);
@@ -138,7 +139,7 @@ class FUOTADeploymentForm extends FormComponent {
         <TextField
           id="dr"
           label="Data-rate"
-          helperText="The data-rate to use when transmitting the multicast frames. Please refer to the LoRaWAN Regional Parameters specification for valid values."
+          helperText={i18n.t(`${packageNS}:tr000270`)}
           margin="normal"
           type="number"
           value={this.state.object.dr || 0}
@@ -149,8 +150,8 @@ class FUOTADeploymentForm extends FormComponent {
 
         <TextField
           id="frequency"
-          label="Frequency (Hz)"
-          helperText="The frequency to use when transmitting the multicast frames. Please refer to the LoRaWAN Regional Parameters specification for valid values."
+          label={i18n.t(`${packageNS}:tr000271`)}
+          helperText={i18n.t(`${packageNS}:tr000272`)}
           margin="normal"
           type="number"
           value={this.state.object.frequency || 0}
@@ -160,16 +161,16 @@ class FUOTADeploymentForm extends FormComponent {
         />
 
         <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>Multicast-group type</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000273`)}</FormLabel>
           <AutocompleteSelect
             id="groupType"
-            label="Select multicast-group type"
+            label={i18n.t(`${packageNS}:tr000274`)}
             value={this.state.object.groupType || ""}
             onChange={this.onChange}
             getOptions={this.getGroupTypeOptions}
           />
           <FormHelperText>
-            The multicast-group type defines the way how multicast frames are scheduled by the network-server.
+            {i18n.t(`${packageNS}:tr000275`)}
           </FormHelperText>
         </FormControl>
 

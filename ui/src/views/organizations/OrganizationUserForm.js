@@ -7,6 +7,7 @@ import FormControl from '@material-ui/core/FormControl';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 
@@ -23,7 +24,7 @@ class OrganizationUserForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
           <TextField
-            label="Username"
+            label={i18n.t(`${packageNS}:tr000056`)}
             margin="normal"
             value={this.state.object.username || ""}
             required
@@ -33,13 +34,11 @@ class OrganizationUserForm extends FormComponent {
             }}
           />
           <Typography variant="body1">
-            An user without additional permissions will be able to see all
-            resources under this organization and will be able to send and
-            receive device payloads.
+            {i18n.t(`${packageNS}:tr000138`)}
           </Typography>
           <FormControl fullWidth margin="normal">
             <FormControlLabel
-              label="User is organization admin"
+              label={i18n.t(`${packageNS}:tr000139`)}
               control={
                 <Checkbox
                   id="isAdmin"
@@ -49,11 +48,11 @@ class OrganizationUserForm extends FormComponent {
                 />
               }
             />
-            <FormHelperText>An organization admin user is able to add and modify resources part of the organization.</FormHelperText>
+            <FormHelperText>{i18n.t(`${packageNS}:tr000140`)}</FormHelperText>
           </FormControl>
           {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
             <FormControlLabel
-              label="User is device admin"
+              label={i18n.t(`${packageNS}:tr000141`)}
               control={
                 <Checkbox
                   id="isDeviceAdmin"
@@ -63,11 +62,11 @@ class OrganizationUserForm extends FormComponent {
                 />
               }
             />
-            <FormHelperText>A device admin user is able to add and modify resources part of the organization that are related to devices.</FormHelperText>
+            <FormHelperText>{i18n.t(`${packageNS}:tr000142`)}</FormHelperText>
           </FormControl>}
           {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
             <FormControlLabel
-              label="User is gateway admin"
+              label={i18n.t(`${packageNS}:tr000143`)}
               control={
                 <Checkbox
                   id="isGatewayAdmin"
@@ -77,7 +76,7 @@ class OrganizationUserForm extends FormComponent {
                 />
               }
             />
-            <FormHelperText>A gateway admin user is able to add and modify gateways part of the organization.</FormHelperText>
+            <FormHelperText>{i18n.t(`${packageNS}:tr000144`)}</FormHelperText>
           </FormControl>}
       </Form>
     );

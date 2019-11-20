@@ -14,6 +14,7 @@ import TableBody from '@material-ui/core/TableBody';
 
 import moment from "moment";
 
+import i18n, { packageNS } from '../../i18n';
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 
 
@@ -117,12 +118,12 @@ class FUOTADeploymentDetails extends Component {
       <Grid container spacing={4}>
         <Grid item xs={6}>
           <Card>
-            <CardHeader title="Details" />
+            <CardHeader title={i18n.t(`${packageNS}:tr000280`)} />
             <CardContent>
               <Table>
                 <TableBody>
                   <TableRow>
-                    <TableCell>Job name</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000320`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.name}</TableCell>
                   </TableRow>
                   <TableRow>
@@ -157,16 +158,16 @@ class FUOTADeploymentDetails extends Component {
 
         <Grid item xs={6}>
           <Card>
-            <CardHeader title="Status" />
+            <CardHeader title={i18n.t(`${packageNS}:tr000282`)} />
             <CardContent>
               <Table>
                 <TableBody>
                   <TableRow>
-                    <TableCell>Created at</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
                     <TableCell>{createdAt}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Updated at</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
                     <TableCell>{updatedAt}</TableCell>
                   </TableRow>
                   <TableRow>

@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 
@@ -57,11 +58,11 @@ class CreateFUOTADeploymentForDevice extends Component {
     return(
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Applications" to={`/organizations/${this.props.match.params.organizationID}/applications`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${this.props.match.params.organizationID}/applications`} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.application.application.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Devices" to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000278`)} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.device.device.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`} />
           <TitleBarTitle title="/" />
@@ -74,7 +75,7 @@ class CreateFUOTADeploymentForDevice extends Component {
           <Card className={this.props.classes.card}>
             <CardContent>
               <FUOTADeploymentForm
-                submitLabel="Create"
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
                 onSubmit={this.onSubmit}
               />
             </CardContent>
