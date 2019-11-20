@@ -130,6 +130,7 @@ class SessionStore extends EventEmitter {
   }
 
   logout(callBackFunc) {
+    console.log('Logging out')
     localStorage.clear();
     this.user = null;
     this.organizations = [];

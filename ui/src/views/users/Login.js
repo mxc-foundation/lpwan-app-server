@@ -203,8 +203,6 @@ class Login extends Component {
   }
 
   componentDidMount() {
-    SessionStore.logout(() => {});
-
     SessionStore.getBranding(resp => {
       if (resp.registration !== "") {
         this.setState({
@@ -226,7 +224,15 @@ class Login extends Component {
       }
 
       SessionStore.login(login, () => {
-        this.props.history.push("/");
+        const orgs = SessionStore.getOrganizations();
+        console.log('Organizations: ', orgs);
+
+        if (SessionStore.getToken() && orgs.length > 0) {
+          this.props.history.push(`/organizations/${orgs[0]}`);
+        } else {
+          console.log('User has no organisations. Redirecting to login');
+          this.props.history.push("/");
+        }
       });
     }else{
       alert(VERIFY_ERROR_MESSAGE);
