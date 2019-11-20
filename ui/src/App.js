@@ -304,12 +304,6 @@ class App extends Component {
                     <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
                     <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
 
-                    {/* <Route exact path="/wallet" component={Dashboard} /> */}
-                    {/* <Route exact path="/withdraw/:organizationID(\d+)" component={Withdraw} />
-                    <Route exact path="/topup" component={Topup} />
-                    <Route path="/history" component={HistoryLayout} />
-                    <Route exact path="/modify-account" component={ModifyEthAccount} /> */}
-
                     <Route exact path="/search" component={Search} />
                   </Switch>
                 </Grid>

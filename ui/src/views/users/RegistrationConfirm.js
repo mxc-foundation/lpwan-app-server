@@ -158,7 +158,7 @@ class RegistrationConfirm extends Component {
           <Grid item xs={6} lg={4}>
             <Card>
               <CardHeader
-                title={i18n.t(`${packageNS}:tr000019_confirmation`)}
+                title={i18n.t(`${packageNS}:tr000019`)}
               />
               <CardContent>
                 {this.state.isPwdMatch !== null && this.state.isPwdMatch === false &&
