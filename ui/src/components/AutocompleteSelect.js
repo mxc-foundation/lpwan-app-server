@@ -168,7 +168,6 @@ class AutocompleteSelect extends Component {
 
   setInitialOptions(callbackFunc) {
     this.props.getOptions("", options => {
-      
       this.setState({
         options: options,
       }, callbackFunc);

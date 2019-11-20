@@ -63,7 +63,7 @@ class ListIntegrations extends Component {
           <DataTable
             header={
               <TableRow>
-                <TableCell>Kind</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000412`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

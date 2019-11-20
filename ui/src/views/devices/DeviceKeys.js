@@ -66,7 +66,7 @@ class LW10DeviceKeysForm extends FormComponent {
         <AESKeyField
           id="nwkKey"
           label={i18n.t(`${packageNS}:tr000388`)}
-          helperText="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
+          helperText={i18n.t(`${packageNS}:tr000397`)}
           onChange={this.onChange}
           value={object.nwkKey || ""}
           margin="normal"
@@ -77,7 +77,7 @@ class LW10DeviceKeysForm extends FormComponent {
         <AESKeyField
           id="genAppKey"
           label={i18n.t(`${packageNS}:tr000389`)}
-          helperText="For LoRaWAN 1.0 devices. This key must only be set when the device implements the remote multicast setup specification / firmware updates over the air (FUOTA). Else leave this field blank."
+          helperText={i18n.t(`${packageNS}:tr000398`)}
           onChange={this.onChange}
           value={object.genAppKey || ""}
           margin="normal"

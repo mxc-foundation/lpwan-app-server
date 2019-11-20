@@ -273,7 +273,7 @@ class SideNav extends Component {
             getOptions={this.getOrganizationOptions}
             className={this.props.classes.select}
             triggerReload={this.state.cacheCounter}
-            placeHolder="Change Organization"
+            placeHolder={i18n.t(`${packageNS}:tr000358`)}
           />
         </div>
         {this.state.organization && <>

@@ -280,7 +280,7 @@ class InfluxDBIntegrationForm extends FormComponent {
           <FormLabel className={this.props.classes.formLabel} required>Timestamp precision</FormLabel>
           <AutocompleteSelect
             id="precision"
-            label="Select timestamp precision"
+            label={i18n.t(`${packageNS}:tr000414`)}
             value={this.state.object.precision || ""}
             onChange={this.onChange}
             getOptions={this.getPrecisionOptions}
@@ -369,7 +369,7 @@ class IntegrationForm extends FormComponent {
           <FormLabel className={this.props.classes.formLabel} required>Integration kind</FormLabel>
           <AutocompleteSelect
             id="kind"
-            label="Select integration kind"
+            label={i18n.t(`${packageNS}:tr000413`)}
             value={this.state.object.kind || ""}
             onChange={this.onChange}
             getOptions={this.getKindOptions}

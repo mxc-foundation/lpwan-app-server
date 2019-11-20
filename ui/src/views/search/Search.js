@@ -30,9 +30,9 @@ class ApplicationResult extends Component {
   render() {
     return(
       <TableRow>
-        <TableCell className={this.props.classes.type}>application</TableCell>
+        <TableCell className={this.props.classes.type}>{i18n.t(`${packageNS}:tr000407`)}</TableCell>
         <TableCell><Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}/applications/${this.props.result.applicationID}`}>{this.props.result.applicationName}</Link></TableCell>
-        <TableCell>organization: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}`}>{this.props.result.organizationName}</Link></TableCell>
+        <TableCell>{i18n.t(`${packageNS}:tr000409`)}: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}`}>{this.props.result.organizationName}</Link></TableCell>
         <TableCell>{this.props.result.applicationID}</TableCell>
       </TableRow>
     );
@@ -46,7 +46,7 @@ class OrganizationResult extends Component {
   render() {
     return(
       <TableRow>
-        <TableCell className={this.props.classes.type}>organization</TableCell>
+        <TableCell className={this.props.classes.type}>{i18n.t(`${packageNS}:tr000409`)}</TableCell>
         <TableCell><Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}`}>{this.props.result.organizationName}</Link></TableCell>
         <TableCell></TableCell>
         <TableCell>{this.props.result.organizationID}</TableCell>
@@ -61,9 +61,9 @@ class DeviceResult extends Component {
   render() {
     return(
       <TableRow>
-        <TableCell className={this.props.classes.type}>device</TableCell>
+        <TableCell className={this.props.classes.type}>{i18n.t(`${packageNS}:tr000408`)}</TableCell>
         <TableCell><Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}/applications/${this.props.result.applicationID}/devices/${this.props.result.deviceDevEUI}`}>{this.props.result.deviceName}</Link></TableCell>
-        <TableCell>organization: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}`}>{this.props.result.organizationName}</Link>, application: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}/applications/${this.props.result.applicationID}`}>{this.props.result.applicationName}</Link></TableCell>
+        <TableCell>{i18n.t(`${packageNS}:tr000409`)}: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}`}>{this.props.result.organizationName}</Link>, {i18n.t(`${packageNS}:tr000407`)}: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}/applications/${this.props.result.applicationID}`}>{this.props.result.applicationName}</Link></TableCell>
         <TableCell>{this.props.result.deviceDevEUI}</TableCell>
       </TableRow>
     );
@@ -76,9 +76,9 @@ class GatewayResult extends Component {
   render() {
     return(
       <TableRow>
-        <TableCell className={this.props.classes.type}>gateway</TableCell>
+        <TableCell className={this.props.classes.type}>{i18n.t(`${packageNS}:tr000410`)}</TableCell>
         <TableCell><Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}/gateways/${this.props.result.gatewayMAC}`}>{this.props.result.gatewayName}</Link></TableCell>
-        <TableCell>organization: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}`}>{this.props.result.organizationName}</Link></TableCell>
+        <TableCell>{i18n.t(`${packageNS}:tr000409`)}: <Link className={this.props.classes.link} to={`/organizations/${this.props.result.organizationID}`}>{this.props.result.organizationName}</Link></TableCell>
         <TableCell>{this.props.result.gatewayMAC}</TableCell>
       </TableRow>
     );
@@ -130,13 +130,13 @@ class Search extends Component {
     return(
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Search" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000411`)} />
         </TitleBar>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>Kind</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000412`)}</TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
                 <TableCell></TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000077`)}</TableCell>

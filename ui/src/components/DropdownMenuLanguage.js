@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Select from "react-select";
 import { withStyles } from "@material-ui/core/styles";
 import classNames from "classnames";
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "../i18n";
+import i18n, { packageNS, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "../i18n";
 import SessionStore from "../stores/SessionStore";
 import FlagIcon from "./FlagIcon";
 
@@ -138,7 +138,7 @@ class WithPromises extends Component {
               primary: "#00FFD950",
             },
           })}
-          placeholder="Select Language"
+          placeholder={i18n.t(`${packageNS}:tr000415`)}
           onChange={this.onChangeLanguage}
           options={SUPPORTED_LANGUAGES}
           value={selectedOption}

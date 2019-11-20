@@ -58,7 +58,7 @@ class GatewayBoardForm extends Component {
   render() {
     return(
       <FormControl fullWidth margin="normal">
-        <FormLabel className={this.props.classes.formLabel}>Board #{this.props.i} configuration (<a href="#delete" onClick={this.onDelete} className={this.props.classes.a}>delete</a>)</FormLabel>
+        <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000400`)} #{this.props.i} (<a href="#delete" onClick={this.onDelete} className={this.props.classes.a}>{i18n.t(`${packageNS}:tr000401`)}</a>)</FormLabel>
         <EUI64Field
           id="fpgaID"
           label={i18n.t(`${packageNS}:tr000236`)}
