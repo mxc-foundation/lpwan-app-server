@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
 import TitleBarTitle from "../../components/TitleBarTitle";
-
+import FoundLocationMap from "../../components/FoundLocationMap"
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -164,7 +164,6 @@ class LoginForm extends FormComponent {
                 onChange={this.onReCapChange}
                 className={this.props.style.textField}
               />*/}
-
       </Form>
     );
   }
@@ -195,11 +194,7 @@ class Login extends Component {
         });
       }
     });
-
-    
   }
-
-  
 
   onSubmit(login) {
     login.isVerified = true
@@ -241,7 +236,7 @@ class Login extends Component {
     return(
       <>
         <Map center={position} zoom={6} style={style} animate={true} scrollWheelZoom={false}>
-          <MapTileLayerCluster />
+          <FoundLocationMap /> 
         </Map>
         <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
           <div className={this.props.classes.loginFormStyle}>

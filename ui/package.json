@@ -23,6 +23,7 @@
     "react-chartjs-2": "^2.7.6",
     "react-codemirror2": "^6.0.0",
     "react-dom": "^16.8.6",
+    "react-geolocated": "^3.0.1",
     "react-google-recaptcha": "^2.0.0-rc.1",
     "react-json-tree": "^0.11.2",
     "react-leaflet": "^2.4.0",
