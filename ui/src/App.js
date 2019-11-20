@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import {Router} from "react-router-dom";
-import { Route, Switch } from 'react-router-dom';
+import { Router, Route, Switch, Redirect } from 'react-router-dom';
 import classNames from "classnames";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -245,6 +244,7 @@ class App extends Component {
               <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={4}>
                   <Switch>
+                    <Redirect exact from="/" to="/login"/>
                     <Route exact path="/login"
                       render={props =>
                         <Login {...props}
@@ -253,7 +253,6 @@ class App extends Component {
                         />
                       }
                     />
-                    {/* <Route exact path="/login" component={Login} /> */}
                     <Route exact path="/users" component={ListUsers} />
                     <Route exact path="/users/create" component={CreateUser} />
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />
