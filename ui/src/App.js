@@ -245,15 +245,15 @@ class App extends Component {
               <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
                 <Grid container spacing={4}>
                   <Switch>
-                    {/* <Route exact path="/login"
+                    <Route exact path="/login"
                       render={props =>
                         <Login {...props}
                           language={language}
                           onChangeLanguage={this.onChangeLanguage}
                         />
                       }
-                    /> */}
-                    <Route exact path="/login" component={Login} />
+                    />
+                    {/* <Route exact path="/login" component={Login} /> */}
                     <Route exact path="/users" component={ListUsers} />
                     <Route exact path="/users/create" component={CreateUser} />
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />
