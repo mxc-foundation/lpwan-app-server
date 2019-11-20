@@ -17,7 +17,7 @@ insert into organization (
 ) values(
 	now(),
 	now(),
-	'loraserver',
+	'lpwan-server',
 	'LPWAN Server',
 	true
 );
