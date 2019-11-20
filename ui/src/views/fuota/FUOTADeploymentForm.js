@@ -41,7 +41,7 @@ class FUOTADeploymentForm extends FormComponent {
 
     for (let i = 0; i < (1 << 4); i++) {
       options.push({
-        label: `${1 << i} seconds`,
+        label: `${1 << i} ${i18n.t(`${packageNS}:tr000357`)}`,
         value: i,
       });
     }
@@ -86,7 +86,7 @@ class FUOTADeploymentForm extends FormComponent {
     if (this.state.file !== null) {
       fileLabel = `${this.state.file.name} (${this.state.file.size} bytes)`
     } else {
-      fileLabel = "Select file..."
+      fileLabel = i18n.t(`${packageNS}:tr000370`)
     }
 
     return(
@@ -96,8 +96,8 @@ class FUOTADeploymentForm extends FormComponent {
       >
         <TextField
           id="name"
-          label="Firmware update job-name"
-          helperText="A descriptive name for this firmware update job."
+          label={i18n.t(`${packageNS}:tr000369`)}
+          helperText={i18n.t(`${packageNS}:tr000368`)}
           margin="normal"
           value={this.state.object.name || ""}
           onChange={this.onChange}
@@ -106,20 +106,20 @@ class FUOTADeploymentForm extends FormComponent {
         />
 
         <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>Select firmware file</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000367`)}</FormLabel>
           <Button component="label">
             {fileLabel}
             <input type="file" style={{display: "none"}} onChange={this.onFileChange} />
           </Button>
           <FormHelperText>
-            This file will fragmented and sent to the device(s). Please note that the format of this file is vendor dependent.
+            {i18n.t(`${packageNS}:tr000366`)}
           </FormHelperText>
         </FormControl>
 
         <TextField
           id="redundancy"
-          label="Redundant frames"
-          helperText="The given number represents the extra redundant frames that will be sent so that a device can recover from packet-loss."
+          label={i18n.t(`${packageNS}:tr000344`)}
+          helperText={i18n.t(`${packageNS}:tr000364`)}
           margin="normal"
           type="number"
           value={this.state.object.redundancy || 0}
@@ -130,8 +130,8 @@ class FUOTADeploymentForm extends FormComponent {
 
         <DurationField
           id="unicastTimeout"
-          label="Unicast timeout (seconds)"
-          helperText="Set this to the minimum interval in which the device(s) are sending uplink messages."
+          label={i18n.t(`${packageNS}:tr000362`)}
+          helperText={i18n.t(`${packageNS}:tr000363`)}
           value={this.state.object.unicastTimeout}
           onChange={this.onChange}
         />
@@ -175,10 +175,10 @@ class FUOTADeploymentForm extends FormComponent {
         </FormControl>
 
         <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>Multicast timeout</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000349`)}</FormLabel>
           <AutocompleteSelect
             id="multicastTimeout"
-            label="Select multicast timeout"
+            label={i18n.t(`${packageNS}:tr000361`)}
             value={this.state.object.multicastTimeout || ""}
             onChange={this.onChange}
             getOptions={this.getMulticastTimeoutOptions}

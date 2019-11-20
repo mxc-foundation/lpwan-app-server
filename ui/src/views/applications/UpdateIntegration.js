@@ -130,7 +130,7 @@ class UpdateIntegration extends Component {
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.application.application.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Integrations" to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000384`)} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.props.match.params.kind} />
         </TitleBar>

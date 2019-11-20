@@ -84,20 +84,20 @@ class FUOTADeploymentDevices extends Component {
           open={this.state.detailDialog}
           onClose={this.onCloseDialog}
         >
-          <DialogTitle>Job status for device</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000339`)}</DialogTitle>
           <DialogContent>
             <Table>
               <TableBody>
                 <TableRow>
-                  <TableCell>Last updated</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000340`)}</TableCell>
                   <TableCell>{fddUpdatedAt}</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell>Device state</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
                   <TableCell>{this.state.deploymentDevice.state}</TableCell>
                 </TableRow>
                 {this.state.deploymentDevice.state === "ERROR" && <TableRow>
-                  <TableCell>Error message</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000341`)}</TableCell>
                   <TableCell>{this.state.deploymentDevice.errorMessage}</TableCell>
                 </TableRow>}
               </TableBody>
@@ -114,10 +114,10 @@ class FUOTADeploymentDevices extends Component {
             header={
               <TableRow>
                 <TableCell>{i18n.t(`${packageNS}:tr000300`)}</TableCell>
-                <TableCell>Device EUI</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000371`)}</TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
-                <TableCell>State</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000350`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

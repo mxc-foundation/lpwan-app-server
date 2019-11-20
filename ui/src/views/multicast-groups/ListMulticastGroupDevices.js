@@ -87,7 +87,7 @@ class ListMulticastGroupDevices extends Component {
             header={
               <TableRow>
                 <TableCell>{i18n.t(`${packageNS}:tr000300`)}</TableCell>
-                <TableCell>Device EUI</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000371`)}</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             }

@@ -188,7 +188,7 @@ class DeviceFrames extends Component {
           </Button>}
           {this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
             <Play className={this.props.classes.icon} />
-            Resume
+            {i18n.t(`${packageNS}:tr000355`)}
           </Button>}
           <Button variant="outlined" className={this.props.classes.button} onClick={this.onDownload}>
             <Download className={this.props.classes.icon} />
@@ -203,7 +203,7 @@ class DeviceFrames extends Component {
           {!this.state.connected && <div className={this.props.classes.center}>
             <Chip
               color="secondary"
-              label="Not connected to Websocket API"
+              label={i18n.t(`${packageNS}:tr000392`)}
               avatar={<Avatar><AlertCircleOutline /></Avatar>}
             />
           </div>}

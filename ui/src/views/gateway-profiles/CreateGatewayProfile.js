@@ -66,14 +66,14 @@ class CreateGatewayProfile extends Component {
           open={this.state.nsDialog}
           onClose={this.closeDialog}
         >
-          <DialogTitle>Add a network-server?</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000394`)}</DialogTitle>
           <DialogContent>
             <DialogContentText paragraph>
-              LoRa App Server isn't connected to a LoRa Server network-server.
-              Did you know that LoRa App Server can connect to multiple LoRa Server instances, e.g. to support multiple regions?
+              {i18n.t(`${packageNS}:tr000377`)}
+              {i18n.t(`${packageNS}:tr000378`)}
             </DialogContentText>
             <DialogContentText>
-              Would you like to connect to a network-server now?
+              {i18n.t(`${packageNS}:tr000379`)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

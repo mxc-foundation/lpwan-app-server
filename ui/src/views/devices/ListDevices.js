@@ -96,9 +96,9 @@ class ListDevices extends Component {
               <TableRow>
                 <TableCell>{i18n.t(`${packageNS}:tr000242`)}</TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000300`)}</TableCell>
-                <TableCell>Device EUI</TableCell>
-                <TableCell>Link margin</TableCell>
-                <TableCell>Battery</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000371`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000382`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000383`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

@@ -140,8 +140,8 @@ class ApplicationLayout extends Component {
             className={this.props.classes.tabs}
           >
             <Tab label={i18n.t(`${packageNS}:tr000278`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
-            {this.state.admin && <Tab label="Application configuration" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/edit`} />}
-            {this.state.admin && <Tab label="Integrations" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />}
+            {this.state.admin && <Tab label={i18n.t(`${packageNS}:tr000395`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/edit`} />}
+            {this.state.admin && <Tab label={i18n.t(`${packageNS}:tr000384`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />}
             {this.state.admin && <Tab label="FUOTA" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments`} />}
           </Tabs>
         </Grid>

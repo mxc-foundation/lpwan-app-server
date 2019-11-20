@@ -195,7 +195,7 @@ class DeviceData extends Component {
           <DialogTitle id="help-dialog-title">{i18n.t(`${packageNS}:tr000248`)}</DialogTitle>
           <DialogContent>
             <DialogContentText id="help-dialog-description">
-              These are the events as published to the application. Please refer to data integrations (documentation) for more information on integrating this with your application.
+              {i18n.t(`${packageNS}:tr000354`)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -214,7 +214,7 @@ class DeviceData extends Component {
           </Button>}
           {this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
             <Play className={this.props.classes.icon} />
-            Resume
+            {i18n.t(`${packageNS}:tr000355`)}
           </Button>}
           <Button variant="outlined" className={this.props.classes.button} onClick={this.onDownload}>
             <Download className={this.props.classes.icon} />
@@ -229,7 +229,7 @@ class DeviceData extends Component {
           {!this.state.connected && <div className={this.props.classes.center}>
             <Chip
               color="secondary"
-              label="Not connected to Websocket API"
+              label={i18n.t(`${packageNS}:tr000392`)}
               avatar={<Avatar><AlertCircleOutline /></Avatar>}
             />
           </div>}

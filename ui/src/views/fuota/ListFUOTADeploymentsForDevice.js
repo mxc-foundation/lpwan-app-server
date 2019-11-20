@@ -102,20 +102,20 @@ class ListFUOTADeploymentsForDevice extends Component {
           open={this.state.detailDialog}
           onClose={this.onCloseDialog}
         >
-          <DialogTitle>Job status for device</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000339`)}</DialogTitle>
           <DialogContent>
             <Table>
               <TableBody>
                 <TableRow>
-                  <TableCell>Last updated</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000340`)}</TableCell>
                   <TableCell>{fddUpdatedAt}</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell>Device state</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
                   <TableCell>{this.state.deploymentDevice.state}</TableCell>
                 </TableRow>
                 {this.state.deploymentDevice.state === "ERROR" && <TableRow>
-                  <TableCell>Error message</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000341`)}</TableCell>
                   <TableCell>{this.state.deploymentDevice.errorMessage}</TableCell>
                 </TableRow>}
               </TableBody>
@@ -130,7 +130,7 @@ class ListFUOTADeploymentsForDevice extends Component {
           <Grid item xs={12} className={this.props.classes.buttons}>
             <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments/create`}>
               <CloudUpload className={this.props.classes.icon} />
-              {/* Create */} Firmware Update {/* Job */}
+              {/* Create */} {i18n.t(`${packageNS}:tr000342`)} {/* Job */}
             </Button>
           </Grid>
         </DeviceAdmin>

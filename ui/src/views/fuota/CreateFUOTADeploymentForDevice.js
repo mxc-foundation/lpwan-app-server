@@ -68,7 +68,7 @@ class CreateFUOTADeploymentForDevice extends Component {
           <TitleBarTitle title="/" />
           <TitleBarTitle title="Firmware" to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create update job" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000381`)} />
         </TitleBar>
 
         <Grid item xs={12}>

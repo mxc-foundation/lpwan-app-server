@@ -55,7 +55,7 @@ class DetailsCard extends Component {
 
 class StatusCard extends Component {
   render() {
-    let lastSeenAt = "never";
+    let lastSeenAt = i18n.t(`${packageNS}:tr000372`);
 
     if (this.props.device.lastSeenAt !== null) {
       lastSeenAt = moment(this.props.device.lastSeenAt).format("lll");

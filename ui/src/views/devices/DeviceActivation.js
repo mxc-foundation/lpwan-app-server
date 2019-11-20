@@ -143,7 +143,7 @@ class LW11DeviceActivationForm extends FormComponent {
         />
         <AESKeyField
           id="nwkSEncKey"
-          label="Network session encryption key"
+          label={i18n.t(`${packageNS}:tr000332`)}
           margin="normal"
           value={this.state.object.nwkSEncKey || ""}
           onChange={this.onChange}
@@ -154,7 +154,7 @@ class LW11DeviceActivationForm extends FormComponent {
         />
         <AESKeyField
           id="sNwkSIntKey"
-          label="Serving network session integrity key"
+          label={i18n.t(`${packageNS}:tr000333`)}
           margin="normal"
           value={this.state.object.sNwkSIntKey || ""}
           onChange={this.onChange}
@@ -165,7 +165,7 @@ class LW11DeviceActivationForm extends FormComponent {
         />
         <AESKeyField
           id="fNwkSIntKey"
-          label="Forwarding network session integrity key"
+          label={i18n.t(`${packageNS}:tr000334`)}
           margin="normal"
           value={this.state.object.fNwkSIntKey || ""}
           onChange={this.onChange}
@@ -176,7 +176,7 @@ class LW11DeviceActivationForm extends FormComponent {
         />
         <AESKeyField
           id="appSKey"
-          label="Application session key"
+          label={i18n.t(`${packageNS}:tr000335`)}
           margin="normal"
           value={this.state.object.appSKey || ""}
           onChange={this.onChange}
@@ -187,7 +187,7 @@ class LW11DeviceActivationForm extends FormComponent {
         />
         <TextField
           id="fCntUp"
-          label="Uplink frame-counter"
+          label={i18n.t(`${packageNS}:tr000336`)}
           margin="normal"
           type="number"
           value={this.state.object.fCntUp || 0}
@@ -198,7 +198,7 @@ class LW11DeviceActivationForm extends FormComponent {
         />
         <TextField
           id="nFCntDown"
-          label="Downlink frame-counter (network)"
+          label={i18n.t(`${packageNS}:tr000337`)}
           margin="normal"
           type="number"
           value={this.state.object.nFCntDown || 0}
@@ -209,7 +209,7 @@ class LW11DeviceActivationForm extends FormComponent {
         />
         <TextField
           id="aFCntDown"
-          label="Downlink frame-counter (application)"
+          label={i18n.t(`${packageNS}:tr000338`)}
           margin="normal"
           type="number"
           value={this.state.object.aFCntDown || 0}

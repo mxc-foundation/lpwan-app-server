@@ -258,7 +258,7 @@ class DeviceForm extends FormComponent {
           {!this.props.update && <EUI64Field
             margin="normal"
             id="devEUI"
-            label="Device EUI"
+            label={i18n.t(`${packageNS}:tr000371`)}
             onChange={this.onChange}
             value={this.state.object.devEUI || ""}
             fullWidth

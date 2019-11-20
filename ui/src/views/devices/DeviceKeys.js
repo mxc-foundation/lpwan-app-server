@@ -25,8 +25,8 @@ class LW11DeviceKeysForm extends FormComponent {
       >
         <AESKeyField
           id="nwkKey"
-          label="Network key (LoRaWAN 1.1)"
-          helperText="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
+          label={i18n.t(`${packageNS}:tr000385`)}
+          helperText={i18n.t(`${packageNS}:tr000386`)}
           onChange={this.onChange}
           value={object.nwkKey || ""}
           margin="normal"
@@ -36,8 +36,8 @@ class LW11DeviceKeysForm extends FormComponent {
         />
         <AESKeyField
           id="appKey"
-          label="Application key (LoRaWAN 1.1)"
-          helperText="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
+          label={i18n.t(`${packageNS}:tr000387`)}
+          helperText={i18n.t(`${packageNS}:tr000386`)}
           onChange={this.onChange}
           value={object.appKey || ""}
           margin="normal"
@@ -64,7 +64,7 @@ class LW10DeviceKeysForm extends FormComponent {
       >
         <AESKeyField
           id="nwkKey"
-          label="Application key"
+          label={i18n.t(`${packageNS}:tr000388`)}
           helperText="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
           onChange={this.onChange}
           value={object.nwkKey || ""}
@@ -75,7 +75,7 @@ class LW10DeviceKeysForm extends FormComponent {
         />
         <AESKeyField
           id="genAppKey"
-          label="Gen Application key"
+          label={i18n.t(`${packageNS}:tr000389`)}
           helperText="For LoRaWAN 1.0 devices. This key must only be set when the device implements the remote multicast setup specification / firmware updates over the air (FUOTA). Else leave this field blank."
           onChange={this.onChange}
           value={object.genAppKey || ""}
@@ -140,12 +140,12 @@ class DeviceKeys extends Component {
           <Card>
             <CardContent>
               {this.props.deviceProfile.macVersion.startsWith("1.0") && <LW10DeviceKeysForm
-                submitLabel="Set device-keys"
+                submitLabel={i18n.t(`${packageNS}:tr000390`)}
                 onSubmit={this.onSubmit}
                 object={this.state.deviceKeys.deviceKeys}
               />}
               {this.props.deviceProfile.macVersion.startsWith("1.1") && <LW11DeviceKeysForm
-                submitLabel="Set device-keys"
+                submitLabel={i18n.t(`${packageNS}:tr000390`)}
                 onSubmit={this.onSubmit}
                 object={this.state.deviceKeys.deviceKeys}
               />}

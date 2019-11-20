@@ -64,7 +64,7 @@ class NetworkServerStore extends EventEmitter {
       type: "CREATE_NOTIFICATION",
       notification: {
         type: "success",
-        message: "network-server has been " + action,
+        message: `${i18n.t(`${packageNS}:tr000356`)} ` + action,
       },
     });
   }

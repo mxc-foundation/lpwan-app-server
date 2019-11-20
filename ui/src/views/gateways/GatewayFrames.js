@@ -183,26 +183,26 @@ class GatewayFrames extends Component {
           </Button>
           {!this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
             <Pause className={this.props.classes.icon} />
-            Pause
+            {i18n.t(`${packageNS}:tr000250`)}
           </Button>}
           {this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
             <Play className={this.props.classes.icon} />
-            Resume
+            {i18n.t(`${packageNS}:tr000355`)}
           </Button>}
           <Button variant="outlined" className={this.props.classes.button} onClick={this.onDownload}>
             <Download className={this.props.classes.icon} />
-            Download
+            {i18n.t(`${packageNS}:tr000251`)}
           </Button>
           <Button variant="outlined" className={this.props.classes.button} color="secondary" onClick={this.onClear}>
             <Delete className={this.props.classes.icon} />
-            Clear
+            {i18n.t(`${packageNS}:tr000252`)}
           </Button>
         </Grid>
         <Grid item xs={12}>
           {!this.state.connected && <div className={this.props.classes.center}>
             <Chip
               color="secondary"
-              label="Not connected to Websocket API"
+              label={i18n.t(`${packageNS}:tr000392`)}
               avatar={<Avatar><AlertCircleOutline /></Avatar>}
             />
           </div>}

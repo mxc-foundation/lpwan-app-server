@@ -62,7 +62,7 @@ class ListOrganizations extends Component {
               <TableRow>
                 <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000126`)}</TableCell>
-                <TableCell>Can have gateways</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000380`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}
