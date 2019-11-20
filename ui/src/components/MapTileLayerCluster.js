@@ -33,10 +33,14 @@ class Context extends Component {
   }
 }
 class MapTileLayerCluster extends Component {
+    
     componentDidMount(){
-        this.map = L.map('map', {
+      let lat = '51.1657';
+      let lon = '10.4515';
+      
+      this.map = L.map('map', {
             //preferCanvas: true,
-            center: [51.1657, 10.4515],
+            center: [lat, lon],
             zoom: 6,
             zoomContorl: false
         });
