@@ -69,19 +69,19 @@ var (
 	}{
 		English: {
 			templatePath: "templates/registration-confirm-en",
-			url:          "/#/registration-confirm-en/",
+			url:          "/#/registration-confirm/",
 		},
 		Korean: {
 			templatePath: "templates/registration-confirm-ko",
-			url:          "/#/registration-confirm-ko/",
+			url:          "/#/registration-confirm/",
 		},
 		SimplifiedChinese: {
 			templatePath: "templates/registration-confirm-zhcn",
-			url:          "/#/registration-confirm-zhcn/",
+			url:          "/#/registration-confirm/",
 		},
 		TraditionalChinese: {
 			templatePath: "templates/registration-confirm-zhtw",
-			url:          "/#/registration-confirm-zhtw/",
+			url:          "/#/registration-confirm/",
 		},
 	}
 )
