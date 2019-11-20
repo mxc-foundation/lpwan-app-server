@@ -221,6 +221,22 @@
           "InternalService"
         ]
       }
+    },
+    "/api/internal/verify-number-recaptcha": {
+      "get": {
+        "operationId": "GetVerifyNumbers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetVerifyNumbersResponse"
+            }
+          }
+        },
+        "tags": [
+          "InternalService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -291,6 +307,27 @@
         },
         "password": {
           "type": "string"
+        }
+      }
+    },
+    "apiGetVerifyNumbersResponse": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "string",
+          "format": "int64"
+        },
+        "y": {
+          "type": "string",
+          "format": "int64"
+        },
+        "z": {
+          "type": "string",
+          "format": "int64"
+        },
+        "answer": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

@@ -1,10 +1,13 @@
 package external
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"io/ioutil"
+	"math/big"
 	"net/http"
 	"net/url"
 
@@ -22,7 +25,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/gofrs/uuid"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
 )
@@ -273,6 +275,20 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 
 	return &pb.LoginResponse{Jwt: jwt}, nil
 }
+
+func GetVerifyNumbers(ctx context.Context, empty *empty.Empty) (*pb.GetVerifyNumbersResponse, error) {
+	var numbers [3]int64
+
+	for i, _ := range numbers {
+		number, _ := rand.Int(rand.Reader, big.NewInt(10))
+		numbers[i] = number.Int64()
+	}
+	return nil, nil
+}
+
+/*func GetVerifyNumberResult(ctx context.Context, req *pb.VerifyNumberResultRequest) (*pb.VerifyNumberResponse, error) {
+	return nil
+}*/
 
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
 	secret := config.C.Recaptcha.Secret

@@ -66,6 +66,25 @@ service InternalService {
 			body: "*"
 		};
 	}
+
+	rpc GetVerifyNumbers(google.protobuf.Empty) returns (GetVerifyNumbersResponse) {
+		option (google.api.http) = {
+			get: "/api/internal/verify-number-recaptcha"
+		};
+	}
+
+	/*rpc GetVerifyNumberResult (VerifyNumberResultRequest) returns (VerifyNumberResponse) {
+		option (google.api.http) = {
+			get: "/api/internal/verify-number-result"
+		};
+	}*/
+}
+
+message GetVerifyNumbersResponse {
+	int64 x = 1;
+	int64 y = 2;
+	int64 z = 3;
+	int64 answer = 4;
 }
 
 message GoogleRecaptchaRequest {
