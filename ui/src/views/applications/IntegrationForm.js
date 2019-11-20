@@ -15,6 +15,7 @@ import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
@@ -242,7 +243,7 @@ class InfluxDBIntegrationForm extends FormComponent {
         />
         <TextField
           id="username"
-          label="Username"
+          label={i18n.t(`${packageNS}:tr000056`)}
           value={this.state.object.username || ""}
           onChange={this.onChange}
           margin="normal"
@@ -250,7 +251,7 @@ class InfluxDBIntegrationForm extends FormComponent {
         />
         <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:tr000004`)}
           value={this.state.object.password || ""}
           type="password"
           onChange={this.onChange}
@@ -279,7 +280,7 @@ class InfluxDBIntegrationForm extends FormComponent {
           <FormLabel className={this.props.classes.formLabel} required>Timestamp precision</FormLabel>
           <AutocompleteSelect
             id="precision"
-            label="Select timestamp precision"
+            label={i18n.t(`${packageNS}:tr000414`)}
             value={this.state.object.precision || ""}
             onChange={this.onChange}
             getOptions={this.getPrecisionOptions}
@@ -368,7 +369,7 @@ class IntegrationForm extends FormComponent {
           <FormLabel className={this.props.classes.formLabel} required>Integration kind</FormLabel>
           <AutocompleteSelect
             id="kind"
-            label="Select integration kind"
+            label={i18n.t(`${packageNS}:tr000413`)}
             value={this.state.object.kind || ""}
             onChange={this.onChange}
             getOptions={this.getKindOptions}

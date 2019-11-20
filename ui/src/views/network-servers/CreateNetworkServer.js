@@ -6,6 +6,7 @@ import Card from '@material-ui/core/Card';
 
 import { CardContent } from "@material-ui/core";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import NetworkServerForm from "./NetworkServerForm";
@@ -28,15 +29,15 @@ class CreateNetworkServer extends Component {
     return(
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Network-servers" to="/network-servers" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000040`)} to="/network-servers" />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Add" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000041`)} />
         </TitleBar>
         <Grid item xs={12}>
           <Card>
             <CardContent>
               <NetworkServerForm
-                submitLabel="Add"
+                submitLabel={i18n.t(`${packageNS}:tr000041`)}
                 onSubmit={this.onSubmit}
               />
             </CardContent>

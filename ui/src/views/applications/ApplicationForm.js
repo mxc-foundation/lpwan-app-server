@@ -14,6 +14,7 @@ import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
+import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
@@ -50,9 +51,9 @@ class ApplicationForm extends FormComponent {
 
   getPayloadCodecOptions(search, callbackFunc) {
     const payloadCodecOptions = [
-      {value: "", label: "None"},
-      {value: "CAYENNE_LPP", label: "Cayenne LPP"},
-      {value: "CUSTOM_JS", label: "Custom JavaScript codec functions"},
+      {value: "", label: i18n.t(`${packageNS}:tr000211`)},
+      {value: "CAYENNE_LPP", label: i18n.t(`${packageNS}:tr000212`)},
+      {value: "CUSTOM_JS", label: i18n.t(`${packageNS}:tr000212`)},
     ];
 
     callbackFunc(payloadCodecOptions);
@@ -107,17 +108,17 @@ function Decode(fPort, bytes) {
       >
         <TextField
           id="name"
-          label="Application name"
+          label={i18n.t(`${packageNS}:tr000254`)}
           margin="normal"
           value={this.state.object.name || ""}
           onChange={this.onChange}
-          helperText="The name may only contain words, numbers and dashes."
+          helperText={i18n.t(`${packageNS}:tr000062`)}
           fullWidth
           required
         />
         <TextField
           id="description"
-          label="Application description"
+          label={i18n.t(`${packageNS}:tr000255`)}
           margin="normal"
           value={this.state.object.description || ""}
           onChange={this.onChange}
@@ -125,33 +126,31 @@ function Decode(fPort, bytes) {
           required
         />
         {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>Service-profile</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000078`)}</FormLabel>
           <AutocompleteSelect
             id="serviceProfileID"
-            label="Select service-profile"
+            label={i18n.t(`${packageNS}:tr000256`)}
             value={this.state.object.serviceProfileID || ""}
             onChange={this.onChange}
             getOption={this.getServiceProfileOption}
             getOptions={this.getServiceProfileOptions}
           />
           <FormHelperText>
-            The service-profile to which this application will be attached. Note that you can't change this value after the application has been created.
+            {i18n.t(`${packageNS}:tr000257`)}
           </FormHelperText>
         </FormControl>}
         {this.state.object.payloadCodec !== "" && <div>
           <FormControl fullWidth margin="normal">
-            <FormLabel className={this.props.classes.formLabel}>Payload codec</FormLabel>
+            <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000209`)}</FormLabel>
             <AutocompleteSelect
               id="payloadCodec"
-              label="Select payload codec"
+              label={i18n.t(`${packageNS}:tr000210`)}
               value={this.state.object.payloadCodec || ""}
               onChange={this.onChange}
               getOptions={this.getPayloadCodecOptions}
             />
             <FormHelperText>
-              By defining a payload codec, LPWAN App Server can encode and decode the binary device payload for you.
-              <strong>Important note</strong>: the payload fields have moved to the device-profile. For backward-compatibility and migration, existing codec settings are still visible.
-              Codec settings on the device-profile have priority over the application codec settings.
+              {i18n.t(`${packageNS}:tr000258`)}
             </FormHelperText>
           </FormControl>
           {this.state.object.payloadCodec === "CUSTOM_JS" && <FormControl fullWidth margin="normal">
@@ -162,8 +161,7 @@ function Decode(fPort, bytes) {
               className={this.props.classes.codeMirror}
             />
             <FormHelperText>
-              The function must have the signature <strong>function Decode(fPort, bytes)</strong> and must return an object.
-              LPWAN App Server will convert this object to JSON.
+              {i18n.t(`${packageNS}:tr000215`)}
             </FormHelperText>
           </FormControl>}
           {this.state.object.payloadCodec === "CUSTOM_JS" && <FormControl fullWidth margin="normal">
@@ -174,14 +172,13 @@ function Decode(fPort, bytes) {
               className={this.props.classes.codeMirror}
             />
             <FormHelperText>
-              The function must have the signature <strong>function Encode(fPort, obj)</strong> and must return an array
-              of bytes.
+              {i18n.t(`${packageNS}:tr000216`)}
             </FormHelperText>
           </FormControl>}
         </div>}
         {this.state.object.payloadCodec === "" && <FormControl fullWidth margin="normal">
           <Typography variant="body1">
-            Note: The payload codec fields have moved to the device-profile.
+            {i18n.t(`${packageNS}:tr000259`)}
           </Typography>
         </FormControl>}
       </Form>

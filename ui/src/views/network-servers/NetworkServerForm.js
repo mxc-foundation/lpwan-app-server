@@ -9,6 +9,7 @@ import FormGroup from "@material-ui/core/FormGroup";
 import FormHelperText from '@material-ui/core/FormHelperText';
 import Checkbox from '@material-ui/core/Checkbox';
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import FormControl from "../../components/FormControl";
@@ -46,35 +47,35 @@ class NetworkServerForm extends FormComponent {
               textColor="primary"
               onChange={this.onChangeTab}
             >
-              <Tab label="General" />
-              <Tab label="Gateway discovery" />
-              <Tab label="TLS certificates" />
+              <Tab label={i18n.t(`${packageNS}:tr000167`)} />
+              <Tab label={i18n.t(`${packageNS}:tr000095`)} />
+              <Tab label={i18n.t(`${packageNS}:tr000104`)} />
             </Tabs>
           {this.state.tab === 0 && <div>
             <TextField
               id="name"
-              label="Network-server name"
+              label={i18n.t(`${packageNS}:tr000090`)}
               fullWidth={true}
               margin="normal"
               value={this.state.object.name || ""}
               onChange={this.onChange}
-              helperText="A name to identify the network-server."
+              helperText={i18n.t(`${packageNS}:tr000091`)}
               required={true}
             />
             <TextField
               id="server"
-              label="Network-server server"
+              label={i18n.t(`${packageNS}:tr000092`)}
               fullWidth={true}
               margin="normal"
               value={this.state.object.server || ""}
               onChange={this.onChange}
-              helperText="The 'hostname:port' of the network-server, e.g. 'localhost:8000'."
+              helperText={i18n.t(`${packageNS}:tr000093`)}
               required={true}
             />
           </div>}
           {this.state.tab === 1 && <div>
             <FormControl
-              label="Gateway discovery"
+              label={i18n.t(`${packageNS}:tr000095`)}
             >
               <FormGroup>
                 <FormControlLabel
@@ -87,80 +88,80 @@ class NetworkServerForm extends FormComponent {
                       color="primary"
                     />
                   }
-                  label="Enable gateway discovery"
+                  label={i18n.t(`${packageNS}:tr000096`)}
                 />
               </FormGroup>
-              <FormHelperText>Enable the gateway discovery feature for this network-server.</FormHelperText>
+              <FormHelperText>{i18n.t(`${packageNS}:tr000097`)}</FormHelperText>
             </FormControl>
             {this.state.object.gatewayDiscoveryEnabled && <TextField
               id="gatewayDiscoveryInterval"
-              label="Interval (per day)"
+              label={i18n.t(`${packageNS}:tr000098`)}
               type="number"
               fullWidth={true}
               margin="normal"
               value={this.state.object.gatewayDiscoveryInterval}
               onChange={this.onChange}
-              helperText="The number of gateway discovery 'pings' per day that LPWAN App Server will broadcast through each gateway."
+              helperText={i18n.t(`${packageNS}:tr000099`)}
               required={true}
             />}
             {this.state.object.gatewayDiscoveryEnabled && <TextField
               id="gatewayDiscoveryTXFrequency"
-              label="TX frequency (Hz)"
+              label={i18n.t(`${packageNS}:tr000100`)}
               type="number"
               fullWidth={true}
               margin="normal"
               value={this.state.object.gatewayDiscoveryTXFrequency}
               onChange={this.onChange}
-              helperText="The frequency (Hz) used for transmitting the gateway discovery 'pings'. Please consult the LoRaWAN Regional Parameters specification for the channels valid for each region."
+              helperText={i18n.t(`${packageNS}:tr000101`)}
               required={true}
             />}
             {this.state.object.gatewayDiscoveryEnabled && <TextField
               id="gatewayDiscoveryDR"
-              label="TX data-rate"
+              label={i18n.t(`${packageNS}:tr000102`)}
               type="number"
               fullWidth={true}
               margin="normal"
               value={this.state.object.gatewayDiscoveryDR}
               onChange={this.onChange}
-              helperText="The data-rate used for transmitting the gateway discovery 'pings'. Please consult the LoRaWAN Regional Parameters specification for the data-rates valid for each region."
+              helperText={i18n.t(`${packageNS}:tr000103`)}
               required={true}
             />}
           </div>}
           {this.state.tab === 2 && <div>
             <FormControl
-              label="Certificates for LPWAN App Server to LPWAN Server connection"
+              label={i18n.t(`${packageNS}:tr000105`)}
             >
               <FormGroup>
                 <TextField
                   id="caCert"
-                  label="CA certificate"
+                  label={i18n.t(`${packageNS}:tr000106`)}
                   fullWidth={true}
                   margin="normal"
                   value={this.state.object.caCert || ""}
                   onChange={this.onChange}
-                  helperText="Paste the content of the CA certificate (PEM) file in the above textbox. Leave blank to disable TLS."
+                  helperText={i18n.t(`${packageNS}:tr000107`)}
                   multiline
                   rows="4"
                 />
                 <TextField
                   id="tlsCert"
-                  label="TLS certificate"
+                  label={i18n.t(`${packageNS}:tr000110`)}
                   fullWidth={true}
                   margin="normal"
                   value={this.state.object.tlsCert || ""}
                   onChange={this.onChange}
-                  helperText="Paste the content of the TLS certificate (PEM) file in the above textbox. Leave blank to disable TLS."
+                  helperText={i18n.t(`${packageNS}:tr000109`)}
                   multiline
                   rows="4"
                 />
                 <TextField
                   id="tlsKey"
-                  label="TLS key"
+                  label={i18n.t(`${packageNS}:tr000108`)}
                   fullWidth={true}
                   margin="normal"
                   value={this.state.object.tlsKey || ""}
                   onChange={this.onChange}
-                  helperText="Paste the content of the TLS key (PEM) file in the above textbox. Leave blank to disable TLS. Note: for security reasons, the TLS key can't be retrieved after being submitted (the field is left blank). When re-submitting the form with an empty TLS key field (but populated TLS certificate field), the key won't be overwritten."
+                  helperText={i18n.t(`${packageNS}:tr000109`)}
                   multiline
                   rows="4"
                 />
@@ -168,39 +169,39 @@ class NetworkServerForm extends FormComponent {
             </FormControl>
 
             <FormControl
-              label="Certificates for LPWAN Server to LPWAN App Server connection"
+              label={i18n.t(`${packageNS}:tr000105`)}
             >
               <FormGroup>
                 <TextField
                   id="routingProfileCACert"
-                  label="CA certificate"
+                  label={i18n.t(`${packageNS}:tr000106`)}
                   fullWidth={true}
                   margin="normal"
                   value={this.state.object.routingProfileCACert || ""}
                   onChange={this.onChange}
-                  helperText="Paste the content of the CA certificate (PEM) file in the above textbox. Leave blank to disable TLS."
+                  helperText={i18n.t(`${packageNS}:tr000107`)}
                   multiline
                   rows="4"
                 />
                 <TextField
                   id="routingProfileTLSCert"
-                  label="TLS certificate"
+                  label={i18n.t(`${packageNS}:tr000110`)}
                   fullWidth={true}
                   margin="normal"
                   value={this.state.object.routingProfileTLSCert || ""}
                   onChange={this.onChange}
-                  helperText="Paste the content of the TLS certificate (PEM) file in the above textbox. Leave blank to disable TLS."
+                  helperText={i18n.t(`${packageNS}:tr000107`)}
                   multiline
                   rows="4"
                 />
                 <TextField
                   id="routingProfileTLSKey"
-                  label="TLS key"
+                  label={i18n.t(`${packageNS}:tr000108`)}
                   fullWidth={true}
                   margin="normal"
                   value={this.state.object.routingProfileTLSKey || ""}
                   onChange={this.onChange}
-                  helperText="Paste the content of the TLS key (PEM) file in the above textbox. Leave blank to disable TLS. Note: for security reasons, the TLS key can't be retrieved after being submitted (the field is left blank). When re-submitting the form with an empty TLS key field (but populated TLS certificate field), the key won't be overwritten."
+                  helperText={i18n.t(`${packageNS}:tr000109`)}
                   multiline
                   rows="4"
                 />

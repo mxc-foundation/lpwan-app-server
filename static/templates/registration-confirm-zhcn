@@ -1,6 +1,6 @@
 From: MXC <{{ .From }}>
 To: {{ .To }}
-Subject: Please confirm the e-mail linked to your Your MXProtocol server provider 
+Subject: 请确认您的电子邮箱以访问MXC极域超级节点服务
 Message-Id: <{{ .MsgId }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -11,9 +11,8 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-You have created a new user access to MXProtocol. This is a security measure. Please click the link below to verify your email
-address. If you are unable to click the link, copy and paste this URL
-into your browser.
+您已经获得了MXC极域超级节点服务的访问权限。请点击下面的链接以验证您的电子邮件
+地址。如果无法单击链接，请复制并粘贴此URL到您的浏览器。
 
 {{ .Link }}
 
@@ -25,7 +24,7 @@ Content-ID: html-body
 <!DOCTYPE html>
 <html>
 <head>
-	<title>MXC E-Mail</title>
+	<title>MXC 电子邮箱</title>
 </head>
 <body>
 
@@ -53,7 +52,7 @@ Content-ID: html-body
 							</td>
 							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
 								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/about">
-									About
+									关于
 								</a>
 							</td>
 							</tr>
@@ -67,7 +66,7 @@ Content-ID: html-body
 				    border-width: 0 10px; ">
 					<tr>
 					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 30px; font-weight: 700; line-height: 37px; padding: 0 15%;">
-							Welcome to your supernode access.
+							欢迎您访问MXC极域超级节点服务。
 					    </td>
 					</tr>
 				</table>
@@ -77,7 +76,8 @@ Content-ID: html-body
 				    border-width: 0 10px 10px 10px; ">
 					<tr>
 					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 14px; font-weight: 300; line-height: 140%;">
-							<p>You have created a new user access to MXProtocol Server. Please click the link below to verify your email address. If you are unable to click the link, copy and paste this URL into your browser.</p>
+							<p>您已经获得了MXC极域超级节点服务的访问权限。
+							   请点击下面的链接以验证您的电子邮件地址。如果无法单击链接，请复制并粘贴此URL到您的浏览器。</p>
 							<p><a target=3D"_blank" href=3D"{{ .Link }}">{{ .Link }}</a></p>
 					    </td>
 					</tr>
@@ -88,7 +88,7 @@ Content-ID: html-body
 					<tbody>
 						<tr>
 							<td>
-								MXC Foundation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
+								MXC极域基金会&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 柏林&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;德国&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
 							</td>
 						</tr>
 					</tbody>

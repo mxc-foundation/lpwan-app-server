@@ -10,6 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import FormControl from "../../components/FormControl";
@@ -85,7 +86,7 @@ class ExtraChannel extends Component {
         <Grid container spacing={4}>
           <Grid item xs={6}>
             <FormControl>
-              <InputLabel htmlFor="modulation" required>Modulation</InputLabel>
+              <InputLabel htmlFor="modulation" required>{i18n.t(`${packageNS}:tr000118`)}</InputLabel>
               <Select
                 value={this.props.channel.modulation || ""}
                 onChange={this.onChange}
@@ -93,14 +94,14 @@ class ExtraChannel extends Component {
                   name: "modulation",
                 }}
               >
-                <MenuItem value="LORA">LoRa</MenuItem>
-                <MenuItem value="FSK">FSK</MenuItem>
+                <MenuItem value="LORA">{i18n.t(`${packageNS}:tr000119`)}</MenuItem>
+                <MenuItem value="FSK">{i18n.t(`${packageNS}:tr000120`)}</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           <Grid item xs={6}>
             <FormControl>
-              <InputLabel htmlFor="bandwidth" required>bandwidth (kHz)</InputLabel>
+              <InputLabel htmlFor="bandwidth" required>{i18n.t(`${packageNS}:tr000121`)}</InputLabel>
               <Select
                 value={this.props.channel.bandwidth || ""}
                 onChange={this.onChange}
@@ -108,9 +109,9 @@ class ExtraChannel extends Component {
                   name: "bandwidth",
                 }}
               >
-                <MenuItem value={125}>125 kHz</MenuItem>
-                <MenuItem value={250}>250 kHz</MenuItem>
-                <MenuItem value={500}>500 kHz</MenuItem>
+                <MenuItem value={125}>125 {i18n.t(`${packageNS}:tr000122`)}</MenuItem>
+                <MenuItem value={250}>250 {i18n.t(`${packageNS}:tr000122`)}</MenuItem>
+                <MenuItem value={500}>500 {i18n.t(`${packageNS}:tr000122`)}</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -129,12 +130,12 @@ class ExtraChannel extends Component {
           {this.props.channel.modulation === "LORA" && <Grid item xs={6}>
             <TextField
               id="spreadingFactorsStr"
-              label="Spreading-factors"
+              label={i18n.t(`${packageNS}:tr000123`)}
               margin="normal"
               value={spreadingFactorsStr}
               onChange={this.onChange}
               placeholder="7, 8, 9, 10, 11, 12"
-              helperText="When defining multiple spreading-factors, the channel will be configured as a multi-SF channel on the gateway."
+              helperText={i18n.t(`${packageNS}:tr000124`)}
               inputProps={{
                 pattern: "[0-9]+(,[\\s]*[0-9]+)*",
               }}
@@ -272,26 +273,26 @@ class GatewayProfileForm extends FormComponent {
       <Form
         submitLabel={this.props.submitLabel}
         onSubmit={this.onSubmit}
-        extraButtons={<Button onClick={this.addExtraChannel}>Add extra channel</Button>}
+        extraButtons={<Button onClick={this.addExtraChannel}>{i18n.t(`${packageNS}:tr000116`)}</Button>}
       >
         <TextField
           id="name"
-          label="Name"
+          label={i18n.t(`${packageNS}:tr000042`)}
           margin="normal"
           value={this.state.object.name || ""}
           onChange={this.onChange}
-          helperText="A short name identifying the gateway-profile."
+          helperText={i18n.t(`${packageNS}:tr000112`)}
           required
           fullWidth
         />
 
         <TextField
           id="channelsStr"
-          label="Enabled channels"
+          label={i18n.t(`${packageNS}:tr000113`)}
           margin="normal"
           value={this.state.object.channelsStr || ""}
           onChange={this.onChange}
-          helperText="The channels active in this gateway-profile as specified in the LoRaWAN Regional Parameters specification. Separate channels by comma, e.g. 0, 1, 2. Extra channels must not be included in this list."
+          helperText={i18n.t(`${packageNS}:tr000114`)}
           placeholder="0, 1, 2"
           inputProps={{
             pattern: "[0-9]+(,[\\s]*[0-9]+)*",
@@ -300,10 +301,10 @@ class GatewayProfileForm extends FormComponent {
           fullWidth
         />
         {!this.props.update && <FormControlOrig margin="normal" fullWidth>
-          <FormLabel className={this.props.classes.formLabel} required>Network-server</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
           <AutocompleteSelect
             id="networkServerID"
-            label="Select network-server"
+            label={i18n.t(`${packageNS}:tr000115`)}
             value={this.state.object.networkServerID || ""}
             onChange={this.onChange}
             getOptions={this.getNetworkServerOptions}

@@ -17,6 +17,7 @@ import Typography from "@material-ui/core/Typography";
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import EUI64Field from "../../components/EUI64Field";
@@ -57,7 +58,7 @@ class DeviceKVForm extends FormComponent {
         <Grid item xs={4}>
           <TextField
             id="key"
-            label="Name"
+            label={i18n.t(`${packageNS}:tr000042`)}
             margin="normal"
             value={this.state.object.key || ""}
             onChange={this.onChange}
@@ -226,16 +227,16 @@ class DeviceForm extends FormComponent {
         disabled={this.props.disabled}
       >
         <Tabs value={this.state.tab} onChange={this.onTabChange} indicatorColor="primary">
-          <Tab label="General" />
-          <Tab label="Variables" />
-          <Tab label="Tags" />
+          <Tab label={i18n.t(`${packageNS}:tr000167`)} />
+          <Tab label={i18n.t(`${packageNS}:tr000305`)} />
+          <Tab label={i18n.t(`${packageNS}:tr000308`)} />
         </Tabs>
 
         {this.state.tab === 0 && <div>
           <TextField
             id="name"
-            label="Device name"
-            helperText="The name may only contain words, numbers and dashes."
+            label={i18n.t(`${packageNS}:tr000300`)}
+            helperText={i18n.t(`${packageNS}:tr000062`)}
             margin="normal"
             value={this.state.object.name || ""}
             onChange={this.onChange}
@@ -247,7 +248,7 @@ class DeviceForm extends FormComponent {
           />
           <TextField
             id="description"
-            label="Device description"
+            label={i18n.t(`${packageNS}:tr000301`)}
             margin="normal"
             value={this.state.object.description || ""}
             onChange={this.onChange}
@@ -257,7 +258,7 @@ class DeviceForm extends FormComponent {
           {!this.props.update && <EUI64Field
             margin="normal"
             id="devEUI"
-            label="Device EUI"
+            label={i18n.t(`${packageNS}:tr000371`)}
             onChange={this.onChange}
             value={this.state.object.devEUI || ""}
             fullWidth
@@ -265,10 +266,10 @@ class DeviceForm extends FormComponent {
             random
           />}
           <FormControl fullWidth margin="normal">
-            <FormLabel className={this.props.classes.formLabel} required>Device-profile</FormLabel>
+            <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000281`)}</FormLabel>
             <AutocompleteSelect
               id="deviceProfileID"
-              label="Device-profile"
+              label={i18n.t(`${packageNS}:tr000281`)}
               value={this.state.object.deviceProfileID}
               onChange={this.onChange}
               getOption={this.getDeviceProfileOption}
@@ -278,7 +279,7 @@ class DeviceForm extends FormComponent {
           <FormControl margin="normal">
             <FormGroup>
               <FormControlLabel
-                label="Disable frame-counter validation"
+                label={i18n.t(`${packageNS}:tr000303`)}
                 control={
                   <Checkbox
                     id="skipFCntCheck"
@@ -290,7 +291,7 @@ class DeviceForm extends FormComponent {
               />
             </FormGroup>
             <FormHelperText>
-              Note that disabling the frame-counter validation will compromise security as it enables people to perform replay-attacks.
+              {i18n.t(`${packageNS}:tr000304`)}
             </FormHelperText>
           </FormControl>
         </div>}
@@ -298,17 +299,17 @@ class DeviceForm extends FormComponent {
         {this.state.tab === 1 && <div>
           <FormControl fullWidth margin="normal">
             <Typography variant="body1">
-              Variables can be used to substitute placeholders in for example integrations, e.g. in case an integration requires the configuration of a device specific token.
+              {i18n.t(`${packageNS}:tr000306`)}
             </Typography>
             {variables}
           </FormControl>
-          <Button variant="outlined" onClick={this.addKV("variables")}>Add variable</Button>
+          <Button variant="outlined" onClick={this.addKV("variables")}>{i18n.t(`${packageNS}:tr000307`)}</Button>
         </div>}
 
         {this.state.tab === 2 && <div>
           <FormControl fullWidth margin="normal">
             <Typography variant="body1">
-              Tags can be used as device filters and are exposed on events as additional meta-data for aggregation.
+              {i18n.t(`${packageNS}:tr000309`)}
             </Typography>
             {tags}
           </FormControl>

@@ -11,6 +11,7 @@ import moment from "moment";
 import Plus from "mdi-material-ui/Plus";
 import PowerPlug from "mdi-material-ui/PowerPlug";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
 import DeviceAdmin from "../../components/DeviceAdmin";
@@ -85,7 +86,7 @@ class ListDevices extends Component {
           <Grid item xs={12} className={this.props.classes.buttons}>
             <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/create`}>
               <Plus className={this.props.classes.icon} />
-              Create
+              {i18n.t(`${packageNS}:tr000277`)}
             </Button>
           </Grid>
         </DeviceAdmin>
@@ -93,11 +94,11 @@ class ListDevices extends Component {
           <DataTable
             header={
               <TableRow>
-                <TableCell>Last seen</TableCell>
-                <TableCell>Device name</TableCell>
-                <TableCell>Device EUI</TableCell>
-                <TableCell>Link margin</TableCell>
-                <TableCell>Battery</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000242`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000300`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000371`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000382`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000383`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

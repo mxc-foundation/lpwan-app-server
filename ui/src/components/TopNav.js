@@ -26,13 +26,14 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Wallet from "mdi-material-ui/WalletOutline";
+import i18n, { packageNS } from '../i18n';
 import { openM2M } from "../util/Util";
 
 import OrganizationStore from "../stores/OrganizationStore"
 import SessionStore from "../stores/SessionStore";
 import WalletStore from "../stores/WalletStore";
 import theme from "../theme";
-
+import DropdownMenuLanguage from "./DropdownMenuLanguage";
 
 const styles = {
   appBar: {
@@ -119,9 +120,9 @@ class TopNav extends Component {
       search: "",
     };
 
+    this.onLogout = this.onLogout.bind(this);
     this.onMenuOpen = this.onMenuOpen.bind(this);
     this.onMenuClose = this.onMenuClose.bind(this);
-    this.onLogout = this.onLogout.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
@@ -145,6 +146,10 @@ class TopNav extends Component {
       console.error(error);
       this.setState({ error });
     }
+  }
+
+  onChangeLanguage = (newLanguageState) => {
+    this.props.onChangeLanguage(newLanguageState);
   }
 
   onMenuOpen(e) {
@@ -199,7 +204,7 @@ class TopNav extends Component {
       //drawerIcon = <MenuIcon />;
       logoIcon = <img src="/logo/logo_LP.png" className={this.props.classes.logo} alt="LPWAN Server" />
       searchbar = <Input
-                    placeholder="Search organization, application, gateway or device"
+                    placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
                     disableUnderline={true}
                     value={this.state.search || ""}
@@ -263,6 +268,9 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
+
+          <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+
           <a href="https://www.mxc.org/support" target="mxc-support">
             <IconButton className={this.props.classes.iconButton}>
               <HelpCircle />
@@ -283,8 +291,8 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem> :
-            <MenuItem onClick={this.onLogout}>Logout</MenuItem>
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem> :
+            <MenuItem onClick={this.onLogout}>{i18n.t(`${packageNS}:tr000035`)}</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
