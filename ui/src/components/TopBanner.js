@@ -150,10 +150,7 @@ class TopBanner extends Component {
                         ?true
                         :false;
     return(
-      <AppBar className={this.props.classes.appBar}>
-            <div className={this.props.classes.flex}>
-                <span>THIS IS A DEMO VERSION.</span>
-            </div>
+      <AppBar>
       </AppBar>
     );
   }

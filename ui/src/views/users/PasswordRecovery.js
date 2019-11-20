@@ -144,7 +144,7 @@ class PasswordRecovery extends Component {
   }
 
   onSubmit(email) {
-    console.log('pass word recovery: ', email);
+    console.log('password recovery: ', email);
   }
 
   render() {

@@ -1,11 +1,11 @@
 package external
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"encoding/json"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 
 	"github.com/golang/protobuf/ptypes"
@@ -21,8 +21,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
 )
@@ -276,7 +276,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
 	secret := config.C.Recaptcha.Secret
-	postURL := config.C.Recaptcha.HostServer 
+	postURL := config.C.Recaptcha.HostServer
 
 	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
 	responsePost, err := http.PostForm(postURL, postStr)
@@ -287,11 +287,11 @@ func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.Googl
 	}
 
 	defer func() {
-        err := responsePost.Body.Close()
-        if err != nil {
-            log.WithError(err).Error("cannot close the responsePost body.")
-        }
-    }()
+		err := responsePost.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("cannot close the responsePost body.")
+		}
+	}()
 
 	body, err := ioutil.ReadAll(responsePost.Body)
 
@@ -307,15 +307,15 @@ func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.Googl
 	}
 
 	return g_response, nil
-} 
+}
 
 func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *pb.GoogleRecaptchaRequest) (*pb.GoogleRecaptchaResponse, error) {
 	res, err := IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
 	if err != nil {
 		log.WithError(err).Error("Cannot verify from google recaptcha")
-        return &pb.GoogleRecaptchaResponse{}, err
-	}             
-	
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
 	return &pb.GoogleRecaptchaResponse{Success: res.Success, ChallengeTs: res.ChallengeTs, Hostname: res.Hostname}, nil
 }
 

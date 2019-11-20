@@ -150,7 +150,7 @@ function Decode(fPort, bytes) {
               getOptions={this.getPayloadCodecOptions}
             />
             <FormHelperText>
-              {i18n.t(`${packageNS}:tr000214`)}
+              {i18n.t(`${packageNS}:tr000258`)}
             </FormHelperText>
           </FormControl>
           {this.state.object.payloadCodec === "CUSTOM_JS" && <FormControl fullWidth margin="normal">

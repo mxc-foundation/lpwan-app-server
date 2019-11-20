@@ -122,7 +122,7 @@ class PasswordResetConfirmForm extends FormComponent {
             onSubmit={this.onSubmit}
         >
             <Password handleChange={this.handlePassword} label={i18n.t(`${packageNS}:tr000004`)} />
-            <Password handleChange={this.handlePasswordConfirm} label={'Password Confirmation'} />
+            <Password handleChange={this.handlePasswordConfirm} label={i18n.t(`${packageNS}:tr000416`)} />
         </Form>
         );
     }

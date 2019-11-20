@@ -202,7 +202,7 @@ class TopNav extends Component {
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LPWAN Server" />
+      logoIcon = <img src="/logo/logo_LP.png" className={this.props.classes.logo} alt="LPWAN Server" />
       searchbar = <Input
                     placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
