@@ -39,6 +39,7 @@ const styles = {
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.secondary.main,
+    height: 84
   },
   menuButton: {
     marginLeft: -12,
