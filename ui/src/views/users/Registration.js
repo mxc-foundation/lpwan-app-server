@@ -98,7 +98,7 @@ class Registration extends Component {
       return false;
     }
 
-    if(SessionStore.getLanguage().id){
+    if(SessionStore.getLanguage() && SessionStore.getLanguage().id){
       user.language = SessionStore.getLanguage().id.toLowerCase();
     }else {
       user.language = 'en';
