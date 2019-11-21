@@ -7,7 +7,9 @@ import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from "@material-ui/core/styles";
+import classNames from "classnames";
 
+import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
@@ -16,6 +18,9 @@ import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
+  languageWrapper: {
+    marginLeft: '15px'
+  },
   textField: {
     width: "100%",
   },
@@ -128,6 +133,17 @@ class RegistrationConfirm extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
+  onChangeLanguage = e => {
+    const newLanguage = {
+      id: e.id,
+      label: e.label,
+      value: e.value,
+      code: e.code
+    }
+
+    this.props.onChangeLanguage(newLanguage);
+  }
+
   onSubmit(data) {
     if (data.password === data.passwordConfirmation) {
       this.setState({
@@ -157,6 +173,9 @@ class RegistrationConfirm extends Component {
         <Grid container justify="center">
           <Grid item xs={6} lg={4}>
             <Card>
+              <div className={classNames(this.props.classes.languageWrapper)}>
+                <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+              </div>
               <CardHeader
                 title={i18n.t(`${packageNS}:tr000019`)}
               />
