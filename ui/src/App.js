@@ -260,8 +260,14 @@ class App extends Component {
                     <Route exact path="/registration" component={Registration} />
                     <Route exact path="/password-recovery" component={PasswordRecovery} />
                     <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
-                    <Route exact path="/registration-confirm/:securityToken" component={RegistrationConfirm} />
-
+                    <Route exact path="/registration-confirm/:securityToken"
+                      render={props =>
+                        <RegistrationConfirm {...props}
+                          language={language}
+                          onChangeLanguage={this.onChangeLanguage}
+                        />
+                      }
+                    />
                     <Route exact path="/network-servers" component={ListNetworkServers} />
                     <Route exact path="/network-servers/create" component={CreateNetworkServer} />
                     <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
