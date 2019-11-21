@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -496,7 +497,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(obj.Username, *obj.SecurityToken, int32(req.Language))
+	err = email.SendInvite(obj.Username, *obj.SecurityToken, os.Getenv("APPSERVER"), int32(req.Language))
 	if err != nil {
 		log.WithFields(log.Fields{
 			"username": user.Username,
