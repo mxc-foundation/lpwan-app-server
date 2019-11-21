@@ -85,7 +85,7 @@ var (
 )
 
 // SendInvite ...
-func SendInvite(user, token, server string, language int32) error {
+func SendInvite(user, token string, language int32) error {
 	var err error
 
 	if disable == true {
@@ -98,7 +98,8 @@ func SendInvite(user, token, server string, language int32) error {
 	}
 
 	link := host + mailTemplateNames[language].url + token
-	logo := server + "branding.png"
+
+	logo := host + "branding.png"
 
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
