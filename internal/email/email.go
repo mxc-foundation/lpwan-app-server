@@ -7,7 +7,6 @@ import (
 	"errors"
 	"net/smtp"
 	"os"
-	"runtime"
 	"text/template"
 	"time"
 
@@ -27,9 +26,9 @@ var (
 )
 
 const (
-	English = pb.Language_en
-	Korean = pb.Language_ko
-	SimplifiedChinese = pb.Language_zhcn
+	English            = pb.Language_en
+	Korean             = pb.Language_ko
+	SimplifiedChinese  = pb.Language_zhcn
 	TraditionalChinese = pb.Language_zhtw
 )
 
@@ -85,7 +84,7 @@ var (
 )
 
 // SendInvite ...
-func SendInvite(user string, token string, language int32) error {
+func SendInvite(user, token string, language int32) error {
 	var err error
 
 	if disable == true {
@@ -99,6 +98,8 @@ func SendInvite(user string, token string, language int32) error {
 
 	link := host + mailTemplateNames[language].url + token
 
+	logo := host + "/branding.png"
+
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
 		return err
@@ -107,7 +108,7 @@ func SendInvite(user string, token string, language int32) error {
 
 	var msg bytes.Buffer
 	if err := mailTemplates[language].Execute(&msg, struct {
-		From, To, Host, MsgId, Boundary, Link string
+		From, To, Host, MsgId, Boundary, Link, Logo string
 	}{
 		From:     senderID,
 		To:       user,
@@ -115,12 +116,12 @@ func SendInvite(user string, token string, language int32) error {
 		MsgId:    messageID + "@" + host,
 		Boundary: "----=_Part_" + messageID,
 		Link:     link,
+		Logo:     logo,
 	}); err != nil {
 		log.Error(err)
 		return err
 	}
 
-	runtime.Breakpoint()
 	err = smtp.SendMail(smtpServer+":"+smtpPort,
 		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
 
