@@ -7,7 +7,6 @@ import (
 	"errors"
 	"net/smtp"
 	"os"
-	"runtime"
 	"text/template"
 	"time"
 
@@ -99,7 +98,7 @@ func SendInvite(user, token string, language int32) error {
 
 	link := host + mailTemplateNames[language].url + token
 
-	logo := host + "branding.png"
+	logo := host + "/branding.png"
 
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
@@ -123,7 +122,6 @@ func SendInvite(user, token string, language int32) error {
 		return err
 	}
 
-	runtime.Breakpoint()
 	err = smtp.SendMail(smtpServer+":"+smtpPort,
 		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
 
