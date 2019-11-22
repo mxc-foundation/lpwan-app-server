@@ -6,14 +6,14 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
-
+import TitleBarTitle from "../../components/TitleBarTitle";
+import FoundLocationMap from "../../components/FoundLocationMap"
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 //import MenuIcon from 'mdi-material-ui/Server';
 
 import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import Password from '../../components/TextfileForPassword'
 import { 
   Map,
@@ -175,13 +175,13 @@ class LoginForm extends FormComponent {
           onChange={this.onChange}
           fullWidth
         />
-        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:tr000004`)} />
-        {/* <TitleBarTitle component={Link} to={`/password-recovery`} title={i18n.t(`${packageNS}:tr000009`)} /> */}
-          {/*<ReCAPTCHA
-          sitekey={process.env.REACT_APP_PUBLIC_KEY}
-          onChange={this.onReCapChange}
-          className={this.props.style.textField}
-        />*/}
+        <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:tr000004`)}/>
+        {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
+{/*        <ReCAPTCHA
+                sitekey={process.env.REACT_APP_PUBLIC_KEY}
+                onChange={this.onReCapChange}
+                className={this.props.style.textField}
+              />*/}
       </Form>
     );
   }
@@ -264,7 +264,7 @@ class Login extends Component {
     return(
       <>
         <Map center={position} zoom={6} style={style} animate={true} scrollWheelZoom={false}>
-          <MapTileLayerCluster />
+          <FoundLocationMap /> 
         </Map>
         <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
           <div className={this.props.classes.loginFormStyle}>

@@ -298,7 +298,7 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem> :
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem>
             <MenuItem onClick={this.onLogout}>{i18n.t(`${packageNS}:tr000035`)}</MenuItem>
           </Menu>
         </Toolbar>
