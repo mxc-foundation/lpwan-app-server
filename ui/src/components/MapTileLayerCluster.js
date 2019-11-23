@@ -23,11 +23,17 @@ function loadGatewayData() {
     });
 } 
 class MapTileLayerCluster extends Component {
-    
     componentDidMount(){
       let lat = 31.2304;
       let lon = 121.4737;
-      
+
+      if(this.props.crd.latitude){
+        lat = this.props.crd.latitude;
+      }
+      if(this.props.crd.longitude){
+        lon = this.props.crd.longitude;
+      }
+
       this.map = L.map('map', {
             //preferCanvas: true,
             center: [lat, lon],
@@ -86,4 +92,4 @@ class MapTileLayerCluster extends Component {
   }
 }
 
-export default withRouter(MapTileLayerCluster);
+export default MapTileLayerCluster;
