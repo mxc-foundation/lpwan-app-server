@@ -12,6 +12,7 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import {Controlled as CodeMirror} from "react-codemirror2";
 import "codemirror/mode/javascript/javascript";
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 
@@ -70,18 +71,18 @@ class DeviceQueueItemForm extends FormComponent {
       >
         <TextField
           id="fPort"
-          label="Port"
+          label={i18n.t(`${packageNS}:tr000285`)}
           margin="normal"
           value={this.state.object.fPort || ""}
           onChange={this.onChange}
-          helperText="Please note that the fPort value must be > 0."
+          helperText={i18n.t(`${packageNS}:tr000286`)}
           required
           fullWidth
           type="number"
         />
         <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="Confirmed downlink"
+            label={i18n.t(`${packageNS}:tr000287`)}
             control={
               <Checkbox
                 id="confirmed"
@@ -93,12 +94,12 @@ class DeviceQueueItemForm extends FormComponent {
           />
         </FormControl>
         <Tabs value={this.state.tab} onChange={this.onTabChange} indicatorColor="primary">
-          <Tab label="Base64 encoded" />
-          <Tab label="JSON object" />
+          <Tab label={i18n.t(`${packageNS}:tr000288`)} />
+          <Tab label={i18n.t(`${packageNS}:tr000290`)} />
         </Tabs>
         {this.state.tab === 0 && <TextField
           id="data"
-          label="Base64 encoded string"
+          label={i18n.t(`${packageNS}:tr000289`)}
           margin="normal"
           value={this.state.object.data || ""}
           onChange={this.onChange}
@@ -113,7 +114,7 @@ class DeviceQueueItemForm extends FormComponent {
             onBeforeChange={this.onCodeChange.bind(this, 'jsonObject')}
           />
           <FormHelperText>
-            The device must be configured with a Device Profile supporting a Codec which is able to encode the given (JSON) payload.
+            {i18n.t(`${packageNS}:tr000291`)}
           </FormHelperText>
         </FormControl>}
       </Form>

@@ -8,12 +8,13 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // MulticastGroup defines the multicast-group.
@@ -23,7 +24,6 @@ type MulticastGroup struct {
 	Name             string            `db:"name"`
 	MCAppSKey        lorawan.AES128Key `db:"mc_app_s_key"`
 	MCKey            lorawan.AES128Key `db:"mc_key"`
-	FCnt             uint32            `db:"f_cnt"`
 	ServiceProfileID uuid.UUID         `db:"service_profile_id"`
 	MulticastGroup   ns.MulticastGroup `db:"-"`
 }
@@ -39,7 +39,7 @@ type MulticastGroupListItem struct {
 }
 
 // CreateMulticastGroup creates the given multicast-group.
-func CreateMulticastGroup(db sqlx.Ext, mg *MulticastGroup) error {
+func CreateMulticastGroup(ctx context.Context, db sqlx.Ext, mg *MulticastGroup) error {
 	mgID, err := uuid.NewV4()
 	if err != nil {
 		return errors.Wrap(err, "new uuid v4 error")
@@ -58,9 +58,8 @@ func CreateMulticastGroup(db sqlx.Ext, mg *MulticastGroup) error {
 			name,
 			service_profile_id,
 			mc_app_s_key,
-			mc_key,
-			f_cnt
-		) values ($1, $2, $3, $4, $5, $6, $7, $8)
+			mc_key
+		) values ($1, $2, $3, $4, $5, $6, $7)
 	`,
 		mgID,
 		mg.CreatedAt,
@@ -69,33 +68,33 @@ func CreateMulticastGroup(db sqlx.Ext, mg *MulticastGroup) error {
 		mg.ServiceProfileID,
 		mg.MCAppSKey,
 		mg.MCKey,
-		mg.FCnt,
 	)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
 	}
 
-	nsClient, err := getNSClientForServiceProfile(db, mg.ServiceProfileID)
+	nsClient, err := getNSClientForServiceProfile(ctx, db, mg.ServiceProfileID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.CreateMulticastGroup(context.Background(), &ns.CreateMulticastGroupRequest{
+	_, err = nsClient.CreateMulticastGroup(ctx, &ns.CreateMulticastGroupRequest{
 		MulticastGroup: &mg.MulticastGroup,
 	})
 	if err != nil {
-		return handleGrpcError(err, "create multicast-group error")
+		return errors.Wrap(err, "create multicast-group error")
 	}
 
 	log.WithFields(log.Fields{
-		"id": mgID,
+		"id":     mgID,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("multicast-group created")
 
 	return nil
 }
 
 // GetMulticastGroup returns the multicast-group given an id.
-func GetMulticastGroup(db sqlx.Queryer, id uuid.UUID, forUpdate, localOnly bool) (MulticastGroup, error) {
+func GetMulticastGroup(ctx context.Context, db sqlx.Queryer, id uuid.UUID, forUpdate, localOnly bool) (MulticastGroup, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -110,8 +109,7 @@ func GetMulticastGroup(db sqlx.Queryer, id uuid.UUID, forUpdate, localOnly bool)
 			name,
 			service_profile_id,
 			mc_app_s_key,
-			mc_key,
-			f_cnt
+			mc_key
 		from
 			multicast_group
 		where
@@ -125,16 +123,16 @@ func GetMulticastGroup(db sqlx.Queryer, id uuid.UUID, forUpdate, localOnly bool)
 		return mg, nil
 	}
 
-	nsClient, err := getNSClientForServiceProfile(db, mg.ServiceProfileID)
+	nsClient, err := getNSClientForServiceProfile(ctx, db, mg.ServiceProfileID)
 	if err != nil {
 		return mg, errors.Wrap(err, "get network-server client error")
 	}
 
-	resp, err := nsClient.GetMulticastGroup(context.Background(), &ns.GetMulticastGroupRequest{
+	resp, err := nsClient.GetMulticastGroup(ctx, &ns.GetMulticastGroupRequest{
 		Id: id.Bytes(),
 	})
 	if err != nil {
-		return mg, handleGrpcError(err, "get multicast-group error")
+		return mg, errors.Wrap(err, "get multicast-group error")
 	}
 
 	if resp.MulticastGroup == nil {
@@ -147,7 +145,7 @@ func GetMulticastGroup(db sqlx.Queryer, id uuid.UUID, forUpdate, localOnly bool)
 }
 
 // UpdateMulticastGroup updates the given multicast-group.
-func UpdateMulticastGroup(db sqlx.Ext, mg *MulticastGroup) error {
+func UpdateMulticastGroup(ctx context.Context, db sqlx.Ext, mg *MulticastGroup) error {
 	mgID, err := uuid.FromBytes(mg.MulticastGroup.Id)
 	if err != nil {
 		return errors.Wrap(err, "uuid from bytes error")
@@ -161,8 +159,7 @@ func UpdateMulticastGroup(db sqlx.Ext, mg *MulticastGroup) error {
 			updated_at = $2,
 			name = $3,
 			mc_app_s_key = $4,
-			mc_key = $5,
-			f_cnt = $6
+			mc_key = $5
 		where
 			id = $1
 	`,
@@ -171,7 +168,6 @@ func UpdateMulticastGroup(db sqlx.Ext, mg *MulticastGroup) error {
 		mg.Name,
 		mg.MCAppSKey,
 		mg.MCKey,
-		mg.FCnt,
 	)
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
@@ -184,28 +180,29 @@ func UpdateMulticastGroup(db sqlx.Ext, mg *MulticastGroup) error {
 		return ErrDoesNotExist
 	}
 
-	nsClient, err := getNSClientForServiceProfile(db, mg.ServiceProfileID)
+	nsClient, err := getNSClientForServiceProfile(ctx, db, mg.ServiceProfileID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.UpdateMulticastGroup(context.Background(), &ns.UpdateMulticastGroupRequest{
+	_, err = nsClient.UpdateMulticastGroup(ctx, &ns.UpdateMulticastGroupRequest{
 		MulticastGroup: &mg.MulticastGroup,
 	})
 	if err != nil {
-		return handleGrpcError(err, "update multicast-group error")
+		return errors.Wrap(err, "update multicast-group error")
 	}
 
 	log.WithFields(log.Fields{
-		"id": mgID,
+		"id":     mgID,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("multicast-group updated")
 
 	return nil
 }
 
 // DeleteMulticastGroup deletes a multicast-group given an id.
-func DeleteMulticastGroup(db sqlx.Ext, id uuid.UUID) error {
-	nsClient, err := getNSClientForMulticastGroup(db, id)
+func DeleteMulticastGroup(ctx context.Context, db sqlx.Ext, id uuid.UUID) error {
+	nsClient, err := getNSClientForMulticastGroup(ctx, db, id)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -228,15 +225,16 @@ func DeleteMulticastGroup(db sqlx.Ext, id uuid.UUID) error {
 		return ErrDoesNotExist
 	}
 
-	_, err = nsClient.DeleteMulticastGroup(context.Background(), &ns.DeleteMulticastGroupRequest{
+	_, err = nsClient.DeleteMulticastGroup(ctx, &ns.DeleteMulticastGroupRequest{
 		Id: id.Bytes(),
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
-		return handleGrpcError(err, "delete multicast-group error")
+		return errors.Wrap(err, "delete multicast-group error")
 	}
 
 	log.WithFields(log.Fields{
-		"id": id,
+		"id":     id,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("multicast-group deleted")
 
 	return nil
@@ -283,7 +281,7 @@ func (f MulticastGroupFilters) SQL() string {
 
 // GetMulticastGroupCount returns the total number of multicast-groups given
 // the provided filters. Note that empty values are not used as filters.
-func GetMulticastGroupCount(db sqlx.Queryer, filters MulticastGroupFilters) (int, error) {
+func GetMulticastGroupCount(ctx context.Context, db sqlx.Queryer, filters MulticastGroupFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -315,7 +313,7 @@ func GetMulticastGroupCount(db sqlx.Queryer, filters MulticastGroupFilters) (int
 
 // GetMulticastGroups returns a slice of multicast-groups, given the privded
 // filters. Note that empty values are not used as filters.
-func GetMulticastGroups(db sqlx.Queryer, filters MulticastGroupFilters) ([]MulticastGroupListItem, error) {
+func GetMulticastGroups(ctx context.Context, db sqlx.Queryer, filters MulticastGroupFilters) ([]MulticastGroupListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -357,7 +355,7 @@ func GetMulticastGroups(db sqlx.Queryer, filters MulticastGroupFilters) ([]Multi
 
 // AddDeviceToMulticastGroup adds the given device to the given multicast-group.
 // It is recommended that db is a transaction.
-func AddDeviceToMulticastGroup(db sqlx.Ext, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func AddDeviceToMulticastGroup(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
 	_, err := db.Exec(`
 		insert into device_multicast_group (
 			dev_eui,
@@ -369,22 +367,23 @@ func AddDeviceToMulticastGroup(db sqlx.Ext, multicastGroupID uuid.UUID, devEUI l
 		return handlePSQLError(Insert, err, "insert error")
 	}
 
-	nsClient, err := getNSClientForMulticastGroup(db, multicastGroupID)
+	nsClient, err := getNSClientForMulticastGroup(ctx, db, multicastGroupID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.AddDeviceToMulticastGroup(context.Background(), &ns.AddDeviceToMulticastGroupRequest{
+	_, err = nsClient.AddDeviceToMulticastGroup(ctx, &ns.AddDeviceToMulticastGroupRequest{
 		DevEui:           devEUI[:],
 		MulticastGroupId: multicastGroupID.Bytes(),
 	})
 	if err != nil {
-		return handleGrpcError(err, "add device to multicast-group error")
+		return errors.Wrap(err, "add device to multicast-group error")
 	}
 
 	log.WithFields(log.Fields{
 		"dev_eui":            devEUI,
 		"multicast_group_id": multicastGroupID,
+		"ctx_id":             ctx.Value(logging.ContextIDKey),
 	}).Info("device added to multicast-group")
 
 	return nil
@@ -392,7 +391,7 @@ func AddDeviceToMulticastGroup(db sqlx.Ext, multicastGroupID uuid.UUID, devEUI l
 
 // RemoveDeviceFromMulticastGroup removes the given device from the given
 // multicast-group.
-func RemoveDeviceFromMulticastGroup(db sqlx.Ext, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func RemoveDeviceFromMulticastGroup(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
 	res, err := db.Exec(`
 		delete from
 			device_multicast_group
@@ -412,22 +411,23 @@ func RemoveDeviceFromMulticastGroup(db sqlx.Ext, multicastGroupID uuid.UUID, dev
 		return ErrDoesNotExist
 	}
 
-	nsClient, err := getNSClientForMulticastGroup(db, multicastGroupID)
+	nsClient, err := getNSClientForMulticastGroup(ctx, db, multicastGroupID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.RemoveDeviceFromMulticastGroup(context.Background(), &ns.RemoveDeviceFromMulticastGroupRequest{
+	_, err = nsClient.RemoveDeviceFromMulticastGroup(ctx, &ns.RemoveDeviceFromMulticastGroupRequest{
 		DevEui:           devEUI[:],
 		MulticastGroupId: multicastGroupID.Bytes(),
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
-		return handleGrpcError(err, "remove device from multicast-group error")
+		return errors.Wrap(err, "remove device from multicast-group error")
 	}
 
 	log.WithFields(log.Fields{
 		"dev_eui":            devEUI,
 		"multicast_group_id": multicastGroupID,
+		"ctx_id":             ctx.Value(logging.ContextIDKey),
 	}).Info("Device removed from multicast-group")
 
 	return nil
@@ -435,7 +435,7 @@ func RemoveDeviceFromMulticastGroup(db sqlx.Ext, multicastGroupID uuid.UUID, dev
 
 // GetDeviceCountForMulticastGroup returns the number of devices for the given
 // multicast-group.
-func GetDeviceCountForMulticastGroup(db sqlx.Queryer, multicastGroup uuid.UUID) (int, error) {
+func GetDeviceCountForMulticastGroup(ctx context.Context, db sqlx.Queryer, multicastGroup uuid.UUID) (int, error) {
 	var count int
 
 	err := sqlx.Get(db, &count, `
@@ -455,7 +455,7 @@ func GetDeviceCountForMulticastGroup(db sqlx.Queryer, multicastGroup uuid.UUID) 
 
 // GetDevicesForMulticastGroup returns a slice of devices for the given
 // multicast-group.
-func GetDevicesForMulticastGroup(db sqlx.Queryer, multicastGroupID uuid.UUID, limit, offset int) ([]DeviceListItem, error) {
+func GetDevicesForMulticastGroup(ctx context.Context, db sqlx.Queryer, multicastGroupID uuid.UUID, limit, offset int) ([]DeviceListItem, error) {
 	var devices []DeviceListItem
 
 	err := sqlx.Select(db, &devices, `

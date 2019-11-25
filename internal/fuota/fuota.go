@@ -1,6 +1,7 @@
 package fuota
 
 import (
+	"context"
 	"crypto/aes"
 	"crypto/rand"
 	"fmt"
@@ -11,14 +12,15 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/downlink"
-	"github.com/brocaar/lora-app-server/internal/multicast"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/fragmentation"
 	"github.com/brocaar/lorawan/applayer/multicastsetup"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/multicast"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 var (
@@ -52,8 +54,16 @@ func Setup(conf config.Config) error {
 
 func fuotaDeploymentLoop() {
 	for {
-		err := storage.Transaction(func(tx sqlx.Ext) error {
-			return fuotaDeployments(tx)
+		ctxID, err := uuid.NewV4()
+		if err != nil {
+			log.WithError(err).Error("new uuid error")
+		}
+
+		ctx := context.Background()
+		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
+
+		err = storage.Transaction(func(tx sqlx.Ext) error {
+			return fuotaDeployments(ctx, tx)
 		})
 		if err != nil {
 			log.WithError(err).Error("fuota deployment error")
@@ -62,14 +72,14 @@ func fuotaDeploymentLoop() {
 	}
 }
 
-func fuotaDeployments(db sqlx.Ext) error {
-	items, err := storage.GetPendingFUOTADeployments(db, batchSize)
+func fuotaDeployments(ctx context.Context, db sqlx.Ext) error {
+	items, err := storage.GetPendingFUOTADeployments(ctx, db, batchSize)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := fuotaDeployment(db, item); err != nil {
+		if err := fuotaDeployment(ctx, db, item); err != nil {
 			return errors.Wrap(err, "fuota deployment error")
 		}
 	}
@@ -77,30 +87,30 @@ func fuotaDeployments(db sqlx.Ext) error {
 	return nil
 }
 
-func fuotaDeployment(db sqlx.Ext, item storage.FUOTADeployment) error {
+func fuotaDeployment(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	switch item.State {
 	case storage.FUOTADeploymentMulticastCreate:
-		return stepMulticastCreate(db, item)
+		return stepMulticastCreate(ctx, db, item)
 	case storage.FUOTADeploymentMulticastSetup:
-		return stepMulticastSetup(db, item)
+		return stepMulticastSetup(ctx, db, item)
 	case storage.FUOTADeploymentFragmentationSessSetup:
-		return stepFragmentationSessSetup(db, item)
+		return stepFragmentationSessSetup(ctx, db, item)
 	case storage.FUOTADeploymentMulticastSessCSetup:
-		return stepMulticastSessCSetup(db, item)
+		return stepMulticastSessCSetup(ctx, db, item)
 	case storage.FUOTADeploymentEnqueue:
-		return stepEnqueue(db, item)
+		return stepEnqueue(ctx, db, item)
 	case storage.FUOTADeploymentStatusRequest:
-		return stepStatusRequest(db, item)
+		return stepStatusRequest(ctx, db, item)
 	case storage.FUOTADeploymentSetDeviceStatus:
-		return stepSetDeviceStatus(db, item)
+		return stepSetDeviceStatus(ctx, db, item)
 	case storage.FUOTADeploymentCleanup:
-		return stepCleanup(db, item)
+		return stepCleanup(ctx, db, item)
 	default:
 		return fmt.Errorf("unexpected state: %s", item.State)
 	}
 }
 
-func stepMulticastCreate(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepMulticastCreate(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	var devAddr lorawan.DevAddr
 	if _, err := rand.Read(devAddr[:]); err != nil {
 		return errors.Wrap(err, "read random bytes error")
@@ -121,7 +131,7 @@ func stepMulticastCreate(db sqlx.Ext, item storage.FUOTADeployment) error {
 		return errors.Wrap(err, "get McNetSKey error")
 	}
 
-	spID, err := storage.GetServiceProfileIDForFUOTADeployment(db, item.ID)
+	spID, err := storage.GetServiceProfileIDForFUOTADeployment(ctx, db, item.ID)
 	if err != nil {
 		return errors.Wrap(err, "get service-profile for fuota deployment error")
 	}
@@ -130,7 +140,6 @@ func stepMulticastCreate(db sqlx.Ext, item storage.FUOTADeployment) error {
 		Name:             fmt.Sprintf("fuota-%s", item.ID),
 		MCAppSKey:        mcAppSKey,
 		MCKey:            mcKey,
-		FCnt:             0,
 		ServiceProfileID: spID,
 		MulticastGroup: ns.MulticastGroup{
 			McAddr:           devAddr[:],
@@ -153,7 +162,7 @@ func stepMulticastCreate(db sqlx.Ext, item storage.FUOTADeployment) error {
 		return fmt.Errorf("unkonwn group-type: %s", item.GroupType)
 	}
 
-	err = storage.CreateMulticastGroup(db, &mg)
+	err = storage.CreateMulticastGroup(ctx, db, &mg)
 	if err != nil {
 		return errors.Wrap(err, "create multicast-group error")
 	}
@@ -165,7 +174,7 @@ func stepMulticastCreate(db sqlx.Ext, item storage.FUOTADeployment) error {
 	item.State = storage.FUOTADeploymentMulticastSetup
 	item.NextStepAfter = time.Now()
 
-	err = storage.UpdateFUOTADeployment(db, &item)
+	err = storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}
@@ -173,12 +182,12 @@ func stepMulticastCreate(db sqlx.Ext, item storage.FUOTADeployment) error {
 	return nil
 }
 
-func stepMulticastSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepMulticastSetup(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
 
-	mcg, err := storage.GetMulticastGroup(db, *item.MulticastGroupID, false, false)
+	mcg, err := storage.GetMulticastGroup(ctx, db, *item.MulticastGroupID, false, false)
 	if err != nil {
 		return errors.Wrap(err, "get multicast group error")
 	}
@@ -242,7 +251,7 @@ func stepMulticastSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
 		}
 		copy(rms.McAddr[:], mcg.MulticastGroup.McAddr)
 
-		err = storage.CreateRemoteMulticastSetup(db, &rms)
+		err = storage.CreateRemoteMulticastSetup(ctx, db, &rms)
 		if err != nil {
 			return errors.Wrap(err, "create remote multicast setup error")
 		}
@@ -251,7 +260,7 @@ func stepMulticastSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
 	item.State = storage.FUOTADeploymentFragmentationSessSetup
 	item.NextStepAfter = time.Now().Add(time.Duration(remoteMulticastSetupRetries) * item.UnicastTimeout)
 
-	err = storage.UpdateFUOTADeployment(db, &item)
+	err = storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}
@@ -259,7 +268,7 @@ func stepMulticastSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
 	return nil
 }
 
-func stepFragmentationSessSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepFragmentationSessSetup(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
@@ -292,7 +301,7 @@ func stepFragmentationSessSetup(db sqlx.Ext, item storage.FUOTADeployment) error
 
 	for _, devEUI := range devEUIs {
 		// delete existing fragmentation session if it exist
-		err = storage.DeleteRemoteFragmentationSession(db, devEUI, fragIndex)
+		err = storage.DeleteRemoteFragmentationSession(ctx, db, devEUI, fragIndex)
 		if err != nil && err != storage.ErrDoesNotExist {
 			return errors.Wrap(err, "delete remote fragmentation session error")
 		}
@@ -310,7 +319,7 @@ func stepFragmentationSessSetup(db sqlx.Ext, item storage.FUOTADeployment) error
 			State:               storage.RemoteMulticastSetupSetup,
 			RetryInterval:       item.UnicastTimeout,
 		}
-		err = storage.CreateRemoteFragmentationSession(db, &fs)
+		err = storage.CreateRemoteFragmentationSession(ctx, db, &fs)
 		if err != nil {
 			return errors.Wrap(err, "create remote fragmentation session error")
 		}
@@ -319,7 +328,7 @@ func stepFragmentationSessSetup(db sqlx.Ext, item storage.FUOTADeployment) error
 	item.State = storage.FUOTADeploymentMulticastSessCSetup
 	item.NextStepAfter = time.Now().Add(time.Duration(remoteFragmentationSessionRetries) * item.UnicastTimeout)
 
-	err = storage.UpdateFUOTADeployment(db, &item)
+	err = storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}
@@ -327,12 +336,12 @@ func stepFragmentationSessSetup(db sqlx.Ext, item storage.FUOTADeployment) error
 	return nil
 }
 
-func stepMulticastSessCSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepMulticastSessCSetup(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
 
-	mcg, err := storage.GetMulticastGroup(db, *item.MulticastGroupID, false, false)
+	mcg, err := storage.GetMulticastGroup(ctx, db, *item.MulticastGroupID, false, false)
 	if err != nil {
 		return errors.Wrap(err, "get multicast group error")
 	}
@@ -375,7 +384,7 @@ func stepMulticastSessCSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
 			SessionTimeOut:   item.MulticastTimeout,
 			RetryInterval:    item.UnicastTimeout,
 		}
-		err = storage.CreateRemoteMulticastClassCSession(db, &rmccs)
+		err = storage.CreateRemoteMulticastClassCSession(ctx, db, &rmccs)
 		if err != nil {
 			return errors.Wrap(err, "create remote multicast class-c session error")
 		}
@@ -384,7 +393,7 @@ func stepMulticastSessCSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
 	item.State = storage.FUOTADeploymentEnqueue
 	item.NextStepAfter = time.Now().Add(time.Duration(remoteMulticastSetupRetries) * item.UnicastTimeout)
 
-	err = storage.UpdateFUOTADeployment(db, &item)
+	err = storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}
@@ -392,7 +401,7 @@ func stepMulticastSessCSetup(db sqlx.Ext, item storage.FUOTADeployment) error {
 	return nil
 }
 
-func stepEnqueue(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepEnqueue(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
@@ -426,7 +435,7 @@ func stepEnqueue(db sqlx.Ext, item storage.FUOTADeployment) error {
 	}
 
 	// enqueue the payloads
-	_, err = multicast.EnqueueMultiple(db, *item.MulticastGroupID, fragmentation.DefaultFPort, payloads)
+	_, err = multicast.EnqueueMultiple(ctx, db, *item.MulticastGroupID, fragmentation.DefaultFPort, payloads)
 	if err != nil {
 		return errors.Wrap(err, "enqueue multiple error")
 	}
@@ -440,7 +449,7 @@ func stepEnqueue(db sqlx.Ext, item storage.FUOTADeployment) error {
 		return fmt.Errorf("group-type not implemented: %s", item.GroupType)
 	}
 
-	err = storage.UpdateFUOTADeployment(db, &item)
+	err = storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}
@@ -448,7 +457,7 @@ func stepEnqueue(db sqlx.Ext, item storage.FUOTADeployment) error {
 	return nil
 }
 
-func stepStatusRequest(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepStatusRequest(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
@@ -495,7 +504,7 @@ func stepStatusRequest(db sqlx.Ext, item storage.FUOTADeployment) error {
 			return errors.Wrap(err, "marshal binary error")
 		}
 
-		_, err = downlink.EnqueueDownlinkPayload(db, devEUI, false, fragmentation.DefaultFPort, b)
+		_, err = downlink.EnqueueDownlinkPayload(ctx, db, devEUI, false, fragmentation.DefaultFPort, b)
 		if err != nil {
 			return errors.Wrap(err, "enqueue downlink payload error")
 		}
@@ -504,7 +513,7 @@ func stepStatusRequest(db sqlx.Ext, item storage.FUOTADeployment) error {
 	item.State = storage.FUOTADeploymentSetDeviceStatus
 	item.NextStepAfter = time.Now().Add(item.UnicastTimeout)
 
-	err = storage.UpdateFUOTADeployment(db, &item)
+	err = storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}
@@ -512,7 +521,7 @@ func stepStatusRequest(db sqlx.Ext, item storage.FUOTADeployment) error {
 	return nil
 }
 
-func stepSetDeviceStatus(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepSetDeviceStatus(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	if item.MulticastGroupID == nil {
 		return errors.New("MulticastGroupID must not be nil")
 	}
@@ -598,7 +607,7 @@ func stepSetDeviceStatus(db sqlx.Ext, item storage.FUOTADeployment) error {
 	item.State = storage.FUOTADeploymentCleanup
 	item.NextStepAfter = time.Now()
 
-	err = storage.UpdateFUOTADeployment(db, &item)
+	err = storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}
@@ -606,9 +615,9 @@ func stepSetDeviceStatus(db sqlx.Ext, item storage.FUOTADeployment) error {
 	return nil
 }
 
-func stepCleanup(db sqlx.Ext, item storage.FUOTADeployment) error {
+func stepCleanup(ctx context.Context, db sqlx.Ext, item storage.FUOTADeployment) error {
 	if item.MulticastGroupID != nil {
-		if err := storage.DeleteMulticastGroup(db, *item.MulticastGroupID); err != nil {
+		if err := storage.DeleteMulticastGroup(ctx, db, *item.MulticastGroupID); err != nil {
 			return errors.Wrap(err, "delete multicast group error")
 		}
 	}
@@ -616,7 +625,7 @@ func stepCleanup(db sqlx.Ext, item storage.FUOTADeployment) error {
 	item.MulticastGroupID = nil
 	item.State = storage.FUOTADeploymentDone
 
-	err := storage.UpdateFUOTADeployment(db, &item)
+	err := storage.UpdateFUOTADeployment(ctx, db, &item)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment error")
 	}

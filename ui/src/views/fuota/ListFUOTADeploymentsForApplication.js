@@ -7,6 +7,7 @@ import TableRow from "@material-ui/core/TableRow";
 
 import moment from "moment";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
@@ -18,10 +19,10 @@ const styles = {
     textAlign: "right",
   },
   button: {
-    marginLeft: 2 * theme.spacing.unit,
+    marginLeft: 2 * theme.spacing(1),
   },
   icon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
 };
 
@@ -60,14 +61,14 @@ class ListFUOTADeploymentsForApplication extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Created at</TableCell>
-                <TableCell>Updated at</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
                 <TableCell>State</TableCell>
               </TableRow>
             }

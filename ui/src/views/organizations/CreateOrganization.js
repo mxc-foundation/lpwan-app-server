@@ -6,6 +6,7 @@ import Card from '@material-ui/core/Card';
 
 import { CardContent } from "@material-ui/core";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import OrganizationForm from "./OrganizationForm";
@@ -26,17 +27,17 @@ class CreateOrganization extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Organizations" to="/organizations" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} to="/organizations" />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
         <Grid item xs={12}>
           <Card>
             <CardContent>
               <OrganizationForm
-                submitLabel="Create"
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
                 onSubmit={this.onSubmit}
               />
             </CardContent>

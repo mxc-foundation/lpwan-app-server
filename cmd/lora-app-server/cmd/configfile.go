@@ -4,7 +4,7 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
@@ -58,11 +58,23 @@ dsn="{{ .PostgreSQL.DSN }}"
 # Automatically apply database migrations.
 #
 # It is possible to apply the database-migrations by hand
-# (see https://github.com/brocaar/lora-app-server/tree/master/migrations)
-# or let LoRa App Server migrate to the latest state automatically, by using
+# (see https://github.com/mxc-foundation/lpwan-app-server/tree/master/migrations)
+# or let LPWAN App Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading Lora
 # App Server and / or applying migrations.
 automigrate={{ .PostgreSQL.Automigrate }}
+
+# Max open connections.
+#
+# This sets the max. number of open connections that are allowed in the
+# PostgreSQL connection pool (0 = unlimited).
+max_open_connections={{ .PostgreSQL.MaxOpenConnections }}
+
+# Max idle connections.
+#
+# This sets the max. number of idle connections in the PostgreSQL connection
+# pool (0 = no idle connections are retained).
+max_idle_connections={{ .PostgreSQL.MaxIdleConnections }}
 
 
 # Redis settings
@@ -85,11 +97,6 @@ max_idle={{ .Redis.MaxIdle }}
 # the timeout to a value less than the server's timeout.
 idle_timeout="{{ .Redis.IdleTimeout }}"
 
-# Mxprotocol-server settings
-[mxprotocol_server]
-mxp_server="{{ .MxpServer.MxpServer }}"
-mxp_server_development="{{ .MxpServer.MxpServerDevelopment }}"
-
 # SMTP settings
 #
 [smtp]
@@ -98,14 +105,18 @@ password={{ .SMTP.Password }}
 host={{ .SMTP.Host }}
 port={{ .SMTP.Port }}
 
-
+[m2m_server]
+m2m_server={{ .M2MServer.M2MServer }}
+ca_cert={{ .M2MServer.CACert }}
+tls_cert={{ .M2MServer.TLSCert }}
+tls_key={{ .M2MServer.TLSKey }}
 
 # Application-server settings.
 [application_server]
 # Application-server identifier.
 #
 # Random UUID defining the id of the application-server installation (used by
-# LoRa Server as routing-profile id).
+# LPWAN Server as routing-profile id).
 # For now it is recommended to not change this id.
 id="{{ .ApplicationServer.ID }}"
 
@@ -276,7 +287,7 @@ id="{{ .ApplicationServer.ID }}"
 
   # Settings for the "internal api"
   #
-  # This is the API used by LoRa Server to communicate with LoRa App Server
+  # This is the API used by LPWAN Server to communicate with LPWAN App Server
   # and should not be exposed to the end-user.
   [application_server.api]
   # ip:port to bind the api server
@@ -293,13 +304,18 @@ id="{{ .ApplicationServer.ID }}"
 
   # Public ip:port of the application-server API.
   #
-  # This is used by LoRa Server to connect to LoRa App Server. When running
-  # LoRa App Server on a different host than LoRa Server, make sure to set
-  # this to the host:ip on which LoRa Server can reach LoRa App Server.
+  # This is used by LPWAN Server to connect to LPWAN App Server. When running
+  # LPWAN App Server on a different host than LPWAN Server, make sure to set
+  # this to the host:ip on which LPWAN Server can reach LPWAN App Server.
   # The port must be equal to the port configured by the 'bind' flag
   # above.
   public_host="{{ .ApplicationServer.API.PublicHost }}"
 
+  [application_server.api_for_m2m]
+  bind="{{ .ApplicationServer.APIForM2M.Bind }}"
+  ca_cert="{{ .ApplicationServer.APIForM2M.CACert }}"
+  tls_cert="{{ .ApplicationServer.APIForM2M.TLSCert }}"
+  tls_key="{{ .ApplicationServer.APIForM2M.TLSKey }}"
 
   # Settings for the "external api"
   #
@@ -328,6 +344,29 @@ id="{{ .ApplicationServer.ID }}"
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users={{ .ApplicationServer.ExternalAPI.DisableAssignExistingUsers }}
 
+  # Settings for the remote multicast setup.
+  [application_server.remote_multicast_setup]
+  # Synchronization interval.
+  sync_interval="{{ .ApplicationServer.RemoteMulticastSetup.SyncInterval }}"
+
+  # Synchronization retries.
+  sync_retries={{ .ApplicationServer.RemoteMulticastSetup.SyncRetries }}
+
+  # Synchronization batch-size.
+  sync_batch_size={{ .ApplicationServer.RemoteMulticastSetup.SyncBatchSize }}
+
+
+  # Settings for the fragmentation-session setup.
+  [application_server.fragmentation_session]
+  # Synchronization interval.
+  sync_interval="{{ .ApplicationServer.FragmentationSession.SyncInterval }}"
+
+  # Synchronization retries.
+  sync_retries={{ .ApplicationServer.FragmentationSession.SyncRetries }}
+
+  # Synchronization batch-size.
+  sync_batch_size={{ .ApplicationServer.FragmentationSession.SyncBatchSize }}
+
 {{ if ne .ApplicationServer.Branding.Header  "" }}
   # Branding configuration.
   [application_server.branding]
@@ -344,8 +383,8 @@ id="{{ .ApplicationServer.ID }}"
 
 # Join-server configuration.
 #
-# LoRa App Server implements a (subset) of the join-api specified by the
-# LoRaWAN Backend Interfaces specification. This API is used by LoRa Server
+# LPWAN App Server implements a (subset) of the join-api specified by the
+# LoRaWAN Backend Interfaces specification. This API is used by LPWAN Server
 # to handle join-requests.
 [join_server]
 # ip:port to bind the join-server api interface to
@@ -370,10 +409,10 @@ tls_key="{{ .JoinServer.TLSKey }}"
 
 # Key Encryption Key (KEK) configuration.
 #
-# The KEK meganism is used to encrypt the session-keys sent from the
+# The KEK mechanism is used to encrypt the session-keys sent from the
 # join-server to the network-server.
 #
-# The LoRa App Server join-server will use the NetID of the requesting
+# The LPWAN App Server join-server will use the NetID of the requesting
 # network-server as the KEK label. When no such label exists in the set,
 # the session-keys will be sent unencrypted (which can be fine for
 # private networks).
@@ -429,9 +468,34 @@ tls_cert="{{ .RegistrationServer.TLSCert }}"
 tls_key="{{ .RegistrationServer.TLSKey }}"
 # Metrics collection settings.
 [metrics]
+# Timezone
+#
+# The timezone is used for correctly aggregating the metrics (e.g. per hour,
+# day or month).
+# Example: "Europe/Amsterdam" or "Local" for the the system's local time zone.
+timezone="{{ .Metrics.Timezone }}"
+
+  # Metrics stored in Redis.
+  #
+  # The following metrics are stored in Redis:
+  # * gateway statistics
+  [metrics.redis]
+  # Aggregation intervals
+  #
+  # The intervals on which to aggregate. Available options are:
+  # 'MINUTE', 'HOUR', 'DAY', 'MONTH'.
+  aggregation_intervals=[{{ if .Metrics.Redis.AggregationIntervals|len }}"{{ end }}{{ range $index, $elm := .Metrics.Redis.AggregationIntervals }}{{ if $index }}", "{{ end }}{{ $elm }}{{ end }}{{ if .Metrics.Redis.AggregationIntervals|len }}"{{ end }}]
+
+  # Aggregated statistics storage duration.
+  minute_aggregation_ttl="{{ .Metrics.Redis.MinuteAggregationTTL }}"
+  hour_aggregation_ttl="{{ .Metrics.Redis.HourAggregationTTL }}"
+  day_aggregation_ttl="{{ .Metrics.Redis.DayAggregationTTL }}"
+  month_aggregation_ttl="{{ .Metrics.Redis.MonthAggregationTTL }}"
+
+
   # Metrics stored in Prometheus.
   #
-  # These metrics expose information about the state of the LoRa Server
+  # These metrics expose information about the state of the LPWAN Server
   # instance.
   [metrics.prometheus]
   # Enable Prometheus metrics endpoint.
@@ -446,6 +510,16 @@ tls_key="{{ .RegistrationServer.TLSKey }}"
   # By setting this to true, the API request timing histogram will be enabled.
   # See also: https://github.com/grpc-ecosystem/go-grpc-prometheus#histograms
   api_timing_histogram={{ .Metrics.Prometheus.APITimingHistogram }}
+
+  [recaptcha]
+  # Each reCAPTCHA user response token is valid for two minutes, and can only 
+  # be verified once to prevent replay attacks. 
+  # If you need a new token, you can re-run the reCAPTCHA verification.
+  #
+  # host_server: The server which provide verifying-recaptcha service.
+  # secret: Required. The shared key between your site and reCAPTCHA.  
+  host_server={{ .Recaptcha.HostServer }}
+	secret={{ .Recaptcha.Secret }}
 `
 
 var configCmd = &cobra.Command{

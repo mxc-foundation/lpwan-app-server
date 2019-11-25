@@ -90,6 +90,23 @@
         ]
       }
     },
+    "/api/gateways-loc": {
+      "get": {
+        "summary": "ListLocations lists the gateways locations.",
+        "operationId": "ListLocations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiListGatewayLocationsResponse"
+            }
+          }
+        },
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/{gateway.id}": {
       "put": {
         "summary": "Update updates the gateway matching the given mac address.",
@@ -124,7 +141,7 @@
         ]
       }
     },
-    "/api/gateways/{gateway_id}/frames": {
+    "/api/gateways/{gatewayId}/frames": {
       "get": {
         "summary": "StreamFrameLogs streams the uplink and downlink frame-logs for the given gateway ID.\nNotes:\n  * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.\n  * This endpoint does not work from a web-browser.",
         "operationId": "StreamFrameLogs",
@@ -138,7 +155,7 @@
         },
         "parameters": [
           {
-            "name": "gateway_id",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -150,7 +167,7 @@
         ]
       }
     },
-    "/api/gateways/{gateway_id}/pings/last": {
+    "/api/gateways/{gatewayId}/pings/last": {
       "get": {
         "summary": "GetLastPing returns the last emitted ping and gateways receiving this ping.",
         "operationId": "GetLastPing",
@@ -164,7 +181,7 @@
         },
         "parameters": [
           {
-            "name": "gateway_id",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -176,7 +193,7 @@
         ]
       }
     },
-    "/api/gateways/{gateway_id}/stats": {
+    "/api/gateways/{gatewayId}/stats": {
       "get": {
         "summary": "GetStats lists the gateway stats given the query parameters.",
         "operationId": "GetStats",
@@ -190,7 +207,7 @@
         },
         "parameters": [
           {
-            "name": "gateway_id",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -302,9 +319,13 @@
     "apiDownlinkTXInfo": {
       "type": "object",
       "properties": {
-        "gatewayId": {
+        "gatewayID": {
           "type": "string",
           "description": "Gateway ID."
+        },
+        "downlinkID": {
+          "type": "string",
+          "description": "Downlink ID (UUID)."
         },
         "frequency": {
           "type": "integer",
@@ -425,7 +446,7 @@
           "items": {
             "$ref": "#/definitions/apiGatewayBoard"
           },
-          "description": "Gateway boards configuration (optional).\nThis is (currently) only needed when the gateway supports the fine-timestamp\nand you you would like to add the FPGA ID to the gateway meta-data or would\nlike LoRa Server to decrypt the fine-timestamp."
+          "description": "Gateway boards configuration (optional).\nThis is (currently) only needed when the gateway supports the fine-timestamp\nand you you would like to add the FPGA ID to the gateway meta-data or would\nlike LPWAN Server to decrypt the fine-timestamp."
         }
       }
     },
@@ -467,6 +488,16 @@
           "format": "date-time",
           "description": "Last update timestamp."
         },
+        "firstSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "First seen timestamp."
+        },
+        "lastSeenAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last seen timestamp."
+        },
         "organizationID": {
           "type": "string",
           "format": "int64",
@@ -476,6 +507,39 @@
           "type": "string",
           "format": "int64",
           "description": "Network-server ID."
+        },
+        "location": {
+          "$ref": "#/definitions/commonLocation",
+          "description": "Location."
+        }
+      }
+    },
+    "apiGatewayLocation": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Latitude of the gateway -90.0 to 90.0."
+        },
+        "longitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Longitude of the gateway -180.0 to 180.0."
+        },
+        "altitude": {
+          "type": "number",
+          "format": "double",
+          "description": "Altitude of the gateway in meters."
+        }
+      }
+    },
+    "apiGatewayLocationListItem": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "$ref": "#/definitions/apiGatewayLocation",
+          "description": "Location."
         }
       }
     },
@@ -576,6 +640,18 @@
         }
       }
     },
+    "apiListGatewayLocationsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGatewayLocationListItem"
+          },
+          "description": "Nodes within this result-set."
+        }
+      }
+    },
     "apiListGatewayResponse": {
       "type": "object",
       "properties": {
@@ -672,9 +748,13 @@
     "apiUplinkRXInfo": {
       "type": "object",
       "properties": {
-        "gatewayId": {
+        "gatewayID": {
           "type": "string",
           "description": "Gateway ID."
+        },
+        "uplinkID": {
+          "type": "string",
+          "description": "Uplink ID (UUID)."
         },
         "time": {
           "type": "string",

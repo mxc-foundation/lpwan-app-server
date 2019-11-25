@@ -1,17 +1,18 @@
 package fuota
 
 import (
+	"context"
 	"testing"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	nsmock "github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/fragmentation"
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -58,19 +59,19 @@ func (ts *FUOTATestSuite) SetupTest() {
 		Name:   "test",
 		Server: "test:1234",
 	}
-	assert.NoError(storage.CreateNetworkServer(ts.tx, &ts.NetworkServer))
+	assert.NoError(storage.CreateNetworkServer(context.Background(), ts.tx, &ts.NetworkServer))
 
 	ts.Organization = storage.Organization{
 		Name: "test-org",
 	}
-	assert.NoError(storage.CreateOrganization(ts.tx, &ts.Organization))
+	assert.NoError(storage.CreateOrganization(context.Background(), ts.tx, &ts.Organization))
 
 	ts.ServiceProfile = storage.ServiceProfile{
 		Name:            "test-sp",
 		OrganizationID:  ts.Organization.ID,
 		NetworkServerID: ts.NetworkServer.ID,
 	}
-	assert.NoError(storage.CreateServiceProfile(ts.tx, &ts.ServiceProfile))
+	assert.NoError(storage.CreateServiceProfile(context.Background(), ts.tx, &ts.ServiceProfile))
 	var spID uuid.UUID
 	copy(spID[:], ts.ServiceProfile.ServiceProfile.Id)
 
@@ -79,14 +80,14 @@ func (ts *FUOTATestSuite) SetupTest() {
 		OrganizationID:   ts.Organization.ID,
 		ServiceProfileID: spID,
 	}
-	assert.NoError(storage.CreateApplication(ts.tx, &ts.Application))
+	assert.NoError(storage.CreateApplication(context.Background(), ts.tx, &ts.Application))
 
 	ts.DeviceProfile = storage.DeviceProfile{
 		Name:            "test-dp",
 		OrganizationID:  ts.Organization.ID,
 		NetworkServerID: ts.NetworkServer.ID,
 	}
-	assert.NoError(storage.CreateDeviceProfile(ts.tx, &ts.DeviceProfile))
+	assert.NoError(storage.CreateDeviceProfile(context.Background(), ts.tx, &ts.DeviceProfile))
 	var dpID uuid.UUID
 	copy(dpID[:], ts.DeviceProfile.DeviceProfile.Id)
 
@@ -97,12 +98,12 @@ func (ts *FUOTATestSuite) SetupTest() {
 		Name:            "test-device",
 		Description:     "test device",
 	}
-	assert.NoError(storage.CreateDevice(ts.tx, &ts.Device))
+	assert.NoError(storage.CreateDevice(context.Background(), ts.tx, &ts.Device))
 
 	ts.DeviceActivation = storage.DeviceActivation{
 		DevEUI: ts.Device.DevEUI,
 	}
-	assert.NoError(storage.CreateDeviceActivation(ts.tx, &ts.DeviceActivation))
+	assert.NoError(storage.CreateDeviceActivation(context.Background(), ts.tx, &ts.DeviceActivation))
 }
 
 func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastCreate() {
@@ -115,13 +116,13 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastCreate() {
 		Frequency:      868100000,
 		PingSlotPeriod: 2,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
 	// run
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// test that multicast-group has been set
-	fdGet, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdGet, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.NotNil(fdGet.MulticastGroupID)
 	assert.Equal(storage.FUOTADeploymentMulticastSetup, fdGet.State)
@@ -138,12 +139,11 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastCreate() {
 	assert.EqualValues(ts.ServiceProfile.ServiceProfile.Id, mgCreateReq.MulticastGroup.ServiceProfileId)
 	assert.EqualValues(routingProfileID.Bytes(), mgCreateReq.MulticastGroup.RoutingProfileId)
 
-	mg, err := storage.GetMulticastGroup(ts.tx, *fdGet.MulticastGroupID, false, true)
+	mg, err := storage.GetMulticastGroup(context.Background(), ts.tx, *fdGet.MulticastGroupID, false, true)
 	assert.NoError(err)
 	assert.NotEqual("", mg.Name)
 	assert.NotEqual(lorawan.AES128Key{}, mg.MCAppSKey)
 	assert.NotEqual(lorawan.AES128Key{}, mg.MCKey)
-	assert.EqualValues(0, mg.FCnt)
 	assert.EqualValues(ts.ServiceProfile.ServiceProfile.Id, mg.ServiceProfileID.Bytes())
 }
 
@@ -155,14 +155,14 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSetupLW10() {
 		DevEUI:    ts.Device.DevEUI,
 		GenAppKey: lorawan.AES128Key{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 	}
-	assert.NoError(storage.CreateDeviceKeys(ts.tx, &deviceKeys))
+	assert.NoError(storage.CreateDeviceKeys(context.Background(), ts.tx, &deviceKeys))
 
 	mcg := storage.MulticastGroup{
 		Name:  "test-mg",
 		MCKey: lorawan.AES128Key{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 	mcgReq := <-ts.nsClient.CreateMulticastGroupChan
@@ -174,13 +174,13 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSetupLW10() {
 		UnicastTimeout:   time.Second,
 		State:            storage.FUOTADeploymentMulticastSetup,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
 	// run
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate remote multicast setup
-	items, err := storage.GetPendingRemoteMulticastSetupItems(ts.tx, 10, 10)
+	items, err := storage.GetPendingRemoteMulticastSetupItems(context.Background(), ts.tx, 10, 10)
 	assert.NoError(err)
 	assert.Len(items, 1)
 
@@ -198,7 +198,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSetupLW10() {
 	}, items[0])
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentFragmentationSessSetup, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.After(time.Now()))
@@ -213,14 +213,14 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSetupLW11() {
 		AppKey:    lorawan.AES128Key{2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 		GenAppKey: lorawan.AES128Key{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 	}
-	assert.NoError(storage.CreateDeviceKeys(ts.tx, &deviceKeys))
+	assert.NoError(storage.CreateDeviceKeys(context.Background(), ts.tx, &deviceKeys))
 
 	mcg := storage.MulticastGroup{
 		Name:  "test-mg",
 		MCKey: lorawan.AES128Key{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 	mcgReq := <-ts.nsClient.CreateMulticastGroupChan
@@ -232,13 +232,13 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSetupLW11() {
 		UnicastTimeout:   time.Second,
 		State:            storage.FUOTADeploymentMulticastSetup,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
 	// run
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate remote multicast setup
-	items, err := storage.GetPendingRemoteMulticastSetupItems(ts.tx, 10, 10)
+	items, err := storage.GetPendingRemoteMulticastSetupItems(context.Background(), ts.tx, 10, 10)
 	assert.NoError(err)
 	assert.Len(items, 1)
 
@@ -256,7 +256,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSetupLW11() {
 	}, items[0])
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentFragmentationSessSetup, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.After(time.Now()))
@@ -270,7 +270,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentFragmentationSessionSetup() {
 		MCKey: lorawan.AES128Key{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 	mcgReq := <-ts.nsClient.CreateMulticastGroupChan
@@ -288,7 +288,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentFragmentationSessionSetup() {
 		Redundancy:          10,
 		BlockAckDelay:       4,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
 	rms := storage.RemoteMulticastSetup{
 		DevEUI:           ts.Device.DevEUI,
@@ -296,13 +296,13 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentFragmentationSessionSetup() {
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: true,
 	}
-	assert.NoError(storage.CreateRemoteMulticastSetup(ts.tx, &rms))
+	assert.NoError(storage.CreateRemoteMulticastSetup(context.Background(), ts.tx, &rms))
 
 	// run
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate fragmentation sesssion
-	items, err := storage.GetPendingRemoteFragmentationSessions(ts.tx, 10, 10)
+	items, err := storage.GetPendingRemoteFragmentationSessions(context.Background(), ts.tx, 10, 10)
 	assert.NoError(err)
 	assert.Len(items, 1)
 
@@ -325,7 +325,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentFragmentationSessionSetup() {
 	}, items[0])
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentMulticastSessCSetup, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.After(time.Now()))
@@ -339,7 +339,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentFragmentationSessionSetupMulticastS
 		MCKey: lorawan.AES128Key{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 	mcgReq := <-ts.nsClient.CreateMulticastGroupChan
@@ -357,7 +357,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentFragmentationSessionSetupMulticastS
 		Redundancy:          10,
 		BlockAckDelay:       4,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
 	rms := storage.RemoteMulticastSetup{
 		DevEUI:           ts.Device.DevEUI,
@@ -365,13 +365,13 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentFragmentationSessionSetupMulticastS
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: false,
 	}
-	assert.NoError(storage.CreateRemoteMulticastSetup(ts.tx, &rms))
+	assert.NoError(storage.CreateRemoteMulticastSetup(context.Background(), ts.tx, &rms))
 
 	// run
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate fragmentation sesssion
-	items, err := storage.GetPendingRemoteFragmentationSessions(ts.tx, 10, 10)
+	items, err := storage.GetPendingRemoteFragmentationSessions(context.Background(), ts.tx, 10, 10)
 	assert.NoError(err)
 	assert.Len(items, 0)
 }
@@ -387,7 +387,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSessCSetup() {
 		},
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 	mcgReq := <-ts.nsClient.CreateMulticastGroupChan
@@ -400,7 +400,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSessCSetup() {
 		MulticastTimeout: 8,
 		State:            storage.FUOTADeploymentMulticastSessCSetup,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
 	rms := storage.RemoteMulticastSetup{
 		DevEUI:           ts.Device.DevEUI,
@@ -408,20 +408,20 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentMulticastSessCSetup() {
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: true,
 	}
-	assert.NoError(storage.CreateRemoteMulticastSetup(ts.tx, &rms))
+	assert.NoError(storage.CreateRemoteMulticastSetup(context.Background(), ts.tx, &rms))
 
 	rfs := storage.RemoteFragmentationSession{
 		DevEUI:           ts.Device.DevEUI,
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: true,
 	}
-	assert.NoError(storage.CreateRemoteFragmentationSession(ts.tx, &rfs))
+	assert.NoError(storage.CreateRemoteFragmentationSession(context.Background(), ts.tx, &rfs))
 
 	// run
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate class-c sessions
-	items, err := storage.GetPendingRemoteMulticastClassCSessions(ts.tx, 10, 10)
+	items, err := storage.GetPendingRemoteMulticastClassCSessions(context.Background(), ts.tx, 10, 10)
 	assert.NoError(err)
 	assert.Len(items, 1)
 
@@ -453,7 +453,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentEnqueue() {
 		},
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 	mcgReq := <-ts.nsClient.CreateMulticastGroupChan
@@ -468,10 +468,10 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentEnqueue() {
 		State:            storage.FUOTADeploymentEnqueue,
 		GroupType:        storage.FUOTADeploymentGroupTypeC,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
 	// run
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate scheduled payloads
 	items := []ns.MulticastQueueItem{
@@ -508,7 +508,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentStatusRequest() {
 		Name: "test-mg",
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 
@@ -518,7 +518,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentStatusRequest() {
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: true,
 	}
-	assert.NoError(storage.CreateRemoteMulticastSetup(ts.tx, &rms))
+	assert.NoError(storage.CreateRemoteMulticastSetup(context.Background(), ts.tx, &rms))
 
 	rfs := storage.RemoteFragmentationSession{
 		DevEUI:           ts.Device.DevEUI,
@@ -526,16 +526,16 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentStatusRequest() {
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: true,
 	}
-	assert.NoError(storage.CreateRemoteFragmentationSession(ts.tx, &rfs))
+	assert.NoError(storage.CreateRemoteFragmentationSession(context.Background(), ts.tx, &rfs))
 
 	fd := storage.FUOTADeployment{
 		Name:             "test-deployment",
 		MulticastGroupID: &mcgID,
 		State:            storage.FUOTADeploymentStatusRequest,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate
 	req := <-ts.nsClient.CreateDeviceQueueItemChan
@@ -548,7 +548,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentStatusRequest() {
 	}, *req.Item)
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentSetDeviceStatus, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.Before(time.Now()))
@@ -561,7 +561,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusNoError() {
 		Name: "test-mg",
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 
@@ -570,23 +570,23 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusNoError() {
 		MulticastGroupID: &mcgID,
 		State:            storage.FUOTADeploymentSetDeviceStatus,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
-	fdd, err := storage.GetPendingFUOTADeploymentDevice(ts.tx, ts.Device.DevEUI)
+	fdd, err := storage.GetPendingFUOTADeploymentDevice(context.Background(), ts.tx, ts.Device.DevEUI)
 	assert.NoError(err)
 	fdd.State = storage.FUOTADeploymentDeviceSuccess
-	assert.NoError(storage.UpdateFUOTADeploymentDevice(ts.tx, &fdd))
+	assert.NoError(storage.UpdateFUOTADeploymentDevice(context.Background(), ts.tx, &fdd))
 
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
-	items, err := storage.GetFUOTADeploymentDevices(ts.tx, fd.ID, 10, 0)
+	items, err := storage.GetFUOTADeploymentDevices(context.Background(), ts.tx, fd.ID, 10, 0)
 	assert.NoError(err)
 	assert.Len(items, 1)
 	assert.Equal(storage.FUOTADeploymentDeviceSuccess, items[0].State)
 	assert.Equal("", items[0].ErrorMessage)
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentCleanup, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.Before(time.Now()))
@@ -599,7 +599,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusGenericError() {
 		Name: "test-mg",
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 
@@ -608,18 +608,18 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusGenericError() {
 		MulticastGroupID: &mcgID,
 		State:            storage.FUOTADeploymentSetDeviceStatus,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
-	items, err := storage.GetFUOTADeploymentDevices(ts.tx, fd.ID, 10, 0)
+	items, err := storage.GetFUOTADeploymentDevices(context.Background(), ts.tx, fd.ID, 10, 0)
 	assert.NoError(err)
 	assert.Len(items, 1)
 	assert.Equal(storage.FUOTADeploymentDeviceError, items[0].State)
 	assert.Equal("Device did not complete the FUOTA deployment or did not confirm that it completed the FUOTA deployment.", items[0].ErrorMessage)
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentCleanup, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.Before(time.Now()))
@@ -632,7 +632,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusRemoteMulticastSetup
 		Name: "test-mg",
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 
@@ -642,25 +642,25 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusRemoteMulticastSetup
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: false,
 	}
-	assert.NoError(storage.CreateRemoteMulticastSetup(ts.tx, &rms))
+	assert.NoError(storage.CreateRemoteMulticastSetup(context.Background(), ts.tx, &rms))
 
 	fd := storage.FUOTADeployment{
 		Name:             "test-deployment",
 		MulticastGroupID: &mcgID,
 		State:            storage.FUOTADeploymentSetDeviceStatus,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
-	items, err := storage.GetFUOTADeploymentDevices(ts.tx, fd.ID, 10, 0)
+	items, err := storage.GetFUOTADeploymentDevices(context.Background(), ts.tx, fd.ID, 10, 0)
 	assert.NoError(err)
 	assert.Len(items, 1)
 	assert.Equal(storage.FUOTADeploymentDeviceError, items[0].State)
 	assert.Equal("The device failed to provision the remote multicast setup.", items[0].ErrorMessage)
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentCleanup, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.Before(time.Now()))
@@ -673,7 +673,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusFragmentationSession
 		Name: "test-mg",
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 
@@ -683,25 +683,25 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentSetDeviceStatusFragmentationSession
 		State:            storage.RemoteMulticastSetupSetup,
 		StateProvisioned: false,
 	}
-	assert.NoError(storage.CreateRemoteFragmentationSession(ts.tx, &rfs))
+	assert.NoError(storage.CreateRemoteFragmentationSession(context.Background(), ts.tx, &rfs))
 
 	fd := storage.FUOTADeployment{
 		Name:             "test-deployment",
 		MulticastGroupID: &mcgID,
 		State:            storage.FUOTADeploymentSetDeviceStatus,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
-	items, err := storage.GetFUOTADeploymentDevices(ts.tx, fd.ID, 10, 0)
+	items, err := storage.GetFUOTADeploymentDevices(context.Background(), ts.tx, fd.ID, 10, 0)
 	assert.NoError(err)
 	assert.Len(items, 1)
 	assert.Equal(storage.FUOTADeploymentDeviceError, items[0].State)
 	assert.Equal("The device failed to provision the fragmentation session setup.", items[0].ErrorMessage)
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentCleanup, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.Before(time.Now()))
@@ -714,7 +714,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentCleanup() {
 		Name: "test-mg",
 	}
 	copy(mcg.ServiceProfileID[:], ts.ServiceProfile.ServiceProfile.Id)
-	assert.NoError(storage.CreateMulticastGroup(ts.tx, &mcg))
+	assert.NoError(storage.CreateMulticastGroup(context.Background(), ts.tx, &mcg))
 	var mcgID uuid.UUID
 	copy(mcgID[:], mcg.MulticastGroup.Id)
 
@@ -723,18 +723,18 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentCleanup() {
 		MulticastGroupID: &mcgID,
 		State:            storage.FUOTADeploymentCleanup,
 	}
-	assert.NoError(storage.CreateFUOTADeploymentForDevice(ts.tx, &fd, ts.Device.DevEUI))
+	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 
-	assert.NoError(fuotaDeployments(ts.tx))
+	assert.NoError(fuotaDeployments(context.Background(), ts.tx))
 
 	// validate fuota deployment record
-	fdUpdated, err := storage.GetFUOTADeployment(ts.tx, fd.ID, false)
+	fdUpdated, err := storage.GetFUOTADeployment(context.Background(), ts.tx, fd.ID, false)
 	assert.NoError(err)
 	assert.Equal(storage.FUOTADeploymentDone, fdUpdated.State)
 	assert.True(fdUpdated.NextStepAfter.Before(time.Now()))
 	assert.Nil(fdUpdated.MulticastGroupID)
 
-	_, err = storage.GetMulticastGroup(ts.tx, mcgID, false, false)
+	_, err = storage.GetMulticastGroup(context.Background(), ts.tx, mcgID, false, false)
 	assert.Equal(storage.ErrDoesNotExist, err)
 }
 

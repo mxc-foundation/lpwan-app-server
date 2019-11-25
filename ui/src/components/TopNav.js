@@ -21,9 +21,19 @@ import AccountCircle from "mdi-material-ui/AccountCircle";
 import Magnify from "mdi-material-ui/Magnify";
 import HelpCircle from "mdi-material-ui/HelpCircle";
 
-import SessionStore from "../stores/SessionStore";
-import theme from "../theme";
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Wallet from "mdi-material-ui/WalletOutline";
+import i18n, { packageNS } from '../i18n';
+import { openM2M } from "../util/Util";
 
+import OrganizationStore from "../stores/OrganizationStore"
+import SessionStore from "../stores/SessionStore";
+import WalletStore from "../stores/WalletStore";
+import theme from "../theme";
+import DropdownMenuLanguage from "./DropdownMenuLanguage";
 
 const styles = {
   appBar: {
@@ -48,7 +58,7 @@ const styles = {
   search: {
     marginRight: 3 * theme.spacing.unit,
     color: theme.palette.textPrimary.main,
-    backgroundColor: theme.palette.primary.secondary,
+    backgroundColor: '#08005C',
     width: 480,
     padding: 5,
     borderRadius: 3,
@@ -60,7 +70,7 @@ const styles = {
   chip: {
     background: theme.palette.secondary.main,
     color: theme.palette.common.white,
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
     "&:hover": {
       background: theme.palette.primary.secondary,
     },
@@ -71,12 +81,33 @@ const styles = {
       background: theme.palette.primary.main,
     },
   },
+  iconStyle: {
+    color: theme.palette.primary.main,
+  },
   iconButton: {
     color: theme.palette.common.white,
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
+  noPadding: {
+    "&:hover": {
+      color: theme.palette.primary.main,
+      cursor: 'pointer'
+    }
+  }
 };
 
+function getWalletBalance(organizationId) {
+  if (!organizationId) {
+    return 0;
+  }
+  
+  return new Promise((resolve, reject) => {
+    
+    WalletStore.getWalletBalance(organizationId, resp => {
+      return resolve(resp);
+    });
+  });
+}
 
 class TopNav extends Component {
   constructor() {
@@ -84,14 +115,41 @@ class TopNav extends Component {
 
     this.state = {
       menuAnchor: null,
+      balance: null,
+      organizationId: SessionStore.getOrganizationID(),
       search: "",
     };
 
+    this.onLogout = this.onLogout.bind(this);
     this.onMenuOpen = this.onMenuOpen.bind(this);
     this.onMenuClose = this.onMenuClose.bind(this);
-    this.onLogout = this.onLogout.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
+  }
+  
+  componentDidMount() {
+    this.loadData();
+
+    SessionStore.on("organization.change", () => {
+      this.loadData();
+    });
+  }
+
+  loadData = async () => {
+    try {
+      let organizationId = SessionStore.getOrganizationID();
+
+      var result = await getWalletBalance(organizationId);
+      
+      this.setState({ balance: result.balance });
+    } catch (error) {
+      console.error(error);
+      this.setState({ error });
+    }
+  }
+
+  onChangeLanguage = (newLanguageState) => {
+    this.props.onChangeLanguage(newLanguageState);
   }
 
   onMenuOpen(e) {
@@ -118,6 +176,18 @@ class TopNav extends Component {
     });
   }
 
+  handlingExtLink = () => {
+    const resp = SessionStore.getProfile();
+    resp.then((res) => {
+      let orgId = this.props.location.pathname.split('/')[2];
+      const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
+
+      OrganizationStore.get(orgId, resp => {
+        openM2M(resp.organization, isBelongToOrg, '/withdraw');
+      });
+    })
+  }
+
   onSearchSubmit(e) {
     e.preventDefault();
     this.props.history.push(`/search?search=${encodeURIComponent(this.state.search)}`);
@@ -132,9 +202,9 @@ class TopNav extends Component {
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
+      logoIcon = <img src="/logo/logo_LP.png" className={this.props.classes.logo} alt="LPWAN Server" />
       searchbar = <Input
-                    placeholder="Search organization, application, gateway or device"
+                    placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
                     disableUnderline={true}
                     value={this.state.search || ""}
@@ -146,6 +216,11 @@ class TopNav extends Component {
                     }
                   />
     }
+    const { balance } = this.state;
+    
+    const balanceEl = balance === null ? 
+      <span className="color-gray">(no org selected)</span> : 
+      balance + " MXC";
 
     const open = Boolean(this.state.menuAnchor);
     const isDisabled = (this.props.user.username === process.env.REACT_APP_DEMO_USER)
@@ -171,6 +246,15 @@ class TopNav extends Component {
             { searchbar }
           </form>
 
+          <List>
+            <ListItem>
+              <ListItemIcon >
+                <Wallet className={this.props.classes.iconStyle} />
+              </ListItemIcon>
+              <ListItemText primary={ balanceEl } classes={{ primary: this.props.classes.noPadding }} onClick={this.handlingExtLink}/>
+            </ListItem>
+          </List>
+
           <Chip
             avatar={
               <Avatar>
@@ -184,7 +268,10 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
-          <a href="https://www.loraserver.io/lora-app-server/" target="loraserver-doc">
+
+          <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+
+          <a href="https://www.mxc.org/support" target="mxc-support">
             <IconButton className={this.props.classes.iconButton}>
               <HelpCircle />
             </IconButton>
@@ -204,8 +291,8 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem> :
-            <MenuItem onClick={this.onLogout}>Logout</MenuItem>
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem> :
+            <MenuItem onClick={this.onLogout}>{i18n.t(`${packageNS}:tr000035`)}</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

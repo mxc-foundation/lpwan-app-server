@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/loraserver/api/ns"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 func (ts *APITestSuite) TestServiceProfile() {
@@ -29,12 +29,12 @@ func (ts *APITestSuite) TestServiceProfile() {
 		Name:   "test-ns",
 		Server: "test-ns:1234",
 	}
-	assert.NoError(storage.CreateNetworkServer(storage.DB(), &n))
+	assert.NoError(storage.CreateNetworkServer(context.Background(), storage.DB(), &n))
 
 	org := storage.Organization{
 		Name: "test-org",
 	}
-	assert.NoError(storage.CreateOrganization(storage.DB(), &org))
+	assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org))
 
 	ts.T().Run("Create", func(t *testing.T) {
 		assert := require.New(t)
@@ -129,13 +129,13 @@ func (ts *APITestSuite) TestServiceProfile() {
 				assert := require.New(t)
 				validator.returnIsAdmin = false
 
-				userID, err := storage.CreateUser(storage.DB(), &storage.User{
+				userID, err := storage.CreateUser(context.Background(), storage.DB(), &storage.User{
 					Username: "testuser",
 					IsActive: true,
 					Email:    "foo@bar.com",
 				}, "testpassword")
 				assert.NoError(err)
-				assert.NoError(storage.CreateOrganizationUser(storage.DB(), org.ID, userID, false))
+				assert.NoError(storage.CreateOrganizationUser(context.Background(), storage.DB(), org.ID, userID, false, false, false))
 
 				t.Run("No filters", func(t *testing.T) {
 					assert := require.New(t)

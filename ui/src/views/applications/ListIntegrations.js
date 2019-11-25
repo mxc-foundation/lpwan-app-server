@@ -9,6 +9,7 @@ import Button from '@material-ui/core/Button';
 
 import Plus from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
 import ApplicationStore from "../../stores/ApplicationStore";
@@ -20,10 +21,10 @@ const styles = {
     textAlign: "right",
   },
   button: {
-    marginLeft: 2 * theme.spacing.unit,
+    marginLeft: 2 * theme.spacing(1),
   },
   icon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
 };
 
@@ -51,18 +52,18 @@ class ListIntegrations extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Grid item xs={12} className={this.props.classes.buttons}>
           <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations/create`}>
             <Plus className={this.props.classes.icon} />
-            Create
+            {i18n.t(`${packageNS}:tr000277`)}
           </Button>
         </Grid>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>Kind</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000412`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

@@ -3,6 +3,7 @@ import { EventEmitter } from "events";
 import Swagger from "swagger-client";
 import { checkStatus, errorHandler, errorHandlerLogin } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
 
 class SessionStore extends EventEmitter {
   constructor() {
@@ -41,6 +42,22 @@ class SessionStore extends EventEmitter {
 
   getToken() {
     return localStorage.getItem("jwt");
+  }
+
+  setSupportedLanguages(languages) {
+    localStorage.setItem("languages-supported", JSON.stringify(languages));
+  }
+
+  getSupportedLanguages() {
+    return JSON.parse(localStorage.getItem("languages-supported"));
+  }
+
+  setLanguage(language) {
+    localStorage.setItem("language", JSON.stringify(language));
+  }
+
+  getLanguage() {
+    return JSON.parse(localStorage.getItem("language"));
   }
 
   getOrganizationID() {
@@ -84,6 +101,22 @@ class SessionStore extends EventEmitter {
     }
   }
 
+  isOrganizationDeviceAdmin(organizationID) {
+    for (let i = 0; i < this.organizations.length; i++) {
+      if (this.organizations[i].organizationID === organizationID) {
+        return this.organizations[i].isAdmin || this.organizations[i].isDeviceAdmin;
+      }
+    }
+  }
+
+  isOrganizationGatewayAdmin(organizationID) {
+    for (let i = 0; i < this.organizations.length; i++) {
+      if (this.organizations[i].organizationID === organizationID) {
+        return this.organizations[i].isAdmin || this.organizations[i].isGatewayAdmin;
+      }
+    }
+  }
+
   login(login, callBackFunc) {
     this.swagger.then(client => {
       client.apis.InternalService.Login({body: login})
@@ -97,12 +130,25 @@ class SessionStore extends EventEmitter {
   }
 
   logout(callBackFunc) {
+    console.log('Logging out')
     localStorage.clear();
     this.user = null;
     this.organizations = [];
     this.settings = {};
     this.emit("change");
     callBackFunc();
+  }
+
+  async getProfile(){
+    try {
+      const client = await this.swagger.then((client) => client);
+      let resp = await client.apis.InternalService.Profile();
+
+      resp = await checkStatus(resp);
+      return resp;
+    } catch (error) {
+      errorHandler(error);
+    }
   }
 
   fetchProfile(callBackFunc) {
@@ -158,6 +204,7 @@ class SessionStore extends EventEmitter {
       client.apis.InternalService.RegisterUser({
         body: {
           email: data.username,
+          language: data.language
         },
       })
       .then(checkStatus)
@@ -203,12 +250,23 @@ class SessionStore extends EventEmitter {
     });
   }
 
+  getVerifyingGoogleRecaptcha(req, callBackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.GetVerifyingGoogleRecaptcha({body: req})
+        .then(checkStatus)
+        .then(resp => {
+          callBackFunc(resp.obj);
+        })
+        .catch(errorHandler);
+    });
+  }
+
   notifyActivation() {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
       notification: {
         type: "success",
-        message: "Confirmation email has been sent.",
+        message: i18n.t(`${packageNS}:tr000018`),
       },
     });
   }

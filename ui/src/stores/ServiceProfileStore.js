@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 
 import Swagger from "swagger-client";
 
+import i18n, { packageNS } from '../i18n';
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
@@ -45,7 +46,7 @@ class ServiceProfileStore extends EventEmitter {
   update(serviceProfile, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ServiceProfileService.Update({
-        "service_profile.id": serviceProfile.id,
+        "serviceProfile.id": serviceProfile.id,
         body: {
           serviceProfile: serviceProfile,
         },
@@ -66,7 +67,7 @@ class ServiceProfileStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notify("deleted");
+        this.notify(i18n.t(`${packageNS}:tr000326`));
         callbackFunc(resp.ojb);
       })
       .catch(errorHandler);

@@ -3,8 +3,8 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
+import "timestamp/timestamp.proto";
+import "empty/empty.proto";
 
 // NetworkServerService is the service managing network-servers.
 service NetworkServerService {
@@ -135,10 +135,10 @@ message GetNetworkServerResponse {
     // Last update timestamp.
     google.protobuf.Timestamp updated_at = 3;
 
-    // The LoRa Server version.
+    // The LPWAN Server version.
     string version = 4;
 
-    // The LoRa Server region configured.
+    // The LPWAN Server region configured.
     string region = 5;
 }
 

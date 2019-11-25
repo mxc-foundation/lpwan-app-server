@@ -8,16 +8,23 @@ import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from "@material-ui/core/styles";
+import ReCAPTCHA from "react-google-recaptcha";
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
-
+import i18n, { packageNS } from '../../i18n';
 
 const styles = {
   textField: {
     width: "100%",
+    display: 'flex',
+    justifyContent: 'center'
+
+  },
+  formWidth: {
+    width: 352,
   },
   link: {
     "& a": {
@@ -29,6 +36,19 @@ const styles = {
 
 
 class RegistrationForm extends FormComponent {
+
+  onReCapChange = (value) => {
+    const req = {
+      secret : process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.state.object.isVerified = resp.success;
+    }); 
+  }
+  
   render() {
     if (this.state.object === undefined) {
       return null;
@@ -41,7 +61,7 @@ class RegistrationForm extends FormComponent {
       >
         <TextField
           id="username"
-          label="Email"
+          label={i18n.t(`${packageNS}:tr000003`)}
           margin="normal"
           type="email"
           value={this.state.object.username || ""}
@@ -49,6 +69,11 @@ class RegistrationForm extends FormComponent {
           fullWidth
           required
         />
+        <ReCAPTCHA
+                sitekey={process.env.REACT_APP_PUBLIC_KEY}
+                onChange={this.onReCapChange}
+                className={this.props.style.textField}
+              />
       </Form>
     );
   }
@@ -58,17 +83,33 @@ class RegistrationForm extends FormComponent {
 class Registration extends Component {
   constructor() {
     super();
+    this.state = {
+      isVerified: false
+    };
 
     this.onSubmit = this.onSubmit.bind(this);
   }
+  
+  
 
   onSubmit(user) {
+    if(!user.isVerified){
+      alert(i18n.t(`${packageNS}:tr000021`));
+      return false;
+    }
+
+    if(SessionStore.getLanguage() && SessionStore.getLanguage().id){
+      user.language = SessionStore.getLanguage().id.toLowerCase();
+    }else {
+      user.language = 'en';
+    }
+    
     if(isEmail(user.username)){
       SessionStore.register(user, () => {
         this.props.history.push("/");
       });
     }else{
-      alert("Please, enter a valid email address to use.");
+      alert(i18n.t(`${packageNS}:tr000024`));
     }
   }
 
@@ -78,13 +119,16 @@ class Registration extends Component {
         <Grid item xs={6} lg={4}>
           <Card>
             <CardHeader
-              title="Registration"
+              title={i18n.t(`${packageNS}:tr000019`)}
             />
             <CardContent>
               <RegistrationForm
-                submitLabel="Register"
+                submitLabel={i18n.t(`${packageNS}:tr000020`)}
                 onSubmit={this.onSubmit}
+                style={this.props.classes}
+                className={this.props.classes.formWidth}
               />
+              
             </CardContent>
           </Card>
         </Grid>

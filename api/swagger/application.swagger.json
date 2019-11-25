@@ -125,7 +125,7 @@
         ]
       }
     },
-    "/api/applications/{application_id}/integrations": {
+    "/api/applications/{applicationId}/integrations": {
       "get": {
         "summary": "ListIntegrations lists all configured integrations.",
         "operationId": "ListIntegrations",
@@ -139,7 +139,7 @@
         },
         "parameters": [
           {
-            "name": "application_id",
+            "name": "applicationId",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -152,7 +152,7 @@
         ]
       }
     },
-    "/api/applications/{application_id}/integrations/http": {
+    "/api/applications/{applicationId}/integrations/http": {
       "get": {
         "summary": "GetHTTPIntegration returns the HTTP application-integration.",
         "operationId": "GetHTTPIntegration",
@@ -166,7 +166,7 @@
         },
         "parameters": [
           {
-            "name": "application_id",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -191,7 +191,7 @@
         },
         "parameters": [
           {
-            "name": "application_id",
+            "name": "applicationId",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -204,7 +204,7 @@
         ]
       }
     },
-    "/api/applications/{application_id}/integrations/influxdb": {
+    "/api/applications/{applicationId}/integrations/influxdb": {
       "get": {
         "summary": "GetInfluxDBIntegration returns the InfluxDB application-integration.",
         "operationId": "GetInfluxDBIntegration",
@@ -218,7 +218,7 @@
         },
         "parameters": [
           {
-            "name": "application_id",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -243,7 +243,7 @@
         },
         "parameters": [
           {
-            "name": "application_id",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -256,7 +256,7 @@
         ]
       }
     },
-    "/api/applications/{application_id}/integrations/thingsboard": {
+    "/api/applications/{applicationId}/integrations/thingsboard": {
       "get": {
         "summary": "GetThingsBoardIntegration returns the ThingsBoard application-integration.",
         "operationId": "GetThingsBoardIntegration",
@@ -270,7 +270,7 @@
         },
         "parameters": [
           {
-            "name": "application_id",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -295,7 +295,7 @@
         },
         "parameters": [
           {
-            "name": "application_id",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -360,7 +360,7 @@
         ]
       }
     },
-    "/api/applications/{integration.application_id}/integrations/http": {
+    "/api/applications/{integration.applicationId}/integrations/http": {
       "post": {
         "summary": "CreateHTTPIntegration creates a HTTP application-integration.",
         "operationId": "CreateHTTPIntegration",
@@ -374,7 +374,7 @@
         },
         "parameters": [
           {
-            "name": "integration.application_id",
+            "name": "integration.applicationId",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -407,7 +407,7 @@
         },
         "parameters": [
           {
-            "name": "integration.application_id",
+            "name": "integration.applicationId",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -428,7 +428,7 @@
         ]
       }
     },
-    "/api/applications/{integration.application_id}/integrations/influxdb": {
+    "/api/applications/{integration.applicationId}/integrations/influxdb": {
       "post": {
         "summary": "CreateInfluxDBIntegration create an InfluxDB application-integration.",
         "operationId": "CreateInfluxDBIntegration",
@@ -442,7 +442,7 @@
         },
         "parameters": [
           {
-            "name": "integration.application_id",
+            "name": "integration.applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -475,7 +475,7 @@
         },
         "parameters": [
           {
-            "name": "integration.application_id",
+            "name": "integration.applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -496,7 +496,7 @@
         ]
       }
     },
-    "/api/applications/{integration.application_id}/integrations/thingsboard": {
+    "/api/applications/{integration.applicationId}/integrations/thingsboard": {
       "post": {
         "summary": "CreateThingsBoardIntegration creates a ThingsBoard application-integration.",
         "operationId": "CreateThingsBoardIntegration",
@@ -510,7 +510,7 @@
         },
         "parameters": [
           {
-            "name": "integration.application_id",
+            "name": "integration.applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -543,7 +543,7 @@
         },
         "parameters": [
           {
-            "name": "integration.application_id",
+            "name": "integration.applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -585,7 +585,7 @@
         "organizationID": {
           "type": "string",
           "format": "int64",
-          "description": "ID of the organization to which the application belongs."
+          "description": "ID of the organization to which the application belongs.\nAfter create, this can not be modified."
         },
         "serviceProfileID": {
           "type": "string",

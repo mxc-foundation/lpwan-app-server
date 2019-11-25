@@ -9,10 +9,11 @@ import Tab from '@material-ui/core/Tab';
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from "@material-ui/core/FormGroup";
 import Checkbox from '@material-ui/core/Checkbox';
 import TextField from "@material-ui/core/TextField";
 import CardContent from "@material-ui/core/CardContent";
+import Typography from "@material-ui/core/Typography";
+import FormHelperText from "@material-ui/core/FormHelperText";
 
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -23,6 +24,7 @@ import UserStore from "../../stores/UserStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
@@ -64,22 +66,25 @@ class AssignUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Add"
+        submitLabel={i18n.t(`${packageNS}:tr000041`)}
         onSubmit={this.onSubmit}
       >
         <FormControl margin="normal" fullWidth>
-          <FormLabel className={this.props.classes.formLabel} required>Username</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000056`)}</FormLabel>
           <AutocompleteSelect
             id="userID"
-            label="Select username"
+            label={i18n.t(`${packageNS}:tr000137`)}
             value={this.state.object.userID || null}
             onChange={this.onChange}
             getOptions={this.getUserOptions}
           />
         </FormControl>
-        <FormGroup>
+        <Typography variant="body1">
+          {i18n.t(`${packageNS}:tr000138`)}
+        </Typography>
+        <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="Is organization admin"
+            label={i18n.t(`${packageNS}:tr000139`)}
             control={
               <Checkbox
                 id="isAdmin"
@@ -89,7 +94,36 @@ class AssignUserForm extends FormComponent {
               />
             }
           />
-        </FormGroup>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000140`)}</FormHelperText>
+        </FormControl>
+        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
+          <FormControlLabel
+            label={i18n.t(`${packageNS}:tr000141`)}
+            control={
+              <Checkbox
+                id="isDeviceAdmin"
+                checked={!!this.state.object.isDeviceAdmin}
+                onChange={this.onChange}
+                color="primary"
+              />
+            }
+          />
+          <FormHelperText>{i18n.t(`${packageNS}:tr000142`)}</FormHelperText>
+        </FormControl>}
+        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
+          <FormControlLabel
+            label={i18n.t(`${packageNS}:tr000143`)}
+            control={
+              <Checkbox
+                id="isGatewayAdmin"
+                checked={!!this.state.object.isGatewayAdmin}
+                onChange={this.onChange}
+                color="primary"
+              />
+            }
+          />
+          <FormHelperText>{i18n.t(`${packageNS}:tr000144`)}</FormHelperText>
+        </FormControl>}
       </Form>
     );
   };
@@ -106,12 +140,12 @@ class CreateUserForm extends FormComponent {
 
     return(
       <Form
-        submitLabel="Create"
+        submitLabel={i18n.t(`${packageNS}:tr000277`)}
         onSubmit={this.onSubmit}
       >
         <TextField
           id="username"
-          label="Username"
+          label={i18n.t(`${packageNS}:tr000056`)}
           margin="normal"
           value={this.state.object.username || ""}
           onChange={this.onChange}
@@ -120,7 +154,7 @@ class CreateUserForm extends FormComponent {
         />
         <TextField
           id="email"
-          label="E-mail address"
+          label={i18n.t(`${packageNS}:tr000147`)}
           margin="normal"
           value={this.state.object.email || ""}
           onChange={this.onChange}
@@ -129,8 +163,8 @@ class CreateUserForm extends FormComponent {
         />
         <TextField
           id="note"
-          label="Optional note"
-          helperText="Optional note, e.g. a phone number, address, comment..."
+          label={i18n.t(`${packageNS}:tr000129`)}
+          helperText={i18n.t(`${packageNS}:tr000130`)}
           margin="normal"
           value={this.state.object.note || ""}
           onChange={this.onChange}
@@ -140,7 +174,7 @@ class CreateUserForm extends FormComponent {
         />
         <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:tr000004`)}
           type="password"
           margin="normal"
           value={this.state.object.password || ""}
@@ -148,9 +182,12 @@ class CreateUserForm extends FormComponent {
           required
           fullWidth
         />
-        <FormGroup>
+        <Typography variant="body1">
+          {i18n.t(`${packageNS}:tr000138`)}
+        </Typography>
+        <FormControl fullWidth margin="normal">
           <FormControlLabel
-            label="Is organization admin"
+            label={i18n.t(`${packageNS}:tr000139`)}
             control={
               <Checkbox
                 id="isAdmin"
@@ -160,7 +197,36 @@ class CreateUserForm extends FormComponent {
               />
             }
           />
-        </FormGroup>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000140`)}</FormHelperText>
+        </FormControl>
+        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
+          <FormControlLabel
+            label={i18n.t(`${packageNS}:tr000141`)}
+            control={
+              <Checkbox
+                id="isDeviceAdmin"
+                checked={!!this.state.object.isDeviceAdmin}
+                onChange={this.onChange}
+                color="primary"
+              />
+            }
+          />
+          <FormHelperText>{i18n.t(`${packageNS}:tr000142`)}</FormHelperText>
+        </FormControl>}
+        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
+          <FormControlLabel
+            label={i18n.t(`${packageNS}:tr000143`)}
+            control={
+              <Checkbox
+                id="isGatewayAdmin"
+                checked={!!this.state.object.isGatewayAdmin}
+                onChange={this.onChange}
+                color="primary"
+              />
+            }
+          />
+          <FormHelperText>{i18n.t(`${packageNS}:tr000144`)}</FormHelperText>
+        </FormControl>}
       </Form>
     );
   }
@@ -213,12 +279,15 @@ class CreateOrganizationUser extends Component {
 
   onCreateUser(user) {
     const orgs = [
-      {isAdmin: user.isAdmin, organizationID: this.props.match.params.organizationID},
+      {isAdmin: user.isAdmin, isDeviceAdmin: user.isDeviceAdmin, isGatewayAdmin: user.isGatewayAdmin, organizationID: this.props.match.params.organizationID},
     ];
 
     let u = user;
-    u.isAdmin = false;
     u.isActive = true;
+
+    delete u.isAdmin;
+    delete u.isDeviceAdmin;
+    delete u.isGatewayAdmin;
 
     UserStore.create(u, user.password, orgs, resp => {
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
@@ -227,17 +296,17 @@ class CreateOrganizationUser extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Organization users" to={`/organizations/${this.props.match.params.organizationID}/users`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000068`)} to={`/organizations/${this.props.match.params.organizationID}/users`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
 
         <Grid item xs={12}>
-          <Tabs value={this.state.tab} onChange={this.onChangeTab} indicatorColor="primary" fullWidth className={this.props.classes.tabs}>
-            {this.state.assignUser && <Tab label="Assign existing user" />}
-            <Tab label="Create and assign user" />
+          <Tabs value={this.state.tab} onChange={this.onChangeTab} indicatorColor="primary" className={this.props.classes.tabs}>
+            {this.state.assignUser && <Tab label={i18n.t(`${packageNS}:tr000136`)} />}
+            <Tab label={i18n.t(`${packageNS}:tr000146`)} />
           </Tabs>
         </Grid>
 

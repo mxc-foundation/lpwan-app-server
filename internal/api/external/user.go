@@ -1,22 +1,29 @@
 package external
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/api/external/auth"
-	"github.com/brocaar/lora-app-server/internal/api/helpers"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	"github.com/brocaar/lora-app-server/internal/email"
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -81,13 +88,13 @@ func (a *UserAPI) Create(ctx context.Context, req *pb.CreateUserRequest) (*pb.Cr
 	var userID int64
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		userID, err = storage.CreateUser(tx, &user, req.Password)
+		userID, err = storage.CreateUser(ctx, tx, &user, req.Password)
 		if err != nil {
 			return err
 		}
 
 		for _, org := range req.Organizations {
-			if err := storage.CreateOrganizationUser(tx, org.OrganizationId, userID, org.IsAdmin); err != nil {
+			if err := storage.CreateOrganizationUser(ctx, tx, org.OrganizationId, userID, org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
 				return err
 			}
 		}
@@ -108,7 +115,7 @@ func (a *UserAPI) Get(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserR
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := storage.GetUser(storage.DB(), req.Id)
+	user, err := storage.GetUser(ctx, storage.DB(), req.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -144,12 +151,12 @@ func (a *UserAPI) List(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUs
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	users, err := storage.GetUsers(storage.DB(), int(req.Limit), int(req.Offset), req.Search)
+	users, err := storage.GetUsers(ctx, storage.DB(), int(req.Limit), int(req.Offset), req.Search)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	totalUserCount, err := storage.GetUserCount(storage.DB(), req.Search)
+	totalUserCount, err := storage.GetUserCount(ctx, storage.DB(), req.Search)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -203,7 +210,7 @@ func (a *UserAPI) Update(ctx context.Context, req *pb.UpdateUserRequest) (*empty
 		Note:       req.User.Note,
 	}
 
-	err := storage.UpdateUser(storage.DB(), userUpdate)
+	err := storage.UpdateUser(ctx, storage.DB(), userUpdate)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -218,7 +225,7 @@ func (a *UserAPI) Delete(ctx context.Context, req *pb.DeleteUserRequest) (*empty
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.DeleteUser(storage.DB(), req.Id)
+	err := storage.DeleteUser(ctx, storage.DB(), req.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -233,7 +240,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := storage.GetUser(storage.DB(), req.UserId)
+	user, err := storage.GetUser(ctx, storage.DB(), req.UserId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -242,7 +249,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 		return nil, helpers.ErrToRPCError(errors.New(fmt.Sprintf("User %s can not change password.", storage.DemoUser)))
 	}
 
-	err = storage.UpdatePassword(storage.DB(), req.UserId, req.Password)
+	err = storage.UpdatePassword(ctx, storage.DB(), req.UserId, req.Password)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -259,12 +266,57 @@ func NewInternalUserAPI(validator auth.Validator) *InternalUserAPI {
 
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	jwt, err := storage.LoginUser(storage.DB(), req.Username, req.Password)
+	jwt, err := storage.LoginUser(ctx, storage.DB(), req.Username, req.Password)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	return &pb.LoginResponse{Jwt: jwt}, nil
+}
+
+func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
+	secret := config.C.Recaptcha.Secret
+	postURL := config.C.Recaptcha.HostServer
+
+	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
+	responsePost, err := http.PostForm(postURL, postStr)
+
+	if err != nil {
+		log.Warn(err)
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	defer func() {
+		err := responsePost.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("cannot close the responsePost body.")
+		}
+	}()
+
+	body, err := ioutil.ReadAll(responsePost.Body)
+
+	if err != nil {
+		log.Warn(err)
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	g_response := &pb.GoogleRecaptchaResponse{}
+	err = json.Unmarshal(body, &g_response)
+	if err != nil {
+		fmt.Println("unmarshal response", err)
+	}
+
+	return g_response, nil
+}
+
+func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *pb.GoogleRecaptchaRequest) (*pb.GoogleRecaptchaResponse, error) {
+	res, err := IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
+	if err != nil {
+		log.WithError(err).Error("Cannot verify from google recaptcha")
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	return &pb.GoogleRecaptchaResponse{Success: res.Success, ChallengeTs: res.ChallengeTs, Hostname: res.Hostname}, nil
 }
 
 type claims struct {
@@ -284,12 +336,12 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*pb.Pr
 	}
 
 	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(storage.DB(), username)
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	prof, err := storage.GetProfile(storage.DB(), user.ID)
+	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -312,6 +364,8 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*pb.Pr
 			OrganizationId:   org.ID,
 			OrganizationName: org.Name,
 			IsAdmin:          org.IsAdmin,
+			IsDeviceAdmin:    org.IsDeviceAdmin,
+			IsGatewayAdmin:   org.IsGatewayAdmin,
 		}
 
 		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
@@ -357,7 +411,7 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	results, err := storage.GlobalSearch(storage.DB(), username, isAdmin, req.Search, int(req.Limit), int(req.Offset))
+	results, err := storage.GlobalSearch(ctx, storage.DB(), username, isAdmin, req.Search, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -419,7 +473,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 	}
 	token := u.String()
 
-	obj, err := storage.GetUserByUsername(storage.DB(), user.Username)
+	obj, err := storage.GetUserByUsername(ctx, storage.DB(), user.Username)
 	if err == storage.ErrDoesNotExist {
 		// user has never been created yet
 		err = storage.RegisterUser(storage.DB(), &user, token)
@@ -428,7 +482,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		}
 
 		// get user again
-		obj, err = storage.GetUserByUsername(storage.DB(), user.Username)
+		obj, err = storage.GetUserByUsername(ctx, storage.DB(), user.Username)
 		if err != nil {
 			// internal error
 			return nil, helpers.ErrToRPCError(err)
@@ -442,7 +496,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(obj.Username, *obj.SecurityToken)
+	err = email.SendInvite(obj.Username, *obj.SecurityToken, int32(req.Language))
 	if err != nil {
 		log.WithFields(log.Fields{
 			"username": user.Username,
@@ -494,18 +548,68 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			return helpers.ErrToRPCError(err)
 		}
 
-		err = storage.CreateOrganization(tx, &org)
+		err = storage.CreateOrganization(ctx, tx, &org)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
-		err = storage.CreateOrganizationUser(tx, org.ID, req.UserId, true)
+		// add admin user into this organization
+		adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
+		if err == nil {
+			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
+			if err != nil {
+				log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
+			}
+		} else {
+			log.WithError(err).Error("Get user by username 'admin' failed")
+		}
+
+		err = storage.CreateOrganizationUser(ctx, tx, org.ID, req.UserId, true, false, false)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
+		}
+
+		// add service profile for this organization
+		networkServerList, err := storage.GetNetworkServers(ctx, tx, 10, 0)
+		if err == nil && len(networkServerList) >= 1 {
+			sp := storage.ServiceProfile{
+				OrganizationID:  org.ID,
+				NetworkServerID: networkServerList[0].ID,
+				Name:            "service_profile_" + org.Name,
+				ServiceProfile: ns.ServiceProfile{
+					UlRate:                 0,
+					UlBucketSize:           0,
+					DlRate:                 0,
+					DlBucketSize:           0,
+					AddGwMetadata:          true,
+					DevStatusReqFreq:       0,
+					ReportDevStatusBattery: true,
+					ReportDevStatusMargin:  true,
+					DrMin:                  0,
+					DrMax:                  0,
+					ChannelMask:            []byte(""),
+					PrAllowed:              true,
+					HrAllowed:              true,
+					RaAllowed:              true,
+					NwkGeoLoc:              true,
+					TargetPer:              0,
+					MinGwDiversity:         0,
+					UlRatePolicy:           ns.RatePolicy_DROP,
+					DlRatePolicy:           ns.RatePolicy_DROP,
+				},
+			}
+
+			err := storage.CreateServiceProfile(ctx, tx, &sp)
+			if err != nil {
+				log.WithError(err).Error("Add service profile for organization_id = ", org.ID, " failed")
+			}
+		} else {
+			log.WithError(err).Error("Get network server for organization_id = 0 failed")
 		}
 
 		return nil
 	})
+
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

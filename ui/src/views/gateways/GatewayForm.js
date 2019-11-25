@@ -12,6 +12,7 @@ import Button from "@material-ui/core/Button";
 
 import { Map, Marker } from 'react-leaflet';
 
+import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
@@ -57,23 +58,23 @@ class GatewayBoardForm extends Component {
   render() {
     return(
       <FormControl fullWidth margin="normal">
-        <FormLabel className={this.props.classes.formLabel}>Board #{this.props.i} configuration (<a href="#delete" onClick={this.onDelete} className={this.props.classes.a}>delete</a>)</FormLabel>
+        <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000400`)} #{this.props.i} (<a href="#delete" onClick={this.onDelete} className={this.props.classes.a}>{i18n.t(`${packageNS}:tr000401`)}</a>)</FormLabel>
         <EUI64Field
           id="fpgaID"
-          label="FPGA ID"
+          label={i18n.t(`${packageNS}:tr000236`)}
           margin="normal"
           value={this.props.board.fpgaID || ""}
           onChange={this.onChange}
-          helperText="The FPGA ID of the geoloc concentrator board. This is only available for v2 gateways with geolocation capabilities. (optional)"
+          helperText={i18n.t(`${packageNS}:tr000237`)}
           fullWidth
         />
         <AESKeyField
           id="fineTimestampKey"
-          label="Fine-timestamp decryption key"
+          label={i18n.t(`${packageNS}:tr000238`)}
           margin="normal"
           value={this.props.board.fineTimestampKey || ""}
           onChange={this.onChange}
-          helperText="The fine-timestamp AES decryption key. When set, LoRa Server will decrypt the fine-timestamp. This is only available for v2 gateways with geolocation capabilities. (optional)"
+          helperText={i18n.t(`${packageNS}:tr000239`)}
           fullWidth
         />
       </FormControl>
@@ -86,7 +87,7 @@ GatewayBoardForm = withStyles(boardStyles)(GatewayBoardForm);
 
 const styles = {
   mapLabel: {
-    marginBottom: theme.spacing.unit,
+    marginBottom: theme.spacing(1),
   },
   link: {
     color: theme.palette.primary.main,
@@ -254,24 +255,24 @@ class GatewayForm extends FormComponent {
       <Form
         submitLabel={this.props.submitLabel}
         onSubmit={this.onSubmit}
-        extraButtons={<Button onClick={this.addGatewayBoard}>Add board configuration</Button>}
+        extraButtons={<Button onClick={this.addGatewayBoard}>{i18n.t(`${packageNS}:tr000234`)}</Button>}
       >
         <TextField
           id="name"
-          label="Gateway name"
+          label={i18n.t(`${packageNS}:tr000218`)}
           margin="normal"
           value={this.state.object.name || ""}
           onChange={this.onChange}
           inputProps={{
             pattern: "[\\w-]+",
           }}
-          helperText="The name may only contain words, numbers and dashes."
+          helperText={i18n.t(`${packageNS}:tr000062`)}
           required
           fullWidth
         />
         <TextField
           id="description"
-          label="Gateway description"
+          label={i18n.t(`${packageNS}:tr000219`)}
           margin="normal"
           value={this.state.object.description || ""}
           onChange={this.onChange}
@@ -282,7 +283,7 @@ class GatewayForm extends FormComponent {
         />
         {!this.props.update && <EUI64Field
           id="id"
-          label="Gateway ID"
+          label={i18n.t(`${packageNS}:tr000074`)}
           margin="normal"
           value={this.state.object.id || ""}
           onChange={this.onChange}
@@ -291,24 +292,24 @@ class GatewayForm extends FormComponent {
           random
         />}
         {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>Network-server</FormLabel>
+          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
           <AutocompleteSelect
             id="networkServerID"
-            label="Select network-server"
+            label={i18n.t(`${packageNS}:tr000115`)}
             value={this.state.object.networkServerID || ""}
             onChange={this.onChange}
             getOption={this.getNetworkServerOption}
             getOptions={this.getNetworkServerOptions}
           />
           <FormHelperText>
-            Select the network-server to which the gateway will connect. When no network-servers are available in the dropdown, make sure a service-profile exists for this organization. 
+            {i18n.t(`${packageNS}:tr000223`)}
           </FormHelperText>
         </FormControl>}
         <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel}>Gateway-profile</FormLabel>
+          <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000224`)}</FormLabel>
           <AutocompleteSelect
             id="gatewayProfileID"
-            label="Select gateway-profile"
+            label={i18n.t(`${packageNS}:tr000225`)}
             value={this.state.object.gatewayProfileID || ""}
             triggerReload={this.state.object.networkServerID || ""}
             onChange={this.onChange}
@@ -320,12 +321,12 @@ class GatewayForm extends FormComponent {
             }}
           />
           <FormHelperText>
-            An optional gateway-profile which can be assigned to a gateway. This configuration can be used to automatically re-configure the gateway when LoRa Gateway Bridge is configured so that it manages the packet-forwarder configuration.
+            {i18n.t(`${packageNS}:tr000227`)}
           </FormHelperText>
         </FormControl>
         <FormGroup>
           <FormControlLabel
-            label="Gateway discovery enabled"
+            label={i18n.t(`${packageNS}:tr000228`)}
             control={
               <Checkbox
                 id="discoveryEnabled"
@@ -336,22 +337,22 @@ class GatewayForm extends FormComponent {
             }
           />
           <FormHelperText>
-            When enabled (and LoRa Server is configured with the gateway discover feature enabled), the gateway will send out periodical pings to test its coverage by other gateways in the same network.
+            {i18n.t(`${packageNS}:tr000229`)}
           </FormHelperText>
         </FormGroup>
         <TextField
           id="location.altitude"
-          label="Gateway altitude (meters)"
+          label={i18n.t(`${packageNS}:tr000230`)}
           margin="normal"
           type="number"
           value={this.state.object.location.altitude || 0}
           onChange={this.onChange}
-          helperText="When the gateway has an on-board GPS, this value will be set automatically when the network received statistics from the gateway."
+          helperText={i18n.t(`${packageNS}:tr000231`)}
           required
           fullWidth
         />
         <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.mapLabel}>Gateway location (<a onClick={this.setCurrentPosition} href="#getlocation" className={this.props.classes.link}>set to current location</a>)</FormLabel>
+          <FormLabel className={this.props.classes.mapLabel}>{i18n.t(`${packageNS}:tr000232`)} (<a onClick={this.setCurrentPosition} href="#getlocation" className={this.props.classes.link}>{i18n.t(`${packageNS}:tr000328`)}</a>)</FormLabel>
           <Map
             center={position}
             zoom={this.state.mapZoom}
@@ -364,7 +365,7 @@ class GatewayForm extends FormComponent {
             <Marker position={position} draggable={true} onDragend={this.updatePosition} ref="marker" />
           </Map>
           <FormHelperText>
-            Drag the marker to the location of the gateway. When the gateway has an on-board GPS, this value will be set automatically when the network receives statistics from the gateway.
+            {i18n.t(`${packageNS}:tr000233`)}
           </FormHelperText>
         </FormControl>
         {boards}

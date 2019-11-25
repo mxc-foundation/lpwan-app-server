@@ -3,8 +3,8 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/duration.proto";
+import "timestamp/timestamp.proto";
+import "duration/duration.proto";
 import "multicastGroup.proto";
 
 // FUOTADeploymentService is the service managing FUOTA deployments.

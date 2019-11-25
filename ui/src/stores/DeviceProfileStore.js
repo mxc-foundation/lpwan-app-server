@@ -45,7 +45,7 @@ class DeviceProfileStore extends EventEmitter {
   update(deviceProfile, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceProfileService.Update({
-        "device_profile.id": deviceProfile.id,
+        "deviceProfile.id": deviceProfile.id,
         body: {
           deviceProfile: deviceProfile,
         },

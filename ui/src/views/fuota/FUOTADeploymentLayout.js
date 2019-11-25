@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 
@@ -89,9 +90,9 @@ class FUOTADeploymentLayout extends Component {
     }
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title="Applications" />
+          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title={i18n.t(`${packageNS}:tr000076`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} title={this.state.application.application.name} />
           <TitleBarTitle title="/" />
@@ -108,7 +109,7 @@ class FUOTADeploymentLayout extends Component {
             onChange={this.onChangeTab}
           >
             <Tab label="Information" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${this.props.match.params.fuotaDeploymentID}`} />
-            <Tab label="Devices" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${this.props.match.params.fuotaDeploymentID}/devices`} />
+            <Tab label={i18n.t(`${packageNS}:tr000278`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${this.props.match.params.fuotaDeploymentID}/devices`} />
           </Tabs>
         </Grid>
 

@@ -3,7 +3,7 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
+import "empty/empty.proto";
 
 // ApplicationService is the service managing applications.
 service ApplicationService {
@@ -160,6 +160,7 @@ message Application {
 	string description = 3;
 
 	// ID of the organization to which the application belongs.
+    // After create, this can not be modified.
 	int64 organization_id = 4 [json_name = "organizationID"];
 
 	// ID of the service profile.

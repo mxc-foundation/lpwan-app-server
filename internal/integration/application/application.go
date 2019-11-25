@@ -3,17 +3,18 @@ package application
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
 
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/integration/http"
-	"github.com/brocaar/lora-app-server/internal/integration/influxdb"
-	"github.com/brocaar/lora-app-server/internal/integration/multi"
-	"github.com/brocaar/lora-app-server/internal/integration/thingsboard"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/influxdb"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/multi"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/thingsboard"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // Integration implements the application integration wrapper.
@@ -27,69 +28,69 @@ func New() *Integration {
 }
 
 // SendDataUp sends an uplink payload.
-func (i *Integration) SendDataUp(pl integration.DataUpPayload) error {
-	multi, err := i.getApplicationIntegration(pl.ApplicationID)
+func (i *Integration) SendDataUp(ctx context.Context, pl integration.DataUpPayload) error {
+	multi, err := i.getApplicationIntegration(ctx, pl.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get application integration error")
 	}
 	defer multi.Close()
 
-	return multi.SendDataUp(pl)
+	return multi.SendDataUp(ctx, pl)
 }
 
 // SendJoinNotification sends a join notification.
-func (i *Integration) SendJoinNotification(pl integration.JoinNotification) error {
-	multi, err := i.getApplicationIntegration(pl.ApplicationID)
+func (i *Integration) SendJoinNotification(ctx context.Context, pl integration.JoinNotification) error {
+	multi, err := i.getApplicationIntegration(ctx, pl.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get appplication integration error")
 	}
 	defer multi.Close()
 
-	return multi.SendJoinNotification(pl)
+	return multi.SendJoinNotification(ctx, pl)
 }
 
 // SendACKNotification sends an ACK notification.
-func (i *Integration) SendACKNotification(pl integration.ACKNotification) error {
-	multi, err := i.getApplicationIntegration(pl.ApplicationID)
+func (i *Integration) SendACKNotification(ctx context.Context, pl integration.ACKNotification) error {
+	multi, err := i.getApplicationIntegration(ctx, pl.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get appplication integration error")
 	}
 	defer multi.Close()
 
-	return multi.SendACKNotification(pl)
+	return multi.SendACKNotification(ctx, pl)
 }
 
 // SendErrorNotification sends an error notification.
-func (i *Integration) SendErrorNotification(pl integration.ErrorNotification) error {
-	multi, err := i.getApplicationIntegration(pl.ApplicationID)
+func (i *Integration) SendErrorNotification(ctx context.Context, pl integration.ErrorNotification) error {
+	multi, err := i.getApplicationIntegration(ctx, pl.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get appplication integration error")
 	}
 	defer multi.Close()
 
-	return multi.SendErrorNotification(pl)
+	return multi.SendErrorNotification(ctx, pl)
 }
 
 // SendStatusNotification sends a status notification.
-func (i *Integration) SendStatusNotification(pl integration.StatusNotification) error {
-	multi, err := i.getApplicationIntegration(pl.ApplicationID)
+func (i *Integration) SendStatusNotification(ctx context.Context, pl integration.StatusNotification) error {
+	multi, err := i.getApplicationIntegration(ctx, pl.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get appplication integration error")
 	}
 	defer multi.Close()
 
-	return multi.SendStatusNotification(pl)
+	return multi.SendStatusNotification(ctx, pl)
 }
 
 // SendLocationNotification sends a location notification.
-func (i *Integration) SendLocationNotification(pl integration.LocationNotification) error {
-	multi, err := i.getApplicationIntegration(pl.ApplicationID)
+func (i *Integration) SendLocationNotification(ctx context.Context, pl integration.LocationNotification) error {
+	multi, err := i.getApplicationIntegration(ctx, pl.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get appplication integration error")
 	}
 	defer multi.Close()
 
-	return multi.SendLocationNotification(pl)
+	return multi.SendLocationNotification(ctx, pl)
 }
 
 // DataDownChan return nil.
@@ -102,11 +103,11 @@ func (i *Integration) Close() error {
 	return nil
 }
 
-func (i *Integration) getApplicationIntegration(id int64) (integration.Integrator, error) {
+func (i *Integration) getApplicationIntegration(ctx context.Context, id int64) (integration.Integrator, error) {
 	var configs []interface{}
 
 	// read integrations
-	appints, err := storage.GetIntegrationsForApplicationID(storage.DB(), id)
+	appints, err := storage.GetIntegrationsForApplicationID(ctx, storage.DB(), id)
 	if err != nil {
 		return nil, errors.Wrap(err, "get integrations for application id error")
 	}

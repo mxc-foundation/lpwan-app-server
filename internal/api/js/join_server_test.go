@@ -2,6 +2,7 @@ package js
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,14 +11,15 @@ import (
 	"github.com/gofrs/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	nsmock "github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/integration/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 func TestJoinServerAPI(t *testing.T) {
@@ -39,20 +41,20 @@ func TestJoinServerAPI(t *testing.T) {
 		org := storage.Organization{
 			Name: "test-org",
 		}
-		So(storage.CreateOrganization(storage.DB(), &org), ShouldBeNil)
+		So(storage.CreateOrganization(context.Background(), storage.DB(), &org), ShouldBeNil)
 
 		n := storage.NetworkServer{
 			Name:   "test-ns",
 			Server: "test-ns:1234",
 		}
-		So(storage.CreateNetworkServer(storage.DB(), &n), ShouldBeNil)
+		So(storage.CreateNetworkServer(context.Background(), storage.DB(), &n), ShouldBeNil)
 
 		sp := storage.ServiceProfile{
 			OrganizationID:  org.ID,
 			NetworkServerID: n.ID,
 			Name:            "test-sp",
 		}
-		So(storage.CreateServiceProfile(storage.DB(), &sp), ShouldBeNil)
+		So(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp), ShouldBeNil)
 		spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
 		So(err, ShouldBeNil)
 
@@ -61,7 +63,7 @@ func TestJoinServerAPI(t *testing.T) {
 			NetworkServerID: n.ID,
 			Name:            "test-dp",
 		}
-		So(storage.CreateDeviceProfile(storage.DB(), &dp), ShouldBeNil)
+		So(storage.CreateDeviceProfile(context.Background(), storage.DB(), &dp), ShouldBeNil)
 		dpID, err := uuid.FromBytes(dp.DeviceProfile.Id)
 		So(err, ShouldBeNil)
 
@@ -70,7 +72,7 @@ func TestJoinServerAPI(t *testing.T) {
 			ServiceProfileID: spID,
 			Name:             "test-app",
 		}
-		So(storage.CreateApplication(storage.DB(), &app), ShouldBeNil)
+		So(storage.CreateApplication(context.Background(), storage.DB(), &app), ShouldBeNil)
 
 		d := storage.Device{
 			ApplicationID:   app.ID,
@@ -78,18 +80,19 @@ func TestJoinServerAPI(t *testing.T) {
 			DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
 			DeviceProfileID: dpID,
 		}
-		So(storage.CreateDevice(storage.DB(), &d), ShouldBeNil)
+		So(storage.CreateDevice(context.Background(), storage.DB(), &d), ShouldBeNil)
 
 		dk := storage.DeviceKeys{
 			DevEUI:    d.DevEUI,
 			NwkKey:    lorawan.AES128Key{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8},
 			JoinNonce: 65535,
 		}
-		So(storage.CreateDeviceKeys(storage.DB(), &dk), ShouldBeNil)
+		So(storage.CreateDeviceKeys(context.Background(), storage.DB(), &dk), ShouldBeNil)
 
 		Convey("Given a test-server", func() {
-			api := JoinServerAPI{}
-			server := httptest.NewServer(&api)
+			api, err := getHandler(config.Config{})
+			So(err, ShouldBeNil)
+			server := httptest.NewServer(api)
 			defer server.Close()
 
 			cFList := lorawan.CFList{
@@ -205,7 +208,7 @@ func TestJoinServerAPI(t *testing.T) {
 				})
 
 				Convey("Then the expected keys are stored", func() {
-					dk, err := storage.GetDeviceKeys(storage.DB(), d.DevEUI)
+					dk, err := storage.GetDeviceKeys(context.Background(), storage.DB(), d.DevEUI)
 					So(err, ShouldBeNil)
 
 					So(dk.JoinNonce, ShouldEqual, 65536)

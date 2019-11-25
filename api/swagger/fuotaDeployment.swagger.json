@@ -15,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/devices/{dev_eui}/fuota-deployments": {
+    "/api/devices/{devEui}/fuota-deployments": {
       "post": {
         "summary": "CreateForDevice creates a deployment for the given DevEUI.",
         "operationId": "CreateForDevice",
@@ -29,7 +29,7 @@
         },
         "parameters": [
           {
-            "name": "dev_eui",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -99,7 +99,7 @@
         ]
       }
     },
-    "/api/fuota-deployments/{fuota_deployment_id}/devices": {
+    "/api/fuota-deployments/{fuotaDeploymentId}/devices": {
       "get": {
         "summary": "ListDeploymentDevices lists the devices (and status) for the given fuota deployment ID.",
         "operationId": "ListDeploymentDevices",
@@ -113,7 +113,7 @@
         },
         "parameters": [
           {
-            "name": "fuota_deployment_id",
+            "name": "fuotaDeploymentId",
             "description": "ID of the deployment (string formatted UUID).\nThis value will be automatically assigned on create.",
             "in": "path",
             "required": true,
@@ -141,7 +141,7 @@
         ]
       }
     },
-    "/api/fuota-deployments/{fuota_deployment_id}/devices/{dev_eui}": {
+    "/api/fuota-deployments/{fuotaDeploymentId}/devices/{devEui}": {
       "get": {
         "summary": "GetDeploymentDevice returns the deployment device.",
         "operationId": "GetDeploymentDevice",
@@ -155,14 +155,14 @@
         },
         "parameters": [
           {
-            "name": "fuota_deployment_id",
+            "name": "fuotaDeploymentId",
             "description": "ID of the deployment (string formatted UUID).\nThis value will be automatically assigned on create.",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "dev_eui",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,

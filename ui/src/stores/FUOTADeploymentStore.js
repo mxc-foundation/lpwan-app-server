@@ -16,7 +16,7 @@ class FUOTADeploymentStore extends EventEmitter {
   createForDevice(devEUI, fuotaDeployment, callbackFunc) {
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.CreateForDevice({
-        dev_eui: devEUI,
+        devEui: devEUI,
         body: {
           fuotaDeployment: fuotaDeployment,
         },
@@ -68,8 +68,8 @@ class FUOTADeploymentStore extends EventEmitter {
   getDeploymentDevice(fuotaDeploymentID, devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.GetDeploymentDevice({
-        fuota_deployment_id: fuotaDeploymentID,
-        dev_eui: devEUI,
+        fuotaDeploymentId: fuotaDeploymentID,
+        devEui: devEUI,
       })
         .then(checkStatus)
         .then(resp => {

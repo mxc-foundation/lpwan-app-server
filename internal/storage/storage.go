@@ -2,22 +2,25 @@ package storage
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
+	uuid "github.com/gofrs/uuid"
 	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/migrations"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
 )
 
 var (
-	jwtsecret      []byte
-	HashIterations = 100000
-	DemoUser       = ""
+	jwtsecret           []byte
+	HashIterations      = 100000
+	DemoUser            = ""
+	applicationServerID uuid.UUID
 )
 
 // Setup configures the storage package.
@@ -27,6 +30,33 @@ func Setup(c config.Config) error {
 	jwtsecret = []byte(c.ApplicationServer.ExternalAPI.JWTSecret)
 	HashIterations = c.General.PasswordHashIterations
 	DemoUser = c.General.DemoUser
+
+	if err := applicationServerID.UnmarshalText([]byte(c.ApplicationServer.ID)); err != nil {
+		return errors.Wrap(err, "decode application_server.id error")
+	}
+
+	log.Info("storage: setup metrics")
+	// setup aggregation intervals
+	var intervals []AggregationInterval
+	for _, agg := range c.Metrics.Redis.AggregationIntervals {
+		intervals = append(intervals, AggregationInterval(strings.ToUpper(agg)))
+	}
+	if err := SetAggregationIntervals(intervals); err != nil {
+		return errors.Wrap(err, "set aggregation intervals error")
+	}
+
+	// setup timezone
+	if err := SetTimeLocation(c.Metrics.Timezone); err != nil {
+		return errors.Wrap(err, "set time location error")
+	}
+
+	// setup storage TTL
+	SetMetricsTTL(
+		c.Metrics.Redis.MinuteAggregationTTL,
+		c.Metrics.Redis.HourAggregationTTL,
+		c.Metrics.Redis.DayAggregationTTL,
+		c.Metrics.Redis.MonthAggregationTTL,
+	)
 
 	log.Info("storage: setting up Redis pool")
 	redisPool = &redis.Pool{
@@ -60,6 +90,8 @@ func Setup(c config.Config) error {
 	if err != nil {
 		return errors.Wrap(err, "storage: PostgreSQL connection error")
 	}
+	d.SetMaxOpenConns(c.PostgreSQL.MaxOpenConnections)
+	d.SetMaxIdleConns(c.PostgreSQL.MaxIdleConnections)
 	for {
 		if err := d.Ping(); err != nil {
 			log.WithError(err).Warning("storage: ping PostgreSQL database error, will retry in 2s")

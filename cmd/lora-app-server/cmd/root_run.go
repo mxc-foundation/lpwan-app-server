@@ -11,21 +11,23 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/brocaar/lora-app-server/internal/api"
-	"github.com/brocaar/lora-app-server/internal/applayer/fragmentation"
-	"github.com/brocaar/lora-app-server/internal/applayer/multicastsetup"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/codec"
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/downlink"
-	"github.com/brocaar/lora-app-server/internal/email"
-	"github.com/brocaar/lora-app-server/internal/fuota"
-	"github.com/brocaar/lora-app-server/internal/gwping"
-	"github.com/brocaar/lora-app-server/internal/integration"
-	"github.com/brocaar/lora-app-server/internal/integration/application"
-	"github.com/brocaar/lora-app-server/internal/integration/multi"
-	"github.com/brocaar/lora-app-server/internal/metrics"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/fuota"
+	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/application"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/multi"
+	"github.com/mxc-foundation/lpwan-app-server/internal/metrics"
+	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -38,6 +40,8 @@ func run(cmd *cobra.Command, args []string) error {
 		printStartMessage,
 		setupStorage,
 		setupNetworkServer,
+		migrateGatewayStats,
+		setupM2MServer,
 		setupIntegration,
 		setupSMTP,
 		setupCodec,
@@ -83,7 +87,7 @@ func printStartMessage() error {
 	log.WithFields(log.Fields{
 		"version": version,
 		"docs":    "https://www.loraserver.io/",
-	}).Info("starting LoRa App Server")
+	}).Info("starting LPWAN App Server")
 	return nil
 }
 
@@ -150,6 +154,21 @@ func setupCodec() error {
 func setupNetworkServer() error {
 	if err := networkserver.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup networkserver error")
+	}
+	return nil
+}
+
+func migrateGatewayStats() error {
+	if err := code.Migrate("migrate_gw_stats", code.MigrateGatewayStats); err != nil {
+		return errors.Wrap(err, "migration error")
+	}
+
+	return nil
+}
+
+func setupM2MServer() error {
+	if err := m2m_client.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup m2m-server error")
 	}
 	return nil
 }

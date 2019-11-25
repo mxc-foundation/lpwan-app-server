@@ -12,6 +12,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from "@material-ui/core/Button";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 
@@ -83,7 +84,7 @@ class CreateDevice extends Component {
     }
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Dialog
           open={this.state.dpDialog}
           onClose={this.closeDialog}
@@ -99,26 +100,26 @@ class CreateDevice extends Component {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to={`/organizations/${this.props.match.params.organizationID}/device-profiles/create`} onClick={this.closeDialog}>Create</Button>
-            <Button color="primary" onClick={this.closeDialog}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to={`/organizations/${this.props.match.params.organizationID}/device-profiles/create`} onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000277`)}</Button>
+            <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
           </DialogActions>
         </Dialog>
 
         <TitleBar>
-          <TitleBarTitle title="Applications" to={`/organizations/${this.props.match.params.organizationID}/applications`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${this.props.match.params.organizationID}/applications`} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.application.application.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Devices" to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000278`)} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Card className={this.props.classes.card}>
             <CardContent>
               <DeviceForm
-                submitLabel="Create"
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
                 onSubmit={this.onSubmit}
                 match={this.props.match}
               />

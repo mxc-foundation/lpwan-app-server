@@ -6,6 +6,7 @@ import TableRow from '@material-ui/core/TableRow';
 
 import Plus from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
@@ -37,25 +38,25 @@ class ListServiceProfiles extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar
           buttons={
             <Admin>
               <TitleBarButton
-                label="Create"
+                label={i18n.t(`${packageNS}:tr000277`)}
                 icon={<Plus />}
                 to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`}
               />
             </Admin>
           }
         >
-          <TitleBarTitle title="Service-profiles" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
         </TitleBar>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>Name</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}
