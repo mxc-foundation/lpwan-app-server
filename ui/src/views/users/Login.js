@@ -116,19 +116,21 @@ class LoginForm extends FormComponent {
   } */
 
   onCallback = (value) => {
-    console.log(value);
-
-    /* const req = {
-      csessionid : value.csessionid,
-      sig: value.sig,
+    const req = {
       token: value.token,
-      value: value.value,
-      remoteip: window.location.origin
+      sessionId : value.csessionid,
+      sig: value.sig,
+      remoteIp: window.location.origin
     }
-
-    SessionStore.getVerifyingRecaptcha(req, resp => {
-      this.state.object.isVerified = resp.success;
-    }); */
+   
+    if(value.value === 'pass'){
+      SessionStore.getVerifyingRecaptcha(req, resp => {
+        console.log('ali resp: ', resp);
+        this.state.object.isVerified = resp.success;
+      });
+    }else{
+      console.log("can't pass verify process.");
+    }
   }
 
   render() {

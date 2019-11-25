@@ -244,7 +244,7 @@ class SessionStore extends EventEmitter {
 
   getVerifyingRecaptcha(req, callBackFunc) {
     this.swagger.then(client => {
-      client.apis.InternalService.GetVerifyingRecaptcha({body: req})
+      client.apis.InternalService.GetVerigyingAliyunRecaptcha({body: req})
         .then(checkStatus)
         .then(resp => {
           callBackFunc(resp.obj);
