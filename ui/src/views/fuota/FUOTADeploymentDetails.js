@@ -14,6 +14,7 @@ import TableBody from '@material-ui/core/TableBody';
 
 import moment from "moment";
 
+import i18n, { packageNS } from '../../i18n';
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 
 
@@ -114,40 +115,40 @@ class FUOTADeploymentDetails extends Component {
     const nextStepAfter = moment(this.props.fuotaDeployment.fuotaDeployment.nextStepAfter).format('lll');
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Grid item xs={6}>
           <Card>
-            <CardHeader title="Details" />
+            <CardHeader title={i18n.t(`${packageNS}:tr000280`)} />
             <CardContent>
               <Table>
                 <TableBody>
                   <TableRow>
-                    <TableCell>Job name</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000320`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.name}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Redundant frames</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000344`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.redundancy}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Unicast timeout</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000345`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.unicastTimeout}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Data-rate</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000346`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.dr}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Frequency</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000347`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.frequency}Hz</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Multicast-group type</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000348`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.groupType}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Multicast timeout</TableCell>
-                    <TableCell>{multicastTimeout} seconds</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000349`)}</TableCell>
+                    <TableCell>{multicastTimeout} {i18n.t(`${packageNS}:tr000357`)}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -157,24 +158,24 @@ class FUOTADeploymentDetails extends Component {
 
         <Grid item xs={6}>
           <Card>
-            <CardHeader title="Status" />
+            <CardHeader title={i18n.t(`${packageNS}:tr000282`)} />
             <CardContent>
               <Table>
                 <TableBody>
                   <TableRow>
-                    <TableCell>Created at</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
                     <TableCell>{createdAt}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Updated at</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
                     <TableCell>{updatedAt}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>State</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000350`)}</TableCell>
                     <TableCell>{this.props.fuotaDeployment.fuotaDeployment.state}</TableCell>
                   </TableRow>
                   {this.props.fuotaDeployment.fuotaDeployment.state !== "DONE" && <TableRow>
-                    <TableCell>Next step at</TableCell>
+                    <TableCell>{i18n.t(`${packageNS}:tr000351`)}</TableCell>
                     <TableCell>{nextStepAfter}</TableCell>
                   </TableRow>}
                 </TableBody>
@@ -182,13 +183,13 @@ class FUOTADeploymentDetails extends Component {
             </CardContent>
             {this.props.fuotaDeployment.fuotaDeployment.state !== "DONE" && <CardContent>
               <Typography variant="subtitle2" gutterBottom>
-                Job progress:
+                {i18n.t(`${packageNS}:tr000352`)}
               </Typography>
               <LinearProgress variant="determinate" value={this.state.progress} />
             </CardContent>}
             {this.props.fuotaDeployment.fuotaDeployment.state !== "DONE" && <CardContent>
               <Typography variant="subtitle2" gutterBottom>
-                State progress:
+                {i18n.t(`${packageNS}:tr000353`)}
               </Typography>
                 <LinearProgress variant="determinate" value={this.state.stepProgress} />
             </CardContent>}

@@ -12,7 +12,6 @@ import (
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
-	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -23,13 +22,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/brocaar/lora-app-server/api"
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/api/external/auth"
-	"github.com/brocaar/lora-app-server/internal/api/helpers"
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/static"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var (
@@ -42,6 +41,8 @@ var (
 	tlsKey          string
 	jwtSecret       string
 	corsAllowOrigin string
+
+	applicationServerID uuid.UUID
 )
 
 // Setup configures the API package.
@@ -61,6 +62,10 @@ func Setup(conf config.Config) error {
 	corsAllowOrigin = conf.ApplicationServer.ExternalAPI.CORSAllowOrigin
 
 	auth.DisableAssignExistingUsers = conf.ApplicationServer.ExternalAPI.DisableAssignExistingUsers
+
+	if err := applicationServerID.UnmarshalText([]byte(conf.ApplicationServer.ID)); err != nil {
+		return errors.Wrap(err, "decode application_server.id error")
+	}
 
 	return setupAPI(conf)
 }
@@ -87,7 +92,8 @@ func setupAPI(conf config.Config) error {
 	api.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(validator))
 	api.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
-	grpc_prometheus.Register(grpcServer)
+	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
+	api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
@@ -257,6 +263,12 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	}
 	if err := pb.RegisterFUOTADeploymentServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register fuota deployment handler error")
+	}
+	if err := pb.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register server info handler error")
+	}
+	if err := pb.RegisterProxyRequestHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 
 	return mux, nil

@@ -8,6 +8,7 @@ import Tab from '@material-ui/core/Tab';
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -114,19 +115,19 @@ class ApplicationLayout extends Component {
     }
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar
           buttons={
             <Admin organizationID={this.props.match.params.organizationID}>
               <TitleBarButton
-                label="Delete"
+                label={i18n.t(`${packageNS}:tr000061`)}
                 icon={<Delete />}
                 onClick={this.deleteApplication}
               />
             </Admin>
           }
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title="Applications" />
+          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title={i18n.t(`${packageNS}:tr000076`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.application.application.name} />
         </TitleBar>
@@ -138,9 +139,9 @@ class ApplicationLayout extends Component {
             indicatorColor="primary"
             className={this.props.classes.tabs}
           >
-            <Tab label="Devices" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
-            {this.state.admin && <Tab label="Application configuration" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/edit`} />}
-            {this.state.admin && <Tab label="Integrations" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />}
+            <Tab label={i18n.t(`${packageNS}:tr000278`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
+            {this.state.admin && <Tab label={i18n.t(`${packageNS}:tr000395`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/edit`} />}
+            {this.state.admin && <Tab label={i18n.t(`${packageNS}:tr000384`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />}
             {this.state.admin && <Tab label="FUOTA" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments`} />}
           </Tabs>
         </Grid>

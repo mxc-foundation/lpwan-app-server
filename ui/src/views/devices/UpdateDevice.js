@@ -6,6 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import CardContent from "@material-ui/core/CardContent";
 
+import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceForm from "./DeviceForm";
 
@@ -31,12 +32,12 @@ class UpdateDevice extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Grid item xs={12}>
           <Card className={this.props.classes.card}>
             <CardContent>
               <DeviceForm
-                submitLabel="Update"
+                submitLabel={i18n.t(`${packageNS}:tr000066`)}
                 object={this.props.device}
                 onSubmit={this.onSubmit}
                 match={this.props.match}

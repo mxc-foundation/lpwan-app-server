@@ -8,12 +8,13 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	. "github.com/smartystreets/goconvey/convey"
+	"golang.org/x/net/context"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/lora-app-server/internal/test"
 	"github.com/brocaar/lorawan"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 type validatorTest struct {
@@ -69,7 +70,7 @@ func TestValidators(t *testing.T) {
 		{Name: "test-ns-2", Server: "test-ns-2:1234"},
 	}
 	for i := range networkServers {
-		if err := storage.CreateNetworkServer(storage.DB(), &networkServers[i]); err != nil {
+		if err := storage.CreateNetworkServer(context.Background(), storage.DB(), &networkServers[i]); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -84,12 +85,12 @@ func TestValidators(t *testing.T) {
 	}
 	var serviceProfilesIDs []uuid.UUID
 	for i := range organizations {
-		if err := storage.CreateOrganization(storage.DB(), &organizations[i]); err != nil {
+		if err := storage.CreateOrganization(context.Background(), storage.DB(), &organizations[i]); err != nil {
 			t.Fatal(err)
 		}
 
 		serviceProfiles[i].OrganizationID = organizations[i].ID
-		if err := storage.CreateServiceProfile(storage.DB(), &serviceProfiles[i]); err != nil {
+		if err := storage.CreateServiceProfile(context.Background(), storage.DB(), &serviceProfiles[i]); err != nil {
 			t.Fatal(err)
 		}
 
@@ -103,7 +104,7 @@ func TestValidators(t *testing.T) {
 	}
 	var multicastGroupsIDs []uuid.UUID
 	for i := range multicastGroups {
-		if err := storage.CreateMulticastGroup(storage.DB(), &multicastGroups[i]); err != nil {
+		if err := storage.CreateMulticastGroup(context.Background(), storage.DB(), &multicastGroups[i]); err != nil {
 			t.Fatal(err)
 		}
 
@@ -117,7 +118,7 @@ func TestValidators(t *testing.T) {
 	}
 	var deviceProfilesIDs []uuid.UUID
 	for i := range deviceProfiles {
-		if err := storage.CreateDeviceProfile(storage.DB(), &deviceProfiles[i]); err != nil {
+		if err := storage.CreateDeviceProfile(context.Background(), storage.DB(), &deviceProfiles[i]); err != nil {
 			t.Fatal(err)
 		}
 		dpID, _ := uuid.FromBytes(deviceProfiles[i].DeviceProfile.Id)
@@ -129,7 +130,7 @@ func TestValidators(t *testing.T) {
 		{OrganizationID: organizations[1].ID, Name: "application-2", ServiceProfileID: serviceProfilesIDs[0]},
 	}
 	for i := range applications {
-		if err := storage.CreateApplication(storage.DB(), &applications[i]); err != nil {
+		if err := storage.CreateApplication(context.Background(), storage.DB(), &applications[i]); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -139,7 +140,7 @@ func TestValidators(t *testing.T) {
 		{DevEUI: lorawan.EUI64{2, 2, 2, 2, 2, 2, 2, 2}, Name: "test-2", ApplicationID: applications[1].ID, DeviceProfileID: deviceProfilesIDs[1]},
 	}
 	for _, d := range devices {
-		if err := storage.CreateDevice(storage.DB(), &d); err != nil {
+		if err := storage.CreateDevice(context.Background(), storage.DB(), &d); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -148,7 +149,7 @@ func TestValidators(t *testing.T) {
 		{Name: "test-fuota", GroupType: storage.FUOTADeploymentGroupTypeC, DR: 5, Frequency: 868100000, Payload: []byte{1, 2, 3, 4}, FragSize: 20, MulticastTimeout: 1, UnicastTimeout: time.Second},
 	}
 	for i := range fuotaDeployments {
-		if err := storage.CreateFUOTADeploymentForDevice(storage.DB(), &fuotaDeployments[i], devices[0].DevEUI); err != nil {
+		if err := storage.CreateFUOTADeploymentForDevice(context.Background(), storage.DB(), &fuotaDeployments[i], devices[0].DevEUI); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -184,6 +185,8 @@ func TestValidators(t *testing.T) {
 		UserID         int64
 		OrganizationID int64
 		IsAdmin        bool
+		IsDeviceAdmin  bool
+		IsGatewayAdmin bool
 	}{
 		{UserID: users[8].ID, OrganizationID: organizations[0].ID, IsAdmin: false},
 		{UserID: users[9].ID, OrganizationID: organizations[0].ID, IsAdmin: true},
@@ -191,7 +194,7 @@ func TestValidators(t *testing.T) {
 		{UserID: users[11].ID, OrganizationID: organizations[1].ID, IsAdmin: true},
 	}
 	for _, orgUser := range orgUsers {
-		if err := storage.CreateOrganizationUser(storage.DB(), orgUser.OrganizationID, orgUser.UserID, orgUser.IsAdmin); err != nil {
+		if err := storage.CreateOrganizationUser(context.Background(), storage.DB(), orgUser.OrganizationID, orgUser.UserID, orgUser.IsAdmin, orgUser.IsDeviceAdmin, orgUser.IsGatewayAdmin); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -201,7 +204,7 @@ func TestValidators(t *testing.T) {
 		{MAC: lorawan.EUI64{2, 2, 2, 2, 2, 2, 2, 2}, Name: "gateway2", OrganizationID: organizations[1].ID, NetworkServerID: networkServers[0].ID},
 	}
 	for i := range gateways {
-		if err := storage.CreateGateway(storage.DB(), &gateways[i]); err != nil {
+		if err := storage.CreateGateway(context.Background(), storage.DB(), &gateways[i]); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -288,284 +291,6 @@ func TestValidators(t *testing.T) {
 					Name:       "other users are not able to read, update or delete",
 					Validators: []ValidatorFunc{ValidateUserAccess(14, Read), ValidateUserAccess(14, Update), ValidateUserAccess(14, Delete)},
 					Claims:     Claims{Username: "user2"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateIsApplicationAdmin", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users are",
-					Validators: []ValidatorFunc{ValidateIsApplicationAdmin(applications[0].ID)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users are",
-					Validators: []ValidatorFunc{ValidateIsApplicationAdmin(applications[0].ID)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "normal organization users are not",
-					Validators: []ValidatorFunc{ValidateIsApplicationAdmin(applications[0].ID)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateApplicationsAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can create and list",
-					Validators: []ValidatorFunc{ValidateApplicationsAccess(Create, organizations[0].ID), ValidateApplicationsAccess(List, organizations[0].ID)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can create and list",
-					Validators: []ValidatorFunc{ValidateApplicationsAccess(Create, organizations[0].ID), ValidateApplicationsAccess(List, organizations[0].ID)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can list",
-					Validators: []ValidatorFunc{ValidateApplicationsAccess(List, organizations[0].ID)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "normal users can list when no organization id is given",
-					Validators: []ValidatorFunc{ValidateApplicationsAccess(List, 0)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can not create",
-					Validators: []ValidatorFunc{ValidateApplicationsAccess(Create, organizations[0].ID)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "normal users can not create and list",
-					Validators: []ValidatorFunc{ValidateApplicationsAccess(Create, organizations[0].ID), ValidateApplicationsAccess(List, organizations[0].ID)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("WHen testing ValidateApplicationAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can read, update and delete",
-					Validators: []ValidatorFunc{ValidateApplicationAccess(applications[0].ID, Read), ValidateApplicationAccess(applications[0].ID, Update), ValidateApplicationAccess(applications[0].ID, Delete)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can read update and delete",
-					Validators: []ValidatorFunc{ValidateApplicationAccess(applications[0].ID, Read), ValidateApplicationAccess(applications[0].ID, Update), ValidateApplicationAccess(applications[0].ID, Delete)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can read",
-					Validators: []ValidatorFunc{ValidateApplicationAccess(applications[0].ID, Read)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "other users can not read, update or delete",
-					Validators: []ValidatorFunc{ValidateApplicationAccess(1, Read), ValidateApplicationAccess(1, Update), ValidateApplicationAccess(1, Delete)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateNodesAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin user has access to create and list",
-					Validators: []ValidatorFunc{ValidateNodesAccess(applications[0].ID, Create), ValidateNodesAccess(applications[0].ID, List)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can create and list",
-					Validators: []ValidatorFunc{ValidateNodesAccess(applications[0].ID, Create), ValidateNodesAccess(applications[0].ID, List)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can list",
-					Validators: []ValidatorFunc{ValidateNodesAccess(applications[0].ID, List)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can not create",
-					Validators: []ValidatorFunc{ValidateNodesAccess(applications[0].ID, Create)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "other users can not create or list",
-					Validators: []ValidatorFunc{ValidateNodesAccess(applications[0].ID, Create), ValidateNodesAccess(applications[0].ID, List)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateNodeAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can read, update and delete",
-					Validators: []ValidatorFunc{ValidateNodeAccess(devices[0].DevEUI, Read), ValidateNodeAccess(devices[0].DevEUI, Update), ValidateNodeAccess(devices[0].DevEUI, Delete)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can read, update and delete",
-					Validators: []ValidatorFunc{ValidateNodeAccess(devices[0].DevEUI, Read), ValidateNodeAccess(devices[0].DevEUI, Update), ValidateNodeAccess(devices[0].DevEUI, Delete)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can read",
-					Validators: []ValidatorFunc{ValidateNodeAccess(devices[0].DevEUI, Read)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users (non-admin) can not update or delete",
-					Validators: []ValidatorFunc{ValidateNodeAccess(devices[0].DevEUI, Update), ValidateNodeAccess(devices[0].DevEUI, Delete)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "other users can not read, update and delete",
-					Validators: []ValidatorFunc{ValidateNodeAccess(devices[0].DevEUI, Read), ValidateNodeAccess(devices[0].DevEUI, Update), ValidateNodeAccess(devices[0].DevEUI, Delete)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateDeviceQueueAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can read, list, update and delete",
-					Validators: []ValidatorFunc{ValidateDeviceQueueAccess(devices[0].DevEUI, Create), ValidateDeviceQueueAccess(devices[0].DevEUI, List), ValidateDeviceQueueAccess(devices[0].DevEUI, Delete)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "other users can not read, list, update and delete",
-					Validators: []ValidatorFunc{ValidateDeviceQueueAccess(devices[0].DevEUI, Create), ValidateDeviceQueueAccess(devices[0].DevEUI, List), ValidateDeviceQueueAccess(devices[0].DevEUI, Delete)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateGatewaysAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can create and list",
-					Validators: []ValidatorFunc{ValidateGatewaysAccess(Create, organizations[0].ID), ValidateGatewaysAccess(List, organizations[0].ID)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can create and list (org CanHaveGateways=true)",
-					Validators: []ValidatorFunc{ValidateGatewaysAccess(Create, organizations[0].ID), ValidateGatewaysAccess(List, organizations[0].ID)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "normal user can list",
-					Validators: []ValidatorFunc{ValidateGatewaysAccess(List, 0)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can not create (org CanHaveGateways=false)",
-					Validators: []ValidatorFunc{ValidateGatewaysAccess(Create, organizations[1].ID)},
-					Claims:     Claims{Username: "user12"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "organization user can not create",
-					Validators: []ValidatorFunc{ValidateGatewaysAccess(Create, organizations[0].ID)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "normal user can not create",
-					Validators: []ValidatorFunc{ValidateGatewaysAccess(Create, organizations[0].ID)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "inactive user can not list",
-					Validators: []ValidatorFunc{ValidateGatewaysAccess(List, 0)},
-					Claims:     Claims{Username: "user11"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateGatewayAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can create, update and delete",
-					Validators: []ValidatorFunc{ValidateGatewayAccess(Read, gateways[0].MAC), ValidateGatewayAccess(Update, gateways[0].MAC), ValidateGatewayAccess(Delete, gateways[0].MAC)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can create, update and delete",
-					Validators: []ValidatorFunc{ValidateGatewayAccess(Read, gateways[0].MAC), ValidateGatewayAccess(Update, gateways[0].MAC), ValidateGatewayAccess(Delete, gateways[0].MAC)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can read",
-					Validators: []ValidatorFunc{ValidateGatewayAccess(Read, gateways[0].MAC)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can not update or delete",
-					Validators: []ValidatorFunc{ValidateGatewayAccess(Update, gateways[0].MAC), ValidateGatewayAccess(Delete, gateways[0].MAC)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "normal users can not read, update or delete",
-					Validators: []ValidatorFunc{ValidateGatewayAccess(Read, gateways[0].MAC), ValidateGatewayAccess(Update, gateways[0].MAC), ValidateGatewayAccess(Delete, gateways[0].MAC)},
-					Claims:     Claims{Username: "user4"},
 					ExpectedOK: false,
 				},
 			}
@@ -847,37 +572,6 @@ func TestValidators(t *testing.T) {
 			runTests(tests, storage.DB())
 		})
 
-		Convey("When testing ValidateNetworkServerAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can read, update and delete",
-					Validators: []ValidatorFunc{ValidateNetworkServerAccess(Read, networkServers[0].ID), ValidateNetworkServerAccess(Update, networkServers[0].ID), ValidateNetworkServerAccess(Delete, networkServers[0].ID)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can read",
-					Validators: []ValidatorFunc{ValidateNetworkServerAccess(Read, networkServers[0].ID)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can not update and delete",
-					Validators: []ValidatorFunc{ValidateNetworkServerAccess(Update, networkServers[0].ID), ValidateNetworkServerAccess(Delete, networkServers[0].ID)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "regular users can not read, update and delete",
-					Validators: []ValidatorFunc{ValidateNetworkServerAccess(Read, networkServers[0].ID), ValidateNetworkServerAccess(Update, networkServers[0].ID), ValidateNetworkServerAccess(Delete, networkServers[0].ID)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
 		Convey("When testing ValidateOrganizationNetworkServerAccess", func() {
 			tests := []validatorTest{
 				{
@@ -996,98 +690,6 @@ func TestValidators(t *testing.T) {
 					Name:       "non-organization users can not read, update or delete",
 					Validators: []ValidatorFunc{ValidateServiceProfileAccess(Read, id), ValidateServiceProfileAccess(Update, id), ValidateServiceProfileAccess(Delete, id)},
 					Claims:     Claims{Username: "user4"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateDeviceProfilesAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can create and list",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(Create, organizations[0].ID, 0), ValidateDeviceProfilesAccess(List, organizations[0].ID, 0)},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can create and list",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(Create, organizations[0].ID, 0), ValidateDeviceProfilesAccess(List, organizations[0].ID, 0)},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can list",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(List, organizations[0].ID, 0)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can list with an application id is given",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(List, 0, applications[0].ID)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "any user can list when organization id = 0",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(List, 0, 0)},
-					Claims:     Claims{Username: "user4"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can not create",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(Create, organizations[0].ID, 0)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "non-organization users can not create or list",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(Create, organizations[0].ID, 0), ValidateDeviceProfilesAccess(List, organizations[0].ID, 0)},
-					Claims:     Claims{Username: "user12"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "non-organization users can not list when an application id is given beloning to a different organization",
-					Validators: []ValidatorFunc{ValidateDeviceProfilesAccess(List, 0, applications[1].ID)},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-			}
-
-			runTests(tests, storage.DB())
-		})
-
-		Convey("When testing ValidateDeviceProfileAccess", func() {
-			tests := []validatorTest{
-				{
-					Name:       "global admin users can read, update and delete",
-					Validators: []ValidatorFunc{ValidateDeviceProfileAccess(Read, deviceProfilesIDs[0]), ValidateDeviceProfileAccess(Update, deviceProfilesIDs[0]), ValidateDeviceProfileAccess(Delete, deviceProfilesIDs[0])},
-					Claims:     Claims{Username: "user1"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization admin users can read, update and delete",
-					Validators: []ValidatorFunc{ValidateDeviceProfileAccess(Read, deviceProfilesIDs[0]), ValidateDeviceProfileAccess(Update, deviceProfilesIDs[0]), ValidateDeviceProfileAccess(Delete, deviceProfilesIDs[0])},
-					Claims:     Claims{Username: "user10"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can read",
-					Validators: []ValidatorFunc{ValidateDeviceProfileAccess(Read, deviceProfilesIDs[0])},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: true,
-				},
-				{
-					Name:       "organization users can not update and delete",
-					Validators: []ValidatorFunc{ValidateDeviceProfileAccess(Update, deviceProfilesIDs[0]), ValidateDeviceProfileAccess(Delete, deviceProfilesIDs[0])},
-					Claims:     Claims{Username: "user9"},
-					ExpectedOK: false,
-				},
-				{
-					Name:       "non-organization users can not read, update ande delete",
-					Validators: []ValidatorFunc{ValidateDeviceProfileAccess(Read, deviceProfilesIDs[0]), ValidateDeviceProfileAccess(Update, deviceProfilesIDs[0]), ValidateDeviceProfileAccess(Delete, deviceProfilesIDs[0])},
-					Claims:     Claims{Username: "user12"},
 					ExpectedOK: false,
 				},
 			}

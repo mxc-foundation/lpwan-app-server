@@ -4,10 +4,11 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
-	"github.com/brocaar/lora-app-server/internal/integration/http"
-	"github.com/brocaar/lora-app-server/internal/integration/influxdb"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/influxdb"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var errToCode = map[error]codes.Code{
@@ -30,6 +31,13 @@ var errToCode = map[error]codes.Code{
 
 func ErrToRPCError(err error) error {
 	cause := errors.Cause(err)
+
+	// if the err has already a gRPC status (it is a gRPC error), just
+	// return the error.
+	if code := status.Code(cause); code != codes.Unknown {
+		return cause
+	}
+
 	code, ok := errToCode[cause]
 	if !ok {
 		code = codes.Unknown

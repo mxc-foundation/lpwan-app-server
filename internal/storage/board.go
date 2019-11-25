@@ -18,17 +18,17 @@ var boardServerRegexp = regexp.MustCompile(`^[.\w-]+$`)
 
 // Board represents a gateway.
 type Board struct {
-	MAC          lorawan.EUI64	`db:"mac"`
-	SN           *string 		`db:"sn"`
-	CreatedAt    time.Time     	`db:"created_at"`
-	UpdatedAt    time.Time     	`db:"updated_at"`
-	Model        string        	`db:"model"`
-	VpnAddr      string        	`db:"vpn_addr"`
-	QaErr        int           	`db:"qa_err"`
-	OsVersion    *string  		`db:"os_version"`
-	FPGAVersion *string  		`db:"fpga_version"`
-	RootPassword *string  		`db:"root_password"`
-	Server       *string  		`db:"server"`
+	MAC          lorawan.EUI64 `db:"mac"`
+	SN           *string       `db:"sn"`
+	CreatedAt    time.Time     `db:"created_at"`
+	UpdatedAt    time.Time     `db:"updated_at"`
+	Model        string        `db:"model"`
+	VpnAddr      string        `db:"vpn_addr"`
+	QaErr        int           `db:"qa_err"`
+	OsVersion    *string       `db:"os_version"`
+	FPGAVersion  *string       `db:"fpga_version"`
+	RootPassword *string       `db:"root_password"`
+	Server       *string       `db:"server"`
 }
 
 // Validate validates the board data.
@@ -146,8 +146,8 @@ func UpdateBoard(db sqlx.Execer, bd *Board) error {
 
 	bd.UpdatedAt = now
 	log.WithFields(log.Fields{
-		"mac":    bd.MAC,
-		"sn":     bd.SN,
+		"mac": bd.MAC,
+		"sn":  bd.SN,
 	}).Info("Board updated")
 
 	return nil
@@ -220,8 +220,8 @@ func UnregisterBoardAtomic(db sqlx.Execer, bd *Board) error {
 	bd.UpdatedAt = now
 	bd.Server = nil
 	log.WithFields(log.Fields{
-		"mac":    bd.MAC,
-		"sn":     bd.SN,
+		"mac": bd.MAC,
+		"sn":  bd.SN,
 	}).Info("Board unregistered")
 
 	return nil

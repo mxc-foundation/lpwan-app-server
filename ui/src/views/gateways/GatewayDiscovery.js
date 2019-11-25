@@ -12,6 +12,7 @@ import ListItem from "@material-ui/core/ListItem";
 import L from 'leaflet';
 import { Map, Marker, Polyline, Popup, MapControl, withLeaflet } from 'react-leaflet';
 
+import i18n, { packageNS } from '../../i18n';
 import MapTileLayer from "../../components/MapTileLayer";
 import GatewayStore from "../../stores/GatewayStore";
 
@@ -79,22 +80,22 @@ class GatewayDiscovery extends Component {
         <Card>
           <CardContent>
             <Typography variant="body1">
-              No gateway discovery data is available (yet). This could mean:
+              {i18n.t(`${packageNS}:tr000246`)}
             </Typography>
             <List>
               <ListItem dense>
                 <Typography variant="body1">
-                  no discovery 'ping' was emitted yet
+                  {i18n.t(`${packageNS}:tr000329`)}
                 </Typography>
               </ListItem>
               <ListItem dense>
                 <Typography variant="body1">
-                  the gateway ping feature has been disabled in LoRa App Server
+                  {i18n.t(`${packageNS}:tr000330`)}
                 </Typography>
               </ListItem>
               <ListItem dense>
                 <Typography variant="body1">
-                  the discovery 'ping' was not received by any other gateways
+                  {i18n.t(`${packageNS}:tr000331`)}
                 </Typography>
               </ListItem>
             </List>

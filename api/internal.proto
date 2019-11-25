@@ -3,8 +3,8 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/empty.proto";
+import "timestamp/timestamp.proto";
+import "empty/empty.proto";
 import "user.proto";
 
 
@@ -60,6 +60,25 @@ service InternalService {
 		};
 	}
 
+	rpc GetVerifyingGoogleRecaptcha(GoogleRecaptchaRequest) returns (GoogleRecaptchaResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/verify-g-recaptcha"
+			body: "*"
+		};
+	}
+}
+
+message GoogleRecaptchaRequest {
+	string secret = 1;
+	string response = 2;
+	string remoteip = 3;
+}
+
+message GoogleRecaptchaResponse {
+	bool success = 1;
+	string challenge_ts = 2;
+	string hostname = 3;
+	string error_codes = 4;
 }
 
 message ProfileSettings {
@@ -77,7 +96,15 @@ message OrganizationLink {
     string organization_name = 2;
     
     // User is admin within the context of this organization.
+    // There is no need to set the is_device_admin and is_gateway_admin flags.
     bool is_admin = 3;
+
+    // User is able to modify device related resources (applications,
+    // device-profiles, devices, multicast-groups).
+    bool is_device_admin = 6;
+
+    // User is able to modify gateways.
+    bool is_gateway_admin = 7;
     
     // Created at timestamp.
     google.protobuf.Timestamp created_at = 4;
@@ -168,8 +195,16 @@ message BrandingResponse {
 	string footer = 3;
 }
 
+enum Language {
+	en = 0;
+	ko = 1;
+	zhcn = 2;
+	zhtw = 3;
+}
+
 message RegisterUserRequest {
     string email = 1;
+	Language language = 2;
 }
 
 message ConfirmRegistrationRequest {

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
@@ -19,10 +19,10 @@ var version string
 
 var rootCmd = &cobra.Command{
 	Use:   "lora-app-server",
-	Short: "LoRa Server project application-server",
-	Long: `LoRa App Server is an open-source application-server, part of the LoRa Server project
+	Short: "LPWAN Server project application-server",
+	Long: `LPWAN App Server is an open-source application-server, part of the LPWAN Server project
 	> documentation & support: https://www.loraserver.io/lora-app-server
-	> source & copyright information: https://github.com/brocaar/lora-app-server`,
+	> source & copyright information: https://github.com/mxc-foundation/lpwan-app-server`,
 	RunE: run,
 }
 
@@ -39,12 +39,15 @@ func init() {
 	viper.SetDefault("general.host_server", "lora.demo.cloud.mxc.org")
 	viper.SetDefault("postgresql.dsn", "postgres://localhost/loraserver_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
+	viper.SetDefault("postgresql.max_idle_connections", 2)
 	viper.SetDefault("redis.url", "redis://localhost:6379")
 	viper.SetDefault("redis.max_idle", 10)
 	viper.SetDefault("redis.idle_timeout", 5*time.Minute)
+	viper.SetDefault("application_server.gateways_locations_limit", 100000)
 	viper.SetDefault("application_server.integration.mqtt.server", "tcp://localhost:1883")
 	viper.SetDefault("application_server.api.public_host", "localhost:8080")
 	viper.SetDefault("application_server.id", "6d5db27e-4ce2-4b2b-b5d7-91f069397978")
+	viper.SetDefault("application_server.cache_dir", "cache")
 	viper.SetDefault("application_server.api.bind", "0.0.0.0:8080")
 	viper.SetDefault("application_server.external_api.bind", "0.0.0.0:8080")
 	viper.SetDefault("join_server.bind", "0.0.0.0:8003")
@@ -66,6 +69,13 @@ func init() {
 	viper.SetDefault("application_server.fragmentation_session.sync_interval", time.Second)
 	viper.SetDefault("application_server.fragmentation_session.sync_retries", 3)
 	viper.SetDefault("application_server.fragmentation_session.sync_batch_size", 100)
+
+	viper.SetDefault("metrics.timezone", "Local")
+	viper.SetDefault("metrics.redis.aggregation_intervals", []string{"MINUTE", "HOUR", "DAY", "MONTH"})
+	viper.SetDefault("metrics.redis.minute_aggregation_ttl", time.Hour*2)
+	viper.SetDefault("metrics.redis.hour_aggregation_ttl", time.Hour*48)
+	viper.SetDefault("metrics.redis.day_aggregation_ttl", time.Hour*24*90)
+	viper.SetDefault("metrics.redis.month_aggregation_ttl", time.Hour*24*730)
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
@@ -92,6 +102,7 @@ func initConfig() {
 	} else {
 		viper.SetConfigName("lora-app-server")
 		viper.AddConfigPath(".")
+		viper.AddConfigPath("./configuration")
 		viper.AddConfigPath("$HOME/.config/lora-app-server")
 		viper.AddConfigPath("/etc/lora-app-server")
 		if err := viper.ReadInConfig(); err != nil {
@@ -114,6 +125,8 @@ func initConfig() {
 	if config.C.ApplicationServer.Integration.Backend != "" {
 		config.C.ApplicationServer.Integration.Enabled = []string{config.C.ApplicationServer.Integration.Backend}
 	}
+
+	config.AppserverVersion = version
 }
 
 func viperBindEnvs(iface interface{}, parts ...string) {

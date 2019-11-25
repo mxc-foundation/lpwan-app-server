@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -55,18 +56,18 @@ class OrganizationLayout extends Component {
 
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar
           buttons={[
             <TitleBarButton
               key={1}
-              label="Delete"
+              label={i18n.t(`${packageNS}:tr000061`)}
               icon={<Delete />}
               onClick={this.deleteOrganization}
             />,
           ]}
         >
-          <TitleBarTitle to="/organizations" title="Organizations" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.organization.name} />
         </TitleBar>

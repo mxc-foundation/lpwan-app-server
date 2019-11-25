@@ -7,14 +7,20 @@ import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from "@material-ui/core/styles";
+import classNames from "classnames";
 
+import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 
 const styles = {
+  languageWrapper: {
+    marginLeft: '15px'
+  },
   textField: {
     width: "100%",
   },
@@ -56,7 +62,7 @@ class RegistrationConfirmForm extends FormComponent {
       >
         <TextField
           id="username"
-          label="Email"
+          label={i18n.t(`${packageNS}:tr000003`)}
           margin="normal"
           value={this.state.object.username || ""}
           onChange={this.onChange}
@@ -68,7 +74,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="password"
-          label="Password"
+          label={i18n.t(`${packageNS}:tr000004`)}
           type="password"
           minLength="6"
           margin="normal"
@@ -79,7 +85,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="passwordConfirmation"
-          label="Password repeat"
+          label={i18n.t(`${packageNS}:tr000023`)}
           type="password"
           minLength="6"
           margin="normal"
@@ -90,7 +96,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="organizationName"
-          label="Organization name"
+          label={i18n.t(`${packageNS}:tr000030`)}
           pattern="[\w-]+"
           margin="normal"
           value={this.state.object.organizationName || ""}
@@ -100,7 +106,7 @@ class RegistrationConfirmForm extends FormComponent {
         />
         <TextField
           id="organizationDisplayName"
-          label="Organization display name"
+          label={i18n.t(`${packageNS}:tr000031`)}
           margin="normal"
           value={this.state.object.organizationDisplayName || ""}
           onChange={this.onChange}
@@ -127,8 +133,18 @@ class RegistrationConfirm extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
+  onChangeLanguage = e => {
+    const newLanguage = {
+      id: e.id,
+      label: e.label,
+      value: e.value,
+      code: e.code
+    }
+
+    this.props.onChangeLanguage(newLanguage);
+  }
+
   onSubmit(data) {
-    console.log('onSubmit(', data, ')')
     if (data.password === data.passwordConfirmation) {
       this.setState({
         isPwdMatch: true
@@ -157,15 +173,18 @@ class RegistrationConfirm extends Component {
         <Grid container justify="center">
           <Grid item xs={6} lg={4}>
             <Card>
+              <div className={classNames(this.props.classes.languageWrapper)}>
+                <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+              </div>
               <CardHeader
-                title="Registration confirmation"
+                title={i18n.t(`${packageNS}:tr000019`)}
               />
               <CardContent>
                 {this.state.isPwdMatch !== null && this.state.isPwdMatch === false &&
-                  <p style={{color: 'Red', textAlign: 'center'}}>Passwords doesn't match.</p>
+                  <p style={{color: 'Red', textAlign: 'center'}}>{i18n.t(`${packageNS}:tr000025`)}</p>
                 }
                 <RegistrationConfirmForm
-                  submitLabel="Confirm"
+                  submitLabel={i18n.t(`${packageNS}:tr000022`)}
                   onSubmit={this.onSubmit}
                   securityToken={this.props.match.params.securityToken}
                 />

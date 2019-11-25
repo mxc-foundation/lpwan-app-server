@@ -2,10 +2,11 @@ package storage
 
 import (
 	"context"
+	"github.com/golang/protobuf/ptypes"
 	"strings"
 	"time"
 
-	uuid "github.com/gofrs/uuid"
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
@@ -13,10 +14,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // Device defines a LoRaWAN device.
@@ -74,13 +78,15 @@ type DeviceActivation struct {
 }
 
 // CreateDevice creates the given device.
-func CreateDevice(db sqlx.Ext, d *Device) error {
+func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
 
 	now := time.Now()
 	d.CreatedAt = now
+	timestampCreatedAt, _ := ptypes.TimestampProto(d.CreatedAt)
+
 	d.UpdatedAt = now
 
 	_, err := db.Exec(`
@@ -125,43 +131,60 @@ func CreateDevice(db sqlx.Ext, d *Device) error {
 		return handlePSQLError(Insert, err, "insert error")
 	}
 
-	app, err := GetApplication(db, d.ApplicationID)
+	app, err := GetApplication(ctx, db, d.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get application error")
 	}
 
-	n, err := GetNetworkServerForDevEUI(db, d.DevEUI)
+	n, err := GetNetworkServerForDevEUI(ctx, db, d.DevEUI)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
 
+	// add this device to network server
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
-	if err != nil {
-		return errors.Wrap(err, "uuid from string error")
-	}
-
-	_, err = nsClient.CreateDevice(context.Background(), &ns.CreateDeviceRequest{
+	_, err = nsClient.CreateDevice(ctx, &ns.CreateDeviceRequest{
 		Device: &ns.Device{
 			DevEui:            d.DevEUI[:],
 			DeviceProfileId:   d.DeviceProfileID.Bytes(),
 			ServiceProfileId:  app.ServiceProfileID.Bytes(),
-			RoutingProfileId:  rpID.Bytes(),
+			RoutingProfileId:  applicationServerID.Bytes(),
 			SkipFCntCheck:     d.SkipFCntCheck,
 			ReferenceAltitude: d.ReferenceAltitude,
 		},
 	})
 	if err != nil {
-		log.WithError(err).Error("network-server create device api error")
-		return handleGrpcError(err, "create device error")
+		return errors.Wrap(err, "create device error")
+	}
+
+	// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
+	// network server successfully
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
+			OrgId: app.OrganizationID,
+			DevProfile: &m2m_api.AppServerDeviceProfile{
+				DevEui:        d.DevEUI.String(),
+				ApplicationId: d.ApplicationID,
+				Name:          d.Name,
+				CreatedAt:     timestampCreatedAt,
+			},
+		})
+		if err != nil {
+			log.WithError(err).Error("m2m server create device api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{
 		"dev_eui": d.DevEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("device created")
 
 	return nil
@@ -171,7 +194,7 @@ func CreateDevice(db sqlx.Ext, d *Device) error {
 // When forUpdate is set to true, then db must be a db transaction.
 // When localOnly is set to true, no call to the network-server is made to
 // retrieve additional device data.
-func GetDevice(db sqlx.Queryer, devEUI lorawan.EUI64, forUpdate, localOnly bool) (Device, error) {
+func GetDevice(ctx context.Context, db sqlx.Queryer, devEUI lorawan.EUI64, forUpdate, localOnly bool) (Device, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -187,7 +210,7 @@ func GetDevice(db sqlx.Queryer, devEUI lorawan.EUI64, forUpdate, localOnly bool)
 		return d, nil
 	}
 
-	n, err := GetNetworkServerForDevEUI(db, d.DevEUI)
+	n, err := GetNetworkServerForDevEUI(ctx, db, d.DevEUI)
 	if err != nil {
 		return d, errors.Wrap(err, "get network-server error")
 	}
@@ -197,7 +220,7 @@ func GetDevice(db sqlx.Queryer, devEUI lorawan.EUI64, forUpdate, localOnly bool)
 		return d, errors.Wrap(err, "get network-server client error")
 	}
 
-	resp, err := nsClient.GetDevice(context.Background(), &ns.GetDeviceRequest{
+	resp, err := nsClient.GetDevice(ctx, &ns.GetDeviceRequest{
 		DevEui: d.DevEUI[:],
 	})
 	if err != nil {
@@ -254,7 +277,7 @@ func (f DeviceFilters) SQL() string {
 }
 
 // GetDeviceCount returns the number of devices.
-func GetDeviceCount(db sqlx.Queryer, filters DeviceFilters) (int, error) {
+func GetDeviceCount(ctx context.Context, db sqlx.Queryer, filters DeviceFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -282,7 +305,23 @@ func GetDeviceCount(db sqlx.Queryer, filters DeviceFilters) (int, error) {
 }
 
 // GetDevices returns a slice of devices.
-func GetDevices(db sqlx.Queryer, filters DeviceFilters) ([]DeviceListItem, error) {
+func GetAllDeviceEuis(ctx context.Context, db sqlx.Queryer) ([]string, error) {
+	var devEuiList []string
+	var list []lorawan.EUI64
+	err := sqlx.Select(db, &list, "select dev_eui from device ORDER BY created_at DESC")
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	for _, devEui := range list {
+		devEuiList = append(devEuiList, devEui.String())
+	}
+
+	return devEuiList, nil
+}
+
+// GetDevices returns a slice of devices.
+func GetDevices(ctx context.Context, db sqlx.Queryer, filters DeviceFilters) ([]DeviceListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -320,7 +359,7 @@ func GetDevices(db sqlx.Queryer, filters DeviceFilters) ([]DeviceListItem, error
 
 // UpdateDevice updates the given device.
 // When localOnly is set, it will not update the device on the network-server.
-func UpdateDevice(db sqlx.Ext, d *Device, localOnly bool) error {
+func UpdateDevice(ctx context.Context, db sqlx.Ext, d *Device, localOnly bool) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -377,12 +416,12 @@ func UpdateDevice(db sqlx.Ext, d *Device, localOnly bool) error {
 
 	// update the device on the network-server
 	if !localOnly {
-		app, err := GetApplication(db, d.ApplicationID)
+		app, err := GetApplication(ctx, db, d.ApplicationID)
 		if err != nil {
 			return errors.Wrap(err, "get application error")
 		}
 
-		n, err := GetNetworkServerForDevEUI(db, d.DevEUI)
+		n, err := GetNetworkServerForDevEUI(ctx, db, d.DevEUI)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
@@ -397,7 +436,7 @@ func UpdateDevice(db sqlx.Ext, d *Device, localOnly bool) error {
 			return errors.Wrap(err, "uuid from string error")
 		}
 
-		_, err = nsClient.UpdateDevice(context.Background(), &ns.UpdateDeviceRequest{
+		_, err = nsClient.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
 			Device: &ns.Device{
 				DevEui:            d.DevEUI[:],
 				DeviceProfileId:   d.DeviceProfileID.Bytes(),
@@ -408,21 +447,21 @@ func UpdateDevice(db sqlx.Ext, d *Device, localOnly bool) error {
 			},
 		})
 		if err != nil {
-			log.WithError(err).Error("network-server update device api error")
-			return handleGrpcError(err, "update device error")
+			return errors.Wrap(err, "update device error")
 		}
 	}
 
 	log.WithFields(log.Fields{
 		"dev_eui": d.DevEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("device updated")
 
 	return nil
 }
 
 // DeleteDevice deletes the device matching the given DevEUI.
-func DeleteDevice(db sqlx.Ext, devEUI lorawan.EUI64) error {
-	n, err := GetNetworkServerForDevEUI(db, devEUI)
+func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error {
+	n, err := GetNetworkServerForDevEUI(ctx, db, devEUI)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -439,28 +478,44 @@ func DeleteDevice(db sqlx.Ext, devEUI lorawan.EUI64) error {
 		return ErrDoesNotExist
 	}
 
+	// delete device from networkserver
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.DeleteDevice(context.Background(), &ns.DeleteDeviceRequest{
+	_, err = nsClient.DeleteDevice(ctx, &ns.DeleteDeviceRequest{
 		DevEui: devEUI[:],
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {
-		log.WithError(err).Error("network-server delete device api error")
-		return handleGrpcError(err, "delete device error")
+		return errors.Wrap(err, "delete device error")
+	}
+
+	// delete device from m2m server, this procedure should not block delete device from appserver once it's deleted from
+	// network server successfully
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err == nil {
+		_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
+			DevEui: devEUI.String(),
+		})
+		if err != nil && grpc.Code(err) != codes.NotFound {
+			log.WithError(err).Error("m2m-server delete device api error")
+		}
+	} else {
+		log.WithError(err).Error("get m2m-server client error")
 	}
 
 	log.WithFields(log.Fields{
 		"dev_eui": devEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("device deleted")
 
 	return nil
 }
 
 // CreateDeviceKeys creates the keys for the given device.
-func CreateDeviceKeys(db sqlx.Execer, dc *DeviceKeys) error {
+func CreateDeviceKeys(ctx context.Context, db sqlx.Execer, dc *DeviceKeys) error {
 	now := time.Now()
 	dc.CreatedAt = now
 	dc.UpdatedAt = now
@@ -489,13 +544,14 @@ func CreateDeviceKeys(db sqlx.Execer, dc *DeviceKeys) error {
 
 	log.WithFields(log.Fields{
 		"dev_eui": dc.DevEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("device-keys created")
 
 	return nil
 }
 
 // GetDeviceKeys returns the device-keys for the given DevEUI.
-func GetDeviceKeys(db sqlx.Queryer, devEUI lorawan.EUI64) (DeviceKeys, error) {
+func GetDeviceKeys(ctx context.Context, db sqlx.Queryer, devEUI lorawan.EUI64) (DeviceKeys, error) {
 	var dc DeviceKeys
 
 	err := sqlx.Get(db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
@@ -507,7 +563,7 @@ func GetDeviceKeys(db sqlx.Queryer, devEUI lorawan.EUI64) (DeviceKeys, error) {
 }
 
 // UpdateDeviceKeys updates the given device-keys.
-func UpdateDeviceKeys(db sqlx.Execer, dc *DeviceKeys) error {
+func UpdateDeviceKeys(ctx context.Context, db sqlx.Execer, dc *DeviceKeys) error {
 	dc.UpdatedAt = time.Now()
 
 	res, err := db.Exec(`
@@ -540,13 +596,14 @@ func UpdateDeviceKeys(db sqlx.Execer, dc *DeviceKeys) error {
 
 	log.WithFields(log.Fields{
 		"dev_eui": dc.DevEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("device-keys updated")
 
 	return nil
 }
 
 // DeleteDeviceKeys deletes the device-keys for the given DevEUI.
-func DeleteDeviceKeys(db sqlx.Execer, devEUI lorawan.EUI64) error {
+func DeleteDeviceKeys(ctx context.Context, db sqlx.Execer, devEUI lorawan.EUI64) error {
 	res, err := db.Exec("delete from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return handlePSQLError(Delete, err, "delete error")
@@ -559,13 +616,16 @@ func DeleteDeviceKeys(db sqlx.Execer, devEUI lorawan.EUI64) error {
 		return ErrDoesNotExist
 	}
 
-	log.WithField("dev_eui", devEUI).Info("device-keys deleted")
+	log.WithFields(log.Fields{
+		"dev_eui": devEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
+	}).Info("device-keys deleted")
 
 	return nil
 }
 
 // CreateDeviceActivation creates the given device-activation.
-func CreateDeviceActivation(db sqlx.Queryer, da *DeviceActivation) error {
+func CreateDeviceActivation(ctx context.Context, db sqlx.Queryer, da *DeviceActivation) error {
 	da.CreatedAt = time.Now()
 
 	err := sqlx.Get(db, &da.ID, `
@@ -588,13 +648,14 @@ func CreateDeviceActivation(db sqlx.Queryer, da *DeviceActivation) error {
 	log.WithFields(log.Fields{
 		"id":      da.ID,
 		"dev_eui": da.DevEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("device-activation created")
 
 	return nil
 }
 
 // GetLastDeviceActivationForDevEUI returns the most recent device-activation for the given DevEUI.
-func GetLastDeviceActivationForDevEUI(db sqlx.Queryer, devEUI lorawan.EUI64) (DeviceActivation, error) {
+func GetLastDeviceActivationForDevEUI(ctx context.Context, db sqlx.Queryer, devEUI lorawan.EUI64) (DeviceActivation, error) {
 	var da DeviceActivation
 
 	err := sqlx.Get(db, &da, `
@@ -615,7 +676,7 @@ func GetLastDeviceActivationForDevEUI(db sqlx.Queryer, devEUI lorawan.EUI64) (De
 }
 
 // DeleteAllDevicesForApplicationID deletes all devices given an application id.
-func DeleteAllDevicesForApplicationID(db sqlx.Ext, applicationID int64) error {
+func DeleteAllDevicesForApplicationID(ctx context.Context, db sqlx.Ext, applicationID int64) error {
 	var devs []Device
 	err := sqlx.Select(db, &devs, "select * from device where application_id = $1", applicationID)
 	if err != nil {
@@ -623,7 +684,7 @@ func DeleteAllDevicesForApplicationID(db sqlx.Ext, applicationID int64) error {
 	}
 
 	for _, dev := range devs {
-		err = DeleteDevice(db, dev.DevEUI)
+		err = DeleteDevice(ctx, db, dev.DevEUI)
 		if err != nil {
 			return errors.Wrap(err, "delete device error")
 		}

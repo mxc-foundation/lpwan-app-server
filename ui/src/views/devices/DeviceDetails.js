@@ -5,7 +5,6 @@ import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
-import CardActions from "@material-ui/core/CardActions";
 import Table from "@material-ui/core/Table";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
@@ -18,29 +17,31 @@ import Delete from "mdi-material-ui/Delete";
 
 import moment from "moment";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DeviceQueueItemForm from "./DeviceQueueItemForm";
 import DeviceQueueStore from "../../stores/DeviceQueueStore";
+import DeviceStore from "../../stores/DeviceStore";
 
 
 class DetailsCard extends Component {
   render() {
     return(
       <Card>
-        <CardHeader title="Details" />
+        <CardHeader title={i18n.t(`${packageNS}:tr000280`)} />
         <CardContent>
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell>Name</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
                 <TableCell>{this.props.device.device.name}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Description</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000079`)}</TableCell>
                 <TableCell>{this.props.device.device.description}</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Device-profile</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000281`)}</TableCell>
                 <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/device-profiles/${this.props.deviceProfile.deviceProfile.id}`}>{this.props.deviceProfile.deviceProfile.name}</TableCellLink>
               </TableRow>
             </TableBody>
@@ -54,7 +55,7 @@ class DetailsCard extends Component {
 
 class StatusCard extends Component {
   render() {
-    let lastSeenAt = "never";
+    let lastSeenAt = i18n.t(`${packageNS}:tr000372`);
 
     if (this.props.device.lastSeenAt !== null) {
       lastSeenAt = moment(this.props.device.lastSeenAt).format("lll");
@@ -62,12 +63,12 @@ class StatusCard extends Component {
 
     return(
       <Card>
-        <CardHeader title="Status" />
+        <CardHeader title={i18n.t(`${packageNS}:tr000282`)} />
         <CardContent>
           <Table>
             <TableBody>
               <TableRow>
-                <TableCell>Last seen at</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000283`)}</TableCell>
                 <TableCell>{lastSeenAt}</TableCell>
               </TableRow>
             </TableBody>
@@ -101,10 +102,10 @@ class EnqueueCard extends Component {
   render() {
     return(
       <Card>
-        <CardHeader title="Enqueue downlink payload" />
+        <CardHeader title={i18n.t(`${packageNS}:tr000284`)} />
         <CardContent>
           <DeviceQueueItemForm
-            submitLabel="Enqueue payload"
+            submitLabel={i18n.t(`${packageNS}:tr000292`)}
             onSubmit={this.onSubmit}
             object={this.state.object}
           />
@@ -176,20 +177,20 @@ class QueueCard extends Component {
 
     return(
       <Card>
-        <CardHeader title="Downlink queue" action={
+        <CardHeader title={i18n.t(`${packageNS}:tr000293`)} action={
           <div>
-            <Button onClick={this.getQueue}><Refresh /></Button>
-            <Button onClick={this.flushQueue} color="secondary"><Delete /></Button>
+            <Button onClick={this.getQueue}><Refresh color="primary" /></Button>
+            <Button onClick={this.flushQueue} color="primary.main"><Delete color="primary"/></Button>
           </div>
         } />
         <CardContent>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>FCnt</TableCell>
-                <TableCell>FPort</TableCell>
-                <TableCell>Confirmed</TableCell>
-                <TableCell>Base64 encoded payload</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000294`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000295`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000296`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000297`)}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -206,22 +207,56 @@ QueueCard = withRouter(QueueCard);
 
 
 class DeviceDetails extends Component {
-  render() {
+  constructor() {
+    super();
+    this.state = {
+      activated: false,
+    };
+  }
 
+  componentDidMount() {
+    this.setDeviceActivation();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.device !== this.props.device) {
+      this.setDeviceActivation();
+    }
+  }
+
+  setDeviceActivation = () => {
+    if (this.props.device === undefined) {
+      return;
+    }
+
+    DeviceStore.getActivation(this.props.device.device.devEUI, resp => {
+      if (resp === null) {
+        this.setState({
+          activated: false,
+        });
+      } else {
+        this.setState({
+          activated: true,
+        });
+      }
+    });
+  };
+
+  render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Grid item xs={6}>
           <DetailsCard device={this.props.device} deviceProfile={this.props.deviceProfile} match={this.props.match} />
         </Grid>
         <Grid item xs={6}>
           <StatusCard device={this.props.device} />
         </Grid>
-        <Grid item xs={12}>
+        {this.state.activated && <Grid item xs={12}>
           <EnqueueCard />
-        </Grid>
-        <Grid item xs={12}>
+        </Grid>}
+        {this.state.activated &&<Grid item xs={12}>
           <QueueCard />
-        </Grid>
+        </Grid>}
       </Grid>
     );
   }

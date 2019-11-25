@@ -9,11 +9,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/loraserver/api/ns"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 func (ts *APITestSuite) TestDeviceProfile() {
@@ -29,12 +29,12 @@ func (ts *APITestSuite) TestDeviceProfile() {
 		Name:   "test",
 		Server: "test:1234",
 	}
-	assert.NoError(storage.CreateNetworkServer(storage.DB(), &n))
+	assert.NoError(storage.CreateNetworkServer(context.Background(), storage.DB(), &n))
 
 	org := storage.Organization{
 		Name: "test-org",
 	}
-	assert.NoError(storage.CreateOrganization(storage.DB(), &org))
+	assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org))
 
 	ts.T().Run("Create", func(t *testing.T) {
 		assert := require.New(t)
@@ -66,6 +66,8 @@ func (ts *APITestSuite) TestDeviceProfile() {
 				PayloadCodec:         "CUSTOM_JS",
 				PayloadEncoderScript: "Encode() {}",
 				PayloadDecoderScript: "Decode() {}",
+				GeolocBufferTtl:      60,
+				GeolocMinBufferSize:  3,
 			},
 		}
 
@@ -97,29 +99,31 @@ func (ts *APITestSuite) TestDeviceProfile() {
 			assert := require.New(t)
 			updateReq := pb.UpdateDeviceProfileRequest{
 				DeviceProfile: &pb.DeviceProfile{
-					Id:                 createResp.Id,
-					OrganizationId:     org.ID,
-					NetworkServerId:    n.ID,
-					Name:               "updated-dp",
-					SupportsClassB:     true,
-					ClassBTimeout:      20,
-					PingSlotPeriod:     30,
-					PingSlotDr:         4,
-					PingSlotFreq:       868300000,
-					SupportsClassC:     true,
-					ClassCTimeout:      20,
-					MacVersion:         "1.1.0",
-					RegParamsRevision:  "C",
-					RxDelay_1:          2,
-					RxDrOffset_1:       3,
-					RxDatarate_2:       5,
-					RxFreq_2:           868500000,
-					FactoryPresetFreqs: []uint32{868100000, 868300000, 868500000, 868700000},
-					MaxEirp:            17,
-					MaxDutyCycle:       1,
-					SupportsJoin:       true,
-					RfRegion:           "EU868",
-					Supports_32BitFCnt: true,
+					Id:                  createResp.Id,
+					OrganizationId:      org.ID,
+					NetworkServerId:     n.ID,
+					Name:                "updated-dp",
+					SupportsClassB:      true,
+					ClassBTimeout:       20,
+					PingSlotPeriod:      30,
+					PingSlotDr:          4,
+					PingSlotFreq:        868300000,
+					SupportsClassC:      true,
+					ClassCTimeout:       20,
+					MacVersion:          "1.1.0",
+					RegParamsRevision:   "C",
+					RxDelay_1:           2,
+					RxDrOffset_1:        3,
+					RxDatarate_2:        5,
+					RxFreq_2:            868500000,
+					FactoryPresetFreqs:  []uint32{868100000, 868300000, 868500000, 868700000},
+					MaxEirp:             17,
+					MaxDutyCycle:        1,
+					SupportsJoin:        true,
+					RfRegion:            "EU868",
+					Supports_32BitFCnt:  true,
+					GeolocBufferTtl:     120,
+					GeolocMinBufferSize: 6,
 				},
 			}
 
@@ -181,14 +185,14 @@ func (ts *APITestSuite) TestDeviceProfile() {
 					Name:   "ns-server-2",
 					Server: "ns-server-2:1234",
 				}
-				assert.NoError(storage.CreateNetworkServer(storage.DB(), &n2))
+				assert.NoError(storage.CreateNetworkServer(context.Background(), storage.DB(), &n2))
 
 				sp1 := storage.ServiceProfile{
 					Name:            "test-sp",
 					NetworkServerID: n.ID,
 					OrganizationID:  org.ID,
 				}
-				assert.NoError(storage.CreateServiceProfile(storage.DB(), &sp1))
+				assert.NoError(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp1))
 				sp1ID, err := uuid.FromBytes(sp1.ServiceProfile.Id)
 				assert.NoError(err)
 
@@ -197,7 +201,7 @@ func (ts *APITestSuite) TestDeviceProfile() {
 					NetworkServerID: n2.ID,
 					OrganizationID:  org.ID,
 				}
-				assert.NoError(storage.CreateServiceProfile(storage.DB(), &sp2))
+				assert.NoError(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp2))
 				sp2ID, err := uuid.FromBytes(sp2.ServiceProfile.Id)
 				assert.NoError(err)
 
@@ -207,7 +211,7 @@ func (ts *APITestSuite) TestDeviceProfile() {
 					OrganizationID:   org.ID,
 					ServiceProfileID: sp1ID,
 				}
-				assert.NoError(storage.CreateApplication(storage.DB(), &app1))
+				assert.NoError(storage.CreateApplication(context.Background(), storage.DB(), &app1))
 
 				app2 := storage.Application{
 					Name:             "test-app-2",
@@ -215,7 +219,7 @@ func (ts *APITestSuite) TestDeviceProfile() {
 					OrganizationID:   org.ID,
 					ServiceProfileID: sp2ID,
 				}
-				assert.NoError(storage.CreateApplication(storage.DB(), &app2))
+				assert.NoError(storage.CreateApplication(context.Background(), storage.DB(), &app2))
 
 				listResp, err := api.List(context.Background(), &pb.ListDeviceProfileRequest{
 					Limit:         10,
@@ -239,14 +243,14 @@ func (ts *APITestSuite) TestDeviceProfile() {
 		t.Run("Organization user", func(t *testing.T) {
 			assert := require.New(t)
 
-			userID, err := storage.CreateUser(storage.DB(), &storage.User{
+			userID, err := storage.CreateUser(context.Background(), storage.DB(), &storage.User{
 				Username: "testuser",
 				IsActive: true,
 				Email:    "foo@bar.com",
 			}, "testpassword")
 			assert.NoError(err)
 
-			assert.NoError(storage.CreateOrganizationUser(storage.DB(), org.ID, userID, false))
+			assert.NoError(storage.CreateOrganizationUser(context.Background(), storage.DB(), org.ID, userID, false, false, false))
 
 			t.Run("List without org id returns all device-profiles for user", func(t *testing.T) {
 				assert := require.New(t)

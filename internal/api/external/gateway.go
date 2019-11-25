@@ -1,24 +1,30 @@
 package external
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
+	"github.com/spf13/viper"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/api/external/auth"
-	"github.com/brocaar/lora-app-server/internal/api/helpers"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/storage"
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
+
+const GatewayLocationsRedisKey = "gateway_locations"
 
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
@@ -60,8 +66,9 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 
 	createReq := ns.CreateGatewayRequest{
 		Gateway: &ns.Gateway{
-			Id:       mac[:],
-			Location: req.Gateway.Location,
+			Id:               mac[:],
+			Location:         req.Gateway.Location,
+			RoutingProfileId: applicationServerID.Bytes(),
 		},
 	}
 
@@ -96,19 +103,22 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err = storage.CreateGateway(tx, &storage.Gateway{
+		err = storage.CreateGateway(ctx, tx, &storage.Gateway{
 			MAC:             mac,
 			Name:            req.Gateway.Name,
 			Description:     req.Gateway.Description,
 			OrganizationID:  req.Gateway.OrganizationId,
 			Ping:            req.Gateway.DiscoveryEnabled,
 			NetworkServerID: req.Gateway.NetworkServerId,
+			Latitude:        req.Gateway.Location.Latitude,
+			Longitude:       req.Gateway.Location.Longitude,
+			Altitude:        req.Gateway.Location.Altitude,
 		})
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
-		n, err := storage.GetNetworkServer(tx, req.Gateway.NetworkServerId)
+		n, err := storage.GetNetworkServer(ctx, tx, req.Gateway.NetworkServerId)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -129,6 +139,11 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 		return nil, err
 	}
 
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
+
 	return &empty.Empty{}, nil
 }
 
@@ -144,12 +159,12 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	gw, err := storage.GetGateway(storage.DB(), mac, false)
+	gw, err := storage.GetGateway(ctx, storage.DB(), mac, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := storage.GetNetworkServer(storage.DB(), gw.NetworkServerID)
+	n, err := storage.GetNetworkServer(ctx, storage.DB(), gw.NetworkServerID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -173,11 +188,13 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 			Description:      gw.Description,
 			OrganizationId:   gw.OrganizationID,
 			DiscoveryEnabled: gw.Ping,
-			Location:         getResp.Gateway.Location,
-			NetworkServerId:  gw.NetworkServerID,
+			Location: &common.Location{
+				Latitude:  gw.Latitude,
+				Longitude: gw.Longitude,
+				Altitude:  gw.Altitude,
+			},
+			NetworkServerId: gw.NetworkServerID,
 		},
-		FirstSeenAt: getResp.FirstSeenAt,
-		LastSeenAt:  getResp.LastSeenAt,
 	}
 
 	resp.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
@@ -187,6 +204,20 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 	resp.UpdatedAt, err = ptypes.TimestampProto(gw.UpdatedAt)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if gw.FirstSeenAt != nil {
+		resp.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+	}
+
+	if gw.LastSeenAt != nil {
+		resp.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
 	}
 
 	if len(getResp.Gateway.GatewayProfileId) != 0 {
@@ -236,12 +267,12 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 
 		if isAdmin {
 			// in case of admin user list all gateways
-			count, err = storage.GetGatewayCount(storage.DB(), req.Search)
+			count, err = storage.GetGatewayCount(ctx, storage.DB(), req.Search)
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
 
-			gws, err = storage.GetGateways(storage.DB(), int(req.Limit), int(req.Offset), req.Search)
+			gws, err = storage.GetGateways(ctx, storage.DB(), int(req.Limit), int(req.Offset), req.Search)
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
@@ -251,21 +282,21 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
-			count, err = storage.GetGatewayCountForUser(storage.DB(), username, req.Search)
+			count, err = storage.GetGatewayCountForUser(ctx, storage.DB(), username, req.Search)
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
-			gws, err = storage.GetGatewaysForUser(storage.DB(), username, int(req.Limit), int(req.Offset), req.Search)
+			gws, err = storage.GetGatewaysForUser(ctx, storage.DB(), username, int(req.Limit), int(req.Offset), req.Search)
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
 		}
 	} else {
-		count, err = storage.GetGatewayCountForOrganizationID(storage.DB(), req.OrganizationId, req.Search)
+		count, err = storage.GetGatewayCountForOrganizationID(ctx, storage.DB(), req.OrganizationId, req.Search)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
-		gws, err = storage.GetGatewaysForOrganizationID(storage.DB(), req.OrganizationId, int(req.Limit), int(req.Offset), req.Search)
+		gws, err = storage.GetGatewaysForOrganizationID(ctx, storage.DB(), req.OrganizationId, int(req.Limit), int(req.Offset), req.Search)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
@@ -282,6 +313,11 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 			Description:     gw.Description,
 			OrganizationId:  gw.OrganizationID,
 			NetworkServerId: gw.NetworkServerID,
+			Location: &common.Location{
+				Latitude:  gw.Latitude,
+				Longitude: gw.Longitude,
+				Altitude:  gw.Altitude,
+			},
 		}
 
 		row.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
@@ -293,7 +329,61 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 			return nil, helpers.ErrToRPCError(err)
 		}
 
+		if gw.FirstSeenAt != nil {
+			row.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
+			if err != nil {
+				return nil, helpers.ErrToRPCError(err)
+			}
+		}
+		if gw.LastSeenAt != nil {
+			row.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
+			if err != nil {
+				return nil, helpers.ErrToRPCError(err)
+			}
+		}
+
 		resp.Result = append(resp.Result, &row)
+	}
+
+	return &resp, nil
+}
+
+// ListLocations lists the gateway locations.
+func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
+	var result []*pb.GatewayLocationListItem
+
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	resultJSON, err := redis.Bytes(redisConn.Do("GET", GatewayLocationsRedisKey))
+	if err == nil {
+		json.Unmarshal(resultJSON, &result)
+	}
+
+	if len(result) == 0 {
+		gwsLoc, err := storage.GetGatewaysLoc(ctx, storage.DB(), viper.GetInt("application_server.gateways_locations_limit"))
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		for _, loc := range gwsLoc {
+			result = append(result, &pb.GatewayLocationListItem{
+				Location: &pb.GatewayLocation{
+					Latitude:  loc.Latitude,
+					Longitude: loc.Longitude,
+					Altitude:  loc.Altitude,
+				},
+			})
+		}
+
+		bytes, err := json.Marshal(&result)
+		if err == nil {
+			redisConn.Do("SET", GatewayLocationsRedisKey, bytes)
+		}
+	}
+
+	resp := pb.ListGatewayLocationsResponse{
+		Result: result,
 	}
 
 	return &resp, nil
@@ -320,7 +410,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		gw, err := storage.GetGateway(tx, mac, true)
+		gw, err := storage.GetGateway(ctx, tx, mac, true)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -328,8 +418,11 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		gw.Name = req.Gateway.Name
 		gw.Description = req.Gateway.Description
 		gw.Ping = req.Gateway.DiscoveryEnabled
+		gw.Latitude = req.Gateway.Location.Latitude
+		gw.Longitude = req.Gateway.Location.Longitude
+		gw.Altitude = req.Gateway.Location.Altitude
 
-		err = storage.UpdateGateway(tx, &gw)
+		err = storage.UpdateGateway(ctx, tx, &gw)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -371,7 +464,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 			updateReq.Gateway.Boards = append(updateReq.Gateway.Boards, &gwBoard)
 		}
 
-		n, err := storage.GetNetworkServer(tx, gw.NetworkServerID)
+		n, err := storage.GetNetworkServer(ctx, tx, gw.NetworkServerID)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -391,6 +484,11 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		return nil, err
 	}
 
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
+
 	return &empty.Empty{}, nil
 }
 
@@ -407,7 +505,7 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err = storage.DeleteGateway(tx, mac)
+		err = storage.DeleteGateway(ctx, tx, mac)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -418,60 +516,58 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 		return nil, err
 	}
 
+	redisConn := storage.RedisPool().Get()
+	defer redisConn.Close()
+
+	redisConn.Do("DEL", GatewayLocationsRedisKey)
+
 	return &empty.Empty{}, nil
 }
 
 // GetStats gets the gateway statistics for the gateway with the given Mac.
 func (a *GatewayAPI) GetStats(ctx context.Context, req *pb.GetGatewayStatsRequest) (*pb.GetGatewayStatsResponse, error) {
-	var mac lorawan.EUI64
-	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+	var gatewayID lorawan.EUI64
+	if err := gatewayID.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, gatewayID))
 	if err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	gw, err := storage.GetGateway(storage.DB(), mac, false)
+	start, err := ptypes.Timestamp(req.StartTimestamp)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	n, err := storage.GetNetworkServer(storage.DB(), gw.NetworkServerID)
+	end, err := ptypes.Timestamp(req.EndTimestamp)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	interval, ok := ns.AggregationInterval_value[strings.ToUpper(req.Interval)]
+	_, ok := ns.AggregationInterval_value[strings.ToUpper(req.Interval)]
 	if !ok {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad interval: %s", req.Interval)
 	}
 
-	statsReq := ns.GetGatewayStatsRequest{
-		GatewayId:      mac[:],
-		Interval:       ns.AggregationInterval(interval),
-		StartTimestamp: req.StartTimestamp,
-		EndTimestamp:   req.EndTimestamp,
-	}
-	stats, err := nsClient.GetGatewayStats(ctx, &statsReq)
+	metrics, err := storage.GetMetrics(ctx, storage.RedisPool(), storage.AggregationInterval(strings.ToUpper(req.Interval)), "gw:"+gatewayID.String(), start, end)
 	if err != nil {
-		return nil, err
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	result := make([]*pb.GatewayStats, len(stats.Result))
-	for i, stat := range stats.Result {
+	result := make([]*pb.GatewayStats, len(metrics))
+	for i, m := range metrics {
 		result[i] = &pb.GatewayStats{
-			Timestamp:           stat.Timestamp,
-			RxPacketsReceived:   stat.RxPacketsReceived,
-			RxPacketsReceivedOk: stat.RxPacketsReceivedOk,
-			TxPacketsReceived:   stat.TxPacketsReceived,
-			TxPacketsEmitted:    stat.TxPacketsEmitted,
+			RxPacketsReceived:   int32(m.Metrics["rx_count"]),
+			RxPacketsReceivedOk: int32(m.Metrics["rx_ok_count"]),
+			TxPacketsReceived:   int32(m.Metrics["tx_count"]),
+			TxPacketsEmitted:    int32(m.Metrics["tx_ok_count"]),
+		}
+
+		result[i].Timestamp, err = ptypes.TimestampProto(m.Time)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
 		}
 	}
 
@@ -492,7 +588,7 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *pb.GetLastPingRequest
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	ping, pingRX, err := storage.GetLastGatewayPingAndRX(storage.DB(), mac)
+	ping, pingRX, err := storage.GetLastGatewayPingAndRX(ctx, storage.DB(), mac)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -535,7 +631,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 		return grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := storage.GetNetworkServerForGatewayMAC(storage.DB(), mac)
+	n, err := storage.GetNetworkServerForGatewayMAC(srv.Context(), storage.DB(), mac)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}

@@ -12,6 +12,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from "@material-ui/core/Button";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 
@@ -61,38 +62,38 @@ class CreateMulticastGroup extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Dialog
           open={this.state.spDialog}
           onClose={this.closeDialog}
         >
-          <DialogTitle>Add a service-profile?</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000164`)}</DialogTitle>
           <DialogContent>
             <DialogContentText paragraph>
-              The selected organization does not have a service-profile yet.
-              A service-profile connects an organization to a network-server and defines the features that an organization can use on this network-server.
+              {i18n.t(`${packageNS}:tr000165`)}
+              {i18n.t(`${packageNS}:tr000326`)}
             </DialogContentText>
             <DialogContentText>
-              Would you like to create a service-profile?
+              {i18n.t(`${packageNS}:tr000327`)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`} onClick={this.closeDialog}>Create</Button>
-            <Button color="primary" onClick={this.closeDialog}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`} onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000277`)}</Button>
+            <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
           </DialogActions>
         </Dialog>
 
         <TitleBar>
-          <TitleBarTitle title="Multicast-groups" to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000083`)} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Card className={this.props.classes.card}>
             <CardContent>
               <MulticastGroupForm
-                submitLabel="Create"
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
                 onSubmit={this.onSubmit}
                 match={this.props.match}
               />

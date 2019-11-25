@@ -135,7 +135,7 @@
         ]
       }
     },
-    "/api/network-servers/{network_server.id}": {
+    "/api/network-servers/{networkServer.id}": {
       "put": {
         "summary": "Update updates the given network-server.",
         "operationId": "Update",
@@ -149,7 +149,7 @@
         },
         "parameters": [
           {
-            "name": "network_server.id",
+            "name": "networkServer.id",
             "description": "Network-server ID.",
             "in": "path",
             "required": true,
@@ -210,11 +210,11 @@
         },
         "version": {
           "type": "string",
-          "description": "The LoRa Server version."
+          "description": "The LPWAN Server version."
         },
         "region": {
           "type": "string",
-          "description": "The LoRa Server region configured."
+          "description": "The LPWAN Server region configured."
         }
       }
     },

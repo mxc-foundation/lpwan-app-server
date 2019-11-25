@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 	"time"
@@ -9,12 +10,11 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/stretchr/testify/require"
 
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/loraserver/api/ns"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 func (ts *StorageTestSuite) TestDevice() {
@@ -26,13 +26,13 @@ func (ts *StorageTestSuite) TestDevice() {
 	org := Organization{
 		Name: "test-org-123",
 	}
-	assert.NoError(CreateOrganization(ts.Tx(), &org))
+	assert.NoError(CreateOrganization(context.Background(), ts.Tx(), &org))
 
 	n := NetworkServer{
 		Name:   "test-ns",
 		Server: "test-ns:1234",
 	}
-	assert.NoError(CreateNetworkServer(ts.Tx(), &n))
+	assert.NoError(CreateNetworkServer(context.Background(), ts.Tx(), &n))
 
 	sp := ServiceProfile{
 		OrganizationID:  org.ID,
@@ -59,7 +59,7 @@ func (ts *StorageTestSuite) TestDevice() {
 			MinGwDiversity:         3,
 		},
 	}
-	assert.NoError(CreateServiceProfile(ts.Tx(), &sp))
+	assert.NoError(CreateServiceProfile(context.Background(), ts.Tx(), &sp))
 	spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
 	assert.NoError(err)
 
@@ -89,7 +89,7 @@ func (ts *StorageTestSuite) TestDevice() {
 			Supports_32BitFCnt: true,
 		},
 	}
-	assert.NoError(CreateDeviceProfile(ts.Tx(), &dp))
+	assert.NoError(CreateDeviceProfile(context.Background(), ts.Tx(), &dp))
 	dpID, err := uuid.FromBytes(dp.DeviceProfile.Id)
 	assert.NoError(err)
 
@@ -98,10 +98,7 @@ func (ts *StorageTestSuite) TestDevice() {
 		Name:             "test-app",
 		ServiceProfileID: spID,
 	}
-	assert.NoError(CreateApplication(ts.Tx(), &app))
-
-	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
-	assert.NoError(err)
+	assert.NoError(CreateApplication(context.Background(), ts.Tx(), &app))
 
 	ts.T().Run("Create", func(t *testing.T) {
 		assert := require.New(t)
@@ -130,7 +127,7 @@ func (ts *StorageTestSuite) TestDevice() {
 				},
 			},
 		}
-		assert.NoError(CreateDevice(ts.Tx(), &d))
+		assert.NoError(CreateDevice(context.Background(), ts.Tx(), &d))
 		d.CreatedAt = d.CreatedAt.UTC().Truncate(time.Millisecond)
 		d.UpdatedAt = d.UpdatedAt.UTC().Truncate(time.Millisecond)
 
@@ -140,7 +137,7 @@ func (ts *StorageTestSuite) TestDevice() {
 				DevEui:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 				DeviceProfileId:   dp.DeviceProfile.Id,
 				ServiceProfileId:  sp.ServiceProfile.Id,
-				RoutingProfileId:  rpID.Bytes(),
+				RoutingProfileId:  applicationServerID.Bytes(),
 				SkipFCntCheck:     true,
 				ReferenceAltitude: 5.6,
 			},
@@ -149,11 +146,11 @@ func (ts *StorageTestSuite) TestDevice() {
 		t.Run("List", func(t *testing.T) {
 			assert := require.New(t)
 
-			devices, err := GetDevices(ts.Tx(), DeviceFilters{Limit: 10})
+			devices, err := GetDevices(context.Background(), ts.Tx(), DeviceFilters{Limit: 10})
 			assert.NoError(err)
 			assert.Len(devices, 1)
 
-			count, err := GetDeviceCount(ts.Tx(), DeviceFilters{})
+			count, err := GetDeviceCount(context.Background(), ts.Tx(), DeviceFilters{})
 			assert.NoError(err)
 			assert.Equal(1, count)
 		})
@@ -161,11 +158,11 @@ func (ts *StorageTestSuite) TestDevice() {
 		t.Run("List by ApplicationID", func(t *testing.T) {
 			assert := require.New(t)
 
-			devices, err := GetDevices(ts.Tx(), DeviceFilters{Limit: 10, ApplicationID: app.ID})
+			devices, err := GetDevices(context.Background(), ts.Tx(), DeviceFilters{Limit: 10, ApplicationID: app.ID})
 			assert.NoError(err)
 			assert.Len(devices, 1)
 
-			count, err := GetDeviceCount(ts.Tx(), DeviceFilters{ApplicationID: app.ID})
+			count, err := GetDeviceCount(context.Background(), ts.Tx(), DeviceFilters{ApplicationID: app.ID})
 			assert.NoError(err)
 			assert.Equal(1, count)
 		})
@@ -175,7 +172,7 @@ func (ts *StorageTestSuite) TestDevice() {
 				Device: createReq.Device,
 			}
 
-			getDevice, err := GetDevice(ts.Tx(), d.DevEUI, false, false)
+			getDevice, err := GetDevice(context.Background(), ts.Tx(), d.DevEUI, false, false)
 			assert.NoError(err)
 
 			getDevice.CreatedAt = getDevice.CreatedAt.UTC().Truncate(time.Millisecond)
@@ -191,7 +188,7 @@ func (ts *StorageTestSuite) TestDevice() {
 				OrganizationID:  org.ID,
 				Name:            "device-profile-2",
 			}
-			assert.NoError(CreateDeviceProfile(ts.Tx(), &dp2))
+			assert.NoError(CreateDeviceProfile(context.Background(), ts.Tx(), &dp2))
 			dp2ID, err := uuid.FromBytes(dp2.DeviceProfile.Id)
 			assert.NoError(err)
 
@@ -209,7 +206,7 @@ func (ts *StorageTestSuite) TestDevice() {
 			d.Variables.Map["var_2"] = sql.NullString{String: "test var 2", Valid: true}
 			d.Tags.Map["bar"] = sql.NullString{String: "foo", Valid: true}
 
-			assert.NoError(UpdateDevice(ts.Tx(), &d, false))
+			assert.NoError(UpdateDevice(context.Background(), ts.Tx(), &d, false))
 			d.UpdatedAt = d.UpdatedAt.UTC().Truncate(time.Millisecond)
 
 			updateReq := <-nsClient.UpdateDeviceChan
@@ -218,7 +215,7 @@ func (ts *StorageTestSuite) TestDevice() {
 					DevEui:            []byte{1, 2, 3, 4, 5, 6, 7, 8},
 					DeviceProfileId:   dp2.DeviceProfile.Id,
 					ServiceProfileId:  sp.ServiceProfile.Id,
-					RoutingProfileId:  rpID.Bytes(),
+					RoutingProfileId:  applicationServerID.Bytes(),
 					SkipFCntCheck:     true,
 					ReferenceAltitude: 5.6,
 				},
@@ -228,7 +225,7 @@ func (ts *StorageTestSuite) TestDevice() {
 				Device: updateReq.Device,
 			}
 
-			deviceGet, err := GetDevice(ts.Tx(), d.DevEUI, false, false)
+			deviceGet, err := GetDevice(context.Background(), ts.Tx(), d.DevEUI, false, false)
 			assert.NoError(err)
 			deviceGet.CreatedAt = deviceGet.CreatedAt.UTC().Truncate(time.Millisecond)
 			deviceGet.UpdatedAt = deviceGet.UpdatedAt.UTC().Truncate(time.Millisecond)
@@ -245,14 +242,14 @@ func (ts *StorageTestSuite) TestDevice() {
 				GenAppKey: lorawan.AES128Key{1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1},
 				JoinNonce: 1234,
 			}
-			assert.NoError(CreateDeviceKeys(ts.Tx(), &dk))
+			assert.NoError(CreateDeviceKeys(context.Background(), ts.Tx(), &dk))
 			dk.CreatedAt = dk.CreatedAt.UTC().Truncate(time.Millisecond)
 			dk.UpdatedAt = dk.UpdatedAt.UTC().Truncate(time.Millisecond)
 
 			t.Run("GetDeviceKeys", func(t *testing.T) {
 				assert := require.New(t)
 
-				dkGet, err := GetDeviceKeys(ts.Tx(), d.DevEUI)
+				dkGet, err := GetDeviceKeys(context.Background(), ts.Tx(), d.DevEUI)
 				assert.NoError(err)
 				dkGet.CreatedAt = dkGet.CreatedAt.UTC().Truncate(time.Millisecond)
 				dkGet.UpdatedAt = dkGet.UpdatedAt.UTC().Truncate(time.Millisecond)
@@ -267,10 +264,10 @@ func (ts *StorageTestSuite) TestDevice() {
 				dk.AppKey = lorawan.AES128Key{8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3, 2, 1}
 				dk.GenAppKey = lorawan.AES128Key{8, 7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7, 8}
 				dk.JoinNonce = 1235
-				assert.NoError(UpdateDeviceKeys(ts.Tx(), &dk))
+				assert.NoError(UpdateDeviceKeys(context.Background(), ts.Tx(), &dk))
 				dk.UpdatedAt = dk.UpdatedAt.UTC().Truncate(time.Millisecond)
 
-				dkGet, err := GetDeviceKeys(ts.Tx(), d.DevEUI)
+				dkGet, err := GetDeviceKeys(context.Background(), ts.Tx(), d.DevEUI)
 				assert.NoError(err)
 				dkGet.CreatedAt = dkGet.CreatedAt.UTC().Truncate(time.Millisecond)
 				dkGet.UpdatedAt = dkGet.UpdatedAt.UTC().Truncate(time.Millisecond)
@@ -281,8 +278,8 @@ func (ts *StorageTestSuite) TestDevice() {
 			t.Run("DeleteDeviceKeys", func(t *testing.T) {
 				assert := require.New(t)
 
-				assert.NoError(DeleteDeviceKeys(ts.Tx(), d.DevEUI))
-				_, err := GetDeviceKeys(ts.Tx(), d.DevEUI)
+				assert.NoError(DeleteDeviceKeys(context.Background(), ts.Tx(), d.DevEUI))
+				_, err := GetDeviceKeys(context.Background(), ts.Tx(), d.DevEUI)
 				assert.Equal(ErrDoesNotExist, err)
 			})
 		})
@@ -295,10 +292,10 @@ func (ts *StorageTestSuite) TestDevice() {
 				DevAddr: lorawan.DevAddr{1, 2, 3, 4},
 				AppSKey: lorawan.AES128Key{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
 			}
-			assert.NoError(CreateDeviceActivation(ts.Tx(), &da))
+			assert.NoError(CreateDeviceActivation(context.Background(), ts.Tx(), &da))
 			da.CreatedAt = da.CreatedAt.UTC().Truncate(time.Millisecond)
 
-			daGet, err := GetLastDeviceActivationForDevEUI(ts.Tx(), d.DevEUI)
+			daGet, err := GetLastDeviceActivationForDevEUI(context.Background(), ts.Tx(), d.DevEUI)
 			assert.NoError(err)
 			daGet.CreatedAt = daGet.CreatedAt.UTC().Truncate(time.Millisecond)
 			assert.Equal(da, daGet)
@@ -311,10 +308,10 @@ func (ts *StorageTestSuite) TestDevice() {
 					DevAddr: lorawan.DevAddr{4, 3, 2, 1},
 					AppSKey: lorawan.AES128Key{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
 				}
-				assert.NoError(CreateDeviceActivation(ts.Tx(), &da2))
+				assert.NoError(CreateDeviceActivation(context.Background(), ts.Tx(), &da2))
 				da2.CreatedAt = da2.CreatedAt.UTC().Truncate(time.Millisecond)
 
-				daGet, err := GetLastDeviceActivationForDevEUI(ts.Tx(), d.DevEUI)
+				daGet, err := GetLastDeviceActivationForDevEUI(context.Background(), ts.Tx(), d.DevEUI)
 				assert.NoError(err)
 				daGet.CreatedAt = daGet.CreatedAt.UTC().Truncate(time.Millisecond)
 				assert.Equal(da2, daGet)
@@ -324,12 +321,12 @@ func (ts *StorageTestSuite) TestDevice() {
 		t.Run("Delete", func(t *testing.T) {
 			assert := require.New(t)
 
-			assert.NoError(DeleteDevice(ts.Tx(), d.DevEUI))
+			assert.NoError(DeleteDevice(context.Background(), ts.Tx(), d.DevEUI))
 			assert.Equal(ns.DeleteDeviceRequest{
 				DevEui: d.DevEUI[:],
 			}, <-nsClient.DeleteDeviceChan)
 
-			_, err := GetDevice(ts.Tx(), d.DevEUI, false, true)
+			_, err := GetDevice(context.Background(), ts.Tx(), d.DevEUI, false, true)
 			assert.Equal(ErrDoesNotExist, err)
 		})
 	})

@@ -10,8 +10,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/static"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,7 +26,10 @@ var (
 )
 
 const (
-	sendInvite = iota
+	English            = pb.Language_en
+	Korean             = pb.Language_ko
+	SimplifiedChinese  = pb.Language_zhcn
+	TraditionalChinese = pb.Language_zhtw
 )
 
 // Setup configures the package.
@@ -34,7 +38,7 @@ func Setup(c config.Config) error {
 	password = c.SMTP.Password
 	smtpServer = c.SMTP.Host
 	smtpPort = c.SMTP.Port
-	host = c.General.HostServer
+	host = os.Getenv("APPSERVER")
 	disable = false
 
 	base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
@@ -60,15 +64,27 @@ var (
 		templatePath string
 		url          string
 	}{
-		sendInvite: {
-			templatePath: "templates/registration-confirm",
+		English: {
+			templatePath: "templates/registration-confirm-en",
+			url:          "/#/registration-confirm/",
+		},
+		Korean: {
+			templatePath: "templates/registration-confirm-ko",
+			url:          "/#/registration-confirm/",
+		},
+		SimplifiedChinese: {
+			templatePath: "templates/registration-confirm-zhcn",
+			url:          "/#/registration-confirm/",
+		},
+		TraditionalChinese: {
+			templatePath: "templates/registration-confirm-zhtw",
 			url:          "/#/registration-confirm/",
 		},
 	}
 )
 
 // SendInvite ...
-func SendInvite(user string, token string) error {
+func SendInvite(user, token string, language int32) error {
 	var err error
 
 	if disable == true {
@@ -80,13 +96,9 @@ func SendInvite(user string, token string) error {
 		return errors.New("Unable to send confirmation email")
 	}
 
-	localHostAddr := os.Getenv("LOCAL_HOST_ADDRESS")
-	var link string
-	if localHostAddr != "" {
-		link = localHostAddr + mailTemplateNames[sendInvite].url + token
-	} else {
-		link = "https://" + host + mailTemplateNames[sendInvite].url + token
-	}
+	link := host + mailTemplateNames[language].url + token
+
+	logo := host + "/branding.png"
 
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
@@ -95,8 +107,8 @@ func SendInvite(user string, token string) error {
 	messageID := time.Now().Format("20060102150405.") + base32endocoding.EncodeToString(b)
 
 	var msg bytes.Buffer
-	if err := mailTemplates[sendInvite].Execute(&msg, struct {
-		From, To, Host, MsgId, Boundary, Link string
+	if err := mailTemplates[language].Execute(&msg, struct {
+		From, To, Host, MsgId, Boundary, Link, Logo string
 	}{
 		From:     senderID,
 		To:       user,
@@ -104,6 +116,7 @@ func SendInvite(user string, token string) error {
 		MsgId:    messageID + "@" + host,
 		Boundary: "----=_Part_" + messageID,
 		Link:     link,
+		Logo:     logo,
 	}); err != nil {
 		log.Error(err)
 		return err

@@ -7,19 +7,20 @@ import TableRow from "@material-ui/core/TableRow";
 
 import Plus from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
 import TitleBarButton from "../../components/TitleBarButton";
 import DataTable from "../../components/DataTable";
-import Admin from "../../components/Admin";
+import DeviceAdmin from "../../components/DeviceAdmin";
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import theme from "../../theme";
 
 
 const styles = {
   idColumn: {
-    width: theme.spacing.unit * 45,
+    width: theme.spacing(45),
     whiteSpace: "nowrap",
   },
 };
@@ -48,27 +49,27 @@ class ListMulticastGroups extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar
           buttons={
-            <Admin organizationID={this.props.match.params.organizationID}>
+            <DeviceAdmin organizationID={this.props.match.params.organizationID}>
               <TitleBarButton
-                label="Create"
+                label={i18n.t(`${packageNS}:tr000277`)}
                 icon={<Plus />}
                 to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/create`}
               />
-            </Admin>
+            </DeviceAdmin>
           }
         >
-          <TitleBarTitle title="Multicast-groups" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000083`)} />
         </TitleBar>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell className={this.props.classes.idColumn}>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Service-profile</TableCell>
+                <TableCell className={this.props.classes.idColumn}>{i18n.t(`${packageNS}:tr000077`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000078`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

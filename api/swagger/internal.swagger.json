@@ -195,6 +195,32 @@
           "InternalService"
         ]
       }
+    },
+    "/api/internal/verify-g-recaptcha": {
+      "post": {
+        "operationId": "GetVerifyingGoogleRecaptcha",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGoogleRecaptchaResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiGoogleRecaptchaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -327,6 +353,48 @@
         }
       }
     },
+    "apiGoogleRecaptchaRequest": {
+      "type": "object",
+      "properties": {
+        "secret": {
+          "type": "string"
+        },
+        "response": {
+          "type": "string"
+        },
+        "remoteip": {
+          "type": "string"
+        }
+      }
+    },
+    "apiGoogleRecaptchaResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "challengeTs": {
+          "type": "string"
+        },
+        "hostname": {
+          "type": "string"
+        },
+        "errorCodes": {
+          "type": "string"
+        }
+      }
+    },
+    "apiLanguage": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ko",
+        "zhcn",
+        "zhtw"
+      ],
+      "default": "en"
+    },
     "apiLoginRequest": {
       "type": "object",
       "properties": {
@@ -364,7 +432,17 @@
         "isAdmin": {
           "type": "boolean",
           "format": "boolean",
-          "description": "User is admin within the context of this organization."
+          "description": "User is admin within the context of this organization.\nThere is no need to set the is_device_admin and is_gateway_admin flags."
+        },
+        "isDeviceAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is able to modify device related resources (applications,\ndevice-profiles, devices, multicast-groups)."
+        },
+        "isGatewayAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is able to modify gateways."
         },
         "createdAt": {
           "type": "string",
@@ -414,6 +492,9 @@
       "properties": {
         "email": {
           "type": "string"
+        },
+        "language": {
+          "$ref": "#/definitions/apiLanguage"
         }
       }
     },

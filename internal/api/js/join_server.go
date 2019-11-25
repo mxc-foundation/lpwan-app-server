@@ -1,19 +1,20 @@
 package js
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
-	"fmt"
+	"encoding/hex"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/brocaar/lora-app-server/internal/config"
-	"github.com/brocaar/lora-app-server/internal/join"
-	"github.com/brocaar/lorawan/backend"
+	"github.com/brocaar/lorawan"
+	"github.com/brocaar/lorawan/backend/joinserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var (
@@ -37,8 +38,13 @@ func Setup(conf config.Config) error {
 		"tls_key":  tlsKey,
 	}).Info("api/js: starting join-server api")
 
+	handler, err := getHandler(conf)
+	if err != nil {
+		return errors.Wrap(err, "get join-server handler error")
+	}
+
 	server := http.Server{
-		Handler:   NewJoinServerAPI(),
+		Handler:   handler,
 		Addr:      bind,
 		TLSConfig: &tls.Config{},
 	}
@@ -77,119 +83,55 @@ func Setup(conf config.Config) error {
 
 	return nil
 }
+func getHandler(conf config.Config) (http.Handler, error) {
+	jsConf := joinserver.HandlerConfig{
+		Logger: log.StandardLogger(),
+		GetDeviceKeysByDevEUIFunc: func(devEUI lorawan.EUI64) (joinserver.DeviceKeys, error) {
+			dk, err := storage.GetDeviceKeys(context.TODO(), storage.DB(), devEUI)
+			if err != nil {
+				return joinserver.DeviceKeys{}, errors.Wrap(err, "get device-keys error")
+			}
 
-// JoinServerAPI implements the join-server API as documented in the LoRaWAN
-// backend interfaces specification.
-type JoinServerAPI struct{}
+			if dk.JoinNonce == (1<<24)-1 {
+				return joinserver.DeviceKeys{}, errors.New("join-nonce overflow")
+			}
+			dk.JoinNonce++
+			if err := storage.UpdateDeviceKeys(context.TODO(), storage.DB(), &dk); err != nil {
+				return joinserver.DeviceKeys{}, errors.Wrap(err, "update device-keys error")
+			}
 
-// NewJoinServerAPI create a new JoinServerAPI.
-func NewJoinServerAPI() http.Handler {
-	return &JoinServerAPI{}
-}
+			return joinserver.DeviceKeys{
+				DevEUI:    dk.DevEUI,
+				NwkKey:    dk.NwkKey,
+				JoinNonce: dk.JoinNonce,
+			}, nil
+		},
+		GetKEKByLabelFunc: func(label string) ([]byte, error) {
+			for _, kek := range conf.JoinServer.KEK.Set {
+				if label == kek.Label {
+					b, err := hex.DecodeString(kek.KEK)
+					if err != nil {
+						return nil, errors.Wrap(err, "decode hex encoded kek error")
+					}
 
-// ServeHTTP implements the http.Handler interface.
-func (a *JoinServerAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var basePL backend.BasePayload
+					return b, nil
+				}
+			}
 
-	b, err := ioutil.ReadAll(r.Body)
+			return nil, nil
+		},
+		GetASKEKLabelByDevEUIFunc: func(devEUI lorawan.EUI64) (string, error) {
+			return conf.JoinServer.KEK.ASKEKLabel, nil
+		},
+	}
+
+	handler, err := joinserver.NewHandler(jsConf)
 	if err != nil {
-		a.returnError(w, http.StatusInternalServerError, backend.Other, "read body error")
-		return
+		return nil, errors.Wrap(err, "new join-server handler error")
 	}
 
-	err = json.Unmarshal(b, &basePL)
-	if err != nil {
-		a.returnError(w, http.StatusBadRequest, backend.Other, err.Error())
-		return
-	}
-
-	log.WithFields(log.Fields{
-		"message_type":   basePL.MessageType,
-		"sender_id":      basePL.SenderID,
-		"receiver_id":    basePL.ReceiverID,
-		"transaction_id": basePL.TransactionID,
-	}).Info("js: request received")
-
-	switch basePL.MessageType {
-	case backend.JoinReq:
-		a.handleJoinReq(w, b)
-	case backend.RejoinReq:
-		a.handleRejoinReq(w, b)
-	default:
-		a.returnError(w, http.StatusBadRequest, backend.Other, fmt.Sprintf("invalid MessageType: %s", basePL.MessageType))
-	}
-}
-
-func (a *JoinServerAPI) returnError(w http.ResponseWriter, code int, resultCode backend.ResultCode, msg string) {
-	log.WithFields(log.Fields{
-		"error": msg,
-	}).Error("js: error handling request")
-
-	w.WriteHeader(code)
-
-	pl := backend.Result{
-		ResultCode:  resultCode,
-		Description: msg,
-	}
-	b, err := json.Marshal(pl)
-	if err != nil {
-		log.WithError(err).Error("marshal json error")
-		return
-	}
-
-	w.Write(b)
-}
-
-func (a *JoinServerAPI) returnPayload(w http.ResponseWriter, code int, pl interface{}) {
-	w.WriteHeader(code)
-
-	b, err := json.Marshal(pl)
-	if err != nil {
-		log.WithError(err).Error("marshal json error")
-		return
-	}
-
-	w.Write(b)
-}
-
-func (a *JoinServerAPI) handleJoinReq(w http.ResponseWriter, b []byte) {
-	var joinReqPL backend.JoinReqPayload
-	err := json.Unmarshal(b, &joinReqPL)
-	if err != nil {
-		a.returnError(w, http.StatusBadRequest, backend.Other, err.Error())
-		return
-	}
-
-	ans := join.HandleJoinRequest(joinReqPL)
-
-	log.WithFields(log.Fields{
-		"message_type":   ans.BasePayload.MessageType,
-		"sender_id":      ans.BasePayload.SenderID,
-		"receiver_id":    ans.BasePayload.ReceiverID,
-		"transaction_id": ans.BasePayload.TransactionID,
-		"result_code":    ans.Result.ResultCode,
-	}).Info("js: sending response")
-
-	a.returnPayload(w, http.StatusOK, ans)
-}
-
-func (a *JoinServerAPI) handleRejoinReq(w http.ResponseWriter, b []byte) {
-	var rejoinReqPL backend.RejoinReqPayload
-	err := json.Unmarshal(b, &rejoinReqPL)
-	if err != nil {
-		a.returnError(w, http.StatusBadRequest, backend.Other, err.Error())
-		return
-	}
-
-	ans := join.HandleRejoinRequest(rejoinReqPL)
-
-	log.WithFields(log.Fields{
-		"message_type":   ans.BasePayload.MessageType,
-		"sender_id":      ans.BasePayload.SenderID,
-		"receiver_id":    ans.BasePayload.ReceiverID,
-		"transaction_id": ans.BasePayload.TransactionID,
-		"result_code":    ans.Result.ResultCode,
-	}).Info("js: sending response")
-
-	a.returnPayload(w, http.StatusOK, ans)
+	return &prometheusMiddleware{
+		handler:         handler,
+		timingHistogram: conf.Metrics.Prometheus.APITimingHistogram,
+	}, nil
 }

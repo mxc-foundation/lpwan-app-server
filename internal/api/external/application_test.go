@@ -9,10 +9,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func (ts *APITestSuite) TestApplication() {
@@ -27,19 +27,19 @@ func (ts *APITestSuite) TestApplication() {
 	org := storage.Organization{
 		Name: "test-org",
 	}
-	assert.NoError(storage.CreateOrganization(storage.DB(), &org))
+	assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org))
 
 	n := storage.NetworkServer{
 		Name:   "test-ns",
 		Server: "test-ns:1234",
 	}
-	assert.NoError(storage.CreateNetworkServer(storage.DB(), &n))
+	assert.NoError(storage.CreateNetworkServer(context.Background(), storage.DB(), &n))
 
 	sp := storage.ServiceProfile{
 		OrganizationID:  org.ID,
 		NetworkServerID: n.ID,
 	}
-	assert.NoError(storage.CreateServiceProfile(storage.DB(), &sp))
+	assert.NoError(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp))
 	spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
 	assert.NoError(err)
 
@@ -86,21 +86,21 @@ func (ts *APITestSuite) TestApplication() {
 			org2 := storage.Organization{
 				Name: "test-org-2",
 			}
-			assert.NoError(storage.CreateOrganization(storage.DB(), &org2))
+			assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org2))
 
 			sp2 := storage.ServiceProfile{
 				Name:            "test-sp2",
 				NetworkServerID: n.ID,
 				OrganizationID:  org.ID,
 			}
-			assert.NoError(storage.CreateServiceProfile(storage.DB(), &sp2))
+			assert.NoError(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp2))
 
 			app2 := storage.Application{
 				OrganizationID:   org2.ID,
 				Name:             "test-app-2",
 				ServiceProfileID: spID,
 			}
-			assert.NoError(storage.CreateApplication(storage.DB(), &app2))
+			assert.NoError(storage.CreateApplication(context.Background(), storage.DB(), &app2))
 
 			t.Run("List", func(t *testing.T) {
 				t.Run("As global admin", func(t *testing.T) {

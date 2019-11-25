@@ -8,6 +8,7 @@ import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
 import Plus from "mdi-material-ui/Plus";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
@@ -49,27 +50,27 @@ class ListUsers extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar
-          title="Users"
+          title={i18n.t(`${packageNS}:tr000036`)}
           buttons={[
             <TitleBarButton
               key={1}
-              label="Create"
+              label={i18n.t(`${packageNS}:tr000277`)}
               icon={<Plus />}
               to={`/users/create`}
             />,
           ]}
         >
-          <TitleBarTitle title="Users" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000036`)} />
         </TitleBar>
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>Username</TableCell>
-                <TableCell>Active</TableCell>
-                <TableCell>Admin</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000056`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000057`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000058`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

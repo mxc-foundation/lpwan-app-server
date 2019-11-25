@@ -3,14 +3,14 @@ package external
 import (
 	"testing"
 
-	"github.com/brocaar/loraserver/api/ns"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 
-	pb "github.com/brocaar/lora-app-server/api"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver"
-	"github.com/brocaar/lora-app-server/internal/backend/networkserver/mock"
-	"github.com/brocaar/lora-app-server/internal/storage"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func (ts *APITestSuite) TestUser() {
@@ -32,7 +32,7 @@ func (ts *APITestSuite) TestUser() {
 		org := storage.Organization{
 			Name: "test-org",
 		}
-		assert.NoError(storage.CreateOrganization(storage.DB(), &org))
+		assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org))
 
 		createReq := pb.CreateUserRequest{
 			User: &pb.User{
@@ -48,7 +48,7 @@ func (ts *APITestSuite) TestUser() {
 		assert.NoError(err)
 		assert.True(createResp.Id > 0)
 
-		users, err := storage.GetOrganizationUsers(storage.DB(), org.ID, 10, 0)
+		users, err := storage.GetOrganizationUsers(context.Background(), storage.DB(), org.ID, 10, 0)
 		assert.NoError(err)
 		assert.Len(users, 1)
 		assert.Equal(createResp.Id, users[0].UserID)

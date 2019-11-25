@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/brocaar/lora-app-server/internal/storage"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -100,7 +100,7 @@ func (v JWTValidator) GetIsAdmin(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	user, err := storage.GetUserByUsername(v.db, claims.Username)
+	user, err := storage.GetUserByUsername(ctx, v.db, claims.Username)
 	if err != nil {
 		return false, errors.Wrap(err, "get user by username error")
 	}

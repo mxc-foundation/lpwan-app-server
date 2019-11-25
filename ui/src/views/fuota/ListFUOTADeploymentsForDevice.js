@@ -16,9 +16,10 @@ import TableBody from '@material-ui/core/TableBody';
 import moment from "moment";
 import CloudUpload from "mdi-material-ui/CloudUpload";
 
+import i18n, { packageNS } from '../../i18n';
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
-import Admin from "../../components/Admin";
+import DeviceAdmin from "../../components/DeviceAdmin";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 import theme from "../../theme";
 
@@ -28,10 +29,10 @@ const styles = {
     textAlign: "right",
   },
   button: {
-    marginLeft: 2 * theme.spacing.unit,
+    marginLeft: 2 * theme.spacing(1),
   },
   icon: {
-    marginRight: theme.spacing.unit,
+    marginRight: theme.spacing(1),
   },
 };
 
@@ -96,53 +97,53 @@ class ListFUOTADeploymentsForDevice extends Component {
     }
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         {this.state.deploymentDevice && <Dialog
           open={this.state.detailDialog}
           onClose={this.onCloseDialog}
         >
-          <DialogTitle>Job status for device</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000339`)}</DialogTitle>
           <DialogContent>
             <Table>
               <TableBody>
                 <TableRow>
-                  <TableCell>Last updated</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000340`)}</TableCell>
                   <TableCell>{fddUpdatedAt}</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell>Device state</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
                   <TableCell>{this.state.deploymentDevice.state}</TableCell>
                 </TableRow>
                 {this.state.deploymentDevice.state === "ERROR" && <TableRow>
-                  <TableCell>Error message</TableCell>
+                  <TableCell>{i18n.t(`${packageNS}:tr000341`)}</TableCell>
                   <TableCell>{this.state.deploymentDevice.errorMessage}</TableCell>
                 </TableRow>}
               </TableBody>
             </Table>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" onClick={this.onCloseDialog}>Dismiss</Button>
+            <Button color="primary.main" onClick={this.onCloseDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
           </DialogActions>
         </Dialog>}
 
-        <Admin organizationID={this.props.match.params.organizationID}>
+        <DeviceAdmin organizationID={this.props.match.params.organizationID}>
           <Grid item xs={12} className={this.props.classes.buttons}>
             <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments/create`}>
               <CloudUpload className={this.props.classes.icon} />
-              {/* Create */} Firmware Update {/* Job */}
+              {/* Create */} {i18n.t(`${packageNS}:tr000342`)} {/* Job */}
             </Button>
           </Grid>
-        </Admin>
+        </DeviceAdmin>
 
         <Grid item xs={12}>
           <DataTable
             header={
               <TableRow>
-                <TableCell>Job name</TableCell>
-                <TableCell>Created at</TableCell>
-                <TableCell>Updated at</TableCell>
-                <TableCell>Job state</TableCell>
-                <TableCell>Device state</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000320`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000323`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}

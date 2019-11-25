@@ -7,7 +7,6 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
 
 import Divider from '@material-ui/core/Divider';
 import Domain from "mdi-material-ui/Domain";
@@ -19,16 +18,18 @@ import Tune from "mdi-material-ui/Tune";
 import Settings from "mdi-material-ui/Settings";
 import Rss from "mdi-material-ui/Rss";
 import Wallet from "mdi-material-ui/WalletOutline";
+import AccessPoint from "mdi-material-ui/AccessPoint";
 
 import AccountDetails from "mdi-material-ui/AccountDetails";
-
+import ServerInfoStore from "../stores/ServerInfoStore"
 import AutocompleteSelect from "./AutocompleteSelect";
 import SessionStore from "../stores/SessionStore";
 import OrganizationStore from "../stores/OrganizationStore";
 import Admin from "./Admin";
 
 import theme from "../theme";
-
+import { openM2M } from "../util/Util";
+import i18n, { packageNS } from '../i18n';
 
 const styles = {
   drawerPaper: {
@@ -42,20 +43,15 @@ const styles = {
     boxShadow: '1px 1px 5px 0px rgba(29, 30, 33, 0.5)',
   },
   select: {
-    paddingTop: theme.spacing.unit,
-    paddingLeft: theme.spacing.unit * 3,
-    paddingRight: theme.spacing.unit * 3,
-    paddingBottom: theme.spacing.unit * 1,
+    paddingTop: theme.spacing(1),
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    paddingBottom: theme.spacing(1),
   },
-/*   card: {
-    width: '100%',
-    height: 200,
-    position: 'absolute',
-    bottom: 0,
-    backgroundColor: '#09006E',
-    color: '#FFFFFF',
-    marginTop: -20,
-  }, */
+  selected: {
+    //fontSize: 'larger', 
+    color: theme.palette.primary.white,
+  },
   static: {
     position: 'static'
   },
@@ -70,6 +66,14 @@ const styles = {
   },
 };
 
+function loadServerVersion() {
+  return new Promise((resolve, reject) => {
+    ServerInfoStore.getAppserverVersion(data=>{
+      resolve(data);
+    });
+  });
+} 
+
 class SideNav extends Component {
   constructor() {
     super();
@@ -78,6 +82,7 @@ class SideNav extends Component {
       open: true,
       organization: null,
       cacheCounter: 0,
+      version: '1.0.0'
     };
 
 
@@ -87,7 +92,28 @@ class SideNav extends Component {
     this.getOrganizationFromLocation = this.getOrganizationFromLocation.bind(this);
   }
 
+  loadData = async () => {
+    try {
+      const organizationID = SessionStore.getOrganizationID();
+      var data = await loadServerVersion();
+      const serverInfo = JSON.parse(data);
+      
+      this.setState({
+        organizationID,
+        version: serverInfo.version
+      })
+
+      this.setState({loading: true})
+      
+    } catch (error) {
+      this.setState({loading: false})
+      console.error(error);
+      this.setState({ error });
+    }
+  }
+
   componentDidMount() {
+    this.loadData();
     SessionStore.on("organization.change", () => {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
         this.setState({
@@ -108,6 +134,10 @@ class SideNav extends Component {
           organization: org,
         });
       }
+
+      this.setState({
+        cacheCounter: this.state.cacheCounter + 1,
+      });
     });
 
     OrganizationStore.on("delete", id => {
@@ -122,13 +152,13 @@ class SideNav extends Component {
       });
     });
 
-    if (SessionStore.getOrganizationID() !== null) {
+    /* if (SessionStore.getOrganizationID() !== null) {
       OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
         this.setState({
           organization: resp.organization,
         });
       });
-    }
+    } */
 
     this.getOrganizationFromLocation();
   }
@@ -142,6 +172,8 @@ class SideNav extends Component {
   }
 
   onChange(e) {
+    SessionStore.setOrganizationID(e.target.value);
+
     this.props.history.push(`/organizations/${e.target.value}/applications`);
   }
 
@@ -167,41 +199,16 @@ class SideNav extends Component {
     });
   }
 
-  handleOpenM2M = () => {
-    let org_id = this.state.organization.id;
-    let org_name = '';
-    if(!org_id){
-      return false;
-    }
-    const user = SessionStore.getUser();  
-    const org = SessionStore.getOrganizations(); 
-    
-    if(user.isAdmin){
-      org_id = '0';
-      org_name = 'Super_admin';
-    }else{
-      if(org.length > 0){
-        org_name = org[0].organizationName;
-      }else{
-        org_name = '';
-      }
-    }
-    
-    const data = {
-      jwt: window.localStorage.getItem("jwt"),
-      path: `/withdraw/${org_id}`,
-      org_id,
-      org_name,
-      username: user.username,
-      loraHostUrl: window.location.origin
-    };
-    
-    const dataString = encodeURIComponent(JSON.stringify(data));
-    /* console.log('M2M_DEV_SERVER', process.env.M2M_DEV_SERVER);
-    console.log('M2M_DEV_SERVER', process.env);
-    return false; */
-    // for new tab, see: https://stackoverflow.com/questions/427479/programmatically-open-new-pages-on-tabs
-    window.location.replace(process.env.REACT_APP_M2M_SERVER + `/#/j/${dataString}`);
+  handlingExtLink = () => {
+    const resp = SessionStore.getProfile();
+    resp.then((res) => {
+      let orgId = SessionStore.getOrganizationID();
+      const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
+
+      OrganizationStore.get(orgId, resp => {
+        openM2M(resp.organization, isBelongToOrg, '/withdraw');
+      });
+    })
   }
 
   render() {
@@ -209,7 +216,18 @@ class SideNav extends Component {
     if (this.state.organization) {
       organizationID = this.state.organization.id;
     }
-   
+    const { pathname } = this.props.location;
+    const pathLastName = pathname.split('/').pop();
+    
+    const active = (sideNavName) => Boolean(pathLastName.match(sideNavName));
+    const selected = (sideNavName) => {
+      if(Boolean(pathLastName.match(sideNavName))){
+        return { primary: this.props.classes.selected };
+      }else{
+        return {};
+      }
+    }
+
     return(
       <Drawer
         variant="persistent"
@@ -219,30 +237,29 @@ class SideNav extends Component {
       >
         <Admin>
           <List>
-            <ListItem button component={Link} to="/network-servers">
+            <ListItem selected={active('/network-servers')} button component={Link} to="/network-servers">
               <ListItemIcon>
                 <Server />
               </ListItemIcon>
-              <ListItemText primary="Network-servers" />
+              <ListItemText classes={selected('/network-servers')} primary={i18n.t(`${packageNS}:tr000040`)} />
             </ListItem>
-            <ListItem button component={Link} to="/gateway-profiles">
+            <ListItem selected={active('/gateway-profiles')} button component={Link} to="/gateway-profiles">
               <ListItemIcon>
                 <RadioTower />
               </ListItemIcon>
-              <ListItemText primary="Gateway-profiles" />
+              <ListItemText classes={selected('/gateway-profiles')} primary={i18n.t(`${packageNS}:tr000046`)} />
             </ListItem>
-            <Divider />
-            <ListItem button component={Link} to="/organizations">
+            <ListItem selected={active('/organizations')} button component={Link} to="/organizations">
             <ListItemIcon>
                 <Domain />
               </ListItemIcon>
-              <ListItemText primary="Organizations" />
+              <ListItemText classes={selected('/organizations')} primary={i18n.t(`${packageNS}:tr000049`)} />
             </ListItem>
-            <ListItem button component={Link} to="/users">
+            <ListItem selected={active('/users')} button component={Link} to="/users">
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="All users" />
+              <ListItemText classes={selected('/users')} primary={i18n.t(`${packageNS}:tr000055`)} />
             </ListItem>
           </List>
         </Admin>
@@ -256,70 +273,82 @@ class SideNav extends Component {
             getOptions={this.getOrganizationOptions}
             className={this.props.classes.select}
             triggerReload={this.state.cacheCounter}
-            placeHolder="Change Organization"
+            placeHolder={i18n.t(`${packageNS}:tr000358`)}
           />
         </div>
-        <Divider />
         {this.state.organization && <>
         <List className={this.props.classes.static}>
            <Admin>
-            <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
+            <ListItem selected={active(`edit`)} button component={Link} to={`/organizations/${this.state.organization.id}/edit`}>
               <ListItemIcon>
                 <Settings />
               </ListItemIcon>
-              <ListItemText primary="Org. settings" />
+              <ListItemText classes={selected(`edit`)} primary={i18n.t(`${packageNS}:tr000060`)} />
             </ListItem>
           </Admin>
           <Admin organizationID={this.state.organization.id}>
-            <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
+            <ListItem selected={active(`users`)} button component={Link} to={`/organizations/${this.state.organization.id}/users`}>
               <ListItemIcon>
                 <Account />
               </ListItemIcon>
-              <ListItemText primary="Org. users" />
+              <ListItemText classes={selected(`users`)} primary={i18n.t(`${packageNS}:tr000067`)} />
             </ListItem>
           </Admin>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
+          <ListItem selected={active(`service-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/service-profiles`}>
             <ListItemIcon>
               <AccountDetails />
             </ListItemIcon>
-            <ListItemText primary="Service-profiles" />
+            <ListItemText classes={selected(`service-profiles`)} primary={i18n.t(`${packageNS}:tr000069`)} />
           </ListItem>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
+          <ListItem selected={active(`device-profiles`)} button component={Link} to={`/organizations/${this.state.organization.id}/device-profiles`}>
             <ListItemIcon>
               <Tune />
             </ListItemIcon>
-            <ListItemText primary="Device-profiles" />
+            <ListItemText classes={selected(`device-profiles`)} primary={i18n.t(`${packageNS}:tr000070`)} />
           </ListItem>
-          {this.state.organization.canHaveGateways && <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
+          {this.state.organization.canHaveGateways && <ListItem selected={active(`gateways`)} button component={Link} to={`/organizations/${this.state.organization.id}/gateways`}>
             <ListItemIcon>
               <RadioTower />
             </ListItemIcon>
-            <ListItemText primary="Gateways" />
+            <ListItemText classes={selected(`gateways`)} primary={i18n.t(`${packageNS}:tr000072`)} />
           </ListItem>}
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
+          <ListItem selected={active(`applications`)} button component={Link} to={`/organizations/${this.state.organization.id}/applications`}>
             <ListItemIcon>
               <Apps />
             </ListItemIcon>
-            <ListItemText primary="Applications" />
+            <ListItemText classes={selected(`applications`)} primary={i18n.t(`${packageNS}:tr000076`)} />
           </ListItem>
-          <ListItem button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
+          <ListItem selected={active(`multicast-groups`)} button component={Link} to={`/organizations/${this.state.organization.id}/multicast-groups`}>
             <ListItemIcon>
               <Rss />
             </ListItemIcon>
-            <ListItemText primary="Multicast-groups" />
+            <ListItemText classes={selected(`multicast-groups`)} primary={i18n.t(`${packageNS}:tr000083`)} />
           </ListItem>
         </List>
         <Divider />
               <List className={this.props.classes.static}>
-                <ListItem button onClick={this.handleOpenM2M} >
+                <ListItem button onClick={this.handlingExtLink} >
                   <ListItemIcon>
                     <Wallet />
                   </ListItemIcon>
-                  <ListItemText primary="M2M Wallet" />
+                  <ListItemText primary={i18n.t(`${packageNS}:tr000084`)} />
                 </ListItem>
-
+                <ListItem button className={this.props.classes.static}>  
+                  <ListItemIcon>
+                    <AccessPoint />
+                  </ListItemIcon>
+                  <ListItemText primary={i18n.t(`${packageNS}:tr000085`)} />
+                </ListItem>
+                <ListItem>
+                  <ListItemText primary={i18n.t(`${packageNS}:tr000086`)} />
+                  <ListItemIcon>
+                    <img src="/logo/mxc_logo.png" className="iconStyle" alt={i18n.t(`${packageNS}:tr000051`)} onClick={this.handleMXC} />
+                  </ListItemIcon>
+                </ListItem>
+                <ListItem>
+                  <ListItemText secondary={`${i18n.t(`${packageNS}:tr000087`)} ${this.state.version}`} />
+                </ListItem>
               </List>
-
         </>}
       </Drawer>
     );

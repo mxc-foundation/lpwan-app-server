@@ -9,6 +9,7 @@ import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
+import i18n, { packageNS } from '../../i18n';
 import Form from "../../components/Form";
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -60,17 +61,17 @@ class AddDeviceForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
         <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.FormLabel} required>Device</FormLabel>
+          <FormLabel className={this.props.classes.FormLabel} required>{i18n.t(`${packageNS}:tr000403`)}</FormLabel>
           <AutocompleteSelect
             id="devEUI"
-            label="Select device"
+            label={i18n.t(`${packageNS}:tr000402`)}
             value={this.state.object.devEUI || ""}
             onChange={this.onChange}
             getOption={this.getDeviceOption}
             getOptions={this.getDeviceOptions}
             margin="none"
           />
-          <FormHelperText>Search on device by it's name or device EUI. Only devices part of the same service-profile as the multicast-group can be added (and are visible).</FormHelperText>
+          <FormHelperText>{i18n.t(`${packageNS}:tr000404`)}</FormHelperText>
         </FormControl>
       </Form>
     );
@@ -107,19 +108,19 @@ class AddDeviceToMulticastGroup extends Component {
     }
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title="Multicast-groups" to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000083`)} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups`} />
           <TitleBarTitle title="/" />
           <TitleBarTitle title={this.state.multicastGroup.name} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${this.state.multicastGroup.id}`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Add device" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000405`)} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Card className={this.props.classes.card}>
             <CardContent>
-              <AddDeviceForm submitLabel="Add" onSubmit={this.onSubmit} serviceProfileID={this.state.multicastGroup.serviceProfileID} />
+              <AddDeviceForm submitLabel={i18n.t(`${packageNS}:tr000406`)} onSubmit={this.onSubmit} serviceProfileID={this.state.multicastGroup.serviceProfileID} />
             </CardContent>
           </Card>
         </Grid>

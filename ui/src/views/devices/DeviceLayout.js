@@ -8,6 +8,7 @@ import Tab from '@material-ui/core/Tab';
 
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -15,7 +16,7 @@ import TitleBarButton from "../../components/TitleBarButton";
 import ApplicationStore from "../../stores/ApplicationStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import SessionStore from "../../stores/SessionStore";
-import Admin from "../../components/Admin";
+import DeviceAdmin from "../../components/DeviceAdmin";
 import DeviceStore from "../../stores/DeviceStore";
 import UpdateDevice from "./UpdateDevice";
 import DeviceKeys from "./DeviceKeys";
@@ -96,7 +97,7 @@ class DeviceLayout extends Component {
 
   setIsAdmin() {
     this.setState({
-      admin: SessionStore.isAdmin() || SessionStore.isOrganizationAdmin(this.props.match.params.organizationID),
+      admin: SessionStore.isAdmin() || SessionStore.isOrganizationDeviceAdmin(this.props.match.params.organizationID),
     }, () => {
       // we need to update the tab index, as for non-admins, some tabs are hidden
       this.locationToTab();
@@ -149,23 +150,23 @@ class DeviceLayout extends Component {
     }
 
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <TitleBar
           buttons={
-            <Admin organizationID={this.props.match.params.organizationID}>
+            <DeviceAdmin organizationID={this.props.match.params.organizationID}>
               <TitleBarButton
-                label="Delete"
+                label={i18n.t(`${packageNS}:tr000061`)}
                 icon={<Delete />}
                 onClick={this.deleteDevice}
               />
-            </Admin>
+            </DeviceAdmin>
           }
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title="Applications" />
+          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title={i18n.t(`${packageNS}:tr000076`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} title={this.state.application.application.name} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} title="Devices" />
+          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} title={i18n.t(`${packageNS}:tr000278`)} />
           <TitleBarTitle title="/" />
           <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`} title={this.state.device.device.name} />
         </TitleBar>
@@ -179,13 +180,13 @@ class DeviceLayout extends Component {
                         variant="scrollable"
             scrollButtons="auto"
           >
-            <Tab label="Details" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`} />
-            <Tab label="Configuration" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/edit`} />
+            <Tab label={i18n.t(`${packageNS}:tr000280`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`} />
+            <Tab label={i18n.t(`${packageNS}:tr000298`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/edit`} />
             {this.state.admin && <Tab label="Keys (OTAA)" disabled={!this.state.deviceProfile.deviceProfile.supportsJoin} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/keys`} />}
-            <Tab label="Activation" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/activation`} />
-            <Tab label="Device data" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/data`} />
-            <Tab label="LoRaWAN Frames" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/frames`} />
-            <Tab label="Firmware" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments`} />
+            <Tab label={i18n.t(`${packageNS}:tr000311`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/activation`} />
+            <Tab label={i18n.t(`${packageNS}:tr000317`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/data`} />
+            <Tab label={i18n.t(`${packageNS}:tr000318`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/frames`} />
+            <Tab label={i18n.t(`${packageNS}:tr000319`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments`} />
           </Tabs>
         </Grid>
 

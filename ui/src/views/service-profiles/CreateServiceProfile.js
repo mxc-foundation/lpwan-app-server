@@ -11,6 +11,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from "@material-ui/core/Button";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 
@@ -56,38 +57,38 @@ class CreateServiceProfile extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Dialog
           open={this.state.nsDialog}
           onClose={this.closeDialog}
         >
-          <DialogTitle>Add a network-server?</DialogTitle>
+          <DialogTitle>{i18n.t(`${packageNS}:tr000394`)}</DialogTitle>
           <DialogContent>
             <DialogContentText paragraph>
-              LoRa App Server isn't connected to a LoRa Server network-server.
-              Did you know that LoRa App Server can connect to multiple LoRa Server instances, e.g. to support multiple regions?
+              {i18n.t(`${packageNS}:tr000377`)}
+              {i18n.t(`${packageNS}:tr000378`)}
             </DialogContentText>
             <DialogContentText>
-              Would you like to connect to a network-server now?
+              {i18n.t(`${packageNS}:tr000379`)}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button color="primary" component={Link} to="/network-servers/create" onClick={this.closeDialog}>Add</Button>
-            <Button color="primary" onClick={this.closeDialog}>Dismiss</Button>
+            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000041`)}</Button>
+            <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
           </DialogActions>
         </Dialog>
 
         <TitleBar>
-          <TitleBarTitle title="Service-profiles" to={`/organizations/${this.props.match.params.organizationID}/service-profiles`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} to={`/organizations/${this.props.match.params.organizationID}/service-profiles`} />
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
 
         <Grid item xs={12}>
           <Card>
             <CardContent>
               <ServiceProfileForm
-                submitLabel="Create"
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
                 onSubmit={this.onSubmit}
                 match={this.props.match}
               />

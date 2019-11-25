@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import { CardContent } from "@material-ui/core";
 
+import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
 import UserForm from "./UserForm";
 
@@ -22,12 +23,12 @@ class UpdateUser extends Component {
 
   render() {
     return(
-      <Grid container spacing={24}>
+      <Grid container spacing={4}>
         <Grid item xs={12}>
           <Card>
             <CardContent>
               <UserForm
-                submitLabel="Update"
+                submitLabel={i18n.t(`${packageNS}:tr000066`)}
                 object={this.props.user}
                 onSubmit={this.onSubmit}
               />

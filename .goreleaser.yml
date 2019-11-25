@@ -24,10 +24,10 @@ release:
   disable: true
 
 nfpm:
-  vendor: LoRa Server project
+  vendor: LPWAN Server project
   homepage: https://www.loraserver.io/
   maintainer: Orne Brocaar <info@brocaar.com>
-  description: LoRa App Server
+  description: LPWAN App Server
   license: MIT
   formats:
     - deb

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package api;
+
+import "google/api/annotations.proto";
+import "empty/empty.proto";
+
+service ServerInfoService {
+    // get version
+    rpc GetAppserverVersion(google.protobuf.Empty) returns (GetAppserverVersionResponse) {
+        option(google.api.http) = {
+            get: "/api/server-info/appserver-version"
+        };
+    };
+}
+
+message GetAppserverVersionResponse {
+    string version = 1;
+}

@@ -38,10 +38,10 @@ func main() {
 		Paths:       make(map[string]interface{}),
 		Definitions: make(map[string]interface{}),
 	}
-	swagger.Info.Title = "LoRa App Server REST API"
+	swagger.Info.Title = "LPWAN App Server REST API"
 	swagger.Info.Version = apiVersion
 	swagger.Info.Description = `
-For more information about the usage of the LoRa App Server (REST) API, see
+For more information about the usage of the LPWAN App Server (REST) API, see
 [https://docs.loraserver.io/lora-app-server/api/](https://docs.loraserver.io/lora-app-server/api/).
 `
 

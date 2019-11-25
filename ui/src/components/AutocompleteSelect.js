@@ -5,12 +5,19 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Chip from '@material-ui/core/Chip';
 import FormControl from "@material-ui/core/FormControl";
 
+import { withRouter } from "react-router-dom";
+import { withStyles } from "@material-ui/core/styles";
+
 import MenuDown from "mdi-material-ui/MenuDown";
 import Cancel from "mdi-material-ui/Cancel";
 import MenuUp from "mdi-material-ui/MenuUp";
 import Close from "mdi-material-ui/Close";
 import AsyncSelect from 'react-select/async';
-
+const inputStyles = {
+  marginB: {
+    marginBottom: 24,
+  },
+} 
 const customStyles = {
   control: (base, state) => ({
     ...base,
@@ -31,14 +38,23 @@ const customStyles = {
     // override border radius to match the box
     borderRadius: 0,
     // kill the gap
-    marginTop: 0
+    marginTop: 28,
   }),
   menuList: base => ({
     ...base,
     background:'#1a2d6e',
     // kill the white space on first and last option
-    padding: 0
-  })
+    padding: 0,
+  }),
+  option: base => ({
+    ...base,
+    // kill the white space on first and last option
+    padding: '10px',
+    maxWidth: 221,
+    whiteSpace: 'nowrap', 
+    overflow: 'hidden',
+    textOverflow: 'ellipsis'
+  }),
 };
 // taken from react-select example
 // https://material-ui.com/demos/autocomplete/
@@ -68,8 +84,13 @@ class Option extends Component {
 }
 
 function SelectWrapped(props) {
-  const { classes, ...other } = props;
+  const { classes, inputRef, ...other } = props;
 
+  React.useImperativeHandle(inputRef, () => ({
+    focus: () => {
+    },
+  }));
+  
   const components = {
     option: Option,
     value: (valueProps) => {
@@ -147,7 +168,6 @@ class AutocompleteSelect extends Component {
 
   setInitialOptions(callbackFunc) {
     this.props.getOptions("", options => {
-      
       this.setState({
         options: options,
       }, callbackFunc);
@@ -182,6 +202,19 @@ class AutocompleteSelect extends Component {
         });
       }
     }
+
+    // If there are any organizations listed, then choose the first one by default
+    this.props.getOptions("", options => {
+      if (options.length > 0) {
+        this.setState({
+          selectedOption: options[0],
+        });
+
+        this.props.onChange({
+          target: options[0]
+        });
+      }
+    });
   }
 
   onAutocomplete(input) {
@@ -199,8 +232,10 @@ class AutocompleteSelect extends Component {
 
   onChange(v) {
     let value = null;
+    let label = null;
     if (v !== null) {
       value = v.value;
+      label = v.label;
     }
 
     this.setState({
@@ -210,22 +245,26 @@ class AutocompleteSelect extends Component {
     this.props.onChange({
       target: {
         id: this.props.id,
-        value: value,
+        value,
+        label
       },
     });
   }
 
   render() {
     const inputProps = this.props.inputProps || {};
+
     return(
       <FormControl margin={this.props.margin || ""}  fullWidth={true} 
         className={this.props.className}>
         <Input
           fullWidth
+          className={this.props.classes.marginB}
           inputComponent={SelectWrapped}
           placeholder={this.props.label}
           id={this.props.id}
           onChange={this.onChange}
+          disableUnderline
           inputProps={{...{
             instanceId: this.props.id,
             clearable: false,
@@ -239,4 +278,4 @@ class AutocompleteSelect extends Component {
   }
 }
 
-export default AutocompleteSelect;
+export default withStyles(inputStyles)(withRouter(AutocompleteSelect));

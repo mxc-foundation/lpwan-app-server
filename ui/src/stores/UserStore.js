@@ -5,6 +5,7 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
 
 
 class UserStore extends EventEmitter {
@@ -68,7 +69,7 @@ class UserStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notify("deleted");
+        this.notify(i18n.t(`${packageNS}:tr000326`));
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);
@@ -78,7 +79,7 @@ class UserStore extends EventEmitter {
   updatePassword(id, password, callbackFunc) {
     this.swagger.then(client => {
       client.apis.UserService.UpdatePassword({
-        "user_id": id,
+        "userId": id,
         body: {
           password: password,
         },
