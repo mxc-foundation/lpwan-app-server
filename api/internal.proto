@@ -67,24 +67,24 @@ service InternalService {
 		};
 	}
 
-	rpc GetVerifyNumbers(google.protobuf.Empty) returns (GetVerifyNumbersResponse) {
+	rpc GetVerigyingAliyunRecaptcha(AliyunRecaptchaRequest) returns (AliyunRecaptchaResponse) {
 		option (google.api.http) = {
-			get: "/api/internal/verify-number-recaptcha"
+			post: "/api/internal/verify-a-recaptcha"
+			body: "*"
 		};
 	}
-
-	/*rpc GetVerifyNumberResult (VerifyNumberResultRequest) returns (VerifyNumberResponse) {
-		option (google.api.http) = {
-			get: "/api/internal/verify-number-result"
-		};
-	}*/
 }
 
-message GetVerifyNumbersResponse {
-	int64 x = 1;
-	int64 y = 2;
-	int64 z = 3;
-	int64 answer = 4;
+message AliyunRecaptchaRequest {
+	string Token = 1;
+	string SessionId = 2;
+	string Sig = 3;
+	string remoteIp = 4;
+}
+
+message AliyunRecaptchaResponse {
+	bool success = 1;
+	string error_codes = 2;
 }
 
 message GoogleRecaptchaRequest {

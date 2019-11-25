@@ -1,13 +1,11 @@
 package external
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"io/ioutil"
-	"math/big"
 	"net/http"
 	"net/url"
 
@@ -276,19 +274,28 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	return &pb.LoginResponse{Jwt: jwt}, nil
 }
 
-func GetVerifyNumbers(ctx context.Context, empty *empty.Empty) (*pb.GetVerifyNumbersResponse, error) {
-	var numbers [3]int64
-
-	for i, _ := range numbers {
-		number, _ := rand.Int(rand.Reader, big.NewInt(10))
-		numbers[i] = number.Int64()
+func (a *InternalUserAPI) GetVerigyingAliyunRecaptcha(ctx context.Context, req *pb.AliyunRecaptchaRequest) (*pb.AliyunRecaptchaResponse, error) {
+	query := make(map[string]string)
+	query["Action"] = "AuthenticateSig"
+	//query["DomainName"] = "afs.aliyuncs.com"//"013201.cn"
+	code, err := auth.SendRequest("GET", "/", query, req.Token, req.SessionId, req.Sig, req.RemoteIp)
+	if err != nil {
+		log.WithError(err).Error("Send AliRecaptcha error")
+		return &pb.AliyunRecaptchaResponse{
+			Success:    false,
+			ErrorCodes: string(code),
+		}, err
 	}
-	return nil, nil
-}
 
-/*func GetVerifyNumberResult(ctx context.Context, req *pb.VerifyNumberResultRequest) (*pb.VerifyNumberResponse, error) {
-	return nil
-}*/
+	if code != 100 {
+		return &pb.AliyunRecaptchaResponse{
+			Success:    false,
+			ErrorCodes: string(code),
+		}, err
+	}
+
+	return &pb.AliyunRecaptchaResponse{Success: true,}, nil
+}
 
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
 	secret := config.C.Recaptcha.Secret

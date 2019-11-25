@@ -196,6 +196,32 @@
         ]
       }
     },
+    "/api/internal/verify-a-recaptcha": {
+      "post": {
+        "operationId": "GetVerigyingAliyunRecaptcha",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiAliyunRecaptchaResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiAliyunRecaptchaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
     "/api/internal/verify-g-recaptcha": {
       "post": {
         "operationId": "GetVerifyingGoogleRecaptcha",
@@ -221,25 +247,38 @@
           "InternalService"
         ]
       }
-    },
-    "/api/internal/verify-number-recaptcha": {
-      "get": {
-        "operationId": "GetVerifyNumbers",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/apiGetVerifyNumbersResponse"
-            }
-          }
-        },
-        "tags": [
-          "InternalService"
-        ]
-      }
     }
   },
   "definitions": {
+    "apiAliyunRecaptchaRequest": {
+      "type": "object",
+      "properties": {
+        "Token": {
+          "type": "string"
+        },
+        "SessionId": {
+          "type": "string"
+        },
+        "Sig": {
+          "type": "string"
+        },
+        "remoteIp": {
+          "type": "string"
+        }
+      }
+    },
+    "apiAliyunRecaptchaResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "errorCodes": {
+          "type": "string"
+        }
+      }
+    },
     "apiBrandingResponse": {
       "type": "object",
       "properties": {
@@ -307,27 +346,6 @@
         },
         "password": {
           "type": "string"
-        }
-      }
-    },
-    "apiGetVerifyNumbersResponse": {
-      "type": "object",
-      "properties": {
-        "x": {
-          "type": "string",
-          "format": "int64"
-        },
-        "y": {
-          "type": "string",
-          "format": "int64"
-        },
-        "z": {
-          "type": "string",
-          "format": "int64"
-        },
-        "answer": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
