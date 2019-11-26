@@ -8,6 +8,8 @@ import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import FoundLocationMap from "../../components/FoundLocationMap"
+import ALiYunCaptcha from 'react-aliyun-captcha';
+
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
@@ -106,6 +108,7 @@ class LoginForm extends FormComponent {
     this.state.object.password = event;
   };
 
+
   onChangeLanguage = e => {
     const newLanguage = {
       id: e.id,
@@ -117,17 +120,22 @@ class LoginForm extends FormComponent {
     this.props.onChangeLanguage(newLanguage);
   }
 
-  onReCapChange = (value) => {
+  onCallback = (value) => {
     const req = {
-      secret : process.env.REACT_APP_PUBLIC_KEY,
-      response: value,
-      remoteip: window.location.origin
+      token: value.token,
+      sessionId : value.csessionid,
+      sig: value.sig,
+      remoteIp: window.location.origin
     }
 
-    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
-      this.state.object.isVerified = resp.success;
-    }); 
-  }
+    if(value.value === 'pass'){
+      SessionStore.getVerifyingRecaptcha(req, resp => {
+        console.log('ali resp: ', resp);
+        this.state.object.isVerified = resp.success;
+      });
+    }else{
+      console.log("can't pass verify process.");
+    }
 
   render() {
     if (this.state.object === undefined) {
@@ -177,11 +185,11 @@ class LoginForm extends FormComponent {
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:tr000004`)}/>
         {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
-{/*        <ReCAPTCHA
-                sitekey={process.env.REACT_APP_PUBLIC_KEY}
-                onChange={this.onReCapChange}
-                className={this.props.style.textField}
-              />*/}
+        <ALiYunCaptcha
+              appKey="FFFF0N000000000087AA"
+              scene="nc_login"
+              onCallback={this.onCallback}
+            />
       </Form>
     );
   }
@@ -203,6 +211,8 @@ class Login extends Component {
   }
 
   componentDidMount() {
+    //SessionStore.logout(() => {}); [edit]
+
     SessionStore.getBranding(resp => {
       if (resp.registration !== "") {
         this.setState({
@@ -217,13 +227,12 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    login.isVerified = true
     if(login.hasOwnProperty('isVerified')){
       if(!login.isVerified){
         alert(VERIFY_ERROR_MESSAGE);
         return false;
       }
-
+      
       SessionStore.login(login, () => {
         const orgs = SessionStore.getOrganizations();
         console.log('Organizations: ', orgs);
@@ -264,7 +273,7 @@ class Login extends Component {
     return(
       <>
         <Map center={position} zoom={6} style={style} animate={true} scrollWheelZoom={false}>
-          <FoundLocationMap /> 
+          <FoundLocationMap />
         </Map>
         <div className={this.props.classes.padding + ' ' + this.props.classes.z1000}>
           <div className={this.props.classes.loginFormStyle}>

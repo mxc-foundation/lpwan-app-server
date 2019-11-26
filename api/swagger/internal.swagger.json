@@ -196,6 +196,32 @@
         ]
       }
     },
+    "/api/internal/verify-a-recaptcha": {
+      "post": {
+        "operationId": "GetVerigyingAliyunRecaptcha",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiAliyunRecaptchaResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiAliyunRecaptchaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
     "/api/internal/verify-g-recaptcha": {
       "post": {
         "operationId": "GetVerifyingGoogleRecaptcha",
@@ -224,6 +250,35 @@
     }
   },
   "definitions": {
+    "apiAliyunRecaptchaRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": "string"
+        },
+        "sig": {
+          "type": "string"
+        },
+        "remoteIp": {
+          "type": "string"
+        }
+      }
+    },
+    "apiAliyunRecaptchaResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "errorCodes": {
+          "type": "string"
+        }
+      }
+    },
     "apiBrandingResponse": {
       "type": "object",
       "properties": {
