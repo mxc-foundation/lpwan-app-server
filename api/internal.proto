@@ -76,9 +76,9 @@ service InternalService {
 }
 
 message AliyunRecaptchaRequest {
-	string Token = 1;
-	string SessionId = 2;
-	string Sig = 3;
+	string token = 1;
+	string sessionId = 2;
+	string sig = 3;
 	string remoteIp = 4;
 }
 

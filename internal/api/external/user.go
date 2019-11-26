@@ -277,7 +277,6 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 func (a *InternalUserAPI) GetVerigyingAliyunRecaptcha(ctx context.Context, req *pb.AliyunRecaptchaRequest) (*pb.AliyunRecaptchaResponse, error) {
 	query := make(map[string]string)
 	query["Action"] = "AuthenticateSig"
-	//query["DomainName"] = "afs.aliyuncs.com"//"013201.cn"
 	code, err := auth.SendRequest("GET", "/", query, req.Token, req.SessionId, req.Sig, req.RemoteIp)
 	if err != nil {
 		log.WithError(err).Error("Send AliRecaptcha error")

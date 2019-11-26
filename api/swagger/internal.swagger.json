@@ -253,13 +253,13 @@
     "apiAliyunRecaptchaRequest": {
       "type": "object",
       "properties": {
-        "Token": {
+        "token": {
           "type": "string"
         },
-        "SessionId": {
+        "sessionId": {
           "type": "string"
         },
-        "Sig": {
+        "sig": {
           "type": "string"
         },
         "remoteIp": {
