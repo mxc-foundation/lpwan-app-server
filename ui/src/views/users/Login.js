@@ -211,8 +211,6 @@ class Login extends Component {
   }
 
   componentDidMount() {
-    //SessionStore.logout(() => {}); [edit]
-
     SessionStore.getBranding(resp => {
       if (resp.registration !== "") {
         this.setState({
