@@ -8,8 +8,7 @@ import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import { withStyles } from "@material-ui/core/styles";
-import ReCAPTCHA from "react-google-recaptcha";
-
+import ALiYunCaptcha from 'react-aliyun-captcha';
 
 import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
@@ -36,17 +35,23 @@ const styles = {
 
 
 class RegistrationForm extends FormComponent {
-
-  onReCapChange = (value) => {
+  
+  onCallback = (value) => {
     const req = {
-      secret : process.env.REACT_APP_PUBLIC_KEY,
-      response: value,
-      remoteip: window.location.origin
+      token: value.token,
+      sessionId : value.csessionid,
+      sig: value.sig,
+      remoteIp: window.location.origin
     }
-
-    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
-      this.state.object.isVerified = resp.success;
-    }); 
+   
+    if(value.value === 'pass'){
+      SessionStore.getVerifyingRecaptcha(req, resp => {
+        console.log('ali resp: ', resp);
+        this.state.object.isVerified = resp.success;
+      });
+    }else{
+      console.log("can't pass verify process.");
+    }
   }
   
   render() {
@@ -69,11 +74,11 @@ class RegistrationForm extends FormComponent {
           fullWidth
           required
         />
-        <ReCAPTCHA
-                sitekey={process.env.REACT_APP_PUBLIC_KEY}
-                onChange={this.onReCapChange}
-                className={this.props.style.textField}
-              />
+        <ALiYunCaptcha
+              appKey="FFFF0N000000000087AA"
+              scene="nc_login"
+              onCallback={this.onCallback}
+            />      
       </Form>
     );
   }
