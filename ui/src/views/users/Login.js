@@ -136,7 +136,7 @@ class LoginForm extends FormComponent {
     }else{
       console.log("can't pass verify process.");
     }
-
+  }
   render() {
     if (this.state.object === undefined) {
       return null;
