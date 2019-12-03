@@ -204,7 +204,7 @@ class AutocompleteSelect extends Component {
     }
 
     // If there are any organizations listed, then choose the first one by default
-    this.props.getOptions("", options => {
+    /*this.props.getOptions("", options => {
       if (options.length > 0) {
         this.setState({
           selectedOption: options[0],
@@ -214,7 +214,7 @@ class AutocompleteSelect extends Component {
           target: options[0]
         });
       }
-    });
+    });*/
   }
 
   onAutocomplete(input) {
