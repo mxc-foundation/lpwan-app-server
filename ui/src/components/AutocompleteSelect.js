@@ -203,7 +203,7 @@ class AutocompleteSelect extends Component {
       }
     }
 
-    // If there are any organizations listed, then choose the first one by default
+/*    // If there are any organizations listed, then choose the first one by default
     this.props.getOptions("", options => {
       if (options.length > 0) {
         this.setState({
@@ -215,7 +215,7 @@ class AutocompleteSelect extends Component {
         });
       }
     });
-  }
+  }*/
 
   onAutocomplete(input) {
     return new Promise((resolve, reject) => {
