@@ -214,8 +214,8 @@ class AutocompleteSelect extends Component {
           target: options[0]
         });
       }
-    });
-  }*/
+    });*/
+  }
 
   onAutocomplete(input) {
     return new Promise((resolve, reject) => {
