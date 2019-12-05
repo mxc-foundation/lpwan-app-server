@@ -553,7 +553,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			return helpers.ErrToRPCError(err)
 		}
 
-		// add admin user into this organization
+/*		// add admin user into this organization
 		adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
 		if err == nil {
 			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
@@ -562,7 +562,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			}
 		} else {
 			log.WithError(err).Error("Get user by username 'admin' failed")
-		}
+		}*/
 
 		err = storage.CreateOrganizationUser(ctx, tx, org.ID, req.UserId, true, false, false)
 		if err != nil {
