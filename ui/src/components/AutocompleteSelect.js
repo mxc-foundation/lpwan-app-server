@@ -203,8 +203,8 @@ class AutocompleteSelect extends Component {
       }
     }
 
-/*    // If there are any organizations listed, then choose the first one by default
-    this.props.getOptions("", options => {
+    // If there are any organizations listed, then choose the first one by default
+    /*this.props.getOptions("", options => {
       if (options.length > 0) {
         this.setState({
           selectedOption: options[0],
