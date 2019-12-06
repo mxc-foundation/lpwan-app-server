@@ -389,6 +389,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 		Logo:         brandingHeader,
 		Registration: brandingRegistration,
 		Footer:       brandingFooter,
+		LogoPath:     brandingLogoPath,
 	}
 
 	return &resp, nil

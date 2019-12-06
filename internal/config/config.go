@@ -114,10 +114,12 @@ type Config struct {
 		} `mapstructure:"fuota_deployment"`
 
 		Branding struct {
-			Header       string
-			Footer       string
-			Registration string
-		}
+			Header       string `mapstructure:"header"`
+			Footer       string `mapstructure:"footer"`
+			Registration string `mapstructure:"registration"`
+			LogoPath     string `mapstructure:"logo_path"`
+		} `mapstructure:"branding"`
+
 	} `mapstructure:"application_server"`
 
 	RegistrationServer struct {

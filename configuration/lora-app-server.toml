@@ -321,7 +321,7 @@ gateways_locations_limit=100000
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users=false
 
-
+branding
   # Settings for the remote multicast setup.
   [application_server.remote_multicast_setup]
   # Synchronization interval.
@@ -344,6 +344,20 @@ gateways_locations_limit=100000
 
   # Synchronization batch-size.
   sync_batch_size=100
+
+  # Branding configuration.
+  [application_server.branding]
+  # Header
+  #header="{{ .ApplicationServer.Branding.Header }}"
+
+  # Footer
+  #footer="{{ .ApplicationServer.Branding.Footer }}"
+
+  # Registration.
+  #registration="{{ .ApplicationServer.Branding.Registration }}"
+
+  # Logo Path
+  logo_path = "/logo/logo.png"
 
 
 
