@@ -321,7 +321,6 @@ gateways_locations_limit=100000
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users=false
 
-branding
   # Settings for the remote multicast setup.
   [application_server.remote_multicast_setup]
   # Synchronization interval.
