@@ -193,6 +193,9 @@ message BrandingResponse {
     
     // Footer html.
 	string footer = 3;
+
+	// Logo img path
+	string logo_path = 4;
 }
 
 enum Language {
