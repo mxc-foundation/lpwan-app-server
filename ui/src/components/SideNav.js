@@ -206,7 +206,7 @@ class SideNav extends Component {
       const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
 
       OrganizationStore.get(orgId, resp => {
-        openM2M(resp.organization, isBelongToOrg, '/withdraw');
+        openM2M(resp.organization, isBelongToOrg, '/modify-account');
       });
     })
   }
