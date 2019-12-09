@@ -238,6 +238,10 @@
         "footer": {
           "type": "string",
           "description": "Footer html."
+        },
+        "logoPath": {
+          "type": "string",
+          "title": "Logo img path"
         }
       }
     },

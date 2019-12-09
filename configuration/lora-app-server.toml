@@ -7,10 +7,10 @@ log_level=4
 # The number of times passwords must be hashed. A higher number is safer as
 # an attack takes more time to perform.
 password_hash_iterations=100000
-demo_user=""
-host_server=""
-demo_user_password=""
-demo_host_server=""
+demo_user="build@mxc.org"
+host_server="lora.demo.supernodes.mxc.org"
+demo_user_password="thefutureismxc"
+demo_host_server="demo.supernodes."
 # PostgreSQL settings.
 #
 # Please note that PostgreSQL 9.5+ is required.
@@ -81,6 +81,11 @@ email=""
 password=""
 host=""
 port=""
+
+#email="namgyeong.cho@mxc.org"
+#password="3abASYMQ79ngB26"
+#host="mail.smtp2go.com"
+#port="587"
 
 [m2m_server]
 m2m_server="mxprotocol-server:4000"
@@ -316,7 +321,6 @@ gateways_locations_limit=100000
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users=false
 
-
   # Settings for the remote multicast setup.
   [application_server.remote_multicast_setup]
   # Synchronization interval.
@@ -339,6 +343,20 @@ gateways_locations_limit=100000
 
   # Synchronization batch-size.
   sync_batch_size=100
+
+  # Branding configuration.
+  [application_server.branding]
+  # Header
+  #header="{{ .ApplicationServer.Branding.Header }}"
+
+  # Footer
+  #footer="{{ .ApplicationServer.Branding.Footer }}"
+
+  # Registration.
+  #registration="{{ .ApplicationServer.Branding.Registration }}"
+
+  # Logo Path
+  logo_path = "/logo/logo.png"
 
 
 

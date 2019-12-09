@@ -186,6 +186,20 @@ class AutocompleteSelect extends Component {
         this.setState({
           selectedOption: "",
         });
+
+        // If there are any organizations listed, then choose the first one by default
+        this.props.getOptions("", options => {
+          if (options.length > 0) {
+            this.setState({
+              selectedOption: options[0],
+            });
+
+            this.props.onChange({
+              target: options[0]
+            });
+          }
+        });
+
       }
     } else {
       if (this.props.value !== undefined && this.props.value !== "" && this.props.value !== null) {
