@@ -66,6 +66,25 @@ service InternalService {
 			body: "*"
 		};
 	}
+
+	rpc GetVerigyingAliyunRecaptcha(AliyunRecaptchaRequest) returns (AliyunRecaptchaResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/verify-a-recaptcha"
+			body: "*"
+		};
+	}
+}
+
+message AliyunRecaptchaRequest {
+	string token = 1;
+	string sessionId = 2;
+	string sig = 3;
+	string remoteIp = 4;
+}
+
+message AliyunRecaptchaResponse {
+	bool success = 1;
+	string error_codes = 2;
 }
 
 message GoogleRecaptchaRequest {
@@ -196,13 +215,6 @@ message BrandingResponse {
 
 	// Logo img path
 	string logo_path = 4;
-}
-
-enum Language {
-	en = 0;
-	ko = 1;
-	zhcn = 2;
-	zhtw = 3;
 }
 
 enum Language {

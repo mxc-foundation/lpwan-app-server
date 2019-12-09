@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -22,7 +23,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/gofrs/uuid"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
 )
@@ -272,6 +272,28 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	}
 
 	return &pb.LoginResponse{Jwt: jwt}, nil
+}
+
+func (a *InternalUserAPI) GetVerigyingAliyunRecaptcha(ctx context.Context, req *pb.AliyunRecaptchaRequest) (*pb.AliyunRecaptchaResponse, error) {
+	query := make(map[string]string)
+	query["Action"] = "AuthenticateSig"
+	code, err := auth.SendRequest("GET", "/", query, req.Token, req.SessionId, req.Sig, req.RemoteIp)
+	if err != nil {
+		log.WithError(err).Error("Send AliRecaptcha error")
+		return &pb.AliyunRecaptchaResponse{
+			Success:    false,
+			ErrorCodes: string(code),
+		}, err
+	}
+
+	if code != 100 {
+		return &pb.AliyunRecaptchaResponse{
+			Success:    false,
+			ErrorCodes: string(code),
+		}, err
+	}
+
+	return &pb.AliyunRecaptchaResponse{Success: true,}, nil
 }
 
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
