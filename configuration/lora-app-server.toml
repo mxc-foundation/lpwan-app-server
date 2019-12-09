@@ -351,6 +351,20 @@ gateways_locations_limit=100000
   # Synchronization batch-size.
   sync_batch_size=100
 
+  # Branding configuration.
+  [application_server.branding]
+  # Header
+  #header="{{ .ApplicationServer.Branding.Header }}"
+
+  # Footer
+  #footer="{{ .ApplicationServer.Branding.Footer }}"
+
+  # Registration.
+  #registration="{{ .ApplicationServer.Branding.Registration }}"
+
+  # Logo Path
+  logo_path = "https://lora.hunanhuaweikeji.com/branding.png"
+
 
 
 # Join-server configuration.
