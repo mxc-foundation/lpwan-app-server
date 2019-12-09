@@ -37,7 +37,6 @@ import MapTileLayerCluster from "../../components/MapTileLayerCluster";
 //const COLOR = 'rgba(121,244,218,0.5)';
 import i18n, { packageNS } from '../../i18n';
 
-const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 const styles = {
   textField: {
     width: "100%",
@@ -113,7 +112,7 @@ class LoginForm extends FormComponent {
       id: e.id,
       label: e.label,
       value: e.value,
-      code: e.code
+      code: e.code,
     }
 
     this.props.onChangeLanguage(newLanguage);
@@ -198,7 +197,8 @@ class Login extends Component {
       registration: null,
       open: true,
       accessOn: false,
-      isVerified: false
+      isVerified: false,
+      message: i18n.t(`${packageNS}:tr000021`)
     };
     
     this.onSubmit = this.onSubmit.bind(this);
@@ -216,6 +216,9 @@ class Login extends Component {
 
   onChangeLanguage = (newLanguageState) => {
     this.props.onChangeLanguage(newLanguageState);
+    this.setState({
+      message: i18n.t(`${packageNS}:tr000021`)
+    })
   }
 
   handlingExtLink = (orgId) => {
@@ -232,7 +235,7 @@ class Login extends Component {
   onSubmit(login) {
     if(login.hasOwnProperty('isVerified')){
       if(!login.isVerified){
-        alert(VERIFY_ERROR_MESSAGE);
+        alert(this.state.message);
         return false;
       }
 
@@ -248,7 +251,7 @@ class Login extends Component {
         }
       });
     }else{
-      alert(VERIFY_ERROR_MESSAGE);
+      alert(this.state.message);
       return false;
     }
   }
