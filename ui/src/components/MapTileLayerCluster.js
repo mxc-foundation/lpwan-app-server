@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 
 import { MAP_LAYER,GATEWAY_ICON } from '../util/Data'
 import GatewayStore from '../stores/GatewayStore';
-import Paper from '../components/Paper';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import styled from 'styled-components';
@@ -23,21 +22,18 @@ function loadGatewayData() {
         })
     });
 } 
-class Context extends Component {
-  render() {
-    return(
-      <Paper>
-        dfsdf
-      </Paper>
-    );
-  }
-}
 class MapTileLayerCluster extends Component {
-    
     componentDidMount(){
       let lat = '51.1657';
       let lon = '10.4515';
       
+      if(this.props.crd){
+        lat = this.props.crd.latitude;
+      }
+      if(this.props.crd){
+        lon = this.props.crd.longitude;
+      }
+
       this.map = L.map('map', {
             //preferCanvas: true,
             center: [lat, lon],
@@ -96,4 +92,4 @@ class MapTileLayerCluster extends Component {
   }
 }
 
-export default withRouter(MapTileLayerCluster);
+export default MapTileLayerCluster;

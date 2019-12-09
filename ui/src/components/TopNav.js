@@ -55,6 +55,10 @@ const styles = {
     height: 32,
     marginLeft: -45,
   },
+  brandLogo: {
+    height: 32,
+    marginLeft: 20,
+  },
   search: {
     marginRight: 3 * theme.spacing.unit,
     color: theme.palette.textPrimary.main,
@@ -118,6 +122,7 @@ class TopNav extends Component {
       balance: null,
       organizationId: SessionStore.getOrganizationID(),
       search: "",
+      brandingLogo: null,
     };
 
     this.onLogout = this.onLogout.bind(this);
@@ -129,6 +134,13 @@ class TopNav extends Component {
   
   componentDidMount() {
     this.loadData();
+    SessionStore.getBranding(resp => {
+      if (resp.logoPath !== "") {
+        this.setState({
+          brandingLogo: resp.logoPath,
+        });
+      }
+    });
 
     SessionStore.on("organization.change", () => {
       this.loadData();
@@ -197,6 +209,7 @@ class TopNav extends Component {
     //let drawerIcon;
     let logoIcon;
     let searchbar;
+    let brandingLogo;
     if (!this.props.drawerOpen) {
       //drawerIcon = <Wallet />;
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
@@ -216,6 +229,14 @@ class TopNav extends Component {
                     }
                   />
     }
+
+    if (this.state.brandingLogo != null) {
+      brandingLogo = <img src={this.state.brandingLogo} className={this.props.classes.brandLogo}/>;
+    }else {
+      brandingLogo = <div></div>
+    }
+    console.log("#######", brandingLogo);
+
     const { balance } = this.state;
     
     const balanceEl = balance === null ? 
@@ -240,6 +261,7 @@ class TopNav extends Component {
 
           <div className={this.props.classes.flex}>
             {logoIcon}
+            {brandingLogo}
           </div>
 
           <form onSubmit={this.onSearchSubmit}>
@@ -291,7 +313,7 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem> :
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem>
             <MenuItem onClick={this.onLogout}>{i18n.t(`${packageNS}:tr000035`)}</MenuItem>
           </Menu>
         </Toolbar>
