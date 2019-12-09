@@ -24,13 +24,13 @@ function loadGatewayData() {
 } 
 class MapTileLayerCluster extends Component {
     componentDidMount(){
-      let lat = 31.2304;
-      let lon = 121.4737;
-
-      if(this.props.crd.latitude){
+      let lat = '51.1657';
+      let lon = '10.4515';
+      
+      if(this.props.crd){
         lat = this.props.crd.latitude;
       }
-      if(this.props.crd.longitude){
+      if(this.props.crd){
         lon = this.props.crd.longitude;
       }
 

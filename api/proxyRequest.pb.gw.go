@@ -55,6 +55,61 @@ func request_ProxyRequest_GetWalletBalance_0(ctx context.Context, marshaler runt
 
 }
 
+func local_request_ProxyRequest_GetWalletBalance_0(ctx context.Context, marshaler runtime.Marshaler, server ProxyRequestServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetWalletBalanceRequest
+	var metadata runtime.ServerMetadata
+
+	var (
+		val string
+		ok  bool
+		err error
+		_   = err
+	)
+
+	val, ok = pathParams["org_id"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+	}
+
+	protoReq.OrgId, err = runtime.Int64(val)
+
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+	}
+
+	msg, err := server.GetWalletBalance(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+// RegisterProxyRequestHandlerServer registers the http handlers for service ProxyRequest to "mux".
+// UnaryRPC     :call ProxyRequestServer directly.
+// StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+func RegisterProxyRequestHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ProxyRequestServer) error {
+
+	mux.Handle("GET", pattern_ProxyRequest_GetWalletBalance_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_ProxyRequest_GetWalletBalance_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ProxyRequest_GetWalletBalance_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	return nil
+}
+
 // RegisterProxyRequestHandlerFromEndpoint is same as RegisterProxyRequestHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterProxyRequestHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {

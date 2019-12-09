@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -23,6 +22,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
 )
@@ -274,28 +274,6 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	return &pb.LoginResponse{Jwt: jwt}, nil
 }
 
-func (a *InternalUserAPI) GetVerigyingAliyunRecaptcha(ctx context.Context, req *pb.AliyunRecaptchaRequest) (*pb.AliyunRecaptchaResponse, error) {
-	query := make(map[string]string)
-	query["Action"] = "AuthenticateSig"
-	code, err := auth.SendRequest("GET", "/", query, req.Token, req.SessionId, req.Sig, req.RemoteIp)
-	if err != nil {
-		log.WithError(err).Error("Send AliRecaptcha error")
-		return &pb.AliyunRecaptchaResponse{
-			Success:    false,
-			ErrorCodes: string(code),
-		}, err
-	}
-
-	if code != 100 {
-		return &pb.AliyunRecaptchaResponse{
-			Success:    false,
-			ErrorCodes: string(code),
-		}, err
-	}
-
-	return &pb.AliyunRecaptchaResponse{Success: true,}, nil
-}
-
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
 	secret := config.C.Recaptcha.Secret
 	postURL := config.C.Recaptcha.HostServer
@@ -411,6 +389,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 		Logo:         brandingHeader,
 		Registration: brandingRegistration,
 		Footer:       brandingFooter,
+		LogoPath:     brandingLogoPath,
 	}
 
 	return &resp, nil
@@ -575,7 +554,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			return helpers.ErrToRPCError(err)
 		}
 
-		// add admin user into this organization
+/*		// add admin user into this organization
 		adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
 		if err == nil {
 			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
@@ -584,7 +563,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			}
 		} else {
 			log.WithError(err).Error("Get user by username 'admin' failed")
-		}
+		}*/
 
 		err = storage.CreateOrganizationUser(ctx, tx, org.ID, req.UserId, true, false, false)
 		if err != nil {

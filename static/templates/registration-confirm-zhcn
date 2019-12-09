@@ -43,10 +43,10 @@ Content-ID: html-body
 					<tbody>
 						<tr>
 							<td>
-								<img style=3D"font-family: Montserrat, Helvetica; width: 100px !important; margin: 15px;" class=3D"logo" src=3D"https://lora.hunanhuaweikeji.com/mxc_logo.png">
-							</td>
-							<td>
-                            	<img style=3D"font-family: Montserrat, Helvetica; width: 200px !important; margin: 15px;" class=3D"logo" src=3D"https://lora.hunanhuaweikeji.com/branding.png">
+                            	<img style=3D"font-family: Montserrat, Helvetica; width: 100px !important; margin: 15px;" class=3D"logo" src=3D"https://lora.supernode.matchx.io/mxc_logo.png">
+                            </td>
+                            <td>
+                                <img style=3D"font-family: Montserrat, Helvetica; width: 180px !important; margin: 15px;" class=3D"logo" src=3D{{ .Logo }}>
                             </td>
 							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
 								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/">

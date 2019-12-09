@@ -367,7 +367,6 @@ id="{{ .ApplicationServer.ID }}"
   # Synchronization batch-size.
   sync_batch_size={{ .ApplicationServer.FragmentationSession.SyncBatchSize }}
 
-{{ if ne .ApplicationServer.Branding.Header  "" }}
   # Branding configuration.
   [application_server.branding]
   # Header
@@ -379,7 +378,9 @@ id="{{ .ApplicationServer.ID }}"
   # Registration.
   registration="{{ .ApplicationServer.Branding.Registration }}"
 
-{{ end }}
+  # Logo Path
+  logo_path = "{{ .ApplicationServer.Branding.LogoPath }}"
+
 
 # Join-server configuration.
 #

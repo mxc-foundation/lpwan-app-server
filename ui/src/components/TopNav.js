@@ -39,7 +39,6 @@ const styles = {
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
     backgroundColor: theme.palette.secondary.main,
-    height: 84
   },
   menuButton: {
     marginLeft: -12,
@@ -52,13 +51,13 @@ const styles = {
     flex: 1,
     paddingLeft: 40,
   },
-    brandLogo: {
-      height: 32,
-      marginLeft: 20
-    },
   logo: {
     height: 32,
     marginLeft: -45,
+  },
+  brandLogo: {
+    height: 32,
+    marginLeft: 20,
   },
   search: {
     marginRight: 3 * theme.spacing.unit,
@@ -123,6 +122,7 @@ class TopNav extends Component {
       balance: null,
       organizationId: SessionStore.getOrganizationID(),
       search: "",
+      brandingLogo: null,
     };
 
     this.onLogout = this.onLogout.bind(this);
@@ -134,6 +134,13 @@ class TopNav extends Component {
   
   componentDidMount() {
     this.loadData();
+    SessionStore.getBranding(resp => {
+      if (resp.logoPath !== "") {
+        this.setState({
+          brandingLogo: resp.logoPath,
+        });
+      }
+    });
 
     SessionStore.on("organization.change", () => {
       this.loadData();
@@ -201,15 +208,14 @@ class TopNav extends Component {
   render() {
     //let drawerIcon;
     let logoIcon;
-    let brandingLogoIcon;
     let searchbar;
+    let brandingLogo;
     if (!this.props.drawerOpen) {
       //drawerIcon = <Wallet />;
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
       logoIcon = <img src="/logo/logo_LP.png" className={this.props.classes.logo} alt="LPWAN Server" />
-      brandingLogoIcon = <img src="/logo/branding.png" className={this.props.classes.brandLogo} alt="LPWAN Server" />
       searchbar = <Input
                     placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
@@ -223,6 +229,14 @@ class TopNav extends Component {
                     }
                   />
     }
+
+    if (this.state.brandingLogo != null) {
+      brandingLogo = <img src={this.state.brandingLogo} className={this.props.classes.brandLogo}/>;
+    }else {
+      brandingLogo = <div></div>
+    }
+
+
     const { balance } = this.state;
     
     const balanceEl = balance === null ? 
@@ -246,7 +260,8 @@ class TopNav extends Component {
           </IconButton> */}
 
           <div className={this.props.classes.flex}>
-            {logoIcon}{brandingLogoIcon}
+            {logoIcon}
+            {brandingLogo}
           </div>
 
           <form onSubmit={this.onSearchSubmit}>

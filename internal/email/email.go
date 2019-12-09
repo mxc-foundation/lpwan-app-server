@@ -3,11 +3,8 @@ package email
 import (
 	"bytes"
 	"crypto/rand"
-	"crypto/tls"
 	"encoding/base32"
 	"errors"
-	"fmt"
-	"net"
 	"net/smtp"
 	"os"
 	"text/template"
@@ -29,9 +26,9 @@ var (
 )
 
 const (
-	English = pb.Language_en
-	Korean = pb.Language_ko
-	SimplifiedChinese = pb.Language_zhcn
+	English            = pb.Language_en
+	Korean             = pb.Language_ko
+	SimplifiedChinese  = pb.Language_zhcn
 	TraditionalChinese = pb.Language_zhtw
 )
 
@@ -87,7 +84,7 @@ var (
 )
 
 // SendInvite ...
-func SendInvite(user string, token string, language int32) error {
+func SendInvite(user, token string, language int32) error {
 	var err error
 
 	if disable == true {
@@ -101,6 +98,8 @@ func SendInvite(user string, token string, language int32) error {
 
 	link := host + mailTemplateNames[language].url + token
 
+	logo := host + "/branding.png"
+
 	b := make([]byte, 20)
 	if _, err := rand.Read(b); err != nil {
 		return err
@@ -109,7 +108,7 @@ func SendInvite(user string, token string, language int32) error {
 
 	var msg bytes.Buffer
 	if err := mailTemplates[language].Execute(&msg, struct {
-		From, To, Host, MsgId, Boundary, Link string
+		From, To, Host, MsgId, Boundary, Link, Logo string
 	}{
 		From:     senderID,
 		To:       user,
@@ -117,80 +116,18 @@ func SendInvite(user string, token string, language int32) error {
 		MsgId:    messageID + "@" + host,
 		Boundary: "----=_Part_" + messageID,
 		Link:     link,
+		Logo:     logo,
 	}); err != nil {
 		log.Error(err)
 		return err
 	}
 
-	auth := smtp.PlainAuth(
-		"",
-		senderID,
-		password,
-		smtpServer,
-	)
+	err = smtp.SendMail(smtpServer+":"+smtpPort,
+		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
 
-	err = SendMailUsingTLS(
-		fmt.Sprintf("%s:%d", smtpServer, 465),
-		auth,
-		senderID,
-		[]string{user},
-		msg.Bytes(),
-	)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-//return a smtp client
-func Dial(addr string) (*smtp.Client, error) {
-	conn, err := tls.Dial("tcp", addr, nil)
-	if err != nil {
-		log.Println("Dialing Error:", err)
-		return nil, err
-	}
-	//split host address and port
-	host, _, _ := net.SplitHostPort(addr)
-	return smtp.NewClient(conn, host)
-}
-
-func SendMailUsingTLS(addr string, auth smtp.Auth, from string,
-	to []string, msg []byte) (err error) {
-	//create smtp client
-	c, err := Dial(addr)
-	if err != nil {
-		log.Println("Create smpt client error:", err)
-		return err
-	}
-	defer c.Close()
-	if auth != nil {
-		if ok, _ := c.Extension("AUTH"); ok {
-			if err = c.Auth(auth); err != nil {
-				log.Println("Error during AUTH", err)
-				return err
-			}
-		}
-	}
-	if err = c.Mail(from); err != nil {
-		return err
-	}
-	for _, addr := range to {
-		if err = c.Rcpt(addr); err != nil {
-			return err
-		}
-	}
-	w, err := c.Data()
-	if err != nil {
-		return err
-	}
-	_, err = w.Write(msg)
-	if err != nil {
-		return err
-	}
-	err = w.Close()
-	if err != nil {
-		return err
-	}
-	return c.Quit()
 }

@@ -14,6 +14,8 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 //import MenuIcon from 'mdi-material-ui/Server';
+import OrganizationStore from "../../stores/OrganizationStore";
+import { openM2M } from "../../util/Util";
 
 import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
 import Password from '../../components/TextfileForPassword'
@@ -71,7 +73,7 @@ const styles = {
   },
   logo: {
     height: 90,
-    marginLeft: 'auto',
+    marginLeft: 0,
     opacity: '0.7',
   },
   logoSection: {
@@ -107,7 +109,6 @@ class LoginForm extends FormComponent {
   handleChange = (event) => {
     this.state.object.password = event;
   };
-
 
   onChangeLanguage = e => {
     const newLanguage = {
@@ -224,19 +225,30 @@ class Login extends Component {
     this.props.onChangeLanguage(newLanguageState);
   }
 
+  handlingExtLink = (orgId) => {
+    const resp = SessionStore.getProfile();
+    resp.then((res) => {
+      const isBelongToOrg = res.body.organizations.some(e => e.organizationID === orgId);
+
+      OrganizationStore.get(orgId, resp => {
+        openM2M(resp.organization, isBelongToOrg, '/modify-account');
+      });
+    })
+  }
+
   onSubmit(login) {
     if(login.hasOwnProperty('isVerified')){
       if(!login.isVerified){
         alert(VERIFY_ERROR_MESSAGE);
         return false;
       }
-      
+
       SessionStore.login(login, () => {
         const orgs = SessionStore.getOrganizations();
-        console.log('Organizations: ', orgs);
 
         if (SessionStore.getToken() && orgs.length > 0) {
-          this.props.history.push(`/organizations/${orgs[0]}`);
+          this.handlingExtLink(orgs[0].organizationID);
+          //this.props.history.push(`/organizations/${orgs[0]}`);
         } else {
           console.log('User has no organisations. Redirecting to login');
           this.props.history.push("/");

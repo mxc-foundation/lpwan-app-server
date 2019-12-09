@@ -35,6 +35,7 @@ var (
 	brandingHeader       string
 	brandingRegistration string
 	brandingFooter       string
+	brandingLogoPath     string
 
 	bind            string
 	tlsCert         string
@@ -54,6 +55,7 @@ func Setup(conf config.Config) error {
 	brandingHeader = conf.ApplicationServer.Branding.Header
 	brandingRegistration = conf.ApplicationServer.Branding.Registration
 	brandingFooter = conf.ApplicationServer.Branding.Footer
+	brandingLogoPath = conf.ApplicationServer.Branding.LogoPath
 
 	bind = conf.ApplicationServer.ExternalAPI.Bind
 	tlsCert = conf.ApplicationServer.ExternalAPI.TLSCert
