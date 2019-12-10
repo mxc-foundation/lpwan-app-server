@@ -10,8 +10,12 @@ import history from "./history";
 import theme from "./theme";
 import i18n, { packageNS, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./i18n";
 
+import './assets/scss/DefaultTheme.scss';
+
 import TopNav from "./components/TopNav";
 import SideNav from "./components/SideNav";
+import Topbar from "./components/Topbar";
+import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
 import Notifications from "./components/Notifications";
 import SessionStore from "./stores/SessionStore";
@@ -147,6 +151,20 @@ class App extends Component {
     this.setDrawerOpen = this.setDrawerOpen.bind(this);
   }
 
+  componentWillMount() {
+    window.addEventListener('resize', this.handleWindowSizeChange);
+  }
+  
+  // make sure to remove the listener
+  // when the component is not mounted anymore
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleWindowSizeChange);
+  }
+
+  handleWindowSizeChange = () => {
+    this.setState({ width: window.innerWidth });
+  };
+
   componentDidMount() {
     SessionStore.on("change", () => {
       this.setState({
@@ -211,15 +229,33 @@ class App extends Component {
     });
   }
 
+  /**
+     * toggle Menu
+     */
+    toggleMenu = (e) => {
+      e.preventDefault();
+      this.setState({ isCondensed: !this.state.isCondensed });
+  }
+
+  /**
+   * Toggle right side bar
+   */
+  toggleRightSidebar = () => {
+      document.body.classList.toggle("right-bar-enabled");
+  }
+
   render() {
     const { language } = this.state;
     let topNav = null;
     let sideNav = null;
     let topbanner = null;
     
+    const { width } = this.state;
+    const isMobile = width <= 800;
+
     if (this.state.user !== null) {
-      sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
-      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>;
+      /* sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
+      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>; 
       topNav = (
         <TopNav
           drawerOpen={this.state.drawerOpen}
@@ -228,20 +264,24 @@ class App extends Component {
           organizationId={this.state.organizationId}
           setDrawerOpen={this.setDrawerOpen}
           user={this.state.user}
-        />
-      );
+        /> 
+        ); */
+        topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
+        sideNav = <Sidebar isCondensed={this.state.isCondensed} {...this.props} />;
     }
     
     return (
       <Router history={history}>
         <React.Fragment>
-          <CssBaseline />
           <MuiThemeProvider theme={theme}>
-            <div className={this.props.classes.root}>
+          <CssBaseline />
+            {/* <div className={this.props.classes.root}> */}
+            <div className="app">
+                <div id="wrapper">
               {topNav}
               {topbanner}
               {sideNav}
-              <div className={classNames(this.props.classes.main, this.state.drawerOpen &&  this.props.classes.mainDrawerOpen)}>
+              <div className={classNames(this.props.classes.main, !isMobile && this.props.classes.mainDrawerOpen )}>
                 <Grid container spacing={4}>
                   <Switch>
                     <Redirect exact from="/" to="/login"/>
@@ -319,6 +359,7 @@ class App extends Component {
               </div>
             </div>
             <Notifications />
+            </div>
           </MuiThemeProvider>
         </React.Fragment>
       </Router>

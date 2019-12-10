@@ -1,0 +1,86 @@
+/*
+Template Name: Adminto - Responsive Bootstrap 4 Admin Dashboard
+Author: CoderThemes
+Version: 1.0.0
+Website: https://coderthemes.com/
+Contact: support@coderthemes.com
+File: Main Css File
+*/
+
+
+//Fonts
+@import "custom/fonts/_fonts";
+
+//Core files
+@import "../../../node_modules/bootstrap/scss/functions";
+@import "../../../node_modules/bootstrap/scss/variables";
+@import "_variables";
+@import "../../../node_modules/bootstrap/scss/mixins.scss";
+
+// Structure
+@import "custom/structure/_general";
+@import "custom/structure/_left-menu";
+@import "custom/structure/_topbar";
+@import "custom/structure/_footer";
+@import "custom/structure/_right-sidebar";
+@import "custom/structure/_layouts";
+
+//Components
+@import "custom/components/_helper";
+@import "custom/components/_social";
+@import "custom/components/_widgets";
+@import "custom/components/_custom-checkbox";
+@import "custom/components/_custom-radio";
+@import "custom/components/_ribbons";
+@import "custom/components/_print";
+@import "custom/components/_preloader";
+@import "custom/components/_accordions";
+
+// pages
+@import "custom/pages/_components-demo";
+@import "custom/pages/_email";
+@import "custom/pages/_authentication";
+@import "custom/pages/_error";
+@import "custom/pages/_taskboard";
+@import "custom/pages/_taskdetails";
+@import "custom/pages/_profile";
+@import "custom/pages/_pricing";
+@import "custom/pages/_timeline";
+@import "custom/pages/_gallery";
+@import "custom/pages/_coming-soon";
+
+// Vendors
+@import "../../../node_modules/metismenujs/scss/metismenujs";
+
+// Plugins
+@import "custom/plugins/_waves";
+@import "custom/plugins/_slimscroll";
+@import "custom/plugins/_sweetalert";
+@import "custom/plugins/_toastr";
+@import "custom/plugins/_ion-rangeslider";
+@import "custom/plugins/_bootstrap-tagsinput";
+@import "custom/plugins/_multiple-select";
+@import "custom/plugins/_select2";
+@import "custom/plugins/_timepicker";
+@import "custom/plugins/_datepicker";
+@import "custom/plugins/_colorpicker";
+@import "custom/plugins/_daterange";
+@import "custom/plugins/_parsley";
+@import "custom/plugins/_form-wizard";
+@import "custom/plugins/_dropify";
+@import "custom/plugins/_form-editor";
+@import "custom/plugins/_x-editable";
+@import "custom/plugins/_datatable";
+@import "custom/plugins/_responsive-table";
+@import "custom/plugins/_tablesaw";
+@import "custom/plugins/_flot";
+@import "custom/plugins/_morris";
+@import "custom/plugins/_chartist";
+@import "custom/plugins/_chartjs";
+@import "custom/plugins/_sparkline-chart";
+@import "custom/plugins/_calendar";
+@import "custom/plugins/_summernote";
+@import "custom/plugins/_hopscotch";
+@import "custom/plugins/_jstree";
+@import "custom/plugins/_google-maps";
+@import "custom/plugins/_vector-maps";

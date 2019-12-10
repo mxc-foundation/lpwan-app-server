@@ -1,0 +1,25 @@
+// 
+// nav.scss
+//
+
+.nav-tabs,.nav-pills {
+    > li {
+        > a {
+            color: $gray-700;
+            font-weight: $font-weight-medium;
+        }
+    }
+}
+
+.nav-pills {
+    > a {
+        color: $gray-700;
+        font-weight: $font-weight-medium;   
+    }
+}
+
+.tab-content {
+    padding: 20px;
+    border: 2px solid $gray-200;
+    border-top: none;
+}  

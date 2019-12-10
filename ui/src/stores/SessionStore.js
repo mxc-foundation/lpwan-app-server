@@ -145,6 +145,7 @@ class SessionStore extends EventEmitter {
       let resp = await client.apis.InternalService.Profile();
 
       resp = await checkStatus(resp);
+      console.log('123', resp);
       return resp;
     } catch (error) {
       errorHandler(error);

@@ -1,0 +1,42 @@
+// 
+// gallery.scss
+//
+
+.portfolioFilter {
+    a {
+        transition: all 0.3s ease-out;
+        color: $dark;
+        border-radius: 3px;
+        padding: 5px 10px;
+        display: inline-block;
+        font-weight: $font-weight-medium;
+        &:hover {
+            color: $primary;
+        }
+    }
+    a.current {
+        color: $primary;
+    }
+}
+
+
+.thumb {
+    background-color: $white;
+    border-radius: 3px;
+    box-shadow: $shadow-sm;
+    margin-top: 24px;
+    padding: 10px;
+}
+  
+.thumb-img {
+    border-radius: 2px;
+    overflow: hidden;
+}
+  
+.gal-detail {
+    h4 {
+      margin-top: 16px;
+      font-size: 16px;
+    }
+}
+
