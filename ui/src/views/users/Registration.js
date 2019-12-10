@@ -75,11 +75,11 @@ class RegistrationForm extends FormComponent {
           fullWidth
           required
         />
-        <ALiYunCaptcha
+{/*        <ALiYunCaptcha
               appKey="FFFF0N000000000087AA"
               scene="nc_login"
               onCallback={this.onCallback}
-            />
+            />*/}
       </Form>
     );
   }
@@ -99,7 +99,7 @@ class Registration extends Component {
   
 
   onSubmit(user) {
-    /*user.isVerified = true;*/
+    user.isVerified = true;
     if(!user.isVerified){
       alert(i18n.t(`${packageNS}:tr000021`));
       return false;
