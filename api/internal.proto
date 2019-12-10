@@ -205,13 +205,6 @@ enum Language {
 	zhtw = 3;
 }
 
-enum Language {
-	en = 0;
-	ko = 1;
-	zhcn = 2;
-	zhtw = 3;
-}
-
 message RegisterUserRequest {
     string email = 1;
 	Language language = 2;
