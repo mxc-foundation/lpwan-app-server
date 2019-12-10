@@ -99,6 +99,7 @@ class Registration extends Component {
   
 
   onSubmit(user) {
+    /*user.isVerified = true;*/
     if(!user.isVerified){
       alert(i18n.t(`${packageNS}:tr000021`));
       return false;

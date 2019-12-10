@@ -186,11 +186,11 @@ class LoginForm extends FormComponent {
         />
         <Password handleChange={this.handleChange} demoPassword={demoPassword} helpText={helpText} label={i18n.t(`${packageNS}:tr000004`)}/>
         {/*<TitleBarTitle component={Link} to={`/password-recovery`} title="FORGOT MY PASSWORD" />*/}
-        {/*<ALiYunCaptcha
+        <ALiYunCaptcha
               appKey="FFFF0N000000000087AA"
               scene="nc_login"
               onCallback={this.onCallback}
-            />*/}
+            />
       </Form>
     );
   }
@@ -237,7 +237,7 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    login.isVerified = true;
+    /*login.isVerified = true;*/
     if(login.hasOwnProperty('isVerified')){
       if(!login.isVerified){
         alert(VERIFY_ERROR_MESSAGE);

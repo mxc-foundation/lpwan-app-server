@@ -437,3 +437,10 @@ tls_key=""
   #host_server="https://www.google.com/recaptcha/api/siteverify"
   host_server="https://www.recaptcha.net/recaptcha/api/siteverify"
   secret="6LfUDLgUAAAAANRbVc9H7abuKPFFmPNwuYDINl3q"
+
+[aliyunrecaptcha]
+  app_key="FFFF0N000000000087AA"
+  scene="nc_login"
+  acc_key="LTAI4FcbEBaG19QnAiWkasHF"
+  acc_secret_key="QOLUK2j0Yy0yFi4pqQ25IZCUyE8Ff7"
+
