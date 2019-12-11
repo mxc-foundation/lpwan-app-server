@@ -135,6 +135,13 @@ const SideNavContent = (props) => {
                             <span> {i18n.t(`${packageNS}:tr000078`)} </span>
                         </Link>
                     </li>
+                    
+                    <li>
+                        <Link to={`/organizations/${props.orgId}/applications`} className="waves-effect side-nav-link-ref">
+                            <i className="mdi mdi-apps"></i>
+                            <span> {i18n.t(`${packageNS}:tr000407`)} </span>
+                        </Link>
+                    </li>
 
                     <li>
                         <Link to={`/organizations/${props.orgId}/multicast-groups`} className="waves-effect side-nav-link-ref">
@@ -144,7 +151,7 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to="/control-panel/wallet/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
+                        <Link to={`/organizations/${props.orgId}/users`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
                             <i className="mdi mdi-settings"></i>
                             <span> Setting </span>
                             <span className="menu-arrow"></span>
@@ -164,12 +171,12 @@ const SideNavContent = (props) => {
                     </Link>
                 </li>
 
-                <li>
+                {/* <li>
                     <Link to={'/ext'} className="waves-effect side-nav-link-ref">
                         <i className="mdi mdi-view-dashboard"></i>
                         <span> {i18n.t(`${packageNS}:menu.lpwan_server`)} </span>
                     </Link>
-                </li>
+                </li> */}
 
                 <li>
                     <Link to={'#'} className="waves-effect side-nav-link-ref">
@@ -322,8 +329,7 @@ const SideNavSettingContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/withdraw/${props.orgId}`} className="waves-effect side-nav-link-ref">
-                            {/* <i className="mdi mdi-cloud-print-outline"></i> */}
+                        <Link to={`/organizations/${props.orgId}/users`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-account-details"></i>
                             <span> {i18n.t(`${packageNS}:tr000419`)} </span>
                         </Link>
@@ -339,7 +345,7 @@ const SideNavSettingContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/history/${props.orgId}`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/organizations/${props.orgId}/edit`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-domain"></i>
                             <span> {i18n.t(`${packageNS}:tr000418`)} </span>
                         </Link>

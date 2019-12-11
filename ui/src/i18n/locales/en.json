@@ -396,7 +396,7 @@
   "tr000404": "Search on device by it's name or device EUI. Only devices part of the same service-profile as the multicast-group can be added (and are visible).",
   "tr000405": "Add device",
   "tr000406": "Add",
-  "tr000407": "application",
+  "tr000407": "Application",
   "tr000408": "device",
   "tr000409": "organization",
   "tr000410": "gateway",
