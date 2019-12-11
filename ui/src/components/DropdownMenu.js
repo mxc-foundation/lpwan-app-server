@@ -69,7 +69,6 @@ const promiseOptions = () =>
     new Promise((resolve, reject) => {
         SessionStore.fetchProfile(
             resp => {
-                console.log('respresp: ', resp);
                 resolve(getOrgList(resp.body.organizations));
             })
     });
@@ -111,7 +110,6 @@ export default class WithPromises extends Component {
     render() {
         const dValue = { label: SessionStore.getOrganizations()[0].organizationName, value: SessionStore.getOrganizations()[0].organizationID }
 
-        console.log('this.state.dOptions', this.state.dOptions);
         return (
             <AsyncSelect
                 cacheOptions

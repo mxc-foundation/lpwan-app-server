@@ -194,7 +194,6 @@ class SessionStore extends EventEmitter {
       client.apis.InternalService.Branding({})
         .then(checkStatus)
         .then(resp => {
-          console.log("#@@@@@ ", resp);
           callbackFunc(resp.obj);
         })
         .catch(errorHandler);
