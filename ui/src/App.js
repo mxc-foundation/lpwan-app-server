@@ -41,6 +41,7 @@ import OrganizationRedirect from "./views/organizations/OrganizationRedirect";
 
 // user
 import Login from "./views/users/Login";
+import Logout from "./views/users/Logout";
 import Registration from "./views/users/Registration";
 import RegistrationConfirm from "./views/users/RegistrationConfirm";
 
@@ -244,6 +245,12 @@ class App extends Component {
       document.body.classList.toggle("right-bar-enabled");
   }
 
+  logout = () => {
+    SessionStore.logout(() => {
+      this.props.history.push("/login");
+    }); 
+  }
+
   render() {
     const { language } = this.state;
     let topNav = null;
@@ -285,6 +292,7 @@ class App extends Component {
                 <Grid container spacing={4}>
                   <Switch>
                     <Redirect exact from="/" to="/login"/>
+                    <Route exact path="/logout" component={Logout} />
                     <Route exact path="/login"
                       render={props =>
                         <Login {...props}
@@ -293,6 +301,7 @@ class App extends Component {
                         />
                       }
                     />
+
                     <Route exact path="/users" component={ListUsers} />
                     <Route exact path="/users/create" component={CreateUser} />
                     <Route exact path="/users/:userID(\d+)" component={UserLayout} />

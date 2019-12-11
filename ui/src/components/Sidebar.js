@@ -84,6 +84,27 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
+                        <Link to={`/users`} className="waves-effect side-nav-link-ref">
+                            <i className="mdi mdi-account-multiple"></i>
+                            <span> {i18n.t(`${packageNS}:tr000055`)} </span>
+                        </Link>
+                    </li>
+
+                    <li>
+                        <Link to={`/organizations/${props.orgId}/edit`} className="waves-effect side-nav-link-ref">
+                            <i className="mdi mdi-domain"></i>
+                            <span> {i18n.t(`${packageNS}:tr000418`)} </span>
+                        </Link>
+                    </li>
+                    
+                    <li>
+                        <Link to={`/organizations/${props.orgId}/users`} className="waves-effect side-nav-link-ref">
+                            <i className="mdi mdi-account-details"></i>
+                            <span> {i18n.t(`${packageNS}:tr000419`)} </span>
+                        </Link>
+                    </li>
+
+                    <li>
                         <Link to="/control-panel/wallet/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_SETTING)}>
                             <i className="mdi mdi-settings"></i>
                             <span> Setting </span>
@@ -328,12 +349,7 @@ const SideNavSettingContent = (props) => {
                         <DropdownMenu2 default={props.default} onChange={props.onChange} />
                     </li>
 
-                    <li>
-                        <Link to={`/organizations/${props.orgId}/users`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-account-details"></i>
-                            <span> {i18n.t(`${packageNS}:tr000419`)} </span>
-                        </Link>
-                    </li>
+                    
 
                     <li>
                         <Link to={`/topup/${props.orgId}`} className="waves-effect side-nav-link-ref">
@@ -344,12 +360,7 @@ const SideNavSettingContent = (props) => {
                         </Link>
                     </li>
 
-                    <li>
-                        <Link to={`/organizations/${props.orgId}/edit`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-domain"></i>
-                            <span> {i18n.t(`${packageNS}:tr000418`)} </span>
-                        </Link>
-                    </li>
+                    
             </ul>
         </div>
         <div className="clearfix"></div>
@@ -430,12 +441,12 @@ class Sidebar extends Component {
     loadData = async () => {
         try {
           const organizationID = SessionStore.getOrganizationID();
-          var data = await loadServerVersion();
-          const serverInfo = JSON.parse(data);
+          /* var data = await loadServerVersion();
+          const serverInfo = JSON.parse(data); */
           
           this.setState({
             organizationID,
-            version: serverInfo.version
+            //version: serverInfo.version
           })
     
           this.setState({loading: true})

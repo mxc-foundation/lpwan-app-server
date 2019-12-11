@@ -225,7 +225,6 @@ class Login extends Component {
 
       SessionStore.login(login, () => {
         const orgs = SessionStore.getOrganizations();
-        console.log('Organizations: ', orgs);
 
         if (SessionStore.getToken() && orgs.length > 0) {
           this.props.history.push(`/organizations/${orgs[0]}`);

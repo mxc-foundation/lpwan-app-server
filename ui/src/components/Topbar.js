@@ -102,7 +102,7 @@ const ProfileMenus = [{
 {
   label: 'Log out',
   icon: 'fe-log-out',
-  redirectTo: "/logout",
+  redirectTo: ()=> this.onLogout,
   hasDivider: true
 }]
 
@@ -131,7 +131,7 @@ class Topbar extends Component {
       ProfileMenus : [{
         label: 'Logout',
         icon: 'fe-log-out',
-        redirectTo: "/logout",
+        redirectTo: '/logout',
         hasDivider: true
       }]
     };
@@ -177,7 +177,11 @@ class Topbar extends Component {
     const balanceEl = balance === null ? 
       <span className="color-gray">(no org selected)</span> : 
       balance + " MXC";
-    const username = SessionStore.getUser().username;
+      let username = null;
+      if(SessionStore.getUser()){
+        username = SessionStore.getUser().username;
+      }
+     
     return (
       <React.Fragment>
         <div className="navbar-custom">
