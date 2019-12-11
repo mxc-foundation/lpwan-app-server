@@ -102,7 +102,7 @@ const ProfileMenus = [{
 {
   label: 'Log out',
   icon: 'fe-log-out',
-  redirectTo: ()=> this.onLogout,
+  redirectTo: '/logout',
   hasDivider: true
 }]
 

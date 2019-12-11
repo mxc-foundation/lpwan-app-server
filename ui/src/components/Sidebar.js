@@ -96,7 +96,7 @@ const SideNavContent = (props) => {
                             <span> {i18n.t(`${packageNS}:tr000418`)} </span>
                         </Link>
                     </li>
-                    
+
                     <li>
                         <Link to={`/organizations/${props.orgId}/users`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-account-details"></i>
