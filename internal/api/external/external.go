@@ -107,6 +107,7 @@ func setupAPI(conf config.Config) error {
 	m2m_api.RegisterSuperNodeServiceServer(grpcServer, m2m_ui.NewSupernodeServerAPI(validator))
 	m2m_api.RegisterTopUpServiceServer(grpcServer, m2m_ui.NewTopUpServerAPI(validator))
 	m2m_api.RegisterWalletServiceServer(grpcServer, m2m_ui.NewWalletServerAPI(validator))
+	m2m_api.RegisterWithdrawServiceServer(grpcServer, m2m_ui.NewWithdrawServerAPI(validator))
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
@@ -302,6 +303,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := m2m_pb.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 

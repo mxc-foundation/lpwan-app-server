@@ -38,9 +38,9 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 	}
 
 	resp, err := m2mClient.AddSuperNodeMoneyAccount(ctx, &m2m_api.AddSuperNodeMoneyAccountRequest{
-		MoneyAbbr:            req.MoneyAbbr,
-		AccountAddr:          req.AccountAddr,
-		OrgId:                req.OrgId,
+		MoneyAbbr:   req.MoneyAbbr,
+		AccountAddr: req.AccountAddr,
+		OrgId:       req.OrgId,
 	})
 	if err != nil {
 		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -67,8 +67,8 @@ func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context,
 	}
 
 	resp, err := m2mClient.GetSuperNodeActiveMoneyAccount(ctx, &m2m_api.GetSuperNodeActiveMoneyAccountRequest{
-		MoneyAbbr:            req.MoneyAbbr,
-		OrgId:                req.OrgId,
+		MoneyAbbr: req.MoneyAbbr,
+		OrgId:     req.OrgId,
 	})
 	if err != nil {
 		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())

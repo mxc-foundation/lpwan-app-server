@@ -76,4 +76,3 @@ func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifyS
 		Status: resp.Status,
 	}, nil
 }
-

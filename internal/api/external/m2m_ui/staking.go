@@ -38,7 +38,7 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 	}
 
 	resp, err := m2mClient.GetStakingPercentage(ctx, &m2m_api.StakingPercentageRequest{
-		OrgId:                req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		return &api.StakingPercentageResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -64,8 +64,8 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 	}
 
 	resp, err := m2mClient.Stake(ctx, &m2m_api.StakeRequest{
-		OrgId:                req.OrgId,
-		Amount:               req.Amount,
+		OrgId:  req.OrgId,
+		Amount: req.Amount,
 	})
 	if err != nil {
 		return &api.StakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -92,15 +92,15 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 	}
 
 	resp, err := m2mClient.Unstake(ctx, &m2m_api.UnstakeRequest{
-		OrgId:                req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.UnstakeResponse{
-		Status:               resp.Status,
-		UserProfile:          resp.UserProfile,
+		Status:      resp.Status,
+		UserProfile: resp.UserProfile,
 	}, nil
 }
 
@@ -119,15 +119,15 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 	}
 
 	resp, err := m2mClient.GetActiveStakes(ctx, &m2m_api.GetActiveStakesRequest{
-		OrgId:                req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetActiveStakesResponse{
-		ActStake:             resp.ActStake,
-		UserProfile:          resp.UserProfile,
+		ActStake:    resp.ActStake,
+		UserProfile: resp.UserProfile,
 	}, nil
 }
 
@@ -146,9 +146,9 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 	}
 
 	resp, err := m2mClient.GetStakingHistory(ctx, &m2m_api.StakingHistoryRequest{
-		OrgId:                req.OrgId,
-		Offset:               req.Offset,
-		Limit:                req.Limit,
+		OrgId:  req.OrgId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
 	})
 	if err != nil {
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -160,4 +160,3 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 		Count:       resp.Count,
 	}, nil
 }
-

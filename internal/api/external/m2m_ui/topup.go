@@ -13,7 +13,6 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-
 type TopUpServerAPI struct {
 	validator auth.Validator
 }
@@ -39,18 +38,18 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 	}
 
 	resp, err := m2mClient.GetTransactionsHistory(ctx, &m2m_api.GetTransactionsHistoryRequest{
-		OrgId:                req.OrgId,
-		Offset:               req.Offset,
-		Limit:                req.Limit,
+		OrgId:  req.OrgId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
 	})
 	if err != nil {
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetTransactionsHistoryResponse{
-		Count:                resp.Count,
-		TransactionHistory:   resp.TransactionHistory,
-		UserProfile:          resp.UserProfile,
+		Count:              resp.Count,
+		TransactionHistory: resp.TransactionHistory,
+		UserProfile:        resp.UserProfile,
 	}, nil
 }
 
@@ -69,18 +68,18 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	}
 
 	resp, err := m2mClient.GetTopUpHistory(ctx, &m2m_api.GetTopUpHistoryRequest{
-		OrgId:                req.OrgId,
-		Offset:               req.Offset,
-		Limit:                req.Limit,
+		OrgId:  req.OrgId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
 	})
 	if err != nil {
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetTopUpHistoryResponse{
-		Count:                resp.Count,
-		TopupHistory:         resp.TopupHistory,
-		UserProfile:          resp.UserProfile,
+		Count:        resp.Count,
+		TopupHistory: resp.TopupHistory,
+		UserProfile:  resp.UserProfile,
 	}, nil
 }
 
@@ -99,16 +98,16 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	}
 
 	resp, err := m2mClient.GetTopUpDestination(ctx, &m2m_api.GetTopUpDestinationRequest{
-		OrgId:                req.OrgId,
-		MoneyAbbr:            req.MoneyAbbr,
+		OrgId:     req.OrgId,
+		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetTopUpDestinationResponse{
-		ActiveAccount:        resp.ActiveAccount,
-		UserProfile:          resp.UserProfile,
+		ActiveAccount: resp.ActiveAccount,
+		UserProfile:   resp.UserProfile,
 	}, nil
 }
 
@@ -127,14 +126,13 @@ func (s *TopUpServerAPI) GetIncome(ctx context.Context, req *api.GetIncomeReques
 	}
 
 	resp, err := m2mClient.GetIncome(ctx, &m2m_api.GetIncomeRequest{
-		OrgId:                req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		return &api.GetIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetIncomeResponse{
-		Amount:               resp.Amount,
+		Amount: resp.Amount,
 	}, nil
 }
-

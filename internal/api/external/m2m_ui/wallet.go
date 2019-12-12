@@ -38,15 +38,15 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 	}
 
 	resp, err := m2mClient.GetWalletBalance(ctx, &m2m_api.GetWalletBalanceRequest{
-		OrgId:                req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetWalletBalanceResponse{
-		Balance:              resp.Balance,
-		UserProfile:          resp.UserProfile,
+		Balance:     resp.Balance,
+		UserProfile: resp.UserProfile,
 	}, nil
 }
 
@@ -65,18 +65,18 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 	}
 
 	resp, err := m2mClient.GetVmxcTxHistory(ctx, &m2m_api.GetVmxcTxHistoryRequest{
-		OrgId:                req.OrgId,
-		Offset:               req.Offset,
-		Limit:                req.Limit,
+		OrgId:  req.OrgId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
 	})
 	if err != nil {
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetVmxcTxHistoryResponse{
-		Count:                resp.Count,
-		TxHistory:            resp.TxHistory,
-		UserProfile:          resp.UserProfile,
+		Count:       resp.Count,
+		TxHistory:   resp.TxHistory,
+		UserProfile: resp.UserProfile,
 	}, nil
 }
 
@@ -95,18 +95,18 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 	}
 
 	resp, err := m2mClient.GetWalletUsageHist(ctx, &m2m_api.GetWalletUsageHistRequest{
-		OrgId:                req.OrgId,
-		Offset:               req.Offset,
-		Limit:                req.Limit,
+		OrgId:  req.OrgId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
 	})
 	if err != nil {
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetWalletUsageHistResponse{
-		WalletUsageHis:       resp.WalletUsageHis,
-		UserProfile:          resp.UserProfile,
-		Count:                resp.Count,
+		WalletUsageHis: resp.WalletUsageHis,
+		UserProfile:    resp.UserProfile,
+		Count:          resp.Count,
 	}, nil
 }
 
@@ -125,14 +125,14 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 	}
 
 	resp, err := m2mClient.GetDlPrice(ctx, &m2m_api.GetDownLinkPriceRequest{
-		OrgId:                req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetDownLinkPriceResponse{
-		DownLinkPrice:        resp.DownLinkPrice,
-		UserProfile:          resp.UserProfile,
+		DownLinkPrice: resp.DownLinkPrice,
+		UserProfile:   resp.UserProfile,
 	}, nil
 }
