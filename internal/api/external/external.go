@@ -100,7 +100,7 @@ func setupAPI(conf config.Config) error {
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
 	api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
 	m2m_api.RegisterDeviceServiceServer(grpcServer, m2m_ui.NewDeviceServerAPI(validator))
-
+	m2m_api.RegisterMoneyServiceServer(grpcServer, m2m_ui.NewMoneyServerAPI(validator))
 
 
 	// setup the client http interface variable
@@ -279,6 +279,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := m2m_pb.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterMoneyServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 
