@@ -1,10 +1,10 @@
 import React, { Component } from "react";
-import { Route, Redirect, Switch, withRouter } from "react-router-dom";
+import { Route, Redirect, Switch, withRouter,Link } from "react-router-dom";
 
 import Grid from '@material-ui/core/Grid';
 
 import Delete from "mdi-material-ui/Delete";
-
+import { Breadcrumb, BreadcrumbItem, Button } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -51,25 +51,26 @@ class OrganizationLayout extends Component {
 
   render() {
     if (this.state.organization === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
 
-    return(
+    return (
       <Grid container spacing={4}>
         <TitleBar
           buttons={[
-            <TitleBarButton
-              key={1}
-              label={i18n.t(`${packageNS}:tr000061`)}
-              icon={<Delete />}
+            <Button color="danger"
               onClick={this.deleteOrganization}
-            />,
+              className="btn-block">{i18n.t(`${packageNS}:tr000061`)}
+            </Button>,
           ]}
         >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.organization.name} />
+          <div>
+            <Breadcrumb>
+              <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/edit`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+              <BreadcrumbItem active>{this.state.organization.name}</BreadcrumbItem>
+            </Breadcrumb>
+          </div>
         </TitleBar>
 
         <Grid item xs={12}>

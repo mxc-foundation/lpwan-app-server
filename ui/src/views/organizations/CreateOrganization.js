@@ -1,14 +1,13 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 
 import { CardContent } from "@material-ui/core";
-
+import { Breadcrumb, BreadcrumbItem, Button } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import OrganizationForm from "./OrganizationForm";
 import OrganizationStore from "../../stores/OrganizationStore";
 
@@ -26,13 +25,17 @@ class CreateOrganization extends Component {
   }
 
   render() {
-    return(
+    return (
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} to="/organizations" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+          <div>
+            <Breadcrumb>
+              <BreadcrumbItem><Link to={"/organizations"}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+              <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+            </Breadcrumb>
+          </div>
         </TitleBar>
+
         <Grid item xs={12}>
           <Card>
             <CardContent>
