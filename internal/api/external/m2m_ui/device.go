@@ -29,7 +29,7 @@ func (s *DeviceServerAPI) GetDeviceList (ctx context.Context, req *api.GetDevice
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletBalance")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -37,12 +37,20 @@ func (s *DeviceServerAPI) GetDeviceList (ctx context.Context, req *api.GetDevice
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetWalletBalance(ctx, &m2m_api.GetWalletBalanceRequest{OrgId: req.OrgId})
+	resp, err := m2mClient.GetDeviceList(ctx, &m2m_api.GetDeviceListRequest{
+		OrgId:                req.OrgId,
+		Offset:               req.Offset,
+		Limit:                req.Limit,
+	})
 	if err != nil {
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetDeviceListResponse{Count:}, nil
+	return &api.GetDeviceListResponse{
+		DevProfile:           resp.DevProfile,
+		Count:                resp.Count,
+		UserProfile:          resp.UserProfile,
+	}, nil
 }
 
 func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDeviceProfileRequest) (*api.GetDeviceProfileResponse, error) {
@@ -51,18 +59,26 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceProfile")
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
 		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetWalletBalance(ctx, &m2m_api.GetWalletBalanceRequest{OrgId: req.OrgId})
+	resp, err := m2mClient.GetDeviceProfile(ctx, &m2m_api.GetDeviceProfileRequest{
+		OrgId: req.OrgId,
+		DevId: req.DevId,
+	})
 	if err != nil {
 		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetDeviceProfileResponse{}, nil
+	return &api.GetDeviceProfileResponse{
+		DevProfile:  resp.DevProfile,
+		UserProfile: resp.UserProfile,
+	}, nil
 }
 
 func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
@@ -71,18 +87,28 @@ func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDevi
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceHistory")
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetWalletBalance(ctx, &m2m_api.GetWalletBalanceRequest{OrgId: req.OrgId})
+	resp, err := m2mClient.GetDeviceHistory(ctx, &m2m_api.GetDeviceHistoryRequest{
+		OrgId:  req.OrgId,
+		DevId:  req.DevId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
+	})
 	if err != nil {
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetDeviceHistoryResponse{}, nil
+	return &api.GetDeviceHistoryResponse{
+		DevHistory:  resp.DevHistory,
+		UserProfile: resp.UserProfile,
+	}, nil
 }
 
 func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
@@ -91,16 +117,25 @@ func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceM
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	log.WithField("orgId", req.OrgId).Info("grpc_api/SetDeviceMode")
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetWalletBalance(ctx, &m2m_api.GetWalletBalanceRequest{OrgId: req.OrgId})
+	resp, err := m2mClient.SetDeviceMode(ctx, &m2m_api.SetDeviceModeRequest{
+		OrgId:   req.OrgId,
+		DevId:   req.DevId,
+		DevMode: req.DevMode,
+	})
 	if err != nil {
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.SetDeviceModeResponse{}, nil
+	return &api.SetDeviceModeResponse{
+		Status:      resp.Status,
+		UserProfile: resp.UserProfile,
+	}, nil
 }

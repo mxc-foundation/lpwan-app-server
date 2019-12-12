@@ -9,6 +9,7 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	wrappers "github.com/golang/protobuf/ptypes/wrappers"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -25,6 +26,93 @@ var _ = math.Inf
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
+
+// DeviceService
+type DeviceMode int32
+
+const (
+	DeviceMode_DV_INACTIVE              DeviceMode = 0
+	DeviceMode_DV_FREE_GATEWAYS_LIMITED DeviceMode = 1
+	DeviceMode_DV_WHOLE_NETWORK         DeviceMode = 2
+	DeviceMode_DV_DELETED               DeviceMode = 3
+)
+
+var DeviceMode_name = map[int32]string{
+	0: "DV_INACTIVE",
+	1: "DV_FREE_GATEWAYS_LIMITED",
+	2: "DV_WHOLE_NETWORK",
+	3: "DV_DELETED",
+}
+
+var DeviceMode_value = map[string]int32{
+	"DV_INACTIVE":              0,
+	"DV_FREE_GATEWAYS_LIMITED": 1,
+	"DV_WHOLE_NETWORK":         2,
+	"DV_DELETED":               3,
+}
+
+func (x DeviceMode) String() string {
+	return proto.EnumName(DeviceMode_name, int32(x))
+}
+
+func (DeviceMode) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{0}
+}
+
+// MoneyService
+type Money int32
+
+const (
+	Money_Ether Money = 0
+)
+
+var Money_name = map[int32]string{
+	0: "Ether",
+}
+
+var Money_value = map[string]int32{
+	"Ether": 0,
+}
+
+func (x Money) String() string {
+	return proto.EnumName(Money_name, int32(x))
+}
+
+func (Money) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{1}
+}
+
+// GatewayService
+type GatewayMode int32
+
+const (
+	GatewayMode_GW_INACTIVE              GatewayMode = 0
+	GatewayMode_GW_FREE_GATEWAYS_LIMITED GatewayMode = 1
+	GatewayMode_GW_WHOLE_NETWORK         GatewayMode = 2
+	GatewayMode_GW_DELETED               GatewayMode = 3
+)
+
+var GatewayMode_name = map[int32]string{
+	0: "GW_INACTIVE",
+	1: "GW_FREE_GATEWAYS_LIMITED",
+	2: "GW_WHOLE_NETWORK",
+	3: "GW_DELETED",
+}
+
+var GatewayMode_value = map[string]int32{
+	"GW_INACTIVE":              0,
+	"GW_FREE_GATEWAYS_LIMITED": 1,
+	"GW_WHOLE_NETWORK":         2,
+	"GW_DELETED":               3,
+}
+
+func (x GatewayMode) String() string {
+	return proto.EnumName(GatewayMode_name, int32(x))
+}
+
+func (GatewayMode) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{2}
+}
 
 type AppServerDeviceProfile struct {
 	DevEui               string               `protobuf:"bytes,1,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
@@ -738,6 +826,524 @@ func (m *GetGatewayMacListResponse) GetGatewayMac() []string {
 	return nil
 }
 
+// InternalService
+type ProfileResponse struct {
+	// User object.
+	User *User `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	// Organizations to which the user is associated.
+	Organizations []*OrganizationLink `protobuf:"bytes,3,rep,name=organizations,proto3" json:"organizations,omitempty"`
+	// Profile settings.
+	Settings             *ProfileSettings `protobuf:"bytes,4,opt,name=settings,proto3" json:"settings,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *ProfileResponse) Reset()         { *m = ProfileResponse{} }
+func (m *ProfileResponse) String() string { return proto.CompactTextString(m) }
+func (*ProfileResponse) ProtoMessage()    {}
+func (*ProfileResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{16}
+}
+
+func (m *ProfileResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ProfileResponse.Unmarshal(m, b)
+}
+func (m *ProfileResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ProfileResponse.Marshal(b, m, deterministic)
+}
+func (m *ProfileResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProfileResponse.Merge(m, src)
+}
+func (m *ProfileResponse) XXX_Size() int {
+	return xxx_messageInfo_ProfileResponse.Size(m)
+}
+func (m *ProfileResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProfileResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProfileResponse proto.InternalMessageInfo
+
+func (m *ProfileResponse) GetUser() *User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
+
+func (m *ProfileResponse) GetOrganizations() []*OrganizationLink {
+	if m != nil {
+		return m.Organizations
+	}
+	return nil
+}
+
+func (m *ProfileResponse) GetSettings() *ProfileSettings {
+	if m != nil {
+		return m.Settings
+	}
+	return nil
+}
+
+type User struct {
+	// User ID.
+	// Will be set automatically on create.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Username of the user.
+	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`
+	// The session timeout, in minutes.
+	SessionTtl int32 `protobuf:"varint,3,opt,name=session_ttl,json=sessionTTL,proto3" json:"session_ttl,omitempty"`
+	// Set to true to make the user a global administrator.
+	IsAdmin bool `protobuf:"varint,4,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
+	// Set to false to disable the user.
+	IsActive bool `protobuf:"varint,5,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	// E-mail of the user.
+	Email string `protobuf:"bytes,6,opt,name=email,proto3" json:"email,omitempty"`
+	// Optional note to store with the user.
+	Note                 string   `protobuf:"bytes,7,opt,name=note,proto3" json:"note,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *User) Reset()         { *m = User{} }
+func (m *User) String() string { return proto.CompactTextString(m) }
+func (*User) ProtoMessage()    {}
+func (*User) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{17}
+}
+
+func (m *User) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_User.Unmarshal(m, b)
+}
+func (m *User) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_User.Marshal(b, m, deterministic)
+}
+func (m *User) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_User.Merge(m, src)
+}
+func (m *User) XXX_Size() int {
+	return xxx_messageInfo_User.Size(m)
+}
+func (m *User) XXX_DiscardUnknown() {
+	xxx_messageInfo_User.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_User proto.InternalMessageInfo
+
+func (m *User) GetId() string {
+	if m != nil {
+		return m.Id
+	}
+	return ""
+}
+
+func (m *User) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *User) GetSessionTtl() int32 {
+	if m != nil {
+		return m.SessionTtl
+	}
+	return 0
+}
+
+func (m *User) GetIsAdmin() bool {
+	if m != nil {
+		return m.IsAdmin
+	}
+	return false
+}
+
+func (m *User) GetIsActive() bool {
+	if m != nil {
+		return m.IsActive
+	}
+	return false
+}
+
+func (m *User) GetEmail() string {
+	if m != nil {
+		return m.Email
+	}
+	return ""
+}
+
+func (m *User) GetNote() string {
+	if m != nil {
+		return m.Note
+	}
+	return ""
+}
+
+type ProfileSettings struct {
+	// Existing users in the system can not be assigned to organizations and
+	// application and can not be listed by non global admin users.
+	DisableAssignExistingUsers bool     `protobuf:"varint,1,opt,name=disable_assign_existing_users,json=disableAssignExistingUsers,proto3" json:"disable_assign_existing_users,omitempty"`
+	XXX_NoUnkeyedLiteral       struct{} `json:"-"`
+	XXX_unrecognized           []byte   `json:"-"`
+	XXX_sizecache              int32    `json:"-"`
+}
+
+func (m *ProfileSettings) Reset()         { *m = ProfileSettings{} }
+func (m *ProfileSettings) String() string { return proto.CompactTextString(m) }
+func (*ProfileSettings) ProtoMessage()    {}
+func (*ProfileSettings) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{18}
+}
+
+func (m *ProfileSettings) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ProfileSettings.Unmarshal(m, b)
+}
+func (m *ProfileSettings) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ProfileSettings.Marshal(b, m, deterministic)
+}
+func (m *ProfileSettings) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProfileSettings.Merge(m, src)
+}
+func (m *ProfileSettings) XXX_Size() int {
+	return xxx_messageInfo_ProfileSettings.Size(m)
+}
+func (m *ProfileSettings) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProfileSettings.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ProfileSettings proto.InternalMessageInfo
+
+func (m *ProfileSettings) GetDisableAssignExistingUsers() bool {
+	if m != nil {
+		return m.DisableAssignExistingUsers
+	}
+	return false
+}
+
+// Defines an organization to which an user is associated.
+type OrganizationLink struct {
+	// Organization ID.
+	OrganizationId int64 `protobuf:"varint,1,opt,name=organization_id,json=organizationID,proto3" json:"organization_id,omitempty"`
+	// Organization name.
+	OrganizationName string `protobuf:"bytes,2,opt,name=organization_name,json=organizationName,proto3" json:"organization_name,omitempty"`
+	// User is admin within the context of this organization.
+	IsAdmin bool `protobuf:"varint,3,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
+	// Created at timestamp.
+	CreatedAt *timestamp.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Last update timestamp.
+	UpdatedAt            *timestamp.Timestamp `protobuf:"bytes,5,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *OrganizationLink) Reset()         { *m = OrganizationLink{} }
+func (m *OrganizationLink) String() string { return proto.CompactTextString(m) }
+func (*OrganizationLink) ProtoMessage()    {}
+func (*OrganizationLink) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{19}
+}
+
+func (m *OrganizationLink) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_OrganizationLink.Unmarshal(m, b)
+}
+func (m *OrganizationLink) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_OrganizationLink.Marshal(b, m, deterministic)
+}
+func (m *OrganizationLink) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_OrganizationLink.Merge(m, src)
+}
+func (m *OrganizationLink) XXX_Size() int {
+	return xxx_messageInfo_OrganizationLink.Size(m)
+}
+func (m *OrganizationLink) XXX_DiscardUnknown() {
+	xxx_messageInfo_OrganizationLink.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_OrganizationLink proto.InternalMessageInfo
+
+func (m *OrganizationLink) GetOrganizationId() int64 {
+	if m != nil {
+		return m.OrganizationId
+	}
+	return 0
+}
+
+func (m *OrganizationLink) GetOrganizationName() string {
+	if m != nil {
+		return m.OrganizationName
+	}
+	return ""
+}
+
+func (m *OrganizationLink) GetIsAdmin() bool {
+	if m != nil {
+		return m.IsAdmin
+	}
+	return false
+}
+
+func (m *OrganizationLink) GetCreatedAt() *timestamp.Timestamp {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return nil
+}
+
+func (m *OrganizationLink) GetUpdatedAt() *timestamp.Timestamp {
+	if m != nil {
+		return m.UpdatedAt
+	}
+	return nil
+}
+
+type LoginRequest struct {
+	// Username of the user.
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	// Password of the user.
+	Password             string   `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *LoginRequest) Reset()         { *m = LoginRequest{} }
+func (m *LoginRequest) String() string { return proto.CompactTextString(m) }
+func (*LoginRequest) ProtoMessage()    {}
+func (*LoginRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{20}
+}
+
+func (m *LoginRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LoginRequest.Unmarshal(m, b)
+}
+func (m *LoginRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LoginRequest.Marshal(b, m, deterministic)
+}
+func (m *LoginRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LoginRequest.Merge(m, src)
+}
+func (m *LoginRequest) XXX_Size() int {
+	return xxx_messageInfo_LoginRequest.Size(m)
+}
+func (m *LoginRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_LoginRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LoginRequest proto.InternalMessageInfo
+
+func (m *LoginRequest) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *LoginRequest) GetPassword() string {
+	if m != nil {
+		return m.Password
+	}
+	return ""
+}
+
+type LoginResponse struct {
+	// The JWT tag to be used to access lora-app-server interfaces.
+	Jwt                  string   `protobuf:"bytes,1,opt,name=jwt,proto3" json:"jwt,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *LoginResponse) Reset()         { *m = LoginResponse{} }
+func (m *LoginResponse) String() string { return proto.CompactTextString(m) }
+func (*LoginResponse) ProtoMessage()    {}
+func (*LoginResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{21}
+}
+
+func (m *LoginResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_LoginResponse.Unmarshal(m, b)
+}
+func (m *LoginResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_LoginResponse.Marshal(b, m, deterministic)
+}
+func (m *LoginResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_LoginResponse.Merge(m, src)
+}
+func (m *LoginResponse) XXX_Size() int {
+	return xxx_messageInfo_LoginResponse.Size(m)
+}
+func (m *LoginResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_LoginResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_LoginResponse proto.InternalMessageInfo
+
+func (m *LoginResponse) GetJwt() string {
+	if m != nil {
+		return m.Jwt
+	}
+	return ""
+}
+
+type GetUserOrganizationListRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetUserOrganizationListRequest) Reset()         { *m = GetUserOrganizationListRequest{} }
+func (m *GetUserOrganizationListRequest) String() string { return proto.CompactTextString(m) }
+func (*GetUserOrganizationListRequest) ProtoMessage()    {}
+func (*GetUserOrganizationListRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{22}
+}
+
+func (m *GetUserOrganizationListRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUserOrganizationListRequest.Unmarshal(m, b)
+}
+func (m *GetUserOrganizationListRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUserOrganizationListRequest.Marshal(b, m, deterministic)
+}
+func (m *GetUserOrganizationListRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUserOrganizationListRequest.Merge(m, src)
+}
+func (m *GetUserOrganizationListRequest) XXX_Size() int {
+	return xxx_messageInfo_GetUserOrganizationListRequest.Size(m)
+}
+func (m *GetUserOrganizationListRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUserOrganizationListRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUserOrganizationListRequest proto.InternalMessageInfo
+
+func (m *GetUserOrganizationListRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type GetUserOrganizationListResponse struct {
+	Organizations        []*OrganizationLink `protobuf:"bytes,1,rep,name=organizations,proto3" json:"organizations,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *GetUserOrganizationListResponse) Reset()         { *m = GetUserOrganizationListResponse{} }
+func (m *GetUserOrganizationListResponse) String() string { return proto.CompactTextString(m) }
+func (*GetUserOrganizationListResponse) ProtoMessage()    {}
+func (*GetUserOrganizationListResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{23}
+}
+
+func (m *GetUserOrganizationListResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUserOrganizationListResponse.Unmarshal(m, b)
+}
+func (m *GetUserOrganizationListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUserOrganizationListResponse.Marshal(b, m, deterministic)
+}
+func (m *GetUserOrganizationListResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUserOrganizationListResponse.Merge(m, src)
+}
+func (m *GetUserOrganizationListResponse) XXX_Size() int {
+	return xxx_messageInfo_GetUserOrganizationListResponse.Size(m)
+}
+func (m *GetUserOrganizationListResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUserOrganizationListResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUserOrganizationListResponse proto.InternalMessageInfo
+
+func (m *GetUserOrganizationListResponse) GetOrganizations() []*OrganizationLink {
+	if m != nil {
+		return m.Organizations
+	}
+	return nil
+}
+
+type GetUserProfileRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetUserProfileRequest) Reset()         { *m = GetUserProfileRequest{} }
+func (m *GetUserProfileRequest) String() string { return proto.CompactTextString(m) }
+func (*GetUserProfileRequest) ProtoMessage()    {}
+func (*GetUserProfileRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{24}
+}
+
+func (m *GetUserProfileRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUserProfileRequest.Unmarshal(m, b)
+}
+func (m *GetUserProfileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUserProfileRequest.Marshal(b, m, deterministic)
+}
+func (m *GetUserProfileRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUserProfileRequest.Merge(m, src)
+}
+func (m *GetUserProfileRequest) XXX_Size() int {
+	return xxx_messageInfo_GetUserProfileRequest.Size(m)
+}
+func (m *GetUserProfileRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUserProfileRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUserProfileRequest proto.InternalMessageInfo
+
+func (m *GetUserProfileRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type GetUserProfileResponse struct {
+	UserProfile          *ProfileResponse `protobuf:"bytes,1,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetUserProfileResponse) Reset()         { *m = GetUserProfileResponse{} }
+func (m *GetUserProfileResponse) String() string { return proto.CompactTextString(m) }
+func (*GetUserProfileResponse) ProtoMessage()    {}
+func (*GetUserProfileResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{25}
+}
+
+func (m *GetUserProfileResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUserProfileResponse.Unmarshal(m, b)
+}
+func (m *GetUserProfileResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUserProfileResponse.Marshal(b, m, deterministic)
+}
+func (m *GetUserProfileResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUserProfileResponse.Merge(m, src)
+}
+func (m *GetUserProfileResponse) XXX_Size() int {
+	return xxx_messageInfo_GetUserProfileResponse.Size(m)
+}
+func (m *GetUserProfileResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUserProfileResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUserProfileResponse proto.InternalMessageInfo
+
+func (m *GetUserProfileResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+// WalletService
 type GetWalletBalanceRequest struct {
 	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -749,7 +1355,7 @@ func (m *GetWalletBalanceRequest) Reset()         { *m = GetWalletBalanceRequest
 func (m *GetWalletBalanceRequest) String() string { return proto.CompactTextString(m) }
 func (*GetWalletBalanceRequest) ProtoMessage()    {}
 func (*GetWalletBalanceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2566523af06a975e, []int{16}
+	return fileDescriptor_2566523af06a975e, []int{26}
 }
 
 func (m *GetWalletBalanceRequest) XXX_Unmarshal(b []byte) error {
@@ -778,17 +1384,18 @@ func (m *GetWalletBalanceRequest) GetOrgId() int64 {
 }
 
 type GetWalletBalanceResponse struct {
-	Balance              float64  `protobuf:"fixed64,1,opt,name=balance,proto3" json:"balance,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Balance              float64          `protobuf:"fixed64,1,opt,name=balance,proto3" json:"balance,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
 }
 
 func (m *GetWalletBalanceResponse) Reset()         { *m = GetWalletBalanceResponse{} }
 func (m *GetWalletBalanceResponse) String() string { return proto.CompactTextString(m) }
 func (*GetWalletBalanceResponse) ProtoMessage()    {}
 func (*GetWalletBalanceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_2566523af06a975e, []int{17}
+	return fileDescriptor_2566523af06a975e, []int{27}
 }
 
 func (m *GetWalletBalanceResponse) XXX_Unmarshal(b []byte) error {
@@ -816,7 +1423,4090 @@ func (m *GetWalletBalanceResponse) GetBalance() float64 {
 	return 0
 }
 
+func (m *GetWalletBalanceResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetVmxcTxHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetVmxcTxHistoryRequest) Reset()         { *m = GetVmxcTxHistoryRequest{} }
+func (m *GetVmxcTxHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetVmxcTxHistoryRequest) ProtoMessage()    {}
+func (*GetVmxcTxHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{28}
+}
+
+func (m *GetVmxcTxHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetVmxcTxHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetVmxcTxHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetVmxcTxHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetVmxcTxHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetVmxcTxHistoryRequest.Merge(m, src)
+}
+func (m *GetVmxcTxHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetVmxcTxHistoryRequest.Size(m)
+}
+func (m *GetVmxcTxHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetVmxcTxHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetVmxcTxHistoryRequest proto.InternalMessageInfo
+
+func (m *GetVmxcTxHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetVmxcTxHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetVmxcTxHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type VmxcTxHistory struct {
+	From                 string   `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	To                   string   `protobuf:"bytes,2,opt,name=to,proto3" json:"to,omitempty"`
+	TxType               string   `protobuf:"bytes,3,opt,name=tx_type,json=txType,proto3" json:"tx_type,omitempty"`
+	Amount               float64  `protobuf:"fixed64,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	CreatedAt            string   `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *VmxcTxHistory) Reset()         { *m = VmxcTxHistory{} }
+func (m *VmxcTxHistory) String() string { return proto.CompactTextString(m) }
+func (*VmxcTxHistory) ProtoMessage()    {}
+func (*VmxcTxHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{29}
+}
+
+func (m *VmxcTxHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_VmxcTxHistory.Unmarshal(m, b)
+}
+func (m *VmxcTxHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_VmxcTxHistory.Marshal(b, m, deterministic)
+}
+func (m *VmxcTxHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VmxcTxHistory.Merge(m, src)
+}
+func (m *VmxcTxHistory) XXX_Size() int {
+	return xxx_messageInfo_VmxcTxHistory.Size(m)
+}
+func (m *VmxcTxHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_VmxcTxHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VmxcTxHistory proto.InternalMessageInfo
+
+func (m *VmxcTxHistory) GetFrom() string {
+	if m != nil {
+		return m.From
+	}
+	return ""
+}
+
+func (m *VmxcTxHistory) GetTo() string {
+	if m != nil {
+		return m.To
+	}
+	return ""
+}
+
+func (m *VmxcTxHistory) GetTxType() string {
+	if m != nil {
+		return m.TxType
+	}
+	return ""
+}
+
+func (m *VmxcTxHistory) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+func (m *VmxcTxHistory) GetCreatedAt() string {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return ""
+}
+
+type GetVmxcTxHistoryResponse struct {
+	Count                int64            `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	TxHistory            []*VmxcTxHistory `protobuf:"bytes,2,rep,name=tx_history,json=txHistory,proto3" json:"tx_history,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetVmxcTxHistoryResponse) Reset()         { *m = GetVmxcTxHistoryResponse{} }
+func (m *GetVmxcTxHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*GetVmxcTxHistoryResponse) ProtoMessage()    {}
+func (*GetVmxcTxHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{30}
+}
+
+func (m *GetVmxcTxHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetVmxcTxHistoryResponse.Unmarshal(m, b)
+}
+func (m *GetVmxcTxHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetVmxcTxHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *GetVmxcTxHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetVmxcTxHistoryResponse.Merge(m, src)
+}
+func (m *GetVmxcTxHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_GetVmxcTxHistoryResponse.Size(m)
+}
+func (m *GetVmxcTxHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetVmxcTxHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetVmxcTxHistoryResponse proto.InternalMessageInfo
+
+func (m *GetVmxcTxHistoryResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+func (m *GetVmxcTxHistoryResponse) GetTxHistory() []*VmxcTxHistory {
+	if m != nil {
+		return m.TxHistory
+	}
+	return nil
+}
+
+func (m *GetVmxcTxHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetWalletUsageHistRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetWalletUsageHistRequest) Reset()         { *m = GetWalletUsageHistRequest{} }
+func (m *GetWalletUsageHistRequest) String() string { return proto.CompactTextString(m) }
+func (*GetWalletUsageHistRequest) ProtoMessage()    {}
+func (*GetWalletUsageHistRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{31}
+}
+
+func (m *GetWalletUsageHistRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetWalletUsageHistRequest.Unmarshal(m, b)
+}
+func (m *GetWalletUsageHistRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetWalletUsageHistRequest.Marshal(b, m, deterministic)
+}
+func (m *GetWalletUsageHistRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetWalletUsageHistRequest.Merge(m, src)
+}
+func (m *GetWalletUsageHistRequest) XXX_Size() int {
+	return xxx_messageInfo_GetWalletUsageHistRequest.Size(m)
+}
+func (m *GetWalletUsageHistRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetWalletUsageHistRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetWalletUsageHistRequest proto.InternalMessageInfo
+
+func (m *GetWalletUsageHistRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHistRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHistRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetWalletUsageHist struct {
+	StartAt              string   `protobuf:"bytes,1,opt,name=StartAt,proto3" json:"StartAt,omitempty"`
+	DurationMinutes      int64    `protobuf:"varint,2,opt,name=DurationMinutes,proto3" json:"DurationMinutes,omitempty"`
+	DlCntDv              int64    `protobuf:"varint,3,opt,name=DlCntDv,proto3" json:"DlCntDv,omitempty"`
+	DlCntDvFree          int64    `protobuf:"varint,4,opt,name=DlCntDvFree,proto3" json:"DlCntDvFree,omitempty"`
+	UlCntDv              int64    `protobuf:"varint,5,opt,name=UlCntDv,proto3" json:"UlCntDv,omitempty"`
+	UlCntDvFree          int64    `protobuf:"varint,6,opt,name=UlCntDvFree,proto3" json:"UlCntDvFree,omitempty"`
+	DlCntGw              int64    `protobuf:"varint,7,opt,name=DlCntGw,proto3" json:"DlCntGw,omitempty"`
+	DlCntGwFree          int64    `protobuf:"varint,8,opt,name=DlCntGwFree,proto3" json:"DlCntGwFree,omitempty"`
+	UlCntGw              int64    `protobuf:"varint,9,opt,name=UlCntGw,proto3" json:"UlCntGw,omitempty"`
+	UlCntGwFree          int64    `protobuf:"varint,10,opt,name=UlCntGwFree,proto3" json:"UlCntGwFree,omitempty"`
+	Spend                float64  `protobuf:"fixed64,11,opt,name=Spend,proto3" json:"Spend,omitempty"`
+	Income               float64  `protobuf:"fixed64,12,opt,name=Income,proto3" json:"Income,omitempty"`
+	UpdatedBalance       float64  `protobuf:"fixed64,13,opt,name=UpdatedBalance,proto3" json:"UpdatedBalance,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetWalletUsageHist) Reset()         { *m = GetWalletUsageHist{} }
+func (m *GetWalletUsageHist) String() string { return proto.CompactTextString(m) }
+func (*GetWalletUsageHist) ProtoMessage()    {}
+func (*GetWalletUsageHist) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{32}
+}
+
+func (m *GetWalletUsageHist) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetWalletUsageHist.Unmarshal(m, b)
+}
+func (m *GetWalletUsageHist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetWalletUsageHist.Marshal(b, m, deterministic)
+}
+func (m *GetWalletUsageHist) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetWalletUsageHist.Merge(m, src)
+}
+func (m *GetWalletUsageHist) XXX_Size() int {
+	return xxx_messageInfo_GetWalletUsageHist.Size(m)
+}
+func (m *GetWalletUsageHist) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetWalletUsageHist.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetWalletUsageHist proto.InternalMessageInfo
+
+func (m *GetWalletUsageHist) GetStartAt() string {
+	if m != nil {
+		return m.StartAt
+	}
+	return ""
+}
+
+func (m *GetWalletUsageHist) GetDurationMinutes() int64 {
+	if m != nil {
+		return m.DurationMinutes
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetDlCntDv() int64 {
+	if m != nil {
+		return m.DlCntDv
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetDlCntDvFree() int64 {
+	if m != nil {
+		return m.DlCntDvFree
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetUlCntDv() int64 {
+	if m != nil {
+		return m.UlCntDv
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetUlCntDvFree() int64 {
+	if m != nil {
+		return m.UlCntDvFree
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetDlCntGw() int64 {
+	if m != nil {
+		return m.DlCntGw
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetDlCntGwFree() int64 {
+	if m != nil {
+		return m.DlCntGwFree
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetUlCntGw() int64 {
+	if m != nil {
+		return m.UlCntGw
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetUlCntGwFree() int64 {
+	if m != nil {
+		return m.UlCntGwFree
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetSpend() float64 {
+	if m != nil {
+		return m.Spend
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetIncome() float64 {
+	if m != nil {
+		return m.Income
+	}
+	return 0
+}
+
+func (m *GetWalletUsageHist) GetUpdatedBalance() float64 {
+	if m != nil {
+		return m.UpdatedBalance
+	}
+	return 0
+}
+
+type GetWalletUsageHistResponse struct {
+	WalletUsageHis       []*GetWalletUsageHist `protobuf:"bytes,1,rep,name=wallet_usage_his,json=walletUsageHis,proto3" json:"wallet_usage_his,omitempty"`
+	UserProfile          *ProfileResponse      `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	Count                int64                 `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
+}
+
+func (m *GetWalletUsageHistResponse) Reset()         { *m = GetWalletUsageHistResponse{} }
+func (m *GetWalletUsageHistResponse) String() string { return proto.CompactTextString(m) }
+func (*GetWalletUsageHistResponse) ProtoMessage()    {}
+func (*GetWalletUsageHistResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{33}
+}
+
+func (m *GetWalletUsageHistResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetWalletUsageHistResponse.Unmarshal(m, b)
+}
+func (m *GetWalletUsageHistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetWalletUsageHistResponse.Marshal(b, m, deterministic)
+}
+func (m *GetWalletUsageHistResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetWalletUsageHistResponse.Merge(m, src)
+}
+func (m *GetWalletUsageHistResponse) XXX_Size() int {
+	return xxx_messageInfo_GetWalletUsageHistResponse.Size(m)
+}
+func (m *GetWalletUsageHistResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetWalletUsageHistResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetWalletUsageHistResponse proto.InternalMessageInfo
+
+func (m *GetWalletUsageHistResponse) GetWalletUsageHis() []*GetWalletUsageHist {
+	if m != nil {
+		return m.WalletUsageHis
+	}
+	return nil
+}
+
+func (m *GetWalletUsageHistResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+func (m *GetWalletUsageHistResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+type GetDownLinkPriceRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetDownLinkPriceRequest) Reset()         { *m = GetDownLinkPriceRequest{} }
+func (m *GetDownLinkPriceRequest) String() string { return proto.CompactTextString(m) }
+func (*GetDownLinkPriceRequest) ProtoMessage()    {}
+func (*GetDownLinkPriceRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{34}
+}
+
+func (m *GetDownLinkPriceRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDownLinkPriceRequest.Unmarshal(m, b)
+}
+func (m *GetDownLinkPriceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDownLinkPriceRequest.Marshal(b, m, deterministic)
+}
+func (m *GetDownLinkPriceRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDownLinkPriceRequest.Merge(m, src)
+}
+func (m *GetDownLinkPriceRequest) XXX_Size() int {
+	return xxx_messageInfo_GetDownLinkPriceRequest.Size(m)
+}
+func (m *GetDownLinkPriceRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDownLinkPriceRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDownLinkPriceRequest proto.InternalMessageInfo
+
+func (m *GetDownLinkPriceRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type GetDownLinkPriceResponse struct {
+	DownLinkPrice        float64          `protobuf:"fixed64,1,opt,name=down_link_price,json=downLinkPrice,proto3" json:"down_link_price,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetDownLinkPriceResponse) Reset()         { *m = GetDownLinkPriceResponse{} }
+func (m *GetDownLinkPriceResponse) String() string { return proto.CompactTextString(m) }
+func (*GetDownLinkPriceResponse) ProtoMessage()    {}
+func (*GetDownLinkPriceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{35}
+}
+
+func (m *GetDownLinkPriceResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDownLinkPriceResponse.Unmarshal(m, b)
+}
+func (m *GetDownLinkPriceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDownLinkPriceResponse.Marshal(b, m, deterministic)
+}
+func (m *GetDownLinkPriceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDownLinkPriceResponse.Merge(m, src)
+}
+func (m *GetDownLinkPriceResponse) XXX_Size() int {
+	return xxx_messageInfo_GetDownLinkPriceResponse.Size(m)
+}
+func (m *GetDownLinkPriceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDownLinkPriceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDownLinkPriceResponse proto.InternalMessageInfo
+
+func (m *GetDownLinkPriceResponse) GetDownLinkPrice() float64 {
+	if m != nil {
+		return m.DownLinkPrice
+	}
+	return 0
+}
+
+func (m *GetDownLinkPriceResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetDeviceListRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetDeviceListRequest) Reset()         { *m = GetDeviceListRequest{} }
+func (m *GetDeviceListRequest) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceListRequest) ProtoMessage()    {}
+func (*GetDeviceListRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{36}
+}
+
+func (m *GetDeviceListRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceListRequest.Unmarshal(m, b)
+}
+func (m *GetDeviceListRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceListRequest.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceListRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceListRequest.Merge(m, src)
+}
+func (m *GetDeviceListRequest) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceListRequest.Size(m)
+}
+func (m *GetDeviceListRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceListRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceListRequest proto.InternalMessageInfo
+
+func (m *GetDeviceListRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetDeviceListRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetDeviceListRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetDeviceListResponse struct {
+	DevProfile           []*DeviceProfile `protobuf:"bytes,1,rep,name=dev_profile,json=devProfile,proto3" json:"dev_profile,omitempty"`
+	Count                int64            `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetDeviceListResponse) Reset()         { *m = GetDeviceListResponse{} }
+func (m *GetDeviceListResponse) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceListResponse) ProtoMessage()    {}
+func (*GetDeviceListResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{37}
+}
+
+func (m *GetDeviceListResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceListResponse.Unmarshal(m, b)
+}
+func (m *GetDeviceListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceListResponse.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceListResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceListResponse.Merge(m, src)
+}
+func (m *GetDeviceListResponse) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceListResponse.Size(m)
+}
+func (m *GetDeviceListResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceListResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceListResponse proto.InternalMessageInfo
+
+func (m *GetDeviceListResponse) GetDevProfile() []*DeviceProfile {
+	if m != nil {
+		return m.DevProfile
+	}
+	return nil
+}
+
+func (m *GetDeviceListResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+func (m *GetDeviceListResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetDeviceProfileRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	DevId                int64    `protobuf:"varint,2,opt,name=dev_id,json=devId,proto3" json:"dev_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetDeviceProfileRequest) Reset()         { *m = GetDeviceProfileRequest{} }
+func (m *GetDeviceProfileRequest) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceProfileRequest) ProtoMessage()    {}
+func (*GetDeviceProfileRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{38}
+}
+
+func (m *GetDeviceProfileRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceProfileRequest.Unmarshal(m, b)
+}
+func (m *GetDeviceProfileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceProfileRequest.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceProfileRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceProfileRequest.Merge(m, src)
+}
+func (m *GetDeviceProfileRequest) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceProfileRequest.Size(m)
+}
+func (m *GetDeviceProfileRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceProfileRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceProfileRequest proto.InternalMessageInfo
+
+func (m *GetDeviceProfileRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetDeviceProfileRequest) GetDevId() int64 {
+	if m != nil {
+		return m.DevId
+	}
+	return 0
+}
+
+type DeviceProfile struct {
+	Id                   int64      `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	DevEui               string     `protobuf:"bytes,2,opt,name=dev_eui,json=devEui,proto3" json:"dev_eui,omitempty"`
+	FkWallet             int64      `protobuf:"varint,3,opt,name=fk_wallet,json=fkWallet,proto3" json:"fk_wallet,omitempty"`
+	Mode                 DeviceMode `protobuf:"varint,4,opt,name=mode,proto3,enum=appserver.DeviceMode" json:"mode,omitempty"`
+	CreatedAt            string     `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	LastSeenAt           string     `protobuf:"bytes,6,opt,name=last_seen_at,json=lastSeenAt,proto3" json:"last_seen_at,omitempty"`
+	ApplicationId        int64      `protobuf:"varint,7,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	Name                 string     `protobuf:"bytes,8,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *DeviceProfile) Reset()         { *m = DeviceProfile{} }
+func (m *DeviceProfile) String() string { return proto.CompactTextString(m) }
+func (*DeviceProfile) ProtoMessage()    {}
+func (*DeviceProfile) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{39}
+}
+
+func (m *DeviceProfile) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeviceProfile.Unmarshal(m, b)
+}
+func (m *DeviceProfile) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeviceProfile.Marshal(b, m, deterministic)
+}
+func (m *DeviceProfile) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeviceProfile.Merge(m, src)
+}
+func (m *DeviceProfile) XXX_Size() int {
+	return xxx_messageInfo_DeviceProfile.Size(m)
+}
+func (m *DeviceProfile) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeviceProfile.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeviceProfile proto.InternalMessageInfo
+
+func (m *DeviceProfile) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *DeviceProfile) GetDevEui() string {
+	if m != nil {
+		return m.DevEui
+	}
+	return ""
+}
+
+func (m *DeviceProfile) GetFkWallet() int64 {
+	if m != nil {
+		return m.FkWallet
+	}
+	return 0
+}
+
+func (m *DeviceProfile) GetMode() DeviceMode {
+	if m != nil {
+		return m.Mode
+	}
+	return DeviceMode_DV_INACTIVE
+}
+
+func (m *DeviceProfile) GetCreatedAt() string {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return ""
+}
+
+func (m *DeviceProfile) GetLastSeenAt() string {
+	if m != nil {
+		return m.LastSeenAt
+	}
+	return ""
+}
+
+func (m *DeviceProfile) GetApplicationId() int64 {
+	if m != nil {
+		return m.ApplicationId
+	}
+	return 0
+}
+
+func (m *DeviceProfile) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+type GetDeviceProfileResponse struct {
+	DevProfile           *DeviceProfile   `protobuf:"bytes,1,opt,name=dev_profile,json=devProfile,proto3" json:"dev_profile,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetDeviceProfileResponse) Reset()         { *m = GetDeviceProfileResponse{} }
+func (m *GetDeviceProfileResponse) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceProfileResponse) ProtoMessage()    {}
+func (*GetDeviceProfileResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{40}
+}
+
+func (m *GetDeviceProfileResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceProfileResponse.Unmarshal(m, b)
+}
+func (m *GetDeviceProfileResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceProfileResponse.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceProfileResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceProfileResponse.Merge(m, src)
+}
+func (m *GetDeviceProfileResponse) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceProfileResponse.Size(m)
+}
+func (m *GetDeviceProfileResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceProfileResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceProfileResponse proto.InternalMessageInfo
+
+func (m *GetDeviceProfileResponse) GetDevProfile() *DeviceProfile {
+	if m != nil {
+		return m.DevProfile
+	}
+	return nil
+}
+
+func (m *GetDeviceProfileResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetDeviceHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	DevId                int64    `protobuf:"varint,2,opt,name=dev_id,json=devId,proto3" json:"dev_id,omitempty"`
+	Offset               int64    `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetDeviceHistoryRequest) Reset()         { *m = GetDeviceHistoryRequest{} }
+func (m *GetDeviceHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceHistoryRequest) ProtoMessage()    {}
+func (*GetDeviceHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{41}
+}
+
+func (m *GetDeviceHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetDeviceHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceHistoryRequest.Merge(m, src)
+}
+func (m *GetDeviceHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceHistoryRequest.Size(m)
+}
+func (m *GetDeviceHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceHistoryRequest proto.InternalMessageInfo
+
+func (m *GetDeviceHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetDeviceHistoryRequest) GetDevId() int64 {
+	if m != nil {
+		return m.DevId
+	}
+	return 0
+}
+
+func (m *GetDeviceHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetDeviceHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetDeviceHistoryResponse struct {
+	DevHistory           string           `protobuf:"bytes,1,opt,name=dev_history,json=devHistory,proto3" json:"dev_history,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetDeviceHistoryResponse) Reset()         { *m = GetDeviceHistoryResponse{} }
+func (m *GetDeviceHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*GetDeviceHistoryResponse) ProtoMessage()    {}
+func (*GetDeviceHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{42}
+}
+
+func (m *GetDeviceHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetDeviceHistoryResponse.Unmarshal(m, b)
+}
+func (m *GetDeviceHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetDeviceHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *GetDeviceHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetDeviceHistoryResponse.Merge(m, src)
+}
+func (m *GetDeviceHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_GetDeviceHistoryResponse.Size(m)
+}
+func (m *GetDeviceHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetDeviceHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetDeviceHistoryResponse proto.InternalMessageInfo
+
+func (m *GetDeviceHistoryResponse) GetDevHistory() string {
+	if m != nil {
+		return m.DevHistory
+	}
+	return ""
+}
+
+func (m *GetDeviceHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type SetDeviceModeRequest struct {
+	OrgId                int64      `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	DevId                int64      `protobuf:"varint,2,opt,name=dev_id,json=devId,proto3" json:"dev_id,omitempty"`
+	DevMode              DeviceMode `protobuf:"varint,3,opt,name=dev_mode,json=devMode,proto3,enum=appserver.DeviceMode" json:"dev_mode,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *SetDeviceModeRequest) Reset()         { *m = SetDeviceModeRequest{} }
+func (m *SetDeviceModeRequest) String() string { return proto.CompactTextString(m) }
+func (*SetDeviceModeRequest) ProtoMessage()    {}
+func (*SetDeviceModeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{43}
+}
+
+func (m *SetDeviceModeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetDeviceModeRequest.Unmarshal(m, b)
+}
+func (m *SetDeviceModeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetDeviceModeRequest.Marshal(b, m, deterministic)
+}
+func (m *SetDeviceModeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetDeviceModeRequest.Merge(m, src)
+}
+func (m *SetDeviceModeRequest) XXX_Size() int {
+	return xxx_messageInfo_SetDeviceModeRequest.Size(m)
+}
+func (m *SetDeviceModeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetDeviceModeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetDeviceModeRequest proto.InternalMessageInfo
+
+func (m *SetDeviceModeRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *SetDeviceModeRequest) GetDevId() int64 {
+	if m != nil {
+		return m.DevId
+	}
+	return 0
+}
+
+func (m *SetDeviceModeRequest) GetDevMode() DeviceMode {
+	if m != nil {
+		return m.DevMode
+	}
+	return DeviceMode_DV_INACTIVE
+}
+
+type SetDeviceModeResponse struct {
+	Status               bool             `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *SetDeviceModeResponse) Reset()         { *m = SetDeviceModeResponse{} }
+func (m *SetDeviceModeResponse) String() string { return proto.CompactTextString(m) }
+func (*SetDeviceModeResponse) ProtoMessage()    {}
+func (*SetDeviceModeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{44}
+}
+
+func (m *SetDeviceModeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetDeviceModeResponse.Unmarshal(m, b)
+}
+func (m *SetDeviceModeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetDeviceModeResponse.Marshal(b, m, deterministic)
+}
+func (m *SetDeviceModeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetDeviceModeResponse.Merge(m, src)
+}
+func (m *SetDeviceModeResponse) XXX_Size() int {
+	return xxx_messageInfo_SetDeviceModeResponse.Size(m)
+}
+func (m *SetDeviceModeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetDeviceModeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetDeviceModeResponse proto.InternalMessageInfo
+
+func (m *SetDeviceModeResponse) GetStatus() bool {
+	if m != nil {
+		return m.Status
+	}
+	return false
+}
+
+func (m *SetDeviceModeResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type ModifyMoneyAccountRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	MoneyAbbr            Money    `protobuf:"varint,2,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	CurrentAccount       string   `protobuf:"bytes,3,opt,name=current_account,json=currentAccount,proto3" json:"current_account,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ModifyMoneyAccountRequest) Reset()         { *m = ModifyMoneyAccountRequest{} }
+func (m *ModifyMoneyAccountRequest) String() string { return proto.CompactTextString(m) }
+func (*ModifyMoneyAccountRequest) ProtoMessage()    {}
+func (*ModifyMoneyAccountRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{45}
+}
+
+func (m *ModifyMoneyAccountRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifyMoneyAccountRequest.Unmarshal(m, b)
+}
+func (m *ModifyMoneyAccountRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifyMoneyAccountRequest.Marshal(b, m, deterministic)
+}
+func (m *ModifyMoneyAccountRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifyMoneyAccountRequest.Merge(m, src)
+}
+func (m *ModifyMoneyAccountRequest) XXX_Size() int {
+	return xxx_messageInfo_ModifyMoneyAccountRequest.Size(m)
+}
+func (m *ModifyMoneyAccountRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifyMoneyAccountRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifyMoneyAccountRequest proto.InternalMessageInfo
+
+func (m *ModifyMoneyAccountRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *ModifyMoneyAccountRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+func (m *ModifyMoneyAccountRequest) GetCurrentAccount() string {
+	if m != nil {
+		return m.CurrentAccount
+	}
+	return ""
+}
+
+type ModifyMoneyAccountResponse struct {
+	Status               bool             `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *ModifyMoneyAccountResponse) Reset()         { *m = ModifyMoneyAccountResponse{} }
+func (m *ModifyMoneyAccountResponse) String() string { return proto.CompactTextString(m) }
+func (*ModifyMoneyAccountResponse) ProtoMessage()    {}
+func (*ModifyMoneyAccountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{46}
+}
+
+func (m *ModifyMoneyAccountResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifyMoneyAccountResponse.Unmarshal(m, b)
+}
+func (m *ModifyMoneyAccountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifyMoneyAccountResponse.Marshal(b, m, deterministic)
+}
+func (m *ModifyMoneyAccountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifyMoneyAccountResponse.Merge(m, src)
+}
+func (m *ModifyMoneyAccountResponse) XXX_Size() int {
+	return xxx_messageInfo_ModifyMoneyAccountResponse.Size(m)
+}
+func (m *ModifyMoneyAccountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifyMoneyAccountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifyMoneyAccountResponse proto.InternalMessageInfo
+
+func (m *ModifyMoneyAccountResponse) GetStatus() bool {
+	if m != nil {
+		return m.Status
+	}
+	return false
+}
+
+func (m *ModifyMoneyAccountResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetMoneyAccountChangeHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	MoneyAbbr            Money    `protobuf:"varint,4,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetMoneyAccountChangeHistoryRequest) Reset()         { *m = GetMoneyAccountChangeHistoryRequest{} }
+func (m *GetMoneyAccountChangeHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetMoneyAccountChangeHistoryRequest) ProtoMessage()    {}
+func (*GetMoneyAccountChangeHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{47}
+}
+
+func (m *GetMoneyAccountChangeHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetMoneyAccountChangeHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetMoneyAccountChangeHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetMoneyAccountChangeHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetMoneyAccountChangeHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetMoneyAccountChangeHistoryRequest.Merge(m, src)
+}
+func (m *GetMoneyAccountChangeHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetMoneyAccountChangeHistoryRequest.Size(m)
+}
+func (m *GetMoneyAccountChangeHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetMoneyAccountChangeHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetMoneyAccountChangeHistoryRequest proto.InternalMessageInfo
+
+func (m *GetMoneyAccountChangeHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetMoneyAccountChangeHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetMoneyAccountChangeHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+func (m *GetMoneyAccountChangeHistoryRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+type MoneyAccountChangeHistory struct {
+	Addr                 string   `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
+	Status               string   `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	CreatedAt            string   `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MoneyAccountChangeHistory) Reset()         { *m = MoneyAccountChangeHistory{} }
+func (m *MoneyAccountChangeHistory) String() string { return proto.CompactTextString(m) }
+func (*MoneyAccountChangeHistory) ProtoMessage()    {}
+func (*MoneyAccountChangeHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{48}
+}
+
+func (m *MoneyAccountChangeHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MoneyAccountChangeHistory.Unmarshal(m, b)
+}
+func (m *MoneyAccountChangeHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MoneyAccountChangeHistory.Marshal(b, m, deterministic)
+}
+func (m *MoneyAccountChangeHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MoneyAccountChangeHistory.Merge(m, src)
+}
+func (m *MoneyAccountChangeHistory) XXX_Size() int {
+	return xxx_messageInfo_MoneyAccountChangeHistory.Size(m)
+}
+func (m *MoneyAccountChangeHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_MoneyAccountChangeHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MoneyAccountChangeHistory proto.InternalMessageInfo
+
+func (m *MoneyAccountChangeHistory) GetAddr() string {
+	if m != nil {
+		return m.Addr
+	}
+	return ""
+}
+
+func (m *MoneyAccountChangeHistory) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+func (m *MoneyAccountChangeHistory) GetCreatedAt() string {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return ""
+}
+
+type GetMoneyAccountChangeHistoryResponse struct {
+	Count                int64                        `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	ChangeHistory        []*MoneyAccountChangeHistory `protobuf:"bytes,2,rep,name=change_history,json=changeHistory,proto3" json:"change_history,omitempty"`
+	UserProfile          *ProfileResponse             `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                     `json:"-"`
+	XXX_unrecognized     []byte                       `json:"-"`
+	XXX_sizecache        int32                        `json:"-"`
+}
+
+func (m *GetMoneyAccountChangeHistoryResponse) Reset()         { *m = GetMoneyAccountChangeHistoryResponse{} }
+func (m *GetMoneyAccountChangeHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*GetMoneyAccountChangeHistoryResponse) ProtoMessage()    {}
+func (*GetMoneyAccountChangeHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{49}
+}
+
+func (m *GetMoneyAccountChangeHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetMoneyAccountChangeHistoryResponse.Unmarshal(m, b)
+}
+func (m *GetMoneyAccountChangeHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetMoneyAccountChangeHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *GetMoneyAccountChangeHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetMoneyAccountChangeHistoryResponse.Merge(m, src)
+}
+func (m *GetMoneyAccountChangeHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_GetMoneyAccountChangeHistoryResponse.Size(m)
+}
+func (m *GetMoneyAccountChangeHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetMoneyAccountChangeHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetMoneyAccountChangeHistoryResponse proto.InternalMessageInfo
+
+func (m *GetMoneyAccountChangeHistoryResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+func (m *GetMoneyAccountChangeHistoryResponse) GetChangeHistory() []*MoneyAccountChangeHistory {
+	if m != nil {
+		return m.ChangeHistory
+	}
+	return nil
+}
+
+func (m *GetMoneyAccountChangeHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetActiveMoneyAccountRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	MoneyAbbr            Money    `protobuf:"varint,2,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetActiveMoneyAccountRequest) Reset()         { *m = GetActiveMoneyAccountRequest{} }
+func (m *GetActiveMoneyAccountRequest) String() string { return proto.CompactTextString(m) }
+func (*GetActiveMoneyAccountRequest) ProtoMessage()    {}
+func (*GetActiveMoneyAccountRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{50}
+}
+
+func (m *GetActiveMoneyAccountRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetActiveMoneyAccountRequest.Unmarshal(m, b)
+}
+func (m *GetActiveMoneyAccountRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetActiveMoneyAccountRequest.Marshal(b, m, deterministic)
+}
+func (m *GetActiveMoneyAccountRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetActiveMoneyAccountRequest.Merge(m, src)
+}
+func (m *GetActiveMoneyAccountRequest) XXX_Size() int {
+	return xxx_messageInfo_GetActiveMoneyAccountRequest.Size(m)
+}
+func (m *GetActiveMoneyAccountRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetActiveMoneyAccountRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetActiveMoneyAccountRequest proto.InternalMessageInfo
+
+func (m *GetActiveMoneyAccountRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetActiveMoneyAccountRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+type GetActiveMoneyAccountResponse struct {
+	ActiveAccount        string           `protobuf:"bytes,1,opt,name=active_account,json=activeAccount,proto3" json:"active_account,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetActiveMoneyAccountResponse) Reset()         { *m = GetActiveMoneyAccountResponse{} }
+func (m *GetActiveMoneyAccountResponse) String() string { return proto.CompactTextString(m) }
+func (*GetActiveMoneyAccountResponse) ProtoMessage()    {}
+func (*GetActiveMoneyAccountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{51}
+}
+
+func (m *GetActiveMoneyAccountResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetActiveMoneyAccountResponse.Unmarshal(m, b)
+}
+func (m *GetActiveMoneyAccountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetActiveMoneyAccountResponse.Marshal(b, m, deterministic)
+}
+func (m *GetActiveMoneyAccountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetActiveMoneyAccountResponse.Merge(m, src)
+}
+func (m *GetActiveMoneyAccountResponse) XXX_Size() int {
+	return xxx_messageInfo_GetActiveMoneyAccountResponse.Size(m)
+}
+func (m *GetActiveMoneyAccountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetActiveMoneyAccountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetActiveMoneyAccountResponse proto.InternalMessageInfo
+
+func (m *GetActiveMoneyAccountResponse) GetActiveAccount() string {
+	if m != nil {
+		return m.ActiveAccount
+	}
+	return ""
+}
+
+func (m *GetActiveMoneyAccountResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetGatewayListRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetGatewayListRequest) Reset()         { *m = GetGatewayListRequest{} }
+func (m *GetGatewayListRequest) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayListRequest) ProtoMessage()    {}
+func (*GetGatewayListRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{52}
+}
+
+func (m *GetGatewayListRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayListRequest.Unmarshal(m, b)
+}
+func (m *GetGatewayListRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayListRequest.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayListRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayListRequest.Merge(m, src)
+}
+func (m *GetGatewayListRequest) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayListRequest.Size(m)
+}
+func (m *GetGatewayListRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayListRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayListRequest proto.InternalMessageInfo
+
+func (m *GetGatewayListRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetGatewayListRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetGatewayListRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetGatewayListResponse struct {
+	GwProfile            []*GatewayProfile `protobuf:"bytes,1,rep,name=gw_profile,json=gwProfile,proto3" json:"gw_profile,omitempty"`
+	Count                int64             `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`
+	UserProfile          *ProfileResponse  `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
+}
+
+func (m *GetGatewayListResponse) Reset()         { *m = GetGatewayListResponse{} }
+func (m *GetGatewayListResponse) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayListResponse) ProtoMessage()    {}
+func (*GetGatewayListResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{53}
+}
+
+func (m *GetGatewayListResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayListResponse.Unmarshal(m, b)
+}
+func (m *GetGatewayListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayListResponse.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayListResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayListResponse.Merge(m, src)
+}
+func (m *GetGatewayListResponse) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayListResponse.Size(m)
+}
+func (m *GetGatewayListResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayListResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayListResponse proto.InternalMessageInfo
+
+func (m *GetGatewayListResponse) GetGwProfile() []*GatewayProfile {
+	if m != nil {
+		return m.GwProfile
+	}
+	return nil
+}
+
+func (m *GetGatewayListResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+func (m *GetGatewayListResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetGatewayProfileRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	GwId                 int64    `protobuf:"varint,2,opt,name=gw_id,json=gwId,proto3" json:"gw_id,omitempty"`
+	Offset               int64    `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetGatewayProfileRequest) Reset()         { *m = GetGatewayProfileRequest{} }
+func (m *GetGatewayProfileRequest) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayProfileRequest) ProtoMessage()    {}
+func (*GetGatewayProfileRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{54}
+}
+
+func (m *GetGatewayProfileRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayProfileRequest.Unmarshal(m, b)
+}
+func (m *GetGatewayProfileRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayProfileRequest.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayProfileRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayProfileRequest.Merge(m, src)
+}
+func (m *GetGatewayProfileRequest) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayProfileRequest.Size(m)
+}
+func (m *GetGatewayProfileRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayProfileRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayProfileRequest proto.InternalMessageInfo
+
+func (m *GetGatewayProfileRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetGatewayProfileRequest) GetGwId() int64 {
+	if m != nil {
+		return m.GwId
+	}
+	return 0
+}
+
+func (m *GetGatewayProfileRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetGatewayProfileRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GatewayProfile struct {
+	Id                   int64       `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Mac                  string      `protobuf:"bytes,2,opt,name=mac,proto3" json:"mac,omitempty"`
+	FkGwNs               int64       `protobuf:"varint,3,opt,name=fk_gw_ns,json=fkGwNs,proto3" json:"fk_gw_ns,omitempty"`
+	FkWallet             int64       `protobuf:"varint,4,opt,name=fk_wallet,json=fkWallet,proto3" json:"fk_wallet,omitempty"`
+	Mode                 GatewayMode `protobuf:"varint,5,opt,name=mode,proto3,enum=appserver.GatewayMode" json:"mode,omitempty"`
+	CreateAt             string      `protobuf:"bytes,6,opt,name=create_at,json=createAt,proto3" json:"create_at,omitempty"`
+	LastSeenAt           string      `protobuf:"bytes,7,opt,name=last_seen_at,json=lastSeenAt,proto3" json:"last_seen_at,omitempty"`
+	OrgId                int64       `protobuf:"varint,8,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Description          string      `protobuf:"bytes,9,opt,name=description,proto3" json:"description,omitempty"`
+	Name                 string      `protobuf:"bytes,10,opt,name=name,proto3" json:"name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *GatewayProfile) Reset()         { *m = GatewayProfile{} }
+func (m *GatewayProfile) String() string { return proto.CompactTextString(m) }
+func (*GatewayProfile) ProtoMessage()    {}
+func (*GatewayProfile) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{55}
+}
+
+func (m *GatewayProfile) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GatewayProfile.Unmarshal(m, b)
+}
+func (m *GatewayProfile) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GatewayProfile.Marshal(b, m, deterministic)
+}
+func (m *GatewayProfile) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GatewayProfile.Merge(m, src)
+}
+func (m *GatewayProfile) XXX_Size() int {
+	return xxx_messageInfo_GatewayProfile.Size(m)
+}
+func (m *GatewayProfile) XXX_DiscardUnknown() {
+	xxx_messageInfo_GatewayProfile.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GatewayProfile proto.InternalMessageInfo
+
+func (m *GatewayProfile) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *GatewayProfile) GetMac() string {
+	if m != nil {
+		return m.Mac
+	}
+	return ""
+}
+
+func (m *GatewayProfile) GetFkGwNs() int64 {
+	if m != nil {
+		return m.FkGwNs
+	}
+	return 0
+}
+
+func (m *GatewayProfile) GetFkWallet() int64 {
+	if m != nil {
+		return m.FkWallet
+	}
+	return 0
+}
+
+func (m *GatewayProfile) GetMode() GatewayMode {
+	if m != nil {
+		return m.Mode
+	}
+	return GatewayMode_GW_INACTIVE
+}
+
+func (m *GatewayProfile) GetCreateAt() string {
+	if m != nil {
+		return m.CreateAt
+	}
+	return ""
+}
+
+func (m *GatewayProfile) GetLastSeenAt() string {
+	if m != nil {
+		return m.LastSeenAt
+	}
+	return ""
+}
+
+func (m *GatewayProfile) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GatewayProfile) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
+func (m *GatewayProfile) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+type GetGatewayProfileResponse struct {
+	GwProfile            *GatewayProfile  `protobuf:"bytes,1,opt,name=gw_profile,json=gwProfile,proto3" json:"gw_profile,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetGatewayProfileResponse) Reset()         { *m = GetGatewayProfileResponse{} }
+func (m *GetGatewayProfileResponse) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayProfileResponse) ProtoMessage()    {}
+func (*GetGatewayProfileResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{56}
+}
+
+func (m *GetGatewayProfileResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayProfileResponse.Unmarshal(m, b)
+}
+func (m *GetGatewayProfileResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayProfileResponse.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayProfileResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayProfileResponse.Merge(m, src)
+}
+func (m *GetGatewayProfileResponse) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayProfileResponse.Size(m)
+}
+func (m *GetGatewayProfileResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayProfileResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayProfileResponse proto.InternalMessageInfo
+
+func (m *GetGatewayProfileResponse) GetGwProfile() *GatewayProfile {
+	if m != nil {
+		return m.GwProfile
+	}
+	return nil
+}
+
+func (m *GetGatewayProfileResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetGatewayHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	GwId                 int64    `protobuf:"varint,2,opt,name=gw_id,json=gwId,proto3" json:"gw_id,omitempty"`
+	Offset               int64    `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,4,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetGatewayHistoryRequest) Reset()         { *m = GetGatewayHistoryRequest{} }
+func (m *GetGatewayHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayHistoryRequest) ProtoMessage()    {}
+func (*GetGatewayHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{57}
+}
+
+func (m *GetGatewayHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetGatewayHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayHistoryRequest.Merge(m, src)
+}
+func (m *GetGatewayHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayHistoryRequest.Size(m)
+}
+func (m *GetGatewayHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayHistoryRequest proto.InternalMessageInfo
+
+func (m *GetGatewayHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetGatewayHistoryRequest) GetGwId() int64 {
+	if m != nil {
+		return m.GwId
+	}
+	return 0
+}
+
+func (m *GetGatewayHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetGatewayHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetGatewayHistoryResponse struct {
+	GwHistory            string           `protobuf:"bytes,1,opt,name=gw_history,json=gwHistory,proto3" json:"gw_history,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetGatewayHistoryResponse) Reset()         { *m = GetGatewayHistoryResponse{} }
+func (m *GetGatewayHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*GetGatewayHistoryResponse) ProtoMessage()    {}
+func (*GetGatewayHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{58}
+}
+
+func (m *GetGatewayHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetGatewayHistoryResponse.Unmarshal(m, b)
+}
+func (m *GetGatewayHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetGatewayHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *GetGatewayHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetGatewayHistoryResponse.Merge(m, src)
+}
+func (m *GetGatewayHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_GetGatewayHistoryResponse.Size(m)
+}
+func (m *GetGatewayHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetGatewayHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetGatewayHistoryResponse proto.InternalMessageInfo
+
+func (m *GetGatewayHistoryResponse) GetGwHistory() string {
+	if m != nil {
+		return m.GwHistory
+	}
+	return ""
+}
+
+func (m *GetGatewayHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type SetGatewayModeRequest struct {
+	OrgId                int64       `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	GwId                 int64       `protobuf:"varint,2,opt,name=gw_id,json=gwId,proto3" json:"gw_id,omitempty"`
+	GwMode               GatewayMode `protobuf:"varint,3,opt,name=gw_mode,json=gwMode,proto3,enum=appserver.GatewayMode" json:"gw_mode,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
+	XXX_unrecognized     []byte      `json:"-"`
+	XXX_sizecache        int32       `json:"-"`
+}
+
+func (m *SetGatewayModeRequest) Reset()         { *m = SetGatewayModeRequest{} }
+func (m *SetGatewayModeRequest) String() string { return proto.CompactTextString(m) }
+func (*SetGatewayModeRequest) ProtoMessage()    {}
+func (*SetGatewayModeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{59}
+}
+
+func (m *SetGatewayModeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetGatewayModeRequest.Unmarshal(m, b)
+}
+func (m *SetGatewayModeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetGatewayModeRequest.Marshal(b, m, deterministic)
+}
+func (m *SetGatewayModeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetGatewayModeRequest.Merge(m, src)
+}
+func (m *SetGatewayModeRequest) XXX_Size() int {
+	return xxx_messageInfo_SetGatewayModeRequest.Size(m)
+}
+func (m *SetGatewayModeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetGatewayModeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetGatewayModeRequest proto.InternalMessageInfo
+
+func (m *SetGatewayModeRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *SetGatewayModeRequest) GetGwId() int64 {
+	if m != nil {
+		return m.GwId
+	}
+	return 0
+}
+
+func (m *SetGatewayModeRequest) GetGwMode() GatewayMode {
+	if m != nil {
+		return m.GwMode
+	}
+	return GatewayMode_GW_INACTIVE
+}
+
+type SetGatewayModeResponse struct {
+	Status               bool             `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *SetGatewayModeResponse) Reset()         { *m = SetGatewayModeResponse{} }
+func (m *SetGatewayModeResponse) String() string { return proto.CompactTextString(m) }
+func (*SetGatewayModeResponse) ProtoMessage()    {}
+func (*SetGatewayModeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{60}
+}
+
+func (m *SetGatewayModeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetGatewayModeResponse.Unmarshal(m, b)
+}
+func (m *SetGatewayModeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetGatewayModeResponse.Marshal(b, m, deterministic)
+}
+func (m *SetGatewayModeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetGatewayModeResponse.Merge(m, src)
+}
+func (m *SetGatewayModeResponse) XXX_Size() int {
+	return xxx_messageInfo_SetGatewayModeResponse.Size(m)
+}
+func (m *SetGatewayModeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetGatewayModeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetGatewayModeResponse proto.InternalMessageInfo
+
+func (m *SetGatewayModeResponse) GetStatus() bool {
+	if m != nil {
+		return m.Status
+	}
+	return false
+}
+
+func (m *SetGatewayModeResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+// ServerInfoService
+type GetVersionResponse struct {
+	Version              string   `protobuf:"bytes,1,opt,name=version,proto3" json:"version,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetVersionResponse) Reset()         { *m = GetVersionResponse{} }
+func (m *GetVersionResponse) String() string { return proto.CompactTextString(m) }
+func (*GetVersionResponse) ProtoMessage()    {}
+func (*GetVersionResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{61}
+}
+
+func (m *GetVersionResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetVersionResponse.Unmarshal(m, b)
+}
+func (m *GetVersionResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetVersionResponse.Marshal(b, m, deterministic)
+}
+func (m *GetVersionResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetVersionResponse.Merge(m, src)
+}
+func (m *GetVersionResponse) XXX_Size() int {
+	return xxx_messageInfo_GetVersionResponse.Size(m)
+}
+func (m *GetVersionResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetVersionResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetVersionResponse proto.InternalMessageInfo
+
+func (m *GetVersionResponse) GetVersion() string {
+	if m != nil {
+		return m.Version
+	}
+	return ""
+}
+
+// SettingsService
+type GetSettingsRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetSettingsRequest) Reset()         { *m = GetSettingsRequest{} }
+func (m *GetSettingsRequest) String() string { return proto.CompactTextString(m) }
+func (*GetSettingsRequest) ProtoMessage()    {}
+func (*GetSettingsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{62}
+}
+
+func (m *GetSettingsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetSettingsRequest.Unmarshal(m, b)
+}
+func (m *GetSettingsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetSettingsRequest.Marshal(b, m, deterministic)
+}
+func (m *GetSettingsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetSettingsRequest.Merge(m, src)
+}
+func (m *GetSettingsRequest) XXX_Size() int {
+	return xxx_messageInfo_GetSettingsRequest.Size(m)
+}
+func (m *GetSettingsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetSettingsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetSettingsRequest proto.InternalMessageInfo
+
+type GetSettingsResponse struct {
+	LowBalanceWarning          int64    `protobuf:"varint,1,opt,name=lowBalanceWarning,proto3" json:"lowBalanceWarning,omitempty"`
+	DownlinkFee                int64    `protobuf:"varint,2,opt,name=downlinkFee,proto3" json:"downlinkFee,omitempty"`
+	TransactionPercentageShare int64    `protobuf:"varint,3,opt,name=transactionPercentageShare,proto3" json:"transactionPercentageShare,omitempty"`
+	XXX_NoUnkeyedLiteral       struct{} `json:"-"`
+	XXX_unrecognized           []byte   `json:"-"`
+	XXX_sizecache              int32    `json:"-"`
+}
+
+func (m *GetSettingsResponse) Reset()         { *m = GetSettingsResponse{} }
+func (m *GetSettingsResponse) String() string { return proto.CompactTextString(m) }
+func (*GetSettingsResponse) ProtoMessage()    {}
+func (*GetSettingsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{63}
+}
+
+func (m *GetSettingsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetSettingsResponse.Unmarshal(m, b)
+}
+func (m *GetSettingsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetSettingsResponse.Marshal(b, m, deterministic)
+}
+func (m *GetSettingsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetSettingsResponse.Merge(m, src)
+}
+func (m *GetSettingsResponse) XXX_Size() int {
+	return xxx_messageInfo_GetSettingsResponse.Size(m)
+}
+func (m *GetSettingsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetSettingsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetSettingsResponse proto.InternalMessageInfo
+
+func (m *GetSettingsResponse) GetLowBalanceWarning() int64 {
+	if m != nil {
+		return m.LowBalanceWarning
+	}
+	return 0
+}
+
+func (m *GetSettingsResponse) GetDownlinkFee() int64 {
+	if m != nil {
+		return m.DownlinkFee
+	}
+	return 0
+}
+
+func (m *GetSettingsResponse) GetTransactionPercentageShare() int64 {
+	if m != nil {
+		return m.TransactionPercentageShare
+	}
+	return 0
+}
+
+type ModifySettingsRequest struct {
+	LowBalanceWarning          *wrappers.Int64Value `protobuf:"bytes,1,opt,name=lowBalanceWarning,proto3" json:"lowBalanceWarning,omitempty"`
+	DownlinkFee                *wrappers.Int64Value `protobuf:"bytes,2,opt,name=downlinkFee,proto3" json:"downlinkFee,omitempty"`
+	TransactionPercentageShare *wrappers.Int64Value `protobuf:"bytes,3,opt,name=transactionPercentageShare,proto3" json:"transactionPercentageShare,omitempty"`
+	XXX_NoUnkeyedLiteral       struct{}             `json:"-"`
+	XXX_unrecognized           []byte               `json:"-"`
+	XXX_sizecache              int32                `json:"-"`
+}
+
+func (m *ModifySettingsRequest) Reset()         { *m = ModifySettingsRequest{} }
+func (m *ModifySettingsRequest) String() string { return proto.CompactTextString(m) }
+func (*ModifySettingsRequest) ProtoMessage()    {}
+func (*ModifySettingsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{64}
+}
+
+func (m *ModifySettingsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifySettingsRequest.Unmarshal(m, b)
+}
+func (m *ModifySettingsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifySettingsRequest.Marshal(b, m, deterministic)
+}
+func (m *ModifySettingsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifySettingsRequest.Merge(m, src)
+}
+func (m *ModifySettingsRequest) XXX_Size() int {
+	return xxx_messageInfo_ModifySettingsRequest.Size(m)
+}
+func (m *ModifySettingsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifySettingsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifySettingsRequest proto.InternalMessageInfo
+
+func (m *ModifySettingsRequest) GetLowBalanceWarning() *wrappers.Int64Value {
+	if m != nil {
+		return m.LowBalanceWarning
+	}
+	return nil
+}
+
+func (m *ModifySettingsRequest) GetDownlinkFee() *wrappers.Int64Value {
+	if m != nil {
+		return m.DownlinkFee
+	}
+	return nil
+}
+
+func (m *ModifySettingsRequest) GetTransactionPercentageShare() *wrappers.Int64Value {
+	if m != nil {
+		return m.TransactionPercentageShare
+	}
+	return nil
+}
+
+type ModifySettingsResponse struct {
+	Status               bool     `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ModifySettingsResponse) Reset()         { *m = ModifySettingsResponse{} }
+func (m *ModifySettingsResponse) String() string { return proto.CompactTextString(m) }
+func (*ModifySettingsResponse) ProtoMessage()    {}
+func (*ModifySettingsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{65}
+}
+
+func (m *ModifySettingsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifySettingsResponse.Unmarshal(m, b)
+}
+func (m *ModifySettingsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifySettingsResponse.Marshal(b, m, deterministic)
+}
+func (m *ModifySettingsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifySettingsResponse.Merge(m, src)
+}
+func (m *ModifySettingsResponse) XXX_Size() int {
+	return xxx_messageInfo_ModifySettingsResponse.Size(m)
+}
+func (m *ModifySettingsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifySettingsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifySettingsResponse proto.InternalMessageInfo
+
+func (m *ModifySettingsResponse) GetStatus() bool {
+	if m != nil {
+		return m.Status
+	}
+	return false
+}
+
+// StakingService
+type StakeRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Amount               float64  `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StakeRequest) Reset()         { *m = StakeRequest{} }
+func (m *StakeRequest) String() string { return proto.CompactTextString(m) }
+func (*StakeRequest) ProtoMessage()    {}
+func (*StakeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{66}
+}
+
+func (m *StakeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakeRequest.Unmarshal(m, b)
+}
+func (m *StakeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakeRequest.Marshal(b, m, deterministic)
+}
+func (m *StakeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakeRequest.Merge(m, src)
+}
+func (m *StakeRequest) XXX_Size() int {
+	return xxx_messageInfo_StakeRequest.Size(m)
+}
+func (m *StakeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakeRequest proto.InternalMessageInfo
+
+func (m *StakeRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *StakeRequest) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+type StakeResponse struct {
+	Status               string           `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *StakeResponse) Reset()         { *m = StakeResponse{} }
+func (m *StakeResponse) String() string { return proto.CompactTextString(m) }
+func (*StakeResponse) ProtoMessage()    {}
+func (*StakeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{67}
+}
+
+func (m *StakeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakeResponse.Unmarshal(m, b)
+}
+func (m *StakeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakeResponse.Marshal(b, m, deterministic)
+}
+func (m *StakeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakeResponse.Merge(m, src)
+}
+func (m *StakeResponse) XXX_Size() int {
+	return xxx_messageInfo_StakeResponse.Size(m)
+}
+func (m *StakeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakeResponse proto.InternalMessageInfo
+
+func (m *StakeResponse) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+func (m *StakeResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type UnstakeRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UnstakeRequest) Reset()         { *m = UnstakeRequest{} }
+func (m *UnstakeRequest) String() string { return proto.CompactTextString(m) }
+func (*UnstakeRequest) ProtoMessage()    {}
+func (*UnstakeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{68}
+}
+
+func (m *UnstakeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UnstakeRequest.Unmarshal(m, b)
+}
+func (m *UnstakeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UnstakeRequest.Marshal(b, m, deterministic)
+}
+func (m *UnstakeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UnstakeRequest.Merge(m, src)
+}
+func (m *UnstakeRequest) XXX_Size() int {
+	return xxx_messageInfo_UnstakeRequest.Size(m)
+}
+func (m *UnstakeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UnstakeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UnstakeRequest proto.InternalMessageInfo
+
+func (m *UnstakeRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type UnstakeResponse struct {
+	Status               string           `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *UnstakeResponse) Reset()         { *m = UnstakeResponse{} }
+func (m *UnstakeResponse) String() string { return proto.CompactTextString(m) }
+func (*UnstakeResponse) ProtoMessage()    {}
+func (*UnstakeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{69}
+}
+
+func (m *UnstakeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UnstakeResponse.Unmarshal(m, b)
+}
+func (m *UnstakeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UnstakeResponse.Marshal(b, m, deterministic)
+}
+func (m *UnstakeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UnstakeResponse.Merge(m, src)
+}
+func (m *UnstakeResponse) XXX_Size() int {
+	return xxx_messageInfo_UnstakeResponse.Size(m)
+}
+func (m *UnstakeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UnstakeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UnstakeResponse proto.InternalMessageInfo
+
+func (m *UnstakeResponse) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+func (m *UnstakeResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetActiveStakesRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetActiveStakesRequest) Reset()         { *m = GetActiveStakesRequest{} }
+func (m *GetActiveStakesRequest) String() string { return proto.CompactTextString(m) }
+func (*GetActiveStakesRequest) ProtoMessage()    {}
+func (*GetActiveStakesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{70}
+}
+
+func (m *GetActiveStakesRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetActiveStakesRequest.Unmarshal(m, b)
+}
+func (m *GetActiveStakesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetActiveStakesRequest.Marshal(b, m, deterministic)
+}
+func (m *GetActiveStakesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetActiveStakesRequest.Merge(m, src)
+}
+func (m *GetActiveStakesRequest) XXX_Size() int {
+	return xxx_messageInfo_GetActiveStakesRequest.Size(m)
+}
+func (m *GetActiveStakesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetActiveStakesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetActiveStakesRequest proto.InternalMessageInfo
+
+func (m *GetActiveStakesRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type ActiveStake struct {
+	Id                   int64    `protobuf:"varint,1,opt,name=Id,proto3" json:"Id,omitempty"`
+	FkWallet             int64    `protobuf:"varint,2,opt,name=FkWallet,proto3" json:"FkWallet,omitempty"`
+	Amount               float64  `protobuf:"fixed64,3,opt,name=Amount,proto3" json:"Amount,omitempty"`
+	StakeStatus          string   `protobuf:"bytes,4,opt,name=StakeStatus,proto3" json:"StakeStatus,omitempty"`
+	StartStakeTime       string   `protobuf:"bytes,5,opt,name=StartStakeTime,proto3" json:"StartStakeTime,omitempty"`
+	UnstakeTime          string   `protobuf:"bytes,6,opt,name=UnstakeTime,proto3" json:"UnstakeTime,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ActiveStake) Reset()         { *m = ActiveStake{} }
+func (m *ActiveStake) String() string { return proto.CompactTextString(m) }
+func (*ActiveStake) ProtoMessage()    {}
+func (*ActiveStake) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{71}
+}
+
+func (m *ActiveStake) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ActiveStake.Unmarshal(m, b)
+}
+func (m *ActiveStake) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ActiveStake.Marshal(b, m, deterministic)
+}
+func (m *ActiveStake) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ActiveStake.Merge(m, src)
+}
+func (m *ActiveStake) XXX_Size() int {
+	return xxx_messageInfo_ActiveStake.Size(m)
+}
+func (m *ActiveStake) XXX_DiscardUnknown() {
+	xxx_messageInfo_ActiveStake.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ActiveStake proto.InternalMessageInfo
+
+func (m *ActiveStake) GetId() int64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+func (m *ActiveStake) GetFkWallet() int64 {
+	if m != nil {
+		return m.FkWallet
+	}
+	return 0
+}
+
+func (m *ActiveStake) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+func (m *ActiveStake) GetStakeStatus() string {
+	if m != nil {
+		return m.StakeStatus
+	}
+	return ""
+}
+
+func (m *ActiveStake) GetStartStakeTime() string {
+	if m != nil {
+		return m.StartStakeTime
+	}
+	return ""
+}
+
+func (m *ActiveStake) GetUnstakeTime() string {
+	if m != nil {
+		return m.UnstakeTime
+	}
+	return ""
+}
+
+type GetActiveStakesResponse struct {
+	ActStake             *ActiveStake     `protobuf:"bytes,1,opt,name=act_stake,json=actStake,proto3" json:"act_stake,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetActiveStakesResponse) Reset()         { *m = GetActiveStakesResponse{} }
+func (m *GetActiveStakesResponse) String() string { return proto.CompactTextString(m) }
+func (*GetActiveStakesResponse) ProtoMessage()    {}
+func (*GetActiveStakesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{72}
+}
+
+func (m *GetActiveStakesResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetActiveStakesResponse.Unmarshal(m, b)
+}
+func (m *GetActiveStakesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetActiveStakesResponse.Marshal(b, m, deterministic)
+}
+func (m *GetActiveStakesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetActiveStakesResponse.Merge(m, src)
+}
+func (m *GetActiveStakesResponse) XXX_Size() int {
+	return xxx_messageInfo_GetActiveStakesResponse.Size(m)
+}
+func (m *GetActiveStakesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetActiveStakesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetActiveStakesResponse proto.InternalMessageInfo
+
+func (m *GetActiveStakesResponse) GetActStake() *ActiveStake {
+	if m != nil {
+		return m.ActStake
+	}
+	return nil
+}
+
+func (m *GetActiveStakesResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type StakingHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StakingHistoryRequest) Reset()         { *m = StakingHistoryRequest{} }
+func (m *StakingHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*StakingHistoryRequest) ProtoMessage()    {}
+func (*StakingHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{73}
+}
+
+func (m *StakingHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakingHistoryRequest.Unmarshal(m, b)
+}
+func (m *StakingHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakingHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *StakingHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakingHistoryRequest.Merge(m, src)
+}
+func (m *StakingHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_StakingHistoryRequest.Size(m)
+}
+func (m *StakingHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakingHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakingHistoryRequest proto.InternalMessageInfo
+
+func (m *StakingHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *StakingHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *StakingHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetStakingHistory struct {
+	StakeAmount          float64  `protobuf:"fixed64,1,opt,name=stake_amount,json=stakeAmount,proto3" json:"stake_amount,omitempty"`
+	Start                string   `protobuf:"bytes,2,opt,name=start,proto3" json:"start,omitempty"`
+	End                  string   `protobuf:"bytes,3,opt,name=end,proto3" json:"end,omitempty"`
+	RevMonth             string   `protobuf:"bytes,4,opt,name=rev_month,json=revMonth,proto3" json:"rev_month,omitempty"`
+	NetworkIncome        float64  `protobuf:"fixed64,5,opt,name=network_income,json=networkIncome,proto3" json:"network_income,omitempty"`
+	MonthlyRate          float64  `protobuf:"fixed64,6,opt,name=monthly_rate,json=monthlyRate,proto3" json:"monthly_rate,omitempty"`
+	Revenue              float64  `protobuf:"fixed64,7,opt,name=revenue,proto3" json:"revenue,omitempty"`
+	Balance              float64  `protobuf:"fixed64,8,opt,name=balance,proto3" json:"balance,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetStakingHistory) Reset()         { *m = GetStakingHistory{} }
+func (m *GetStakingHistory) String() string { return proto.CompactTextString(m) }
+func (*GetStakingHistory) ProtoMessage()    {}
+func (*GetStakingHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{74}
+}
+
+func (m *GetStakingHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetStakingHistory.Unmarshal(m, b)
+}
+func (m *GetStakingHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetStakingHistory.Marshal(b, m, deterministic)
+}
+func (m *GetStakingHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetStakingHistory.Merge(m, src)
+}
+func (m *GetStakingHistory) XXX_Size() int {
+	return xxx_messageInfo_GetStakingHistory.Size(m)
+}
+func (m *GetStakingHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetStakingHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetStakingHistory proto.InternalMessageInfo
+
+func (m *GetStakingHistory) GetStakeAmount() float64 {
+	if m != nil {
+		return m.StakeAmount
+	}
+	return 0
+}
+
+func (m *GetStakingHistory) GetStart() string {
+	if m != nil {
+		return m.Start
+	}
+	return ""
+}
+
+func (m *GetStakingHistory) GetEnd() string {
+	if m != nil {
+		return m.End
+	}
+	return ""
+}
+
+func (m *GetStakingHistory) GetRevMonth() string {
+	if m != nil {
+		return m.RevMonth
+	}
+	return ""
+}
+
+func (m *GetStakingHistory) GetNetworkIncome() float64 {
+	if m != nil {
+		return m.NetworkIncome
+	}
+	return 0
+}
+
+func (m *GetStakingHistory) GetMonthlyRate() float64 {
+	if m != nil {
+		return m.MonthlyRate
+	}
+	return 0
+}
+
+func (m *GetStakingHistory) GetRevenue() float64 {
+	if m != nil {
+		return m.Revenue
+	}
+	return 0
+}
+
+func (m *GetStakingHistory) GetBalance() float64 {
+	if m != nil {
+		return m.Balance
+	}
+	return 0
+}
+
+type StakingHistoryResponse struct {
+	UserProfile          *ProfileResponse     `protobuf:"bytes,1,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	StakingHist          []*GetStakingHistory `protobuf:"bytes,2,rep,name=staking_hist,json=stakingHist,proto3" json:"staking_hist,omitempty"`
+	Count                int64                `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *StakingHistoryResponse) Reset()         { *m = StakingHistoryResponse{} }
+func (m *StakingHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*StakingHistoryResponse) ProtoMessage()    {}
+func (*StakingHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{75}
+}
+
+func (m *StakingHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakingHistoryResponse.Unmarshal(m, b)
+}
+func (m *StakingHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakingHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *StakingHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakingHistoryResponse.Merge(m, src)
+}
+func (m *StakingHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_StakingHistoryResponse.Size(m)
+}
+func (m *StakingHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakingHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakingHistoryResponse proto.InternalMessageInfo
+
+func (m *StakingHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+func (m *StakingHistoryResponse) GetStakingHist() []*GetStakingHistory {
+	if m != nil {
+		return m.StakingHist
+	}
+	return nil
+}
+
+func (m *StakingHistoryResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+type StakingPercentageRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StakingPercentageRequest) Reset()         { *m = StakingPercentageRequest{} }
+func (m *StakingPercentageRequest) String() string { return proto.CompactTextString(m) }
+func (*StakingPercentageRequest) ProtoMessage()    {}
+func (*StakingPercentageRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{76}
+}
+
+func (m *StakingPercentageRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakingPercentageRequest.Unmarshal(m, b)
+}
+func (m *StakingPercentageRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakingPercentageRequest.Marshal(b, m, deterministic)
+}
+func (m *StakingPercentageRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakingPercentageRequest.Merge(m, src)
+}
+func (m *StakingPercentageRequest) XXX_Size() int {
+	return xxx_messageInfo_StakingPercentageRequest.Size(m)
+}
+func (m *StakingPercentageRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakingPercentageRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakingPercentageRequest proto.InternalMessageInfo
+
+func (m *StakingPercentageRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type StakingPercentageResponse struct {
+	StakingPercentage    float64  `protobuf:"fixed64,1,opt,name=staking_percentage,json=stakingPercentage,proto3" json:"staking_percentage,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StakingPercentageResponse) Reset()         { *m = StakingPercentageResponse{} }
+func (m *StakingPercentageResponse) String() string { return proto.CompactTextString(m) }
+func (*StakingPercentageResponse) ProtoMessage()    {}
+func (*StakingPercentageResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{77}
+}
+
+func (m *StakingPercentageResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakingPercentageResponse.Unmarshal(m, b)
+}
+func (m *StakingPercentageResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakingPercentageResponse.Marshal(b, m, deterministic)
+}
+func (m *StakingPercentageResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakingPercentageResponse.Merge(m, src)
+}
+func (m *StakingPercentageResponse) XXX_Size() int {
+	return xxx_messageInfo_StakingPercentageResponse.Size(m)
+}
+func (m *StakingPercentageResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakingPercentageResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakingPercentageResponse proto.InternalMessageInfo
+
+func (m *StakingPercentageResponse) GetStakingPercentage() float64 {
+	if m != nil {
+		return m.StakingPercentage
+	}
+	return 0
+}
+
+// SuperNodeService
+type GetSuperNodeActiveMoneyAccountRequest struct {
+	MoneyAbbr            Money    `protobuf:"varint,1,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	OrgId                int64    `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetSuperNodeActiveMoneyAccountRequest) Reset()         { *m = GetSuperNodeActiveMoneyAccountRequest{} }
+func (m *GetSuperNodeActiveMoneyAccountRequest) String() string { return proto.CompactTextString(m) }
+func (*GetSuperNodeActiveMoneyAccountRequest) ProtoMessage()    {}
+func (*GetSuperNodeActiveMoneyAccountRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{78}
+}
+
+func (m *GetSuperNodeActiveMoneyAccountRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetSuperNodeActiveMoneyAccountRequest.Unmarshal(m, b)
+}
+func (m *GetSuperNodeActiveMoneyAccountRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetSuperNodeActiveMoneyAccountRequest.Marshal(b, m, deterministic)
+}
+func (m *GetSuperNodeActiveMoneyAccountRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetSuperNodeActiveMoneyAccountRequest.Merge(m, src)
+}
+func (m *GetSuperNodeActiveMoneyAccountRequest) XXX_Size() int {
+	return xxx_messageInfo_GetSuperNodeActiveMoneyAccountRequest.Size(m)
+}
+func (m *GetSuperNodeActiveMoneyAccountRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetSuperNodeActiveMoneyAccountRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetSuperNodeActiveMoneyAccountRequest proto.InternalMessageInfo
+
+func (m *GetSuperNodeActiveMoneyAccountRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+func (m *GetSuperNodeActiveMoneyAccountRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type GetSuperNodeActiveMoneyAccountResponse struct {
+	SupernodeActiveAccount string           `protobuf:"bytes,1,opt,name=supernode_active_account,json=supernodeActiveAccount,proto3" json:"supernode_active_account,omitempty"`
+	UserProfile            *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral   struct{}         `json:"-"`
+	XXX_unrecognized       []byte           `json:"-"`
+	XXX_sizecache          int32            `json:"-"`
+}
+
+func (m *GetSuperNodeActiveMoneyAccountResponse) Reset() {
+	*m = GetSuperNodeActiveMoneyAccountResponse{}
+}
+func (m *GetSuperNodeActiveMoneyAccountResponse) String() string { return proto.CompactTextString(m) }
+func (*GetSuperNodeActiveMoneyAccountResponse) ProtoMessage()    {}
+func (*GetSuperNodeActiveMoneyAccountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{79}
+}
+
+func (m *GetSuperNodeActiveMoneyAccountResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetSuperNodeActiveMoneyAccountResponse.Unmarshal(m, b)
+}
+func (m *GetSuperNodeActiveMoneyAccountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetSuperNodeActiveMoneyAccountResponse.Marshal(b, m, deterministic)
+}
+func (m *GetSuperNodeActiveMoneyAccountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetSuperNodeActiveMoneyAccountResponse.Merge(m, src)
+}
+func (m *GetSuperNodeActiveMoneyAccountResponse) XXX_Size() int {
+	return xxx_messageInfo_GetSuperNodeActiveMoneyAccountResponse.Size(m)
+}
+func (m *GetSuperNodeActiveMoneyAccountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetSuperNodeActiveMoneyAccountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetSuperNodeActiveMoneyAccountResponse proto.InternalMessageInfo
+
+func (m *GetSuperNodeActiveMoneyAccountResponse) GetSupernodeActiveAccount() string {
+	if m != nil {
+		return m.SupernodeActiveAccount
+	}
+	return ""
+}
+
+func (m *GetSuperNodeActiveMoneyAccountResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type AddSuperNodeMoneyAccountRequest struct {
+	MoneyAbbr            Money    `protobuf:"varint,1,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	AccountAddr          string   `protobuf:"bytes,2,opt,name=account_addr,json=accountAddr,proto3" json:"account_addr,omitempty"`
+	OrgId                int64    `protobuf:"varint,3,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AddSuperNodeMoneyAccountRequest) Reset()         { *m = AddSuperNodeMoneyAccountRequest{} }
+func (m *AddSuperNodeMoneyAccountRequest) String() string { return proto.CompactTextString(m) }
+func (*AddSuperNodeMoneyAccountRequest) ProtoMessage()    {}
+func (*AddSuperNodeMoneyAccountRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{80}
+}
+
+func (m *AddSuperNodeMoneyAccountRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddSuperNodeMoneyAccountRequest.Unmarshal(m, b)
+}
+func (m *AddSuperNodeMoneyAccountRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddSuperNodeMoneyAccountRequest.Marshal(b, m, deterministic)
+}
+func (m *AddSuperNodeMoneyAccountRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddSuperNodeMoneyAccountRequest.Merge(m, src)
+}
+func (m *AddSuperNodeMoneyAccountRequest) XXX_Size() int {
+	return xxx_messageInfo_AddSuperNodeMoneyAccountRequest.Size(m)
+}
+func (m *AddSuperNodeMoneyAccountRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddSuperNodeMoneyAccountRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddSuperNodeMoneyAccountRequest proto.InternalMessageInfo
+
+func (m *AddSuperNodeMoneyAccountRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+func (m *AddSuperNodeMoneyAccountRequest) GetAccountAddr() string {
+	if m != nil {
+		return m.AccountAddr
+	}
+	return ""
+}
+
+func (m *AddSuperNodeMoneyAccountRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type AddSuperNodeMoneyAccountResponse struct {
+	Status               bool             `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *AddSuperNodeMoneyAccountResponse) Reset()         { *m = AddSuperNodeMoneyAccountResponse{} }
+func (m *AddSuperNodeMoneyAccountResponse) String() string { return proto.CompactTextString(m) }
+func (*AddSuperNodeMoneyAccountResponse) ProtoMessage()    {}
+func (*AddSuperNodeMoneyAccountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{81}
+}
+
+func (m *AddSuperNodeMoneyAccountResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddSuperNodeMoneyAccountResponse.Unmarshal(m, b)
+}
+func (m *AddSuperNodeMoneyAccountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddSuperNodeMoneyAccountResponse.Marshal(b, m, deterministic)
+}
+func (m *AddSuperNodeMoneyAccountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddSuperNodeMoneyAccountResponse.Merge(m, src)
+}
+func (m *AddSuperNodeMoneyAccountResponse) XXX_Size() int {
+	return xxx_messageInfo_AddSuperNodeMoneyAccountResponse.Size(m)
+}
+func (m *AddSuperNodeMoneyAccountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddSuperNodeMoneyAccountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddSuperNodeMoneyAccountResponse proto.InternalMessageInfo
+
+func (m *AddSuperNodeMoneyAccountResponse) GetStatus() bool {
+	if m != nil {
+		return m.Status
+	}
+	return false
+}
+
+func (m *AddSuperNodeMoneyAccountResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+// TopUpService
+type GetTransactionsHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetTransactionsHistoryRequest) Reset()         { *m = GetTransactionsHistoryRequest{} }
+func (m *GetTransactionsHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetTransactionsHistoryRequest) ProtoMessage()    {}
+func (*GetTransactionsHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{82}
+}
+
+func (m *GetTransactionsHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetTransactionsHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetTransactionsHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetTransactionsHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetTransactionsHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTransactionsHistoryRequest.Merge(m, src)
+}
+func (m *GetTransactionsHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetTransactionsHistoryRequest.Size(m)
+}
+func (m *GetTransactionsHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTransactionsHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTransactionsHistoryRequest proto.InternalMessageInfo
+
+func (m *GetTransactionsHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetTransactionsHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetTransactionsHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type GetTransactionsHistoryResponse struct {
+	Count                int64                  `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	TransactionHistory   []*TransactionsHistory `protobuf:"bytes,2,rep,name=transaction_history,json=transactionHistory,proto3" json:"transaction_history,omitempty"`
+	UserProfile          *ProfileResponse       `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
+	XXX_unrecognized     []byte                 `json:"-"`
+	XXX_sizecache        int32                  `json:"-"`
+}
+
+func (m *GetTransactionsHistoryResponse) Reset()         { *m = GetTransactionsHistoryResponse{} }
+func (m *GetTransactionsHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*GetTransactionsHistoryResponse) ProtoMessage()    {}
+func (*GetTransactionsHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{83}
+}
+
+func (m *GetTransactionsHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetTransactionsHistoryResponse.Unmarshal(m, b)
+}
+func (m *GetTransactionsHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetTransactionsHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *GetTransactionsHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTransactionsHistoryResponse.Merge(m, src)
+}
+func (m *GetTransactionsHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_GetTransactionsHistoryResponse.Size(m)
+}
+func (m *GetTransactionsHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTransactionsHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTransactionsHistoryResponse proto.InternalMessageInfo
+
+func (m *GetTransactionsHistoryResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+func (m *GetTransactionsHistoryResponse) GetTransactionHistory() []*TransactionsHistory {
+	if m != nil {
+		return m.TransactionHistory
+	}
+	return nil
+}
+
+func (m *GetTransactionsHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetIncomeRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetIncomeRequest) Reset()         { *m = GetIncomeRequest{} }
+func (m *GetIncomeRequest) String() string { return proto.CompactTextString(m) }
+func (*GetIncomeRequest) ProtoMessage()    {}
+func (*GetIncomeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{84}
+}
+
+func (m *GetIncomeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetIncomeRequest.Unmarshal(m, b)
+}
+func (m *GetIncomeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetIncomeRequest.Marshal(b, m, deterministic)
+}
+func (m *GetIncomeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetIncomeRequest.Merge(m, src)
+}
+func (m *GetIncomeRequest) XXX_Size() int {
+	return xxx_messageInfo_GetIncomeRequest.Size(m)
+}
+func (m *GetIncomeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetIncomeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetIncomeRequest proto.InternalMessageInfo
+
+func (m *GetIncomeRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type GetIncomeResponse struct {
+	Amount               float64  `protobuf:"fixed64,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetIncomeResponse) Reset()         { *m = GetIncomeResponse{} }
+func (m *GetIncomeResponse) String() string { return proto.CompactTextString(m) }
+func (*GetIncomeResponse) ProtoMessage()    {}
+func (*GetIncomeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{85}
+}
+
+func (m *GetIncomeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetIncomeResponse.Unmarshal(m, b)
+}
+func (m *GetIncomeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetIncomeResponse.Marshal(b, m, deterministic)
+}
+func (m *GetIncomeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetIncomeResponse.Merge(m, src)
+}
+func (m *GetIncomeResponse) XXX_Size() int {
+	return xxx_messageInfo_GetIncomeResponse.Size(m)
+}
+func (m *GetIncomeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetIncomeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetIncomeResponse proto.InternalMessageInfo
+
+func (m *GetIncomeResponse) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+type TransactionsHistory struct {
+	From                 string               `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	To                   string               `protobuf:"bytes,2,opt,name=to,proto3" json:"to,omitempty"`
+	MoneyAbbr            string               `protobuf:"bytes,3,opt,name=money_abbr,json=moneyAbbr,proto3" json:"money_abbr,omitempty"`
+	Amount               float64              `protobuf:"fixed64,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	Status               string               `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
+	TxHash               string               `protobuf:"bytes,6,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	TransactionType      string               `protobuf:"bytes,7,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
+	LastUpdateTime       *timestamp.Timestamp `protobuf:"bytes,8,opt,name=last_update_time,json=lastUpdateTime,proto3" json:"last_update_time,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *TransactionsHistory) Reset()         { *m = TransactionsHistory{} }
+func (m *TransactionsHistory) String() string { return proto.CompactTextString(m) }
+func (*TransactionsHistory) ProtoMessage()    {}
+func (*TransactionsHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{86}
+}
+
+func (m *TransactionsHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TransactionsHistory.Unmarshal(m, b)
+}
+func (m *TransactionsHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TransactionsHistory.Marshal(b, m, deterministic)
+}
+func (m *TransactionsHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TransactionsHistory.Merge(m, src)
+}
+func (m *TransactionsHistory) XXX_Size() int {
+	return xxx_messageInfo_TransactionsHistory.Size(m)
+}
+func (m *TransactionsHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_TransactionsHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TransactionsHistory proto.InternalMessageInfo
+
+func (m *TransactionsHistory) GetFrom() string {
+	if m != nil {
+		return m.From
+	}
+	return ""
+}
+
+func (m *TransactionsHistory) GetTo() string {
+	if m != nil {
+		return m.To
+	}
+	return ""
+}
+
+func (m *TransactionsHistory) GetMoneyAbbr() string {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return ""
+}
+
+func (m *TransactionsHistory) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+func (m *TransactionsHistory) GetStatus() string {
+	if m != nil {
+		return m.Status
+	}
+	return ""
+}
+
+func (m *TransactionsHistory) GetTxHash() string {
+	if m != nil {
+		return m.TxHash
+	}
+	return ""
+}
+
+func (m *TransactionsHistory) GetTransactionType() string {
+	if m != nil {
+		return m.TransactionType
+	}
+	return ""
+}
+
+func (m *TransactionsHistory) GetLastUpdateTime() *timestamp.Timestamp {
+	if m != nil {
+		return m.LastUpdateTime
+	}
+	return nil
+}
+
+type GetTopUpHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetTopUpHistoryRequest) Reset()         { *m = GetTopUpHistoryRequest{} }
+func (m *GetTopUpHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetTopUpHistoryRequest) ProtoMessage()    {}
+func (*GetTopUpHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{87}
+}
+
+func (m *GetTopUpHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetTopUpHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetTopUpHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetTopUpHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetTopUpHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTopUpHistoryRequest.Merge(m, src)
+}
+func (m *GetTopUpHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetTopUpHistoryRequest.Size(m)
+}
+func (m *GetTopUpHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTopUpHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTopUpHistoryRequest proto.InternalMessageInfo
+
+func (m *GetTopUpHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetTopUpHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetTopUpHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type TopUpHistory struct {
+	From                 string   `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	To                   string   `protobuf:"bytes,2,opt,name=to,proto3" json:"to,omitempty"`
+	Amount               float64  `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	CreatedAt            string   `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	MoneyType            string   `protobuf:"bytes,5,opt,name=money_type,json=moneyType,proto3" json:"money_type,omitempty"`
+	TxHash               string   `protobuf:"bytes,6,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *TopUpHistory) Reset()         { *m = TopUpHistory{} }
+func (m *TopUpHistory) String() string { return proto.CompactTextString(m) }
+func (*TopUpHistory) ProtoMessage()    {}
+func (*TopUpHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{88}
+}
+
+func (m *TopUpHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_TopUpHistory.Unmarshal(m, b)
+}
+func (m *TopUpHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_TopUpHistory.Marshal(b, m, deterministic)
+}
+func (m *TopUpHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TopUpHistory.Merge(m, src)
+}
+func (m *TopUpHistory) XXX_Size() int {
+	return xxx_messageInfo_TopUpHistory.Size(m)
+}
+func (m *TopUpHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_TopUpHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_TopUpHistory proto.InternalMessageInfo
+
+func (m *TopUpHistory) GetFrom() string {
+	if m != nil {
+		return m.From
+	}
+	return ""
+}
+
+func (m *TopUpHistory) GetTo() string {
+	if m != nil {
+		return m.To
+	}
+	return ""
+}
+
+func (m *TopUpHistory) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+func (m *TopUpHistory) GetCreatedAt() string {
+	if m != nil {
+		return m.CreatedAt
+	}
+	return ""
+}
+
+func (m *TopUpHistory) GetMoneyType() string {
+	if m != nil {
+		return m.MoneyType
+	}
+	return ""
+}
+
+func (m *TopUpHistory) GetTxHash() string {
+	if m != nil {
+		return m.TxHash
+	}
+	return ""
+}
+
+type GetTopUpHistoryResponse struct {
+	Count                int64            `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	TopupHistory         []*TopUpHistory  `protobuf:"bytes,2,rep,name=topup_history,json=topupHistory,proto3" json:"topup_history,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetTopUpHistoryResponse) Reset()         { *m = GetTopUpHistoryResponse{} }
+func (m *GetTopUpHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*GetTopUpHistoryResponse) ProtoMessage()    {}
+func (*GetTopUpHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{89}
+}
+
+func (m *GetTopUpHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetTopUpHistoryResponse.Unmarshal(m, b)
+}
+func (m *GetTopUpHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetTopUpHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *GetTopUpHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTopUpHistoryResponse.Merge(m, src)
+}
+func (m *GetTopUpHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_GetTopUpHistoryResponse.Size(m)
+}
+func (m *GetTopUpHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTopUpHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTopUpHistoryResponse proto.InternalMessageInfo
+
+func (m *GetTopUpHistoryResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+func (m *GetTopUpHistoryResponse) GetTopupHistory() []*TopUpHistory {
+	if m != nil {
+		return m.TopupHistory
+	}
+	return nil
+}
+
+func (m *GetTopUpHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetTopUpDestinationRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	MoneyAbbr            Money    `protobuf:"varint,2,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetTopUpDestinationRequest) Reset()         { *m = GetTopUpDestinationRequest{} }
+func (m *GetTopUpDestinationRequest) String() string { return proto.CompactTextString(m) }
+func (*GetTopUpDestinationRequest) ProtoMessage()    {}
+func (*GetTopUpDestinationRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{90}
+}
+
+func (m *GetTopUpDestinationRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetTopUpDestinationRequest.Unmarshal(m, b)
+}
+func (m *GetTopUpDestinationRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetTopUpDestinationRequest.Marshal(b, m, deterministic)
+}
+func (m *GetTopUpDestinationRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTopUpDestinationRequest.Merge(m, src)
+}
+func (m *GetTopUpDestinationRequest) XXX_Size() int {
+	return xxx_messageInfo_GetTopUpDestinationRequest.Size(m)
+}
+func (m *GetTopUpDestinationRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTopUpDestinationRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTopUpDestinationRequest proto.InternalMessageInfo
+
+func (m *GetTopUpDestinationRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetTopUpDestinationRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+type GetTopUpDestinationResponse struct {
+	ActiveAccount        string           `protobuf:"bytes,1,opt,name=active_account,json=activeAccount,proto3" json:"active_account,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetTopUpDestinationResponse) Reset()         { *m = GetTopUpDestinationResponse{} }
+func (m *GetTopUpDestinationResponse) String() string { return proto.CompactTextString(m) }
+func (*GetTopUpDestinationResponse) ProtoMessage()    {}
+func (*GetTopUpDestinationResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{91}
+}
+
+func (m *GetTopUpDestinationResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetTopUpDestinationResponse.Unmarshal(m, b)
+}
+func (m *GetTopUpDestinationResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetTopUpDestinationResponse.Marshal(b, m, deterministic)
+}
+func (m *GetTopUpDestinationResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetTopUpDestinationResponse.Merge(m, src)
+}
+func (m *GetTopUpDestinationResponse) XXX_Size() int {
+	return xxx_messageInfo_GetTopUpDestinationResponse.Size(m)
+}
+func (m *GetTopUpDestinationResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetTopUpDestinationResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetTopUpDestinationResponse proto.InternalMessageInfo
+
+func (m *GetTopUpDestinationResponse) GetActiveAccount() string {
+	if m != nil {
+		return m.ActiveAccount
+	}
+	return ""
+}
+
+func (m *GetTopUpDestinationResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+// WithdrawService
+type GetWithdrawFeeRequest struct {
+	// type of crypto currency
+	MoneyAbbr            Money    `protobuf:"varint,1,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	OrgId                int64    `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetWithdrawFeeRequest) Reset()         { *m = GetWithdrawFeeRequest{} }
+func (m *GetWithdrawFeeRequest) String() string { return proto.CompactTextString(m) }
+func (*GetWithdrawFeeRequest) ProtoMessage()    {}
+func (*GetWithdrawFeeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{92}
+}
+
+func (m *GetWithdrawFeeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetWithdrawFeeRequest.Unmarshal(m, b)
+}
+func (m *GetWithdrawFeeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetWithdrawFeeRequest.Marshal(b, m, deterministic)
+}
+func (m *GetWithdrawFeeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetWithdrawFeeRequest.Merge(m, src)
+}
+func (m *GetWithdrawFeeRequest) XXX_Size() int {
+	return xxx_messageInfo_GetWithdrawFeeRequest.Size(m)
+}
+func (m *GetWithdrawFeeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetWithdrawFeeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetWithdrawFeeRequest proto.InternalMessageInfo
+
+func (m *GetWithdrawFeeRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+func (m *GetWithdrawFeeRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type GetWithdrawFeeResponse struct {
+	// Withdraw object.
+	WithdrawFee          float64          `protobuf:"fixed64,1,opt,name=withdrawFee,proto3" json:"withdrawFee,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *GetWithdrawFeeResponse) Reset()         { *m = GetWithdrawFeeResponse{} }
+func (m *GetWithdrawFeeResponse) String() string { return proto.CompactTextString(m) }
+func (*GetWithdrawFeeResponse) ProtoMessage()    {}
+func (*GetWithdrawFeeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{93}
+}
+
+func (m *GetWithdrawFeeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetWithdrawFeeResponse.Unmarshal(m, b)
+}
+func (m *GetWithdrawFeeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetWithdrawFeeResponse.Marshal(b, m, deterministic)
+}
+func (m *GetWithdrawFeeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetWithdrawFeeResponse.Merge(m, src)
+}
+func (m *GetWithdrawFeeResponse) XXX_Size() int {
+	return xxx_messageInfo_GetWithdrawFeeResponse.Size(m)
+}
+func (m *GetWithdrawFeeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetWithdrawFeeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetWithdrawFeeResponse proto.InternalMessageInfo
+
+func (m *GetWithdrawFeeResponse) GetWithdrawFee() float64 {
+	if m != nil {
+		return m.WithdrawFee
+	}
+	return 0
+}
+
+func (m *GetWithdrawFeeResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type WithdrawReqRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	MoneyAbbr            Money    `protobuf:"varint,2,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	Amount               float64  `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *WithdrawReqRequest) Reset()         { *m = WithdrawReqRequest{} }
+func (m *WithdrawReqRequest) String() string { return proto.CompactTextString(m) }
+func (*WithdrawReqRequest) ProtoMessage()    {}
+func (*WithdrawReqRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{94}
+}
+
+func (m *WithdrawReqRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WithdrawReqRequest.Unmarshal(m, b)
+}
+func (m *WithdrawReqRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WithdrawReqRequest.Marshal(b, m, deterministic)
+}
+func (m *WithdrawReqRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WithdrawReqRequest.Merge(m, src)
+}
+func (m *WithdrawReqRequest) XXX_Size() int {
+	return xxx_messageInfo_WithdrawReqRequest.Size(m)
+}
+func (m *WithdrawReqRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_WithdrawReqRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_WithdrawReqRequest proto.InternalMessageInfo
+
+func (m *WithdrawReqRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *WithdrawReqRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+func (m *WithdrawReqRequest) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+type WithdrawReqResponse struct {
+	Status               bool             `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *WithdrawReqResponse) Reset()         { *m = WithdrawReqResponse{} }
+func (m *WithdrawReqResponse) String() string { return proto.CompactTextString(m) }
+func (*WithdrawReqResponse) ProtoMessage()    {}
+func (*WithdrawReqResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{95}
+}
+
+func (m *WithdrawReqResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WithdrawReqResponse.Unmarshal(m, b)
+}
+func (m *WithdrawReqResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WithdrawReqResponse.Marshal(b, m, deterministic)
+}
+func (m *WithdrawReqResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WithdrawReqResponse.Merge(m, src)
+}
+func (m *WithdrawReqResponse) XXX_Size() int {
+	return xxx_messageInfo_WithdrawReqResponse.Size(m)
+}
+func (m *WithdrawReqResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_WithdrawReqResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_WithdrawReqResponse proto.InternalMessageInfo
+
+func (m *WithdrawReqResponse) GetStatus() bool {
+	if m != nil {
+		return m.Status
+	}
+	return false
+}
+
+func (m *WithdrawReqResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type GetWithdrawHistoryRequest struct {
+	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
+	MoneyAbbr            Money    `protobuf:"varint,4,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetWithdrawHistoryRequest) Reset()         { *m = GetWithdrawHistoryRequest{} }
+func (m *GetWithdrawHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetWithdrawHistoryRequest) ProtoMessage()    {}
+func (*GetWithdrawHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{96}
+}
+
+func (m *GetWithdrawHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetWithdrawHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetWithdrawHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetWithdrawHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetWithdrawHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetWithdrawHistoryRequest.Merge(m, src)
+}
+func (m *GetWithdrawHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetWithdrawHistoryRequest.Size(m)
+}
+func (m *GetWithdrawHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetWithdrawHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetWithdrawHistoryRequest proto.InternalMessageInfo
+
+func (m *GetWithdrawHistoryRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *GetWithdrawHistoryRequest) GetOffset() int64 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetWithdrawHistoryRequest) GetLimit() int64 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+func (m *GetWithdrawHistoryRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+type WithdrawHistory struct {
+	From                 string   `protobuf:"bytes,1,opt,name=from,proto3" json:"from,omitempty"`
+	To                   string   `protobuf:"bytes,2,opt,name=to,proto3" json:"to,omitempty"`
+	MoneyType            string   `protobuf:"bytes,3,opt,name=money_type,json=moneyType,proto3" json:"money_type,omitempty"`
+	Amount               float64  `protobuf:"fixed64,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	WithdrawFee          float64  `protobuf:"fixed64,5,opt,name=withdraw_fee,json=withdrawFee,proto3" json:"withdraw_fee,omitempty"`
+	TxSentTime           string   `protobuf:"bytes,6,opt,name=tx_sent_time,json=txSentTime,proto3" json:"tx_sent_time,omitempty"`
+	TxStatus             string   `protobuf:"bytes,7,opt,name=tx_status,json=txStatus,proto3" json:"tx_status,omitempty"`
+	TxApprovedTime       string   `protobuf:"bytes,8,opt,name=tx_approved_time,json=txApprovedTime,proto3" json:"tx_approved_time,omitempty"`
+	TxHash               string   `protobuf:"bytes,9,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *WithdrawHistory) Reset()         { *m = WithdrawHistory{} }
+func (m *WithdrawHistory) String() string { return proto.CompactTextString(m) }
+func (*WithdrawHistory) ProtoMessage()    {}
+func (*WithdrawHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{97}
+}
+
+func (m *WithdrawHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WithdrawHistory.Unmarshal(m, b)
+}
+func (m *WithdrawHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WithdrawHistory.Marshal(b, m, deterministic)
+}
+func (m *WithdrawHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WithdrawHistory.Merge(m, src)
+}
+func (m *WithdrawHistory) XXX_Size() int {
+	return xxx_messageInfo_WithdrawHistory.Size(m)
+}
+func (m *WithdrawHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_WithdrawHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_WithdrawHistory proto.InternalMessageInfo
+
+func (m *WithdrawHistory) GetFrom() string {
+	if m != nil {
+		return m.From
+	}
+	return ""
+}
+
+func (m *WithdrawHistory) GetTo() string {
+	if m != nil {
+		return m.To
+	}
+	return ""
+}
+
+func (m *WithdrawHistory) GetMoneyType() string {
+	if m != nil {
+		return m.MoneyType
+	}
+	return ""
+}
+
+func (m *WithdrawHistory) GetAmount() float64 {
+	if m != nil {
+		return m.Amount
+	}
+	return 0
+}
+
+func (m *WithdrawHistory) GetWithdrawFee() float64 {
+	if m != nil {
+		return m.WithdrawFee
+	}
+	return 0
+}
+
+func (m *WithdrawHistory) GetTxSentTime() string {
+	if m != nil {
+		return m.TxSentTime
+	}
+	return ""
+}
+
+func (m *WithdrawHistory) GetTxStatus() string {
+	if m != nil {
+		return m.TxStatus
+	}
+	return ""
+}
+
+func (m *WithdrawHistory) GetTxApprovedTime() string {
+	if m != nil {
+		return m.TxApprovedTime
+	}
+	return ""
+}
+
+func (m *WithdrawHistory) GetTxHash() string {
+	if m != nil {
+		return m.TxHash
+	}
+	return ""
+}
+
+type GetWithdrawHistoryResponse struct {
+	Count                int64              `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	WithdrawHistory      []*WithdrawHistory `protobuf:"bytes,2,rep,name=withdraw_history,json=withdrawHistory,proto3" json:"withdraw_history,omitempty"`
+	UserProfile          *ProfileResponse   `protobuf:"bytes,3,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *GetWithdrawHistoryResponse) Reset()         { *m = GetWithdrawHistoryResponse{} }
+func (m *GetWithdrawHistoryResponse) String() string { return proto.CompactTextString(m) }
+func (*GetWithdrawHistoryResponse) ProtoMessage()    {}
+func (*GetWithdrawHistoryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{98}
+}
+
+func (m *GetWithdrawHistoryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetWithdrawHistoryResponse.Unmarshal(m, b)
+}
+func (m *GetWithdrawHistoryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetWithdrawHistoryResponse.Marshal(b, m, deterministic)
+}
+func (m *GetWithdrawHistoryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetWithdrawHistoryResponse.Merge(m, src)
+}
+func (m *GetWithdrawHistoryResponse) XXX_Size() int {
+	return xxx_messageInfo_GetWithdrawHistoryResponse.Size(m)
+}
+func (m *GetWithdrawHistoryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetWithdrawHistoryResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetWithdrawHistoryResponse proto.InternalMessageInfo
+
+func (m *GetWithdrawHistoryResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+func (m *GetWithdrawHistoryResponse) GetWithdrawHistory() []*WithdrawHistory {
+	if m != nil {
+		return m.WithdrawHistory
+	}
+	return nil
+}
+
+func (m *GetWithdrawHistoryResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
+type ModifyWithdrawFeeRequest struct {
+	MoneyAbbr            Money    `protobuf:"varint,1,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver.Money" json:"money_abbr,omitempty"`
+	WithdrawFee          float64  `protobuf:"fixed64,2,opt,name=withdraw_fee,json=withdrawFee,proto3" json:"withdraw_fee,omitempty"`
+	OrgId                int64    `protobuf:"varint,3,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ModifyWithdrawFeeRequest) Reset()         { *m = ModifyWithdrawFeeRequest{} }
+func (m *ModifyWithdrawFeeRequest) String() string { return proto.CompactTextString(m) }
+func (*ModifyWithdrawFeeRequest) ProtoMessage()    {}
+func (*ModifyWithdrawFeeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{99}
+}
+
+func (m *ModifyWithdrawFeeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifyWithdrawFeeRequest.Unmarshal(m, b)
+}
+func (m *ModifyWithdrawFeeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifyWithdrawFeeRequest.Marshal(b, m, deterministic)
+}
+func (m *ModifyWithdrawFeeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifyWithdrawFeeRequest.Merge(m, src)
+}
+func (m *ModifyWithdrawFeeRequest) XXX_Size() int {
+	return xxx_messageInfo_ModifyWithdrawFeeRequest.Size(m)
+}
+func (m *ModifyWithdrawFeeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifyWithdrawFeeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifyWithdrawFeeRequest proto.InternalMessageInfo
+
+func (m *ModifyWithdrawFeeRequest) GetMoneyAbbr() Money {
+	if m != nil {
+		return m.MoneyAbbr
+	}
+	return Money_Ether
+}
+
+func (m *ModifyWithdrawFeeRequest) GetWithdrawFee() float64 {
+	if m != nil {
+		return m.WithdrawFee
+	}
+	return 0
+}
+
+func (m *ModifyWithdrawFeeRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+type ModifyWithdrawFeeResponse struct {
+	Status               bool             `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
+}
+
+func (m *ModifyWithdrawFeeResponse) Reset()         { *m = ModifyWithdrawFeeResponse{} }
+func (m *ModifyWithdrawFeeResponse) String() string { return proto.CompactTextString(m) }
+func (*ModifyWithdrawFeeResponse) ProtoMessage()    {}
+func (*ModifyWithdrawFeeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_2566523af06a975e, []int{100}
+}
+
+func (m *ModifyWithdrawFeeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ModifyWithdrawFeeResponse.Unmarshal(m, b)
+}
+func (m *ModifyWithdrawFeeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ModifyWithdrawFeeResponse.Marshal(b, m, deterministic)
+}
+func (m *ModifyWithdrawFeeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ModifyWithdrawFeeResponse.Merge(m, src)
+}
+func (m *ModifyWithdrawFeeResponse) XXX_Size() int {
+	return xxx_messageInfo_ModifyWithdrawFeeResponse.Size(m)
+}
+func (m *ModifyWithdrawFeeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ModifyWithdrawFeeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ModifyWithdrawFeeResponse proto.InternalMessageInfo
+
+func (m *ModifyWithdrawFeeResponse) GetStatus() bool {
+	if m != nil {
+		return m.Status
+	}
+	return false
+}
+
+func (m *ModifyWithdrawFeeResponse) GetUserProfile() *ProfileResponse {
+	if m != nil {
+		return m.UserProfile
+	}
+	return nil
+}
+
 func init() {
+	proto.RegisterEnum("appserver.DeviceMode", DeviceMode_name, DeviceMode_value)
+	proto.RegisterEnum("appserver.Money", Money_name, Money_value)
+	proto.RegisterEnum("appserver.GatewayMode", GatewayMode_name, GatewayMode_value)
 	proto.RegisterType((*AppServerDeviceProfile)(nil), "appserver.AppServerDeviceProfile")
 	proto.RegisterType((*AddDeviceInM2MServerRequest)(nil), "appserver.AddDeviceInM2MServerRequest")
 	proto.RegisterType((*AddDeviceInM2MServerResponse)(nil), "appserver.AddDeviceInM2MServerResponse")
@@ -833,62 +5523,342 @@ func init() {
 	proto.RegisterType((*GetGatewayByMacResponse)(nil), "appserver.GetGatewayByMacResponse")
 	proto.RegisterType((*GetDeviceDevEuiListResponse)(nil), "appserver.GetDeviceDevEuiListResponse")
 	proto.RegisterType((*GetGatewayMacListResponse)(nil), "appserver.GetGatewayMacListResponse")
+	proto.RegisterType((*ProfileResponse)(nil), "appserver.ProfileResponse")
+	proto.RegisterType((*User)(nil), "appserver.User")
+	proto.RegisterType((*ProfileSettings)(nil), "appserver.ProfileSettings")
+	proto.RegisterType((*OrganizationLink)(nil), "appserver.OrganizationLink")
+	proto.RegisterType((*LoginRequest)(nil), "appserver.LoginRequest")
+	proto.RegisterType((*LoginResponse)(nil), "appserver.LoginResponse")
+	proto.RegisterType((*GetUserOrganizationListRequest)(nil), "appserver.GetUserOrganizationListRequest")
+	proto.RegisterType((*GetUserOrganizationListResponse)(nil), "appserver.GetUserOrganizationListResponse")
+	proto.RegisterType((*GetUserProfileRequest)(nil), "appserver.GetUserProfileRequest")
+	proto.RegisterType((*GetUserProfileResponse)(nil), "appserver.GetUserProfileResponse")
 	proto.RegisterType((*GetWalletBalanceRequest)(nil), "appserver.GetWalletBalanceRequest")
 	proto.RegisterType((*GetWalletBalanceResponse)(nil), "appserver.GetWalletBalanceResponse")
+	proto.RegisterType((*GetVmxcTxHistoryRequest)(nil), "appserver.GetVmxcTxHistoryRequest")
+	proto.RegisterType((*VmxcTxHistory)(nil), "appserver.VmxcTxHistory")
+	proto.RegisterType((*GetVmxcTxHistoryResponse)(nil), "appserver.GetVmxcTxHistoryResponse")
+	proto.RegisterType((*GetWalletUsageHistRequest)(nil), "appserver.GetWalletUsageHistRequest")
+	proto.RegisterType((*GetWalletUsageHist)(nil), "appserver.GetWalletUsageHist")
+	proto.RegisterType((*GetWalletUsageHistResponse)(nil), "appserver.GetWalletUsageHistResponse")
+	proto.RegisterType((*GetDownLinkPriceRequest)(nil), "appserver.GetDownLinkPriceRequest")
+	proto.RegisterType((*GetDownLinkPriceResponse)(nil), "appserver.GetDownLinkPriceResponse")
+	proto.RegisterType((*GetDeviceListRequest)(nil), "appserver.GetDeviceListRequest")
+	proto.RegisterType((*GetDeviceListResponse)(nil), "appserver.GetDeviceListResponse")
+	proto.RegisterType((*GetDeviceProfileRequest)(nil), "appserver.GetDeviceProfileRequest")
+	proto.RegisterType((*DeviceProfile)(nil), "appserver.DeviceProfile")
+	proto.RegisterType((*GetDeviceProfileResponse)(nil), "appserver.GetDeviceProfileResponse")
+	proto.RegisterType((*GetDeviceHistoryRequest)(nil), "appserver.GetDeviceHistoryRequest")
+	proto.RegisterType((*GetDeviceHistoryResponse)(nil), "appserver.GetDeviceHistoryResponse")
+	proto.RegisterType((*SetDeviceModeRequest)(nil), "appserver.SetDeviceModeRequest")
+	proto.RegisterType((*SetDeviceModeResponse)(nil), "appserver.SetDeviceModeResponse")
+	proto.RegisterType((*ModifyMoneyAccountRequest)(nil), "appserver.ModifyMoneyAccountRequest")
+	proto.RegisterType((*ModifyMoneyAccountResponse)(nil), "appserver.ModifyMoneyAccountResponse")
+	proto.RegisterType((*GetMoneyAccountChangeHistoryRequest)(nil), "appserver.GetMoneyAccountChangeHistoryRequest")
+	proto.RegisterType((*MoneyAccountChangeHistory)(nil), "appserver.MoneyAccountChangeHistory")
+	proto.RegisterType((*GetMoneyAccountChangeHistoryResponse)(nil), "appserver.GetMoneyAccountChangeHistoryResponse")
+	proto.RegisterType((*GetActiveMoneyAccountRequest)(nil), "appserver.GetActiveMoneyAccountRequest")
+	proto.RegisterType((*GetActiveMoneyAccountResponse)(nil), "appserver.GetActiveMoneyAccountResponse")
+	proto.RegisterType((*GetGatewayListRequest)(nil), "appserver.GetGatewayListRequest")
+	proto.RegisterType((*GetGatewayListResponse)(nil), "appserver.GetGatewayListResponse")
+	proto.RegisterType((*GetGatewayProfileRequest)(nil), "appserver.GetGatewayProfileRequest")
+	proto.RegisterType((*GatewayProfile)(nil), "appserver.GatewayProfile")
+	proto.RegisterType((*GetGatewayProfileResponse)(nil), "appserver.GetGatewayProfileResponse")
+	proto.RegisterType((*GetGatewayHistoryRequest)(nil), "appserver.GetGatewayHistoryRequest")
+	proto.RegisterType((*GetGatewayHistoryResponse)(nil), "appserver.GetGatewayHistoryResponse")
+	proto.RegisterType((*SetGatewayModeRequest)(nil), "appserver.SetGatewayModeRequest")
+	proto.RegisterType((*SetGatewayModeResponse)(nil), "appserver.SetGatewayModeResponse")
+	proto.RegisterType((*GetVersionResponse)(nil), "appserver.GetVersionResponse")
+	proto.RegisterType((*GetSettingsRequest)(nil), "appserver.GetSettingsRequest")
+	proto.RegisterType((*GetSettingsResponse)(nil), "appserver.GetSettingsResponse")
+	proto.RegisterType((*ModifySettingsRequest)(nil), "appserver.ModifySettingsRequest")
+	proto.RegisterType((*ModifySettingsResponse)(nil), "appserver.ModifySettingsResponse")
+	proto.RegisterType((*StakeRequest)(nil), "appserver.StakeRequest")
+	proto.RegisterType((*StakeResponse)(nil), "appserver.StakeResponse")
+	proto.RegisterType((*UnstakeRequest)(nil), "appserver.UnstakeRequest")
+	proto.RegisterType((*UnstakeResponse)(nil), "appserver.UnstakeResponse")
+	proto.RegisterType((*GetActiveStakesRequest)(nil), "appserver.GetActiveStakesRequest")
+	proto.RegisterType((*ActiveStake)(nil), "appserver.ActiveStake")
+	proto.RegisterType((*GetActiveStakesResponse)(nil), "appserver.GetActiveStakesResponse")
+	proto.RegisterType((*StakingHistoryRequest)(nil), "appserver.StakingHistoryRequest")
+	proto.RegisterType((*GetStakingHistory)(nil), "appserver.GetStakingHistory")
+	proto.RegisterType((*StakingHistoryResponse)(nil), "appserver.StakingHistoryResponse")
+	proto.RegisterType((*StakingPercentageRequest)(nil), "appserver.StakingPercentageRequest")
+	proto.RegisterType((*StakingPercentageResponse)(nil), "appserver.StakingPercentageResponse")
+	proto.RegisterType((*GetSuperNodeActiveMoneyAccountRequest)(nil), "appserver.GetSuperNodeActiveMoneyAccountRequest")
+	proto.RegisterType((*GetSuperNodeActiveMoneyAccountResponse)(nil), "appserver.GetSuperNodeActiveMoneyAccountResponse")
+	proto.RegisterType((*AddSuperNodeMoneyAccountRequest)(nil), "appserver.AddSuperNodeMoneyAccountRequest")
+	proto.RegisterType((*AddSuperNodeMoneyAccountResponse)(nil), "appserver.AddSuperNodeMoneyAccountResponse")
+	proto.RegisterType((*GetTransactionsHistoryRequest)(nil), "appserver.GetTransactionsHistoryRequest")
+	proto.RegisterType((*GetTransactionsHistoryResponse)(nil), "appserver.GetTransactionsHistoryResponse")
+	proto.RegisterType((*GetIncomeRequest)(nil), "appserver.GetIncomeRequest")
+	proto.RegisterType((*GetIncomeResponse)(nil), "appserver.GetIncomeResponse")
+	proto.RegisterType((*TransactionsHistory)(nil), "appserver.TransactionsHistory")
+	proto.RegisterType((*GetTopUpHistoryRequest)(nil), "appserver.GetTopUpHistoryRequest")
+	proto.RegisterType((*TopUpHistory)(nil), "appserver.TopUpHistory")
+	proto.RegisterType((*GetTopUpHistoryResponse)(nil), "appserver.GetTopUpHistoryResponse")
+	proto.RegisterType((*GetTopUpDestinationRequest)(nil), "appserver.GetTopUpDestinationRequest")
+	proto.RegisterType((*GetTopUpDestinationResponse)(nil), "appserver.GetTopUpDestinationResponse")
+	proto.RegisterType((*GetWithdrawFeeRequest)(nil), "appserver.GetWithdrawFeeRequest")
+	proto.RegisterType((*GetWithdrawFeeResponse)(nil), "appserver.GetWithdrawFeeResponse")
+	proto.RegisterType((*WithdrawReqRequest)(nil), "appserver.WithdrawReqRequest")
+	proto.RegisterType((*WithdrawReqResponse)(nil), "appserver.WithdrawReqResponse")
+	proto.RegisterType((*GetWithdrawHistoryRequest)(nil), "appserver.GetWithdrawHistoryRequest")
+	proto.RegisterType((*WithdrawHistory)(nil), "appserver.WithdrawHistory")
+	proto.RegisterType((*GetWithdrawHistoryResponse)(nil), "appserver.GetWithdrawHistoryResponse")
+	proto.RegisterType((*ModifyWithdrawFeeRequest)(nil), "appserver.ModifyWithdrawFeeRequest")
+	proto.RegisterType((*ModifyWithdrawFeeResponse)(nil), "appserver.ModifyWithdrawFeeResponse")
 }
 
 func init() { proto.RegisterFile("appserver.proto", fileDescriptor_2566523af06a975e) }
 
 var fileDescriptor_2566523af06a975e = []byte{
-	// 766 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xef, 0x6f, 0xd2, 0x5c,
-	0x14, 0x4e, 0x07, 0x63, 0x2f, 0x87, 0xbc, 0xef, 0x78, 0xef, 0x1c, 0x60, 0xa7, 0xc2, 0xea, 0x9c,
-	0x38, 0x13, 0x66, 0xd8, 0x34, 0x99, 0xf1, 0x0b, 0x64, 0xcb, 0x42, 0x22, 0x89, 0x56, 0x8d, 0x26,
-	0x26, 0x92, 0xbb, 0xf6, 0xac, 0xa9, 0x01, 0x5a, 0xdb, 0x4b, 0x91, 0xbf, 0xc8, 0x0f, 0x7e, 0xf4,
-	0x7f, 0xf3, 0xb3, 0xe9, 0xed, 0x6d, 0x29, 0xa5, 0x85, 0x99, 0xe8, 0x97, 0xe5, 0xf6, 0xde, 0x73,
-	0xce, 0xf3, 0x9c, 0xe7, 0xfc, 0x18, 0xb0, 0x4d, 0x6d, 0xdb, 0x45, 0xc7, 0x43, 0xa7, 0x65, 0x3b,
-	0x16, 0xb3, 0x48, 0x31, 0xba, 0x90, 0xeb, 0x86, 0x65, 0x19, 0x43, 0x3c, 0xe6, 0x0f, 0x57, 0x93,
-	0xeb, 0x63, 0x66, 0x8e, 0xd0, 0x65, 0x74, 0x64, 0x07, 0xb6, 0xf2, 0x5e, 0xd2, 0x00, 0x47, 0x36,
-	0x9b, 0x05, 0x8f, 0xca, 0x37, 0x09, 0x2a, 0x1d, 0xdb, 0x7e, 0xc3, 0x63, 0x9d, 0xa3, 0x67, 0x6a,
-	0xf8, 0xca, 0xb1, 0xae, 0xcd, 0x21, 0x92, 0x2a, 0x6c, 0xe9, 0xe8, 0x0d, 0x70, 0x62, 0xd6, 0xa4,
-	0x86, 0xd4, 0x2c, 0xaa, 0x05, 0x1d, 0xbd, 0x8b, 0x89, 0x49, 0x1e, 0xc0, 0x7f, 0xd4, 0xb6, 0x87,
-	0xa6, 0x46, 0x99, 0x69, 0x8d, 0x07, 0xa6, 0x5e, 0xdb, 0x68, 0x48, 0xcd, 0x9c, 0xfa, 0x6f, 0xec,
-	0xb6, 0xa7, 0x13, 0x02, 0xf9, 0x31, 0x1d, 0x61, 0x2d, 0xc7, 0x9d, 0xf9, 0x99, 0x9c, 0x01, 0x68,
-	0x0e, 0x52, 0x86, 0xfa, 0x80, 0xb2, 0x5a, 0xbe, 0x21, 0x35, 0x4b, 0x6d, 0xb9, 0x15, 0x10, 0x6c,
-	0x85, 0x04, 0x5b, 0x6f, 0xc3, 0x0c, 0xd4, 0xa2, 0xb0, 0xee, 0x30, 0xe5, 0x2b, 0xec, 0x75, 0x74,
-	0x3d, 0xa0, 0xd8, 0x1b, 0xf7, 0xdb, 0xfd, 0x80, 0xb3, 0x8a, 0x5f, 0x26, 0xe8, 0x32, 0xb2, 0x0b,
-	0x05, 0xcb, 0x31, 0x7c, 0x32, 0x12, 0x27, 0xb3, 0x69, 0x39, 0x46, 0x4f, 0x27, 0x5d, 0x28, 0xf9,
-	0x49, 0xd8, 0x41, 0x4e, 0x9c, 0x68, 0xa9, 0xbd, 0xdf, 0x9a, 0xeb, 0x99, 0x9e, 0xbc, 0x0a, 0x3a,
-	0x7a, 0xe2, 0xac, 0x3c, 0x85, 0x3b, 0xe9, 0xc8, 0xae, 0x6d, 0x8d, 0x5d, 0xf4, 0xa1, 0x7d, 0x8c,
-	0x39, 0xb4, 0x8e, 0x5e, 0x4f, 0x57, 0xce, 0xe0, 0xde, 0x39, 0x0e, 0x91, 0x61, 0x26, 0xe7, 0x2c,
-	0x85, 0x95, 0x33, 0xa8, 0x67, 0xba, 0x0a, 0xd0, 0x0a, 0x14, 0x5c, 0x46, 0xd9, 0xc4, 0xe5, 0xae,
-	0xff, 0xa8, 0xe2, 0x4b, 0xf9, 0x21, 0x41, 0x35, 0xca, 0xe9, 0x92, 0x32, 0x9c, 0xd2, 0x59, 0x58,
-	0xd1, 0x32, 0xe4, 0x46, 0x54, 0x13, 0x58, 0xfe, 0x31, 0xa6, 0xda, 0x46, 0x5c, 0xb5, 0x86, 0xaf,
-	0x9a, 0xab, 0x39, 0xa6, 0xed, 0xd7, 0x52, 0x54, 0x30, 0x7e, 0x15, 0x15, 0x37, 0x9f, 0x59, 0xdc,
-	0xcd, 0xdf, 0x2b, 0xae, 0x2f, 0xb1, 0xa0, 0x7b, 0xf3, 0xea, 0x76, 0x00, 0x8c, 0x69, 0xa2, 0xb8,
-	0x4a, 0x5a, 0x71, 0x17, 0x85, 0x50, 0x8b, 0xc6, 0x34, 0x2c, 0xee, 0x29, 0xdc, 0xcd, 0x40, 0x16,
-	0x42, 0xef, 0xc0, 0xa6, 0x31, 0x9d, 0x23, 0xe7, 0x8d, 0x69, 0x4f, 0x57, 0xba, 0x61, 0x81, 0xb2,
-	0x29, 0xd7, 0xa1, 0x34, 0xa2, 0xda, 0x80, 0xea, 0xba, 0x83, 0xae, 0xcb, 0xc9, 0x15, 0x55, 0x18,
-	0x51, 0xad, 0x13, 0xdc, 0x28, 0xcf, 0xa1, 0x91, 0x1d, 0x63, 0x4d, 0x95, 0x4f, 0xa0, 0x76, 0x89,
-	0x2c, 0xe8, 0x8e, 0xee, 0xec, 0x9c, 0x77, 0xcd, 0xda, 0xae, 0xf2, 0xe0, 0x76, 0x8a, 0xd3, 0xbc,
-	0x89, 0xff, 0xd6, 0xfc, 0x1c, 0x41, 0xe5, 0x12, 0x99, 0xc8, 0xb2, 0x3b, 0xeb, 0x53, 0x2d, 0xa4,
-	0xba, 0xd4, 0x90, 0x8a, 0x0b, 0xd5, 0x25, 0xdb, 0xd5, 0x0c, 0xff, 0x40, 0x0f, 0x3c, 0x83, 0xbd,
-	0x48, 0x98, 0x40, 0x96, 0x97, 0xa6, 0xcb, 0x22, 0xe0, 0x05, 0x41, 0x73, 0x31, 0x41, 0x5f, 0x70,
-	0x41, 0x45, 0xdc, 0x3e, 0xd5, 0x16, 0xbc, 0xea, 0x50, 0x32, 0x82, 0x97, 0x41, 0x90, 0xa3, 0xef,
-	0x09, 0x46, 0x64, 0xac, 0x3c, 0xe1, 0xa9, 0xbe, 0xa7, 0xc3, 0x21, 0xb2, 0x2e, 0x1d, 0xd2, 0xb1,
-	0x86, 0xab, 0xdb, 0x5d, 0x39, 0xe5, 0x55, 0x4f, 0x78, 0x08, 0xb8, 0x1a, 0x6c, 0x5d, 0x05, 0x57,
-	0xdc, 0x47, 0x52, 0xc3, 0xcf, 0xf6, 0xf7, 0x3c, 0x94, 0xa3, 0xce, 0xf2, 0xff, 0x9a, 0x1a, 0x12,
-	0x03, 0x6e, 0xa5, 0xed, 0x34, 0x72, 0x18, 0x57, 0x2e, 0x7b, 0xdd, 0xca, 0x0f, 0xd7, 0xda, 0x09,
-	0x5e, 0x36, 0x54, 0x33, 0x56, 0x19, 0x79, 0x14, 0x8b, 0xb1, 0x7a, 0x53, 0xca, 0x47, 0x37, 0x31,
-	0x15, 0x88, 0x9f, 0x61, 0x37, 0x75, 0xa2, 0x49, 0x82, 0x73, 0xe6, 0xe8, 0xca, 0xcd, 0xf5, 0x86,
-	0x02, 0xcb, 0x85, 0x5a, 0xd6, 0x0c, 0x93, 0x65, 0xce, 0xd9, 0x88, 0x8f, 0x6f, 0x64, 0x2b, 0x40,
-	0x3f, 0x42, 0x39, 0xd9, 0x06, 0x24, 0xde, 0xf1, 0x19, 0x5d, 0x25, 0xdf, 0x5f, 0x69, 0x13, 0x04,
-	0x6f, 0xff, 0xdc, 0x80, 0x72, 0x34, 0x32, 0x61, 0xb7, 0x7c, 0x82, 0xff, 0x97, 0x36, 0x07, 0x49,
-	0x84, 0x4b, 0x5d, 0x46, 0xf2, 0xc1, 0x6a, 0x23, 0x91, 0xd1, 0x07, 0xd8, 0x4e, 0x4c, 0x3d, 0xd9,
-	0x5f, 0x74, 0x4c, 0xd9, 0x1e, 0xb2, 0xb2, 0xca, 0x44, 0x44, 0x7e, 0x07, 0x3b, 0x29, 0xa3, 0x4d,
-	0x2a, 0x4b, 0xff, 0x96, 0x2e, 0xfc, 0x1f, 0x45, 0xf2, 0x61, 0x1a, 0xdd, 0x94, 0x95, 0xf0, 0x9a,
-	0x0b, 0xb2, 0x38, 0xf9, 0x99, 0x41, 0x0f, 0x52, 0x79, 0x26, 0xf6, 0xc5, 0x55, 0x81, 0x7b, 0x9d,
-	0xfc, 0x0a, 0x00, 0x00, 0xff, 0xff, 0x6c, 0xb4, 0x02, 0x42, 0xec, 0x09, 0x00, 0x00,
+	// 3918 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x3b, 0x4d, 0x6f, 0xe3, 0x48,
+	0x76, 0x4b, 0xc9, 0x72, 0x4b, 0x4f, 0xb6, 0xac, 0x61, 0xbb, 0xdd, 0x6a, 0xb9, 0x3f, 0x6c, 0xf6,
+	0xc7, 0x74, 0xf7, 0x24, 0xee, 0x59, 0xcf, 0x66, 0x36, 0x33, 0xd8, 0x49, 0xa2, 0x1e, 0xb9, 0x35,
+	0xce, 0xda, 0xdd, 0x13, 0xfa, 0x2b, 0xc1, 0x24, 0xcb, 0xd0, 0x62, 0x59, 0xe6, 0x58, 0x22, 0xb5,
+	0x64, 0xc9, 0xb2, 0xf7, 0x12, 0x04, 0x8b, 0xb9, 0x6d, 0x0e, 0x1b, 0xe4, 0x16, 0x20, 0xc0, 0x1c,
+	0x82, 0xcd, 0x21, 0x08, 0x10, 0x04, 0x01, 0x82, 0x00, 0xb9, 0xe4, 0x10, 0xe4, 0x17, 0x05, 0x58,
+	0x20, 0x08, 0x82, 0xfa, 0x20, 0x59, 0x55, 0x22, 0x29, 0x7b, 0x6c, 0x07, 0xb9, 0x08, 0x62, 0xf1,
+	0x55, 0xbd, 0xcf, 0x7a, 0xf5, 0xea, 0xbd, 0x47, 0x58, 0xb0, 0x87, 0xc3, 0x10, 0x05, 0xa7, 0x28,
+	0x58, 0x1b, 0x06, 0x3e, 0xf6, 0xf5, 0x4a, 0x3c, 0xd0, 0x7c, 0xd4, 0xf3, 0xfd, 0x5e, 0x1f, 0xbd,
+	0xa2, 0x2f, 0x0e, 0x47, 0x47, 0xaf, 0xb0, 0x3b, 0x40, 0x21, 0xb6, 0x07, 0x43, 0x06, 0xdb, 0x5c,
+	0x56, 0x01, 0xd0, 0x60, 0x88, 0xcf, 0xf9, 0xcb, 0x87, 0xea, 0xcb, 0x71, 0x60, 0x0f, 0x87, 0x28,
+	0x08, 0xd9, 0x7b, 0xe3, 0x57, 0x1a, 0x2c, 0xb5, 0x86, 0xc3, 0x1d, 0x8a, 0xab, 0x8d, 0x4e, 0xdd,
+	0x2e, 0xfa, 0x32, 0xf0, 0x8f, 0xdc, 0x3e, 0xd2, 0xef, 0xc2, 0x2d, 0x07, 0x9d, 0x5a, 0x68, 0xe4,
+	0x36, 0xb4, 0x15, 0xed, 0x79, 0xc5, 0x9c, 0x75, 0xd0, 0xe9, 0xc6, 0xc8, 0xd5, 0x9f, 0x42, 0xcd,
+	0x1e, 0x0e, 0xfb, 0x6e, 0xd7, 0xc6, 0xae, 0xef, 0x59, 0xae, 0xd3, 0x28, 0xac, 0x68, 0xcf, 0x8b,
+	0xe6, 0xbc, 0x30, 0xba, 0xe9, 0xe8, 0x3a, 0xcc, 0x78, 0xf6, 0x00, 0x35, 0x8a, 0x74, 0x32, 0xfd,
+	0xaf, 0x7f, 0x02, 0xd0, 0x0d, 0x90, 0x8d, 0x91, 0x63, 0xd9, 0xb8, 0x31, 0xb3, 0xa2, 0x3d, 0xaf,
+	0xae, 0x37, 0xd7, 0x18, 0x8d, 0x6b, 0x11, 0x8d, 0x6b, 0xbb, 0x11, 0x87, 0x66, 0x85, 0x43, 0xb7,
+	0xb0, 0x71, 0x06, 0xcb, 0x2d, 0xc7, 0x61, 0x24, 0x6e, 0x7a, 0xdb, 0xeb, 0xdb, 0x8c, 0x66, 0x13,
+	0xfd, 0x74, 0x84, 0x42, 0xac, 0xdf, 0x81, 0x59, 0x3f, 0xe8, 0x11, 0x62, 0x34, 0x4a, 0x4c, 0xc9,
+	0x0f, 0x7a, 0x9b, 0x8e, 0xfe, 0x1a, 0xaa, 0x84, 0x89, 0x21, 0xe3, 0x89, 0x12, 0x5a, 0x5d, 0x5f,
+	0x5d, 0x4b, 0xe4, 0x9d, 0xce, 0xbc, 0x09, 0x0e, 0x3a, 0xe5, 0xff, 0x8d, 0xdf, 0x82, 0xfb, 0xe9,
+	0x98, 0xc3, 0xa1, 0xef, 0x85, 0x88, 0xa0, 0x26, 0x38, 0x12, 0xd4, 0x0e, 0x3a, 0xdd, 0x74, 0x8c,
+	0x4f, 0xe0, 0x61, 0x1b, 0xf5, 0x11, 0x46, 0x99, 0x34, 0x67, 0x49, 0xd8, 0xf8, 0x04, 0x1e, 0x65,
+	0x4e, 0xe5, 0x48, 0x97, 0x60, 0x36, 0xc4, 0x36, 0x1e, 0x85, 0x74, 0x6a, 0xd9, 0xe4, 0x4f, 0xc6,
+	0x3f, 0x69, 0x70, 0x37, 0xe6, 0xa9, 0x63, 0x63, 0x34, 0xb6, 0xcf, 0x23, 0x8d, 0xd6, 0xa1, 0x38,
+	0xb0, 0xbb, 0x1c, 0x17, 0xf9, 0x2b, 0x48, 0xad, 0x20, 0x4a, 0x6d, 0x85, 0x48, 0x2d, 0xec, 0x06,
+	0xee, 0x90, 0xe8, 0x92, 0x6b, 0x50, 0x1c, 0x8a, 0x95, 0x3b, 0x93, 0xa9, 0xdc, 0xd2, 0xe5, 0x94,
+	0x4b, 0x44, 0xcc, 0xc9, 0xbd, 0xb8, 0x76, 0x5b, 0x00, 0xbd, 0xb1, 0xa2, 0x5c, 0x23, 0x4d, 0xb9,
+	0xb2, 0x20, 0xcc, 0x4a, 0x6f, 0x1c, 0x29, 0xf7, 0x07, 0xf0, 0x20, 0x03, 0x33, 0x17, 0xf4, 0x6d,
+	0x28, 0xf5, 0xc6, 0x09, 0xe6, 0x99, 0xde, 0x78, 0xd3, 0x31, 0x5e, 0x47, 0x0a, 0xca, 0x26, 0xf9,
+	0x11, 0x54, 0x07, 0x76, 0xd7, 0xb2, 0x1d, 0x27, 0x40, 0x61, 0x48, 0x89, 0xab, 0x98, 0x30, 0xb0,
+	0xbb, 0x2d, 0x36, 0x62, 0x7c, 0x0a, 0x2b, 0xd9, 0x6b, 0x4c, 0xd1, 0xf2, 0x47, 0xd0, 0xe8, 0x20,
+	0xcc, 0xac, 0xe3, 0xf5, 0x79, 0x9b, 0x5a, 0xcd, 0x54, 0xab, 0x3a, 0x85, 0x7b, 0x29, 0x93, 0x12,
+	0x23, 0xbe, 0xa9, 0xfd, 0xf3, 0x12, 0x96, 0x3a, 0x08, 0x73, 0x2e, 0x5f, 0x9f, 0x6f, 0xdb, 0xdd,
+	0x88, 0xd4, 0x09, 0x83, 0x34, 0x42, 0xb8, 0x3b, 0x01, 0x9b, 0x4f, 0xe1, 0x35, 0xd8, 0xc0, 0xc7,
+	0xb0, 0x1c, 0x0b, 0x86, 0x89, 0x65, 0xcb, 0x0d, 0x71, 0x8c, 0x58, 0x12, 0x68, 0x51, 0x10, 0xe8,
+	0x8f, 0xa8, 0x40, 0xf9, 0xba, 0xdb, 0x76, 0x57, 0x9a, 0xf5, 0x08, 0xaa, 0x3d, 0xf6, 0xc6, 0x62,
+	0x3c, 0x92, 0x99, 0xd0, 0x8b, 0x81, 0x8d, 0x7f, 0xd4, 0x60, 0x21, 0x22, 0x26, 0x9a, 0xf4, 0x18,
+	0x66, 0x46, 0x21, 0x0a, 0x28, 0x87, 0xd5, 0xf5, 0x05, 0x81, 0x8d, 0xbd, 0x10, 0x05, 0x26, 0x7d,
+	0xa9, 0xb7, 0x60, 0xde, 0x0f, 0x7a, 0xb6, 0xe7, 0xfe, 0x8c, 0xba, 0xda, 0xb0, 0x51, 0x5c, 0x29,
+	0x3e, 0xaf, 0xae, 0x2f, 0x0b, 0xd0, 0xef, 0x84, 0xf7, 0x5b, 0xae, 0x77, 0x62, 0xca, 0x33, 0xf4,
+	0x8f, 0xa1, 0x1c, 0x22, 0x8c, 0x5d, 0xaf, 0x17, 0xc6, 0x5e, 0x38, 0x99, 0xcd, 0xa9, 0xda, 0xe1,
+	0x10, 0x66, 0x0c, 0x6b, 0xfc, 0xb3, 0x06, 0x33, 0x84, 0x12, 0xbd, 0x06, 0x05, 0xae, 0x88, 0x8a,
+	0x59, 0x70, 0x1d, 0xbd, 0x09, 0x65, 0x42, 0x1b, 0xf5, 0x09, 0xcc, 0xd4, 0xe3, 0x67, 0x22, 0x89,
+	0x10, 0x85, 0x21, 0x39, 0x2b, 0x30, 0xee, 0x53, 0x6f, 0x52, 0x32, 0x81, 0x0f, 0xed, 0xee, 0x6e,
+	0xe9, 0xf7, 0xa0, 0xec, 0x86, 0x96, 0xed, 0x0c, 0x5c, 0x8f, 0x52, 0x53, 0x36, 0x6f, 0xb9, 0x61,
+	0x8b, 0x3c, 0xea, 0xcb, 0x50, 0x21, 0xaf, 0xba, 0xd8, 0x3d, 0x45, 0xd4, 0xa5, 0x94, 0xcd, 0xb2,
+	0x1b, 0xb6, 0xe8, 0xb3, 0xbe, 0x08, 0x25, 0x34, 0xb0, 0xdd, 0x7e, 0x63, 0x96, 0x62, 0x64, 0x0f,
+	0xd4, 0x35, 0xf9, 0x18, 0x35, 0x6e, 0x71, 0xd7, 0xe4, 0x63, 0x64, 0xec, 0xc6, 0xa2, 0x8e, 0x98,
+	0xd2, 0x5b, 0xf0, 0xc0, 0x71, 0x43, 0xfb, 0xb0, 0x8f, 0x2c, 0x3b, 0x0c, 0xdd, 0x9e, 0x67, 0xa1,
+	0x33, 0x37, 0x24, 0xef, 0x2c, 0x42, 0x79, 0xb4, 0xe3, 0x9a, 0x1c, 0xa8, 0x45, 0x61, 0x36, 0x38,
+	0x08, 0x91, 0x41, 0x68, 0xfc, 0x5a, 0x83, 0xba, 0x2a, 0x69, 0xfd, 0x7d, 0x58, 0x10, 0x65, 0x9d,
+	0xd8, 0x6b, 0x4d, 0x1c, 0xde, 0x6c, 0xeb, 0x1f, 0xc0, 0x7b, 0x12, 0xa0, 0x20, 0xbb, 0xba, 0xf8,
+	0xe2, 0x2d, 0x91, 0xa1, 0x28, 0xa2, 0xa2, 0x2c, 0xa2, 0xef, 0x7e, 0xa6, 0x92, 0xa9, 0xa3, 0xa1,
+	0x73, 0x09, 0x8f, 0xcd, 0xa1, 0x5b, 0xd8, 0x78, 0x03, 0x73, 0x5b, 0x7e, 0xcf, 0xf5, 0xa2, 0xad,
+	0x2c, 0x1a, 0x80, 0xa6, 0x18, 0x40, 0x13, 0xca, 0x43, 0x3b, 0x0c, 0xc7, 0x7e, 0xe0, 0x44, 0xc6,
+	0x11, 0x3d, 0x1b, 0xab, 0x30, 0xcf, 0xd7, 0xe1, 0x5b, 0xa0, 0x0e, 0xc5, 0xaf, 0xc7, 0x38, 0xf2,
+	0x09, 0x5f, 0x8f, 0xb1, 0xf1, 0x43, 0x78, 0xd8, 0x41, 0x98, 0x88, 0x5c, 0x16, 0x36, 0xd9, 0x6c,
+	0x79, 0xc7, 0x83, 0xe1, 0xc0, 0xa3, 0xcc, 0x89, 0x1c, 0xdb, 0xc4, 0x5e, 0xd2, 0x2e, 0xbb, 0x97,
+	0x8c, 0x35, 0xb8, 0xc3, 0xb1, 0xc4, 0xbb, 0x39, 0x97, 0xaa, 0x03, 0xea, 0x0e, 0x25, 0x78, 0x4e,
+	0xcc, 0x67, 0x30, 0x47, 0x64, 0x16, 0x3b, 0x33, 0x2d, 0x6b, 0x67, 0x46, 0x33, 0xcc, 0xea, 0x28,
+	0x59, 0xc6, 0xf8, 0x90, 0xfa, 0xce, 0x03, 0xbb, 0xdf, 0x47, 0xf8, 0xb5, 0xdd, 0xb7, 0xbd, 0xee,
+	0x34, 0x52, 0x42, 0x7a, 0x8c, 0x28, 0x33, 0x38, 0x31, 0x0d, 0xb8, 0x75, 0xc8, 0x86, 0xe8, 0x1c,
+	0xcd, 0x8c, 0x1e, 0x27, 0xc8, 0x2c, 0x5c, 0x8e, 0xcc, 0x9f, 0x50, 0x32, 0xf7, 0x07, 0x67, 0xdd,
+	0xdd, 0xb3, 0x2f, 0xdc, 0x10, 0xfb, 0xc1, 0xf9, 0x94, 0x63, 0x7e, 0x09, 0x66, 0xfd, 0xa3, 0xa3,
+	0x10, 0x61, 0x1e, 0xa5, 0xf0, 0x27, 0xb2, 0xff, 0xfb, 0xee, 0xc0, 0xc5, 0x74, 0x47, 0x14, 0x4d,
+	0xf6, 0x60, 0xfc, 0x5c, 0x83, 0x79, 0x69, 0x75, 0xe2, 0x11, 0x8e, 0x02, 0x7f, 0xc0, 0x6d, 0x8a,
+	0xfe, 0x27, 0x0e, 0x0c, 0xfb, 0xdc, 0x1a, 0x0b, 0xd8, 0x27, 0x4e, 0x1e, 0x9f, 0x59, 0xf8, 0x7c,
+	0x18, 0x05, 0xac, 0xb3, 0xf8, 0x6c, 0xf7, 0x7c, 0x48, 0x8f, 0x60, 0x7b, 0xe0, 0x8f, 0x3c, 0xb6,
+	0xb5, 0x34, 0x93, 0x3f, 0xe9, 0x0f, 0x26, 0xa2, 0x9d, 0x8a, 0x18, 0xd1, 0xfc, 0x9d, 0x46, 0x65,
+	0xab, 0xb0, 0xc9, 0x65, 0xbb, 0x08, 0xa5, 0x2e, 0x5d, 0x92, 0xb3, 0x49, 0x1f, 0xf4, 0x1f, 0x02,
+	0xe0, 0x33, 0xeb, 0x98, 0xc1, 0x36, 0x0a, 0xd4, 0x10, 0x1b, 0x82, 0x54, 0xe5, 0xb5, 0x2a, 0x38,
+	0xe6, 0x4f, 0x55, 0x48, 0xf1, 0x72, 0x0a, 0xf9, 0x53, 0x7a, 0x8c, 0x31, 0x2b, 0xd8, 0x0b, 0xed,
+	0x1e, 0xfa, 0x62, 0xea, 0xd6, 0xba, 0xa4, 0x4a, 0xfe, 0xa6, 0x08, 0xfa, 0x24, 0x0a, 0x62, 0x62,
+	0x3b, 0xd8, 0x0e, 0x70, 0x2b, 0xda, 0xee, 0xd1, 0xa3, 0xfe, 0x1c, 0x16, 0xda, 0xa3, 0x80, 0x6e,
+	0xb0, 0x6d, 0xd7, 0x1b, 0x61, 0x14, 0x72, 0x3c, 0xea, 0x30, 0x59, 0xa3, 0xdd, 0xff, 0xdc, 0xc3,
+	0xed, 0x53, 0x8e, 0x32, 0x7a, 0x24, 0x41, 0x2c, 0xff, 0xfb, 0x26, 0x40, 0x2c, 0x52, 0x2d, 0x9a,
+	0xe2, 0x10, 0x99, 0xbb, 0xc7, 0xe7, 0x96, 0xd8, 0xdc, 0xbd, 0x64, 0xee, 0x9e, 0x30, 0x77, 0x96,
+	0xcd, 0xdd, 0x93, 0xe7, 0xd2, 0xa5, 0x3a, 0x63, 0x7a, 0xd0, 0x44, 0x78, 0x3b, 0xe3, 0x18, 0x6f,
+	0x67, 0x4c, 0xe7, 0x96, 0x05, 0xbc, 0x6c, 0x28, 0xc6, 0xdb, 0x19, 0x37, 0x2a, 0x02, 0x5e, 0x36,
+	0x77, 0x4f, 0x98, 0x0b, 0x02, 0x5e, 0x3e, 0x77, 0x11, 0x4a, 0x3b, 0x43, 0xe4, 0x39, 0x8d, 0x2a,
+	0xb5, 0x46, 0xf6, 0x40, 0xd4, 0xb1, 0xe9, 0x75, 0xfd, 0x01, 0x6a, 0xcc, 0x31, 0x23, 0x65, 0x4f,
+	0xfa, 0x33, 0xa8, 0xed, 0x31, 0x97, 0xcd, 0xb7, 0x77, 0x63, 0x9e, 0xbe, 0x57, 0x46, 0x8d, 0x7f,
+	0xd5, 0xa0, 0x99, 0x66, 0x03, 0xdc, 0x5e, 0x3b, 0x50, 0x1f, 0xd3, 0x57, 0xd6, 0x88, 0xbc, 0x23,
+	0x36, 0xca, 0x1d, 0xe5, 0x03, 0xc1, 0xc8, 0x52, 0x16, 0xa8, 0x8d, 0xa5, 0x81, 0x2b, 0xba, 0x8e,
+	0x64, 0xdf, 0x14, 0x85, 0x7d, 0xc3, 0xfd, 0x5e, 0xdb, 0x1f, 0x53, 0xf7, 0xfc, 0x65, 0xe0, 0x4e,
+	0xf5, 0x7b, 0x7f, 0xce, 0x36, 0xa7, 0x32, 0x85, 0x33, 0xfb, 0x0c, 0x16, 0x1c, 0x7f, 0xec, 0x59,
+	0x7d, 0xd7, 0x3b, 0xb1, 0x86, 0xe4, 0x15, 0x77, 0x80, 0xf3, 0x8e, 0x08, 0x7f, 0x55, 0x37, 0xf8,
+	0x15, 0x2c, 0xc6, 0x41, 0xe7, 0xd6, 0x75, 0x6f, 0xb8, 0x5f, 0x69, 0xf4, 0x50, 0x12, 0x57, 0xe7,
+	0xdc, 0x7d, 0x22, 0x07, 0xf4, 0xda, 0x84, 0x97, 0xc9, 0x8c, 0xe3, 0x13, 0xe9, 0x17, 0x44, 0xaf,
+	0x75, 0x45, 0xe7, 0xd3, 0x61, 0xca, 0x93, 0x90, 0xe6, 0x4b, 0x22, 0xb9, 0x6e, 0x17, 0xc4, 0xeb,
+	0xf6, 0x7f, 0x6b, 0x30, 0x2f, 0x27, 0x30, 0x92, 0x18, 0xb5, 0x48, 0x63, 0x54, 0x21, 0x8e, 0x2f,
+	0x48, 0x09, 0x8d, 0x65, 0xa8, 0x1c, 0x9d, 0x58, 0xcc, 0x54, 0xb9, 0x1c, 0xcb, 0x47, 0x27, 0xcc,
+	0x96, 0xf5, 0x17, 0x30, 0x33, 0xf0, 0x1d, 0xe6, 0x3f, 0x6a, 0xeb, 0x77, 0x26, 0x24, 0xb5, 0xed,
+	0x3b, 0xc8, 0xa4, 0x20, 0x53, 0x8e, 0x04, 0x7d, 0x05, 0xe6, 0xfa, 0x76, 0x88, 0xad, 0x10, 0x21,
+	0x8f, 0x00, 0xb0, 0xa8, 0x15, 0xc8, 0xd8, 0x0e, 0x42, 0x5e, 0x0b, 0xa7, 0x64, 0x56, 0x6e, 0xe5,
+	0x65, 0x56, 0xca, 0xc9, 0xe5, 0xdb, 0xf8, 0x2b, 0x4d, 0xb8, 0x12, 0xaa, 0x81, 0xc5, 0x84, 0xd2,
+	0xb5, 0x0b, 0x2b, 0xfd, 0x8a, 0xea, 0x1d, 0x09, 0xea, 0xbd, 0xd8, 0x61, 0x9f, 0xae, 0x5e, 0xc1,
+	0xfe, 0x8b, 0xe9, 0xf6, 0x3f, 0x23, 0xda, 0xff, 0xcf, 0x04, 0x61, 0xa8, 0x87, 0xef, 0x23, 0x26,
+	0x8c, 0xe8, 0x9c, 0x65, 0x27, 0x0f, 0x61, 0x39, 0xeb, 0x38, 0xbd, 0xe4, 0xc6, 0x3e, 0x85, 0xc5,
+	0x9d, 0x08, 0x37, 0x35, 0x8e, 0xef, 0xc4, 0xef, 0x87, 0x50, 0x26, 0xc3, 0xd4, 0xf4, 0x8a, 0x79,
+	0xa6, 0x47, 0x6c, 0x9a, 0xfc, 0x31, 0x3c, 0xb8, 0xa3, 0xe0, 0xcd, 0x4f, 0x22, 0x5c, 0x55, 0xb5,
+	0xbf, 0xd0, 0xe0, 0xde, 0xb6, 0xef, 0xb8, 0x47, 0xe7, 0xdb, 0xbe, 0x87, 0xce, 0x5b, 0x5d, 0xea,
+	0x0f, 0xa6, 0x70, 0xfb, 0x0a, 0x60, 0x40, 0xa0, 0x2d, 0xfb, 0xf0, 0x30, 0xa0, 0x1c, 0xd7, 0xd6,
+	0xeb, 0x02, 0x46, 0xba, 0x94, 0x59, 0xa1, 0x30, 0xad, 0xc3, 0xc3, 0x80, 0x5c, 0xa7, 0xba, 0xa3,
+	0x20, 0x40, 0x1e, 0xb6, 0xec, 0x6e, 0xe2, 0xfc, 0x2b, 0x66, 0x8d, 0x0f, 0x73, 0xbc, 0x46, 0x08,
+	0xcd, 0x34, 0x6a, 0x2e, 0x29, 0x83, 0x4b, 0xea, 0xfa, 0xaf, 0x35, 0x78, 0xdc, 0x41, 0x58, 0x44,
+	0xf9, 0xf9, 0xb1, 0xed, 0xf5, 0xd0, 0x0d, 0x04, 0xb6, 0x8a, 0xec, 0x66, 0xa6, 0xca, 0xce, 0x38,
+	0x22, 0x0a, 0xca, 0xa0, 0x8c, 0x38, 0x11, 0xdb, 0x71, 0x82, 0x28, 0x28, 0x26, 0xff, 0x05, 0x29,
+	0x71, 0x07, 0xc9, 0xa5, 0x24, 0x3b, 0xb6, 0xa2, 0x1a, 0xeb, 0xfe, 0xa7, 0x06, 0x4f, 0xf2, 0xa5,
+	0x90, 0x1b, 0xf7, 0xfe, 0x18, 0x6a, 0x5d, 0x0a, 0xae, 0xc4, 0xbe, 0x4f, 0x54, 0xde, 0x52, 0xd7,
+	0x9e, 0xef, 0x4a, 0x6c, 0x5d, 0xd1, 0xa8, 0x8f, 0xe0, 0x7e, 0x07, 0x61, 0x96, 0x5f, 0xb8, 0x41,
+	0xb3, 0x36, 0xbe, 0xd1, 0xe0, 0x41, 0x06, 0x22, 0x2e, 0x2b, 0x72, 0x16, 0xd0, 0xb7, 0xb1, 0xdd,
+	0x33, 0x4d, 0xcd, 0xb3, 0x51, 0x0e, 0x7e, 0x55, 0x03, 0xfe, 0x63, 0x1a, 0x27, 0xf0, 0x14, 0xd6,
+	0x4d, 0x84, 0x21, 0x4b, 0xea, 0xf2, 0x9c, 0xbd, 0xdf, 0x96, 0xd2, 0x76, 0x2c, 0x0c, 0xb9, 0x27,
+	0x06, 0x93, 0x59, 0xd9, 0xba, 0x9b, 0x09, 0x43, 0x30, 0x3d, 0x30, 0x14, 0xa4, 0xf9, 0xa2, 0x88,
+	0x13, 0xc3, 0x85, 0x24, 0x31, 0x7c, 0xc9, 0x63, 0xea, 0xdb, 0x02, 0xd4, 0x94, 0x1c, 0xbd, 0x1a,
+	0xb4, 0xf0, 0x14, 0x69, 0x21, 0xc9, 0xd9, 0x37, 0xa0, 0x7c, 0x74, 0x62, 0xf5, 0xc6, 0x16, 0xcd,
+	0xfc, 0x51, 0x24, 0x47, 0x27, 0x9d, 0xf1, 0xdb, 0x50, 0x8e, 0x63, 0x66, 0x94, 0x38, 0xe6, 0x25,
+	0x8f, 0x63, 0x4a, 0xd4, 0x38, 0x97, 0x26, 0x45, 0x2d, 0x04, 0x32, 0xcb, 0xc0, 0x77, 0x77, 0x12,
+	0xa6, 0x94, 0xd9, 0x40, 0x4a, 0x18, 0x73, 0x6b, 0x22, 0x8c, 0x49, 0x04, 0x56, 0xce, 0xa9, 0x2a,
+	0x54, 0xb2, 0xab, 0x0a, 0x20, 0x07, 0x36, 0xf7, 0x52, 0x54, 0x93, 0x61, 0x46, 0xda, 0x85, 0xcd,
+	0xe8, 0x8a, 0x1b, 0x47, 0x32, 0x98, 0x8b, 0x79, 0xfb, 0x6b, 0x30, 0x98, 0x73, 0x51, 0x16, 0xaa,
+	0x77, 0x7d, 0x40, 0x65, 0x21, 0xc7, 0x35, 0x95, 0xde, 0xf8, 0x9a, 0xc2, 0x1a, 0x4c, 0xc3, 0x0b,
+	0xd1, 0x56, 0xbe, 0x03, 0xb7, 0xaf, 0xe0, 0x56, 0x6f, 0x2c, 0x06, 0x35, 0x59, 0x76, 0x38, 0xdb,
+	0x1b, 0xd3, 0xa0, 0xc6, 0x87, 0x25, 0x15, 0xeb, 0xcd, 0x46, 0x35, 0x6b, 0x34, 0x53, 0xb1, 0x8f,
+	0x82, 0xd0, 0xf5, 0x3d, 0x31, 0x19, 0x76, 0xca, 0x86, 0xa2, 0x4c, 0x05, 0x7f, 0x34, 0x16, 0x29,
+	0x7c, 0x9c, 0x2a, 0x67, 0x32, 0x31, 0xfe, 0x56, 0x83, 0xdb, 0xd2, 0x30, 0x5f, 0xe7, 0x37, 0xe0,
+	0xbd, 0xbe, 0x3f, 0xe6, 0xb7, 0xee, 0x03, 0x3b, 0xf0, 0x5c, 0xaf, 0xc7, 0xc5, 0x36, 0xf9, 0x82,
+	0x6e, 0x18, 0x7f, 0xec, 0x91, 0x8b, 0xe8, 0x1b, 0x84, 0xb8, 0x20, 0xc5, 0x21, 0xfd, 0x77, 0xa0,
+	0x89, 0x03, 0xdb, 0x0b, 0xc9, 0x99, 0xe0, 0x7b, 0x5f, 0xa2, 0xa0, 0x8b, 0x3c, 0x6c, 0xf7, 0xd0,
+	0xce, 0xb1, 0x1d, 0x20, 0x6e, 0x51, 0x39, 0x10, 0xc6, 0xff, 0x68, 0x70, 0x87, 0x45, 0x4d, 0x0a,
+	0x07, 0xfa, 0x66, 0x16, 0xa5, 0xd5, 0xf5, 0xe5, 0x89, 0x0c, 0xf1, 0xa6, 0x87, 0x3f, 0xfe, 0xc1,
+	0xbe, 0xdd, 0x1f, 0xa1, 0x34, 0x36, 0x3e, 0x9b, 0x64, 0x63, 0xca, 0x22, 0x12, 0x8f, 0x5f, 0x4d,
+	0xe5, 0x71, 0xca, 0x6a, 0x79, 0x02, 0xf8, 0x10, 0x96, 0x54, 0xfe, 0xa7, 0x94, 0xde, 0x3e, 0x83,
+	0xb9, 0x1d, 0x6c, 0x9f, 0xa0, 0xe9, 0x07, 0x25, 0x4f, 0x1b, 0x16, 0xc4, 0xb4, 0xa1, 0x71, 0x04,
+	0xf3, 0x7c, 0x7a, 0x2a, 0x9e, 0xca, 0x75, 0x45, 0xa6, 0xef, 0x43, 0x6d, 0xcf, 0x0b, 0xa7, 0x13,
+	0x6a, 0x1c, 0xc3, 0x42, 0x0c, 0x78, 0xb3, 0x24, 0xbd, 0xa2, 0xc1, 0x00, 0x0b, 0x79, 0xa8, 0x0c,
+	0xc2, 0x29, 0xa4, 0xfd, 0x9b, 0x06, 0x55, 0x01, 0x9c, 0x9c, 0x8d, 0x9b, 0xf1, 0xd9, 0xb8, 0x49,
+	0x8b, 0x4e, 0x6f, 0xf8, 0xf1, 0xc6, 0x37, 0x47, 0xfc, 0x4c, 0x78, 0x68, 0x0d, 0xe2, 0xeb, 0x82,
+	0x66, 0xf2, 0x27, 0xb2, 0xa7, 0xe8, 0x62, 0x3b, 0x8c, 0x41, 0x56, 0xbf, 0x16, 0x87, 0xf4, 0x67,
+	0x50, 0xa3, 0x69, 0x48, 0x3a, 0xb6, 0xeb, 0x0e, 0x10, 0xbf, 0xc9, 0x2b, 0xa3, 0x34, 0x57, 0xc7,
+	0x04, 0x47, 0x81, 0xd8, 0x31, 0x29, 0x0e, 0x19, 0x7f, 0xa1, 0xd1, 0xdb, 0xaf, 0xcc, 0x31, 0x97,
+	0xf1, 0x47, 0x50, 0xb1, 0xbb, 0xd8, 0xa2, 0xc0, 0x7c, 0x5f, 0x89, 0xbe, 0x50, 0x98, 0x63, 0x96,
+	0xed, 0x2e, 0x43, 0x7b, 0x0d, 0xc1, 0x1e, 0x59, 0xc7, 0xf5, 0x7a, 0x37, 0x91, 0x77, 0xff, 0xb5,
+	0x06, 0xef, 0x11, 0x9f, 0x27, 0x61, 0xd0, 0x57, 0x61, 0x8e, 0xf2, 0x68, 0xf1, 0xdd, 0xc0, 0x52,
+	0x69, 0x55, 0x3a, 0xc6, 0x55, 0xb2, 0x08, 0xa5, 0x90, 0x88, 0x96, 0x07, 0x39, 0xec, 0x81, 0x04,
+	0x3e, 0xc8, 0x73, 0xf8, 0x65, 0x83, 0xfc, 0x25, 0x51, 0x49, 0x40, 0xaf, 0xc4, 0x1e, 0x3e, 0xe6,
+	0x8a, 0x2b, 0x07, 0xe4, 0xf2, 0xeb, 0xe1, 0x63, 0x12, 0x2e, 0x7b, 0x08, 0x8f, 0xfd, 0xe0, 0xc4,
+	0x72, 0x59, 0x26, 0xb4, 0xc4, 0x92, 0x76, 0x7c, 0x94, 0x27, 0x44, 0x57, 0x61, 0x8e, 0xce, 0xef,
+	0x9f, 0x5b, 0x81, 0x8d, 0x99, 0xd6, 0x34, 0xb3, 0xca, 0xc7, 0x4c, 0x1b, 0x53, 0x5f, 0x1f, 0xa0,
+	0x53, 0xe4, 0x8d, 0x58, 0x09, 0x51, 0x33, 0xa3, 0x47, 0xb1, 0x24, 0x52, 0x96, 0x4a, 0x22, 0xc6,
+	0x3f, 0x68, 0xb0, 0xa4, 0x8a, 0xf6, 0x5a, 0x8a, 0x3a, 0xfa, 0xef, 0x32, 0xf9, 0xb9, 0x5e, 0x8f,
+	0x9e, 0xec, 0xfc, 0x6a, 0x74, 0x5f, 0x4e, 0xbb, 0x2a, 0xa8, 0xab, 0x61, 0xf2, 0x9c, 0x91, 0x33,
+	0xfd, 0x3e, 0x34, 0xf8, 0xa4, 0xc4, 0x23, 0x4e, 0xd9, 0x8d, 0xbf, 0x0f, 0xf7, 0x52, 0xa6, 0x70,
+	0x2e, 0x7f, 0x13, 0xf4, 0x88, 0xcc, 0x61, 0xfc, 0x96, 0x2b, 0xfb, 0xbd, 0x50, 0x9d, 0x66, 0xf8,
+	0xf0, 0x94, 0x90, 0x3d, 0x1a, 0xa2, 0xe0, 0xad, 0xef, 0xa0, 0xec, 0xfb, 0x96, 0x7c, 0xb1, 0xd2,
+	0xa6, 0xe7, 0x0b, 0xd2, 0x3b, 0x5a, 0x8c, 0x6f, 0x35, 0x78, 0x36, 0x0d, 0x63, 0x1c, 0x52, 0x36,
+	0x42, 0x02, 0xe6, 0xf9, 0x0e, 0xb2, 0x52, 0xaf, 0x60, 0x4b, 0xf1, 0xfb, 0xd6, 0x75, 0xde, 0xc5,
+	0x7e, 0xa1, 0xc1, 0xa3, 0x96, 0xe3, 0xc4, 0x34, 0x5e, 0x8b, 0x3c, 0x56, 0x61, 0x8e, 0x13, 0x4f,
+	0x5b, 0x51, 0xf8, 0x1e, 0xab, 0xf2, 0xb1, 0x16, 0xb9, 0xf5, 0x27, 0x22, 0x2b, 0x8a, 0x22, 0x3b,
+	0x87, 0x95, 0x6c, 0x6a, 0x6e, 0x36, 0xad, 0xe2, 0xd0, 0xcb, 0xf1, 0x6e, 0x72, 0x6c, 0x87, 0x37,
+	0xe1, 0xb0, 0xfe, 0x43, 0xa3, 0x85, 0xe5, 0x54, 0x34, 0xb9, 0x09, 0x8b, 0x77, 0x70, 0x5b, 0x08,
+	0x29, 0x94, 0xac, 0xc5, 0x43, 0x81, 0xc9, 0xb4, 0xa5, 0x75, 0x61, 0xea, 0x35, 0x25, 0x2d, 0x5e,
+	0x40, 0xbd, 0x83, 0x30, 0xf3, 0x70, 0x53, 0x36, 0xf1, 0x07, 0xd4, 0x47, 0x47, 0xa0, 0x89, 0x16,
+	0x25, 0xef, 0x1c, 0xc5, 0x2a, 0x7f, 0x59, 0x80, 0xdb, 0x29, 0x2c, 0x5c, 0xa8, 0x9e, 0xfa, 0x40,
+	0x32, 0x54, 0x9e, 0x32, 0x4a, 0xcc, 0x32, 0xab, 0xaa, 0x9a, 0x18, 0x54, 0x49, 0x0a, 0x3d, 0x58,
+	0x79, 0xf6, 0xd8, 0x0e, 0x8f, 0xf9, 0x41, 0x3b, 0x8b, 0xcf, 0xbe, 0xb0, 0xc3, 0x63, 0xfd, 0x05,
+	0xd4, 0x45, 0x5d, 0xd0, 0x02, 0x2e, 0xbb, 0x91, 0x2e, 0x08, 0xe3, 0xb4, 0x92, 0xdb, 0x86, 0x3a,
+	0xbd, 0xb8, 0xb2, 0x26, 0x06, 0x0b, 0xbb, 0x3c, 0x85, 0x9e, 0xdf, 0xf3, 0x50, 0x23, 0x73, 0x58,
+	0xb9, 0x8c, 0x1e, 0xea, 0x7f, 0x42, 0xa3, 0x98, 0x5d, 0x7f, 0xb8, 0x37, 0xbc, 0x09, 0xa3, 0xfc,
+	0x56, 0x83, 0x39, 0x71, 0xf1, 0x0b, 0x09, 0x3b, 0x91, 0x66, 0x31, 0xa7, 0x46, 0x3d, 0xa3, 0x16,
+	0x24, 0x62, 0x1d, 0x51, 0xa9, 0x95, 0x04, 0x1d, 0x51, 0x79, 0x65, 0xc9, 0xdc, 0xf8, 0x7b, 0x16,
+	0xd7, 0xc8, 0x32, 0xc8, 0xdd, 0x31, 0x3f, 0x82, 0x79, 0xec, 0x0f, 0x47, 0x43, 0x65, 0xaf, 0xdc,
+	0x15, 0xf7, 0x8a, 0xb8, 0xda, 0x1c, 0x85, 0xbe, 0xa6, 0xed, 0xe1, 0xd0, 0xda, 0x26, 0x5d, 0xbf,
+	0x8d, 0x42, 0xec, 0x7a, 0xb4, 0x8e, 0x72, 0xdd, 0x19, 0xbd, 0x9f, 0x6b, 0xb4, 0x8b, 0x6c, 0x12,
+	0xcd, 0xff, 0x69, 0x3e, 0xcf, 0xa2, 0xf9, 0xbc, 0x03, 0x17, 0x1f, 0x3b, 0x81, 0x3d, 0x7e, 0x83,
+	0xd0, 0x75, 0x1f, 0xa4, 0xe7, 0xd4, 0xfc, 0x25, 0x04, 0x9c, 0xc1, 0x15, 0xa8, 0x8e, 0x93, 0xe1,
+	0x28, 0xd0, 0x13, 0x86, 0xae, 0x9e, 0x81, 0xd0, 0x23, 0xbc, 0x26, 0xfa, 0xe9, 0x75, 0x17, 0x1a,
+	0x32, 0xf6, 0x90, 0xd1, 0x87, 0xdb, 0x12, 0xd6, 0x9b, 0x3d, 0xf9, 0x7e, 0xc9, 0xb2, 0x5d, 0x11,
+	0xc6, 0xff, 0x17, 0x65, 0x84, 0x5f, 0x16, 0x60, 0x41, 0x21, 0xe8, 0x72, 0x47, 0x80, 0xd0, 0x55,
+	0x23, 0xb8, 0x97, 0xac, 0x23, 0x60, 0x15, 0xe6, 0x22, 0xa3, 0xb1, 0x8e, 0x50, 0x14, 0xc7, 0x4b,
+	0x86, 0xb4, 0x02, 0x73, 0xf8, 0xcc, 0x0a, 0x91, 0x87, 0x99, 0x17, 0xe7, 0x95, 0x54, 0x7c, 0xb6,
+	0x83, 0x3c, 0x4c, 0x2f, 0x67, 0xcb, 0x50, 0x21, 0x10, 0x4c, 0x43, 0xec, 0x3c, 0x28, 0xe3, 0x33,
+	0x7e, 0xc3, 0x7b, 0x0e, 0x75, 0x7c, 0x66, 0xd9, 0xc3, 0x61, 0xe0, 0x9f, 0x22, 0x27, 0x39, 0x08,
+	0x2a, 0x66, 0x0d, 0x9f, 0xb5, 0xf8, 0x30, 0x5d, 0x46, 0x70, 0x81, 0x15, 0xc9, 0x05, 0xfe, 0x0b,
+	0x6f, 0x98, 0x50, 0xf5, 0x94, 0xeb, 0x05, 0x37, 0xa0, 0x1e, 0x73, 0x26, 0x3b, 0x42, 0xd1, 0x3e,
+	0xd4, 0x35, 0x17, 0xc6, 0x8a, 0xec, 0xaf, 0xe8, 0x0e, 0xbf, 0xd1, 0xa0, 0xc1, 0x72, 0x1e, 0xd7,
+	0xe1, 0x26, 0x54, 0x6d, 0x15, 0x26, 0xb5, 0x95, 0x11, 0x5f, 0x06, 0x51, 0xf9, 0x30, 0xcd, 0x99,
+	0xdc, 0xcc, 0xf6, 0x7a, 0x69, 0x03, 0x24, 0x05, 0x52, 0x7d, 0x01, 0xaa, 0xed, 0x7d, 0x6b, 0xf3,
+	0x6d, 0xeb, 0xf3, 0xdd, 0xcd, 0xfd, 0x8d, 0xfa, 0xf7, 0xf4, 0xfb, 0xd0, 0x68, 0xef, 0x5b, 0x6f,
+	0xcc, 0x8d, 0x0d, 0xab, 0xd3, 0xda, 0xdd, 0x38, 0x68, 0xfd, 0xd1, 0x8e, 0xb5, 0xb5, 0xb9, 0xbd,
+	0xb9, 0xbb, 0xd1, 0xae, 0x6b, 0xfa, 0x22, 0xd4, 0xdb, 0xfb, 0xd6, 0xc1, 0x17, 0xef, 0xb6, 0x36,
+	0xac, 0xb7, 0x1b, 0xbb, 0x07, 0xef, 0xcc, 0x1f, 0xd7, 0x0b, 0x7a, 0x0d, 0xa0, 0xbd, 0x6f, 0xb5,
+	0x37, 0xb6, 0x36, 0x08, 0x54, 0xf1, 0xa5, 0x0e, 0x25, 0x2a, 0x24, 0xbd, 0x02, 0xa5, 0x0d, 0x7c,
+	0x8c, 0x82, 0xfa, 0xf7, 0x5e, 0x1e, 0x42, 0x55, 0x48, 0x61, 0x12, 0xbc, 0x9d, 0x03, 0x05, 0x6f,
+	0xe7, 0x20, 0x0f, 0x6f, 0xe7, 0x20, 0x0d, 0x6f, 0xe7, 0x20, 0xc1, 0xbb, 0xfe, 0xef, 0x0f, 0xa0,
+	0x1e, 0x37, 0x90, 0x93, 0x5f, 0xb7, 0x8b, 0xf4, 0x1e, 0x2c, 0xa6, 0x7d, 0xba, 0xa0, 0x3f, 0x13,
+	0x53, 0x0d, 0xd9, 0x5f, 0x55, 0x34, 0xdf, 0x9f, 0x0a, 0xc7, 0xf5, 0x35, 0x84, 0xbb, 0x19, 0x5f,
+	0x2c, 0xe8, 0x2f, 0xa4, 0xba, 0x75, 0xde, 0x07, 0x11, 0xcd, 0x97, 0x17, 0x01, 0xe5, 0x18, 0xbf,
+	0x86, 0x3b, 0xa9, 0x8d, 0xfb, 0xba, 0x42, 0x73, 0x66, 0x87, 0x7e, 0xf3, 0xf9, 0x74, 0x40, 0x8e,
+	0x2b, 0x84, 0x46, 0x56, 0xab, 0xbe, 0x3e, 0x49, 0x73, 0x36, 0xc6, 0x0f, 0x2e, 0x04, 0xcb, 0x91,
+	0x7e, 0x0a, 0x25, 0xda, 0x19, 0xab, 0x8b, 0x51, 0x92, 0xd8, 0x73, 0xdb, 0x6c, 0x4c, 0xbe, 0x48,
+	0xd4, 0x91, 0xd1, 0xf9, 0x2a, 0xa9, 0x23, 0xbf, 0xad, 0x56, 0x52, 0xc7, 0xb4, 0x46, 0xda, 0x3d,
+	0xa8, 0xc9, 0x5d, 0xad, 0xfa, 0xca, 0xe4, 0x6c, 0xb9, 0xb0, 0xd6, 0x5c, 0xcd, 0x81, 0xe0, 0xcb,
+	0x7e, 0x45, 0xaf, 0x36, 0x52, 0x87, 0xaa, 0x6e, 0xa4, 0xf5, 0x9c, 0xc9, 0x0d, 0xaf, 0xcd, 0xc7,
+	0xb9, 0x30, 0xd2, 0xe2, 0x72, 0xaf, 0xa8, 0xb2, 0x78, 0x5a, 0x9b, 0xaa, 0xba, 0x78, 0x7a, 0x8f,
+	0xa7, 0x9d, 0xda, 0xf2, 0xf8, 0x24, 0xbf, 0x5f, 0x8e, 0x23, 0x78, 0x3a, 0x05, 0x2a, 0x96, 0x39,
+	0x74, 0x10, 0x6e, 0xf7, 0x59, 0x3f, 0x9a, 0x42, 0x79, 0x5a, 0x3f, 0x9c, 0x4a, 0x79, 0x7a, 0x03,
+	0x9c, 0x09, 0xf3, 0x52, 0xef, 0x98, 0xfe, 0x48, 0x99, 0xa5, 0xf6, 0xac, 0x35, 0x57, 0xb2, 0x01,
+	0x24, 0x51, 0xcb, 0xfd, 0x59, 0x46, 0xda, 0x2c, 0xc5, 0x44, 0x1e, 0xe7, 0xc2, 0xa4, 0x2c, 0x9e,
+	0xa1, 0xc7, 0xb4, 0x0e, 0xa4, 0xf4, 0xc5, 0x55, 0x3d, 0x9a, 0x30, 0x2f, 0xb5, 0xd5, 0x48, 0xd2,
+	0x48, 0x6b, 0xf4, 0x91, 0xa4, 0x91, 0xde, 0x91, 0x63, 0x83, 0x3e, 0xd9, 0xab, 0xa2, 0xcb, 0xfd,
+	0x0e, 0x19, 0x8d, 0x35, 0x92, 0x6d, 0xe4, 0x34, 0xbc, 0xfc, 0x19, 0x6d, 0x64, 0x60, 0xad, 0x12,
+	0x22, 0x40, 0x24, 0x9f, 0x35, 0x99, 0xf7, 0x69, 0x1d, 0x2c, 0xcd, 0x57, 0x17, 0x86, 0x4f, 0xfc,
+	0x73, 0x6a, 0x83, 0x83, 0xe4, 0x9f, 0xf3, 0x7a, 0x2d, 0x24, 0xff, 0x9c, 0xdf, 0x2b, 0xc1, 0x9c,
+	0x8f, 0xd0, 0x66, 0xa0, 0x3a, 0x9f, 0xc9, 0x06, 0x07, 0xd5, 0xf9, 0xa4, 0xf5, 0x28, 0xfc, 0x84,
+	0x26, 0x4b, 0x94, 0x02, 0xfd, 0xe3, 0xd4, 0x79, 0x8a, 0xd9, 0x3e, 0xc9, 0x07, 0x4a, 0x5b, 0x3f,
+	0x52, 0x4c, 0xfa, 0xfa, 0x8a, 0x36, 0x9e, 0xe4, 0x03, 0x25, 0x62, 0x91, 0x8b, 0xa7, 0xba, 0x62,
+	0x9a, 0x93, 0xd5, 0x5c, 0x49, 0x2c, 0x19, 0x95, 0xd7, 0xcf, 0xa9, 0xdb, 0xe1, 0x25, 0x52, 0x7d,
+	0x69, 0x22, 0x77, 0xb2, 0x31, 0x18, 0xe2, 0xf3, 0xa6, 0xd2, 0x19, 0xac, 0x56, 0x54, 0xb7, 0xa0,
+	0x2a, 0x14, 0x48, 0x75, 0x05, 0x5a, 0xa9, 0x46, 0x36, 0x1f, 0x66, 0xbd, 0x4e, 0x38, 0x95, 0xcb,
+	0x78, 0x12, 0xa7, 0xa9, 0x15, 0x4e, 0x89, 0xd3, 0x8c, 0x1a, 0xe0, 0xa7, 0x50, 0x62, 0x85, 0x17,
+	0xf1, 0x08, 0x16, 0xab, 0x7f, 0xd2, 0x11, 0x2c, 0xd7, 0xf5, 0x7e, 0x0f, 0x6e, 0xf1, 0x5a, 0x90,
+	0x2e, 0x36, 0x24, 0xc8, 0x45, 0xb9, 0x66, 0x33, 0xed, 0x15, 0x5f, 0xe1, 0x0f, 0x61, 0x41, 0xa9,
+	0x1e, 0xe9, 0xab, 0x69, 0x5b, 0x42, 0xaa, 0xa5, 0x35, 0x8d, 0x3c, 0x90, 0x78, 0xe5, 0x94, 0x4a,
+	0xcd, 0x8a, 0xc2, 0xca, 0x44, 0x99, 0x48, 0xb6, 0x8d, 0xf4, 0x6a, 0x87, 0x4d, 0xbb, 0x9a, 0x27,
+	0xea, 0x04, 0x92, 0x55, 0x67, 0x15, 0x1e, 0x24, 0xab, 0xce, 0x2e, 0x35, 0x7c, 0xc3, 0xd2, 0xb6,
+	0x39, 0xa9, 0x7c, 0xfd, 0x43, 0xc5, 0x5c, 0xa6, 0xd6, 0x19, 0x9a, 0xdf, 0xbf, 0xc4, 0x8c, 0x24,
+	0x28, 0xcc, 0xca, 0x8f, 0x4b, 0x41, 0xe1, 0x94, 0x94, 0xbe, 0x14, 0x14, 0x4e, 0x4d, 0xb8, 0x0f,
+	0x58, 0xf6, 0x31, 0x25, 0x29, 0xab, 0x78, 0xcb, 0xec, 0xe4, 0x79, 0xf3, 0xc5, 0x05, 0x20, 0x39,
+	0xba, 0x37, 0x50, 0x89, 0xd3, 0xc5, 0xfa, 0xb2, 0x3c, 0x4f, 0xca, 0x37, 0x37, 0xef, 0xa7, 0xbf,
+	0x94, 0x4c, 0x59, 0xca, 0x6b, 0x2a, 0xa6, 0x9c, 0x92, 0x50, 0x55, 0x4d, 0x39, 0x35, 0xdf, 0xe8,
+	0xd0, 0x46, 0x0b, 0x35, 0xeb, 0xa6, 0x3f, 0x4d, 0x99, 0x3a, 0x99, 0xfc, 0x6b, 0x3e, 0x9b, 0x06,
+	0x26, 0x1d, 0x30, 0x07, 0x62, 0x0a, 0x42, 0x09, 0xd1, 0x26, 0xae, 0xd2, 0xea, 0x01, 0x93, 0x76,
+	0xcb, 0xdd, 0x82, 0xaa, 0x90, 0x5b, 0x92, 0x9c, 0xe0, 0x64, 0xa6, 0x4b, 0x72, 0x82, 0x69, 0x29,
+	0x29, 0x1e, 0x71, 0x2a, 0xd9, 0x82, 0x27, 0xe9, 0x64, 0x28, 0xa2, 0x7e, 0x3a, 0x05, 0x2a, 0x39,
+	0xb1, 0x26, 0xee, 0xec, 0xd2, 0xde, 0xce, 0x4a, 0x2c, 0x34, 0x9f, 0xe4, 0x03, 0xb1, 0xf5, 0xd7,
+	0xff, 0xab, 0x00, 0xf5, 0xf8, 0x83, 0xdd, 0xe8, 0x12, 0xcb, 0x8e, 0x49, 0xf9, 0xbb, 0x65, 0x3d,
+	0x35, 0x76, 0x53, 0x3e, 0x85, 0x56, 0x8f, 0xc9, 0x8c, 0x4f, 0x9f, 0x99, 0x71, 0x8a, 0xdf, 0x1c,
+	0xeb, 0xe9, 0xc1, 0x81, 0xf8, 0xed, 0xb2, 0x6a, 0x9c, 0xa9, 0x9f, 0x2c, 0xef, 0x51, 0xe3, 0x54,
+	0x3f, 0x2c, 0xce, 0x3c, 0x32, 0x9f, 0xa5, 0x91, 0x9b, 0xf2, 0x41, 0xf2, 0x1f, 0x88, 0x71, 0x03,
+	0xff, 0xee, 0x38, 0x73, 0xd1, 0xf4, 0x50, 0x41, 0xf9, 0x5a, 0xf9, 0x70, 0x96, 0xce, 0xfa, 0xe8,
+	0x7f, 0x03, 0x00, 0x00, 0xff, 0xff, 0x39, 0xb0, 0xe5, 0xa5, 0x8a, 0x42, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -907,7 +5877,53 @@ type M2MServerServiceClient interface {
 	DeleteDeviceInM2MServer(ctx context.Context, in *DeleteDeviceInM2MServerRequest, opts ...grpc.CallOption) (*DeleteDeviceInM2MServerResponse, error)
 	AddGatewayInM2MServer(ctx context.Context, in *AddGatewayInM2MServerRequest, opts ...grpc.CallOption) (*AddGatewayInM2MServerResponse, error)
 	DeleteGatewayInM2MServer(ctx context.Context, in *DeleteGatewayInM2MServerRequest, opts ...grpc.CallOption) (*DeleteGatewayInM2MServerResponse, error)
+	// InternalService
+	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	GetUserOrganizationList(ctx context.Context, in *GetUserOrganizationListRequest, opts ...grpc.CallOption) (*GetUserOrganizationListResponse, error)
+	GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...grpc.CallOption) (*GetUserProfileResponse, error)
+	// WalletService
 	GetWalletBalance(ctx context.Context, in *GetWalletBalanceRequest, opts ...grpc.CallOption) (*GetWalletBalanceResponse, error)
+	GetVmxcTxHistory(ctx context.Context, in *GetVmxcTxHistoryRequest, opts ...grpc.CallOption) (*GetVmxcTxHistoryResponse, error)
+	GetWalletUsageHist(ctx context.Context, in *GetWalletUsageHistRequest, opts ...grpc.CallOption) (*GetWalletUsageHistResponse, error)
+	GetDlPrice(ctx context.Context, in *GetDownLinkPriceRequest, opts ...grpc.CallOption) (*GetDownLinkPriceResponse, error)
+	// DeviceService
+	GetDeviceList(ctx context.Context, in *GetDeviceListRequest, opts ...grpc.CallOption) (*GetDeviceListResponse, error)
+	GetDeviceProfile(ctx context.Context, in *GetDeviceProfileRequest, opts ...grpc.CallOption) (*GetDeviceProfileResponse, error)
+	GetDeviceHistory(ctx context.Context, in *GetDeviceHistoryRequest, opts ...grpc.CallOption) (*GetDeviceHistoryResponse, error)
+	SetDeviceMode(ctx context.Context, in *SetDeviceModeRequest, opts ...grpc.CallOption) (*SetDeviceModeResponse, error)
+	// MoneyService
+	ModifyMoneyAccount(ctx context.Context, in *ModifyMoneyAccountRequest, opts ...grpc.CallOption) (*ModifyMoneyAccountResponse, error)
+	GetChangeMoneyAccountHistory(ctx context.Context, in *GetMoneyAccountChangeHistoryRequest, opts ...grpc.CallOption) (*GetMoneyAccountChangeHistoryResponse, error)
+	GetActiveMoneyAccount(ctx context.Context, in *GetActiveMoneyAccountRequest, opts ...grpc.CallOption) (*GetActiveMoneyAccountResponse, error)
+	// GatewayService
+	GetGatewayList(ctx context.Context, in *GetGatewayListRequest, opts ...grpc.CallOption) (*GetGatewayListResponse, error)
+	GetGatewayProfile(ctx context.Context, in *GetGatewayProfileRequest, opts ...grpc.CallOption) (*GetGatewayProfileResponse, error)
+	GetGatewayHistory(ctx context.Context, in *GetGatewayHistoryRequest, opts ...grpc.CallOption) (*GetGatewayHistoryResponse, error)
+	SetGatewayMode(ctx context.Context, in *SetGatewayModeRequest, opts ...grpc.CallOption) (*SetGatewayModeResponse, error)
+	// ServerInfoService
+	GetVersion(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetVersionResponse, error)
+	// SettingsService
+	GetSettings(ctx context.Context, in *GetSettingsRequest, opts ...grpc.CallOption) (*GetSettingsResponse, error)
+	ModifySettings(ctx context.Context, in *ModifySettingsRequest, opts ...grpc.CallOption) (*ModifySettingsResponse, error)
+	// StakingService
+	Stake(ctx context.Context, in *StakeRequest, opts ...grpc.CallOption) (*StakeResponse, error)
+	Unstake(ctx context.Context, in *UnstakeRequest, opts ...grpc.CallOption) (*UnstakeResponse, error)
+	GetActiveStakes(ctx context.Context, in *GetActiveStakesRequest, opts ...grpc.CallOption) (*GetActiveStakesResponse, error)
+	GetStakingHistory(ctx context.Context, in *StakingHistoryRequest, opts ...grpc.CallOption) (*StakingHistoryResponse, error)
+	GetStakingPercentage(ctx context.Context, in *StakingPercentageRequest, opts ...grpc.CallOption) (*StakingPercentageResponse, error)
+	// SuperNodeService
+	GetSuperNodeActiveMoneyAccount(ctx context.Context, in *GetSuperNodeActiveMoneyAccountRequest, opts ...grpc.CallOption) (*GetSuperNodeActiveMoneyAccountResponse, error)
+	AddSuperNodeMoneyAccount(ctx context.Context, in *AddSuperNodeMoneyAccountRequest, opts ...grpc.CallOption) (*AddSuperNodeMoneyAccountResponse, error)
+	// TopUpService
+	GetTransactionsHistory(ctx context.Context, in *GetTransactionsHistoryRequest, opts ...grpc.CallOption) (*GetTransactionsHistoryResponse, error)
+	GetIncome(ctx context.Context, in *GetIncomeRequest, opts ...grpc.CallOption) (*GetIncomeResponse, error)
+	GetTopUpHistory(ctx context.Context, in *GetTopUpHistoryRequest, opts ...grpc.CallOption) (*GetTopUpHistoryResponse, error)
+	GetTopUpDestination(ctx context.Context, in *GetTopUpDestinationRequest, opts ...grpc.CallOption) (*GetTopUpDestinationResponse, error)
+	// WithdrawService
+	GetWithdrawFee(ctx context.Context, in *GetWithdrawFeeRequest, opts ...grpc.CallOption) (*GetWithdrawFeeResponse, error)
+	WithdrawReq(ctx context.Context, in *WithdrawReqRequest, opts ...grpc.CallOption) (*WithdrawReqResponse, error)
+	GetWithdrawHistory(ctx context.Context, in *GetWithdrawHistoryRequest, opts ...grpc.CallOption) (*GetWithdrawHistoryResponse, error)
+	ModifyWithdrawFee(ctx context.Context, in *ModifyWithdrawFeeRequest, opts ...grpc.CallOption) (*ModifyWithdrawFeeResponse, error)
 }
 
 type m2MServerServiceClient struct {
@@ -954,9 +5970,324 @@ func (c *m2MServerServiceClient) DeleteGatewayInM2MServer(ctx context.Context, i
 	return out, nil
 }
 
+func (c *m2MServerServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetUserOrganizationList(ctx context.Context, in *GetUserOrganizationListRequest, opts ...grpc.CallOption) (*GetUserOrganizationListResponse, error) {
+	out := new(GetUserOrganizationListResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetUserOrganizationList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...grpc.CallOption) (*GetUserProfileResponse, error) {
+	out := new(GetUserProfileResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetUserProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *m2MServerServiceClient) GetWalletBalance(ctx context.Context, in *GetWalletBalanceRequest, opts ...grpc.CallOption) (*GetWalletBalanceResponse, error) {
 	out := new(GetWalletBalanceResponse)
 	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetWalletBalance", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetVmxcTxHistory(ctx context.Context, in *GetVmxcTxHistoryRequest, opts ...grpc.CallOption) (*GetVmxcTxHistoryResponse, error) {
+	out := new(GetVmxcTxHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetVmxcTxHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetWalletUsageHist(ctx context.Context, in *GetWalletUsageHistRequest, opts ...grpc.CallOption) (*GetWalletUsageHistResponse, error) {
+	out := new(GetWalletUsageHistResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetWalletUsageHist", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetDlPrice(ctx context.Context, in *GetDownLinkPriceRequest, opts ...grpc.CallOption) (*GetDownLinkPriceResponse, error) {
+	out := new(GetDownLinkPriceResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetDlPrice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetDeviceList(ctx context.Context, in *GetDeviceListRequest, opts ...grpc.CallOption) (*GetDeviceListResponse, error) {
+	out := new(GetDeviceListResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetDeviceList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetDeviceProfile(ctx context.Context, in *GetDeviceProfileRequest, opts ...grpc.CallOption) (*GetDeviceProfileResponse, error) {
+	out := new(GetDeviceProfileResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetDeviceProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetDeviceHistory(ctx context.Context, in *GetDeviceHistoryRequest, opts ...grpc.CallOption) (*GetDeviceHistoryResponse, error) {
+	out := new(GetDeviceHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetDeviceHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) SetDeviceMode(ctx context.Context, in *SetDeviceModeRequest, opts ...grpc.CallOption) (*SetDeviceModeResponse, error) {
+	out := new(SetDeviceModeResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/SetDeviceMode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) ModifyMoneyAccount(ctx context.Context, in *ModifyMoneyAccountRequest, opts ...grpc.CallOption) (*ModifyMoneyAccountResponse, error) {
+	out := new(ModifyMoneyAccountResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/ModifyMoneyAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetChangeMoneyAccountHistory(ctx context.Context, in *GetMoneyAccountChangeHistoryRequest, opts ...grpc.CallOption) (*GetMoneyAccountChangeHistoryResponse, error) {
+	out := new(GetMoneyAccountChangeHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetChangeMoneyAccountHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetActiveMoneyAccount(ctx context.Context, in *GetActiveMoneyAccountRequest, opts ...grpc.CallOption) (*GetActiveMoneyAccountResponse, error) {
+	out := new(GetActiveMoneyAccountResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetActiveMoneyAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetGatewayList(ctx context.Context, in *GetGatewayListRequest, opts ...grpc.CallOption) (*GetGatewayListResponse, error) {
+	out := new(GetGatewayListResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetGatewayList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetGatewayProfile(ctx context.Context, in *GetGatewayProfileRequest, opts ...grpc.CallOption) (*GetGatewayProfileResponse, error) {
+	out := new(GetGatewayProfileResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetGatewayProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetGatewayHistory(ctx context.Context, in *GetGatewayHistoryRequest, opts ...grpc.CallOption) (*GetGatewayHistoryResponse, error) {
+	out := new(GetGatewayHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetGatewayHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) SetGatewayMode(ctx context.Context, in *SetGatewayModeRequest, opts ...grpc.CallOption) (*SetGatewayModeResponse, error) {
+	out := new(SetGatewayModeResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/SetGatewayMode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetVersion(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*GetVersionResponse, error) {
+	out := new(GetVersionResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetVersion", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetSettings(ctx context.Context, in *GetSettingsRequest, opts ...grpc.CallOption) (*GetSettingsResponse, error) {
+	out := new(GetSettingsResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetSettings", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) ModifySettings(ctx context.Context, in *ModifySettingsRequest, opts ...grpc.CallOption) (*ModifySettingsResponse, error) {
+	out := new(ModifySettingsResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/ModifySettings", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) Stake(ctx context.Context, in *StakeRequest, opts ...grpc.CallOption) (*StakeResponse, error) {
+	out := new(StakeResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/Stake", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) Unstake(ctx context.Context, in *UnstakeRequest, opts ...grpc.CallOption) (*UnstakeResponse, error) {
+	out := new(UnstakeResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/Unstake", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetActiveStakes(ctx context.Context, in *GetActiveStakesRequest, opts ...grpc.CallOption) (*GetActiveStakesResponse, error) {
+	out := new(GetActiveStakesResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetActiveStakes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetStakingHistory(ctx context.Context, in *StakingHistoryRequest, opts ...grpc.CallOption) (*StakingHistoryResponse, error) {
+	out := new(StakingHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetStakingHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetStakingPercentage(ctx context.Context, in *StakingPercentageRequest, opts ...grpc.CallOption) (*StakingPercentageResponse, error) {
+	out := new(StakingPercentageResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetStakingPercentage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetSuperNodeActiveMoneyAccount(ctx context.Context, in *GetSuperNodeActiveMoneyAccountRequest, opts ...grpc.CallOption) (*GetSuperNodeActiveMoneyAccountResponse, error) {
+	out := new(GetSuperNodeActiveMoneyAccountResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetSuperNodeActiveMoneyAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) AddSuperNodeMoneyAccount(ctx context.Context, in *AddSuperNodeMoneyAccountRequest, opts ...grpc.CallOption) (*AddSuperNodeMoneyAccountResponse, error) {
+	out := new(AddSuperNodeMoneyAccountResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/AddSuperNodeMoneyAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetTransactionsHistory(ctx context.Context, in *GetTransactionsHistoryRequest, opts ...grpc.CallOption) (*GetTransactionsHistoryResponse, error) {
+	out := new(GetTransactionsHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetTransactionsHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetIncome(ctx context.Context, in *GetIncomeRequest, opts ...grpc.CallOption) (*GetIncomeResponse, error) {
+	out := new(GetIncomeResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetIncome", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetTopUpHistory(ctx context.Context, in *GetTopUpHistoryRequest, opts ...grpc.CallOption) (*GetTopUpHistoryResponse, error) {
+	out := new(GetTopUpHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetTopUpHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetTopUpDestination(ctx context.Context, in *GetTopUpDestinationRequest, opts ...grpc.CallOption) (*GetTopUpDestinationResponse, error) {
+	out := new(GetTopUpDestinationResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetTopUpDestination", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetWithdrawFee(ctx context.Context, in *GetWithdrawFeeRequest, opts ...grpc.CallOption) (*GetWithdrawFeeResponse, error) {
+	out := new(GetWithdrawFeeResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetWithdrawFee", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) WithdrawReq(ctx context.Context, in *WithdrawReqRequest, opts ...grpc.CallOption) (*WithdrawReqResponse, error) {
+	out := new(WithdrawReqResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/WithdrawReq", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) GetWithdrawHistory(ctx context.Context, in *GetWithdrawHistoryRequest, opts ...grpc.CallOption) (*GetWithdrawHistoryResponse, error) {
+	out := new(GetWithdrawHistoryResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/GetWithdrawHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *m2MServerServiceClient) ModifyWithdrawFee(ctx context.Context, in *ModifyWithdrawFeeRequest, opts ...grpc.CallOption) (*ModifyWithdrawFeeResponse, error) {
+	out := new(ModifyWithdrawFeeResponse)
+	err := c.cc.Invoke(ctx, "/appserver.M2MServerService/ModifyWithdrawFee", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -969,7 +6300,53 @@ type M2MServerServiceServer interface {
 	DeleteDeviceInM2MServer(context.Context, *DeleteDeviceInM2MServerRequest) (*DeleteDeviceInM2MServerResponse, error)
 	AddGatewayInM2MServer(context.Context, *AddGatewayInM2MServerRequest) (*AddGatewayInM2MServerResponse, error)
 	DeleteGatewayInM2MServer(context.Context, *DeleteGatewayInM2MServerRequest) (*DeleteGatewayInM2MServerResponse, error)
+	// InternalService
+	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	GetUserOrganizationList(context.Context, *GetUserOrganizationListRequest) (*GetUserOrganizationListResponse, error)
+	GetUserProfile(context.Context, *GetUserProfileRequest) (*GetUserProfileResponse, error)
+	// WalletService
 	GetWalletBalance(context.Context, *GetWalletBalanceRequest) (*GetWalletBalanceResponse, error)
+	GetVmxcTxHistory(context.Context, *GetVmxcTxHistoryRequest) (*GetVmxcTxHistoryResponse, error)
+	GetWalletUsageHist(context.Context, *GetWalletUsageHistRequest) (*GetWalletUsageHistResponse, error)
+	GetDlPrice(context.Context, *GetDownLinkPriceRequest) (*GetDownLinkPriceResponse, error)
+	// DeviceService
+	GetDeviceList(context.Context, *GetDeviceListRequest) (*GetDeviceListResponse, error)
+	GetDeviceProfile(context.Context, *GetDeviceProfileRequest) (*GetDeviceProfileResponse, error)
+	GetDeviceHistory(context.Context, *GetDeviceHistoryRequest) (*GetDeviceHistoryResponse, error)
+	SetDeviceMode(context.Context, *SetDeviceModeRequest) (*SetDeviceModeResponse, error)
+	// MoneyService
+	ModifyMoneyAccount(context.Context, *ModifyMoneyAccountRequest) (*ModifyMoneyAccountResponse, error)
+	GetChangeMoneyAccountHistory(context.Context, *GetMoneyAccountChangeHistoryRequest) (*GetMoneyAccountChangeHistoryResponse, error)
+	GetActiveMoneyAccount(context.Context, *GetActiveMoneyAccountRequest) (*GetActiveMoneyAccountResponse, error)
+	// GatewayService
+	GetGatewayList(context.Context, *GetGatewayListRequest) (*GetGatewayListResponse, error)
+	GetGatewayProfile(context.Context, *GetGatewayProfileRequest) (*GetGatewayProfileResponse, error)
+	GetGatewayHistory(context.Context, *GetGatewayHistoryRequest) (*GetGatewayHistoryResponse, error)
+	SetGatewayMode(context.Context, *SetGatewayModeRequest) (*SetGatewayModeResponse, error)
+	// ServerInfoService
+	GetVersion(context.Context, *empty.Empty) (*GetVersionResponse, error)
+	// SettingsService
+	GetSettings(context.Context, *GetSettingsRequest) (*GetSettingsResponse, error)
+	ModifySettings(context.Context, *ModifySettingsRequest) (*ModifySettingsResponse, error)
+	// StakingService
+	Stake(context.Context, *StakeRequest) (*StakeResponse, error)
+	Unstake(context.Context, *UnstakeRequest) (*UnstakeResponse, error)
+	GetActiveStakes(context.Context, *GetActiveStakesRequest) (*GetActiveStakesResponse, error)
+	GetStakingHistory(context.Context, *StakingHistoryRequest) (*StakingHistoryResponse, error)
+	GetStakingPercentage(context.Context, *StakingPercentageRequest) (*StakingPercentageResponse, error)
+	// SuperNodeService
+	GetSuperNodeActiveMoneyAccount(context.Context, *GetSuperNodeActiveMoneyAccountRequest) (*GetSuperNodeActiveMoneyAccountResponse, error)
+	AddSuperNodeMoneyAccount(context.Context, *AddSuperNodeMoneyAccountRequest) (*AddSuperNodeMoneyAccountResponse, error)
+	// TopUpService
+	GetTransactionsHistory(context.Context, *GetTransactionsHistoryRequest) (*GetTransactionsHistoryResponse, error)
+	GetIncome(context.Context, *GetIncomeRequest) (*GetIncomeResponse, error)
+	GetTopUpHistory(context.Context, *GetTopUpHistoryRequest) (*GetTopUpHistoryResponse, error)
+	GetTopUpDestination(context.Context, *GetTopUpDestinationRequest) (*GetTopUpDestinationResponse, error)
+	// WithdrawService
+	GetWithdrawFee(context.Context, *GetWithdrawFeeRequest) (*GetWithdrawFeeResponse, error)
+	WithdrawReq(context.Context, *WithdrawReqRequest) (*WithdrawReqResponse, error)
+	GetWithdrawHistory(context.Context, *GetWithdrawHistoryRequest) (*GetWithdrawHistoryResponse, error)
+	ModifyWithdrawFee(context.Context, *ModifyWithdrawFeeRequest) (*ModifyWithdrawFeeResponse, error)
 }
 
 // UnimplementedM2MServerServiceServer can be embedded to have forward compatible implementations.
@@ -988,8 +6365,113 @@ func (*UnimplementedM2MServerServiceServer) AddGatewayInM2MServer(ctx context.Co
 func (*UnimplementedM2MServerServiceServer) DeleteGatewayInM2MServer(ctx context.Context, req *DeleteGatewayInM2MServerRequest) (*DeleteGatewayInM2MServerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteGatewayInM2MServer not implemented")
 }
+func (*UnimplementedM2MServerServiceServer) Login(ctx context.Context, req *LoginRequest) (*LoginResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetUserOrganizationList(ctx context.Context, req *GetUserOrganizationListRequest) (*GetUserOrganizationListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserOrganizationList not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetUserProfile(ctx context.Context, req *GetUserProfileRequest) (*GetUserProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserProfile not implemented")
+}
 func (*UnimplementedM2MServerServiceServer) GetWalletBalance(ctx context.Context, req *GetWalletBalanceRequest) (*GetWalletBalanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWalletBalance not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetVmxcTxHistory(ctx context.Context, req *GetVmxcTxHistoryRequest) (*GetVmxcTxHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVmxcTxHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetWalletUsageHist(ctx context.Context, req *GetWalletUsageHistRequest) (*GetWalletUsageHistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWalletUsageHist not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetDlPrice(ctx context.Context, req *GetDownLinkPriceRequest) (*GetDownLinkPriceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDlPrice not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetDeviceList(ctx context.Context, req *GetDeviceListRequest) (*GetDeviceListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceList not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetDeviceProfile(ctx context.Context, req *GetDeviceProfileRequest) (*GetDeviceProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceProfile not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetDeviceHistory(ctx context.Context, req *GetDeviceHistoryRequest) (*GetDeviceHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) SetDeviceMode(ctx context.Context, req *SetDeviceModeRequest) (*SetDeviceModeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetDeviceMode not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) ModifyMoneyAccount(ctx context.Context, req *ModifyMoneyAccountRequest) (*ModifyMoneyAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModifyMoneyAccount not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetChangeMoneyAccountHistory(ctx context.Context, req *GetMoneyAccountChangeHistoryRequest) (*GetMoneyAccountChangeHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChangeMoneyAccountHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetActiveMoneyAccount(ctx context.Context, req *GetActiveMoneyAccountRequest) (*GetActiveMoneyAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveMoneyAccount not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetGatewayList(ctx context.Context, req *GetGatewayListRequest) (*GetGatewayListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGatewayList not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetGatewayProfile(ctx context.Context, req *GetGatewayProfileRequest) (*GetGatewayProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGatewayProfile not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetGatewayHistory(ctx context.Context, req *GetGatewayHistoryRequest) (*GetGatewayHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGatewayHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) SetGatewayMode(ctx context.Context, req *SetGatewayModeRequest) (*SetGatewayModeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetGatewayMode not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetVersion(ctx context.Context, req *empty.Empty) (*GetVersionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVersion not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetSettings(ctx context.Context, req *GetSettingsRequest) (*GetSettingsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSettings not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) ModifySettings(ctx context.Context, req *ModifySettingsRequest) (*ModifySettingsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModifySettings not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) Stake(ctx context.Context, req *StakeRequest) (*StakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Stake not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) Unstake(ctx context.Context, req *UnstakeRequest) (*UnstakeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unstake not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetActiveStakes(ctx context.Context, req *GetActiveStakesRequest) (*GetActiveStakesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActiveStakes not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetStakingHistory(ctx context.Context, req *StakingHistoryRequest) (*StakingHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakingHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetStakingPercentage(ctx context.Context, req *StakingPercentageRequest) (*StakingPercentageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakingPercentage not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetSuperNodeActiveMoneyAccount(ctx context.Context, req *GetSuperNodeActiveMoneyAccountRequest) (*GetSuperNodeActiveMoneyAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSuperNodeActiveMoneyAccount not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) AddSuperNodeMoneyAccount(ctx context.Context, req *AddSuperNodeMoneyAccountRequest) (*AddSuperNodeMoneyAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddSuperNodeMoneyAccount not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetTransactionsHistory(ctx context.Context, req *GetTransactionsHistoryRequest) (*GetTransactionsHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTransactionsHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetIncome(ctx context.Context, req *GetIncomeRequest) (*GetIncomeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIncome not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetTopUpHistory(ctx context.Context, req *GetTopUpHistoryRequest) (*GetTopUpHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopUpHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetTopUpDestination(ctx context.Context, req *GetTopUpDestinationRequest) (*GetTopUpDestinationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTopUpDestination not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetWithdrawFee(ctx context.Context, req *GetWithdrawFeeRequest) (*GetWithdrawFeeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWithdrawFee not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) WithdrawReq(ctx context.Context, req *WithdrawReqRequest) (*WithdrawReqResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WithdrawReq not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) GetWithdrawHistory(ctx context.Context, req *GetWithdrawHistoryRequest) (*GetWithdrawHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWithdrawHistory not implemented")
+}
+func (*UnimplementedM2MServerServiceServer) ModifyWithdrawFee(ctx context.Context, req *ModifyWithdrawFeeRequest) (*ModifyWithdrawFeeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ModifyWithdrawFee not implemented")
 }
 
 func RegisterM2MServerServiceServer(s *grpc.Server, srv M2MServerServiceServer) {
@@ -1068,6 +6550,60 @@ func _M2MServerService_DeleteGatewayInM2MServer_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _M2MServerService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).Login(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetUserOrganizationList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserOrganizationListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetUserOrganizationList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetUserOrganizationList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetUserOrganizationList(ctx, req.(*GetUserOrganizationListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetUserProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetUserProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetUserProfile(ctx, req.(*GetUserProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _M2MServerService_GetWalletBalance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetWalletBalanceRequest)
 	if err := dec(in); err != nil {
@@ -1082,6 +6618,582 @@ func _M2MServerService_GetWalletBalance_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(M2MServerServiceServer).GetWalletBalance(ctx, req.(*GetWalletBalanceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetVmxcTxHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVmxcTxHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetVmxcTxHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetVmxcTxHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetVmxcTxHistory(ctx, req.(*GetVmxcTxHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetWalletUsageHist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWalletUsageHistRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetWalletUsageHist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetWalletUsageHist",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetWalletUsageHist(ctx, req.(*GetWalletUsageHistRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetDlPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDownLinkPriceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetDlPrice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetDlPrice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetDlPrice(ctx, req.(*GetDownLinkPriceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetDeviceList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetDeviceList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetDeviceList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetDeviceList(ctx, req.(*GetDeviceListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetDeviceProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetDeviceProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetDeviceProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetDeviceProfile(ctx, req.(*GetDeviceProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetDeviceHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetDeviceHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetDeviceHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetDeviceHistory(ctx, req.(*GetDeviceHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_SetDeviceMode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetDeviceModeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).SetDeviceMode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/SetDeviceMode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).SetDeviceMode(ctx, req.(*SetDeviceModeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_ModifyMoneyAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ModifyMoneyAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).ModifyMoneyAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/ModifyMoneyAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).ModifyMoneyAccount(ctx, req.(*ModifyMoneyAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetChangeMoneyAccountHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMoneyAccountChangeHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetChangeMoneyAccountHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetChangeMoneyAccountHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetChangeMoneyAccountHistory(ctx, req.(*GetMoneyAccountChangeHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetActiveMoneyAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetActiveMoneyAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetActiveMoneyAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetActiveMoneyAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetActiveMoneyAccount(ctx, req.(*GetActiveMoneyAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetGatewayList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGatewayListRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetGatewayList(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetGatewayList",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetGatewayList(ctx, req.(*GetGatewayListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetGatewayProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGatewayProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetGatewayProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetGatewayProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetGatewayProfile(ctx, req.(*GetGatewayProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetGatewayHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGatewayHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetGatewayHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetGatewayHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetGatewayHistory(ctx, req.(*GetGatewayHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_SetGatewayMode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetGatewayModeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).SetGatewayMode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/SetGatewayMode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).SetGatewayMode(ctx, req.(*SetGatewayModeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetVersion(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetVersion",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetVersion(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetSettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetSettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetSettings",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetSettings(ctx, req.(*GetSettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_ModifySettings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ModifySettingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).ModifySettings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/ModifySettings",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).ModifySettings(ctx, req.(*ModifySettingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_Stake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StakeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).Stake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/Stake",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).Stake(ctx, req.(*StakeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_Unstake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnstakeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).Unstake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/Unstake",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).Unstake(ctx, req.(*UnstakeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetActiveStakes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetActiveStakesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetActiveStakes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetActiveStakes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetActiveStakes(ctx, req.(*GetActiveStakesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetStakingHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StakingHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetStakingHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetStakingHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetStakingHistory(ctx, req.(*StakingHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetStakingPercentage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StakingPercentageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetStakingPercentage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetStakingPercentage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetStakingPercentage(ctx, req.(*StakingPercentageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetSuperNodeActiveMoneyAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSuperNodeActiveMoneyAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetSuperNodeActiveMoneyAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetSuperNodeActiveMoneyAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetSuperNodeActiveMoneyAccount(ctx, req.(*GetSuperNodeActiveMoneyAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_AddSuperNodeMoneyAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddSuperNodeMoneyAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).AddSuperNodeMoneyAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/AddSuperNodeMoneyAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).AddSuperNodeMoneyAccount(ctx, req.(*AddSuperNodeMoneyAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetTransactionsHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTransactionsHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetTransactionsHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetTransactionsHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetTransactionsHistory(ctx, req.(*GetTransactionsHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetIncome_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIncomeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetIncome(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetIncome",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetIncome(ctx, req.(*GetIncomeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetTopUpHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopUpHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetTopUpHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetTopUpHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetTopUpHistory(ctx, req.(*GetTopUpHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetTopUpDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTopUpDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetTopUpDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetTopUpDestination",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetTopUpDestination(ctx, req.(*GetTopUpDestinationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetWithdrawFee_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWithdrawFeeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetWithdrawFee(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetWithdrawFee",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetWithdrawFee(ctx, req.(*GetWithdrawFeeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_WithdrawReq_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawReqRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).WithdrawReq(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/WithdrawReq",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).WithdrawReq(ctx, req.(*WithdrawReqRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_GetWithdrawHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWithdrawHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).GetWithdrawHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/GetWithdrawHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).GetWithdrawHistory(ctx, req.(*GetWithdrawHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _M2MServerService_ModifyWithdrawFee_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ModifyWithdrawFeeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(M2MServerServiceServer).ModifyWithdrawFee(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver.M2MServerService/ModifyWithdrawFee",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(M2MServerServiceServer).ModifyWithdrawFee(ctx, req.(*ModifyWithdrawFeeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1107,8 +7219,148 @@ var _M2MServerService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _M2MServerService_DeleteGatewayInM2MServer_Handler,
 		},
 		{
+			MethodName: "Login",
+			Handler:    _M2MServerService_Login_Handler,
+		},
+		{
+			MethodName: "GetUserOrganizationList",
+			Handler:    _M2MServerService_GetUserOrganizationList_Handler,
+		},
+		{
+			MethodName: "GetUserProfile",
+			Handler:    _M2MServerService_GetUserProfile_Handler,
+		},
+		{
 			MethodName: "GetWalletBalance",
 			Handler:    _M2MServerService_GetWalletBalance_Handler,
+		},
+		{
+			MethodName: "GetVmxcTxHistory",
+			Handler:    _M2MServerService_GetVmxcTxHistory_Handler,
+		},
+		{
+			MethodName: "GetWalletUsageHist",
+			Handler:    _M2MServerService_GetWalletUsageHist_Handler,
+		},
+		{
+			MethodName: "GetDlPrice",
+			Handler:    _M2MServerService_GetDlPrice_Handler,
+		},
+		{
+			MethodName: "GetDeviceList",
+			Handler:    _M2MServerService_GetDeviceList_Handler,
+		},
+		{
+			MethodName: "GetDeviceProfile",
+			Handler:    _M2MServerService_GetDeviceProfile_Handler,
+		},
+		{
+			MethodName: "GetDeviceHistory",
+			Handler:    _M2MServerService_GetDeviceHistory_Handler,
+		},
+		{
+			MethodName: "SetDeviceMode",
+			Handler:    _M2MServerService_SetDeviceMode_Handler,
+		},
+		{
+			MethodName: "ModifyMoneyAccount",
+			Handler:    _M2MServerService_ModifyMoneyAccount_Handler,
+		},
+		{
+			MethodName: "GetChangeMoneyAccountHistory",
+			Handler:    _M2MServerService_GetChangeMoneyAccountHistory_Handler,
+		},
+		{
+			MethodName: "GetActiveMoneyAccount",
+			Handler:    _M2MServerService_GetActiveMoneyAccount_Handler,
+		},
+		{
+			MethodName: "GetGatewayList",
+			Handler:    _M2MServerService_GetGatewayList_Handler,
+		},
+		{
+			MethodName: "GetGatewayProfile",
+			Handler:    _M2MServerService_GetGatewayProfile_Handler,
+		},
+		{
+			MethodName: "GetGatewayHistory",
+			Handler:    _M2MServerService_GetGatewayHistory_Handler,
+		},
+		{
+			MethodName: "SetGatewayMode",
+			Handler:    _M2MServerService_SetGatewayMode_Handler,
+		},
+		{
+			MethodName: "GetVersion",
+			Handler:    _M2MServerService_GetVersion_Handler,
+		},
+		{
+			MethodName: "GetSettings",
+			Handler:    _M2MServerService_GetSettings_Handler,
+		},
+		{
+			MethodName: "ModifySettings",
+			Handler:    _M2MServerService_ModifySettings_Handler,
+		},
+		{
+			MethodName: "Stake",
+			Handler:    _M2MServerService_Stake_Handler,
+		},
+		{
+			MethodName: "Unstake",
+			Handler:    _M2MServerService_Unstake_Handler,
+		},
+		{
+			MethodName: "GetActiveStakes",
+			Handler:    _M2MServerService_GetActiveStakes_Handler,
+		},
+		{
+			MethodName: "GetStakingHistory",
+			Handler:    _M2MServerService_GetStakingHistory_Handler,
+		},
+		{
+			MethodName: "GetStakingPercentage",
+			Handler:    _M2MServerService_GetStakingPercentage_Handler,
+		},
+		{
+			MethodName: "GetSuperNodeActiveMoneyAccount",
+			Handler:    _M2MServerService_GetSuperNodeActiveMoneyAccount_Handler,
+		},
+		{
+			MethodName: "AddSuperNodeMoneyAccount",
+			Handler:    _M2MServerService_AddSuperNodeMoneyAccount_Handler,
+		},
+		{
+			MethodName: "GetTransactionsHistory",
+			Handler:    _M2MServerService_GetTransactionsHistory_Handler,
+		},
+		{
+			MethodName: "GetIncome",
+			Handler:    _M2MServerService_GetIncome_Handler,
+		},
+		{
+			MethodName: "GetTopUpHistory",
+			Handler:    _M2MServerService_GetTopUpHistory_Handler,
+		},
+		{
+			MethodName: "GetTopUpDestination",
+			Handler:    _M2MServerService_GetTopUpDestination_Handler,
+		},
+		{
+			MethodName: "GetWithdrawFee",
+			Handler:    _M2MServerService_GetWithdrawFee_Handler,
+		},
+		{
+			MethodName: "WithdrawReq",
+			Handler:    _M2MServerService_WithdrawReq_Handler,
+		},
+		{
+			MethodName: "GetWithdrawHistory",
+			Handler:    _M2MServerService_GetWithdrawHistory_Handler,
+		},
+		{
+			MethodName: "ModifyWithdrawFee",
+			Handler:    _M2MServerService_ModifyWithdrawFee_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
