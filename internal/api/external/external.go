@@ -24,9 +24,9 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	m2m_pb "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -101,7 +101,7 @@ func setupAPI(conf config.Config) error {
 	api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
 	m2m_api.RegisterDeviceServiceServer(grpcServer, m2m_ui.NewDeviceServerAPI(validator))
 	m2m_api.RegisterMoneyServiceServer(grpcServer, m2m_ui.NewMoneyServerAPI(validator))
-
+	m2m_api.RegisterGatewayServiceServer(grpcServer, m2m_ui.NewGatewayServerAPI(validator))
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
@@ -282,6 +282,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := m2m_pb.RegisterMoneyServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 

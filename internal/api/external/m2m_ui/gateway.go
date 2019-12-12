@@ -13,17 +13,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type DeviceServerAPI struct {
+type GatewayServerAPI struct {
 	validator auth.Validator
 }
 
-func NewDeviceServerAPI(validator auth.Validator) *DeviceServerAPI {
-	return &DeviceServerAPI{
+func NewGatewayServerAPI(validator auth.Validator) *GatewayServerAPI {
+	return &GatewayServerAPI{
 		validator: validator,
 	}
 }
 
-func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
+func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
 	if err := s.validator.Validate(ctx,
 		auth.ValidateActiveUser()); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
@@ -34,107 +34,109 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
-		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetDeviceList(ctx, &m2m_api.GetDeviceListRequest{
+	resp, err := m2mClient.GetGatewayList(ctx, &m2m_api.GetGatewayListRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
 	if err != nil {
-		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetDeviceListResponse{
-		DevProfile:  resp.DevProfile,
+	return &api.GetGatewayListResponse{
+		GwProfile:   resp.GwProfile,
 		Count:       resp.Count,
 		UserProfile: resp.UserProfile,
 	}, nil
 }
 
-func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDeviceProfileRequest) (*api.GetDeviceProfileResponse, error) {
+func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGatewayProfileRequest) (*api.GetGatewayProfileResponse, error) {
 	if err := s.validator.Validate(ctx,
 		auth.ValidateActiveUser()); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceProfile")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
-		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetDeviceProfile(ctx, &m2m_api.GetDeviceProfileRequest{
-		OrgId: req.OrgId,
-		DevId: req.DevId,
-	})
-	if err != nil {
-		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	return &api.GetDeviceProfileResponse{
-		DevProfile:  resp.DevProfile,
-		UserProfile: resp.UserProfile,
-	}, nil
-}
-
-func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceHistory")
-
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	resp, err := m2mClient.GetDeviceHistory(ctx, &m2m_api.GetDeviceHistoryRequest{
+	resp, err := m2mClient.GetGatewayProfile(ctx, &m2m_api.GetGatewayProfileRequest{
 		OrgId:  req.OrgId,
-		DevId:  req.DevId,
+		GwId:   req.GwId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
 	if err != nil {
-		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetDeviceHistoryResponse{
-		DevHistory:  resp.DevHistory,
+	return &api.GetGatewayProfileResponse{
+		GwProfile:   resp.GwProfile,
 		UserProfile: resp.UserProfile,
 	}, nil
 }
 
-func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
+func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
 	if err := s.validator.Validate(ctx,
 		auth.ValidateActiveUser()); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/SetDeviceMode")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
-		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.SetDeviceMode(ctx, &m2m_api.SetDeviceModeRequest{
-		OrgId:   req.OrgId,
-		DevId:   req.DevId,
-		DevMode: req.DevMode,
+	resp, err := m2mClient.GetGatewayHistory(ctx, &m2m_api.GetGatewayHistoryRequest{
+		OrgId:  req.OrgId,
+		GwId:   req.GwId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
 	})
 	if err != nil {
-		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.SetDeviceModeResponse{
+	return &api.GetGatewayHistoryResponse{
+		GwHistory:   resp.GwHistory,
+		UserProfile: resp.UserProfile,
+	}, nil
+}
+
+func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayModeRequest) (*api.SetGatewayModeResponse, error) {
+	if err := s.validator.Validate(ctx,
+		auth.ValidateActiveUser()); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	resp, err := m2mClient.SetGatewayMode(ctx, &m2m_api.SetGatewayModeRequest{
+		OrgId:  req.OrgId,
+		GwId:   req.GwId,
+		GwMode: req.GwMode,
+	})
+	if err != nil {
+		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &api.SetGatewayModeResponse{
 		Status:      resp.Status,
 		UserProfile: resp.UserProfile,
 	}, nil
