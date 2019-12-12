@@ -1,0 +1,409 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "withdraw.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/withdraw/{orgId}/get-withdraw-fee/{moneyAbbr}": {
+      "get": {
+        "summary": "Get data for current withdraw fee",
+        "operationId": "GetWithdrawFee",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetWithdrawFeeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "description": "type of crypto currency",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "Ether"
+            ]
+          }
+        ],
+        "tags": [
+          "WithdrawServiceM2M"
+        ]
+      }
+    },
+    "/api/withdraw/{orgId}/history/{moneyAbbr}": {
+      "get": {
+        "operationId": "GetWithdrawHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetWithdrawHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "Ether"
+            ]
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WithdrawServiceM2M"
+        ]
+      }
+    },
+    "/api/withdraw/{orgId}/modify-withdraw-fee/{moneyAbbr}": {
+      "put": {
+        "operationId": "ModifyWithdrawFee",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiModifyWithdrawFeeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "Ether"
+            ]
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiModifyWithdrawFeeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawServiceM2M"
+        ]
+      }
+    },
+    "/api/withdraw/{orgId}/withdraw/{moneyAbbr}": {
+      "post": {
+        "operationId": "WithdrawReq",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiWithdrawReqResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "Ether"
+            ]
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiWithdrawReqRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawServiceM2M"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiGetWithdrawFeeResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawFee": {
+          "type": "number",
+          "format": "double",
+          "description": "Withdraw object."
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiGetWithdrawHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "withdrawHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiWithdrawHistory"
+          }
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiModifyWithdrawFeeRequest": {
+      "type": "object",
+      "properties": {
+        "moneyAbbr": {
+          "$ref": "#/definitions/apiMoney"
+        },
+        "withdrawFee": {
+          "type": "number",
+          "format": "double"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "apiModifyWithdrawFeeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiMoney": {
+      "type": "string",
+      "enum": [
+        "Ether"
+      ],
+      "default": "Ether"
+    },
+    "apiOrganizationLink": {
+      "type": "object",
+      "properties": {
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "Organization name."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is admin within the context of this organization."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        }
+      },
+      "description": "Defines an organization to which an user is associated."
+    },
+    "apiProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/apiUser",
+          "description": "User object."
+        },
+        "organizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiOrganizationLink"
+          },
+          "description": "Organizations to which the user is associated."
+        },
+        "settings": {
+          "$ref": "#/definitions/apiProfileSettings",
+          "description": "Profile settings."
+        }
+      }
+    },
+    "apiProfileSettings": {
+      "type": "object",
+      "properties": {
+        "disableAssignExistingUsers": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
+        }
+      }
+    },
+    "apiUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User ID.\nWill be set automatically on create."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "sessionTTL": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The session timeout, in minutes."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to true to make the user a global administrator."
+        },
+        "isActive": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to false to disable the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail of the user."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note to store with the user."
+        }
+      }
+    },
+    "apiWithdrawHistory": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "moneyType": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "withdrawFee": {
+          "type": "number",
+          "format": "double"
+        },
+        "txSentTime": {
+          "type": "string"
+        },
+        "txStatus": {
+          "type": "string"
+        },
+        "txApprovedTime": {
+          "type": "string"
+        },
+        "txHash": {
+          "type": "string"
+        }
+      }
+    },
+    "apiWithdrawReqRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "moneyAbbr": {
+          "$ref": "#/definitions/apiMoney"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "apiWithdrawReqResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    }
+  }
+}

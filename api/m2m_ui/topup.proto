@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package api;
+
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "profile.proto";
+import "ext_account.proto";
+
+service TopUpServiceM2M {
+    rpc GetTransactionsHistory(GetTransactionsHistoryRequest) returns (GetTransactionsHistoryResponse){
+        option(google.api.http) = {
+			get: "/api/transactions/{org_id}/history"
+		};
+    }
+
+    rpc GetIncome(GetIncomeRequest) returns (GetIncomeResponse){
+        option(google.api.http) = {
+			get: "/api/transactions/{org_id}/income"
+		};
+    }
+
+    rpc GetTopUpHistory(GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse){
+        option(google.api.http) = {
+			get: "/api/top-up/{org_id}/history"
+		};
+    }
+
+    rpc GetTopUpDestination(GetTopUpDestinationRequest) returns (GetTopUpDestinationResponse){
+        option(google.api.http) = {
+			get: "/api/top-up/{org_id}/supernode-account/{money_abbr}"
+		};
+    }
+}
+
+message GetTransactionsHistoryRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+}
+
+message GetTransactionsHistoryResponse {
+    int64 count = 1;
+    repeated TransactionsHistory transaction_history = 2;
+    ProfileResponse user_profile = 3;
+}
+
+message GetIncomeRequest {
+    int64 org_id = 1;
+}
+
+message GetIncomeResponse {
+    double amount = 1;    
+}
+
+message TransactionsHistory {
+    string from = 1;
+    string to = 2;
+    string money_abbr = 3;
+    double amount = 4;
+    string status = 5;
+    string tx_hash = 6;
+    string transaction_type = 7;
+    google.protobuf.Timestamp last_update_time = 8;
+}
+
+message GetTopUpHistoryRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+}
+
+message TopUpHistory {
+    string from = 1;
+    string to = 2;
+    double amount = 3;
+    string created_at = 4;
+    string money_type = 5;
+	string tx_hash = 6;
+}
+
+message GetTopUpHistoryResponse {
+    int64 count = 1;
+    repeated TopUpHistory topup_history = 2;
+    ProfileResponse user_profile = 3;
+}
+
+message GetTopUpDestinationRequest {
+    int64 org_id = 1;
+    Money money_abbr = 2;
+}
+
+message GetTopUpDestinationResponse {
+    string active_account = 1;
+    ProfileResponse user_profile = 2;
+}

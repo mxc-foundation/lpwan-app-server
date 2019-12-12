@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package api;
+
+import "google/api/annotations.proto";
+import "profile.proto";
+
+service DeviceServiceM2M {
+    rpc GetDeviceList(GetDeviceListRequest) returns (GetDeviceListResponse){
+        option(google.api.http) = {
+			get: "/api/device/{org_id}/device-list"
+		};
+    }
+
+    rpc GetDeviceProfile(GetDeviceProfileRequest) returns (GetDeviceProfileResponse){
+        option(google.api.http) = {
+			get: "/api/device/{org_id}/device-profile/{dev_id}"
+		};
+    }
+
+    rpc GetDeviceHistory(GetDeviceHistoryRequest) returns (GetDeviceHistoryResponse) {
+        option (google.api.http) = {
+			get: "/api/device/{org_id}/device-history/{dev_id}"
+		};
+    }
+
+    rpc SetDeviceMode(SetDeviceModeRequest) returns (SetDeviceModeResponse) {
+        option (google.api.http) = {
+            post: "/api/device/{org_id}/device-mode/{dev_id}"
+            body: "*"
+        };
+    }
+}
+
+enum DeviceMode {
+    DV_INACTIVE = 0;
+    DV_FREE_GATEWAYS_LIMITED = 1;
+    DV_WHOLE_NETWORK = 2;
+    DV_DELETED = 3;
+}
+
+message GetDeviceListRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+}
+
+message GetDeviceListResponse {
+    repeated DeviceProfile dev_profile = 1;
+    int64 count = 2;
+    ProfileResponse user_profile = 3;
+}
+
+message GetDeviceProfileRequest {
+    int64 org_id = 1;
+    int64 dev_id = 2;
+}
+
+message DeviceProfile {
+    int64 id = 1;
+    string dev_eui = 2;
+    int64 fk_wallet = 3;
+    DeviceMode mode = 4;
+    string created_at = 5;
+    string last_seen_at = 6;
+    int64 application_id = 7;
+    string name = 8;
+}
+
+message GetDeviceProfileResponse {
+    DeviceProfile dev_profile = 1;
+    ProfileResponse user_profile = 3;
+}
+
+message GetDeviceHistoryRequest {
+    int64 org_id = 1;
+    int64 dev_id = 2;
+    int64 offset = 3;
+    int64 limit = 4;
+}
+
+message GetDeviceHistoryResponse {
+    string dev_history = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message SetDeviceModeRequest {
+    int64 org_id = 1;
+    int64 dev_id = 2;
+    DeviceMode dev_mode = 3;
+}
+
+message SetDeviceModeResponse {
+    bool status = 1;
+    ProfileResponse user_profile = 3;
+}

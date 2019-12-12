@@ -1,0 +1,368 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "topup.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/top-up/{orgId}/history": {
+      "get": {
+        "operationId": "GetTopUpHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetTopUpHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TopUpServiceM2M"
+        ]
+      }
+    },
+    "/api/top-up/{orgId}/supernode-account/{moneyAbbr}": {
+      "get": {
+        "operationId": "GetTopUpDestination",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetTopUpDestinationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "Ether"
+            ]
+          }
+        ],
+        "tags": [
+          "TopUpServiceM2M"
+        ]
+      }
+    },
+    "/api/transactions/{orgId}/history": {
+      "get": {
+        "operationId": "GetTransactionsHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetTransactionsHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TopUpServiceM2M"
+        ]
+      }
+    },
+    "/api/transactions/{orgId}/income": {
+      "get": {
+        "operationId": "GetIncome",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetIncomeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TopUpServiceM2M"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiGetIncomeResponse": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "apiGetTopUpDestinationResponse": {
+      "type": "object",
+      "properties": {
+        "activeAccount": {
+          "type": "string"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiGetTopUpHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "topupHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiTopUpHistory"
+          }
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiGetTransactionsHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transactionHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiTransactionsHistory"
+          }
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiMoney": {
+      "type": "string",
+      "enum": [
+        "Ether"
+      ],
+      "default": "Ether"
+    },
+    "apiOrganizationLink": {
+      "type": "object",
+      "properties": {
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "Organization name."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is admin within the context of this organization."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        }
+      },
+      "description": "Defines an organization to which an user is associated."
+    },
+    "apiProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/apiUser",
+          "description": "User object."
+        },
+        "organizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiOrganizationLink"
+          },
+          "description": "Organizations to which the user is associated."
+        },
+        "settings": {
+          "$ref": "#/definitions/apiProfileSettings",
+          "description": "Profile settings."
+        }
+      }
+    },
+    "apiProfileSettings": {
+      "type": "object",
+      "properties": {
+        "disableAssignExistingUsers": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
+        }
+      }
+    },
+    "apiTopUpHistory": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "moneyType": {
+          "type": "string"
+        },
+        "txHash": {
+          "type": "string"
+        }
+      }
+    },
+    "apiTransactionsHistory": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "moneyAbbr": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "status": {
+          "type": "string"
+        },
+        "txHash": {
+          "type": "string"
+        },
+        "transactionType": {
+          "type": "string"
+        },
+        "lastUpdateTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "apiUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User ID.\nWill be set automatically on create."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "sessionTTL": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The session timeout, in minutes."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to true to make the user a global administrator."
+        },
+        "isActive": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to false to disable the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail of the user."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note to store with the user."
+        }
+      }
+    }
+  }
+}

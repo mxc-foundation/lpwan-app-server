@@ -1,0 +1,401 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "gateway.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/gateway/{orgId}/gateway-history/{gwId}": {
+      "get": {
+        "operationId": "GetGatewayHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetGatewayHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gwId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "GatewayServiceM2M"
+        ]
+      }
+    },
+    "/api/gateway/{orgId}/gateway-list": {
+      "get": {
+        "operationId": "GetGatewayList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetGatewayListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "GatewayServiceM2M"
+        ]
+      }
+    },
+    "/api/gateway/{orgId}/gateway-mode/{gwId}": {
+      "post": {
+        "operationId": "SetGatewayMode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiSetGatewayModeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gwId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiSetGatewayModeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayServiceM2M"
+        ]
+      }
+    },
+    "/api/gateway/{orgId}/gateway-profile/{gwId}": {
+      "get": {
+        "operationId": "GetGatewayProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetGatewayProfileResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gwId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "GatewayServiceM2M"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiGatewayMode": {
+      "type": "string",
+      "enum": [
+        "GW_INACTIVE",
+        "GW_FREE_GATEWAYS_LIMITED",
+        "GW_WHOLE_NETWORK",
+        "GW_DELETED"
+      ],
+      "default": "GW_INACTIVE"
+    },
+    "apiGatewayProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "mac": {
+          "type": "string"
+        },
+        "fkGwNs": {
+          "type": "string",
+          "format": "int64"
+        },
+        "fkWallet": {
+          "type": "string",
+          "format": "int64"
+        },
+        "mode": {
+          "$ref": "#/definitions/apiGatewayMode"
+        },
+        "createAt": {
+          "type": "string"
+        },
+        "lastSeenAt": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "apiGetGatewayHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "gwHistory": {
+          "type": "string"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiGetGatewayListResponse": {
+      "type": "object",
+      "properties": {
+        "gwProfile": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGatewayProfile"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiGetGatewayProfileResponse": {
+      "type": "object",
+      "properties": {
+        "gwProfile": {
+          "$ref": "#/definitions/apiGatewayProfile"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiOrganizationLink": {
+      "type": "object",
+      "properties": {
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "Organization name."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is admin within the context of this organization."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        }
+      },
+      "description": "Defines an organization to which an user is associated."
+    },
+    "apiProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/apiUser",
+          "description": "User object."
+        },
+        "organizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiOrganizationLink"
+          },
+          "description": "Organizations to which the user is associated."
+        },
+        "settings": {
+          "$ref": "#/definitions/apiProfileSettings",
+          "description": "Profile settings."
+        }
+      }
+    },
+    "apiProfileSettings": {
+      "type": "object",
+      "properties": {
+        "disableAssignExistingUsers": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
+        }
+      }
+    },
+    "apiSetGatewayModeRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gwId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gwMode": {
+          "$ref": "#/definitions/apiGatewayMode"
+        }
+      }
+    },
+    "apiSetGatewayModeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/apiProfileResponse"
+        }
+      }
+    },
+    "apiUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "User ID.\nWill be set automatically on create."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "sessionTTL": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The session timeout, in minutes."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to true to make the user a global administrator."
+        },
+        "isActive": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to false to disable the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail of the user."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note to store with the user."
+        }
+      }
+    }
+  }
+}

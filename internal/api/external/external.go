@@ -96,6 +96,8 @@ func setupAPI(conf config.Config) error {
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
 	api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
+	api.RegisterDeviceServiceM2MServer()
+
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the

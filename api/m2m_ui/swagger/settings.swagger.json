@@ -1,0 +1,100 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "settings.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/settings": {
+      "get": {
+        "operationId": "GetSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetSettingsResponse"
+            }
+          }
+        },
+        "tags": [
+          "SettingsServiceM2M"
+        ]
+      },
+      "put": {
+        "operationId": "ModifySettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiModifySettingsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiModifySettingsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SettingsServiceM2M"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiGetSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "lowBalanceWarning": {
+          "type": "string",
+          "format": "int64"
+        },
+        "downlinkFee": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transactionPercentageShare": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "apiModifySettingsRequest": {
+      "type": "object",
+      "properties": {
+        "lowBalanceWarning": {
+          "type": "string",
+          "format": "int64"
+        },
+        "downlinkFee": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transactionPercentageShare": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "apiModifySettingsResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    }
+  }
+}

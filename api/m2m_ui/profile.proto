@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package api;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+// InternalService is the service providing API endpoints for internal usage.
+service InternalServiceM2M {
+	// Log in a user
+	rpc Login(LoginRequest) returns (LoginResponse) {
+		option(google.api.http) = {
+			post: "/api/internal/login"
+			body: "*"
+		};
+	}
+
+	rpc GetUserOrganizationList(GetUserOrganizationListRequest) returns (GetUserOrganizationListResponse) {
+		option(google.api.http) = {
+			get: "/api/internal/{org_id}/organizations"
+		};
+	}
+
+	rpc GetUserProfile(GetUserProfileRequest) returns (GetUserProfileResponse) {
+		option(google.api.http) = {
+			get: "/api/internal/user-profile"
+		};
+	}
+}
+
+message ProfileResponse {
+	// User object.
+	User user = 1;
+
+	// Organizations to which the user is associated.
+	repeated OrganizationLink organizations = 3;
+
+	// Profile settings.
+	ProfileSettings settings = 4;
+}
+
+message User {
+	// User ID.
+	// Will be set automatically on create.
+	string id = 1;
+
+	// Username of the user.
+	string username = 2;
+
+	// The session timeout, in minutes.
+	int32 session_ttl = 3 [json_name = "sessionTTL"];
+
+	// Set to true to make the user a global administrator.
+	bool is_admin = 4;
+
+	// Set to false to disable the user.
+	bool is_active = 5;
+
+	// E-mail of the user.
+	string email = 6;
+
+	// Optional note to store with the user.
+	string note = 7;
+}
+
+message ProfileSettings {
+	// Existing users in the system can not be assigned to organizations and
+	// application and can not be listed by non global admin users.
+	bool disable_assign_existing_users = 1;
+}
+
+// Defines an organization to which an user is associated.
+message OrganizationLink {
+	// Organization ID.
+	int64 organization_id = 1 [json_name = "organizationID"];
+
+	// Organization name.
+	string organization_name = 2;
+
+	// User is admin within the context of this organization.
+	bool is_admin = 3;
+
+	// Created at timestamp.
+	google.protobuf.Timestamp created_at = 4;
+
+	// Last update timestamp.
+	google.protobuf.Timestamp updated_at = 5;
+}
+
+message LoginRequest {
+	// Username of the user.
+	string username = 1;
+
+	// Password of the user.
+	string password = 2;
+}
+
+message LoginResponse {
+	// The JWT tag to be used to access lora-app-server interfaces.
+	string jwt = 1;
+}
+
+message GetUserOrganizationListRequest {
+	int64 org_id = 1;
+}
+
+message GetUserOrganizationListResponse {
+	repeated OrganizationLink organizations = 1;
+}
+
+message GetUserProfileRequest {
+	int64 org_id = 1;
+}
+
+message GetUserProfileResponse {
+	ProfileResponse user_profile = 1;
+}
