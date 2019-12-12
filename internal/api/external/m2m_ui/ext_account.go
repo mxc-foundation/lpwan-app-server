@@ -29,7 +29,7 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyMoneyAccount")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -58,7 +58,7 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetChangeMoneyAccountHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -89,7 +89,7 @@ func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *ap
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetActiveMoneyAccount")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))

@@ -29,7 +29,7 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayList")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -59,7 +59,7 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayProfile")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -89,7 +89,7 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -119,7 +119,7 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/SetGatewayMode")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))

@@ -102,6 +102,7 @@ func setupAPI(conf config.Config) error {
 	m2m_api.RegisterDeviceServiceServer(grpcServer, m2m_ui.NewDeviceServerAPI(validator))
 	m2m_api.RegisterMoneyServiceServer(grpcServer, m2m_ui.NewMoneyServerAPI(validator))
 	m2m_api.RegisterGatewayServiceServer(grpcServer, m2m_ui.NewGatewayServerAPI(validator))
+	m2m_api.RegisterSettingsServiceServer(grpcServer, m2m_ui.NewSettingsServerAPI(validator))
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
