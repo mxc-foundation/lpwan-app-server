@@ -7,6 +7,7 @@ import { MuiThemeProvider, withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
 
 import history from "./history";
+import themeChinese from "./themeChinese";
 import theme from "./theme";
 import i18n, { packageNS, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./i18n";
 
@@ -146,7 +147,8 @@ class App extends Component {
       user: null,
       organizationId: null,
       drawerOpen: false,
-      language: null
+      language: null,
+      theme: theme
     };
 
     this.setDrawerOpen = this.setDrawerOpen.bind(this);
@@ -220,7 +222,8 @@ class App extends Component {
     });
 
     this.setState({
-      language: newLanguage
+      language: newLanguage,
+      theme: newLanguage.code === 'cn' ? themeChinese:theme
     });
   }
 
@@ -280,7 +283,7 @@ class App extends Component {
     return (
       <Router history={history}>
         <React.Fragment>
-          <MuiThemeProvider theme={theme}>
+          <MuiThemeProvider theme={this.state.theme}>
           <CssBaseline />
             {/* <div className={this.props.classes.root}> */}
             <div className="app">
