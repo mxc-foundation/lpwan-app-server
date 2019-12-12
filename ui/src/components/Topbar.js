@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
 
+import Input from "@material-ui/core/Input";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import Magnify from "mdi-material-ui/Magnify";
 //import WithdrawStore from "../stores/WithdrawStore";
 //import { SUPER_ADMIN } from "../util/M2mUtil";
 //import WalletStore from "../stores/WalletStore";
@@ -174,6 +177,20 @@ class Topbar extends Component {
   render() {
     const { balance } = this.state;
 
+    let searchbar;
+    searchbar = <Input
+                  placeholder={i18n.t(`${packageNS}:tr000033`)}
+                  className={this.props.classes.search}
+                  disableUnderline={true}
+                  value={this.state.search || ""}
+                  onChange={this.onSearchChange}
+                  startAdornment={
+                    <InputAdornment position="start">
+                    <Magnify />
+                    </InputAdornment>
+                  }
+                />
+
     const balanceEl = balance === null ? 
       <span className="color-gray">(no org selected)</span> : 
       balance + " MXC";
@@ -205,7 +222,11 @@ class Topbar extends Component {
             <li>
               {/* <NotificationDropdown notifications={Notifications} /> */}
             </li>
-
+            {/* <li>
+              <form onSubmit={this.onSearchSubmit}>
+                { searchbar }
+              </form>
+            </li> */}
             <li className="dropdown notification-list">
               <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
                 <i className="mdi mdi-wallet-outline"></i>

@@ -57,7 +57,7 @@ const SideNavContent = (props) => {
                     <li>
                         <Link to="/control-panel/withdraw/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_WALLET)}>
                             <i className="mdi mdi-wallet"></i>
-                            <span> Wallet </span>
+                            <span> {i18n.t(`${packageNS}:tr000084`)} </span>
                             <span className="menu-arrow"></span>
                         </Link>
                     </li>
@@ -97,12 +97,7 @@ const SideNavContent = (props) => {
                         </Link>
                     </li>
 
-                    <li>
-                        <Link to={`/organizations/${props.orgId}/users`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-account-details"></i>
-                            <span> {i18n.t(`${packageNS}:tr000419`)} </span>
-                        </Link>
-                    </li>
+                    
 
                     <li>
                         <Link to="/control-panel/wallet/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_SETTING)}>
@@ -123,8 +118,15 @@ const SideNavContent = (props) => {
                     <li>
                         <Link to={`/withdraw/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
                             <i className="mdi mdi-wallet"></i>
-                            <span> Wallet </span>
+                            <span> {i18n.t(`${packageNS}:tr000084`)} </span>
                             <span className="menu-arrow"></span>
+                        </Link>
+                    </li>
+                    
+                    <li>
+                        <Link to={`/organizations/${props.orgId}/users`} className="waves-effect side-nav-link-ref">
+                            <i className="mdi mdi-account-details"></i>
+                            <span> {i18n.t(`${packageNS}:tr000067`)} </span>
                         </Link>
                     </li>
 
@@ -172,7 +174,7 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/organizations/${props.orgId}/users`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
+                        <Link to={`/modify-account/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
                             <i className="mdi mdi-settings"></i>
                             <span> Setting </span>
                             <span className="menu-arrow"></span>
@@ -349,10 +351,8 @@ const SideNavSettingContent = (props) => {
                         <DropdownMenu2 default={props.default} onChange={props.onChange} />
                     </li>
 
-                    
-
                     <li>
-                        <Link to={`/topup/${props.orgId}`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref">
                             {/* <i className="mdi mdi-inbox-arrow-down"></i>
                         <i className="mdi mdi-basket-fill"></i> */}
                             <i className="mdi mdi-ethereum"></i>
