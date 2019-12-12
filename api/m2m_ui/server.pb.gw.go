@@ -32,7 +32,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_ServerInfoServiceM2M_GetVersion_0(ctx context.Context, marshaler runtime.Marshaler, client ServerInfoServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_ServerInfoService_GetVersion_0(ctx context.Context, marshaler runtime.Marshaler, client ServerInfoServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
@@ -41,7 +41,7 @@ func request_ServerInfoServiceM2M_GetVersion_0(ctx context.Context, marshaler ru
 
 }
 
-func local_request_ServerInfoServiceM2M_GetVersion_0(ctx context.Context, marshaler runtime.Marshaler, server ServerInfoServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_ServerInfoService_GetVersion_0(ctx context.Context, marshaler runtime.Marshaler, server ServerInfoServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq empty.Empty
 	var metadata runtime.ServerMetadata
 
@@ -50,12 +50,12 @@ func local_request_ServerInfoServiceM2M_GetVersion_0(ctx context.Context, marsha
 
 }
 
-// RegisterServerInfoServiceM2MHandlerServer registers the http handlers for service ServerInfoServiceM2M to "mux".
-// UnaryRPC     :call ServerInfoServiceM2MServer directly.
+// RegisterServerInfoServiceHandlerServer registers the http handlers for service ServerInfoService to "mux".
+// UnaryRPC     :call ServerInfoServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterServerInfoServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ServerInfoServiceM2MServer) error {
+func RegisterServerInfoServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ServerInfoServiceServer) error {
 
-	mux.Handle("GET", pattern_ServerInfoServiceM2M_GetVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ServerInfoService_GetVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -64,23 +64,23 @@ func RegisterServerInfoServiceM2MHandlerServer(ctx context.Context, mux *runtime
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_ServerInfoServiceM2M_GetVersion_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_ServerInfoService_GetVersion_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_ServerInfoServiceM2M_GetVersion_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_ServerInfoService_GetVersion_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterServerInfoServiceM2MHandlerFromEndpoint is same as RegisterServerInfoServiceM2MHandler but
+// RegisterServerInfoServiceHandlerFromEndpoint is same as RegisterServerInfoServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterServerInfoServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterServerInfoServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -100,23 +100,23 @@ func RegisterServerInfoServiceM2MHandlerFromEndpoint(ctx context.Context, mux *r
 		}()
 	}()
 
-	return RegisterServerInfoServiceM2MHandler(ctx, mux, conn)
+	return RegisterServerInfoServiceHandler(ctx, mux, conn)
 }
 
-// RegisterServerInfoServiceM2MHandler registers the http handlers for service ServerInfoServiceM2M to "mux".
+// RegisterServerInfoServiceHandler registers the http handlers for service ServerInfoService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterServerInfoServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterServerInfoServiceM2MHandlerClient(ctx, mux, NewServerInfoServiceM2MClient(conn))
+func RegisterServerInfoServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterServerInfoServiceHandlerClient(ctx, mux, NewServerInfoServiceClient(conn))
 }
 
-// RegisterServerInfoServiceM2MHandlerClient registers the http handlers for service ServerInfoServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ServerInfoServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ServerInfoServiceM2MClient"
+// RegisterServerInfoServiceHandlerClient registers the http handlers for service ServerInfoService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ServerInfoServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ServerInfoServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ServerInfoServiceM2MClient" to call the correct interceptors.
-func RegisterServerInfoServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ServerInfoServiceM2MClient) error {
+// "ServerInfoServiceClient" to call the correct interceptors.
+func RegisterServerInfoServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ServerInfoServiceClient) error {
 
-	mux.Handle("GET", pattern_ServerInfoServiceM2M_GetVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ServerInfoService_GetVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -125,14 +125,14 @@ func RegisterServerInfoServiceM2MHandlerClient(ctx context.Context, mux *runtime
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_ServerInfoServiceM2M_GetVersion_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_ServerInfoService_GetVersion_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_ServerInfoServiceM2M_GetVersion_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_ServerInfoService_GetVersion_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -140,9 +140,9 @@ func RegisterServerInfoServiceM2MHandlerClient(ctx context.Context, mux *runtime
 }
 
 var (
-	pattern_ServerInfoServiceM2M_GetVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "server-info", "version"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_ServerInfoService_GetVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "server-info", "version"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_ServerInfoServiceM2M_GetVersion_0 = runtime.ForwardResponseMessage
+	forward_ServerInfoService_GetVersion_0 = runtime.ForwardResponseMessage
 )

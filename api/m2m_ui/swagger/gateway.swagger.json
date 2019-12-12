@@ -53,7 +53,7 @@
           }
         ],
         "tags": [
-          "GatewayServiceM2M"
+          "GatewayService"
         ]
       }
     },
@@ -92,7 +92,7 @@
           }
         ],
         "tags": [
-          "GatewayServiceM2M"
+          "GatewayService"
         ]
       }
     },
@@ -132,7 +132,7 @@
           }
         ],
         "tags": [
-          "GatewayServiceM2M"
+          "GatewayService"
         ]
       }
     },
@@ -178,7 +178,7 @@
           }
         ],
         "tags": [
-          "GatewayServiceM2M"
+          "GatewayService"
         ]
       }
     }

@@ -34,7 +34,7 @@
           }
         ],
         "tags": [
-          "InternalServiceM2M"
+          "InternalService"
         ]
       }
     },
@@ -59,7 +59,7 @@
           }
         ],
         "tags": [
-          "InternalServiceM2M"
+          "InternalService"
         ]
       }
     },
@@ -84,7 +84,7 @@
           }
         ],
         "tags": [
-          "InternalServiceM2M"
+          "InternalService"
         ]
       }
     }

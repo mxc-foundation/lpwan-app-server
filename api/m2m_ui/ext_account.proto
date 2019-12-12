@@ -5,7 +5,7 @@ package api;
 import "google/api/annotations.proto";
 import "profile.proto";
 
-service MoneyServiceM2M {
+service MoneyService {
     rpc ModifyMoneyAccount(ModifyMoneyAccountRequest) returns (ModifyMoneyAccountResponse){
         option(google.api.http) = {
 			put: "/api/ext-account/{org_id}/modify-account/{money_abbr}"

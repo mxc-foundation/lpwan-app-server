@@ -5,7 +5,7 @@ package api;
 import "google/api/annotations.proto";
 import "profile.proto";
 
-service StakingServiceM2M {
+service StakingService {
     rpc Stake (StakeRequest) returns (StakeResponse) {
         option (google.api.http) = {
             post: "/api/staking/{org_id}/stake"

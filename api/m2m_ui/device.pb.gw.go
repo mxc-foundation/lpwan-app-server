@@ -32,10 +32,10 @@ var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
 var (
-	filter_DeviceServiceM2M_GetDeviceList_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_DeviceService_GetDeviceList_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_DeviceServiceM2M_GetDeviceList_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_DeviceService_GetDeviceList_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDeviceListRequest
 	var metadata runtime.ServerMetadata
 
@@ -60,7 +60,7 @@ func request_DeviceServiceM2M_GetDeviceList_0(ctx context.Context, marshaler run
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceServiceM2M_GetDeviceList_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceService_GetDeviceList_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -69,7 +69,7 @@ func request_DeviceServiceM2M_GetDeviceList_0(ctx context.Context, marshaler run
 
 }
 
-func local_request_DeviceServiceM2M_GetDeviceList_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_DeviceService_GetDeviceList_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDeviceListRequest
 	var metadata runtime.ServerMetadata
 
@@ -91,7 +91,7 @@ func local_request_DeviceServiceM2M_GetDeviceList_0(ctx context.Context, marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceServiceM2M_GetDeviceList_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceService_GetDeviceList_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -100,7 +100,7 @@ func local_request_DeviceServiceM2M_GetDeviceList_0(ctx context.Context, marshal
 
 }
 
-func request_DeviceServiceM2M_GetDeviceProfile_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_DeviceService_GetDeviceProfile_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDeviceProfileRequest
 	var metadata runtime.ServerMetadata
 
@@ -138,7 +138,7 @@ func request_DeviceServiceM2M_GetDeviceProfile_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_DeviceServiceM2M_GetDeviceProfile_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_DeviceService_GetDeviceProfile_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDeviceProfileRequest
 	var metadata runtime.ServerMetadata
 
@@ -177,10 +177,10 @@ func local_request_DeviceServiceM2M_GetDeviceProfile_0(ctx context.Context, mars
 }
 
 var (
-	filter_DeviceServiceM2M_GetDeviceHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "dev_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_DeviceService_GetDeviceHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "dev_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
-func request_DeviceServiceM2M_GetDeviceHistory_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_DeviceService_GetDeviceHistory_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDeviceHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -216,7 +216,7 @@ func request_DeviceServiceM2M_GetDeviceHistory_0(ctx context.Context, marshaler 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceServiceM2M_GetDeviceHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceService_GetDeviceHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -225,7 +225,7 @@ func request_DeviceServiceM2M_GetDeviceHistory_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_DeviceServiceM2M_GetDeviceHistory_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_DeviceService_GetDeviceHistory_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDeviceHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -258,7 +258,7 @@ func local_request_DeviceServiceM2M_GetDeviceHistory_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "dev_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceServiceM2M_GetDeviceHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceService_GetDeviceHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -267,7 +267,7 @@ func local_request_DeviceServiceM2M_GetDeviceHistory_0(ctx context.Context, mars
 
 }
 
-func request_DeviceServiceM2M_SetDeviceMode_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_DeviceService_SetDeviceMode_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq SetDeviceModeRequest
 	var metadata runtime.ServerMetadata
 
@@ -313,7 +313,7 @@ func request_DeviceServiceM2M_SetDeviceMode_0(ctx context.Context, marshaler run
 
 }
 
-func local_request_DeviceServiceM2M_SetDeviceMode_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_DeviceService_SetDeviceMode_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq SetDeviceModeRequest
 	var metadata runtime.ServerMetadata
 
@@ -359,12 +359,12 @@ func local_request_DeviceServiceM2M_SetDeviceMode_0(ctx context.Context, marshal
 
 }
 
-// RegisterDeviceServiceM2MHandlerServer registers the http handlers for service DeviceServiceM2M to "mux".
-// UnaryRPC     :call DeviceServiceM2MServer directly.
+// RegisterDeviceServiceHandlerServer registers the http handlers for service DeviceService to "mux".
+// UnaryRPC     :call DeviceServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterDeviceServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DeviceServiceM2MServer) error {
+func RegisterDeviceServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DeviceServiceServer) error {
 
-	mux.Handle("GET", pattern_DeviceServiceM2M_GetDeviceList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DeviceService_GetDeviceList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -373,18 +373,18 @@ func RegisterDeviceServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DeviceServiceM2M_GetDeviceList_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DeviceService_GetDeviceList_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_GetDeviceList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_GetDeviceList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_DeviceServiceM2M_GetDeviceProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DeviceService_GetDeviceProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -393,18 +393,18 @@ func RegisterDeviceServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DeviceServiceM2M_GetDeviceProfile_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DeviceService_GetDeviceProfile_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_GetDeviceProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_GetDeviceProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_DeviceServiceM2M_GetDeviceHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DeviceService_GetDeviceHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -413,18 +413,18 @@ func RegisterDeviceServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DeviceServiceM2M_GetDeviceHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DeviceService_GetDeviceHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_GetDeviceHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_GetDeviceHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DeviceServiceM2M_SetDeviceMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DeviceService_SetDeviceMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -433,23 +433,23 @@ func RegisterDeviceServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_DeviceServiceM2M_SetDeviceMode_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_DeviceService_SetDeviceMode_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_SetDeviceMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_SetDeviceMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterDeviceServiceM2MHandlerFromEndpoint is same as RegisterDeviceServiceM2MHandler but
+// RegisterDeviceServiceHandlerFromEndpoint is same as RegisterDeviceServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterDeviceServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterDeviceServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -469,23 +469,23 @@ func RegisterDeviceServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runti
 		}()
 	}()
 
-	return RegisterDeviceServiceM2MHandler(ctx, mux, conn)
+	return RegisterDeviceServiceHandler(ctx, mux, conn)
 }
 
-// RegisterDeviceServiceM2MHandler registers the http handlers for service DeviceServiceM2M to "mux".
+// RegisterDeviceServiceHandler registers the http handlers for service DeviceService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterDeviceServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterDeviceServiceM2MHandlerClient(ctx, mux, NewDeviceServiceM2MClient(conn))
+func RegisterDeviceServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterDeviceServiceHandlerClient(ctx, mux, NewDeviceServiceClient(conn))
 }
 
-// RegisterDeviceServiceM2MHandlerClient registers the http handlers for service DeviceServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "DeviceServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "DeviceServiceM2MClient"
+// RegisterDeviceServiceHandlerClient registers the http handlers for service DeviceService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "DeviceServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "DeviceServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "DeviceServiceM2MClient" to call the correct interceptors.
-func RegisterDeviceServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client DeviceServiceM2MClient) error {
+// "DeviceServiceClient" to call the correct interceptors.
+func RegisterDeviceServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client DeviceServiceClient) error {
 
-	mux.Handle("GET", pattern_DeviceServiceM2M_GetDeviceList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DeviceService_GetDeviceList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -494,18 +494,18 @@ func RegisterDeviceServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DeviceServiceM2M_GetDeviceList_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DeviceService_GetDeviceList_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_GetDeviceList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_GetDeviceList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_DeviceServiceM2M_GetDeviceProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DeviceService_GetDeviceProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -514,18 +514,18 @@ func RegisterDeviceServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DeviceServiceM2M_GetDeviceProfile_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DeviceService_GetDeviceProfile_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_GetDeviceProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_GetDeviceProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_DeviceServiceM2M_GetDeviceHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_DeviceService_GetDeviceHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -534,18 +534,18 @@ func RegisterDeviceServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DeviceServiceM2M_GetDeviceHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DeviceService_GetDeviceHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_GetDeviceHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_GetDeviceHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_DeviceServiceM2M_SetDeviceMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_DeviceService_SetDeviceMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -554,14 +554,14 @@ func RegisterDeviceServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_DeviceServiceM2M_SetDeviceMode_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_DeviceService_SetDeviceMode_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_DeviceServiceM2M_SetDeviceMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_DeviceService_SetDeviceMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -569,21 +569,21 @@ func RegisterDeviceServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 }
 
 var (
-	pattern_DeviceServiceM2M_GetDeviceList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "device", "org_id", "device-list"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DeviceService_GetDeviceList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "device", "org_id", "device-list"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DeviceServiceM2M_GetDeviceProfile_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "device", "org_id", "device-profile", "dev_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DeviceService_GetDeviceProfile_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "device", "org_id", "device-profile", "dev_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DeviceServiceM2M_GetDeviceHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "device", "org_id", "device-history", "dev_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DeviceService_GetDeviceHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "device", "org_id", "device-history", "dev_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DeviceServiceM2M_SetDeviceMode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "device", "org_id", "device-mode", "dev_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DeviceService_SetDeviceMode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "device", "org_id", "device-mode", "dev_id"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_DeviceServiceM2M_GetDeviceList_0 = runtime.ForwardResponseMessage
+	forward_DeviceService_GetDeviceList_0 = runtime.ForwardResponseMessage
 
-	forward_DeviceServiceM2M_GetDeviceProfile_0 = runtime.ForwardResponseMessage
+	forward_DeviceService_GetDeviceProfile_0 = runtime.ForwardResponseMessage
 
-	forward_DeviceServiceM2M_GetDeviceHistory_0 = runtime.ForwardResponseMessage
+	forward_DeviceService_GetDeviceHistory_0 = runtime.ForwardResponseMessage
 
-	forward_DeviceServiceM2M_SetDeviceMode_0 = runtime.ForwardResponseMessage
+	forward_DeviceService_SetDeviceMode_0 = runtime.ForwardResponseMessage
 )

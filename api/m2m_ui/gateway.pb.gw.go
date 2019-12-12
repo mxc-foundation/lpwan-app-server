@@ -32,10 +32,10 @@ var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
 var (
-	filter_GatewayServiceM2M_GetGatewayList_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_GatewayService_GetGatewayList_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_GatewayServiceM2M_GetGatewayList_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_GatewayService_GetGatewayList_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetGatewayListRequest
 	var metadata runtime.ServerMetadata
 
@@ -60,7 +60,7 @@ func request_GatewayServiceM2M_GetGatewayList_0(ctx context.Context, marshaler r
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayServiceM2M_GetGatewayList_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayService_GetGatewayList_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -69,7 +69,7 @@ func request_GatewayServiceM2M_GetGatewayList_0(ctx context.Context, marshaler r
 
 }
 
-func local_request_GatewayServiceM2M_GetGatewayList_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_GatewayService_GetGatewayList_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetGatewayListRequest
 	var metadata runtime.ServerMetadata
 
@@ -91,7 +91,7 @@ func local_request_GatewayServiceM2M_GetGatewayList_0(ctx context.Context, marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayServiceM2M_GetGatewayList_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayService_GetGatewayList_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -101,10 +101,10 @@ func local_request_GatewayServiceM2M_GetGatewayList_0(ctx context.Context, marsh
 }
 
 var (
-	filter_GatewayServiceM2M_GetGatewayProfile_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "gw_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_GatewayService_GetGatewayProfile_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "gw_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
-func request_GatewayServiceM2M_GetGatewayProfile_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_GatewayService_GetGatewayProfile_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetGatewayProfileRequest
 	var metadata runtime.ServerMetadata
 
@@ -140,7 +140,7 @@ func request_GatewayServiceM2M_GetGatewayProfile_0(ctx context.Context, marshale
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayServiceM2M_GetGatewayProfile_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayService_GetGatewayProfile_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -149,7 +149,7 @@ func request_GatewayServiceM2M_GetGatewayProfile_0(ctx context.Context, marshale
 
 }
 
-func local_request_GatewayServiceM2M_GetGatewayProfile_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_GatewayService_GetGatewayProfile_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetGatewayProfileRequest
 	var metadata runtime.ServerMetadata
 
@@ -182,7 +182,7 @@ func local_request_GatewayServiceM2M_GetGatewayProfile_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "gw_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayServiceM2M_GetGatewayProfile_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayService_GetGatewayProfile_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -192,10 +192,10 @@ func local_request_GatewayServiceM2M_GetGatewayProfile_0(ctx context.Context, ma
 }
 
 var (
-	filter_GatewayServiceM2M_GetGatewayHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "gw_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_GatewayService_GetGatewayHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "gw_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
-func request_GatewayServiceM2M_GetGatewayHistory_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_GatewayService_GetGatewayHistory_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetGatewayHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -231,7 +231,7 @@ func request_GatewayServiceM2M_GetGatewayHistory_0(ctx context.Context, marshale
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayServiceM2M_GetGatewayHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayService_GetGatewayHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -240,7 +240,7 @@ func request_GatewayServiceM2M_GetGatewayHistory_0(ctx context.Context, marshale
 
 }
 
-func local_request_GatewayServiceM2M_GetGatewayHistory_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_GatewayService_GetGatewayHistory_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetGatewayHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -273,7 +273,7 @@ func local_request_GatewayServiceM2M_GetGatewayHistory_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "gw_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayServiceM2M_GetGatewayHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayService_GetGatewayHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -282,7 +282,7 @@ func local_request_GatewayServiceM2M_GetGatewayHistory_0(ctx context.Context, ma
 
 }
 
-func request_GatewayServiceM2M_SetGatewayMode_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_GatewayService_SetGatewayMode_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq SetGatewayModeRequest
 	var metadata runtime.ServerMetadata
 
@@ -328,7 +328,7 @@ func request_GatewayServiceM2M_SetGatewayMode_0(ctx context.Context, marshaler r
 
 }
 
-func local_request_GatewayServiceM2M_SetGatewayMode_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_GatewayService_SetGatewayMode_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq SetGatewayModeRequest
 	var metadata runtime.ServerMetadata
 
@@ -374,12 +374,12 @@ func local_request_GatewayServiceM2M_SetGatewayMode_0(ctx context.Context, marsh
 
 }
 
-// RegisterGatewayServiceM2MHandlerServer registers the http handlers for service GatewayServiceM2M to "mux".
-// UnaryRPC     :call GatewayServiceM2MServer directly.
+// RegisterGatewayServiceHandlerServer registers the http handlers for service GatewayService to "mux".
+// UnaryRPC     :call GatewayServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterGatewayServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server GatewayServiceM2MServer) error {
+func RegisterGatewayServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server GatewayServiceServer) error {
 
-	mux.Handle("GET", pattern_GatewayServiceM2M_GetGatewayList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_GatewayService_GetGatewayList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -388,18 +388,18 @@ func RegisterGatewayServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_GatewayServiceM2M_GetGatewayList_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_GatewayService_GetGatewayList_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_GetGatewayList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_GetGatewayList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_GatewayServiceM2M_GetGatewayProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_GatewayService_GetGatewayProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -408,18 +408,18 @@ func RegisterGatewayServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_GatewayServiceM2M_GetGatewayProfile_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_GatewayService_GetGatewayProfile_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_GetGatewayProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_GetGatewayProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_GatewayServiceM2M_GetGatewayHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_GatewayService_GetGatewayHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -428,18 +428,18 @@ func RegisterGatewayServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_GatewayServiceM2M_GetGatewayHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_GatewayService_GetGatewayHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_GetGatewayHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_GetGatewayHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_GatewayServiceM2M_SetGatewayMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_GatewayService_SetGatewayMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -448,23 +448,23 @@ func RegisterGatewayServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_GatewayServiceM2M_SetGatewayMode_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_GatewayService_SetGatewayMode_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_SetGatewayMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_SetGatewayMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterGatewayServiceM2MHandlerFromEndpoint is same as RegisterGatewayServiceM2MHandler but
+// RegisterGatewayServiceHandlerFromEndpoint is same as RegisterGatewayServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterGatewayServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterGatewayServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -484,23 +484,23 @@ func RegisterGatewayServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runt
 		}()
 	}()
 
-	return RegisterGatewayServiceM2MHandler(ctx, mux, conn)
+	return RegisterGatewayServiceHandler(ctx, mux, conn)
 }
 
-// RegisterGatewayServiceM2MHandler registers the http handlers for service GatewayServiceM2M to "mux".
+// RegisterGatewayServiceHandler registers the http handlers for service GatewayService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterGatewayServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterGatewayServiceM2MHandlerClient(ctx, mux, NewGatewayServiceM2MClient(conn))
+func RegisterGatewayServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterGatewayServiceHandlerClient(ctx, mux, NewGatewayServiceClient(conn))
 }
 
-// RegisterGatewayServiceM2MHandlerClient registers the http handlers for service GatewayServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "GatewayServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "GatewayServiceM2MClient"
+// RegisterGatewayServiceHandlerClient registers the http handlers for service GatewayService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "GatewayServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "GatewayServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "GatewayServiceM2MClient" to call the correct interceptors.
-func RegisterGatewayServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client GatewayServiceM2MClient) error {
+// "GatewayServiceClient" to call the correct interceptors.
+func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client GatewayServiceClient) error {
 
-	mux.Handle("GET", pattern_GatewayServiceM2M_GetGatewayList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_GatewayService_GetGatewayList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -509,18 +509,18 @@ func RegisterGatewayServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_GatewayServiceM2M_GetGatewayList_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_GatewayService_GetGatewayList_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_GetGatewayList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_GetGatewayList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_GatewayServiceM2M_GetGatewayProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_GatewayService_GetGatewayProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -529,18 +529,18 @@ func RegisterGatewayServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_GatewayServiceM2M_GetGatewayProfile_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_GatewayService_GetGatewayProfile_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_GetGatewayProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_GetGatewayProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_GatewayServiceM2M_GetGatewayHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_GatewayService_GetGatewayHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -549,18 +549,18 @@ func RegisterGatewayServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_GatewayServiceM2M_GetGatewayHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_GatewayService_GetGatewayHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_GetGatewayHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_GetGatewayHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_GatewayServiceM2M_SetGatewayMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_GatewayService_SetGatewayMode_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -569,14 +569,14 @@ func RegisterGatewayServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_GatewayServiceM2M_SetGatewayMode_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_GatewayService_SetGatewayMode_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_GatewayServiceM2M_SetGatewayMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_GatewayService_SetGatewayMode_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -584,21 +584,21 @@ func RegisterGatewayServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 }
 
 var (
-	pattern_GatewayServiceM2M_GetGatewayList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "gateway", "org_id", "gateway-list"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_GetGatewayList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "gateway", "org_id", "gateway-list"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GatewayServiceM2M_GetGatewayProfile_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "gateway", "org_id", "gateway-profile", "gw_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_GetGatewayProfile_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "gateway", "org_id", "gateway-profile", "gw_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GatewayServiceM2M_GetGatewayHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "gateway", "org_id", "gateway-history", "gw_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_GetGatewayHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "gateway", "org_id", "gateway-history", "gw_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GatewayServiceM2M_SetGatewayMode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "gateway", "org_id", "gateway-mode", "gw_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_SetGatewayMode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "gateway", "org_id", "gateway-mode", "gw_id"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_GatewayServiceM2M_GetGatewayList_0 = runtime.ForwardResponseMessage
+	forward_GatewayService_GetGatewayList_0 = runtime.ForwardResponseMessage
 
-	forward_GatewayServiceM2M_GetGatewayProfile_0 = runtime.ForwardResponseMessage
+	forward_GatewayService_GetGatewayProfile_0 = runtime.ForwardResponseMessage
 
-	forward_GatewayServiceM2M_GetGatewayHistory_0 = runtime.ForwardResponseMessage
+	forward_GatewayService_GetGatewayHistory_0 = runtime.ForwardResponseMessage
 
-	forward_GatewayServiceM2M_SetGatewayMode_0 = runtime.ForwardResponseMessage
+	forward_GatewayService_SetGatewayMode_0 = runtime.ForwardResponseMessage
 )

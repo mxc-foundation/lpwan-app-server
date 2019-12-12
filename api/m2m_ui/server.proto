@@ -5,7 +5,7 @@ package api;
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
-service ServerInfoServiceM2M {
+service ServerInfoService {
     // get version
     rpc GetVersion(google.protobuf.Empty) returns (GetVersionResponse) {
         option(google.api.http) = {

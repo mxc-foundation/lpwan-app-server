@@ -41,7 +41,7 @@
           }
         ],
         "tags": [
-          "MoneyServiceM2M"
+          "MoneyService"
         ]
       }
     },
@@ -89,7 +89,7 @@
           }
         ],
         "tags": [
-          "MoneyServiceM2M"
+          "MoneyService"
         ]
       }
     },
@@ -131,7 +131,7 @@
           }
         ],
         "tags": [
-          "MoneyServiceM2M"
+          "MoneyService"
         ]
       }
     }

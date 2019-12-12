@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client SuperNodeServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_SuperNodeService_GetSuperNodeActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client SuperNodeServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetSuperNodeActiveMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -72,7 +72,7 @@ func request_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(ctx context.Co
 
 }
 
-func local_request_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server SuperNodeServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_SuperNodeService_GetSuperNodeActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server SuperNodeServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetSuperNodeActiveMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -113,7 +113,7 @@ func local_request_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(ctx cont
 
 }
 
-func request_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client SuperNodeServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_SuperNodeService_AddSuperNodeMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client SuperNodeServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq AddSuperNodeMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -162,7 +162,7 @@ func request_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(ctx context.Context,
 
 }
 
-func local_request_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server SuperNodeServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_SuperNodeService_AddSuperNodeMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server SuperNodeServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq AddSuperNodeMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -211,12 +211,12 @@ func local_request_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(ctx context.Co
 
 }
 
-// RegisterSuperNodeServiceM2MHandlerServer registers the http handlers for service SuperNodeServiceM2M to "mux".
-// UnaryRPC     :call SuperNodeServiceM2MServer directly.
+// RegisterSuperNodeServiceHandlerServer registers the http handlers for service SuperNodeService to "mux".
+// UnaryRPC     :call SuperNodeServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterSuperNodeServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server SuperNodeServiceM2MServer) error {
+func RegisterSuperNodeServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server SuperNodeServiceServer) error {
 
-	mux.Handle("GET", pattern_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_SuperNodeService_GetSuperNodeActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -225,18 +225,18 @@ func RegisterSuperNodeServiceM2MHandlerServer(ctx context.Context, mux *runtime.
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_SuperNodeService_GetSuperNodeActiveMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SuperNodeService_GetSuperNodeActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_SuperNodeService_AddSuperNodeMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -245,23 +245,23 @@ func RegisterSuperNodeServiceM2MHandlerServer(ctx context.Context, mux *runtime.
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_SuperNodeService_AddSuperNodeMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SuperNodeService_AddSuperNodeMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterSuperNodeServiceM2MHandlerFromEndpoint is same as RegisterSuperNodeServiceM2MHandler but
+// RegisterSuperNodeServiceHandlerFromEndpoint is same as RegisterSuperNodeServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterSuperNodeServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterSuperNodeServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -281,23 +281,23 @@ func RegisterSuperNodeServiceM2MHandlerFromEndpoint(ctx context.Context, mux *ru
 		}()
 	}()
 
-	return RegisterSuperNodeServiceM2MHandler(ctx, mux, conn)
+	return RegisterSuperNodeServiceHandler(ctx, mux, conn)
 }
 
-// RegisterSuperNodeServiceM2MHandler registers the http handlers for service SuperNodeServiceM2M to "mux".
+// RegisterSuperNodeServiceHandler registers the http handlers for service SuperNodeService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterSuperNodeServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterSuperNodeServiceM2MHandlerClient(ctx, mux, NewSuperNodeServiceM2MClient(conn))
+func RegisterSuperNodeServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterSuperNodeServiceHandlerClient(ctx, mux, NewSuperNodeServiceClient(conn))
 }
 
-// RegisterSuperNodeServiceM2MHandlerClient registers the http handlers for service SuperNodeServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "SuperNodeServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "SuperNodeServiceM2MClient"
+// RegisterSuperNodeServiceHandlerClient registers the http handlers for service SuperNodeService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "SuperNodeServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "SuperNodeServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "SuperNodeServiceM2MClient" to call the correct interceptors.
-func RegisterSuperNodeServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client SuperNodeServiceM2MClient) error {
+// "SuperNodeServiceClient" to call the correct interceptors.
+func RegisterSuperNodeServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client SuperNodeServiceClient) error {
 
-	mux.Handle("GET", pattern_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_SuperNodeService_GetSuperNodeActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -306,18 +306,18 @@ func RegisterSuperNodeServiceM2MHandlerClient(ctx context.Context, mux *runtime.
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_SuperNodeService_GetSuperNodeActiveMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SuperNodeService_GetSuperNodeActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_SuperNodeService_AddSuperNodeMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -326,14 +326,14 @@ func RegisterSuperNodeServiceM2MHandlerClient(ctx context.Context, mux *runtime.
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_SuperNodeService_AddSuperNodeMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SuperNodeService_AddSuperNodeMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -341,13 +341,13 @@ func RegisterSuperNodeServiceM2MHandlerClient(ctx context.Context, mux *runtime.
 }
 
 var (
-	pattern_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "supernode", "org_id", "active-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SuperNodeService_GetSuperNodeActiveMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "supernode", "org_id", "active-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "supernode", "org_id", "add-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SuperNodeService_AddSuperNodeMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "supernode", "org_id", "add-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_SuperNodeServiceM2M_GetSuperNodeActiveMoneyAccount_0 = runtime.ForwardResponseMessage
+	forward_SuperNodeService_GetSuperNodeActiveMoneyAccount_0 = runtime.ForwardResponseMessage
 
-	forward_SuperNodeServiceM2M_AddSuperNodeMoneyAccount_0 = runtime.ForwardResponseMessage
+	forward_SuperNodeService_AddSuperNodeMoneyAccount_0 = runtime.ForwardResponseMessage
 )

@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_MoneyServiceM2M_ModifyMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client MoneyServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_MoneyService_ModifyMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client MoneyServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ModifyMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -80,7 +80,7 @@ func request_MoneyServiceM2M_ModifyMoneyAccount_0(ctx context.Context, marshaler
 
 }
 
-func local_request_MoneyServiceM2M_ModifyMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server MoneyServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_MoneyService_ModifyMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server MoneyServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ModifyMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -130,10 +130,10 @@ func local_request_MoneyServiceM2M_ModifyMoneyAccount_0(ctx context.Context, mar
 }
 
 var (
-	filter_MoneyServiceM2M_GetChangeMoneyAccountHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "money_abbr": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_MoneyService_GetChangeMoneyAccountHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "money_abbr": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
-func request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx context.Context, marshaler runtime.Marshaler, client MoneyServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_MoneyService_GetChangeMoneyAccountHistory_0(ctx context.Context, marshaler runtime.Marshaler, client MoneyServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetMoneyAccountChangeHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -172,7 +172,7 @@ func request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx context.Context,
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_MoneyServiceM2M_GetChangeMoneyAccountHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_MoneyService_GetChangeMoneyAccountHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -181,7 +181,7 @@ func request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx context.Context,
 
 }
 
-func local_request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx context.Context, marshaler runtime.Marshaler, server MoneyServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_MoneyService_GetChangeMoneyAccountHistory_0(ctx context.Context, marshaler runtime.Marshaler, server MoneyServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetMoneyAccountChangeHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -217,7 +217,7 @@ func local_request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx context.Co
 
 	protoReq.MoneyAbbr = Money(e)
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_MoneyServiceM2M_GetChangeMoneyAccountHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_MoneyService_GetChangeMoneyAccountHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -226,7 +226,7 @@ func local_request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx context.Co
 
 }
 
-func request_MoneyServiceM2M_GetActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client MoneyServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_MoneyService_GetActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, client MoneyServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetActiveMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -267,7 +267,7 @@ func request_MoneyServiceM2M_GetActiveMoneyAccount_0(ctx context.Context, marsha
 
 }
 
-func local_request_MoneyServiceM2M_GetActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server MoneyServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_MoneyService_GetActiveMoneyAccount_0(ctx context.Context, marshaler runtime.Marshaler, server MoneyServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetActiveMoneyAccountRequest
 	var metadata runtime.ServerMetadata
 
@@ -308,12 +308,12 @@ func local_request_MoneyServiceM2M_GetActiveMoneyAccount_0(ctx context.Context, 
 
 }
 
-// RegisterMoneyServiceM2MHandlerServer registers the http handlers for service MoneyServiceM2M to "mux".
-// UnaryRPC     :call MoneyServiceM2MServer directly.
+// RegisterMoneyServiceHandlerServer registers the http handlers for service MoneyService to "mux".
+// UnaryRPC     :call MoneyServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterMoneyServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server MoneyServiceM2MServer) error {
+func RegisterMoneyServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server MoneyServiceServer) error {
 
-	mux.Handle("PUT", pattern_MoneyServiceM2M_ModifyMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_MoneyService_ModifyMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -322,18 +322,18 @@ func RegisterMoneyServiceM2MHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_MoneyServiceM2M_ModifyMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_MoneyService_ModifyMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_MoneyServiceM2M_ModifyMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_MoneyService_ModifyMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_MoneyServiceM2M_GetChangeMoneyAccountHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_MoneyService_GetChangeMoneyAccountHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -342,18 +342,18 @@ func RegisterMoneyServiceM2MHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_MoneyService_GetChangeMoneyAccountHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_MoneyService_GetChangeMoneyAccountHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_MoneyServiceM2M_GetActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_MoneyService_GetActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -362,23 +362,23 @@ func RegisterMoneyServiceM2MHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_MoneyServiceM2M_GetActiveMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_MoneyService_GetActiveMoneyAccount_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_MoneyServiceM2M_GetActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_MoneyService_GetActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterMoneyServiceM2MHandlerFromEndpoint is same as RegisterMoneyServiceM2MHandler but
+// RegisterMoneyServiceHandlerFromEndpoint is same as RegisterMoneyServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterMoneyServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterMoneyServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -398,23 +398,23 @@ func RegisterMoneyServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtim
 		}()
 	}()
 
-	return RegisterMoneyServiceM2MHandler(ctx, mux, conn)
+	return RegisterMoneyServiceHandler(ctx, mux, conn)
 }
 
-// RegisterMoneyServiceM2MHandler registers the http handlers for service MoneyServiceM2M to "mux".
+// RegisterMoneyServiceHandler registers the http handlers for service MoneyService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterMoneyServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterMoneyServiceM2MHandlerClient(ctx, mux, NewMoneyServiceM2MClient(conn))
+func RegisterMoneyServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterMoneyServiceHandlerClient(ctx, mux, NewMoneyServiceClient(conn))
 }
 
-// RegisterMoneyServiceM2MHandlerClient registers the http handlers for service MoneyServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "MoneyServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "MoneyServiceM2MClient"
+// RegisterMoneyServiceHandlerClient registers the http handlers for service MoneyService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "MoneyServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "MoneyServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "MoneyServiceM2MClient" to call the correct interceptors.
-func RegisterMoneyServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client MoneyServiceM2MClient) error {
+// "MoneyServiceClient" to call the correct interceptors.
+func RegisterMoneyServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client MoneyServiceClient) error {
 
-	mux.Handle("PUT", pattern_MoneyServiceM2M_ModifyMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_MoneyService_ModifyMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -423,18 +423,18 @@ func RegisterMoneyServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_MoneyServiceM2M_ModifyMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_MoneyService_ModifyMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_MoneyServiceM2M_ModifyMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_MoneyService_ModifyMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_MoneyServiceM2M_GetChangeMoneyAccountHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_MoneyService_GetChangeMoneyAccountHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -443,18 +443,18 @@ func RegisterMoneyServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_MoneyService_GetChangeMoneyAccountHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_MoneyServiceM2M_GetChangeMoneyAccountHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_MoneyService_GetChangeMoneyAccountHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_MoneyServiceM2M_GetActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_MoneyService_GetActiveMoneyAccount_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -463,14 +463,14 @@ func RegisterMoneyServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_MoneyServiceM2M_GetActiveMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_MoneyService_GetActiveMoneyAccount_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_MoneyServiceM2M_GetActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_MoneyService_GetActiveMoneyAccount_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -478,17 +478,17 @@ func RegisterMoneyServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 }
 
 var (
-	pattern_MoneyServiceM2M_ModifyMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "ext-account", "org_id", "modify-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_MoneyService_ModifyMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "ext-account", "org_id", "modify-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_MoneyServiceM2M_GetChangeMoneyAccountHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "ext-account", "org_id", "change-history", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_MoneyService_GetChangeMoneyAccountHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "ext-account", "org_id", "change-history", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_MoneyServiceM2M_GetActiveMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "ext-account", "org_id", "active-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_MoneyService_GetActiveMoneyAccount_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "ext-account", "org_id", "active-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_MoneyServiceM2M_ModifyMoneyAccount_0 = runtime.ForwardResponseMessage
+	forward_MoneyService_ModifyMoneyAccount_0 = runtime.ForwardResponseMessage
 
-	forward_MoneyServiceM2M_GetChangeMoneyAccountHistory_0 = runtime.ForwardResponseMessage
+	forward_MoneyService_GetChangeMoneyAccountHistory_0 = runtime.ForwardResponseMessage
 
-	forward_MoneyServiceM2M_GetActiveMoneyAccount_0 = runtime.ForwardResponseMessage
+	forward_MoneyService_GetActiveMoneyAccount_0 = runtime.ForwardResponseMessage
 )

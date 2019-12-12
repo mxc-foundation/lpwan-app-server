@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_SettingsServiceM2M_GetSettings_0(ctx context.Context, marshaler runtime.Marshaler, client SettingsServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_SettingsService_GetSettings_0(ctx context.Context, marshaler runtime.Marshaler, client SettingsServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetSettingsRequest
 	var metadata runtime.ServerMetadata
 
@@ -40,7 +40,7 @@ func request_SettingsServiceM2M_GetSettings_0(ctx context.Context, marshaler run
 
 }
 
-func local_request_SettingsServiceM2M_GetSettings_0(ctx context.Context, marshaler runtime.Marshaler, server SettingsServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_SettingsService_GetSettings_0(ctx context.Context, marshaler runtime.Marshaler, server SettingsServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetSettingsRequest
 	var metadata runtime.ServerMetadata
 
@@ -49,7 +49,7 @@ func local_request_SettingsServiceM2M_GetSettings_0(ctx context.Context, marshal
 
 }
 
-func request_SettingsServiceM2M_ModifySettings_0(ctx context.Context, marshaler runtime.Marshaler, client SettingsServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_SettingsService_ModifySettings_0(ctx context.Context, marshaler runtime.Marshaler, client SettingsServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ModifySettingsRequest
 	var metadata runtime.ServerMetadata
 
@@ -66,7 +66,7 @@ func request_SettingsServiceM2M_ModifySettings_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_SettingsServiceM2M_ModifySettings_0(ctx context.Context, marshaler runtime.Marshaler, server SettingsServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_SettingsService_ModifySettings_0(ctx context.Context, marshaler runtime.Marshaler, server SettingsServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ModifySettingsRequest
 	var metadata runtime.ServerMetadata
 
@@ -83,12 +83,12 @@ func local_request_SettingsServiceM2M_ModifySettings_0(ctx context.Context, mars
 
 }
 
-// RegisterSettingsServiceM2MHandlerServer registers the http handlers for service SettingsServiceM2M to "mux".
-// UnaryRPC     :call SettingsServiceM2MServer directly.
+// RegisterSettingsServiceHandlerServer registers the http handlers for service SettingsService to "mux".
+// UnaryRPC     :call SettingsServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterSettingsServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server SettingsServiceM2MServer) error {
+func RegisterSettingsServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server SettingsServiceServer) error {
 
-	mux.Handle("GET", pattern_SettingsServiceM2M_GetSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_SettingsService_GetSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -97,18 +97,18 @@ func RegisterSettingsServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_SettingsServiceM2M_GetSettings_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_SettingsService_GetSettings_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SettingsServiceM2M_GetSettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SettingsService_GetSettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("PUT", pattern_SettingsServiceM2M_ModifySettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_SettingsService_ModifySettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -117,23 +117,23 @@ func RegisterSettingsServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_SettingsServiceM2M_ModifySettings_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_SettingsService_ModifySettings_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SettingsServiceM2M_ModifySettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SettingsService_ModifySettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterSettingsServiceM2MHandlerFromEndpoint is same as RegisterSettingsServiceM2MHandler but
+// RegisterSettingsServiceHandlerFromEndpoint is same as RegisterSettingsServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterSettingsServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterSettingsServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -153,23 +153,23 @@ func RegisterSettingsServiceM2MHandlerFromEndpoint(ctx context.Context, mux *run
 		}()
 	}()
 
-	return RegisterSettingsServiceM2MHandler(ctx, mux, conn)
+	return RegisterSettingsServiceHandler(ctx, mux, conn)
 }
 
-// RegisterSettingsServiceM2MHandler registers the http handlers for service SettingsServiceM2M to "mux".
+// RegisterSettingsServiceHandler registers the http handlers for service SettingsService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterSettingsServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterSettingsServiceM2MHandlerClient(ctx, mux, NewSettingsServiceM2MClient(conn))
+func RegisterSettingsServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterSettingsServiceHandlerClient(ctx, mux, NewSettingsServiceClient(conn))
 }
 
-// RegisterSettingsServiceM2MHandlerClient registers the http handlers for service SettingsServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "SettingsServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "SettingsServiceM2MClient"
+// RegisterSettingsServiceHandlerClient registers the http handlers for service SettingsService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "SettingsServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "SettingsServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "SettingsServiceM2MClient" to call the correct interceptors.
-func RegisterSettingsServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client SettingsServiceM2MClient) error {
+// "SettingsServiceClient" to call the correct interceptors.
+func RegisterSettingsServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client SettingsServiceClient) error {
 
-	mux.Handle("GET", pattern_SettingsServiceM2M_GetSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_SettingsService_GetSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -178,18 +178,18 @@ func RegisterSettingsServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_SettingsServiceM2M_GetSettings_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_SettingsService_GetSettings_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SettingsServiceM2M_GetSettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SettingsService_GetSettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("PUT", pattern_SettingsServiceM2M_ModifySettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_SettingsService_ModifySettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -198,14 +198,14 @@ func RegisterSettingsServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_SettingsServiceM2M_ModifySettings_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_SettingsService_ModifySettings_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_SettingsServiceM2M_ModifySettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_SettingsService_ModifySettings_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -213,13 +213,13 @@ func RegisterSettingsServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 }
 
 var (
-	pattern_SettingsServiceM2M_GetSettings_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "settings"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SettingsService_GetSettings_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "settings"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SettingsServiceM2M_ModifySettings_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "settings"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SettingsService_ModifySettings_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "settings"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_SettingsServiceM2M_GetSettings_0 = runtime.ForwardResponseMessage
+	forward_SettingsService_GetSettings_0 = runtime.ForwardResponseMessage
 
-	forward_SettingsServiceM2M_ModifySettings_0 = runtime.ForwardResponseMessage
+	forward_SettingsService_ModifySettings_0 = runtime.ForwardResponseMessage
 )

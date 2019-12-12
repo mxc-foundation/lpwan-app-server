@@ -5,7 +5,7 @@ package api;
 import "google/api/annotations.proto";
 import "profile.proto";
 
-service DeviceServiceM2M {
+service DeviceService {
     rpc GetDeviceList(GetDeviceListRequest) returns (GetDeviceListResponse){
         option(google.api.http) = {
 			get: "/api/device/{org_id}/device-list"

@@ -7,7 +7,7 @@ import "google/protobuf/wrappers.proto";
 
 
 // SettingsService is the service managing system settings.
-service SettingsServiceM2M {
+service SettingsService {
     rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse) {
         option (google.api.http) = {
 			get: "/api/settings"

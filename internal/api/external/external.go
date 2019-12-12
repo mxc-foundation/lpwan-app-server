@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/m2m_ui"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -23,6 +24,8 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/mxc-foundation/lpwan-app-server/api"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	m2m_pb "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -96,7 +99,8 @@ func setupAPI(conf config.Config) error {
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
 	api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
-	api.RegisterDeviceServiceM2MServer()
+	m2m_api.RegisterDeviceServiceServer(grpcServer, m2m_ui.NewDeviceServerAPI(validator))
+
 
 
 	// setup the client http interface variable
@@ -272,6 +276,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		return nil, errors.Wrap(err, "register server info handler error")
 	}
 	if err := pb.RegisterProxyRequestHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 

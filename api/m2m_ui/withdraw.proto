@@ -7,7 +7,7 @@ import "ext_account.proto";
 import "profile.proto";
 
 // WithdrawService is the service managing the withdraw access.
-service WithdrawServiceM2M {
+service WithdrawService {
     // Get data for current withdraw fee
     rpc GetWithdrawFee (GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse) {
         option (google.api.http) = {

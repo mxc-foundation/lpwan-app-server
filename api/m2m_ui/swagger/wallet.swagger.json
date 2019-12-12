@@ -32,7 +32,7 @@
           }
         ],
         "tags": [
-          "WalletServiceM2M"
+          "WalletService"
         ]
       }
     },
@@ -57,7 +57,7 @@
           }
         ],
         "tags": [
-          "WalletServiceM2M"
+          "WalletService"
         ]
       }
     },
@@ -96,7 +96,7 @@
           }
         ],
         "tags": [
-          "WalletServiceM2M"
+          "WalletService"
         ]
       }
     },
@@ -135,7 +135,7 @@
           }
         ],
         "tags": [
-          "WalletServiceM2M"
+          "WalletService"
         ]
       }
     }

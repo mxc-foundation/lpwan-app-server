@@ -43,7 +43,7 @@
           }
         ],
         "tags": [
-          "WithdrawServiceM2M"
+          "WithdrawService"
         ]
       }
     },
@@ -91,7 +91,7 @@
           }
         ],
         "tags": [
-          "WithdrawServiceM2M"
+          "WithdrawService"
         ]
       }
     },
@@ -133,7 +133,7 @@
           }
         ],
         "tags": [
-          "WithdrawServiceM2M"
+          "WithdrawService"
         ]
       }
     },
@@ -175,7 +175,7 @@
           }
         ],
         "tags": [
-          "WithdrawServiceM2M"
+          "WithdrawService"
         ]
       }
     }

@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_WalletServiceM2M_GetWalletBalance_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WalletService_GetWalletBalance_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWalletBalanceRequest
 	var metadata runtime.ServerMetadata
 
@@ -58,7 +58,7 @@ func request_WalletServiceM2M_GetWalletBalance_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_WalletServiceM2M_GetWalletBalance_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WalletService_GetWalletBalance_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWalletBalanceRequest
 	var metadata runtime.ServerMetadata
 
@@ -86,10 +86,10 @@ func local_request_WalletServiceM2M_GetWalletBalance_0(ctx context.Context, mars
 }
 
 var (
-	filter_WalletServiceM2M_GetVmxcTxHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_WalletService_GetVmxcTxHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_WalletServiceM2M_GetVmxcTxHistory_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WalletService_GetVmxcTxHistory_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetVmxcTxHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -114,7 +114,7 @@ func request_WalletServiceM2M_GetVmxcTxHistory_0(ctx context.Context, marshaler 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WalletServiceM2M_GetVmxcTxHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WalletService_GetVmxcTxHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -123,7 +123,7 @@ func request_WalletServiceM2M_GetVmxcTxHistory_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_WalletServiceM2M_GetVmxcTxHistory_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WalletService_GetVmxcTxHistory_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetVmxcTxHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -145,7 +145,7 @@ func local_request_WalletServiceM2M_GetVmxcTxHistory_0(ctx context.Context, mars
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WalletServiceM2M_GetVmxcTxHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WalletService_GetVmxcTxHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -155,10 +155,10 @@ func local_request_WalletServiceM2M_GetVmxcTxHistory_0(ctx context.Context, mars
 }
 
 var (
-	filter_WalletServiceM2M_GetWalletUsageHist_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_WalletService_GetWalletUsageHist_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_WalletServiceM2M_GetWalletUsageHist_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WalletService_GetWalletUsageHist_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWalletUsageHistRequest
 	var metadata runtime.ServerMetadata
 
@@ -183,7 +183,7 @@ func request_WalletServiceM2M_GetWalletUsageHist_0(ctx context.Context, marshale
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WalletServiceM2M_GetWalletUsageHist_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WalletService_GetWalletUsageHist_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -192,7 +192,7 @@ func request_WalletServiceM2M_GetWalletUsageHist_0(ctx context.Context, marshale
 
 }
 
-func local_request_WalletServiceM2M_GetWalletUsageHist_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WalletService_GetWalletUsageHist_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWalletUsageHistRequest
 	var metadata runtime.ServerMetadata
 
@@ -214,7 +214,7 @@ func local_request_WalletServiceM2M_GetWalletUsageHist_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WalletServiceM2M_GetWalletUsageHist_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WalletService_GetWalletUsageHist_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -223,7 +223,7 @@ func local_request_WalletServiceM2M_GetWalletUsageHist_0(ctx context.Context, ma
 
 }
 
-func request_WalletServiceM2M_GetDlPrice_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WalletService_GetDlPrice_0(ctx context.Context, marshaler runtime.Marshaler, client WalletServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDownLinkPriceRequest
 	var metadata runtime.ServerMetadata
 
@@ -250,7 +250,7 @@ func request_WalletServiceM2M_GetDlPrice_0(ctx context.Context, marshaler runtim
 
 }
 
-func local_request_WalletServiceM2M_GetDlPrice_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WalletService_GetDlPrice_0(ctx context.Context, marshaler runtime.Marshaler, server WalletServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetDownLinkPriceRequest
 	var metadata runtime.ServerMetadata
 
@@ -277,12 +277,12 @@ func local_request_WalletServiceM2M_GetDlPrice_0(ctx context.Context, marshaler 
 
 }
 
-// RegisterWalletServiceM2MHandlerServer registers the http handlers for service WalletServiceM2M to "mux".
-// UnaryRPC     :call WalletServiceM2MServer directly.
+// RegisterWalletServiceHandlerServer registers the http handlers for service WalletService to "mux".
+// UnaryRPC     :call WalletServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterWalletServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WalletServiceM2MServer) error {
+func RegisterWalletServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WalletServiceServer) error {
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetWalletBalance_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetWalletBalance_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -291,18 +291,18 @@ func RegisterWalletServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WalletServiceM2M_GetWalletBalance_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WalletService_GetWalletBalance_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetWalletBalance_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetWalletBalance_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetVmxcTxHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetVmxcTxHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -311,18 +311,18 @@ func RegisterWalletServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WalletServiceM2M_GetVmxcTxHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WalletService_GetVmxcTxHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetVmxcTxHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetVmxcTxHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetWalletUsageHist_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetWalletUsageHist_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -331,18 +331,18 @@ func RegisterWalletServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WalletServiceM2M_GetWalletUsageHist_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WalletService_GetWalletUsageHist_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetWalletUsageHist_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetWalletUsageHist_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetDlPrice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetDlPrice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -351,23 +351,23 @@ func RegisterWalletServiceM2MHandlerServer(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WalletServiceM2M_GetDlPrice_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WalletService_GetDlPrice_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetDlPrice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetDlPrice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterWalletServiceM2MHandlerFromEndpoint is same as RegisterWalletServiceM2MHandler but
+// RegisterWalletServiceHandlerFromEndpoint is same as RegisterWalletServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterWalletServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterWalletServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -387,23 +387,23 @@ func RegisterWalletServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runti
 		}()
 	}()
 
-	return RegisterWalletServiceM2MHandler(ctx, mux, conn)
+	return RegisterWalletServiceHandler(ctx, mux, conn)
 }
 
-// RegisterWalletServiceM2MHandler registers the http handlers for service WalletServiceM2M to "mux".
+// RegisterWalletServiceHandler registers the http handlers for service WalletService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterWalletServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterWalletServiceM2MHandlerClient(ctx, mux, NewWalletServiceM2MClient(conn))
+func RegisterWalletServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterWalletServiceHandlerClient(ctx, mux, NewWalletServiceClient(conn))
 }
 
-// RegisterWalletServiceM2MHandlerClient registers the http handlers for service WalletServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "WalletServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "WalletServiceM2MClient"
+// RegisterWalletServiceHandlerClient registers the http handlers for service WalletService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "WalletServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "WalletServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "WalletServiceM2MClient" to call the correct interceptors.
-func RegisterWalletServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WalletServiceM2MClient) error {
+// "WalletServiceClient" to call the correct interceptors.
+func RegisterWalletServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WalletServiceClient) error {
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetWalletBalance_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetWalletBalance_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -412,18 +412,18 @@ func RegisterWalletServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WalletServiceM2M_GetWalletBalance_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WalletService_GetWalletBalance_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetWalletBalance_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetWalletBalance_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetVmxcTxHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetVmxcTxHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -432,18 +432,18 @@ func RegisterWalletServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WalletServiceM2M_GetVmxcTxHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WalletService_GetVmxcTxHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetVmxcTxHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetVmxcTxHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetWalletUsageHist_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetWalletUsageHist_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -452,18 +452,18 @@ func RegisterWalletServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WalletServiceM2M_GetWalletUsageHist_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WalletService_GetWalletUsageHist_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetWalletUsageHist_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetWalletUsageHist_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WalletServiceM2M_GetDlPrice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WalletService_GetDlPrice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -472,14 +472,14 @@ func RegisterWalletServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WalletServiceM2M_GetDlPrice_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WalletService_GetDlPrice_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WalletServiceM2M_GetDlPrice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WalletService_GetDlPrice_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -487,21 +487,21 @@ func RegisterWalletServiceM2MHandlerClient(ctx context.Context, mux *runtime.Ser
 }
 
 var (
-	pattern_WalletServiceM2M_GetWalletBalance_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "balance"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WalletService_GetWalletBalance_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "balance"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WalletServiceM2M_GetVmxcTxHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "tx-history"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WalletService_GetVmxcTxHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "tx-history"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WalletServiceM2M_GetWalletUsageHist_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "usage-history"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WalletService_GetWalletUsageHist_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "usage-history"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WalletServiceM2M_GetDlPrice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "downlink_price"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WalletService_GetDlPrice_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "wallet", "org_id", "downlink_price"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_WalletServiceM2M_GetWalletBalance_0 = runtime.ForwardResponseMessage
+	forward_WalletService_GetWalletBalance_0 = runtime.ForwardResponseMessage
 
-	forward_WalletServiceM2M_GetVmxcTxHistory_0 = runtime.ForwardResponseMessage
+	forward_WalletService_GetVmxcTxHistory_0 = runtime.ForwardResponseMessage
 
-	forward_WalletServiceM2M_GetWalletUsageHist_0 = runtime.ForwardResponseMessage
+	forward_WalletService_GetWalletUsageHist_0 = runtime.ForwardResponseMessage
 
-	forward_WalletServiceM2M_GetDlPrice_0 = runtime.ForwardResponseMessage
+	forward_WalletService_GetDlPrice_0 = runtime.ForwardResponseMessage
 )

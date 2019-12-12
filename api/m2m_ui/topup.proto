@@ -8,7 +8,7 @@ import "google/protobuf/timestamp.proto";
 import "profile.proto";
 import "ext_account.proto";
 
-service TopUpServiceM2M {
+service TopUpService {
     rpc GetTransactionsHistory(GetTransactionsHistoryRequest) returns (GetTransactionsHistoryResponse){
         option(google.api.http) = {
 			get: "/api/transactions/{org_id}/history"

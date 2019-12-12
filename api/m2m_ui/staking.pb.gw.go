@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_StakingServiceM2M_Stake_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_StakingService_Stake_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StakeRequest
 	var metadata runtime.ServerMetadata
 
@@ -66,7 +66,7 @@ func request_StakingServiceM2M_Stake_0(ctx context.Context, marshaler runtime.Ma
 
 }
 
-func local_request_StakingServiceM2M_Stake_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_StakingService_Stake_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StakeRequest
 	var metadata runtime.ServerMetadata
 
@@ -101,7 +101,7 @@ func local_request_StakingServiceM2M_Stake_0(ctx context.Context, marshaler runt
 
 }
 
-func request_StakingServiceM2M_Unstake_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_StakingService_Unstake_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UnstakeRequest
 	var metadata runtime.ServerMetadata
 
@@ -136,7 +136,7 @@ func request_StakingServiceM2M_Unstake_0(ctx context.Context, marshaler runtime.
 
 }
 
-func local_request_StakingServiceM2M_Unstake_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_StakingService_Unstake_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UnstakeRequest
 	var metadata runtime.ServerMetadata
 
@@ -171,7 +171,7 @@ func local_request_StakingServiceM2M_Unstake_0(ctx context.Context, marshaler ru
 
 }
 
-func request_StakingServiceM2M_GetActiveStakes_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_StakingService_GetActiveStakes_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetActiveStakesRequest
 	var metadata runtime.ServerMetadata
 
@@ -198,7 +198,7 @@ func request_StakingServiceM2M_GetActiveStakes_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_StakingServiceM2M_GetActiveStakes_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_StakingService_GetActiveStakes_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetActiveStakesRequest
 	var metadata runtime.ServerMetadata
 
@@ -226,10 +226,10 @@ func local_request_StakingServiceM2M_GetActiveStakes_0(ctx context.Context, mars
 }
 
 var (
-	filter_StakingServiceM2M_GetStakingHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_StakingService_GetStakingHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_StakingServiceM2M_GetStakingHistory_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_StakingService_GetStakingHistory_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StakingHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -254,7 +254,7 @@ func request_StakingServiceM2M_GetStakingHistory_0(ctx context.Context, marshale
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StakingServiceM2M_GetStakingHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StakingService_GetStakingHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -263,7 +263,7 @@ func request_StakingServiceM2M_GetStakingHistory_0(ctx context.Context, marshale
 
 }
 
-func local_request_StakingServiceM2M_GetStakingHistory_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_StakingService_GetStakingHistory_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StakingHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -285,7 +285,7 @@ func local_request_StakingServiceM2M_GetStakingHistory_0(ctx context.Context, ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_StakingServiceM2M_GetStakingHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_StakingService_GetStakingHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -294,7 +294,7 @@ func local_request_StakingServiceM2M_GetStakingHistory_0(ctx context.Context, ma
 
 }
 
-func request_StakingServiceM2M_GetStakingPercentage_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_StakingService_GetStakingPercentage_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StakingPercentageRequest
 	var metadata runtime.ServerMetadata
 
@@ -321,7 +321,7 @@ func request_StakingServiceM2M_GetStakingPercentage_0(ctx context.Context, marsh
 
 }
 
-func local_request_StakingServiceM2M_GetStakingPercentage_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_StakingService_GetStakingPercentage_0(ctx context.Context, marshaler runtime.Marshaler, server StakingServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StakingPercentageRequest
 	var metadata runtime.ServerMetadata
 
@@ -348,12 +348,12 @@ func local_request_StakingServiceM2M_GetStakingPercentage_0(ctx context.Context,
 
 }
 
-// RegisterStakingServiceM2MHandlerServer registers the http handlers for service StakingServiceM2M to "mux".
-// UnaryRPC     :call StakingServiceM2MServer directly.
+// RegisterStakingServiceHandlerServer registers the http handlers for service StakingService to "mux".
+// UnaryRPC     :call StakingServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterStakingServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server StakingServiceM2MServer) error {
+func RegisterStakingServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server StakingServiceServer) error {
 
-	mux.Handle("POST", pattern_StakingServiceM2M_Stake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_StakingService_Stake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -362,18 +362,18 @@ func RegisterStakingServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_StakingServiceM2M_Stake_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_StakingService_Stake_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_Stake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_Stake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_StakingServiceM2M_Unstake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_StakingService_Unstake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -382,18 +382,18 @@ func RegisterStakingServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_StakingServiceM2M_Unstake_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_StakingService_Unstake_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_Unstake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_Unstake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_StakingServiceM2M_GetActiveStakes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StakingService_GetActiveStakes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -402,18 +402,18 @@ func RegisterStakingServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_StakingServiceM2M_GetActiveStakes_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_StakingService_GetActiveStakes_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_GetActiveStakes_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_GetActiveStakes_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_StakingServiceM2M_GetStakingHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StakingService_GetStakingHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -422,18 +422,18 @@ func RegisterStakingServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_StakingServiceM2M_GetStakingHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_StakingService_GetStakingHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_GetStakingHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_GetStakingHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_StakingServiceM2M_GetStakingPercentage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StakingService_GetStakingPercentage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -442,23 +442,23 @@ func RegisterStakingServiceM2MHandlerServer(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_StakingServiceM2M_GetStakingPercentage_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_StakingService_GetStakingPercentage_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_GetStakingPercentage_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_GetStakingPercentage_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterStakingServiceM2MHandlerFromEndpoint is same as RegisterStakingServiceM2MHandler but
+// RegisterStakingServiceHandlerFromEndpoint is same as RegisterStakingServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterStakingServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterStakingServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -478,23 +478,23 @@ func RegisterStakingServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runt
 		}()
 	}()
 
-	return RegisterStakingServiceM2MHandler(ctx, mux, conn)
+	return RegisterStakingServiceHandler(ctx, mux, conn)
 }
 
-// RegisterStakingServiceM2MHandler registers the http handlers for service StakingServiceM2M to "mux".
+// RegisterStakingServiceHandler registers the http handlers for service StakingService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterStakingServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterStakingServiceM2MHandlerClient(ctx, mux, NewStakingServiceM2MClient(conn))
+func RegisterStakingServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterStakingServiceHandlerClient(ctx, mux, NewStakingServiceClient(conn))
 }
 
-// RegisterStakingServiceM2MHandlerClient registers the http handlers for service StakingServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "StakingServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "StakingServiceM2MClient"
+// RegisterStakingServiceHandlerClient registers the http handlers for service StakingService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "StakingServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "StakingServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "StakingServiceM2MClient" to call the correct interceptors.
-func RegisterStakingServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client StakingServiceM2MClient) error {
+// "StakingServiceClient" to call the correct interceptors.
+func RegisterStakingServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client StakingServiceClient) error {
 
-	mux.Handle("POST", pattern_StakingServiceM2M_Stake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_StakingService_Stake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -503,18 +503,18 @@ func RegisterStakingServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_StakingServiceM2M_Stake_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_StakingService_Stake_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_Stake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_Stake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_StakingServiceM2M_Unstake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_StakingService_Unstake_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -523,18 +523,18 @@ func RegisterStakingServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_StakingServiceM2M_Unstake_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_StakingService_Unstake_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_Unstake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_Unstake_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_StakingServiceM2M_GetActiveStakes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StakingService_GetActiveStakes_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -543,18 +543,18 @@ func RegisterStakingServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_StakingServiceM2M_GetActiveStakes_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_StakingService_GetActiveStakes_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_GetActiveStakes_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_GetActiveStakes_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_StakingServiceM2M_GetStakingHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StakingService_GetStakingHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -563,18 +563,18 @@ func RegisterStakingServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_StakingServiceM2M_GetStakingHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_StakingService_GetStakingHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_GetStakingHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_GetStakingHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_StakingServiceM2M_GetStakingPercentage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_StakingService_GetStakingPercentage_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -583,14 +583,14 @@ func RegisterStakingServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_StakingServiceM2M_GetStakingPercentage_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_StakingService_GetStakingPercentage_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_StakingServiceM2M_GetStakingPercentage_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StakingService_GetStakingPercentage_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -598,25 +598,25 @@ func RegisterStakingServiceM2MHandlerClient(ctx context.Context, mux *runtime.Se
 }
 
 var (
-	pattern_StakingServiceM2M_Stake_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "stake"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_StakingService_Stake_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "stake"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_StakingServiceM2M_Unstake_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "unstake"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_StakingService_Unstake_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "unstake"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_StakingServiceM2M_GetActiveStakes_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "activestakes"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_StakingService_GetActiveStakes_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "activestakes"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_StakingServiceM2M_GetStakingHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_StakingService_GetStakingHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_StakingServiceM2M_GetStakingPercentage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "staking_percentage"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_StakingService_GetStakingPercentage_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "staking", "org_id", "staking_percentage"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_StakingServiceM2M_Stake_0 = runtime.ForwardResponseMessage
+	forward_StakingService_Stake_0 = runtime.ForwardResponseMessage
 
-	forward_StakingServiceM2M_Unstake_0 = runtime.ForwardResponseMessage
+	forward_StakingService_Unstake_0 = runtime.ForwardResponseMessage
 
-	forward_StakingServiceM2M_GetActiveStakes_0 = runtime.ForwardResponseMessage
+	forward_StakingService_GetActiveStakes_0 = runtime.ForwardResponseMessage
 
-	forward_StakingServiceM2M_GetStakingHistory_0 = runtime.ForwardResponseMessage
+	forward_StakingService_GetStakingHistory_0 = runtime.ForwardResponseMessage
 
-	forward_StakingServiceM2M_GetStakingPercentage_0 = runtime.ForwardResponseMessage
+	forward_StakingService_GetStakingPercentage_0 = runtime.ForwardResponseMessage
 )

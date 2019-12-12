@@ -41,7 +41,7 @@
           }
         ],
         "tags": [
-          "SuperNodeServiceM2M"
+          "SuperNodeService"
         ]
       }
     },
@@ -83,7 +83,7 @@
           }
         ],
         "tags": [
-          "SuperNodeServiceM2M"
+          "SuperNodeService"
         ]
       }
     }

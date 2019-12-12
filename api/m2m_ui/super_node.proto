@@ -6,7 +6,7 @@ import "google/api/annotations.proto";
 import "ext_account.proto";
 import "profile.proto";
 
-service SuperNodeServiceM2M {
+service SuperNodeService {
     rpc GetSuperNodeActiveMoneyAccount (GetSuperNodeActiveMoneyAccountRequest) returns (GetSuperNodeActiveMoneyAccountResponse){
         option(google.api.http) = {
 			get: "/api/supernode/{org_id}/active-account/{money_abbr}"

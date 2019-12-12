@@ -46,7 +46,7 @@
           }
         ],
         "tags": [
-          "TopUpServiceM2M"
+          "TopUpService"
         ]
       }
     },
@@ -80,7 +80,7 @@
           }
         ],
         "tags": [
-          "TopUpServiceM2M"
+          "TopUpService"
         ]
       }
     },
@@ -119,7 +119,7 @@
           }
         ],
         "tags": [
-          "TopUpServiceM2M"
+          "TopUpService"
         ]
       }
     },
@@ -144,7 +144,7 @@
           }
         ],
         "tags": [
-          "TopUpServiceM2M"
+          "TopUpService"
         ]
       }
     }

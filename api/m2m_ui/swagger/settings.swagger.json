@@ -23,7 +23,7 @@
           }
         },
         "tags": [
-          "SettingsServiceM2M"
+          "SettingsService"
         ]
       },
       "put": {
@@ -47,7 +47,7 @@
           }
         ],
         "tags": [
-          "SettingsServiceM2M"
+          "SettingsService"
         ]
       }
     }

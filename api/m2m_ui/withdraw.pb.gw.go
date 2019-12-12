@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_WithdrawServiceM2M_GetWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WithdrawService_GetWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWithdrawFeeRequest
 	var metadata runtime.ServerMetadata
 
@@ -72,7 +72,7 @@ func request_WithdrawServiceM2M_GetWithdrawFee_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_WithdrawServiceM2M_GetWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WithdrawService_GetWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWithdrawFeeRequest
 	var metadata runtime.ServerMetadata
 
@@ -113,7 +113,7 @@ func local_request_WithdrawServiceM2M_GetWithdrawFee_0(ctx context.Context, mars
 
 }
 
-func request_WithdrawServiceM2M_WithdrawReq_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WithdrawService_WithdrawReq_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq WithdrawReqRequest
 	var metadata runtime.ServerMetadata
 
@@ -162,7 +162,7 @@ func request_WithdrawServiceM2M_WithdrawReq_0(ctx context.Context, marshaler run
 
 }
 
-func local_request_WithdrawServiceM2M_WithdrawReq_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WithdrawService_WithdrawReq_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq WithdrawReqRequest
 	var metadata runtime.ServerMetadata
 
@@ -212,10 +212,10 @@ func local_request_WithdrawServiceM2M_WithdrawReq_0(ctx context.Context, marshal
 }
 
 var (
-	filter_WithdrawServiceM2M_GetWithdrawHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "money_abbr": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_WithdrawService_GetWithdrawHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "money_abbr": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
-func request_WithdrawServiceM2M_GetWithdrawHistory_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WithdrawService_GetWithdrawHistory_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWithdrawHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -254,7 +254,7 @@ func request_WithdrawServiceM2M_GetWithdrawHistory_0(ctx context.Context, marsha
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WithdrawServiceM2M_GetWithdrawHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WithdrawService_GetWithdrawHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -263,7 +263,7 @@ func request_WithdrawServiceM2M_GetWithdrawHistory_0(ctx context.Context, marsha
 
 }
 
-func local_request_WithdrawServiceM2M_GetWithdrawHistory_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WithdrawService_GetWithdrawHistory_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWithdrawHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -299,7 +299,7 @@ func local_request_WithdrawServiceM2M_GetWithdrawHistory_0(ctx context.Context, 
 
 	protoReq.MoneyAbbr = Money(e)
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WithdrawServiceM2M_GetWithdrawHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WithdrawService_GetWithdrawHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -308,7 +308,7 @@ func local_request_WithdrawServiceM2M_GetWithdrawHistory_0(ctx context.Context, 
 
 }
 
-func request_WithdrawServiceM2M_ModifyWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_WithdrawService_ModifyWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ModifyWithdrawFeeRequest
 	var metadata runtime.ServerMetadata
 
@@ -357,7 +357,7 @@ func request_WithdrawServiceM2M_ModifyWithdrawFee_0(ctx context.Context, marshal
 
 }
 
-func local_request_WithdrawServiceM2M_ModifyWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_WithdrawService_ModifyWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, server WithdrawServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ModifyWithdrawFeeRequest
 	var metadata runtime.ServerMetadata
 
@@ -406,12 +406,12 @@ func local_request_WithdrawServiceM2M_ModifyWithdrawFee_0(ctx context.Context, m
 
 }
 
-// RegisterWithdrawServiceM2MHandlerServer registers the http handlers for service WithdrawServiceM2M to "mux".
-// UnaryRPC     :call WithdrawServiceM2MServer directly.
+// RegisterWithdrawServiceHandlerServer registers the http handlers for service WithdrawService to "mux".
+// UnaryRPC     :call WithdrawServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterWithdrawServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WithdrawServiceM2MServer) error {
+func RegisterWithdrawServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WithdrawServiceServer) error {
 
-	mux.Handle("GET", pattern_WithdrawServiceM2M_GetWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WithdrawService_GetWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -420,18 +420,18 @@ func RegisterWithdrawServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithdrawServiceM2M_GetWithdrawFee_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WithdrawService_GetWithdrawFee_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_GetWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_GetWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_WithdrawServiceM2M_WithdrawReq_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawService_WithdrawReq_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -440,18 +440,18 @@ func RegisterWithdrawServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithdrawServiceM2M_WithdrawReq_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WithdrawService_WithdrawReq_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_WithdrawReq_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_WithdrawReq_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WithdrawServiceM2M_GetWithdrawHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WithdrawService_GetWithdrawHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -460,18 +460,18 @@ func RegisterWithdrawServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithdrawServiceM2M_GetWithdrawHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WithdrawService_GetWithdrawHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_GetWithdrawHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_GetWithdrawHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("PUT", pattern_WithdrawServiceM2M_ModifyWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_WithdrawService_ModifyWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -480,23 +480,23 @@ func RegisterWithdrawServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_WithdrawServiceM2M_ModifyWithdrawFee_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_WithdrawService_ModifyWithdrawFee_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_ModifyWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_ModifyWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterWithdrawServiceM2MHandlerFromEndpoint is same as RegisterWithdrawServiceM2MHandler but
+// RegisterWithdrawServiceHandlerFromEndpoint is same as RegisterWithdrawServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterWithdrawServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterWithdrawServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -516,23 +516,23 @@ func RegisterWithdrawServiceM2MHandlerFromEndpoint(ctx context.Context, mux *run
 		}()
 	}()
 
-	return RegisterWithdrawServiceM2MHandler(ctx, mux, conn)
+	return RegisterWithdrawServiceHandler(ctx, mux, conn)
 }
 
-// RegisterWithdrawServiceM2MHandler registers the http handlers for service WithdrawServiceM2M to "mux".
+// RegisterWithdrawServiceHandler registers the http handlers for service WithdrawService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterWithdrawServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterWithdrawServiceM2MHandlerClient(ctx, mux, NewWithdrawServiceM2MClient(conn))
+func RegisterWithdrawServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterWithdrawServiceHandlerClient(ctx, mux, NewWithdrawServiceClient(conn))
 }
 
-// RegisterWithdrawServiceM2MHandlerClient registers the http handlers for service WithdrawServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "WithdrawServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "WithdrawServiceM2MClient"
+// RegisterWithdrawServiceHandlerClient registers the http handlers for service WithdrawService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "WithdrawServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "WithdrawServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "WithdrawServiceM2MClient" to call the correct interceptors.
-func RegisterWithdrawServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WithdrawServiceM2MClient) error {
+// "WithdrawServiceClient" to call the correct interceptors.
+func RegisterWithdrawServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client WithdrawServiceClient) error {
 
-	mux.Handle("GET", pattern_WithdrawServiceM2M_GetWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WithdrawService_GetWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -541,18 +541,18 @@ func RegisterWithdrawServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithdrawServiceM2M_GetWithdrawFee_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WithdrawService_GetWithdrawFee_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_GetWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_GetWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_WithdrawServiceM2M_WithdrawReq_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_WithdrawService_WithdrawReq_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -561,18 +561,18 @@ func RegisterWithdrawServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithdrawServiceM2M_WithdrawReq_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WithdrawService_WithdrawReq_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_WithdrawReq_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_WithdrawReq_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_WithdrawServiceM2M_GetWithdrawHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_WithdrawService_GetWithdrawHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -581,18 +581,18 @@ func RegisterWithdrawServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithdrawServiceM2M_GetWithdrawHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WithdrawService_GetWithdrawHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_GetWithdrawHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_GetWithdrawHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("PUT", pattern_WithdrawServiceM2M_ModifyWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_WithdrawService_ModifyWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -601,14 +601,14 @@ func RegisterWithdrawServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_WithdrawServiceM2M_ModifyWithdrawFee_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_WithdrawService_ModifyWithdrawFee_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_WithdrawServiceM2M_ModifyWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_WithdrawService_ModifyWithdrawFee_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -616,21 +616,21 @@ func RegisterWithdrawServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 }
 
 var (
-	pattern_WithdrawServiceM2M_GetWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "get-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_GetWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "get-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawServiceM2M_WithdrawReq_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"api", "withdraw", "org_id", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_WithdrawReq_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"api", "withdraw", "org_id", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawServiceM2M_GetWithdrawHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "history", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_GetWithdrawHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "history", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawServiceM2M_ModifyWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "modify-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_ModifyWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "modify-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_WithdrawServiceM2M_GetWithdrawFee_0 = runtime.ForwardResponseMessage
+	forward_WithdrawService_GetWithdrawFee_0 = runtime.ForwardResponseMessage
 
-	forward_WithdrawServiceM2M_WithdrawReq_0 = runtime.ForwardResponseMessage
+	forward_WithdrawService_WithdrawReq_0 = runtime.ForwardResponseMessage
 
-	forward_WithdrawServiceM2M_GetWithdrawHistory_0 = runtime.ForwardResponseMessage
+	forward_WithdrawService_GetWithdrawHistory_0 = runtime.ForwardResponseMessage
 
-	forward_WithdrawServiceM2M_ModifyWithdrawFee_0 = runtime.ForwardResponseMessage
+	forward_WithdrawService_ModifyWithdrawFee_0 = runtime.ForwardResponseMessage
 )

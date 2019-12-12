@@ -32,7 +32,7 @@
           }
         ],
         "tags": [
-          "StakingServiceM2M"
+          "StakingService"
         ]
       }
     },
@@ -71,7 +71,7 @@
           }
         ],
         "tags": [
-          "StakingServiceM2M"
+          "StakingService"
         ]
       }
     },
@@ -104,7 +104,7 @@
           }
         ],
         "tags": [
-          "StakingServiceM2M"
+          "StakingService"
         ]
       }
     },
@@ -129,7 +129,7 @@
           }
         ],
         "tags": [
-          "StakingServiceM2M"
+          "StakingService"
         ]
       }
     },
@@ -162,7 +162,7 @@
           }
         ],
         "tags": [
-          "StakingServiceM2M"
+          "StakingService"
         ]
       }
     }

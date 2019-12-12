@@ -6,7 +6,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
 // InternalService is the service providing API endpoints for internal usage.
-service InternalServiceM2M {
+service InternalService {
 	// Log in a user
 	rpc Login(LoginRequest) returns (LoginResponse) {
 		option(google.api.http) = {

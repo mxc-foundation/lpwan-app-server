@@ -32,10 +32,10 @@ var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
 var (
-	filter_TopUpServiceM2M_GetTransactionsHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_TopUpService_GetTransactionsHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_TopUpServiceM2M_GetTransactionsHistory_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_TopUpService_GetTransactionsHistory_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetTransactionsHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -60,7 +60,7 @@ func request_TopUpServiceM2M_GetTransactionsHistory_0(ctx context.Context, marsh
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_TopUpServiceM2M_GetTransactionsHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_TopUpService_GetTransactionsHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -69,7 +69,7 @@ func request_TopUpServiceM2M_GetTransactionsHistory_0(ctx context.Context, marsh
 
 }
 
-func local_request_TopUpServiceM2M_GetTransactionsHistory_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_TopUpService_GetTransactionsHistory_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetTransactionsHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -91,7 +91,7 @@ func local_request_TopUpServiceM2M_GetTransactionsHistory_0(ctx context.Context,
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_TopUpServiceM2M_GetTransactionsHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_TopUpService_GetTransactionsHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -100,7 +100,7 @@ func local_request_TopUpServiceM2M_GetTransactionsHistory_0(ctx context.Context,
 
 }
 
-func request_TopUpServiceM2M_GetIncome_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_TopUpService_GetIncome_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetIncomeRequest
 	var metadata runtime.ServerMetadata
 
@@ -127,7 +127,7 @@ func request_TopUpServiceM2M_GetIncome_0(ctx context.Context, marshaler runtime.
 
 }
 
-func local_request_TopUpServiceM2M_GetIncome_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_TopUpService_GetIncome_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetIncomeRequest
 	var metadata runtime.ServerMetadata
 
@@ -155,10 +155,10 @@ func local_request_TopUpServiceM2M_GetIncome_0(ctx context.Context, marshaler ru
 }
 
 var (
-	filter_TopUpServiceM2M_GetTopUpHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_TopUpService_GetTopUpHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
-func request_TopUpServiceM2M_GetTopUpHistory_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_TopUpService_GetTopUpHistory_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetTopUpHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -183,7 +183,7 @@ func request_TopUpServiceM2M_GetTopUpHistory_0(ctx context.Context, marshaler ru
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_TopUpServiceM2M_GetTopUpHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_TopUpService_GetTopUpHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -192,7 +192,7 @@ func request_TopUpServiceM2M_GetTopUpHistory_0(ctx context.Context, marshaler ru
 
 }
 
-func local_request_TopUpServiceM2M_GetTopUpHistory_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_TopUpService_GetTopUpHistory_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetTopUpHistoryRequest
 	var metadata runtime.ServerMetadata
 
@@ -214,7 +214,7 @@ func local_request_TopUpServiceM2M_GetTopUpHistory_0(ctx context.Context, marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_TopUpServiceM2M_GetTopUpHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_TopUpService_GetTopUpHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -223,7 +223,7 @@ func local_request_TopUpServiceM2M_GetTopUpHistory_0(ctx context.Context, marsha
 
 }
 
-func request_TopUpServiceM2M_GetTopUpDestination_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_TopUpService_GetTopUpDestination_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetTopUpDestinationRequest
 	var metadata runtime.ServerMetadata
 
@@ -264,7 +264,7 @@ func request_TopUpServiceM2M_GetTopUpDestination_0(ctx context.Context, marshale
 
 }
 
-func local_request_TopUpServiceM2M_GetTopUpDestination_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_TopUpService_GetTopUpDestination_0(ctx context.Context, marshaler runtime.Marshaler, server TopUpServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetTopUpDestinationRequest
 	var metadata runtime.ServerMetadata
 
@@ -305,12 +305,12 @@ func local_request_TopUpServiceM2M_GetTopUpDestination_0(ctx context.Context, ma
 
 }
 
-// RegisterTopUpServiceM2MHandlerServer registers the http handlers for service TopUpServiceM2M to "mux".
-// UnaryRPC     :call TopUpServiceM2MServer directly.
+// RegisterTopUpServiceHandlerServer registers the http handlers for service TopUpService to "mux".
+// UnaryRPC     :call TopUpServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterTopUpServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server TopUpServiceM2MServer) error {
+func RegisterTopUpServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server TopUpServiceServer) error {
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetTransactionsHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetTransactionsHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -319,18 +319,18 @@ func RegisterTopUpServiceM2MHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_TopUpServiceM2M_GetTransactionsHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_TopUpService_GetTransactionsHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetTransactionsHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetTransactionsHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetIncome_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetIncome_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -339,18 +339,18 @@ func RegisterTopUpServiceM2MHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_TopUpServiceM2M_GetIncome_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_TopUpService_GetIncome_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetIncome_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetIncome_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetTopUpHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetTopUpHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -359,18 +359,18 @@ func RegisterTopUpServiceM2MHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_TopUpServiceM2M_GetTopUpHistory_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_TopUpService_GetTopUpHistory_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetTopUpHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetTopUpHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetTopUpDestination_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetTopUpDestination_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -379,23 +379,23 @@ func RegisterTopUpServiceM2MHandlerServer(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_TopUpServiceM2M_GetTopUpDestination_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_TopUpService_GetTopUpDestination_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetTopUpDestination_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetTopUpDestination_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterTopUpServiceM2MHandlerFromEndpoint is same as RegisterTopUpServiceM2MHandler but
+// RegisterTopUpServiceHandlerFromEndpoint is same as RegisterTopUpServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterTopUpServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterTopUpServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -415,23 +415,23 @@ func RegisterTopUpServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtim
 		}()
 	}()
 
-	return RegisterTopUpServiceM2MHandler(ctx, mux, conn)
+	return RegisterTopUpServiceHandler(ctx, mux, conn)
 }
 
-// RegisterTopUpServiceM2MHandler registers the http handlers for service TopUpServiceM2M to "mux".
+// RegisterTopUpServiceHandler registers the http handlers for service TopUpService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterTopUpServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterTopUpServiceM2MHandlerClient(ctx, mux, NewTopUpServiceM2MClient(conn))
+func RegisterTopUpServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterTopUpServiceHandlerClient(ctx, mux, NewTopUpServiceClient(conn))
 }
 
-// RegisterTopUpServiceM2MHandlerClient registers the http handlers for service TopUpServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "TopUpServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "TopUpServiceM2MClient"
+// RegisterTopUpServiceHandlerClient registers the http handlers for service TopUpService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "TopUpServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "TopUpServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "TopUpServiceM2MClient" to call the correct interceptors.
-func RegisterTopUpServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client TopUpServiceM2MClient) error {
+// "TopUpServiceClient" to call the correct interceptors.
+func RegisterTopUpServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client TopUpServiceClient) error {
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetTransactionsHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetTransactionsHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -440,18 +440,18 @@ func RegisterTopUpServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_TopUpServiceM2M_GetTransactionsHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_TopUpService_GetTransactionsHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetTransactionsHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetTransactionsHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetIncome_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetIncome_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -460,18 +460,18 @@ func RegisterTopUpServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_TopUpServiceM2M_GetIncome_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_TopUpService_GetIncome_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetIncome_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetIncome_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetTopUpHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetTopUpHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -480,18 +480,18 @@ func RegisterTopUpServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_TopUpServiceM2M_GetTopUpHistory_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_TopUpService_GetTopUpHistory_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetTopUpHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetTopUpHistory_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_TopUpServiceM2M_GetTopUpDestination_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_TopUpService_GetTopUpDestination_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -500,14 +500,14 @@ func RegisterTopUpServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_TopUpServiceM2M_GetTopUpDestination_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_TopUpService_GetTopUpDestination_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_TopUpServiceM2M_GetTopUpDestination_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TopUpService_GetTopUpDestination_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -515,21 +515,21 @@ func RegisterTopUpServiceM2MHandlerClient(ctx context.Context, mux *runtime.Serv
 }
 
 var (
-	pattern_TopUpServiceM2M_GetTransactionsHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "transactions", "org_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_TopUpService_GetTransactionsHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "transactions", "org_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_TopUpServiceM2M_GetIncome_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "transactions", "org_id", "income"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_TopUpService_GetIncome_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "transactions", "org_id", "income"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_TopUpServiceM2M_GetTopUpHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "top-up", "org_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_TopUpService_GetTopUpHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "top-up", "org_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_TopUpServiceM2M_GetTopUpDestination_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "top-up", "org_id", "supernode-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_TopUpService_GetTopUpDestination_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "top-up", "org_id", "supernode-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_TopUpServiceM2M_GetTransactionsHistory_0 = runtime.ForwardResponseMessage
+	forward_TopUpService_GetTransactionsHistory_0 = runtime.ForwardResponseMessage
 
-	forward_TopUpServiceM2M_GetIncome_0 = runtime.ForwardResponseMessage
+	forward_TopUpService_GetIncome_0 = runtime.ForwardResponseMessage
 
-	forward_TopUpServiceM2M_GetTopUpHistory_0 = runtime.ForwardResponseMessage
+	forward_TopUpService_GetTopUpHistory_0 = runtime.ForwardResponseMessage
 
-	forward_TopUpServiceM2M_GetTopUpDestination_0 = runtime.ForwardResponseMessage
+	forward_TopUpService_GetTopUpDestination_0 = runtime.ForwardResponseMessage
 )

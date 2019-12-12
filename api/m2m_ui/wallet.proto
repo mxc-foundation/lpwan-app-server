@@ -5,7 +5,7 @@ package api;
 import "google/api/annotations.proto";
 import "profile.proto";
 
-service WalletServiceM2M {
+service WalletService {
     rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
         option(google.api.http) = {
 			get: "/api/wallet/{org_id}/balance"

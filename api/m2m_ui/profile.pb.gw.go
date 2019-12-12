@@ -31,7 +31,7 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-func request_InternalServiceM2M_Login_0(ctx context.Context, marshaler runtime.Marshaler, client InternalServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_InternalService_Login_0(ctx context.Context, marshaler runtime.Marshaler, client InternalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq LoginRequest
 	var metadata runtime.ServerMetadata
 
@@ -48,7 +48,7 @@ func request_InternalServiceM2M_Login_0(ctx context.Context, marshaler runtime.M
 
 }
 
-func local_request_InternalServiceM2M_Login_0(ctx context.Context, marshaler runtime.Marshaler, server InternalServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_InternalService_Login_0(ctx context.Context, marshaler runtime.Marshaler, server InternalServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq LoginRequest
 	var metadata runtime.ServerMetadata
 
@@ -65,7 +65,7 @@ func local_request_InternalServiceM2M_Login_0(ctx context.Context, marshaler run
 
 }
 
-func request_InternalServiceM2M_GetUserOrganizationList_0(ctx context.Context, marshaler runtime.Marshaler, client InternalServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_InternalService_GetUserOrganizationList_0(ctx context.Context, marshaler runtime.Marshaler, client InternalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetUserOrganizationListRequest
 	var metadata runtime.ServerMetadata
 
@@ -92,7 +92,7 @@ func request_InternalServiceM2M_GetUserOrganizationList_0(ctx context.Context, m
 
 }
 
-func local_request_InternalServiceM2M_GetUserOrganizationList_0(ctx context.Context, marshaler runtime.Marshaler, server InternalServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_InternalService_GetUserOrganizationList_0(ctx context.Context, marshaler runtime.Marshaler, server InternalServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetUserOrganizationListRequest
 	var metadata runtime.ServerMetadata
 
@@ -120,17 +120,17 @@ func local_request_InternalServiceM2M_GetUserOrganizationList_0(ctx context.Cont
 }
 
 var (
-	filter_InternalServiceM2M_GetUserProfile_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+	filter_InternalService_GetUserProfile_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_InternalServiceM2M_GetUserProfile_0(ctx context.Context, marshaler runtime.Marshaler, client InternalServiceM2MClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_InternalService_GetUserProfile_0(ctx context.Context, marshaler runtime.Marshaler, client InternalServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetUserProfileRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InternalServiceM2M_GetUserProfile_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InternalService_GetUserProfile_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -139,11 +139,11 @@ func request_InternalServiceM2M_GetUserProfile_0(ctx context.Context, marshaler 
 
 }
 
-func local_request_InternalServiceM2M_GetUserProfile_0(ctx context.Context, marshaler runtime.Marshaler, server InternalServiceM2MServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_InternalService_GetUserProfile_0(ctx context.Context, marshaler runtime.Marshaler, server InternalServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetUserProfileRequest
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_InternalServiceM2M_GetUserProfile_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_InternalService_GetUserProfile_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -152,12 +152,12 @@ func local_request_InternalServiceM2M_GetUserProfile_0(ctx context.Context, mars
 
 }
 
-// RegisterInternalServiceM2MHandlerServer registers the http handlers for service InternalServiceM2M to "mux".
-// UnaryRPC     :call InternalServiceM2MServer directly.
+// RegisterInternalServiceHandlerServer registers the http handlers for service InternalService to "mux".
+// UnaryRPC     :call InternalServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-func RegisterInternalServiceM2MHandlerServer(ctx context.Context, mux *runtime.ServeMux, server InternalServiceM2MServer) error {
+func RegisterInternalServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server InternalServiceServer) error {
 
-	mux.Handle("POST", pattern_InternalServiceM2M_Login_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_InternalService_Login_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -166,18 +166,18 @@ func RegisterInternalServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_InternalServiceM2M_Login_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_InternalService_Login_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InternalServiceM2M_Login_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InternalService_Login_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_InternalServiceM2M_GetUserOrganizationList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InternalService_GetUserOrganizationList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -186,18 +186,18 @@ func RegisterInternalServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_InternalServiceM2M_GetUserOrganizationList_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_InternalService_GetUserOrganizationList_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InternalServiceM2M_GetUserOrganizationList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InternalService_GetUserOrganizationList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_InternalServiceM2M_GetUserProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InternalService_GetUserProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -206,23 +206,23 @@ func RegisterInternalServiceM2MHandlerServer(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_InternalServiceM2M_GetUserProfile_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_InternalService_GetUserProfile_0(rctx, inboundMarshaler, server, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InternalServiceM2M_GetUserProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InternalService_GetUserProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterInternalServiceM2MHandlerFromEndpoint is same as RegisterInternalServiceM2MHandler but
+// RegisterInternalServiceHandlerFromEndpoint is same as RegisterInternalServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterInternalServiceM2MHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterInternalServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -242,23 +242,23 @@ func RegisterInternalServiceM2MHandlerFromEndpoint(ctx context.Context, mux *run
 		}()
 	}()
 
-	return RegisterInternalServiceM2MHandler(ctx, mux, conn)
+	return RegisterInternalServiceHandler(ctx, mux, conn)
 }
 
-// RegisterInternalServiceM2MHandler registers the http handlers for service InternalServiceM2M to "mux".
+// RegisterInternalServiceHandler registers the http handlers for service InternalService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterInternalServiceM2MHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterInternalServiceM2MHandlerClient(ctx, mux, NewInternalServiceM2MClient(conn))
+func RegisterInternalServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterInternalServiceHandlerClient(ctx, mux, NewInternalServiceClient(conn))
 }
 
-// RegisterInternalServiceM2MHandlerClient registers the http handlers for service InternalServiceM2M
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "InternalServiceM2MClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "InternalServiceM2MClient"
+// RegisterInternalServiceHandlerClient registers the http handlers for service InternalService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "InternalServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "InternalServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "InternalServiceM2MClient" to call the correct interceptors.
-func RegisterInternalServiceM2MHandlerClient(ctx context.Context, mux *runtime.ServeMux, client InternalServiceM2MClient) error {
+// "InternalServiceClient" to call the correct interceptors.
+func RegisterInternalServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client InternalServiceClient) error {
 
-	mux.Handle("POST", pattern_InternalServiceM2M_Login_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_InternalService_Login_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -267,18 +267,18 @@ func RegisterInternalServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_InternalServiceM2M_Login_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_InternalService_Login_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InternalServiceM2M_Login_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InternalService_Login_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_InternalServiceM2M_GetUserOrganizationList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InternalService_GetUserOrganizationList_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -287,18 +287,18 @@ func RegisterInternalServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_InternalServiceM2M_GetUserOrganizationList_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_InternalService_GetUserOrganizationList_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InternalServiceM2M_GetUserOrganizationList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InternalService_GetUserOrganizationList_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("GET", pattern_InternalServiceM2M_GetUserProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_InternalService_GetUserProfile_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -307,14 +307,14 @@ func RegisterInternalServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_InternalServiceM2M_GetUserProfile_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_InternalService_GetUserProfile_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_InternalServiceM2M_GetUserProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_InternalService_GetUserProfile_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -322,17 +322,17 @@ func RegisterInternalServiceM2MHandlerClient(ctx context.Context, mux *runtime.S
 }
 
 var (
-	pattern_InternalServiceM2M_Login_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "internal", "login"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_InternalService_Login_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "internal", "login"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_InternalServiceM2M_GetUserOrganizationList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "internal", "org_id", "organizations"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_InternalService_GetUserOrganizationList_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "internal", "org_id", "organizations"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_InternalServiceM2M_GetUserProfile_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "internal", "user-profile"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_InternalService_GetUserProfile_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "internal", "user-profile"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
-	forward_InternalServiceM2M_Login_0 = runtime.ForwardResponseMessage
+	forward_InternalService_Login_0 = runtime.ForwardResponseMessage
 
-	forward_InternalServiceM2M_GetUserOrganizationList_0 = runtime.ForwardResponseMessage
+	forward_InternalService_GetUserOrganizationList_0 = runtime.ForwardResponseMessage
 
-	forward_InternalServiceM2M_GetUserProfile_0 = runtime.ForwardResponseMessage
+	forward_InternalService_GetUserProfile_0 = runtime.ForwardResponseMessage
 )
