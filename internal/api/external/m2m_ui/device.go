@@ -24,6 +24,8 @@ func NewDeviceServerAPI(validator auth.Validator) *DeviceServerAPI {
 }
 
 func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
+	userProfile, res := auth.VerifyRequestViaAuthServer(ctx, s.serviceName, req.OrgId)
+
 	if err := s.validator.Validate(ctx,
 		auth.ValidateActiveUser()); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
@@ -46,10 +48,27 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	dvProfiles := api.GetDeviceListResponse{}.DevProfile
+
+	for _, v := range resp.DevProfile {
+		dvProfile  := api.DeviceProfile{}
+		dvProfile.Id = v.Id
+		dvProfile.DevEui = v.DevEui
+		dvProfile.FkWallet = v.FkWallet
+		dvMode := api.DeviceMode(api.DeviceMode_value[string(v.Mode)])
+		dvProfile.Mode = dvMode
+		dvProfile.CreatedAt = v.CreatedAt
+		dvProfile.LastSeenAt = v.LastSeenAt
+		dvProfile.ApplicationId = v.ApplicationId
+		dvProfile.Name = v.Name
+
+		dvProfiles = append(dvProfiles, &dvProfile)
+	}
+
 	return &api.GetDeviceListResponse{
-		DevProfile:  resp.DevProfile,
-		Count:       resp.Count,
-		UserProfile: resp.UserProfile,
+		DevProfile:           dvProfiles,
+		Count:                resp.Count,
+		UserProfile:          resp.UserProfile,
 	}, nil
 }
 
