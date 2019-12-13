@@ -4,6 +4,7 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -38,9 +39,17 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetWalletBalanceResponse{}, err
+	}
+
+	userProfile := api.GetWalletBalanceResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetWalletBalanceResponse{
 		Balance:     resp.Balance,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -64,10 +73,18 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 
 	txHist := api.GetVmxcTxHistoryResponse.GetTxHistory(&resp.TxHistory)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetVmxcTxHistoryResponse{}, err
+	}
+
+	userProfile := api.GetVmxcTxHistoryResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetVmxcTxHistoryResponse{
 		Count:       resp.Count,
 		TxHistory:   txHist,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -91,9 +108,17 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 
 	walletUsageHist := api.GetWalletUsageHistResponse.GetWalletUsageHis(&resp.WalletUsageHis)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetWalletUsageHistResponse{}, err
+	}
+
+	userProfile := api.GetWalletUsageHistResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetWalletUsageHistResponse{
 		WalletUsageHis: walletUsageHist,
-		UserProfile:    UserProfile,
+		UserProfile:    userProfile,
 		Count:          resp.Count,
 	}, nil
 }
@@ -114,8 +139,16 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetDownLinkPriceResponse{}, err
+	}
+
+	userProfile := api.GetDownLinkPriceResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetDownLinkPriceResponse{
 		DownLinkPrice: resp.DownLinkPrice,
-		UserProfile:   UserProfile,
+		UserProfile:   userProfile,
 	}, nil
 }

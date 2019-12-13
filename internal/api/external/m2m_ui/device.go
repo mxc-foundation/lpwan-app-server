@@ -4,11 +4,11 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -22,9 +22,6 @@ func NewDeviceServerAPI(validator auth.Validator) *DeviceServerAPI {
 		validator: validator,
 	}
 }
-
-var UserProfile = &api.ProfileResponse{}
-
 
 func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
@@ -46,10 +43,18 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 
 	devProfile := api.GetDeviceListResponse.GetDevProfile(&resp.DevProfile)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetDeviceListResponse{}, err
+	}
+
+	userProfile := api.GetDeviceListResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetDeviceListResponse{
 		DevProfile:  devProfile,
 		Count:       resp.Count,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -72,9 +77,17 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 
 	devProfile := api.GetDeviceProfileResponse.GetDevProfile(&resp.DevProfile)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetDeviceProfileResponse{}, err
+	}
+
+	userProfile := api.GetDeviceProfileResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetDeviceProfileResponse{
 		DevProfile:  devProfile,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -97,9 +110,17 @@ func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDevi
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetDeviceHistoryResponse{}, err
+	}
+
+	userProfile := api.GetDeviceHistoryResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetDeviceHistoryResponse{
 		DevHistory:  resp.DevHistory,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -123,8 +144,16 @@ func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceM
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.SetDeviceModeResponse{}, err
+	}
+
+	userProfile := api.SetDeviceModeResponse.GetUserProfile(getUserProfile)
+
 	return &api.SetDeviceModeResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }

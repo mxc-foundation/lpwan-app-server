@@ -4,6 +4,7 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -42,10 +43,18 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 
 	gwProfile := api.GetGatewayListResponse.GetGwProfile(&resp.GwProfile)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetGatewayListResponse{}, err
+	}
+
+	userProfile := api.GetGatewayListResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetGatewayListResponse{
 		GwProfile:   gwProfile,
 		Count:       resp.Count,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -70,9 +79,17 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 
 	gwProfile := api.GetGatewayProfileResponse.GetGwProfile(&resp.GwProfile)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetGatewayProfileResponse{}, err
+	}
+
+	userProfile := api.GetGatewayProfileResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetGatewayProfileResponse{
 		GwProfile:   gwProfile,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -95,9 +112,17 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetGatewayHistoryResponse{}, err
+	}
+
+	userProfile := api.GetGatewayListResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetGatewayHistoryResponse{
 		GwHistory:   resp.GwHistory,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -121,8 +146,16 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.SetGatewayModeResponse{}, err
+	}
+
+	userProfile := api.SetGatewayModeResponse.GetUserProfile(getUserProfile)
+
 	return &api.SetGatewayModeResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }

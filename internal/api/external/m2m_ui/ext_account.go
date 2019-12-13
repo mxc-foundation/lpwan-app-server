@@ -4,6 +4,7 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -42,9 +43,17 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 		return &api.ModifyMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.ModifyMoneyAccountResponse{}, err
+	}
+
+	userProfile := api.ModifyMoneyAccountResponse.GetUserProfile(getUserProfile)
+
 	return &api.ModifyMoneyAccountResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -71,10 +80,18 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 
 	changeHist := api.GetMoneyAccountChangeHistoryResponse.GetChangeHistory(&resp.ChangeHistory)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetMoneyAccountChangeHistoryResponse{}, err
+	}
+
+	userProfile := api.GetMoneyAccountChangeHistoryResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetMoneyAccountChangeHistoryResponse{
 		Count:         resp.Count,
 		ChangeHistory: changeHist,
-		UserProfile:   UserProfile,
+		UserProfile:   userProfile,
 	}, nil
 }
 
@@ -97,8 +114,16 @@ func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *ap
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetActiveMoneyAccountResponse{}, err
+	}
+
+	userProfile := api.GetActiveMoneyAccountResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetActiveMoneyAccountResponse{
 		ActiveAccount: resp.ActiveAccount,
-		UserProfile:   UserProfile,
+		UserProfile:   userProfile,
 	}, nil
 }

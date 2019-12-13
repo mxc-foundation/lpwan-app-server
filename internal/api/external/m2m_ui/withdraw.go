@@ -4,6 +4,7 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -42,9 +43,17 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.ModifyWithdrawFeeResponse{}, err
+	}
+
+	userProfile := api.ModifyWithdrawFeeResponse.GetUserProfile(getUserProfile)
+
 	return &api.ModifyWithdrawFeeResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -67,9 +76,17 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetWithdrawFeeResponse{}, err
+	}
+
+	userProfile := api.GetWithdrawFeeResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetWithdrawFeeResponse{
 		WithdrawFee: resp.WithdrawFee,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -96,10 +113,18 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 
 	withdrawHist := api.GetWithdrawHistoryResponse.GetWithdrawHistory(resp.WithdrawHistory)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetWithdrawHistoryResponse{}, err
+	}
+
+	userProfile := api.GetWithdrawHistoryResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetWithdrawHistoryResponse{
 		Count:           resp.Count,
 		WithdrawHistory: withdrawHist,
-		UserProfile:     UserProfile,
+		UserProfile:     userProfile,
 	}, nil
 }
 
@@ -123,8 +148,16 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.WithdrawReqResponse{}, err
+	}
+
+	userProfile := api.WithdrawReqResponse.GetUserProfile(getUserProfile)
+
 	return &api.WithdrawReqResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }

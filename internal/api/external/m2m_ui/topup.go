@@ -4,6 +4,7 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -42,10 +43,18 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 
 	txHist := api.GetTransactionsHistoryResponse.GetTransactionHistory(&resp.TransactionHistory)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetTransactionsHistoryResponse{}, err
+	}
+
+	userProfile := api.GetTransactionsHistoryResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetTransactionsHistoryResponse{
 		Count:              resp.Count,
 		TransactionHistory: txHist,
-		UserProfile:        UserProfile,
+		UserProfile:        userProfile,
 	}, nil
 }
 
@@ -69,10 +78,18 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 
 	topupHist := api.GetTopUpHistoryResponse.GetTopupHistory(&resp.TopupHistory)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetTopUpHistoryResponse{}, err
+	}
+
+	userProfile := api.GetTopUpHistoryResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetTopUpHistoryResponse{
 		Count:        resp.Count,
 		TopupHistory: topupHist,
-		UserProfile:  UserProfile,
+		UserProfile:  userProfile,
 	}, nil
 }
 
@@ -95,9 +112,17 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetTopUpDestinationResponse{}, err
+	}
+
+	userProfile := api.GetTopUpDestinationResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetTopUpDestinationResponse{
 		ActiveAccount: resp.ActiveAccount,
-		UserProfile:   UserProfile,
+		UserProfile:   userProfile,
 	}, nil
 }
 

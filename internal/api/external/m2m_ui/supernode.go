@@ -4,6 +4,7 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -42,9 +43,17 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.AddSuperNodeMoneyAccountResponse{}, err
+	}
+
+	userProfile := api.AddSuperNodeMoneyAccountResponse.GetUserProfile(getUserProfile)
+
 	return &api.AddSuperNodeMoneyAccountResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -67,8 +76,16 @@ func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context,
 		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetSuperNodeActiveMoneyAccountResponse{}, err
+	}
+
+	userProfile := api.GetSuperNodeActiveMoneyAccountResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetSuperNodeActiveMoneyAccountResponse{
 		SupernodeActiveAccount: resp.SupernodeActiveAccount,
-		UserProfile:            UserProfile,
+		UserProfile:            userProfile,
 	}, nil
 }

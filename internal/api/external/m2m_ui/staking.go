@@ -4,6 +4,7 @@ import (
 	"context"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -60,9 +61,17 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 		return &api.StakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.StakeResponse{}, err
+	}
+
+	userProfile := api.StakeResponse.GetUserProfile(getUserProfile)
+
 	return &api.StakeResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -82,9 +91,17 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.UnstakeResponse{}, err
+	}
+
+	userProfile := api.UnstakeResponse.GetUserProfile(getUserProfile)
+
 	return &api.UnstakeResponse{
 		Status:      resp.Status,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -106,9 +123,17 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 
 	actStake := api.GetActiveStakesResponse.GetActStake(&resp.ActStake)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.GetActiveStakesResponse{}, err
+	}
+
+	userProfile := api.GetActiveStakesResponse.GetUserProfile(getUserProfile)
+
 	return &api.GetActiveStakesResponse{
 		ActStake:    actStake,
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 	}, nil
 }
 
@@ -132,8 +157,16 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 
 	stakingHist := api.StakingHistoryResponse.GetStakingHist(&resp.StakingHist)
 
+	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
+	if err != nil {
+		log.WithError(err).Error("Cannot get userprofile")
+		return &api.StakingHistoryResponse{}, err
+	}
+
+	userProfile := api.StakingHistoryResponse.GetUserProfile(getUserProfile)
+
 	return &api.StakingHistoryResponse{
-		UserProfile: UserProfile,
+		UserProfile: userProfile,
 		StakingHist: stakingHist,
 		Count:       resp.Count,
 	}, nil
