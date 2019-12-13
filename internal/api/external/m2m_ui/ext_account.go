@@ -37,9 +37,11 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 		return &api.ModifyMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.ModifyMoneyAccount(ctx, &m2m_api.ModifyMoneyAccountRequest{
 		OrgId:          req.OrgId,
-		MoneyAbbr:      req.MoneyAbbr,
+		MoneyAbbr:      moneyAbbr,
 		CurrentAccount: req.CurrentAccount,
 	})
 	if err != nil {
@@ -76,9 +78,11 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	changeHist := api.GetMoneyAccountChangeHistoryResponse.GetChangeHistory(&resp.ChangeHistory)
+
 	return &api.GetMoneyAccountChangeHistoryResponse{
 		Count:         resp.Count,
-		ChangeHistory: resp.ChangeHistory,
+		ChangeHistory: changeHist,
 		UserProfile:   resp.UserProfile,
 	}, nil
 }
@@ -97,9 +101,11 @@ func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *ap
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.GetActiveMoneyAccount(ctx, &m2m_api.GetActiveMoneyAccountRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: req.MoneyAbbr,
+		MoneyAbbr: moneyAbbr,
 	})
 	if err != nil {
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())

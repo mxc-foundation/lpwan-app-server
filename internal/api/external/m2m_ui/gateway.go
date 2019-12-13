@@ -46,8 +46,10 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	gwProfile := api.GetGatewayListResponse.GetGwProfile(&resp.GwProfile)
+
 	return &api.GetGatewayListResponse{
-		GwProfile:   resp.GwProfile,
+		GwProfile:   gwProfile,
 		Count:       resp.Count,
 		UserProfile: resp.UserProfile,
 	}, nil
@@ -77,8 +79,10 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	gwProfile := api.GetGatewayProfileResponse.GetGwProfile(&resp.GwProfile)
+
 	return &api.GetGatewayProfileResponse{
-		GwProfile:   resp.GwProfile,
+		GwProfile:   gwProfile,
 		UserProfile: resp.UserProfile,
 	}, nil
 }
@@ -127,10 +131,12 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	gwMode := m2m_api.GatewayMode(req.GwMode)
+
 	resp, err := m2mClient.SetGatewayMode(ctx, &m2m_api.SetGatewayModeRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
-		GwMode: req.GwMode,
+		GwMode: gwMode,
 	})
 	if err != nil {
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())

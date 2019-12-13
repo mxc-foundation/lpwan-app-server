@@ -125,8 +125,10 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	actStake := api.GetActiveStakesResponse.GetActStake(&resp.ActStake)
+
 	return &api.GetActiveStakesResponse{
-		ActStake:    resp.ActStake,
+		ActStake:    actStake,
 		UserProfile: resp.UserProfile,
 	}, nil
 }
@@ -154,9 +156,11 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	stakingHist := api.StakingHistoryResponse.GetStakingHist(&resp.StakingHist)
+
 	return &api.StakingHistoryResponse{
 		UserProfile: resp.UserProfile,
-		StakingHist: resp.StakingHist,
+		StakingHist: stakingHist,
 		Count:       resp.Count,
 	}, nil
 }

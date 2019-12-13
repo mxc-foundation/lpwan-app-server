@@ -48,27 +48,12 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	dvProfiles := api.GetDeviceListResponse{}.DevProfile
-
-	for _, v := range resp.DevProfile {
-		dvProfile  := api.DeviceProfile{}
-		dvProfile.Id = v.Id
-		dvProfile.DevEui = v.DevEui
-		dvProfile.FkWallet = v.FkWallet
-		dvMode := api.DeviceMode(api.DeviceMode_value[string(v.Mode)])
-		dvProfile.Mode = dvMode
-		dvProfile.CreatedAt = v.CreatedAt
-		dvProfile.LastSeenAt = v.LastSeenAt
-		dvProfile.ApplicationId = v.ApplicationId
-		dvProfile.Name = v.Name
-
-		dvProfiles = append(dvProfiles, &dvProfile)
-	}
-
+	devProfile := api.GetDeviceListResponse.GetDevProfile(&resp.DevProfile)
+	
 	return &api.GetDeviceListResponse{
-		DevProfile:           dvProfiles,
-		Count:                resp.Count,
-		UserProfile:          resp.UserProfile,
+		DevProfile:  devProfile,
+		Count:       resp.Count,
+		UserProfile: resp.UserProfile,
 	}, nil
 }
 
@@ -94,8 +79,10 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	devProfile := api.GetDeviceProfileResponse.GetDevProfile(&resp.DevProfile)
+
 	return &api.GetDeviceProfileResponse{
-		DevProfile:  resp.DevProfile,
+		DevProfile:  devProfile,
 		UserProfile: resp.UserProfile,
 	}, nil
 }
@@ -144,10 +131,12 @@ func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceM
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	devMode := m2m_api.DeviceMode(req.DevMode)
+
 	resp, err := m2mClient.SetDeviceMode(ctx, &m2m_api.SetDeviceModeRequest{
 		OrgId:   req.OrgId,
 		DevId:   req.DevId,
-		DevMode: req.DevMode,
+		DevMode: devMode,
 	})
 	if err != nil {
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())

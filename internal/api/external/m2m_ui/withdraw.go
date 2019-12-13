@@ -37,8 +37,10 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.ModifyWithdrawFee(ctx, &m2m_api.ModifyWithdrawFeeRequest{
-		MoneyAbbr:   req.MoneyAbbr,
+		MoneyAbbr:   moneyAbbr,
 		WithdrawFee: req.WithdrawFee,
 		OrgId:       req.OrgId,
 	})
@@ -66,8 +68,10 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.GetWithdrawFee(ctx, &m2m_api.GetWithdrawFeeRequest{
-		MoneyAbbr: req.MoneyAbbr,
+		MoneyAbbr: moneyAbbr,
 		OrgId:     req.OrgId,
 	})
 	if err != nil {
@@ -94,19 +98,23 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.GetWithdrawHistory(ctx, &m2m_api.GetWithdrawHistoryRequest{
 		OrgId:     req.OrgId,
 		Offset:    req.Offset,
 		Limit:     req.Limit,
-		MoneyAbbr: req.MoneyAbbr,
+		MoneyAbbr: moneyAbbr,
 	})
 	if err != nil {
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	withdrawHist := api.GetWithdrawHistoryResponse.GetWithdrawHistory(resp.WithdrawHistory)
+
 	return &api.GetWithdrawHistoryResponse{
 		Count:           resp.Count,
-		WithdrawHistory: resp.WithdrawHistory,
+		WithdrawHistory: withdrawHist,
 		UserProfile:     resp.UserProfile,
 	}, nil
 }
@@ -125,9 +133,11 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.WithdrawReq(ctx, &m2m_api.WithdrawReqRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: req.MoneyAbbr,
+		MoneyAbbr: moneyAbbr,
 		Amount:    req.Amount,
 	})
 	if err != nil {

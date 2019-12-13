@@ -73,9 +73,11 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	txHist := api.GetVmxcTxHistoryResponse.GetTxHistory(&resp.TxHistory)
+
 	return &api.GetVmxcTxHistoryResponse{
 		Count:       resp.Count,
-		TxHistory:   resp.TxHistory,
+		TxHistory:   txHist,
 		UserProfile: resp.UserProfile,
 	}, nil
 }
@@ -103,8 +105,10 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	walletUsageHist := api.GetWalletUsageHistResponse.GetWalletUsageHis(&resp.WalletUsageHis)
+
 	return &api.GetWalletUsageHistResponse{
-		WalletUsageHis: resp.WalletUsageHis,
+		WalletUsageHis: walletUsageHist,
 		UserProfile:    resp.UserProfile,
 		Count:          resp.Count,
 	}, nil

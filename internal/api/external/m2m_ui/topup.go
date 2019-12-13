@@ -46,9 +46,11 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	txHist := api.GetTransactionsHistoryResponse.GetTransactionHistory(&resp.TransactionHistory)
+
 	return &api.GetTransactionsHistoryResponse{
 		Count:              resp.Count,
-		TransactionHistory: resp.TransactionHistory,
+		TransactionHistory: txHist,
 		UserProfile:        resp.UserProfile,
 	}, nil
 }
@@ -76,9 +78,11 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	topupHist := api.GetTopUpHistoryResponse.GetTopupHistory(&resp.TopupHistory)
+
 	return &api.GetTopUpHistoryResponse{
 		Count:        resp.Count,
-		TopupHistory: resp.TopupHistory,
+		TopupHistory: topupHist,
 		UserProfile:  resp.UserProfile,
 	}, nil
 }
@@ -97,9 +101,11 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.GetTopUpDestination(ctx, &m2m_api.GetTopUpDestinationRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: req.MoneyAbbr,
+		MoneyAbbr: moneyAbbr,
 	})
 	if err != nil {
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
