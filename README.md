@@ -6,6 +6,20 @@ See MXC Developer Handbook for further information.
 
 Note: Only lpwan-app-server is required
 
+## Environment
+
+#### Set up docker
+- [Install Docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/)  
+Just follow __Install using the repository / SET UP THE REPOSITORY__, no need to install docker engine community
+
+- [Install docker-compose](https://docs.docker.com/compose/install/)
+Just follow __Install Compose on Linux systems__
+
+- Add user to docker group
+```bash
+$ sudo usermod -aG docker $USER
+```
+
 ## Clone the repo:
 
 ```bash
@@ -138,8 +152,6 @@ Now when you make changes it will automatically refresh
 
 # Intro
 
-[![CircleCI](https://circleci.com/gh/brocaar/lora-app-server.svg?style=svg)](https://circleci.com/gh/brocaar/lora-app-server)
-
 LPWAN App Server is an open-source LoRaWAN application-server, part of the
 [LPWAN Server](https://www.loraserver.io/) project. It is responsible
 for the node "inventory" part of a LoRaWAN infrastructure, handling of received
@@ -150,7 +162,6 @@ and payloads can be enqueued by using MQTT or the API.
 
 ## Architecture
 
-![architecture](https://www.loraserver.io/img/architecture.png)
 
 ### Component links
 
