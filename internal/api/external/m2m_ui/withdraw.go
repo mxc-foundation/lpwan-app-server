@@ -8,7 +8,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,11 +23,6 @@ func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
 }
 
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyWithdrawFee")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -50,16 +44,11 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 
 	return &api.ModifyWithdrawFeeResponse{
 		Status:      resp.Status,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWithdrawFeeRequest) (*api.GetWithdrawFeeResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawFee")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -80,16 +69,11 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 
 	return &api.GetWithdrawFeeResponse{
 		WithdrawFee: resp.WithdrawFee,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.GetWithdrawHistoryRequest) (*api.GetWithdrawHistoryResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -115,16 +99,11 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 	return &api.GetWithdrawHistoryResponse{
 		Count:           resp.Count,
 		WithdrawHistory: withdrawHist,
-		UserProfile:     resp.UserProfile,
+		UserProfile:     UserProfile,
 	}, nil
 }
 
 func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawReqRequest) (*api.WithdrawReqResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/WithdrawReq")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -146,6 +125,6 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 
 	return &api.WithdrawReqResponse{
 		Status:      resp.Status,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }

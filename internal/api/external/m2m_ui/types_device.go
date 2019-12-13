@@ -1,4 +1,4 @@
-package types
+package m2m_ui
 
 import "time"
 

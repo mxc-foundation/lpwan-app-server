@@ -8,7 +8,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,11 +23,6 @@ func NewGatewayServerAPI(validator auth.Validator) *GatewayServerAPI {
 }
 
 func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayList")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -51,16 +45,11 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 	return &api.GetGatewayListResponse{
 		GwProfile:   gwProfile,
 		Count:       resp.Count,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGatewayProfileRequest) (*api.GetGatewayProfileResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayProfile")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -83,16 +72,11 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 
 	return &api.GetGatewayProfileResponse{
 		GwProfile:   gwProfile,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -113,16 +97,11 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 
 	return &api.GetGatewayHistoryResponse{
 		GwHistory:   resp.GwHistory,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayModeRequest) (*api.SetGatewayModeResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/SetGatewayMode")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -144,6 +123,6 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 
 	return &api.SetGatewayModeResponse{
 		Status:      resp.Status,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }

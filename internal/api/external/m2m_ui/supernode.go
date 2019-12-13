@@ -8,7 +8,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,11 +23,6 @@ func NewSupernodeServerAPI(validator auth.Validator) *SupernodeServerAPI {
 }
 
 func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *api.AddSuperNodeMoneyAccountRequest) (*api.AddSuperNodeMoneyAccountResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/AddSuperNodeMoneyAccount")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -50,16 +44,11 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 
 	return &api.AddSuperNodeMoneyAccountResponse{
 		Status:      resp.Status,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context, req *api.GetSuperNodeActiveMoneyAccountRequest) (*api.GetSuperNodeActiveMoneyAccountResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetSuperNodeActiveMoneyAccount")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -80,6 +69,6 @@ func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context,
 
 	return &api.GetSuperNodeActiveMoneyAccountResponse{
 		SupernodeActiveAccount: resp.SupernodeActiveAccount,
-		UserProfile:            resp.UserProfile,
+		UserProfile:            UserProfile,
 	}, nil
 }

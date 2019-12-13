@@ -8,7 +8,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -24,11 +23,6 @@ func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
 }
 
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletBalance")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -46,16 +40,11 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 
 	return &api.GetWalletBalanceResponse{
 		Balance:     resp.Balance,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxcTxHistoryRequest) (*api.GetVmxcTxHistoryResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetVmxcTxHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -78,16 +67,11 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 	return &api.GetVmxcTxHistoryResponse{
 		Count:       resp.Count,
 		TxHistory:   txHist,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWalletUsageHistRequest) (*api.GetWalletUsageHistResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletUsageHist")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -109,17 +93,12 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 
 	return &api.GetWalletUsageHistResponse{
 		WalletUsageHis: walletUsageHist,
-		UserProfile:    resp.UserProfile,
+		UserProfile:    UserProfile,
 		Count:          resp.Count,
 	}, nil
 }
 
 func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPriceRequest) (*api.GetDownLinkPriceResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDlPrice")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -137,6 +116,6 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 
 	return &api.GetDownLinkPriceResponse{
 		DownLinkPrice: resp.DownLinkPrice,
-		UserProfile:   resp.UserProfile,
+		UserProfile:   UserProfile,
 	}, nil
 }

@@ -23,14 +23,10 @@ func NewDeviceServerAPI(validator auth.Validator) *DeviceServerAPI {
 	}
 }
 
+var UserProfile = &api.ProfileResponse{}
+
+
 func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
-	userProfile, res := auth.VerifyRequestViaAuthServer(ctx, s.serviceName, req.OrgId)
-
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -49,20 +45,15 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 	}
 
 	devProfile := api.GetDeviceListResponse.GetDevProfile(&resp.DevProfile)
-	
+
 	return &api.GetDeviceListResponse{
 		DevProfile:  devProfile,
 		Count:       resp.Count,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDeviceProfileRequest) (*api.GetDeviceProfileResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceProfile")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -83,16 +74,11 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 
 	return &api.GetDeviceProfileResponse{
 		DevProfile:  devProfile,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -113,16 +99,11 @@ func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDevi
 
 	return &api.GetDeviceHistoryResponse{
 		DevHistory:  resp.DevHistory,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/SetDeviceMode")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -144,6 +125,6 @@ func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceM
 
 	return &api.SetDeviceModeResponse{
 		Status:      resp.Status,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }

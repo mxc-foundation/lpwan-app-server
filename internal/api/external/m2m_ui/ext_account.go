@@ -7,10 +7,9 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"google.golang.org/grpc"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	log "github.com/sirupsen/logrus"
 )
 
 type ExtAccountServerAPI struct {
@@ -24,11 +23,6 @@ func NewMoneyServerAPI(validator auth.Validator) *ExtAccountServerAPI {
 }
 
 func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.ModifyMoneyAccountRequest) (*api.ModifyMoneyAccountResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyMoneyAccount")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -50,16 +44,11 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 
 	return &api.ModifyMoneyAccountResponse{
 		Status:      resp.Status,
-		UserProfile: resp.UserProfile,
+		UserProfile: UserProfile,
 	}, nil
 }
 
 func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, req *api.GetMoneyAccountChangeHistoryRequest) (*api.GetMoneyAccountChangeHistoryResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetChangeMoneyAccountHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -68,11 +57,13 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+
 	resp, err := m2mClient.GetChangeMoneyAccountHistory(ctx, &m2m_api.GetMoneyAccountChangeHistoryRequest{
 		OrgId:     req.OrgId,
 		Offset:    req.Offset,
 		Limit:     req.Limit,
-		MoneyAbbr: req.MoneyAbbr,
+		MoneyAbbr: moneyAbbr,
 	})
 	if err != nil {
 		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -83,16 +74,11 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 	return &api.GetMoneyAccountChangeHistoryResponse{
 		Count:         resp.Count,
 		ChangeHistory: changeHist,
-		UserProfile:   resp.UserProfile,
+		UserProfile:   UserProfile,
 	}, nil
 }
 
 func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *api.GetActiveMoneyAccountRequest) (*api.GetActiveMoneyAccountResponse, error) {
-	if err := s.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetActiveMoneyAccount")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -113,6 +99,6 @@ func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *ap
 
 	return &api.GetActiveMoneyAccountResponse{
 		ActiveAccount: resp.ActiveAccount,
-		UserProfile:   resp.UserProfile,
+		UserProfile:   UserProfile,
 	}, nil
 }
