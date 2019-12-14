@@ -1,14 +1,10 @@
 import React, { Component } from "react";
-import { Route, Redirect, Switch, withRouter,Link } from "react-router-dom";
+import { Route, Redirect, Switch, withRouter, Link } from "react-router-dom";
 
-import Grid from '@material-ui/core/Grid';
-
-import Delete from "mdi-material-ui/Delete";
-import { Breadcrumb, BreadcrumbItem, Button } from 'reactstrap';
+import { Button } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganization from "./UpdateOrganization";
 
@@ -56,30 +52,23 @@ class OrganizationLayout extends Component {
 
 
     return (
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar
           buttons={[
             <Button color="danger"
               onClick={this.deleteOrganization}
-              className="btn-block">{i18n.t(`${packageNS}:tr000061`)}
+              className="">{i18n.t(`${packageNS}:tr000061`)}
             </Button>,
           ]}
         >
-          <div>
-            <Breadcrumb>
-              <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/edit`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
-              <BreadcrumbItem active>{this.state.organization.name}</BreadcrumbItem>
-            </Breadcrumb>
-          </div>
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
         </TitleBar>
 
-        <Grid item xs={12}>
-          <Switch>
-            <Route exact path={this.props.match.path} render={() => <Redirect to={`${this.props.match.url}/edit`} />} />
-            <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateOrganization organization={this.state.organization} {...props} />} />
-          </Switch>
-        </Grid>
-      </Grid>
+        <Switch>
+          <Route exact path={this.props.match.path} render={() => <Redirect to={`${this.props.match.url}/edit`} />} />
+          <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateOrganization organization={this.state.organization} {...props} />} />
+        </Switch>
+      </React.Fragment>
     );
   }
 }

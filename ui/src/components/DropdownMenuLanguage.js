@@ -70,7 +70,7 @@ const customSelectComponents = {
     return (<components.SingleValue {...props}>
       {<FlagIcon
               code={code}
-              size='1x'
+              // size='1x'
             />}
     </components.SingleValue>);
   }
@@ -142,7 +142,8 @@ class WithPromises extends Component {
           ) : null
         } */}
         <Select
-          className={classNames(this.props.classes.languageSelection)}
+          className={classNames('react-select', this.props.classes.languageSelection)}
+          classNamePrefix="react-select"
           styles={customStyles}
           theme={(theme) => ({
             ...theme,
@@ -152,6 +153,7 @@ class WithPromises extends Component {
               primary: "#00FFD950",
             },
           })}
+          isSearchable={false}
           placeholder="Select Language"
           onChange={this.onChangeLanguage}
           options={SUPPORTED_LANGUAGES}

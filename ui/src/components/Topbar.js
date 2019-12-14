@@ -1,13 +1,6 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
 
-import Input from "@material-ui/core/Input";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import Magnify from "mdi-material-ui/Magnify";
-//import WithdrawStore from "../stores/WithdrawStore";
-//import { SUPER_ADMIN } from "../util/M2mUtil";
-//import WalletStore from "../stores/WalletStore";
-//import NotificationDropdown from './NotificationDropdown';
 import ProfileDropdown from './ProfileDropdown';
 import DropdownMenuLanguage from "./DropdownMenuLanguage";
 
@@ -16,98 +9,9 @@ import SessionStore from "../stores/SessionStore";
 
 import logoSm from '../assets/images/logo-sm.png';
 import logo from '../assets/images/logos_wallet_light.png';
-import profilePic from '../assets/images/users/profile-icon.png'; 
+import profilePic from '../assets/images/users/profile-icon.png';
 
-const Notifications = [{
-  id: 1,
-  text: 'Caleb Flakelar commented on Admin',
-  subText: '1 min ago',
-  icon: 'mdi mdi-comment-account-outline',
-  bgColor: 'primary'
-},
-{
-  id: 2,
-  text: 'New user registered.',
-  subText: '5 min ago',
-  icon: 'mdi mdi-account-plus',
-  bgColor: 'info'
-},
-{
-  id: 3,
-  text: 'Cristina Pride',
-  subText: 'Hi, How are you? What about our next meeting',
-  icon: 'mdi mdi-comment-account-outline',
-  bgColor: 'success'
-},
-{
-  id: 4,
-  text: 'Caleb Flakelar commented on Admin',
-  subText: '2 days ago',
-  icon: 'mdi mdi-comment-account-outline',
-  bgColor: 'danger'
-},
-{
-  id: 5,
-  text: 'Caleb Flakelar commented on Admin',
-  subText: '1 min ago',
-  icon: 'mdi mdi-comment-account-outline',
-  bgColor: 'primary'
-},
-{
-  id: 6,
-  text: 'New user registered.',
-  subText: '5 min ago',
-  icon: 'mdi mdi-account-plus',
-  bgColor: 'info'
-},
-{
-  id: 7,
-  text: 'Cristina Pride',
-  subText: 'Hi, How are you? What about our next meeting',
-  icon: 'mdi mdi-comment-account-outline',
-  bgColor: 'success'
-},
-{
-  id: 8,
-  text: 'Caleb Flakelar commented on Admin',
-  subText: '2 days ago',
-  icon: 'mdi mdi-comment-account-outline',
-  bgColor: 'danger'
-}];
 
-/* const ProfileMenus = [{
-  label: 'My Account',
-  icon: 'fe-user',
-  redirectTo: "/",
-},
-{
-  label: 'Settings',
-  icon: 'fe-settings',
-  redirectTo: "/"
-},
-{
-  label: 'Lock Screen',
-  icon: 'fe-lock',
-  redirectTo: "/"
-},
-{
-  label: 'Logout',
-  icon: 'fe-log-out',
-  redirectTo: "/logout",
-  hasDivider: true
-}] [edit] 191126 */
-
-const ProfileMenus = [{
-  label: 'Change Password',
-  icon: 'mdi mdi-key-change',
-  redirectTo: "/",
-},
-{
-  label: 'Log out',
-  icon: 'fe-log-out',
-  redirectTo: '/logout',
-  hasDivider: true
-}]
 
 /* function getWalletBalance() {
   var organizationId = SessionStore.getOrganizationID();
@@ -131,7 +35,7 @@ class Topbar extends Component {
     super(props);
     this.state = {
       balance: 0,
-      ProfileMenus : [{
+      ProfileMenus: [{
         label: 'Logout',
         icon: 'fe-log-out',
         redirectTo: '/logout',
@@ -165,11 +69,11 @@ class Topbar extends Component {
   onChangeLanguage = (newLanguageState) => {
     this.props.onChangeLanguage(newLanguageState);
 
-    const obj = this.state.ProfileMenus.filter((obj, i, b)=>{
-      if(obj.hasOwnProperty('redirectTo')) return obj;
+    const obj = this.state.ProfileMenus.filter((obj, i, b) => {
+      if (obj.hasOwnProperty('redirectTo')) return obj;
     });
-    
-    if(obj){
+
+    if (obj) {
       this.state.ProfileMenus[0].label = i18n.t(`${packageNS}:menu.settings.logout`);
     }
   }
@@ -177,28 +81,28 @@ class Topbar extends Component {
   render() {
     const { balance } = this.state;
 
-    let searchbar;
-    searchbar = <Input
-                  placeholder={i18n.t(`${packageNS}:tr000033`)}
-                  className={this.props.classes.search}
-                  disableUnderline={true}
-                  value={this.state.search || ""}
-                  onChange={this.onSearchChange}
-                  startAdornment={
-                    <InputAdornment position="start">
-                    <Magnify />
-                    </InputAdornment>
-                  }
-                />
+    // let searchbar;
+    // searchbar = <Input
+    //               placeholder={i18n.t(`${packageNS}:tr000033`)}
+    //               className={this.props.classes.search}
+    //               disableUnderline={true}
+    //               value={this.state.search || ""}
+    //               onChange={this.onSearchChange}
+    //               startAdornment={
+    //                 <InputAdornment position="start">
+    //                 <Magnify />
+    //                 </InputAdornment>
+    //               }
+    //             />
 
-    const balanceEl = balance === null ? 
-      <span className="color-gray">(no org selected)</span> : 
+    const balanceEl = balance === null ?
+      <span className="color-gray">(no org selected)</span> :
       balance + " MXC";
-      let username = null;
-      if(SessionStore.getUser()){
-        username = SessionStore.getUser().username;
-      }
-     
+    let username = null;
+    if (SessionStore.getUser()) {
+      username = SessionStore.getUser().username;
+    }
+
     return (
       <React.Fragment>
         <div className="navbar-custom">
@@ -219,14 +123,6 @@ class Topbar extends Component {
               </form> */}
             </li>
 
-            <li>
-              {/* <NotificationDropdown notifications={Notifications} /> */}
-            </li>
-            {/* <li>
-              <form onSubmit={this.onSearchSubmit}>
-                { searchbar }
-              </form>
-            </li> */}
             <li className="dropdown notification-list">
               <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
                 <i className="mdi mdi-wallet-outline"></i>
@@ -241,12 +137,6 @@ class Topbar extends Component {
             <li>
               <ProfileDropdown profilePic={profilePic} menuItems={this.state.ProfileMenus} username={username} />
             </li>
-
-            {/* <li className="dropdown notification-list">
-              <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
-                <i className="mdi mdi-help-circle-outline"></i>
-              </button>
-            </li> */}
           </ul>
 
           <div className="logo-box">
@@ -271,7 +161,7 @@ class Topbar extends Component {
               <h4 className="page-title-main">{this.props.title}</h4>
             </li>
           </ul>
-            
+
         </div>
       </React.Fragment >
     );
@@ -279,5 +169,3 @@ class Topbar extends Component {
 }
 
 export default withRouter(Topbar);
-//export default connect()(Topbar); [edit]
-
