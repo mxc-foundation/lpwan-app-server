@@ -2,12 +2,14 @@ package m2m_ui
 
 import (
 	"context"
+	"github.com/golang/protobuf/ptypes"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -61,17 +63,58 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 		return &api.StakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
-	if err != nil {
-		log.WithError(err).Error("Cannot get userprofile")
-		return &api.StakeResponse{}, err
+	username, err := auth.JWTValidator{}.GetUsername(ctx)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	userProfile := api.StakeResponse.GetUserProfile(getUserProfile)
+	// Get the user id based on the username.
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
+	userProfile := api.ProfileResponse{
+		User: &api.User{
+			Id:         string(prof.User.ID),
+			Username:   prof.User.Username,
+			SessionTtl: prof.User.SessionTTL,
+			IsAdmin:    prof.User.IsAdmin,
+			IsActive:   prof.User.IsActive,
+		},
+		Settings: &api.ProfileSettings{
+			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
+		},
+	}
+
+	for _, org := range prof.Organizations {
+		row := api.OrganizationLink{
+			OrganizationId:   org.ID,
+			OrganizationName: org.Name,
+			IsAdmin:          org.IsAdmin,
+		}
+
+		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		userProfile.Organizations = append(userProfile.Organizations, &row)
+	}
 
 	return &api.StakeResponse{
 		Status:      resp.Status,
-		UserProfile: userProfile,
+		UserProfile: &userProfile,
 	}, nil
 }
 
@@ -91,17 +134,58 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
-	if err != nil {
-		log.WithError(err).Error("Cannot get userprofile")
-		return &api.UnstakeResponse{}, err
+	username, err := auth.JWTValidator{}.GetUsername(ctx)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	userProfile := api.UnstakeResponse.GetUserProfile(getUserProfile)
+	// Get the user id based on the username.
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
+	userProfile := api.ProfileResponse{
+		User: &api.User{
+			Id:         string(prof.User.ID),
+			Username:   prof.User.Username,
+			SessionTtl: prof.User.SessionTTL,
+			IsAdmin:    prof.User.IsAdmin,
+			IsActive:   prof.User.IsActive,
+		},
+		Settings: &api.ProfileSettings{
+			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
+		},
+	}
+
+	for _, org := range prof.Organizations {
+		row := api.OrganizationLink{
+			OrganizationId:   org.ID,
+			OrganizationName: org.Name,
+			IsAdmin:          org.IsAdmin,
+		}
+
+		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		userProfile.Organizations = append(userProfile.Organizations, &row)
+	}
 
 	return &api.UnstakeResponse{
 		Status:      resp.Status,
-		UserProfile: userProfile,
+		UserProfile: &userProfile,
 	}, nil
 }
 
@@ -121,19 +205,66 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	actStake := api.GetActiveStakesResponse.GetActStake(&resp.ActStake)
+	actStake := api.GetActiveStakesResponse{}.GetActStake()
+	actStake.FkWallet = resp.ActStake.FkWallet
+	actStake.Id = resp.ActStake.Id
+	actStake.Amount = resp.ActStake.Amount
+	actStake.StakeStatus = resp.ActStake.StakeStatus
+	actStake.StartStakeTime = resp.ActStake.StartStakeTime
+	actStake.UnstakeTime = resp.ActStake.UnstakeTime
 
-	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
-	if err != nil {
-		log.WithError(err).Error("Cannot get userprofile")
-		return &api.GetActiveStakesResponse{}, err
+	username, err := auth.JWTValidator{}.GetUsername(ctx)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	userProfile := api.GetActiveStakesResponse.GetUserProfile(getUserProfile)
+	// Get the user id based on the username.
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
+	userProfile := api.ProfileResponse{
+		User: &api.User{
+			Id:         string(prof.User.ID),
+			Username:   prof.User.Username,
+			SessionTtl: prof.User.SessionTTL,
+			IsAdmin:    prof.User.IsAdmin,
+			IsActive:   prof.User.IsActive,
+		},
+		Settings: &api.ProfileSettings{
+			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
+		},
+	}
+
+	for _, org := range prof.Organizations {
+		row := api.OrganizationLink{
+			OrganizationId:   org.ID,
+			OrganizationName: org.Name,
+			IsAdmin:          org.IsAdmin,
+		}
+
+		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		userProfile.Organizations = append(userProfile.Organizations, &row)
+	}
 
 	return &api.GetActiveStakesResponse{
 		ActStake:    actStake,
-		UserProfile: userProfile,
+		UserProfile: &userProfile,
 	}, nil
 }
 
@@ -157,16 +288,57 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 
 	stakingHist := api.StakingHistoryResponse.GetStakingHist(&resp.StakingHist)
 
-	getUserProfile, err := external.InternalUserAPI{}.Profile(ctx, nil)
-	if err != nil {
-		log.WithError(err).Error("Cannot get userprofile")
-		return &api.StakingHistoryResponse{}, err
+	username, err := auth.JWTValidator{}.GetUsername(ctx)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	userProfile := api.StakingHistoryResponse.GetUserProfile(getUserProfile)
+	// Get the user id based on the username.
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
+	userProfile := api.ProfileResponse{
+		User: &api.User{
+			Id:         string(prof.User.ID),
+			Username:   prof.User.Username,
+			SessionTtl: prof.User.SessionTTL,
+			IsAdmin:    prof.User.IsAdmin,
+			IsActive:   prof.User.IsActive,
+		},
+		Settings: &api.ProfileSettings{
+			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
+		},
+	}
+
+	for _, org := range prof.Organizations {
+		row := api.OrganizationLink{
+			OrganizationId:   org.ID,
+			OrganizationName: org.Name,
+			IsAdmin:          org.IsAdmin,
+		}
+
+		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		userProfile.Organizations = append(userProfile.Organizations, &row)
+	}
 
 	return &api.StakingHistoryResponse{
-		UserProfile: userProfile,
+		UserProfile: &userProfile,
 		StakingHist: stakingHist,
 		Count:       resp.Count,
 	}, nil
