@@ -16,6 +16,7 @@ import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 import GatewayAdmin from "../../components/GatewayAdmin";
 import GatewayStore from "../../stores/GatewayStore";
 import MapTileLayer from "../../components/MapTileLayer";
@@ -159,8 +160,9 @@ class ListGatewaysTable extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    this.setState({loading: true});
     GatewayStore.list("", this.props.organizationID, limit, offset, (res) => {
-      this.setState({ data: res.result });
+      this.setState({ data: res.result, loading: false });
     });
   }
 
@@ -170,8 +172,11 @@ class ListGatewaysTable extends Component {
 
   render() {
     return (
-      <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID)}
-        keyField="id" onTableChange={this.handleTableChange} searchEnabled={true} rowsPerPage={10}></AdvancedTable>
+      <div className="position-relative">
+        {this.state.loading && <Loader />}
+        <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID)}
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={true} rowsPerPage={10}></AdvancedTable>
+      </div>
     );
   }
 }
@@ -317,7 +322,6 @@ class ListGateways extends Component {
         <Col>
           <Card>
             <CardBody>
-              
               {this.state.viewMode === 'map' && 
                 <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
 
