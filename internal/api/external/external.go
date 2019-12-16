@@ -98,7 +98,7 @@ func setupAPI(conf config.Config) error {
 	api.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
-	api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
+	//api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
 	m2m_api.RegisterDeviceServiceServer(grpcServer, m2m_ui.NewDeviceServerAPI(validator))
 	m2m_api.RegisterMoneyServiceServer(grpcServer, m2m_ui.NewMoneyServerAPI(validator))
 	m2m_api.RegisterGatewayServiceServer(grpcServer, m2m_ui.NewGatewayServerAPI(validator))

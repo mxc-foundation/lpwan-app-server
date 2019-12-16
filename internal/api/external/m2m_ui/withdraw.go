@@ -103,8 +103,6 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	withdrawHist := api.GetWithdrawHistoryResponse.GetWithdrawHistory(resp.WithdrawHistory)
-
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
 	if err != nil{
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
@@ -112,7 +110,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 
 	return &api.GetWithdrawHistoryResponse{
 		Count:           resp.Count,
-		WithdrawHistory: withdrawHist,
+		WithdrawHistory: resp.WithdrawHistory,
 		UserProfile:     &prof,
 	}, nil
 }

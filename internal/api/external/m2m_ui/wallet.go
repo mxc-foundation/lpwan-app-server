@@ -70,8 +70,6 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	txHist := api.GetVmxcTxHistoryResponse.GetTxHistory(&resp.TxHistory)
-
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
 	if err != nil{
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
@@ -79,7 +77,7 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 
 	return &api.GetVmxcTxHistoryResponse{
 		Count:       resp.Count,
-		TxHistory:   txHist,
+		TxHistory:   resp.TxHistory,
 		UserProfile: &prof,
 	}, nil
 }
@@ -104,15 +102,13 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	walletUsageHist := api.GetWalletUsageHistResponse.GetWalletUsageHis(&resp.WalletUsageHis)
-
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
 	if err != nil{
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.GetWalletUsageHistResponse{
-		WalletUsageHis: walletUsageHist,
+		WalletUsageHis: resp.WalletUsageHis,
 		UserProfile:    &prof,
 		Count:          resp.Count,
 	}, nil
