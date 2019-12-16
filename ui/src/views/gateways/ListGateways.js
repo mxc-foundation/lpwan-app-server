@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import { Route, Switch, Link } from "react-router-dom";
 
-import { withStyles } from "@material-ui/core/styles";
-
 import moment from "moment";
 import { Bar } from "react-chartjs-2";
 import { Map, Marker, Popup } from 'react-leaflet';

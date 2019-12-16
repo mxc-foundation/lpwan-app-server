@@ -6,7 +6,7 @@ import classNames from "classnames";
 class TitleBarTitle extends Component {
   render() {
     return (
-      <h4 className={classNames("mt-0", "mb-3", this.props.classes)}>
+      <h4 className={classNames("mt-0", this.props.classes)}>
         {this.props.to && <Link to={this.props.to}>{this.props.title}</Link>}
         {!this.props.to && <React.Fragment>{this.props.title}</React.Fragment>}
       </h4>

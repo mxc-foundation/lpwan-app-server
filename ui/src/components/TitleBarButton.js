@@ -14,7 +14,7 @@ class TitleBarButton extends Component {
         {icon}
         {this.props.label}
       </Link>}
-      {!this.props.to && <Button to={this.props.to} color={color}>{icon}{this.props.label}</Button>}
+      {!this.props.to && <Button to={this.props.to} color={color} onClick={this.props.onClick}>{icon}{this.props.label}</Button>}
     </React.Fragment>
     );
   }

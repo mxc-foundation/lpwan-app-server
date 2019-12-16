@@ -413,6 +413,7 @@
   "title": "M2M Wallet",
   "tr000421": "Downlink Price",
   "tr000422": "Mode",
+  "tr000423": "Gateway Details",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
