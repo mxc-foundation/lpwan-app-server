@@ -414,6 +414,9 @@
   "tr000421": "Downlink Price",
   "tr000422": "Mode",
   "tr000423": "Gateway Details",
+  "tr000424": "Cancel",
+  "tr000425": "Confirm",
+  "tr000426": "Are you sure, you want to delete this gateway-profile?",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
