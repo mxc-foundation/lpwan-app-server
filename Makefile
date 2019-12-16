@@ -44,7 +44,6 @@ api:
 	@echo "Generating API code from .proto files"
 	@go mod vendor
 	@go generate api/api.go
-	@go generate api/m2m_server/api.go
 	@go generate api/m2m_ui/api.go
 	@rm -rf vendor/
 
