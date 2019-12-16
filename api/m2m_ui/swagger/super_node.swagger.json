@@ -4,6 +4,10 @@
     "title": "super_node.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetSuperNodeActiveMoneyAccountResponse"
+              "$ref": "#/definitions/m2m_uiGetSuperNodeActiveMoneyAccountResponse"
             }
           }
         },
@@ -52,7 +56,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiAddSuperNodeMoneyAccountResponse"
+              "$ref": "#/definitions/m2m_uiAddSuperNodeMoneyAccountResponse"
             }
           }
         },
@@ -78,7 +82,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiAddSuperNodeMoneyAccountRequest"
+              "$ref": "#/definitions/m2m_uiAddSuperNodeMoneyAccountRequest"
             }
           }
         ],
@@ -89,11 +93,11 @@
     }
   },
   "definitions": {
-    "apiAddSuperNodeMoneyAccountRequest": {
+    "m2m_uiAddSuperNodeMoneyAccountRequest": {
       "type": "object",
       "properties": {
         "moneyAbbr": {
-          "$ref": "#/definitions/apiMoney"
+          "$ref": "#/definitions/m2m_uiMoney"
         },
         "accountAddr": {
           "type": "string"
@@ -104,7 +108,7 @@
         }
       }
     },
-    "apiAddSuperNodeMoneyAccountResponse": {
+    "m2m_uiAddSuperNodeMoneyAccountResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -112,29 +116,29 @@
           "format": "boolean"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetSuperNodeActiveMoneyAccountResponse": {
+    "m2m_uiGetSuperNodeActiveMoneyAccountResponse": {
       "type": "object",
       "properties": {
         "supernodeActiveAccount": {
           "type": "string"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiMoney": {
+    "m2m_uiMoney": {
       "type": "string",
       "enum": [
         "Ether"
       ],
       "default": "Ether"
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -164,27 +168,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -194,7 +198,7 @@
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {

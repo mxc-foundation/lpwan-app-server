@@ -4,6 +4,10 @@
     "title": "settings.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetSettingsResponse"
+              "$ref": "#/definitions/m2m_uiGetSettingsResponse"
             }
           }
         },
@@ -32,7 +36,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiModifySettingsResponse"
+              "$ref": "#/definitions/m2m_uiModifySettingsResponse"
             }
           }
         },
@@ -42,7 +46,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiModifySettingsRequest"
+              "$ref": "#/definitions/m2m_uiModifySettingsRequest"
             }
           }
         ],
@@ -53,7 +57,7 @@
     }
   },
   "definitions": {
-    "apiGetSettingsResponse": {
+    "m2m_uiGetSettingsResponse": {
       "type": "object",
       "properties": {
         "lowBalanceWarning": {
@@ -70,7 +74,7 @@
         }
       }
     },
-    "apiModifySettingsRequest": {
+    "m2m_uiModifySettingsRequest": {
       "type": "object",
       "properties": {
         "lowBalanceWarning": {
@@ -87,7 +91,7 @@
         }
       }
     },
-    "apiModifySettingsResponse": {
+    "m2m_uiModifySettingsResponse": {
       "type": "object",
       "properties": {
         "status": {

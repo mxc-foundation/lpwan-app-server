@@ -4,6 +4,10 @@
     "title": "withdraw.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -19,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetWithdrawFeeResponse"
+              "$ref": "#/definitions/m2m_uiGetWithdrawFeeResponse"
             }
           }
         },
@@ -54,7 +58,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetWithdrawHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetWithdrawHistoryResponse"
             }
           }
         },
@@ -102,7 +106,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiModifyWithdrawFeeResponse"
+              "$ref": "#/definitions/m2m_uiModifyWithdrawFeeResponse"
             }
           }
         },
@@ -128,7 +132,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiModifyWithdrawFeeRequest"
+              "$ref": "#/definitions/m2m_uiModifyWithdrawFeeRequest"
             }
           }
         ],
@@ -144,7 +148,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiWithdrawReqResponse"
+              "$ref": "#/definitions/m2m_uiWithdrawReqResponse"
             }
           }
         },
@@ -170,7 +174,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiWithdrawReqRequest"
+              "$ref": "#/definitions/m2m_uiWithdrawReqRequest"
             }
           }
         ],
@@ -181,7 +185,7 @@
     }
   },
   "definitions": {
-    "apiGetWithdrawFeeResponse": {
+    "m2m_uiGetWithdrawFeeResponse": {
       "type": "object",
       "properties": {
         "withdrawFee": {
@@ -190,11 +194,11 @@
           "description": "Withdraw object."
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetWithdrawHistoryResponse": {
+    "m2m_uiGetWithdrawHistoryResponse": {
       "type": "object",
       "properties": {
         "count": {
@@ -204,19 +208,19 @@
         "withdrawHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiWithdrawHistory"
+            "$ref": "#/definitions/m2m_uiWithdrawHistory"
           }
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiModifyWithdrawFeeRequest": {
+    "m2m_uiModifyWithdrawFeeRequest": {
       "type": "object",
       "properties": {
         "moneyAbbr": {
-          "$ref": "#/definitions/apiMoney"
+          "$ref": "#/definitions/m2m_uiMoney"
         },
         "withdrawFee": {
           "type": "number",
@@ -228,7 +232,7 @@
         }
       }
     },
-    "apiModifyWithdrawFeeResponse": {
+    "m2m_uiModifyWithdrawFeeResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -236,18 +240,18 @@
           "format": "boolean"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiMoney": {
+    "m2m_uiMoney": {
       "type": "string",
       "enum": [
         "Ether"
       ],
       "default": "Ether"
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -277,27 +281,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -307,7 +311,7 @@
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {
@@ -343,7 +347,7 @@
         }
       }
     },
-    "apiWithdrawHistory": {
+    "m2m_uiWithdrawHistory": {
       "type": "object",
       "properties": {
         "from": {
@@ -377,7 +381,7 @@
         }
       }
     },
-    "apiWithdrawReqRequest": {
+    "m2m_uiWithdrawReqRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -385,7 +389,7 @@
           "format": "int64"
         },
         "moneyAbbr": {
-          "$ref": "#/definitions/apiMoney"
+          "$ref": "#/definitions/m2m_uiMoney"
         },
         "amount": {
           "type": "number",
@@ -393,7 +397,7 @@
         }
       }
     },
-    "apiWithdrawReqResponse": {
+    "m2m_uiWithdrawReqResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -401,7 +405,7 @@
           "format": "boolean"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     }

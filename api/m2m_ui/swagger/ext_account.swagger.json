@@ -4,6 +4,10 @@
     "title": "ext_account.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetActiveMoneyAccountResponse"
+              "$ref": "#/definitions/m2m_uiGetActiveMoneyAccountResponse"
             }
           }
         },
@@ -52,7 +56,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetMoneyAccountChangeHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetMoneyAccountChangeHistoryResponse"
             }
           }
         },
@@ -100,7 +104,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiModifyMoneyAccountResponse"
+              "$ref": "#/definitions/m2m_uiModifyMoneyAccountResponse"
             }
           }
         },
@@ -126,7 +130,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiModifyMoneyAccountRequest"
+              "$ref": "#/definitions/m2m_uiModifyMoneyAccountRequest"
             }
           }
         ],
@@ -137,18 +141,18 @@
     }
   },
   "definitions": {
-    "apiGetActiveMoneyAccountResponse": {
+    "m2m_uiGetActiveMoneyAccountResponse": {
       "type": "object",
       "properties": {
         "activeAccount": {
           "type": "string"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetMoneyAccountChangeHistoryResponse": {
+    "m2m_uiGetMoneyAccountChangeHistoryResponse": {
       "type": "object",
       "properties": {
         "count": {
@@ -158,15 +162,15 @@
         "changeHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiMoneyAccountChangeHistory"
+            "$ref": "#/definitions/m2m_uiMoneyAccountChangeHistory"
           }
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiModifyMoneyAccountRequest": {
+    "m2m_uiModifyMoneyAccountRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -174,14 +178,14 @@
           "format": "int64"
         },
         "moneyAbbr": {
-          "$ref": "#/definitions/apiMoney"
+          "$ref": "#/definitions/m2m_uiMoney"
         },
         "currentAccount": {
           "type": "string"
         }
       }
     },
-    "apiModifyMoneyAccountResponse": {
+    "m2m_uiModifyMoneyAccountResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -189,18 +193,18 @@
           "format": "boolean"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiMoney": {
+    "m2m_uiMoney": {
       "type": "string",
       "enum": [
         "Ether"
       ],
       "default": "Ether"
     },
-    "apiMoneyAccountChangeHistory": {
+    "m2m_uiMoneyAccountChangeHistory": {
       "type": "object",
       "properties": {
         "addr": {
@@ -214,7 +218,7 @@
         }
       }
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -244,27 +248,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -274,7 +278,7 @@
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {

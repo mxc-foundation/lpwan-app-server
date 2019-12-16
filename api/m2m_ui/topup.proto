@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package api;
+package m2m_ui;
 
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "api/m2m_ui/profile.proto";
-import "api/m2m_ui/ext_account.proto";
+import "profile.proto";
+import "ext_account.proto";
 
 service TopUpService {
     rpc GetTransactionsHistory(GetTransactionsHistoryRequest) returns (GetTransactionsHistoryResponse){

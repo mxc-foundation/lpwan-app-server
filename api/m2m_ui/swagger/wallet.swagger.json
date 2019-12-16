@@ -4,6 +4,10 @@
     "title": "wallet.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetWalletBalanceResponse"
+              "$ref": "#/definitions/m2m_uiGetWalletBalanceResponse"
             }
           }
         },
@@ -43,7 +47,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetDownLinkPriceResponse"
+              "$ref": "#/definitions/m2m_uiGetDownLinkPriceResponse"
             }
           }
         },
@@ -68,7 +72,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetVmxcTxHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetVmxcTxHistoryResponse"
             }
           }
         },
@@ -107,7 +111,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetWalletUsageHistResponse"
+              "$ref": "#/definitions/m2m_uiGetWalletUsageHistResponse"
             }
           }
         },
@@ -141,7 +145,7 @@
     }
   },
   "definitions": {
-    "apiGetDownLinkPriceResponse": {
+    "m2m_uiGetDownLinkPriceResponse": {
       "type": "object",
       "properties": {
         "downLinkPrice": {
@@ -149,11 +153,11 @@
           "format": "double"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetVmxcTxHistoryResponse": {
+    "m2m_uiGetVmxcTxHistoryResponse": {
       "type": "object",
       "properties": {
         "count": {
@@ -163,15 +167,15 @@
         "txHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiVmxcTxHistory"
+            "$ref": "#/definitions/m2m_uiVmxcTxHistory"
           }
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetWalletBalanceResponse": {
+    "m2m_uiGetWalletBalanceResponse": {
       "type": "object",
       "properties": {
         "balance": {
@@ -179,11 +183,11 @@
           "format": "double"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetWalletUsageHist": {
+    "m2m_uiGetWalletUsageHist": {
       "type": "object",
       "properties": {
         "StartAt": {
@@ -239,17 +243,17 @@
         }
       }
     },
-    "apiGetWalletUsageHistResponse": {
+    "m2m_uiGetWalletUsageHistResponse": {
       "type": "object",
       "properties": {
         "walletUsageHis": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiGetWalletUsageHist"
+            "$ref": "#/definitions/m2m_uiGetWalletUsageHist"
           }
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         },
         "count": {
           "type": "string",
@@ -257,7 +261,7 @@
         }
       }
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -287,27 +291,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -317,7 +321,7 @@
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {
@@ -353,7 +357,7 @@
         }
       }
     },
-    "apiVmxcTxHistory": {
+    "m2m_uiVmxcTxHistory": {
       "type": "object",
       "properties": {
         "from": {

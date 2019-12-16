@@ -1,3 +1,3 @@
 //go:generate sh gen.sh
 
-package api
+package m2m_ui

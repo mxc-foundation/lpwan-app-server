@@ -4,6 +4,10 @@
     "title": "staking.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetActiveStakesResponse"
+              "$ref": "#/definitions/m2m_uiGetActiveStakesResponse"
             }
           }
         },
@@ -43,7 +47,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiStakingHistoryResponse"
+              "$ref": "#/definitions/m2m_uiStakingHistoryResponse"
             }
           }
         },
@@ -82,7 +86,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiStakeResponse"
+              "$ref": "#/definitions/m2m_uiStakeResponse"
             }
           }
         },
@@ -99,7 +103,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiStakeRequest"
+              "$ref": "#/definitions/m2m_uiStakeRequest"
             }
           }
         ],
@@ -115,7 +119,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiStakingPercentageResponse"
+              "$ref": "#/definitions/m2m_uiStakingPercentageResponse"
             }
           }
         },
@@ -140,7 +144,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiUnstakeResponse"
+              "$ref": "#/definitions/m2m_uiUnstakeResponse"
             }
           }
         },
@@ -157,7 +161,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiUnstakeRequest"
+              "$ref": "#/definitions/m2m_uiUnstakeRequest"
             }
           }
         ],
@@ -168,7 +172,7 @@
     }
   },
   "definitions": {
-    "apiActiveStake": {
+    "m2m_uiActiveStake": {
       "type": "object",
       "properties": {
         "Id": {
@@ -194,18 +198,18 @@
         }
       }
     },
-    "apiGetActiveStakesResponse": {
+    "m2m_uiGetActiveStakesResponse": {
       "type": "object",
       "properties": {
         "actStake": {
-          "$ref": "#/definitions/apiActiveStake"
+          "$ref": "#/definitions/m2m_uiActiveStake"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetStakingHistory": {
+    "m2m_uiGetStakingHistory": {
       "type": "object",
       "properties": {
         "stakeAmount": {
@@ -239,7 +243,7 @@
         }
       }
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -269,27 +273,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -299,7 +303,7 @@
         }
       }
     },
-    "apiStakeRequest": {
+    "m2m_uiStakeRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -312,27 +316,27 @@
         }
       }
     },
-    "apiStakeResponse": {
+    "m2m_uiStakeResponse": {
       "type": "object",
       "properties": {
         "status": {
           "type": "string"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiStakingHistoryResponse": {
+    "m2m_uiStakingHistoryResponse": {
       "type": "object",
       "properties": {
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         },
         "stakingHist": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiGetStakingHistory"
+            "$ref": "#/definitions/m2m_uiGetStakingHistory"
           }
         },
         "count": {
@@ -341,7 +345,7 @@
         }
       }
     },
-    "apiStakingPercentageResponse": {
+    "m2m_uiStakingPercentageResponse": {
       "type": "object",
       "properties": {
         "stakingPercentage": {
@@ -350,7 +354,7 @@
         }
       }
     },
-    "apiUnstakeRequest": {
+    "m2m_uiUnstakeRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -359,18 +363,18 @@
         }
       }
     },
-    "apiUnstakeResponse": {
+    "m2m_uiUnstakeResponse": {
       "type": "object",
       "properties": {
         "status": {
           "type": "string"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {

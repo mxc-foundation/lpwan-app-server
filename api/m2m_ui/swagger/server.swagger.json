@@ -4,6 +4,10 @@
     "title": "server.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -19,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetVersionResponse"
+              "$ref": "#/definitions/m2m_uiGetVersionResponse"
             }
           }
         },
@@ -30,7 +34,7 @@
     }
   },
   "definitions": {
-    "apiGetVersionResponse": {
+    "m2m_uiGetVersionResponse": {
       "type": "object",
       "properties": {
         "version": {

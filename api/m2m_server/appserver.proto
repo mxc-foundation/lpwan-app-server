@@ -1,20 +1,20 @@
 syntax = "proto3";
 
-package api;
+package m2m_server;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
-import "api/m2m_ui/device.proto";
-import "api/m2m_ui/ext_account.proto";
-import "api/m2m_ui/gateway.proto";
-import "api/m2m_ui/server.proto";
-import "api/m2m_ui/settings.proto";
-import "api/m2m_ui/staking.proto";
-import "api/m2m_ui/super_node.proto";
-import "api/m2m_ui/topup.proto";
-import "api/m2m_ui/wallet.proto";
-import "api/m2m_ui/withdraw.proto";
+import "device.proto";
+import "ext_account.proto";
+import "gateway.proto";
+import "server.proto";
+import "settings.proto";
+import "staking.proto";
+import "super_node.proto";
+import "topup.proto";
+import "wallet.proto";
+import "withdraw.proto";
 
 service M2MServerService {
     rpc AddDeviceInM2MServer (AddDeviceInM2MServerRequest) returns (AddDeviceInM2MServerResponse);
@@ -24,57 +24,57 @@ service M2MServerService {
     rpc DeleteGatewayInM2MServer (DeleteGatewayInM2MServerRequest) returns (DeleteGatewayInM2MServerResponse);
 
     // WalletService
-    rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse);
-    rpc GetVmxcTxHistory(GetVmxcTxHistoryRequest) returns (GetVmxcTxHistoryResponse);
-    rpc GetWalletUsageHist(GetWalletUsageHistRequest) returns (GetWalletUsageHistResponse);
-    rpc GetDlPrice (GetDownLinkPriceRequest) returns (GetDownLinkPriceResponse);
+    rpc GetWalletBalance(m2m_ui.GetWalletBalanceRequest) returns (m2m_ui.GetWalletBalanceResponse);
+    rpc GetVmxcTxHistory(m2m_ui.GetVmxcTxHistoryRequest) returns (m2m_ui.GetVmxcTxHistoryResponse);
+    rpc GetWalletUsageHist(m2m_ui.GetWalletUsageHistRequest) returns (m2m_ui.GetWalletUsageHistResponse);
+    rpc GetDlPrice (m2m_ui.GetDownLinkPriceRequest) returns (m2m_ui.GetDownLinkPriceResponse);
 
     // DeviceService
-    rpc GetDeviceList(GetDeviceListRequest) returns (GetDeviceListResponse);
-    rpc GetDeviceProfile(GetDeviceProfileRequest) returns (GetDeviceProfileResponse);
-    rpc GetDeviceHistory(GetDeviceHistoryRequest) returns (GetDeviceHistoryResponse);
-    rpc SetDeviceMode(SetDeviceModeRequest) returns (SetDeviceModeResponse);
+    rpc GetDeviceList(m2m_ui.GetDeviceListRequest) returns (m2m_ui.GetDeviceListResponse);
+    rpc GetDeviceProfile(m2m_ui.GetDeviceProfileRequest) returns (m2m_ui.GetDeviceProfileResponse);
+    rpc GetDeviceHistory(m2m_ui.GetDeviceHistoryRequest) returns (m2m_ui.GetDeviceHistoryResponse);
+    rpc SetDeviceMode(m2m_ui.SetDeviceModeRequest) returns (m2m_ui.SetDeviceModeResponse);
 
     // MoneyService
-    rpc ModifyMoneyAccount(ModifyMoneyAccountRequest) returns (ModifyMoneyAccountResponse);
-    rpc GetChangeMoneyAccountHistory(GetMoneyAccountChangeHistoryRequest) returns (GetMoneyAccountChangeHistoryResponse);
-    rpc GetActiveMoneyAccount(GetActiveMoneyAccountRequest) returns (GetActiveMoneyAccountResponse);
+    rpc ModifyMoneyAccount(m2m_ui.ModifyMoneyAccountRequest) returns (m2m_ui.ModifyMoneyAccountResponse);
+    rpc GetChangeMoneyAccountHistory(m2m_ui.GetMoneyAccountChangeHistoryRequest) returns (m2m_ui.GetMoneyAccountChangeHistoryResponse);
+    rpc GetActiveMoneyAccount(m2m_ui.GetActiveMoneyAccountRequest) returns (m2m_ui.GetActiveMoneyAccountResponse);
 
     // GatewayService
-    rpc GetGatewayList(GetGatewayListRequest) returns (GetGatewayListResponse);
-    rpc GetGatewayProfile(GetGatewayProfileRequest) returns (GetGatewayProfileResponse);
-    rpc GetGatewayHistory(GetGatewayHistoryRequest) returns (GetGatewayHistoryResponse);
-    rpc SetGatewayMode(SetGatewayModeRequest) returns (SetGatewayModeResponse);
+    rpc GetGatewayList(m2m_ui.GetGatewayListRequest) returns (m2m_ui.GetGatewayListResponse);
+    rpc GetGatewayProfile(m2m_ui.GetGatewayProfileRequest) returns (m2m_ui.GetGatewayProfileResponse);
+    rpc GetGatewayHistory(m2m_ui.GetGatewayHistoryRequest) returns (m2m_ui.GetGatewayHistoryResponse);
+    rpc SetGatewayMode(m2m_ui.SetGatewayModeRequest) returns (m2m_ui.SetGatewayModeResponse);
 
     // ServerInfoService
-    rpc GetVersion(google.protobuf.Empty) returns (GetVersionResponse);
+    rpc GetVersion(google.protobuf.Empty) returns (m2m_ui.GetVersionResponse);
 
     // SettingsService
-    rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse);
-    rpc ModifySettings (ModifySettingsRequest) returns (ModifySettingsResponse);
+    rpc GetSettings (m2m_ui.GetSettingsRequest) returns (m2m_ui.GetSettingsResponse);
+    rpc ModifySettings (m2m_ui.ModifySettingsRequest) returns (m2m_ui.ModifySettingsResponse);
 
     // StakingService
-    rpc Stake (StakeRequest) returns (StakeResponse);
-    rpc Unstake (UnstakeRequest) returns (UnstakeResponse);
-    rpc GetActiveStakes (GetActiveStakesRequest) returns (GetActiveStakesResponse);
-    rpc GetStakingHistory (StakingHistoryRequest) returns (StakingHistoryResponse);
-    rpc GetStakingPercentage (StakingPercentageRequest) returns (StakingPercentageResponse);
+    rpc Stake (m2m_ui.StakeRequest) returns (m2m_ui.StakeResponse);
+    rpc Unstake (m2m_ui.UnstakeRequest) returns (m2m_ui.UnstakeResponse);
+    rpc GetActiveStakes (m2m_ui.GetActiveStakesRequest) returns (m2m_ui.GetActiveStakesResponse);
+    rpc GetStakingHistory (m2m_ui.StakingHistoryRequest) returns (m2m_ui.StakingHistoryResponse);
+    rpc GetStakingPercentage (m2m_ui.StakingPercentageRequest) returns (m2m_ui.StakingPercentageResponse);
 
     // SuperNodeService
-    rpc GetSuperNodeActiveMoneyAccount (GetSuperNodeActiveMoneyAccountRequest) returns (GetSuperNodeActiveMoneyAccountResponse);
-    rpc AddSuperNodeMoneyAccount (AddSuperNodeMoneyAccountRequest) returns (AddSuperNodeMoneyAccountResponse);
+    rpc GetSuperNodeActiveMoneyAccount (m2m_ui.GetSuperNodeActiveMoneyAccountRequest) returns (m2m_ui.GetSuperNodeActiveMoneyAccountResponse);
+    rpc AddSuperNodeMoneyAccount (m2m_ui.AddSuperNodeMoneyAccountRequest) returns (m2m_ui.AddSuperNodeMoneyAccountResponse);
 
     // TopUpService
-    rpc GetTransactionsHistory(GetTransactionsHistoryRequest) returns (GetTransactionsHistoryResponse);
-    rpc GetIncome(GetIncomeRequest) returns (GetIncomeResponse);
-    rpc GetTopUpHistory(GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse);
-    rpc GetTopUpDestination(GetTopUpDestinationRequest) returns (GetTopUpDestinationResponse);
+    rpc GetTransactionsHistory(m2m_ui.GetTransactionsHistoryRequest) returns (m2m_ui.GetTransactionsHistoryResponse);
+    rpc GetIncome(m2m_ui.GetIncomeRequest) returns (m2m_ui.GetIncomeResponse);
+    rpc GetTopUpHistory(m2m_ui.GetTopUpHistoryRequest) returns (m2m_ui.GetTopUpHistoryResponse);
+    rpc GetTopUpDestination(m2m_ui.GetTopUpDestinationRequest) returns (m2m_ui.GetTopUpDestinationResponse);
 
     // WithdrawService
-    rpc GetWithdrawFee (GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse);
-    rpc WithdrawReq (WithdrawReqRequest) returns (WithdrawReqResponse);
-    rpc GetWithdrawHistory (GetWithdrawHistoryRequest) returns (GetWithdrawHistoryResponse);
-    rpc ModifyWithdrawFee (ModifyWithdrawFeeRequest) returns (ModifyWithdrawFeeResponse);
+    rpc GetWithdrawFee (m2m_ui.GetWithdrawFeeRequest) returns (m2m_ui.GetWithdrawFeeResponse);
+    rpc WithdrawReq (m2m_ui.WithdrawReqRequest) returns (m2m_ui.WithdrawReqResponse);
+    rpc GetWithdrawHistory (m2m_ui.GetWithdrawHistoryRequest) returns (m2m_ui.GetWithdrawHistoryResponse);
+    rpc ModifyWithdrawFee (m2m_ui.ModifyWithdrawFeeRequest) returns (m2m_ui.ModifyWithdrawFeeResponse);
 }
 
 service AppServerService {
