@@ -28,6 +28,11 @@ func NewDeviceServerAPI(validator auth.Validator) *DeviceServerAPI {
 func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
 
+	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	if err != nil{
+		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
@@ -61,64 +66,20 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 		dvProfiles = append(dvProfiles, &dvProfile)
 	}
 
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	userProfile := api.ProfileResponse{
-		User: &api.User{
-			Id:         string(prof.User.ID),
-			Username:   prof.User.Username,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
-		},
-		Settings: &api.ProfileSettings{
-			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
-		},
-	}
-
-	for _, org := range prof.Organizations {
-		row := api.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		userProfile.Organizations = append(userProfile.Organizations, &row)
-	}
-	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
-
 	return &api.GetDeviceListResponse{
 		DevProfile:  dvProfiles,
 		Count:       resp.Count,
-		UserProfile: &userProfile,
+		UserProfile: &prof,
 	}, nil
 }
 
 func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDeviceProfileRequest) (*api.GetDeviceProfileResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceProfile")
+
+	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	if err != nil{
+		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -145,63 +106,19 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 	dvProfile.Mode = api.DeviceMode(api.DeviceMode_value[string(resp.DevProfile.Mode)])
 	dvProfile.Name = resp.DevProfile.Name
 
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	//userProfile := api.GetDeviceProfileResponse.GetUserProfile(prof)
-	userProfile := api.ProfileResponse{
-		User: &api.User{
-			Id:         string(prof.User.ID),
-			Username:   prof.User.Username,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
-		},
-		Settings: &api.ProfileSettings{
-			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
-		},
-	}
-
-	for _, org := range prof.Organizations {
-		row := api.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		userProfile.Organizations = append(userProfile.Organizations, &row)
-	}
-
 	return &api.GetDeviceProfileResponse{
 		DevProfile:  dvProfile,
-		UserProfile: &userProfile,
+		UserProfile: &prof,
 	}, nil
 }
 
 func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceHistory")
+
+	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	if err != nil{
+		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -219,63 +136,19 @@ func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDevi
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
-	userProfile := api.ProfileResponse{
-		User: &api.User{
-			Id:         string(prof.User.ID),
-			Username:   prof.User.Username,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
-		},
-		Settings: &api.ProfileSettings{
-			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
-		},
-	}
-
-	for _, org := range prof.Organizations {
-		row := api.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		userProfile.Organizations = append(userProfile.Organizations, &row)
-	}
-
 	return &api.GetDeviceHistoryResponse{
 		DevHistory:  resp.DevHistory,
-		UserProfile: &userProfile,
+		UserProfile: &prof,
 	}, nil
 }
 
 func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/SetDeviceMode")
+
+	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	if err != nil{
+		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -294,57 +167,8 @@ func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceM
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
-	userProfile := api.ProfileResponse{
-		User: &api.User{
-			Id:         string(prof.User.ID),
-			Username:   prof.User.Username,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
-		},
-		Settings: &api.ProfileSettings{
-			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
-		},
-	}
-
-	for _, org := range prof.Organizations {
-		row := api.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		userProfile.Organizations = append(userProfile.Organizations, &row)
-	}
-
 	return &api.SetDeviceModeResponse{
 		Status:      resp.Status,
-		UserProfile: &userProfile,
+		UserProfile: &prof,
 	}, nil
 }
