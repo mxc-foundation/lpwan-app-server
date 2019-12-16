@@ -45,58 +45,14 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 		return &api.ModifyMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
-	userProfile := api.ProfileResponse{
-		User: &api.User{
-			Id:         string(prof.User.ID),
-			Username:   prof.User.Username,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
-		},
-		Settings: &api.ProfileSettings{
-			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
-		},
-	}
-
-	for _, org := range prof.Organizations {
-		row := api.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		userProfile.Organizations = append(userProfile.Organizations, &row)
+	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	if err != nil{
+		return &api.ModifyMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.ModifyMoneyAccountResponse{
 		Status:      resp.Status,
-		UserProfile: &userProfile,
+		UserProfile: &prof,
 	}, nil
 }
 
@@ -133,59 +89,15 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 		hists = append(hists, &hist)
 	}
 
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
-	userProfile := api.ProfileResponse{
-		User: &api.User{
-			Id:         string(prof.User.ID),
-			Username:   prof.User.Username,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
-		},
-		Settings: &api.ProfileSettings{
-			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
-		},
-	}
-
-	for _, org := range prof.Organizations {
-		row := api.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		userProfile.Organizations = append(userProfile.Organizations, &row)
+	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	if err != nil{
+		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.GetMoneyAccountChangeHistoryResponse{
 		Count:         resp.Count,
 		ChangeHistory: hists,
-		UserProfile:   &userProfile,
+		UserProfile:   &prof,
 	}, nil
 }
 
@@ -208,57 +120,13 @@ func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *ap
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	prof, err := storage.GetProfile(ctx, storage.DB(), user.ID)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	//userProfile := api.GetDeviceListResponse.GetUserProfile(prof)
-	userProfile := api.ProfileResponse{
-		User: &api.User{
-			Id:         string(prof.User.ID),
-			Username:   prof.User.Username,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
-		},
-		Settings: &api.ProfileSettings{
-			DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
-		},
-	}
-
-	for _, org := range prof.Organizations {
-		row := api.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		userProfile.Organizations = append(userProfile.Organizations, &row)
+	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	if err != nil{
+		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.GetActiveMoneyAccountResponse{
 		ActiveAccount: resp.ActiveAccount,
-		UserProfile:   &userProfile,
+		UserProfile:   &prof,
 	}, nil
 }
