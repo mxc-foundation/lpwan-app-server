@@ -3,8 +3,8 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "ext_account.proto";
-import "profile.proto";
+import "api/m2m_ui/ext_account.proto";
+import "api/m2m_ui/profile.proto";
 
 // WithdrawService is the service managing the withdraw access.
 service WithdrawService {

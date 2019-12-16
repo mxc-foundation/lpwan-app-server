@@ -3,7 +3,7 @@ syntax = "proto3";
 package api;
 
 import "google/api/annotations.proto";
-import "profile.proto";
+import "api/m2m_ui/profile.proto";
 
 service DeviceService {
     rpc GetDeviceList(GetDeviceListRequest) returns (GetDeviceListResponse){
