@@ -2,14 +2,10 @@ package m2m_ui
 
 import (
 	"context"
-	"github.com/golang/protobuf/ptypes"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -34,11 +30,11 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 		return &api.ModifyMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	moneyClient := api.NewMoneyServiceClient(m2mClient)
 
-	resp, err := m2mClient.ModifyMoneyAccount(ctx, &m2m_api.ModifyMoneyAccountRequest{
+	resp, err := moneyClient.ModifyMoneyAccount(ctx, &api.ModifyMoneyAccountRequest{
 		OrgId:          req.OrgId,
-		MoneyAbbr:      moneyAbbr,
+		MoneyAbbr:      req.MoneyAbbr,
 		CurrentAccount: req.CurrentAccount,
 	})
 	if err != nil {
@@ -65,28 +61,16 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	moneyClient := api.NewMoneyServiceClient(m2mClient)
 
-	resp, err := m2mClient.GetChangeMoneyAccountHistory(ctx, &m2m_api.GetMoneyAccountChangeHistoryRequest{
+	resp, err := moneyClient.GetChangeMoneyAccountHistory(ctx, &api.GetMoneyAccountChangeHistoryRequest{
 		OrgId:     req.OrgId,
 		Offset:    req.Offset,
 		Limit:     req.Limit,
-		MoneyAbbr: moneyAbbr,
+		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {
 		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	//changeHist := api.GetMoneyAccountChangeHistoryResponse.GetChangeHistory(&resp.ChangeHistory)
-	hists := api.GetMoneyAccountChangeHistoryResponse{}.ChangeHistory
-
-	for _, v := range resp.ChangeHistory {
-		hist := api.MoneyAccountChangeHistory{}
-		hist.CreatedAt = v.CreatedAt
-		hist.Addr = v.Addr
-		hist.Status = v.Status
-
-		hists = append(hists, &hist)
 	}
 
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
@@ -96,7 +80,7 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 
 	return &api.GetMoneyAccountChangeHistoryResponse{
 		Count:         resp.Count,
-		ChangeHistory: hists,
+		ChangeHistory: resp.ChangeHistory,
 		UserProfile:   &prof,
 	}, nil
 }
@@ -110,11 +94,11 @@ func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *ap
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	moneyClient := api.NewMoneyServiceClient(m2mClient)
 
-	resp, err := m2mClient.GetActiveMoneyAccount(ctx, &m2m_api.GetActiveMoneyAccountRequest{
+	resp, err := moneyClient.GetActiveMoneyAccount(ctx, &api.GetActiveMoneyAccountRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: moneyAbbr,
+		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())

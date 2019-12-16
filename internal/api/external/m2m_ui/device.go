@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -36,7 +35,9 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetDeviceList(ctx, &m2m_api.GetDeviceListRequest{
+	devClient := api.NewDeviceServiceClient(m2mClient)
+
+	resp, err := devClient.GetDeviceList(ctx, &api.GetDeviceListRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
@@ -45,26 +46,8 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	//devProfile := api.GetDeviceListResponse.GetDevProfile(resp.DevProfile)
-	dvProfiles := api.GetDeviceListResponse{}.DevProfile
-
-	for _, v := range resp.DevProfile {
-		dvProfile  := api.DeviceProfile{}
-		dvProfile.Id = v.Id
-		dvProfile.DevEui = v.DevEui
-		dvProfile.FkWallet = v.FkWallet
-		dvMode := api.DeviceMode(api.DeviceMode_value[string(v.Mode)])
-		dvProfile.Mode = dvMode
-		dvProfile.CreatedAt = v.CreatedAt
-		dvProfile.LastSeenAt = v.LastSeenAt
-		dvProfile.ApplicationId = v.ApplicationId
-		dvProfile.Name = v.Name
-
-		dvProfiles = append(dvProfiles, &dvProfile)
-	}
-
 	return &api.GetDeviceListResponse{
-		DevProfile:  dvProfiles,
+		DevProfile:  resp.DevProfile,
 		Count:       resp.Count,
 		UserProfile: &prof,
 	}, nil
@@ -84,7 +67,9 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetDeviceProfile(ctx, &m2m_api.GetDeviceProfileRequest{
+	devClient := api.NewDeviceServiceClient(m2mClient)
+
+	resp, err := devClient.GetDeviceProfile(ctx, &api.GetDeviceProfileRequest{
 		OrgId: req.OrgId,
 		DevId: req.DevId,
 	})
@@ -92,19 +77,8 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	//devProfile := api.GetDeviceProfileResponse.GetDevProfile(&resp.DevProfile)
-	dvProfile := api.GetDeviceProfileResponse{}.DevProfile
-	dvProfile.Id = resp.DevProfile.Id
-	dvProfile.ApplicationId = resp.DevProfile.ApplicationId
-	dvProfile.CreatedAt = resp.DevProfile.CreatedAt
-	dvProfile.DevEui = resp.DevProfile.DevEui
-	dvProfile.FkWallet = resp.DevProfile.FkWallet
-	dvProfile.LastSeenAt = resp.DevProfile.LastSeenAt
-	dvProfile.Mode = api.DeviceMode(api.DeviceMode_value[string(resp.DevProfile.Mode)])
-	dvProfile.Name = resp.DevProfile.Name
-
 	return &api.GetDeviceProfileResponse{
-		DevProfile:  dvProfile,
+		DevProfile:  resp.DevProfile,
 		UserProfile: &prof,
 	}, nil
 }
@@ -123,7 +97,9 @@ func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDevi
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetDeviceHistory(ctx, &m2m_api.GetDeviceHistoryRequest{
+	devClient := api.NewDeviceServiceClient(m2mClient)
+
+	resp, err := devClient.GetDeviceHistory(ctx, &api.GetDeviceHistoryRequest{
 		OrgId:  req.OrgId,
 		DevId:  req.DevId,
 		Offset: req.Offset,
@@ -153,12 +129,12 @@ func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceM
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devMode := m2m_api.DeviceMode(req.DevMode)
+	devClient := api.NewDeviceServiceClient(m2mClient)
 
-	resp, err := m2mClient.SetDeviceMode(ctx, &m2m_api.SetDeviceModeRequest{
+	resp, err := devClient.SetDeviceMode(ctx, &api.SetDeviceModeRequest{
 		OrgId:   req.OrgId,
 		DevId:   req.DevId,
-		DevMode: devMode,
+		DevMode: req.DevMode,
 	})
 	if err != nil {
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())

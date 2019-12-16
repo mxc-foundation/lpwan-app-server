@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -31,10 +30,10 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	supernodeClient := api.NewSuperNodeServiceClient(m2mClient)
 
-	resp, err := m2mClient.AddSuperNodeMoneyAccount(ctx, &m2m_api.AddSuperNodeMoneyAccountRequest{
-		MoneyAbbr:   moneyAbbr,
+	resp, err := supernodeClient.AddSuperNodeMoneyAccount(ctx, &api.AddSuperNodeMoneyAccountRequest{
+		MoneyAbbr:   req.MoneyAbbr,
 		AccountAddr: req.AccountAddr,
 		OrgId:       req.OrgId,
 	})
@@ -62,10 +61,10 @@ func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context,
 		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	supernodeClient := api.NewSuperNodeServiceClient(m2mClient)
 
-	resp, err := m2mClient.GetSuperNodeActiveMoneyAccount(ctx, &m2m_api.GetSuperNodeActiveMoneyAccountRequest{
-		MoneyAbbr: moneyAbbr,
+	resp, err := supernodeClient.GetSuperNodeActiveMoneyAccount(ctx, &api.GetSuperNodeActiveMoneyAccountRequest{
+		MoneyAbbr: req.MoneyAbbr,
 		OrgId:     req.OrgId,
 	})
 	if err != nil {

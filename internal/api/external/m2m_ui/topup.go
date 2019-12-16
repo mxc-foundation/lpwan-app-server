@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -31,7 +30,9 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetTransactionsHistory(ctx, &m2m_api.GetTransactionsHistoryRequest{
+	topupClient := api.NewTopUpServiceClient(m2mClient)
+
+	resp, err := topupClient.GetTransactionsHistory(ctx, &api.GetTransactionsHistoryRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
@@ -40,8 +41,6 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	txHist := api.GetTransactionsHistoryResponse.GetTransactionHistory(&resp.TransactionHistory)
-
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
 	if err != nil{
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
@@ -49,7 +48,7 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 
 	return &api.GetTransactionsHistoryResponse{
 		Count:              resp.Count,
-		TransactionHistory: txHist,
+		TransactionHistory: resp.TransactionHistory,
 		UserProfile:        &prof,
 	}, nil
 }
@@ -63,7 +62,9 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetTopUpHistory(ctx, &m2m_api.GetTopUpHistoryRequest{
+	topupClient := api.NewTopUpServiceClient(m2mClient)
+
+	resp, err := topupClient.GetTopUpHistory(ctx, &api.GetTopUpHistoryRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
@@ -72,8 +73,6 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	topupHist := api.GetTopUpHistoryResponse.GetTopupHistory(&resp.TopupHistory)
-
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
 	if err != nil{
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
@@ -81,7 +80,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 
 	return &api.GetTopUpHistoryResponse{
 		Count:        resp.Count,
-		TopupHistory: topupHist,
+		TopupHistory: resp.TopupHistory,
 		UserProfile:  &prof,
 	}, nil
 }
@@ -95,11 +94,11 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	topupClient := api.NewTopUpServiceClient(m2mClient)
 
-	resp, err := m2mClient.GetTopUpDestination(ctx, &m2m_api.GetTopUpDestinationRequest{
+	resp, err := topupClient.GetTopUpDestination(ctx, &api.GetTopUpDestinationRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: moneyAbbr,
+		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -125,7 +124,9 @@ func (s *TopUpServerAPI) GetIncome(ctx context.Context, req *api.GetIncomeReques
 		return &api.GetIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetIncome(ctx, &m2m_api.GetIncomeRequest{
+	topupClient := api.NewTopUpServiceClient(m2mClient)
+
+	resp, err := topupClient.GetIncome(ctx, &api.GetIncomeRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {

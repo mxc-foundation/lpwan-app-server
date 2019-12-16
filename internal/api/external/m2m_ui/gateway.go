@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -31,7 +30,9 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetGatewayList(ctx, &m2m_api.GetGatewayListRequest{
+	gwClient := api.NewGatewayServiceClient(m2mClient)
+
+	resp, err := gwClient.GetGatewayList(ctx, &api.GetGatewayListRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
@@ -40,31 +41,13 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	//gwProfile := api.GetGatewayListResponse.GetGwProfile(&resp.GwProfile)
-	gwProfiles := api.GetGatewayListResponse{}.GwProfile
-	for _, v := range resp.GwProfile {
-		gwProfile := api.GatewayProfile{}
-		gwProfile.Mode = api.GatewayMode(api.DeviceMode_value[string(v.Mode)])
-		gwProfile.Name = v.Name
-		gwProfile.LastSeenAt = v.LastSeenAt
-		gwProfile.FkWallet = v.FkWallet
-		gwProfile.Id = v.Id
-		gwProfile.CreateAt = v.CreateAt
-		gwProfile.Description = v.Description
-		gwProfile.FkGwNs = v.FkGwNs
-		gwProfile.Mac = v.Mac
-		gwProfile.OrgId = v.OrgId
-
-		gwProfiles = append(gwProfiles, &gwProfile)
-	}
-
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
 	if err != nil{
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.GetGatewayListResponse{
-		GwProfile:   gwProfiles,
+		GwProfile:   resp.GwProfile,
 		Count:       resp.Count,
 		UserProfile: &prof,
 	}, nil
@@ -79,7 +62,9 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetGatewayProfile(ctx, &m2m_api.GetGatewayProfileRequest{
+	gwClient := api.NewGatewayServiceClient(m2mClient)
+
+	resp, err := gwClient.GetGatewayProfile(ctx, &api.GetGatewayProfileRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
 		Offset: req.Offset,
@@ -89,25 +74,13 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwProfile := api.GetGatewayProfileResponse{}.GwProfile
-	gwProfile.OrgId = resp.GwProfile.OrgId
-	gwProfile.Mac = resp.GwProfile.Mac
-	gwProfile.FkGwNs = resp.GwProfile.FkGwNs
-	gwProfile.Description = resp.GwProfile.Description
-	gwProfile.CreateAt = resp.GwProfile.CreateAt
-	gwProfile.Id = resp.GwProfile.Id
-	gwProfile.FkWallet = resp.GwProfile.FkWallet
-	gwProfile.LastSeenAt = resp.GwProfile.LastSeenAt
-	gwProfile.Name = resp.GwProfile.Name
-	gwProfile.Mode = api.GatewayMode(api.DeviceMode_value[string(resp.GwProfile.Mode)])
-
 	prof, err := getUserProfileByJwt(ctx, req.OrgId)
 	if err != nil{
 		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.GetGatewayProfileResponse{
-		GwProfile:   gwProfile,
+		GwProfile:   resp.GwProfile,
 		UserProfile: &prof,
 	}, nil
 }
@@ -121,7 +94,9 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetGatewayHistory(ctx, &m2m_api.GetGatewayHistoryRequest{
+	gwClient := api.NewGatewayServiceClient(m2mClient)
+
+	resp, err := gwClient.GetGatewayHistory(ctx, &api.GetGatewayHistoryRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
 		Offset: req.Offset,
@@ -151,12 +126,12 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwMode := m2m_api.GatewayMode(req.GwMode)
+	gwClient := api.NewGatewayServiceClient(m2mClient)
 
-	resp, err := m2mClient.SetGatewayMode(ctx, &m2m_api.SetGatewayModeRequest{
+	resp, err := gwClient.SetGatewayMode(ctx, &api.SetGatewayModeRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
-		GwMode: gwMode,
+		GwMode: req.GwMode,
 	})
 	if err != nil {
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())

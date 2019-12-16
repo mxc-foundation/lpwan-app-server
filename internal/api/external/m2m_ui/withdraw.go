@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -31,10 +30,10 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
 
-	resp, err := m2mClient.ModifyWithdrawFee(ctx, &m2m_api.ModifyWithdrawFeeRequest{
-		MoneyAbbr:   moneyAbbr,
+	resp, err := withdrawClient.ModifyWithdrawFee(ctx, &api.ModifyWithdrawFeeRequest{
+		MoneyAbbr:   req.MoneyAbbr,
 		WithdrawFee: req.WithdrawFee,
 		OrgId:       req.OrgId,
 	})
@@ -62,10 +61,10 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
 
-	resp, err := m2mClient.GetWithdrawFee(ctx, &m2m_api.GetWithdrawFeeRequest{
-		MoneyAbbr: moneyAbbr,
+	resp, err := withdrawClient.GetWithdrawFee(ctx, &api.GetWithdrawFeeRequest{
+		MoneyAbbr: req.MoneyAbbr,
 		OrgId:     req.OrgId,
 	})
 	if err != nil {
@@ -92,13 +91,13 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
 
-	resp, err := m2mClient.GetWithdrawHistory(ctx, &m2m_api.GetWithdrawHistoryRequest{
+	resp, err := withdrawClient.GetWithdrawHistory(ctx, &api.GetWithdrawHistoryRequest{
 		OrgId:     req.OrgId,
 		Offset:    req.Offset,
 		Limit:     req.Limit,
-		MoneyAbbr: moneyAbbr,
+		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -127,11 +126,11 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	moneyAbbr := m2m_api.Money(req.MoneyAbbr)
+	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
 
-	resp, err := m2mClient.WithdrawReq(ctx, &m2m_api.WithdrawReqRequest{
+	resp, err := withdrawClient.WithdrawReq(ctx, &api.WithdrawReqRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: moneyAbbr,
+		MoneyAbbr: req.MoneyAbbr,
 		Amount:    req.Amount,
 	})
 	if err != nil {

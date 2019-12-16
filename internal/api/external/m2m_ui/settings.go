@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -31,7 +30,9 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetSettings(ctx, &m2m_api.GetSettingsRequest{})
+	settingClient := api.NewSettingsServiceClient(m2mClient)
+
+	resp, err := settingClient.GetSettings(ctx, &api.GetSettingsRequest{})
 	if err != nil {
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
@@ -52,7 +53,9 @@ func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifyS
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.ModifySettings(ctx, &m2m_api.ModifySettingsRequest{
+	settingClient := api.NewSettingsServiceClient(m2mClient)
+
+	resp, err := settingClient.ModifySettings(ctx, &api.ModifySettingsRequest{
 		LowBalanceWarning:          req.LowBalanceWarning,
 		DownlinkFee:                req.DownlinkFee,
 		TransactionPercentageShare: req.TransactionPercentageShare,

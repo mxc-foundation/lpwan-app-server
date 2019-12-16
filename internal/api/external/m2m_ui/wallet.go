@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -31,7 +30,9 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetWalletBalance(ctx, &m2m_api.GetWalletBalanceRequest{
+	walletClient := api.NewWalletServiceClient(m2mClient)
+
+	resp, err := walletClient.GetWalletBalance(ctx, &api.GetWalletBalanceRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
@@ -58,7 +59,9 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetVmxcTxHistory(ctx, &m2m_api.GetVmxcTxHistoryRequest{
+	walletClient := api.NewWalletServiceClient(m2mClient)
+
+	resp, err := walletClient.GetVmxcTxHistory(ctx, &api.GetVmxcTxHistoryRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
@@ -90,7 +93,9 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetWalletUsageHist(ctx, &m2m_api.GetWalletUsageHistRequest{
+	walletClient := api.NewWalletServiceClient(m2mClient)
+
+	resp, err := walletClient.GetWalletUsageHist(ctx, &api.GetWalletUsageHistRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
@@ -122,7 +127,9 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := m2mClient.GetDlPrice(ctx, &m2m_api.GetDownLinkPriceRequest{
+	walletClient := api.NewWalletServiceClient(m2mClient)
+
+	resp, err := walletClient.GetDlPrice(ctx, &api.GetDownLinkPriceRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
