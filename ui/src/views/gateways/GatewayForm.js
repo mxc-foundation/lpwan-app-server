@@ -1,5 +1,8 @@
 import React, { Component } from "react";
 
+import { AvForm, AvField } from 'availity-reactstrap-validation';
+import { Row, Col, Button as RButton } from 'reactstrap';
+
 import { withStyles } from "@material-ui/core/styles";
 import TextField from '@material-ui/core/TextField';
 import FormControl from "@material-ui/core/FormControl";
@@ -56,7 +59,7 @@ class GatewayBoardForm extends Component {
   }
 
   render() {
-    return(
+    return (
       <FormControl fullWidth margin="normal">
         <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000400`)} #{this.props.i} (<a href="#delete" onClick={this.onDelete} className={this.props.classes.a}>{i18n.t(`${packageNS}:tr000401`)}</a>)</FormLabel>
         <EUI64Field
@@ -100,7 +103,7 @@ const styles = {
 class GatewayForm extends FormComponent {
   constructor() {
     super();
-    
+
     this.state = {
       mapZoom: 15,
     };
@@ -172,20 +175,20 @@ class GatewayForm extends FormComponent {
 
   getNetworkServerOption(id, callbackFunc) {
     NetworkServerStore.get(id, resp => {
-      callbackFunc({label: resp.networkServer.name, value: resp.networkServer.id});
+      callbackFunc({ label: resp.networkServer.name, value: resp.networkServer.id });
     });
   }
 
   getNetworkServerOptions(search, callbackFunc) {
     NetworkServerStore.list(this.props.match.params.organizationID, 999, 0, resp => {
-      const options = resp.result.map((ns, i) => {return {label: ns.name, value: ns.id}});
+      const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
       callbackFunc(options);
     });
   }
 
   getGatewayProfileOption(id, callbackFunc) {
     GatewayProfileStore.get(id, resp => {
-      callbackFunc({label: resp.gatewayProfile.name, value: resp.gatewayProfile.id});
+      callbackFunc({ label: resp.gatewayProfile.name, value: resp.gatewayProfile.id });
     });
   }
 
@@ -196,7 +199,7 @@ class GatewayForm extends FormComponent {
     }
 
     GatewayProfileStore.list(this.state.object.networkServerID, 999, 0, resp => {
-      const options = resp.result.map((gp, i) => {return {label: gp.name, value: gp.id}});
+      const options = resp.result.map((gp, i) => { return { label: gp.name, value: gp.id } });
       callbackFunc(options);
     });
   }
@@ -232,7 +235,7 @@ class GatewayForm extends FormComponent {
 
   render() {
     if (this.state.object === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
     const style = {
@@ -251,11 +254,33 @@ class GatewayForm extends FormComponent {
       boards = this.state.object.boards.map((b, i) => <GatewayBoardForm key={i} i={i} board={b} onDelete={() => this.deleteGatewayBoard(i)} onChange={board => this.updateGatewayBoard(i, board)} />);
     }
 
-    return(
+    return (<React.Fragment>
+      <Row>
+        <Col>
+          <AvForm onValidSubmit={this.onSubmit} model={this.state.object}>
+            <AvField name="name" label={i18n.t(`${packageNS}:tr000218`)} type="text" required helpMessage={i18n.t(`${packageNS}:tr000062`)} />
+
+            <AvField name="description" label={i18n.t(`${packageNS}:tr000219`)} type="textarea" required />
+
+            {!this.props.update && <EUI64Field
+              id="id"
+              label={i18n.t(`${packageNS}:tr000074`)}
+              margin="normal"
+              value={this.state.object.id || ""}
+              onChange={this.onChange}
+              required
+              fullWidth
+              random
+            />}
+
+            <Button onClick={this.addGatewayBoard}>{i18n.t(`${packageNS}:tr000234`)}</Button>
+          </AvForm>
+        </Col>
+      </Row>
+
       <Form
         submitLabel={this.props.submitLabel}
         onSubmit={this.onSubmit}
-        extraButtons={<Button onClick={this.addGatewayBoard}>{i18n.t(`${packageNS}:tr000234`)}</Button>}
       >
         <TextField
           id="name"
@@ -360,7 +385,7 @@ class GatewayForm extends FormComponent {
             animate={true}
             scrollWheelZoom={false}
             onZoomend={this.updateZoom}
-            >
+          >
             <MapTileLayer />
             <Marker position={position} draggable={true} onDragend={this.updatePosition} ref="marker" />
           </Map>
@@ -370,6 +395,7 @@ class GatewayForm extends FormComponent {
         </FormControl>
         {boards}
       </Form>
+    </React.Fragment>
     );
   }
 }

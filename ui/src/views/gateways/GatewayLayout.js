@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
 import classNames from "classnames";
-import { Breadcrumb, BreadcrumbItem, TabContent, TabPane, Nav, NavItem, NavLink, Row, Col, Card, CardBody } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 
 
 import i18n, { packageNS } from '../../i18n';
@@ -25,7 +25,6 @@ class GatewayLayout extends Component {
       admin: false,
     };
     this.deleteGateway = this.deleteGateway.bind(this);
-    this.onChangeTab = this.onChangeTab.bind(this);
     this.locationToTab = this.locationToTab.bind(this);
     this.setIsAdmin = this.setIsAdmin.bind(this);
   }
@@ -84,13 +83,7 @@ class GatewayLayout extends Component {
     }
 
     this.setState({
-      tab: tab + '',
-    });
-  }
-
-  onChangeTab(v) {
-    this.setState({
-      tab: v,
+      activeTab: tab + '',
     });
   }
 
@@ -122,33 +115,33 @@ class GatewayLayout extends Component {
               <CardBody>
                 <Nav tabs>
                   <NavItem>
-                    <NavLink
-                      className={classNames({ active: this.state.activeTab === '1' })}
-                      href={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}`}
-                    >{i18n.t(`${packageNS}:tr000423`)}</NavLink>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '0' })}
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}`}
+                    >{i18n.t(`${packageNS}:tr000423`)}</Link>
                   </NavItem>
                   {this.state.admin && <NavItem>
-                    <NavLink
-                      className={classNames({ active: this.state.activeTab === '2' })}
-                      href={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/edit`}
-                    >{i18n.t(`${packageNS}:tr000298`)}</NavLink>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '1' })}
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/edit`}
+                    >{i18n.t(`${packageNS}:tr000298`)}</Link>
                   </NavItem>}
                   <NavItem>
-                    <NavLink
-                      className={classNames({ active: this.state.activeTab === '3' })}
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '2' })}
                       disabled={!this.state.gateway.gateway.discoveryEnabled} 
-                      href={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/discovery`}
-                    >{i18n.t(`${packageNS}:tr000095`)}</NavLink>
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/discovery`}
+                    >{i18n.t(`${packageNS}:tr000095`)}</Link>
                   </NavItem>
                   <NavItem>
-                    <NavLink
-                      className={classNames({ active: this.state.activeTab === '4' })}
-                      href={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/frames`}
-                    >{i18n.t(`${packageNS}:tr000247`)}</NavLink>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '3' })}
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/frames`}
+                    >{i18n.t(`${packageNS}:tr000247`)}</Link>
                   </NavItem>
                 </Nav>
 
-                <Row className="mt-2">
+                <Row className="pt-3">
                   <Col>
                     <Switch>
                       <Route exact path={`${this.props.match.path}`} render={props => <GatewayDetails gateway={this.state.gateway.gateway} lastSeenAt={this.state.gateway.lastSeenAt} {...props} />} />
