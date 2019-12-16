@@ -1,52 +1,23 @@
 import React, { Component } from "react";
+import classNames from "classnames";
 import { Link } from "react-router-dom";
-
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-
-import theme from "../theme";
-
-
-const styles = {
-  button: {
-    marginLeft: theme.spacing(1),
-  },
-  icon: {
-    marginRight: theme.spacing(1),
-  },
-};
+import { Button } from 'reactstrap';
 
 
 class TitleBarButton extends Component {
   render() {
-    let component = "button";
-    let icon = null;
+    const color = this.props.color || "primary";
+    const icon = this.props.icon || null;
 
-    if (this.props.to !== undefined) {
-      component = Link
-    }
-
-    if (this.props.icon !== undefined) {
-      icon = React.cloneElement(this.props.icon, {
-        className: this.props.classes.icon,
-      })
-    }
-
-    return(
-      <Button
-        variant="outlined"
-        color={this.props.color}
-        className={this.props.classes.button}
-        component={component}
-        to={this.props.to}
-        onClick={this.props.onClick}
-        disabled={this.props.disabled}
-      >
+    return (<React.Fragment>
+      {this.props.to && <Link to={this.props.to} className={classNames("btn", `btn-${color}`)}>
         {icon}
         {this.props.label}
-      </Button>
+      </Link>}
+      {!this.props.to && <Button to={this.props.to} color={color} onClick={this.props.onClick}>{icon}{this.props.label}</Button>}
+    </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(TitleBarButton);
+export default TitleBarButton;

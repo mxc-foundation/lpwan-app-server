@@ -2,7 +2,9 @@
 // 
 // breadcrumb.scss
 //
-
+.breadcrumb {
+    padding-top: 0px;
+}
 
 // Breadcrumb item arrow
 .breadcrumb-item {
@@ -10,7 +12,9 @@
         color: $gray-700;
     }
     +.breadcrumb-item {
+        padding-left: 3px;
         &::before {
+            padding-right: 3px;
             font-family: "Material Design Icons";
         }
     }
