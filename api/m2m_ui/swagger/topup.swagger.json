@@ -4,6 +4,10 @@
     "title": "topup.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetTopUpHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetTopUpHistoryResponse"
             }
           }
         },
@@ -57,7 +61,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetTopUpDestinationResponse"
+              "$ref": "#/definitions/m2m_uiGetTopUpDestinationResponse"
             }
           }
         },
@@ -91,7 +95,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetTransactionsHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetTransactionsHistoryResponse"
             }
           }
         },
@@ -130,7 +134,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetIncomeResponse"
+              "$ref": "#/definitions/m2m_uiGetIncomeResponse"
             }
           }
         },
@@ -150,7 +154,7 @@
     }
   },
   "definitions": {
-    "apiGetIncomeResponse": {
+    "m2m_uiGetIncomeResponse": {
       "type": "object",
       "properties": {
         "amount": {
@@ -159,18 +163,18 @@
         }
       }
     },
-    "apiGetTopUpDestinationResponse": {
+    "m2m_uiGetTopUpDestinationResponse": {
       "type": "object",
       "properties": {
         "activeAccount": {
           "type": "string"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetTopUpHistoryResponse": {
+    "m2m_uiGetTopUpHistoryResponse": {
       "type": "object",
       "properties": {
         "count": {
@@ -180,15 +184,15 @@
         "topupHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiTopUpHistory"
+            "$ref": "#/definitions/m2m_uiTopUpHistory"
           }
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetTransactionsHistoryResponse": {
+    "m2m_uiGetTransactionsHistoryResponse": {
       "type": "object",
       "properties": {
         "count": {
@@ -198,22 +202,22 @@
         "transactionHistory": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiTransactionsHistory"
+            "$ref": "#/definitions/m2m_uiTransactionsHistory"
           }
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiMoney": {
+    "m2m_uiMoney": {
       "type": "string",
       "enum": [
         "Ether"
       ],
       "default": "Ether"
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -243,27 +247,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -273,7 +277,7 @@
         }
       }
     },
-    "apiTopUpHistory": {
+    "m2m_uiTopUpHistory": {
       "type": "object",
       "properties": {
         "from": {
@@ -297,7 +301,7 @@
         }
       }
     },
-    "apiTransactionsHistory": {
+    "m2m_uiTransactionsHistory": {
       "type": "object",
       "properties": {
         "from": {
@@ -328,7 +332,7 @@
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {

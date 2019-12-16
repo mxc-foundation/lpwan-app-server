@@ -2,12 +2,12 @@ syntax = "proto3";
 
 package api;
 
-import "timestamp/timestamp.proto";
-import "duration/duration.proto";
-
 // from loraserver
 import "api/common/common.proto";
 import "api/gw/gw.proto";
+import "timestamp/timestamp.proto";
+import "duration/duration.proto";
+
 
 
 enum RXWindow {

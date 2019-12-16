@@ -4,6 +4,10 @@
     "title": "device.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetDeviceHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetDeviceHistoryResponse"
             }
           }
         },
@@ -64,7 +68,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetDeviceListResponse"
+              "$ref": "#/definitions/m2m_uiGetDeviceListResponse"
             }
           }
         },
@@ -103,7 +107,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiSetDeviceModeResponse"
+              "$ref": "#/definitions/m2m_uiSetDeviceModeResponse"
             }
           }
         },
@@ -127,7 +131,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiSetDeviceModeRequest"
+              "$ref": "#/definitions/m2m_uiSetDeviceModeRequest"
             }
           }
         ],
@@ -143,7 +147,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetDeviceProfileResponse"
+              "$ref": "#/definitions/m2m_uiGetDeviceProfileResponse"
             }
           }
         },
@@ -170,7 +174,7 @@
     }
   },
   "definitions": {
-    "apiDeviceMode": {
+    "m2m_uiDeviceMode": {
       "type": "string",
       "enum": [
         "DV_INACTIVE",
@@ -180,7 +184,7 @@
       ],
       "default": "DV_INACTIVE"
     },
-    "apiDeviceProfile": {
+    "m2m_uiDeviceProfile": {
       "type": "object",
       "properties": {
         "id": {
@@ -195,7 +199,7 @@
           "format": "int64"
         },
         "mode": {
-          "$ref": "#/definitions/apiDeviceMode"
+          "$ref": "#/definitions/m2m_uiDeviceMode"
         },
         "createdAt": {
           "type": "string"
@@ -212,24 +216,24 @@
         }
       }
     },
-    "apiGetDeviceHistoryResponse": {
+    "m2m_uiGetDeviceHistoryResponse": {
       "type": "object",
       "properties": {
         "devHistory": {
           "type": "string"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetDeviceListResponse": {
+    "m2m_uiGetDeviceListResponse": {
       "type": "object",
       "properties": {
         "devProfile": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiDeviceProfile"
+            "$ref": "#/definitions/m2m_uiDeviceProfile"
           }
         },
         "count": {
@@ -237,22 +241,22 @@
           "format": "int64"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetDeviceProfileResponse": {
+    "m2m_uiGetDeviceProfileResponse": {
       "type": "object",
       "properties": {
         "devProfile": {
-          "$ref": "#/definitions/apiDeviceProfile"
+          "$ref": "#/definitions/m2m_uiDeviceProfile"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -282,27 +286,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -312,7 +316,7 @@
         }
       }
     },
-    "apiSetDeviceModeRequest": {
+    "m2m_uiSetDeviceModeRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -324,11 +328,11 @@
           "format": "int64"
         },
         "devMode": {
-          "$ref": "#/definitions/apiDeviceMode"
+          "$ref": "#/definitions/m2m_uiDeviceMode"
         }
       }
     },
-    "apiSetDeviceModeResponse": {
+    "m2m_uiSetDeviceModeResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -336,11 +340,11 @@
           "format": "boolean"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {

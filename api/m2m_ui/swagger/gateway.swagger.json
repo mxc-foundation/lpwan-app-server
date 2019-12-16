@@ -4,6 +4,10 @@
     "title": "gateway.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -18,7 +22,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetGatewayHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetGatewayHistoryResponse"
             }
           }
         },
@@ -64,7 +68,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetGatewayListResponse"
+              "$ref": "#/definitions/m2m_uiGetGatewayListResponse"
             }
           }
         },
@@ -103,7 +107,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiSetGatewayModeResponse"
+              "$ref": "#/definitions/m2m_uiSetGatewayModeResponse"
             }
           }
         },
@@ -127,7 +131,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiSetGatewayModeRequest"
+              "$ref": "#/definitions/m2m_uiSetGatewayModeRequest"
             }
           }
         ],
@@ -143,7 +147,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetGatewayProfileResponse"
+              "$ref": "#/definitions/m2m_uiGetGatewayProfileResponse"
             }
           }
         },
@@ -184,7 +188,7 @@
     }
   },
   "definitions": {
-    "apiGatewayMode": {
+    "m2m_uiGatewayMode": {
       "type": "string",
       "enum": [
         "GW_INACTIVE",
@@ -194,7 +198,7 @@
       ],
       "default": "GW_INACTIVE"
     },
-    "apiGatewayProfile": {
+    "m2m_uiGatewayProfile": {
       "type": "object",
       "properties": {
         "id": {
@@ -213,7 +217,7 @@
           "format": "int64"
         },
         "mode": {
-          "$ref": "#/definitions/apiGatewayMode"
+          "$ref": "#/definitions/m2m_uiGatewayMode"
         },
         "createAt": {
           "type": "string"
@@ -233,24 +237,24 @@
         }
       }
     },
-    "apiGetGatewayHistoryResponse": {
+    "m2m_uiGetGatewayHistoryResponse": {
       "type": "object",
       "properties": {
         "gwHistory": {
           "type": "string"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetGatewayListResponse": {
+    "m2m_uiGetGatewayListResponse": {
       "type": "object",
       "properties": {
         "gwProfile": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiGatewayProfile"
+            "$ref": "#/definitions/m2m_uiGatewayProfile"
           }
         },
         "count": {
@@ -258,22 +262,22 @@
           "format": "int64"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiGetGatewayProfileResponse": {
+    "m2m_uiGetGatewayProfileResponse": {
       "type": "object",
       "properties": {
         "gwProfile": {
-          "$ref": "#/definitions/apiGatewayProfile"
+          "$ref": "#/definitions/m2m_uiGatewayProfile"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -303,27 +307,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -333,7 +337,7 @@
         }
       }
     },
-    "apiSetGatewayModeRequest": {
+    "m2m_uiSetGatewayModeRequest": {
       "type": "object",
       "properties": {
         "orgId": {
@@ -345,11 +349,11 @@
           "format": "int64"
         },
         "gwMode": {
-          "$ref": "#/definitions/apiGatewayMode"
+          "$ref": "#/definitions/m2m_uiGatewayMode"
         }
       }
     },
-    "apiSetGatewayModeResponse": {
+    "m2m_uiSetGatewayModeResponse": {
       "type": "object",
       "properties": {
         "status": {
@@ -357,11 +361,11 @@
           "format": "boolean"
         },
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {

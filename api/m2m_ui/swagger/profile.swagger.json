@@ -4,6 +4,10 @@
     "title": "profile.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -19,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiLoginResponse"
+              "$ref": "#/definitions/m2m_uiLoginResponse"
             }
           }
         },
@@ -29,7 +33,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/apiLoginRequest"
+              "$ref": "#/definitions/m2m_uiLoginRequest"
             }
           }
         ],
@@ -45,7 +49,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetUserProfileResponse"
+              "$ref": "#/definitions/m2m_uiGetUserProfileResponse"
             }
           }
         },
@@ -70,7 +74,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/apiGetUserOrganizationListResponse"
+              "$ref": "#/definitions/m2m_uiGetUserOrganizationListResponse"
             }
           }
         },
@@ -90,26 +94,26 @@
     }
   },
   "definitions": {
-    "apiGetUserOrganizationListResponse": {
+    "m2m_uiGetUserOrganizationListResponse": {
       "type": "object",
       "properties": {
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           }
         }
       }
     },
-    "apiGetUserProfileResponse": {
+    "m2m_uiGetUserProfileResponse": {
       "type": "object",
       "properties": {
         "userProfile": {
-          "$ref": "#/definitions/apiProfileResponse"
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
-    "apiLoginRequest": {
+    "m2m_uiLoginRequest": {
       "type": "object",
       "properties": {
         "username": {
@@ -122,7 +126,7 @@
         }
       }
     },
-    "apiLoginResponse": {
+    "m2m_uiLoginResponse": {
       "type": "object",
       "properties": {
         "jwt": {
@@ -131,7 +135,7 @@
         }
       }
     },
-    "apiOrganizationLink": {
+    "m2m_uiOrganizationLink": {
       "type": "object",
       "properties": {
         "organizationID": {
@@ -161,27 +165,27 @@
       },
       "description": "Defines an organization to which an user is associated."
     },
-    "apiProfileResponse": {
+    "m2m_uiProfileResponse": {
       "type": "object",
       "properties": {
         "user": {
-          "$ref": "#/definitions/apiUser",
+          "$ref": "#/definitions/m2m_uiUser",
           "description": "User object."
         },
         "organizations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/apiOrganizationLink"
+            "$ref": "#/definitions/m2m_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
         },
         "settings": {
-          "$ref": "#/definitions/apiProfileSettings",
+          "$ref": "#/definitions/m2m_uiProfileSettings",
           "description": "Profile settings."
         }
       }
     },
-    "apiProfileSettings": {
+    "m2m_uiProfileSettings": {
       "type": "object",
       "properties": {
         "disableAssignExistingUsers": {
@@ -191,7 +195,7 @@
         }
       }
     },
-    "apiUser": {
+    "m2m_uiUser": {
       "type": "object",
       "properties": {
         "id": {
