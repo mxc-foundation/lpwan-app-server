@@ -4,6 +4,7 @@ package api;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
+import "api/internal.proto";
 
 // InternalService is the service providing API endpoints for internal usage.
 service InternalService {

@@ -3,7 +3,7 @@ GRPC_GW_PATH=`go list -f '{{ .Dir }}' github.com/grpc-ecosystem/grpc-gateway/pro
 GRPC_GW_PATH="${GRPC_GW_PATH}/../third_party/googleapis"
 
 # generate the gRPC code
-protoc -I. -I${GRPC_GW_PATH} --go_out=plugins=grpc:. \
+protoc -I. -I${GRPC_GW_PATH} -I../.. --go_out=plugins=grpc:. \
     profile.proto \
     ext_account.proto \
     super_node.proto \
@@ -17,7 +17,7 @@ protoc -I. -I${GRPC_GW_PATH} --go_out=plugins=grpc:. \
     staking.proto
 
 # generate the JSON interface code
-protoc -I. -I${GRPC_GW_PATH} --grpc-gateway_out=logtostderr=true:. \
+protoc -I. -I${GRPC_GW_PATH} -I../.. --grpc-gateway_out=logtostderr=true:. \
     profile.proto \
     ext_account.proto \
     super_node.proto \
@@ -31,7 +31,7 @@ protoc -I. -I${GRPC_GW_PATH} --grpc-gateway_out=logtostderr=true:. \
     settings.proto
 
 # generate the swagger definitions
-protoc -I. -I${GRPC_GW_PATH} --swagger_out=json_names_for_fields=true:./swagger \
+protoc -I. -I${GRPC_GW_PATH} -I../.. --swagger_out=json_names_for_fields=true:./swagger \
     profile.proto \
     ext_account.proto \
     super_node.proto \
