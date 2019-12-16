@@ -1,14 +1,17 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-
-import { CardContent } from "@material-ui/core";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  Card,
+  CardSubtitle,
+  CardTitle,
+  Col,
+  Container,
+  Row
+} from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import NetworkServerForm from "./NetworkServerForm";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
@@ -27,23 +30,39 @@ class CreateNetworkServer extends Component {
 
   render() {
     return(
-      <Grid container spacing={4}>
-        <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000040`)} to="/network-servers" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000041`)} />
-        </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <NetworkServerForm
-                submitLabel={i18n.t(`${packageNS}:tr000041`)}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <Container>
+        <Row>
+          <Col md="12" sm="12">
+            <Card className="card-box" style={{ minWidth: "25rem" }}>
+              <Row>
+                <Col md="12" xs="12">
+                  <Breadcrumb>
+                    <BreadcrumbItem><a href="#">Home</a></BreadcrumbItem>
+                    <BreadcrumbItem><a href="/network-servers">{i18n.t(`${packageNS}:tr000040`)}</a></BreadcrumbItem>
+                    <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+                  </Breadcrumb>
+                </Col>
+              </Row>
+              <Row>
+                <Col md="12" xs="12">
+                  <CardTitle className="mt-0 header-title">{i18n.t(`${packageNS}:tr000040`)}</CardTitle>
+                  <CardSubtitle className="text-muted font-14 mb-3">
+                    Create a network server.
+                  </CardSubtitle>
+                </Col>
+              </Row>
+              <Row className="md-center">
+                <Col md="12" sm="12">
+                  <NetworkServerForm
+                    submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                    onSubmit={this.onSubmit}
+                  />
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     );
   }
 }
