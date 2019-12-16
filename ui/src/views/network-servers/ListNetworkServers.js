@@ -51,7 +51,7 @@ class ListNetworkServers extends Component {
                 </Col>
               </Row>
               <Row>
-                <Col md="10" xs="9">
+                <Col md="9" xs="9">
                   <CardTitle className="mt-0 header-title">
                     {i18n.t(`${packageNS}:tr000040`)}
                   </CardTitle>
@@ -59,14 +59,14 @@ class ListNetworkServers extends Component {
                     List of network servers.
                   </CardSubtitle>
                 </Col>
-                <Col md="2" xs="3">
+                <Col md="3" xs="3">
                   <Button
                     color="primary"
                     href={`/network-servers/create`}
                     outline
                     size="md"
                   >
-                    {i18n.t(`${packageNS}:tr000041`)}
+                    {i18n.t(`${packageNS}:tr000277`)}
                   </Button>
                 </Col>
               </Row>
