@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 
 import {
+  Breadcrumb,
+  BreadcrumbItem,
   Button,
   Card,
   CardSubtitle,
@@ -42,6 +44,14 @@ class ListNetworkServers extends Component {
             <Card className="card-box" style={{ minWidth: "25rem" }}>
               <Row>
                 <Col md="8" xs="9">
+                  <Breadcrumb>
+                    <BreadcrumbItem><a href="#">Home</a></BreadcrumbItem>
+                    <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
+                  </Breadcrumb>
+                </Col>
+              </Row>
+              <Row>
+                <Col md="10" xs="9">
                   <CardTitle className="mt-0 header-title">
                     {i18n.t(`${packageNS}:tr000040`)}
                   </CardTitle>
