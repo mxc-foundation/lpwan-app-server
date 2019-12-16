@@ -1,16 +1,20 @@
 import React, { Component } from "react";
 
-import Grid from '@material-ui/core/Grid';
+import {
+  Button,
+  Card,
+  CardSubtitle,
+  CardTitle,
+  Col,
+  Container,
+  Row
+} from 'reactstrap';
+
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 
-import Plus from "mdi-material-ui/Plus";
-
 import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
 import DataTable from "../../components/DataTable";
 
 import NetworkServerStore from "../../stores/NetworkServerStore";
@@ -32,32 +36,48 @@ class ListNetworkServers extends Component {
 
   render() {
     return(
-      <Grid container spacing={4}>
-        <TitleBar
-          buttons={[
-            <TitleBarButton
-              key={1}
-              icon={<Plus />}
-              label={i18n.t(`${packageNS}:tr000041`)}
-              to={`/network-servers/create`}
-            />,
-          ]}
-        >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000040`)} />
-        </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000043`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+      <Container>
+        <Row>
+          <Col md="12" sm="12">
+            <Card className="card-box" style={{ minWidth: "25rem" }}>
+              <Row>
+                <Col md="8" xs="9">
+                  <CardTitle className="mt-0 header-title">
+                    {i18n.t(`${packageNS}:tr000040`)}
+                  </CardTitle>
+                  <CardSubtitle className="text-muted font-14 mb-3">
+                    List of network servers.
+                  </CardSubtitle>
+                </Col>
+                <Col md="2" xs="3">
+                  <Button
+                    color="primary"
+                    href={`/network-servers/create`}
+                    outline
+                    size="md"
+                  >
+                    {i18n.t(`${packageNS}:tr000041`)}
+                  </Button>
+                </Col>
+              </Row>
+              <Row>
+                <Col md="12" sm="12">
+                  <DataTable
+                    header={
+                      <TableRow>
+                        <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+                        <TableCell>{i18n.t(`${packageNS}:tr000043`)}</TableCell>
+                      </TableRow>
+                    }
+                    getPage={this.getPage}
+                    getRow={this.getRow}
+                  />
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     );
   }
 }
