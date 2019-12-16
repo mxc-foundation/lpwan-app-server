@@ -163,8 +163,9 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 	// add this gateway to m2m server
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	gwClient := m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
-		_, err = m2mClient.AddGatewayInM2MServer(context.Background(), &m2m_api.AddGatewayInM2MServerRequest{
+		_, err = gwClient.AddGatewayInM2MServer(context.Background(), &m2m_api.AddGatewayInM2MServerRequest{
 			OrgId: gw.OrganizationID,
 			GwProfile: &m2m_api.AppServerGatewayProfile{
 				Mac:         gw.MAC.String(),
@@ -285,8 +286,9 @@ func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 	// delete this gateway from m2m-server
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	gwClient := m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
-		_, err = m2mClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
+		_, err = gwClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
 			MacAddress: mac.String(),
 		})
 		if err != nil && grpc.Code(err) != codes.NotFound {

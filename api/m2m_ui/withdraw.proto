@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package m2m_ui;
+
+import "google/api/annotations.proto";
+import "ext_account.proto";
+import "profile.proto";
+
+// WithdrawService is the service managing the withdraw access.
+service WithdrawService {
+    // Get data for current withdraw fee
+    rpc GetWithdrawFee (GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse) {
+        option (google.api.http) = {
+			get: "/api/withdraw/{org_id}/get-withdraw-fee/{money_abbr}"
+		};
+    }
+
+    rpc WithdrawReq (WithdrawReqRequest) returns (WithdrawReqResponse) {
+        option (google.api.http) = {
+			post: "/api/withdraw/{org_id}/withdraw/{money_abbr}"
+			body: "*"
+		};
+    }
+
+    rpc GetWithdrawHistory (GetWithdrawHistoryRequest) returns (GetWithdrawHistoryResponse) {
+        option (google.api.http) = {
+			get: "/api/withdraw/{org_id}/history/{money_abbr}"
+		};
+    }
+
+    rpc ModifyWithdrawFee (ModifyWithdrawFeeRequest) returns (ModifyWithdrawFeeResponse) {
+        option(google.api.http) = {
+			put: "/api/withdraw/{org_id}/modify-withdraw-fee/{money_abbr}"
+			body: "*"
+		};
+    }
+}
+
+message GetWithdrawFeeRequest {
+    // type of crypto currency
+    Money money_abbr = 1;
+    int64 org_id = 2;
+}
+
+message GetWithdrawFeeResponse {
+    // Withdraw object.
+    double withdrawFee = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message WithdrawReqRequest {
+    int64 org_id = 1;
+    Money money_abbr = 2;
+    double amount = 3;
+}
+
+message WithdrawReqResponse {
+    bool status = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message GetWithdrawHistoryRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+    Money money_abbr = 4;
+}
+
+message WithdrawHistory {
+    string from = 1;
+    string to = 2;
+    string money_type = 3;
+    double amount = 4;
+    double withdraw_fee = 5;
+    string tx_sent_time = 6;
+    string tx_status = 7;
+    string tx_approved_time = 8;
+	string tx_hash = 9;
+}
+
+message GetWithdrawHistoryResponse {
+    int64 count = 1;
+    repeated WithdrawHistory withdraw_history = 2;
+    ProfileResponse user_profile = 3;
+}
+
+message ModifyWithdrawFeeRequest {
+    Money money_abbr = 1;
+    double withdraw_fee = 2;
+    int64 org_id = 3;
+}
+
+message ModifyWithdrawFeeResponse {
+    bool status = 1;
+    ProfileResponse user_profile = 2;
+}
