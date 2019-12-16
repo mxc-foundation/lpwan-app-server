@@ -72,4 +72,4 @@ protoc -I. -I${LS_PATH_NS} -I${LS_PATH_APP} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH}
     proxyRequest.proto
 
 # merge the swagger code into one file
-go run swagger/main.go swagger > ../static/swagger/api.swagger.json
+#go run swagger/main.go swagger > ../static/swagger/api.swagger.json

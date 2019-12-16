@@ -55,6 +55,7 @@ internal/statics internal/migrations: static/swagger/api.swagger.json
 
 static/swagger/api.swagger.json:
 	@echo "Generating combined Swagger JSON"
+	@cp api/m2m_ui/swagger/*.json api/swagger
 	@GOOS="" GOARCH="" go run api/swagger/main.go api/swagger > static/swagger/api.swagger.json
 	@cp api/swagger/*.json static/swagger
 

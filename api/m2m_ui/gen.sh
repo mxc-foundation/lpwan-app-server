@@ -13,8 +13,8 @@ protoc -I. -I${GRPC_GW_PATH} -I${LS_PATH_APP} --go_out=plugins=grpc:. \
     topup.proto \
     wallet.proto \
     withdraw.proto \
-    device.proto \
-    gateway.proto \
+    m2mserver_device.proto \
+    m2mserver_gateway.proto \
     settings.proto \
     server.proto \
     staking.proto
@@ -27,8 +27,8 @@ protoc -I. -I${GRPC_GW_PATH} -I${LS_PATH_APP} --grpc-gateway_out=logtostderr=tru
     topup.proto \
     wallet.proto \
     withdraw.proto \
-    device.proto \
-    gateway.proto \
+    m2mserver_device.proto \
+    m2mserver_gateway.proto \
     server.proto \
     staking.proto \
     settings.proto
@@ -41,8 +41,8 @@ protoc -I. -I${GRPC_GW_PATH} -I${LS_PATH_APP} --swagger_out=json_names_for_field
     topup.proto \
     wallet.proto \
     withdraw.proto \
-    device.proto \
-    gateway.proto \
+    m2mserver_device.proto \
+    m2mserver_gateway.proto \
     settings.proto \
     server.proto \
     staking.proto

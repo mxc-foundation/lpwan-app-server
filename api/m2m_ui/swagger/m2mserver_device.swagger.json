@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "gateway.proto",
+    "title": "m2mserver_device.proto",
     "version": "version not set"
   },
   "schemes": [
@@ -15,14 +15,14 @@
     "application/json"
   ],
   "paths": {
-    "/api/gateway/{orgId}/gateway-history/{gwId}": {
+    "/api/device/{orgId}/device-history/{devId}": {
       "get": {
-        "operationId": "GetGatewayHistory",
+        "operationId": "GetDeviceHistory",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/m2m_uiGetGatewayHistoryResponse"
+              "$ref": "#/definitions/m2m_uiGetDeviceHistoryResponse"
             }
           }
         },
@@ -35,7 +35,7 @@
             "format": "int64"
           },
           {
-            "name": "gwId",
+            "name": "devId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -57,18 +57,18 @@
           }
         ],
         "tags": [
-          "GatewayService"
+          "DeviceService"
         ]
       }
     },
-    "/api/gateway/{orgId}/gateway-list": {
+    "/api/device/{orgId}/device-list": {
       "get": {
-        "operationId": "GetGatewayList",
+        "operationId": "GetDeviceList",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/m2m_uiGetGatewayListResponse"
+              "$ref": "#/definitions/m2m_uiGetDeviceListResponse"
             }
           }
         },
@@ -96,18 +96,18 @@
           }
         ],
         "tags": [
-          "GatewayService"
+          "DeviceService"
         ]
       }
     },
-    "/api/gateway/{orgId}/gateway-mode/{gwId}": {
+    "/api/device/{orgId}/device-mode/{devId}": {
       "post": {
-        "operationId": "SetGatewayMode",
+        "operationId": "SetDeviceMode",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/m2m_uiSetGatewayModeResponse"
+              "$ref": "#/definitions/m2m_uiSetDeviceModeResponse"
             }
           }
         },
@@ -120,7 +120,7 @@
             "format": "int64"
           },
           {
-            "name": "gwId",
+            "name": "devId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -131,23 +131,23 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/m2m_uiSetGatewayModeRequest"
+              "$ref": "#/definitions/m2m_uiSetDeviceModeRequest"
             }
           }
         ],
         "tags": [
-          "GatewayService"
+          "DeviceService"
         ]
       }
     },
-    "/api/gateway/{orgId}/gateway-profile/{gwId}": {
+    "/api/device/{orgId}/device-profile/{devId}": {
       "get": {
-        "operationId": "GetGatewayProfile",
+        "operationId": "GetDeviceProfile",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/m2m_uiGetGatewayProfileResponse"
+              "$ref": "#/definitions/m2m_uiGetDeviceProfileResponse"
             }
           }
         },
@@ -160,87 +160,66 @@
             "format": "int64"
           },
           {
-            "name": "gwId",
+            "name": "devId",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
             "type": "string",
             "format": "int64"
           }
         ],
         "tags": [
-          "GatewayService"
+          "DeviceService"
         ]
       }
     }
   },
   "definitions": {
-    "m2m_uiGatewayMode": {
+    "m2m_uiDeviceMode": {
       "type": "string",
       "enum": [
-        "GW_INACTIVE",
-        "GW_FREE_GATEWAYS_LIMITED",
-        "GW_WHOLE_NETWORK",
-        "GW_DELETED"
+        "DV_INACTIVE",
+        "DV_FREE_GATEWAYS_LIMITED",
+        "DV_WHOLE_NETWORK",
+        "DV_DELETED"
       ],
-      "default": "GW_INACTIVE"
+      "default": "DV_INACTIVE"
     },
-    "m2m_uiGatewayProfile": {
+    "m2m_uiDeviceProfile": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
           "format": "int64"
         },
-        "mac": {
+        "devEui": {
           "type": "string"
-        },
-        "fkGwNs": {
-          "type": "string",
-          "format": "int64"
         },
         "fkWallet": {
           "type": "string",
           "format": "int64"
         },
         "mode": {
-          "$ref": "#/definitions/m2m_uiGatewayMode"
+          "$ref": "#/definitions/m2m_uiDeviceMode"
         },
-        "createAt": {
+        "createdAt": {
           "type": "string"
         },
         "lastSeenAt": {
           "type": "string"
         },
-        "orgId": {
+        "applicationId": {
           "type": "string",
           "format": "int64"
-        },
-        "description": {
-          "type": "string"
         },
         "name": {
           "type": "string"
         }
       }
     },
-    "m2m_uiGetGatewayHistoryResponse": {
+    "m2m_uiGetDeviceHistoryResponse": {
       "type": "object",
       "properties": {
-        "gwHistory": {
+        "devHistory": {
           "type": "string"
         },
         "userProfile": {
@@ -248,13 +227,13 @@
         }
       }
     },
-    "m2m_uiGetGatewayListResponse": {
+    "m2m_uiGetDeviceListResponse": {
       "type": "object",
       "properties": {
-        "gwProfile": {
+        "devProfile": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/m2m_uiGatewayProfile"
+            "$ref": "#/definitions/m2m_uiDeviceProfile"
           }
         },
         "count": {
@@ -266,11 +245,11 @@
         }
       }
     },
-    "m2m_uiGetGatewayProfileResponse": {
+    "m2m_uiGetDeviceProfileResponse": {
       "type": "object",
       "properties": {
-        "gwProfile": {
-          "$ref": "#/definitions/m2m_uiGatewayProfile"
+        "devProfile": {
+          "$ref": "#/definitions/m2m_uiDeviceProfile"
         },
         "userProfile": {
           "$ref": "#/definitions/m2m_uiProfileResponse"
@@ -337,23 +316,23 @@
         }
       }
     },
-    "m2m_uiSetGatewayModeRequest": {
+    "m2m_uiSetDeviceModeRequest": {
       "type": "object",
       "properties": {
         "orgId": {
           "type": "string",
           "format": "int64"
         },
-        "gwId": {
+        "devId": {
           "type": "string",
           "format": "int64"
         },
-        "gwMode": {
-          "$ref": "#/definitions/m2m_uiGatewayMode"
+        "devMode": {
+          "$ref": "#/definitions/m2m_uiDeviceMode"
         }
       }
     },
-    "m2m_uiSetGatewayModeResponse": {
+    "m2m_uiSetDeviceModeResponse": {
       "type": "object",
       "properties": {
         "status": {
