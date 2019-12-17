@@ -150,6 +150,22 @@ Then open in your web browser: http://localhost:3000
 
 Now when you make changes it will automatically refresh
 
+## Configuration
+
+##### - redirect database
+For sharing testing data during development, set postgresql service server wherever it is needed.
+Change in configuration/lora-app-server.toml
+```toml
+[postgresql]
+dsn="postgres://USERNAME:PASSWORD@SERVICE_SERVER_DOMAIN_NAME:5432/DATABASE_NAME?sslmode=disable"
+```
+
+After changing config file, simply restart the service in docker container again
+
+```bash
+$ ./build/lora-app-server -c configuration/lora-app-server.toml
+```
+
 # Intro
 
 LPWAN App Server is an open-source LoRaWAN application-server, part of the

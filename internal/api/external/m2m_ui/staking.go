@@ -47,6 +47,11 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/Stake")
 
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
@@ -63,11 +68,6 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 		return &api.StakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.StakeResponse{
 		Status:      resp.Status,
 		UserProfile: &prof,
@@ -76,6 +76,11 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 
 func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.UnstakeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/Unstake")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -92,11 +97,6 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.UnstakeResponse{
 		Status:      resp.Status,
 		UserProfile: &prof,
@@ -105,6 +105,11 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 
 func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRequest) (*api.GetActiveStakesResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetActiveStakes")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -121,11 +126,6 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.GetActiveStakesResponse{
 		ActStake:    resp.ActStake,
 		UserProfile: &prof,
@@ -134,6 +134,11 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 
 func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.StakingHistoryRequest) (*api.StakingHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetStakingHistory")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -150,11 +155,6 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 	})
 	if err != nil {
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.StakingHistoryResponse{

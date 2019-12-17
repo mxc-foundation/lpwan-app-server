@@ -24,6 +24,11 @@ func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletBalance")
 
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
@@ -39,11 +44,6 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.GetWalletBalanceResponse{
 		Balance:     resp.Balance,
 		UserProfile: &prof,
@@ -52,6 +52,11 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 
 func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxcTxHistoryRequest) (*api.GetVmxcTxHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetVmxcTxHistory")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -70,11 +75,6 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.GetVmxcTxHistoryResponse{
 		Count:       resp.Count,
 		TxHistory:   resp.TxHistory,
@@ -84,6 +84,11 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 
 func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWalletUsageHistRequest) (*api.GetWalletUsageHistResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletUsageHist")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -102,11 +107,6 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.GetWalletUsageHistResponse{
 		WalletUsageHis: resp.WalletUsageHis,
 		UserProfile:    &prof,
@@ -116,6 +116,11 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 
 func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPriceRequest) (*api.GetDownLinkPriceResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDlPrice")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -130,11 +135,6 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 	})
 	if err != nil {
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.GetDownLinkPriceResponse{
