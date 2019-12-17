@@ -4,7 +4,8 @@
 
 See MXC Developer Handbook for further information.
 
-Note: Only lpwan-app-server is required
+Note: UI part from m2m has been merged into lpwan-app-server, m2m no longer contains UI part.  
+However part of the APIs get data from m2m service, you need to start m2m service for accessing all features correctly.
 
 ## Environment
 
