@@ -154,9 +154,16 @@ Now when you make changes it will automatically refresh
 
 ##### - redirect database
 For sharing testing data during development, set postgresql service server wherever it is needed.
+Change in configuration/lora-app-server.toml
 ```toml
 [postgresql]
 dsn="postgres://USERNAME:PASSWORD@SERVICE_SERVER_DOMAIN_NAME:5432/DATABASE_NAME?sslmode=disable"
+```
+
+After changing config file, simply restart the service in docker container again
+
+```bash
+$ ./build/lora-app-server -c configuration/lora-app-server.toml
 ```
 
 # Intro
