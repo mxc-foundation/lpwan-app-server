@@ -24,6 +24,11 @@ func NewGatewayServerAPI(validator auth.Validator) *GatewayServerAPI {
 func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayList")
 
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
@@ -41,11 +46,6 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.GetGatewayListResponse{
 		GwProfile:   resp.GwProfile,
 		Count:       resp.Count,
@@ -55,6 +55,11 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 
 func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGatewayProfileRequest) (*api.GetGatewayProfileResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayProfile")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -74,11 +79,6 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.GetGatewayProfileResponse{
 		GwProfile:   resp.GwProfile,
 		UserProfile: &prof,
@@ -87,6 +87,11 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 
 func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayHistory")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -106,11 +111,6 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.GetGatewayHistoryResponse{
 		GwHistory:   resp.GwHistory,
 		UserProfile: &prof,
@@ -119,6 +119,11 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 
 func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayModeRequest) (*api.SetGatewayModeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/SetGatewayMode")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -135,11 +140,6 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 	})
 	if err != nil {
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.SetGatewayModeResponse{

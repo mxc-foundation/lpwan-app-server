@@ -24,6 +24,11 @@ func NewSupernodeServerAPI(validator auth.Validator) *SupernodeServerAPI {
 func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *api.AddSuperNodeMoneyAccountRequest) (*api.AddSuperNodeMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/AddSuperNodeMoneyAccount")
 
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
+
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
@@ -41,11 +46,6 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	return &api.AddSuperNodeMoneyAccountResponse{
 		Status:      resp.Status,
 		UserProfile: &prof,
@@ -54,6 +54,11 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 
 func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context, req *api.GetSuperNodeActiveMoneyAccountRequest) (*api.GetSuperNodeActiveMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetSuperNodeActiveMoneyAccount")
+
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
+		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -69,11 +74,6 @@ func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context,
 	})
 	if err != nil {
 		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
-		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	return &api.GetSuperNodeActiveMoneyAccountResponse{
