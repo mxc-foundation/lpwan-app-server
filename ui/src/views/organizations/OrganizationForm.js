@@ -1,11 +1,7 @@
 import React from "react";
 
-import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from "@material-ui/core/FormGroup";
 import FormHelperText from '@material-ui/core/FormHelperText';
-import Checkbox from '@material-ui/core/Checkbox';
-import { Button, Label, Input, FormText } from 'reactstrap';
+import { FormText } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import FormControl from "../../components/FormControl";
 import FormComponent from "../../classes/FormComponent";
