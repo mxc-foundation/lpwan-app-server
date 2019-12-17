@@ -4,7 +4,7 @@ import classNames from "classnames";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { MuiThemeProvider, withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
+import { Container } from 'reactstrap';
 
 import history from "./history";
 import themeChinese from "./themeChinese";
@@ -13,11 +13,12 @@ import i18n, { packageNS, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "./i18n";
 
 import './assets/scss/DefaultTheme.scss';
 
-import TopNav from "./components/TopNav";
-import SideNav from "./components/SideNav";
 import Topbar from "./components/Topbar";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
+import AuthLayout from "./components/AuthLayout";
+import NonAuthLayout from "./components/NonAuthLayout";
+
 import Notifications from "./components/Notifications";
 import SessionStore from "./stores/SessionStore";
 
@@ -113,7 +114,7 @@ const styles = {
     fontFamily: 'Montserrat',
   },
   input: {
-      color: theme.palette.textPrimary.main.white,
+    color: theme.palette.textPrimary.main.white,
   },
   paper: {
     padding: theme.spacing(2),
@@ -157,7 +158,7 @@ class App extends Component {
   componentWillMount() {
     window.addEventListener('resize', this.handleWindowSizeChange);
   }
-  
+
   // make sure to remove the listener
   // when the component is not mounted anymore
   componentWillUnmount() {
@@ -203,7 +204,7 @@ class App extends Component {
         }
       });
     }
-    
+
     this.setState({
       user: SessionStore.getUser(),
       organizationId: SessionStore.getOrganizationID(),
@@ -223,7 +224,7 @@ class App extends Component {
 
     this.setState({
       language: newLanguage,
-      theme: newLanguage.code === 'cn' ? themeChinese:theme
+      theme: newLanguage.code === 'cn' ? themeChinese : theme
     });
   }
 
@@ -236,22 +237,22 @@ class App extends Component {
   /**
      * toggle Menu
      */
-    toggleMenu = (e) => {
-      e.preventDefault();
-      this.setState({ isCondensed: !this.state.isCondensed });
+  toggleMenu = (e) => {
+    e.preventDefault();
+    this.setState({ isCondensed: !this.state.isCondensed });
   }
 
   /**
    * Toggle right side bar
    */
   toggleRightSidebar = () => {
-      document.body.classList.toggle("right-bar-enabled");
+    document.body.classList.toggle("right-bar-enabled");
   }
 
   logout = () => {
     SessionStore.logout(() => {
       this.props.history.push("/login");
-    }); 
+    });
   }
 
   render() {
@@ -259,9 +260,11 @@ class App extends Component {
     let topNav = null;
     let sideNav = null;
     let topbanner = null;
-    
+
     const { width } = this.state;
     const isMobile = width <= 800;
+
+    let Layout = NonAuthLayout;
 
     if (this.state.user !== null) {
       /* sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
@@ -276,102 +279,96 @@ class App extends Component {
           user={this.state.user}
         /> 
         ); */
-        topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
-        sideNav = <Sidebar isCondensed={this.state.isCondensed} {...this.props} />;
+      topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
+      sideNav = <Sidebar isCondensed={this.state.isCondensed} {...this.props} />;
+
+      // if user is logged in - set auth layout
+      Layout = AuthLayout;
     }
-    
+
     return (
       <Router history={history}>
         <React.Fragment>
           <MuiThemeProvider theme={this.state.theme}>
-          <CssBaseline />
+            <CssBaseline />
             {/* <div className={this.props.classes.root}> */}
-            <div className="app">
-                <div id="wrapper">
-              {topNav}
-              {topbanner}
-              {sideNav}
-              <div className={classNames(this.props.classes.main, !isMobile && this.props.classes.mainDrawerOpen )}>
-                <Grid container spacing={4}>
-                  <Switch>
-                    <Redirect exact from="/" to="/login"/>
-                    <Route exact path="/logout" component={Logout} />
-                    <Route exact path="/login"
-                      render={props =>
-                        <Login {...props}
-                          language={language}
-                          onChangeLanguage={this.onChangeLanguage}
-                        />
-                      }
+
+            <Layout topBar={topNav} topBanner={topbanner} sideNav={sideNav}>
+              <Switch>
+                <Redirect exact from="/" to="/login" />
+                <Route exact path="/logout" component={Logout} />
+                <Route exact path="/login"
+                  render={props =>
+                    <Login {...props}
+                      language={language}
+                      onChangeLanguage={this.onChangeLanguage}
                     />
+                  }
+                />
 
-                    <Route exact path="/users" component={ListUsers} />
-                    <Route exact path="/users/create" component={CreateUser} />
-                    <Route exact path="/users/:userID(\d+)" component={UserLayout} />
-                    <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
-                    <Route exact path="/registration" component={Registration} />
-                    <Route exact path="/password-recovery" component={PasswordRecovery} />
-                    <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
-                    <Route exact path="/registration-confirm/:securityToken"
-                      render={props =>
-                        <RegistrationConfirm {...props}
-                          language={language}
-                          onChangeLanguage={this.onChangeLanguage}
-                        />
-                      }
+                <Route exact path="/users" component={ListUsers} />
+                <Route exact path="/users/create" component={CreateUser} />
+                <Route exact path="/users/:userID(\d+)" component={UserLayout} />
+                <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
+                <Route exact path="/registration" component={Registration} />
+                <Route exact path="/password-recovery" component={PasswordRecovery} />
+                <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
+                <Route exact path="/registration-confirm/:securityToken"
+                  render={props =>
+                    <RegistrationConfirm {...props}
+                      language={language}
+                      onChangeLanguage={this.onChangeLanguage}
                     />
-                    <Route exact path="/network-servers" component={ListNetworkServers} />
-                    <Route exact path="/network-servers/create" component={CreateNetworkServer} />
-                    <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
+                  }
+                />
+                <Route exact path="/network-servers" component={ListNetworkServers} />
+                <Route exact path="/network-servers/create" component={CreateNetworkServer} />
+                <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
 
-                    <Route exact path="/gateway-profiles" component={ListGatewayProfiles} />
-                    <Route exact path="/gateway-profiles/create" component={CreateGatewayProfile} />
-                    <Route path="/gateway-profiles/:gatewayProfileID([\w-]{36})" component={GatewayProfileLayout} />
+                <Route exact path="/gateway-profiles" component={ListGatewayProfiles} />
+                <Route exact path="/gateway-profiles/create" component={CreateGatewayProfile} />
+                <Route path="/gateway-profiles/:gatewayProfileID([\w-]{36})" component={GatewayProfileLayout} />
 
-                    <Route exact path="/organizations/:organizationID(\d+)/service-profiles" component={ListServiceProfiles} />
-                    <Route exact path="/organizations/:organizationID(\d+)/service-profiles/create" component={CreateServiceProfile} />
-                    <Route path="/organizations/:organizationID(\d+)/service-profiles/:serviceProfileID([\w-]{36})" component={ServiceProfileLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/service-profiles" component={ListServiceProfiles} />
+                <Route exact path="/organizations/:organizationID(\d+)/service-profiles/create" component={CreateServiceProfile} />
+                <Route path="/organizations/:organizationID(\d+)/service-profiles/:serviceProfileID([\w-]{36})" component={ServiceProfileLayout} />
 
-                    <Route exact path="/organizations/:organizationID(\d+)/device-profiles" component={ListDeviceProfiles} />
-                    <Route exact path="/organizations/:organizationID(\d+)/device-profiles/create" component={CreateDeviceProfile} />
-                    <Route path="/organizations/:organizationID(\d+)/device-profiles/:deviceProfileID([\w-]{36})" component={DeviceProfileLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/device-profiles" component={ListDeviceProfiles} />
+                <Route exact path="/organizations/:organizationID(\d+)/device-profiles/create" component={CreateDeviceProfile} />
+                <Route path="/organizations/:organizationID(\d+)/device-profiles/:deviceProfileID([\w-]{36})" component={DeviceProfileLayout} />
 
-                    <Route exact path="/organizations/:organizationID(\d+)/gateways/create" component={CreateGateway} />
-                    <Route path="/organizations/:organizationID(\d+)/gateways/:gatewayID([\w]{16})" component={GatewayLayout} />
-                    <Route path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
+                <Route exact path="/organizations/:organizationID(\d+)/gateways/create" component={CreateGateway} />
+                <Route path="/organizations/:organizationID(\d+)/gateways/:gatewayID([\w]{16})" component={GatewayLayout} />
+                <Route path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
 
-                    <Route exact path="/organizations/:organizationID(\d+)/applications" component={ListApplications} />
-                    <Route exact path="/organizations/:organizationID(\d+)/applications/create" component={CreateApplication} />
-                    <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/create" component={CreateIntegration} />
-                    <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/:kind" component={UpdateIntegration} />
-                    <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/create" component={CreateDevice} />
-                    <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
-                    <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/fuota-deployments/:fuotaDeploymentID([\w-]{36})" component={FUOTADeploymentLayout} />
-                    <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})" component={DeviceLayout} />
-                    <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)" component={ApplicationLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/applications" component={ListApplications} />
+                <Route exact path="/organizations/:organizationID(\d+)/applications/create" component={CreateApplication} />
+                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/create" component={CreateIntegration} />
+                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/:kind" component={UpdateIntegration} />
+                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/create" component={CreateDevice} />
+                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
+                <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/fuota-deployments/:fuotaDeploymentID([\w-]{36})" component={FUOTADeploymentLayout} />
+                <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})" component={DeviceLayout} />
+                <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)" component={ApplicationLayout} />
 
-                    <Route exact path="/organizations/:organizationID(\d+)/multicast-groups" component={ListMulticastGroups} />
-                    <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/create" component={CreateMulticastGroup} />
-                    <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID/devices/create" component={AddDeviceToMulticastGroup} />
-                    <Route path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID([\w-]{36})" component={MulticastGroupLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/multicast-groups" component={ListMulticastGroups} />
+                <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/create" component={CreateMulticastGroup} />
+                <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID/devices/create" component={AddDeviceToMulticastGroup} />
+                <Route path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID([\w-]{36})" component={MulticastGroupLayout} />
 
-                    <Route exact path="/organizations" component={ListOrganizations} />
-                    <Route exact path="/organizations/create" component={CreateOrganization} />
-                    <Route exact path="/organizations/:organizationID(\d+)/users" component={ListOrganizationUsers} />
-                    <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
-                    <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
-                    <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
+                <Route exact path="/organizations" component={ListOrganizations} />
+                <Route exact path="/organizations/create" component={CreateOrganization} />
+                <Route exact path="/organizations/:organizationID(\d+)/users" component={ListOrganizationUsers} />
+                <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
+                <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
+                <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
 
-                    <Route exact path="/search" component={Search} />
-                  </Switch>
-                </Grid>
-              </div>
-              <div className={this.state.drawerOpen ? this.props.classes.footerDrawerOpen : ""}>
-                <Footer />
-              </div>
-            </div>
+                <Route exact path="/search" component={Search} />
+              </Switch>
+            </Layout>
+
+            <Footer />
             <Notifications />
-            </div>
           </MuiThemeProvider>
         </React.Fragment>
       </Router>

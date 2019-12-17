@@ -6,12 +6,8 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import ReCAPTCHA from "react-google-recaptcha";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import FoundLocationMap from "../../components/FoundLocationMap"
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
-//import MenuIcon from 'mdi-material-ui/Server';
+
 
 import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
 import Password from '../../components/TextfileForPassword'
@@ -66,6 +62,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: '100%',
+    zIndex: 10000
   },
   logo: {
     height: 90,
@@ -141,6 +138,7 @@ class LoginForm extends FormComponent {
         component={Link} 
         to={`/registration`} 
         type="button" 
+        key="fb-1"
         disabled={false}>{i18n.t(`${packageNS}:tr000020`)}</Button>
     ]
     let demoUsername = "";

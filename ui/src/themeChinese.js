@@ -29,7 +29,11 @@ const themeChinese = createMuiTheme({
         secondary: { main: blueMxcBrand, secondary: overlayBG },
         darkBG: { main: blueBG },
         textPrimary: { main: dark },
-        textSecondary: { main: blueMxcBrand }
+        textSecondary: { main: blueMxcBrand },
+        background: {
+            paper: "#fff",
+            default: "#ebeff2"
+        }
     },
     MuiListItemIcon: {
         root: {
