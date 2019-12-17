@@ -308,6 +308,11 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	if err := m2m_pb.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
+	if err := m2m_pb.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+
+
 
 	return mux, nil
 }
