@@ -1,20 +1,11 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  Card,
-  CardSubtitle,
-  CardTitle,
-  Col,
-  Container,
-  Row
-} from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Card, Col, Row } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
-import NetworkServerForm from "./NetworkServerForm";
 import NetworkServerStore from "../../stores/NetworkServerStore";
-
+import TitleBar from "../../components/TitleBar";
+import NetworkServerForm from "./NetworkServerForm";
 
 class CreateNetworkServer extends Component {
   constructor() {
@@ -30,38 +21,23 @@ class CreateNetworkServer extends Component {
 
   render() {
     return(
-      <Container>
-        <Row>
-          <Col md="12" sm="12">
-            <Card className="card-box" style={{ minWidth: "25rem" }}>
-              <Row>
-                <Col md="12" xs="12">
-                  <Breadcrumb>
-                    <BreadcrumbItem><Link to={`/`}>Home</Link></BreadcrumbItem>
-                    <BreadcrumbItem><Link to={`/network-servers`}>{i18n.t(`${packageNS}:tr000040`)}</Link></BreadcrumbItem>
-                    <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-                  </Breadcrumb>
-                </Col>
-              </Row>
-              <Row>
-                <Col md="12" xs="12">
-                  <CardTitle className="mt-0 header-title">{i18n.t(`${packageNS}:tr000040`)}</CardTitle>
-                  <CardSubtitle className="text-muted font-14 mb-3">
-                    Create a network server.
-                  </CardSubtitle>
-                </Col>
-              </Row>
-              <Row className="md-center">
-                <Col md="12" sm="12">
-                  <NetworkServerForm
-                    onSubmit={this.onSubmit}
-                  />
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+      <React.Fragment>
+        <TitleBar>
+          <Breadcrumb style={{ fontSize: "1.25rem", margin: "0rem", padding: "0rem" }}>
+            <BreadcrumbItem><Link to={`/network-servers`}>{i18n.t(`${packageNS}:tr000040`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
+        </TitleBar>
+        <Card className="card-box" style={{ minWidth: "25rem" }}>
+          <Row className="md-center">
+            <Col md="12" sm="12">
+              <NetworkServerForm
+                onSubmit={this.onSubmit}
+              />
+            </Col>
+          </Row>
+        </Card>
+      </React.Fragment>
     );
   }
 }
