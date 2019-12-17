@@ -1,13 +1,8 @@
 import React, { Component } from "react";
 
-import TextField from "@material-ui/core/TextField";
-import InputAdornment from '@material-ui/core/InputAdornment';
-import IconButton from '@material-ui/core/IconButton';
-import Button from "@material-ui/core/Button";
-import Tooltip from '@material-ui/core/Tooltip';
-
-import Refresh from "mdi-material-ui/Refresh";
-
+import { Field, connect } from 'formik';
+import { Button as RButton, UncontrolledTooltip } from 'reactstrap';
+import { ReactstrapInputGroup } from './FormInputs';
 import MaskedInput from "react-text-mask";
 
 import i18n, { packageNS } from '../i18n';
@@ -15,10 +10,11 @@ import i18n, { packageNS } from '../i18n';
 
 class EUI64HEXMask extends Component {
   render() {
-    const { inputRef, ...other } = this.props;
+    const { inputRef, inputComponent, helpText, ...other } = this.props;
 
-    return(
+    return (
       <MaskedInput
+        className="form-control"
         {...other}
         ref={inputRef}
         mask={[
@@ -70,7 +66,7 @@ class EUI64Field extends Component {
     const bytes = this.state.value.match(/[A-Fa-f0-9]{2}/g);
     if (bytes !== null) {
       this.setState({
-        value: bytes.reverse().join(" "),
+        value: bytes.reverse().join(" ").replace(/\s/g, ""),
       });
     }
   }
@@ -79,54 +75,17 @@ class EUI64Field extends Component {
     let key = "";
     const possible = 'abcdef0123456789';
 
-    for(let i = 0; i < 16; i++){
+    for (let i = 0; i < 16; i++) {
       key += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     this.setState({
       value: key,
-    });
-
-    let str = "";
-    const bytes = key.match(/[A-Fa-f0-9]{2}/g);
-    if (!this.state.msb && bytes !== null) {
-      str = bytes.reverse().join("");
-    } else if (bytes !== null) {
-      str = bytes.join("");
-    } else {
-      str = "";
-    }
-
-    this.props.onChange({
-      target: {
-        value: str,
-        type: "text",
-        id: this.props.id,
-      },
     });
   }
 
   onChange = (e) => {
     this.setState({
       value: e.target.value,
-    });
-
-    let str = "";
-
-    const bytes = e.target.value.match(/[A-Fa-f0-9]{2}/g);
-    if (!this.state.msb && bytes !== null) {
-      str = bytes.reverse().join("");
-    } else if (bytes !== null) {
-      str = bytes.join("");
-    } else {
-      str = "";
-    }
-
-    this.props.onChange({
-      target: {
-        value: str,
-        type: "text",
-        id: this.props.id,
-      },
     });
   }
 
@@ -136,38 +95,42 @@ class EUI64Field extends Component {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state !== prevState) {
+      const { name, formik: { setFieldValue } } = this.props;
+      setFieldValue(name, this.state.value);
+    }
+  }
+
   render() {
-    return(
-      <TextField
+    const controls = <React.Fragment>
+      <RButton color="primary" type="button"
+        onClick={this.toggleByteOrder} id="toggleBtn">{this.state.msb ? i18n.t(`${packageNS}:tr000220`) : i18n.t(`${packageNS}:tr000221`)}</RButton>
+      {this.props.random && !this.props.disabled && <RButton color="secondary" type="button" onClick={this.randomKey} id="generateBtn">
+        <i className="mdi mdi-refresh"></i>
+      </RButton>}
+      <UncontrolledTooltip placement="bottom" target="toggleBtn">{i18n.t(`${packageNS}:tr000373`)}</UncontrolledTooltip>
+      {this.props.random && !this.props.disabled && <UncontrolledTooltip placement="bottom" target="generateBtn">{i18n.t(`${packageNS}:tr000391`)}</UncontrolledTooltip>}
+    </React.Fragment>;
+    return (<React.Fragment>
+
+      <Field
         type="text"
-        InputProps={{
-          inputComponent: EUI64HEXMask,
-          endAdornment: <InputAdornment position="end">
-            <Tooltip title={i18n.t(`${packageNS}:tr000373`)}>
-              <Button
-                aria-label={i18n.t(`${packageNS}:tr000374`)}
-                onClick={this.toggleByteOrder}
-              >
-                {this.state.msb ? i18n.t(`${packageNS}:tr000220`): i18n.t(`${packageNS}:tr000221`)}
-              </Button>
-            </Tooltip>
-            {this.props.random && !this.props.disabled && <Tooltip title={i18n.t(`${packageNS}:tr000391`)}>
-              <IconButton
-                aria-label={i18n.t(`${packageNS}:tr000376`)}
-                onClick={this.randomKey}
-              >
-                <Refresh />
-              </IconButton>
-             </Tooltip>}
-          </InputAdornment>
-        }}
-        {...this.props}
+        label={this.props.label}
+        name={this.props.name}
+        id={this.props.id}
+        helpText={this.props.helpText || null}
+        append={controls}
+        inputComponent={EUI64HEXMask}
         onChange={this.onChange}
-        value={this.state.value}
+        defaultValue={this.state.value}
         disabled={this.props.disabled}
+        required={this.props.required}
+        component={ReactstrapInputGroup}
       />
+    </React.Fragment>
     );
   }
 }
 
-export default EUI64Field;
+export default connect(EUI64Field);

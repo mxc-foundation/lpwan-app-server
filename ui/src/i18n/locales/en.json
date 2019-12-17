@@ -415,6 +415,7 @@
   "tr000422": "Mode",
   "tr000423": "Gateway Details",
   "tr000424": "Altitude",
+  "tr000425": "This field is required",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",

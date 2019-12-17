@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 
-import { AvForm, AvField } from 'availity-reactstrap-validation';
 import { Row, Col, Button as RButton } from 'reactstrap';
+import { Formik, Form as BForm, Field } from 'formik';
+import * as Yup from 'yup';
 
 import { withStyles } from "@material-ui/core/styles";
 import TextField from '@material-ui/core/TextField';
@@ -15,9 +16,10 @@ import Button from "@material-ui/core/Button";
 
 import { Map, Marker } from 'react-leaflet';
 
+import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
-import FormComponent from "../../classes/FormComponent";
 import Form from "../../components/Form";
+
 import AutocompleteSelect from "../../components/AutocompleteSelect";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
@@ -100,9 +102,9 @@ const styles = {
   },
 };
 
-class GatewayForm extends FormComponent {
-  constructor() {
-    super();
+class GatewayForm extends Component {
+  constructor(props) {
+    super(props);
 
     this.state = {
       mapZoom: 15,
@@ -119,24 +121,26 @@ class GatewayForm extends FormComponent {
   }
 
   componentDidMount() {
-    super.componentDidMount();
+    this.setState({
+      object: this.props.object || {},
+    });
 
     if (!this.props.update) {
       this.setCurrentPosition();
     }
   }
 
-  onChange(e) {
-    if (e.target.id === "networkServerID" && e.target.value !== this.state.object.networkServerID) {
-      let object = this.state.object;
-      object.gatewayProfileID = null;
-      this.setState({
-        object: object,
-      });
-    }
+  // onChange(e) {
+  //   if (e.target.id === "networkServerID" && e.target.value !== this.state.object.networkServerID) {
+  //     let object = this.state.object;
+  //     object.gatewayProfileID = null;
+  //     this.setState({
+  //       object: object,
+  //     });
+  //   }
 
-    super.onChange(e);
-  }
+  //   super.onChange(e);
+  // }
 
   setCurrentPosition(e) {
     if (e !== undefined) {
@@ -254,27 +258,122 @@ class GatewayForm extends FormComponent {
       boards = this.state.object.boards.map((b, i) => <GatewayBoardForm key={i} i={i} board={b} onDelete={() => this.deleteGatewayBoard(i)} onChange={board => this.updateGatewayBoard(i, board)} />);
     }
 
+
+    let fieldsSchema = {
+      name: Yup.string()
+        .required(i18n.t(`${packageNS}:tr000425`)),
+      description: Yup.string()
+        .required(i18n.t(`${packageNS}:tr000425`)),
+      gatewayProfileID: Yup.string(),
+      discoveryEnabled: Yup.bool(),
+      'location.altitude': Yup.number().required(i18n.t(`${packageNS}:tr000425`)),
+    }
+
+    if (!this.props.update) {
+      fieldsSchema['id'] = Yup.string().required(i18n.t(`${packageNS}:tr000425`));
+      fieldsSchema['networkServerID'] =  Yup.string();
+    }
+    const formSchema = Yup.object().shape(fieldsSchema);
+
     return (<React.Fragment>
       <Row>
         <Col>
-          <AvForm onValidSubmit={this.onSubmit} model={this.state.object}>
-            <AvField name="name" label={i18n.t(`${packageNS}:tr000218`)} type="text" required helpMessage={i18n.t(`${packageNS}:tr000062`)} />
+          <Formik
+            initialValues={this.state.object}
+            validationSchema={formSchema}
+            onSubmit={values => {
+              // same shape as initial values
+              console.log(values);
+            }}>
+            {({
+              handleSubmit,
+              setFieldValue
+            }) => (
+                <BForm noValidate>
+                  <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:tr000218`)}
+                    name="name"
+                    id="name"
+                    helpText={i18n.t(`${packageNS}:tr000062`)}
+                    component={ReactstrapInput}
+                  />
 
-            <AvField name="description" label={i18n.t(`${packageNS}:tr000219`)} type="textarea" required />
+                  <Field
+                    type="textarea"
+                    label={i18n.t(`${packageNS}:tr000219`)}
+                    name="description"
+                    id="description"
+                    component={ReactstrapInput}
+                  />
 
-            {!this.props.update && <EUI64Field
-              id="id"
-              label={i18n.t(`${packageNS}:tr000074`)}
-              margin="normal"
-              value={this.state.object.id || ""}
-              onChange={this.onChange}
-              required
-              fullWidth
-              random
-            />}
+                  {!this.props.update && <EUI64Field
+                    id="id"
+                    label={i18n.t(`${packageNS}:tr000074`)}
+                    name="id"
+                    value={this.state.object.id || ""}
+                    required
+                    random
+                  />}
 
-            <Button onClick={this.addGatewayBoard}>{i18n.t(`${packageNS}:tr000234`)}</Button>
-          </AvForm>
+                  {!this.props.update && <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:tr000047`)}
+                    name="networkServerID"
+                    id="networkServerID"
+                    value={this.state.object.networkServerID || ""}
+                    getOption={this.getNetworkServerOption}
+                    getOptions={this.getNetworkServerOptions}
+                    setFieldValue={setFieldValue}
+                    helpText={i18n.t(`${packageNS}:tr000223`)}
+                    inputProps={{
+                      clearable: true,
+                      cache: false,
+                    }}
+                    component={AsyncAutoComplete}
+                  />}
+                  
+
+                  <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:tr000224`)}
+                    name="gatewayProfileID"
+                    id="gatewayProfileID"
+                    value={this.state.object.gatewayProfileID || ""}
+                    getOption={this.getGatewayProfileOption}
+                    getOptions={this.getGatewayProfileOptions}
+                    setFieldValue={setFieldValue}
+                    inputProps={{
+                      clearable: true,
+                      cache: false,
+                    }}
+                    component={AsyncAutoComplete}
+                  />
+
+                  <Field
+                    type="checkbox"
+                    label={i18n.t(`${packageNS}:tr000228`)}
+                    name="discoveryEnabled"
+                    id="discoveryEnabled"
+                    component={ReactstrapCheckbox}
+                    helpText={i18n.t(`${packageNS}:tr000229`)}
+                  />
+
+                  <Field
+                    type="number"
+                    label={i18n.t(`${packageNS}:tr000230`)}
+                    name="location.altitude"
+                    id="location.altitude"
+                    value={this.state.object.location.altitude || 0}
+                    component={ReactstrapInput}
+                    helpText={i18n.t(`${packageNS}:tr000231`)}
+                  />
+
+                  <RButton type="submit" color="primary">Submit</RButton>
+                  {/* <Button onClick={this.addGatewayBoard}>{i18n.t(`${packageNS}:tr000234`)}</Button>   */}
+                </BForm>
+              )}
+          </Formik>
         </Col>
       </Row>
 
@@ -282,7 +381,7 @@ class GatewayForm extends FormComponent {
         submitLabel={this.props.submitLabel}
         onSubmit={this.onSubmit}
       >
-        <TextField
+        {/* <TextField
           id="name"
           label={i18n.t(`${packageNS}:tr000218`)}
           margin="normal"
@@ -305,8 +404,8 @@ class GatewayForm extends FormComponent {
           multiline
           required
           fullWidth
-        />
-        {!this.props.update && <EUI64Field
+        /> */}
+        {/* {!this.props.update && <EUI64Field
           id="id"
           label={i18n.t(`${packageNS}:tr000074`)}
           margin="normal"
@@ -315,14 +414,14 @@ class GatewayForm extends FormComponent {
           required
           fullWidth
           random
-        />}
-        {!this.props.update && <FormControl fullWidth margin="normal">
+        />} */}
+        {/* {!this.props.update && <FormControl fullWidth margin="normal">
           <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
           <AutocompleteSelect
             id="networkServerID"
             label={i18n.t(`${packageNS}:tr000115`)}
             value={this.state.object.networkServerID || ""}
-            onChange={this.onChange}
+            onChange={(e) => { console.log(e) }}
             getOption={this.getNetworkServerOption}
             getOptions={this.getNetworkServerOptions}
           />
@@ -337,7 +436,7 @@ class GatewayForm extends FormComponent {
             label={i18n.t(`${packageNS}:tr000225`)}
             value={this.state.object.gatewayProfileID || ""}
             triggerReload={this.state.object.networkServerID || ""}
-            onChange={this.onChange}
+            onChange={(e) => { console.log(e) }}
             getOption={this.getGatewayProfileOption}
             getOptions={this.getGatewayProfileOptions}
             inputProps={{
@@ -348,8 +447,8 @@ class GatewayForm extends FormComponent {
           <FormHelperText>
             {i18n.t(`${packageNS}:tr000227`)}
           </FormHelperText>
-        </FormControl>
-        <FormGroup>
+        </FormControl> */}
+        {/* <FormGroup>
           <FormControlLabel
             label={i18n.t(`${packageNS}:tr000228`)}
             control={
@@ -364,8 +463,8 @@ class GatewayForm extends FormComponent {
           <FormHelperText>
             {i18n.t(`${packageNS}:tr000229`)}
           </FormHelperText>
-        </FormGroup>
-        <TextField
+        </FormGroup> */}
+        {/* <TextField
           id="location.altitude"
           label={i18n.t(`${packageNS}:tr000230`)}
           margin="normal"
@@ -375,7 +474,7 @@ class GatewayForm extends FormComponent {
           helperText={i18n.t(`${packageNS}:tr000231`)}
           required
           fullWidth
-        />
+        /> */}
         <FormControl fullWidth margin="normal">
           <FormLabel className={this.props.classes.mapLabel}>{i18n.t(`${packageNS}:tr000232`)} (<a onClick={this.setCurrentPosition} href="#getlocation" className={this.props.classes.link}>{i18n.t(`${packageNS}:tr000328`)}</a>)</FormLabel>
           <Map
@@ -393,7 +492,7 @@ class GatewayForm extends FormComponent {
             {i18n.t(`${packageNS}:tr000233`)}
           </FormHelperText>
         </FormControl>
-        {boards}
+        {/* {boards} */}
       </Form>
     </React.Fragment>
     );
