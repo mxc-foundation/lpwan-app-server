@@ -41,7 +41,7 @@ demo_host_server="demo.supernodes."
 # * require - Always SSL (skip verification)
 # * verify-ca - Always SSL (verify that the certificate presented by the server was signed by a trusted CA)
 # * verify-full - Always SSL (verify that the certification presented by the server was signed by a trusted CA and the server host name matches the one in the certificate)
-dsn="postgres://loraserver_as:loraserver_as@postgresql:5432/loraserver_as?sslmode=disable"
+dsn="postgres://loraserver_as:loraserver_as@lora.test.cloud.mxc.org:5432/loraserver_as?sslmode=disable"
 
 # Automatically apply database migrations.
 #
