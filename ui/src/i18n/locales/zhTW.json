@@ -409,5 +409,6 @@
   "tr000417": "System Fee",
   "tr000418": "Organization Setting",
   "tr000419": "Profile Setting",
-  "tr000420": "Network Server"
+  "tr000420": "Network Server",
+  "tr000421": "將LPWAN App Server的配置文件證書路由到LPWAN Server連接"
 }

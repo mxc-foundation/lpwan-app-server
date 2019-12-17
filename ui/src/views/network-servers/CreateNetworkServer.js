@@ -53,7 +53,9 @@ class CreateNetworkServer extends Component {
               </Row>
               <Row className="md-center">
                 <Col md="12" sm="12">
-                  <NetworkServerForm />
+                  <NetworkServerForm
+                    onSubmit={this.onSubmit}
+                  />
                 </Col>
               </Row>
             </Card>
