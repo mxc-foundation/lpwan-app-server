@@ -41,7 +41,7 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -73,7 +73,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -104,7 +104,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}

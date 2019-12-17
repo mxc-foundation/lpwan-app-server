@@ -39,7 +39,7 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -70,7 +70,7 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -102,7 +102,7 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -132,7 +132,7 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}

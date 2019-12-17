@@ -10,8 +10,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
-func getUserProfileByJwt(ctx context.Context, organizationID int64) (api.ProfileResponse, error) {
-	username, err := auth.JWTValidator{}.GetUsername(ctx)
+func getUserProfileByJwt(v auth.Validator, ctx context.Context, organizationID int64) (api.ProfileResponse, error) {
+	username, err := v.GetUsername(ctx)
 	if nil != err {
 		return api.ProfileResponse{}, err
 	}

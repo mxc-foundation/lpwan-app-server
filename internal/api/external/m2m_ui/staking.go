@@ -63,7 +63,7 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 		return &api.StakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -92,7 +92,7 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -121,7 +121,7 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -152,7 +152,7 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
