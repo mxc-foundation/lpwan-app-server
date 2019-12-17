@@ -25,11 +25,6 @@ func NewM2MServerAPI(validator auth.Validator) *M2MServerAPI {
 func (s *M2MServerAPI) GetVersion(ctx context.Context, req *empty.Empty) (*api.GetVersionResponse, error) {
 	log.WithField("", "").Info("grpc_api/GetVersion")
 
-	/*prof, err := getUserProfileByJwt(s.validator, ctx, 0)
-	if err != nil{
-		return &api.GetVersionResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}*/
-
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
@@ -38,10 +33,12 @@ func (s *M2MServerAPI) GetVersion(ctx context.Context, req *empty.Empty) (*api.G
 
 	verClient := api.NewServerInfoServiceClient(m2mClient)
 
-	resp, err := verClient.GetVersion(ctx, nil)
+	resp, err := verClient.GetVersion(ctx, req)
 	if err != nil {
 		return &api.GetVersionResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetVersionResponse{Version: resp.Version}, nil
+	return &api.GetVersionResponse{
+		Version:              resp.Version,
+	}, nil
 }
