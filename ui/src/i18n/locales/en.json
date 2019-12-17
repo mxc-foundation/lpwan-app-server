@@ -410,11 +410,11 @@
   "tr000418": "Organization Setting",
   "tr000419": "Profile Setting",
   "tr000420": "Network Server",
-  "tr000421": "Routing Profile Certificates for LPWAN App Server to LPWAN Server connection",
-  "title": "M2M Wallet",
   "tr000421": "Downlink Price",
   "tr000422": "Mode",
   "tr000423": "Gateway Details",
+  "tr000424": "Routing Profile Certificates for LPWAN App Server to LPWAN Server connection",
+  "title": "M2M Wallet",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
