@@ -1,13 +1,11 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-
-import Grid from '@material-ui/core/Grid';
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
 
 import Delete from "mdi-material-ui/Delete";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 
 import NetworkServerStore from "../../stores/NetworkServerStore";
@@ -45,10 +43,11 @@ class NetworkServerLayout extends Component {
     }
 
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar
           buttons={[
             <TitleBarButton
+              color="danger"
               key={1}
               icon={<Delete />}
               label={i18n.t(`${packageNS}:tr000061`)}
@@ -56,15 +55,15 @@ class NetworkServerLayout extends Component {
             />,
           ]}
         >
-          <TitleBarTitle to="/network-servers" title={i18n.t(`${packageNS}:tr000040`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={`${this.state.networkServer.networkServer.name} (${this.state.networkServer.region} @ ${this.state.networkServer.version})`} />
+          <Breadcrumb style={{ fontSize: "1.25rem", margin: "0rem" }}>
+            <BreadcrumbItem><Link to={`/network-servers`}>{i18n.t(`${packageNS}:tr000040`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
+            <BreadcrumbItem active>{`${this.state.networkServer.networkServer.id}`}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} />
-        </Grid>
-      </Grid>
+        <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} />
+      </React.Fragment>
     );
   }
 }

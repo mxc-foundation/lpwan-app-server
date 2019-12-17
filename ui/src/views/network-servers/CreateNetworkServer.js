@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
-import { Breadcrumb, BreadcrumbItem, Card, Col, Row } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
@@ -28,14 +28,12 @@ class CreateNetworkServer extends Component {
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
-        <Card className="card-box" style={{ minWidth: "25rem" }}>
-          <Row className="md-center">
-            <Col md="12" sm="12">
-              <NetworkServerForm
-                onSubmit={this.onSubmit}
-              />
-            </Col>
-          </Row>
+
+        <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+          <NetworkServerForm
+            onSubmit={this.onSubmit}
+            submitLabel={i18n.t(`${packageNS}:tr000277`)}
+          />
         </Card>
       </React.Fragment>
     );

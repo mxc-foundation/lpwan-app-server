@@ -10,17 +10,17 @@ import classnames from 'classnames';
 import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 
-const submitButton = (submitting) => {
+const submitButton = (submitting, submitLabel) => {
   return (
     <Button
-      aria-label={i18n.t(`${packageNS}:tr000277`)}
+      aria-label={submitLabel}
       block
       color="primary"
       disabled={submitting}
       size="md"
       type="submit"
     >
-      {i18n.t(`${packageNS}:tr000277`)}
+      {submitLabel}
     </Button>
   );
 };
@@ -45,7 +45,7 @@ class NetworkServerForm extends FormComponent {
 
   render() {
     const { activeTab } = this.state;
-    const { onSubmit } = this.props;
+    const { onSubmit, submitLabel } = this.props;
 
     if (this.state.object === undefined) {
       return(null);
@@ -54,8 +54,23 @@ class NetworkServerForm extends FormComponent {
     return(
       <Form
         onSubmit={onSubmit}
+        initialValues={{
+          id: this.state.object.id,
+          name: this.state.object.name,
+          server: this.state.object.server,
+          gatewayDiscoveryEnabled: !!this.state.object.gatewayDiscoveryEnabled,
+          gatewayDiscoveryInterval: this.state.object.gatewayDiscoveryInterval || undefined,
+          gatewayDiscoveryTXFrequency: this.state.object.gatewayDiscoveryTXFrequency || undefined,
+          gatewayDiscoveryDR: this.state.object.gatewayDiscoveryDR || undefined,
+          caCert: this.state.object.caCert,
+          tlsCert: this.state.object.tlsCert,
+          tlsKey: this.state.object.tlsKey,
+          routingProfileCACert: this.state.object.routingProfileCACert,
+          routingProfileTLSCert: this.state.object.routingProfileTLSCert,
+          routingProfileTLSKey: this.state.object.routingProfileTLSKey
+        }}
         validate={values => {
-          // console.log('validateForm values/activeTab: ', values);
+          console.log('validateForm values/activeTab: ', values);
           if (!values) {
             return {};
           }
@@ -110,11 +125,33 @@ class NetworkServerForm extends FormComponent {
                   {i18n.t(`${packageNS}:tr000104`)}
                 </NavLink>
               </NavItem>
+              <NavItem>
+                <NavLink
+                  className={classnames({ active: activeTab === '4' })}
+                  onClick={() => { this.toggle('4'); }}
+                >
+                  {i18n.t(`${packageNS}:tr000428`)}
+                </NavLink>
+              </NavItem>
             </Nav>
             <TabContent activeTab={activeTab}>
               <TabPane tabId="1">
                 <Row>
                   <Col sm="12">
+                    <FormGroup row>
+                      <Field name="id">
+                        {({ input, meta }) => (
+                          <div>
+                            <Input
+                              {...input}
+                              id="id"
+                              name="id"
+                              type="hidden"
+                            />
+                          </div>
+                        )}
+                      </Field>
+                    </FormGroup>
                     <FormGroup row>
                       <Label for="name" sm={3}>
                         {i18n.t(`${packageNS}:tr000090`)}
@@ -129,7 +166,6 @@ class NetworkServerForm extends FormComponent {
                                 name="name"
                                 placeholder={i18n.t(`${packageNS}:tr000091`)}
                                 type="text"
-                                value={this.state.object.name}
                                 invalid={meta.error && meta.touched}
                               />
                               {meta.error && meta.touched &&
@@ -157,7 +193,6 @@ class NetworkServerForm extends FormComponent {
                                 name="server"
                                 placeholder={i18n.t(`${packageNS}:tr000093`)}
                                 type="text"
-                                value={this.state.object.server}
                                 invalid={meta.error && meta.touched}
                               />
                               {meta.error && meta.touched &&
@@ -174,7 +209,7 @@ class NetworkServerForm extends FormComponent {
                     <FormGroup row>
                       <Col sm="12">
                         <br />
-                        {submitButton(submitting)}
+                        {submitButton(submitting, submitLabel)}
                       </Col>
                     </FormGroup>
                   </Col>
@@ -191,7 +226,6 @@ class NetworkServerForm extends FormComponent {
                           <Label check for="gatewayDiscoveryEnabled">
                             <Input
                               {...input}
-                              checked={!!this.state.object.gatewayDiscoveryEnabled}
                               id="gatewayDiscoveryEnabled"
                               name="gatewayDiscoveryEnabled"
                               type="checkbox"
@@ -229,7 +263,6 @@ class NetworkServerForm extends FormComponent {
                                     name="gatewayDiscoveryInterval"
                                     placeholder={i18n.t(`${packageNS}:tr000099`)}
                                     type="number"
-                                    value={this.state.object.gatewayDiscoveryInterval}
                                   />
                                   {meta.error && meta.touched &&
                                     <FormFeedback>{meta.error}</FormFeedback>
@@ -258,7 +291,6 @@ class NetworkServerForm extends FormComponent {
                                     name="gatewayDiscoveryTXFrequency"
                                     placeholder={i18n.t(`${packageNS}:tr000101`)}
                                     type="number"
-                                    value={this.state.object.gatewayDiscoveryTXFrequency}
                                   />
                                   {meta.error && meta.touched &&
                                     <FormFeedback>{meta.error}</FormFeedback>
@@ -287,7 +319,6 @@ class NetworkServerForm extends FormComponent {
                                     name="gatewayDiscoveryDR"
                                     placeholder={i18n.t(`${packageNS}:tr000103`)}
                                     type="number"
-                                    value={this.state.object.gatewayDiscoveryDR}
                                   />
                                   {meta.error && meta.touched &&
                                     <FormFeedback>{meta.error}</FormFeedback>
@@ -305,7 +336,7 @@ class NetworkServerForm extends FormComponent {
                     <FormGroup row>
                       <Col sm="12">
                         <br />
-                        {submitButton(submitting)}
+                        {submitButton(submitting, submitLabel)}
                       </Col>
                     </FormGroup>
                   </Col>
@@ -329,7 +360,6 @@ class NetworkServerForm extends FormComponent {
                           placeholder={i18n.t(`${packageNS}:tr000107`)}
                           rows="4"
                           type="textarea"
-                          value={this.state.object.caCert || ""}
                         />
                         <FormText color="muted">
                           {i18n.t(`${packageNS}:tr000107`)}
@@ -349,7 +379,6 @@ class NetworkServerForm extends FormComponent {
                           placeholder={i18n.t(`${packageNS}:tr000109`)}
                           rows="4"
                           type="textarea"
-                          value={this.state.object.tlsCert || ""}
                         />
                         <FormText color="muted">
                           {i18n.t(`${packageNS}:tr000109`)}
@@ -369,15 +398,25 @@ class NetworkServerForm extends FormComponent {
                           placeholder={i18n.t(`${packageNS}:tr000109`)}
                           rows="4"
                           type="textarea"
-                          value={this.state.object.tlsKey || ""}
                         />
                         <FormText color="muted">
                           {i18n.t(`${packageNS}:tr000109`)}
                         </FormText>
                       </Col>
                     </FormGroup>
-                    <br />
-                    <h5>{i18n.t(`${packageNS}:tr000421`)}</h5>
+                    <FormGroup row>
+                      <Col sm="12">
+                        <br />
+                        {submitButton(submitting, submitLabel)}
+                      </Col>
+                    </FormGroup>
+                  </Col>
+                </Row>
+              </TabPane>
+              <TabPane tabId="4">
+                <Row>
+                  <Col sm="12">
+                    <h5>{i18n.t(`${packageNS}:tr000427`)}</h5>
                     <br />
                     <FormGroup row>
                       <Label for="routingProfileCACert" sm={3}>
@@ -392,7 +431,6 @@ class NetworkServerForm extends FormComponent {
                           placeholder={i18n.t(`${packageNS}:tr000107`)}
                           rows="4"
                           type="textarea"
-                          value={this.state.object.routingProfileCACert || ""}
                         />
                         <FormText color="muted">
                           {i18n.t(`${packageNS}:tr000107`)}
@@ -412,7 +450,6 @@ class NetworkServerForm extends FormComponent {
                           placeholder={i18n.t(`${packageNS}:tr000107`)}
                           rows="4"
                           type="textarea"
-                          value={this.state.object.routingProfileTLSCert || ""}
                         />
                         <FormText color="muted">
                           {i18n.t(`${packageNS}:tr000107`)}
@@ -432,7 +469,6 @@ class NetworkServerForm extends FormComponent {
                           placeholder={i18n.t(`${packageNS}:tr000109`)}
                           rows="4"
                           type="textarea"
-                          value={this.state.object.routingProfileTLSKey || ""}
                         />
                         <FormText color="muted">
                           {i18n.t(`${packageNS}:tr000109`)}
@@ -442,7 +478,7 @@ class NetworkServerForm extends FormComponent {
                     <FormGroup row>
                       <Col sm="12">
                         <br />
-                        {submitButton(submitting)}
+                        {submitButton(submitting, submitLabel)}
                       </Col>
                     </FormGroup>
                   </Col>

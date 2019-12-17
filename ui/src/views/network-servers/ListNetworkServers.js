@@ -17,7 +17,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
 const NetworkServerColumn = (cell, row, index, extraData) => {
-  return <Link to={`/network-servers/${row.id}`}>{row.networkServerName}</Link>;
+  return <Link to={`/network-servers/${row.id}`}>{row.name}</Link>;
 }
 
 const NetworkServerAddressColumn = (cell, row, index, extraData) => {
@@ -89,9 +89,14 @@ class ListNetworkServers extends Component {
 
         <Row>
           <Col>
-            <Card>
+            <Card className="shadow-sm">
               <CardBody>
-                <AdvancedTable getRow={this.getRow} data={this.state.data} columns={columns} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+                <AdvancedTable
+                  data={this.state.data}
+                  columns={columns}
+                  keyField="id"
+                  onTableChange={this.handleTableChange}
+                />
               </CardBody>
             </Card>
           </Col>
