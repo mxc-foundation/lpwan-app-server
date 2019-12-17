@@ -59,6 +59,7 @@ class NetworkServerForm extends FormComponent {
           name: this.state.object.name,
           server: this.state.object.server,
           gatewayDiscoveryEnabled: !!this.state.object.gatewayDiscoveryEnabled,
+          // Fallback to undefined, otherwise it defaults to a value of 0 even if the user hasn't entered anything
           gatewayDiscoveryInterval: this.state.object.gatewayDiscoveryInterval || undefined,
           gatewayDiscoveryTXFrequency: this.state.object.gatewayDiscoveryTXFrequency || undefined,
           gatewayDiscoveryDR: this.state.object.gatewayDiscoveryDR || undefined,
@@ -164,7 +165,6 @@ class NetworkServerForm extends FormComponent {
                                 {...input}
                                 id="name"
                                 name="name"
-                                placeholder={i18n.t(`${packageNS}:tr000091`)}
                                 type="text"
                                 invalid={meta.error && meta.touched}
                               />
@@ -191,7 +191,6 @@ class NetworkServerForm extends FormComponent {
                                 {...input}
                                 id="server"
                                 name="server"
-                                placeholder={i18n.t(`${packageNS}:tr000093`)}
                                 type="text"
                                 invalid={meta.error && meta.touched}
                               />
@@ -261,7 +260,6 @@ class NetworkServerForm extends FormComponent {
                                     invalid={meta.error && meta.touched}
                                     min="0" 
                                     name="gatewayDiscoveryInterval"
-                                    placeholder={i18n.t(`${packageNS}:tr000099`)}
                                     type="number"
                                   />
                                   {meta.error && meta.touched &&
@@ -289,7 +287,6 @@ class NetworkServerForm extends FormComponent {
                                     invalid={meta.error && meta.touched}
                                     min="0"
                                     name="gatewayDiscoveryTXFrequency"
-                                    placeholder={i18n.t(`${packageNS}:tr000101`)}
                                     type="number"
                                   />
                                   {meta.error && meta.touched &&
@@ -317,7 +314,6 @@ class NetworkServerForm extends FormComponent {
                                     invalid={meta.error && meta.touched}
                                     min="0"
                                     name="gatewayDiscoveryDR"
-                                    placeholder={i18n.t(`${packageNS}:tr000103`)}
                                     type="number"
                                   />
                                   {meta.error && meta.touched &&
@@ -357,7 +353,6 @@ class NetworkServerForm extends FormComponent {
                           name="caCert"
                           multiline="true"
                           onChange={this.onChange}
-                          placeholder={i18n.t(`${packageNS}:tr000107`)}
                           rows="4"
                           type="textarea"
                         />
@@ -376,7 +371,6 @@ class NetworkServerForm extends FormComponent {
                           name="tlsCert"
                           multiline="true"
                           onChange={this.onChange}
-                          placeholder={i18n.t(`${packageNS}:tr000109`)}
                           rows="4"
                           type="textarea"
                         />
@@ -395,7 +389,6 @@ class NetworkServerForm extends FormComponent {
                           name="tlsKey"
                           multiline="true"
                           onChange={this.onChange}
-                          placeholder={i18n.t(`${packageNS}:tr000109`)}
                           rows="4"
                           type="textarea"
                         />
@@ -428,7 +421,6 @@ class NetworkServerForm extends FormComponent {
                           name="routingProfileCACert"
                           multiline="true"
                           onChange={this.onChange}
-                          placeholder={i18n.t(`${packageNS}:tr000107`)}
                           rows="4"
                           type="textarea"
                         />
@@ -447,7 +439,6 @@ class NetworkServerForm extends FormComponent {
                           name="routingProfileTLSCert"
                           multiline="true"
                           onChange={this.onChange}
-                          placeholder={i18n.t(`${packageNS}:tr000107`)}
                           rows="4"
                           type="textarea"
                         />
@@ -466,7 +457,6 @@ class NetworkServerForm extends FormComponent {
                           name="routingProfileTLSKey"
                           multiline="true"
                           onChange={this.onChange}
-                          placeholder={i18n.t(`${packageNS}:tr000109`)}
                           rows="4"
                           type="textarea"
                         />
