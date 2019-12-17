@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/m2m_ui"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -24,6 +25,8 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/api"
 	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	m2m_pb "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -95,7 +98,16 @@ func setupAPI(conf config.Config) error {
 	api.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
-	api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
+	//api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
+	m2m_api.RegisterDeviceServiceServer(grpcServer, m2m_ui.NewDeviceServerAPI(validator))
+	m2m_api.RegisterMoneyServiceServer(grpcServer, m2m_ui.NewMoneyServerAPI(validator))
+	m2m_api.RegisterGatewayServiceServer(grpcServer, m2m_ui.NewGatewayServerAPI(validator))
+	m2m_api.RegisterSettingsServiceServer(grpcServer, m2m_ui.NewSettingsServerAPI(validator))
+	m2m_api.RegisterStakingServiceServer(grpcServer, m2m_ui.NewStakingServerAPI(validator))
+	m2m_api.RegisterSuperNodeServiceServer(grpcServer, m2m_ui.NewSupernodeServerAPI(validator))
+	m2m_api.RegisterTopUpServiceServer(grpcServer, m2m_ui.NewTopUpServerAPI(validator))
+	m2m_api.RegisterWalletServiceServer(grpcServer, m2m_ui.NewWalletServerAPI(validator))
+	m2m_api.RegisterWithdrawServiceServer(grpcServer, m2m_ui.NewWithdrawServerAPI(validator))
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
@@ -272,6 +284,35 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	if err := pb.RegisterProxyRequestHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
+	if err := m2m_pb.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterMoneyServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterSuperNodeServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterTopUpServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := m2m_pb.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register proxy request handler error")
+	}
+
+
 
 	return mux, nil
 }

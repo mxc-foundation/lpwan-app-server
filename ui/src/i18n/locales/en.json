@@ -413,8 +413,11 @@
   "tr000421": "Downlink Price",
   "tr000422": "Mode",
   "tr000423": "Gateway Details",
-  "tr000424": "Routing Profile Certificates for LPWAN App Server to LPWAN Server connection",
   "title": "M2M Wallet",
+  "tr000424": "Cancel",
+  "tr000425": "Confirm",
+  "tr000426": "Are you sure, you want to delete this gateway-profile?",
+  "tr000427": "Routing Profile Certificates for LPWAN App Server to LPWAN Server connection",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",

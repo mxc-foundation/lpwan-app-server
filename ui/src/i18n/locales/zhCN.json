@@ -410,5 +410,9 @@
   "tr000418": "Organization Setting",
   "tr000419": "Profile Setting",
   "tr000420": "Network Server",
-  "tr000424": "将LPWAN App Server的配置文件证书路由到LPWAN Server连接"
+  "tr000421": "Downlink Price",
+  "tr000422": "Mode",
+  "tr000423": "Gateway Details",
+  "tr000426": "Are you sure you want to delete this gateway-profile?",
+  "tr000427": "将LPWAN App Server的配置文件证书路由到LPWAN Server连接"
 }

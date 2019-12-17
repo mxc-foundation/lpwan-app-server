@@ -8,7 +8,7 @@ services:
       - ./configuration:/etc/lora-app-server
       - ./:/lora-app-server
     links:
-      - postgresql
+    #  - postgresql
       - redis
       - mosquitto
     ports:
@@ -22,10 +22,10 @@ services:
       - SYS_PTRACE
     tty: true
 
-  postgresql:
-    image: postgres:9.6-alpine
-    volumes:
-      - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
+  #postgresql:
+  #  image: postgres:9.6-alpine
+  #  volumes:
+  #    - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:5-alpine
