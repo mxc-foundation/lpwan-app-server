@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -37,8 +37,8 @@ class CreateNetworkServer extends Component {
               <Row>
                 <Col md="12" xs="12">
                   <Breadcrumb>
-                    <BreadcrumbItem><a href="#">Home</a></BreadcrumbItem>
-                    <BreadcrumbItem><a href="/network-servers">{i18n.t(`${packageNS}:tr000040`)}</a></BreadcrumbItem>
+                    <BreadcrumbItem><Link to={`/`}>Home</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link to={`/network-servers`}>{i18n.t(`${packageNS}:tr000040`)}</Link></BreadcrumbItem>
                     <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
                   </Breadcrumb>
                 </Col>
@@ -53,10 +53,7 @@ class CreateNetworkServer extends Component {
               </Row>
               <Row className="md-center">
                 <Col md="12" sm="12">
-                  <NetworkServerForm
-                    submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                    onSubmit={this.onSubmit}
-                  />
+                  <NetworkServerForm />
                 </Col>
               </Row>
             </Card>

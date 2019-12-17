@@ -1,213 +1,356 @@
 import React from "react";
-
-import TextField from '@material-ui/core/TextField';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from "@material-ui/core/FormGroup";
-import FormHelperText from '@material-ui/core/FormHelperText';
-import Checkbox from '@material-ui/core/Checkbox';
+import {
+  Button, Col, Form, FormGroup, FormText, Input, Label, 
+  TabContent, TabPane, Nav, NavItem, NavLink, Row,
+} from 'reactstrap';
+import classnames from 'classnames';
 
 import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
-import FormControl from "../../components/FormControl";
 
+const submitButton = () => {
+  return (
+    <Button
+      aria-label={i18n.t(`${packageNS}:tr000277`)}
+      block
+      color="primary"
+      size="md"
+      type="submit"
+    >
+      {i18n.t(`${packageNS}:tr000277`)}
+    </Button>
+  );
+};
 
 class NetworkServerForm extends FormComponent {
   constructor() {
     super();
-    this.state = {
-      tab: 0,
-    };
 
-    this.onChangeTab = this.onChangeTab.bind(this);
+    this.state = {
+      activeTab: '1'
+    };
   }
 
-  onChangeTab(event, value) {
-    this.setState({
-      tab: value,
-    });
+  toggle = tab => {
+    const { activeTab } = this.state;
+    if (activeTab !== tab) {
+      this.setState({
+        activeTab: tab
+      });
+    }
   }
 
   render() {
+    const { activeTab } = this.state;
+
     if (this.state.object === undefined) {
       return(null);
     }
 
     return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-            <Tabs
-              value={this.state.tab}
-              indicatorColor="primary"
-              textColor="primary"
-              onChange={this.onChangeTab}
+      <Form>
+        <Nav tabs>
+          <NavItem>
+            <NavLink
+              className={classnames({ active: activeTab === '1' })}
+              onClick={() => { this.toggle('1'); }}
             >
-              <Tab label={i18n.t(`${packageNS}:tr000167`)} />
-              <Tab label={i18n.t(`${packageNS}:tr000095`)} />
-              <Tab label={i18n.t(`${packageNS}:tr000104`)} />
-            </Tabs>
-          {this.state.tab === 0 && <div>
-            <TextField
-              id="name"
-              label={i18n.t(`${packageNS}:tr000090`)}
-              fullWidth={true}
-              margin="normal"
-              value={this.state.object.name || ""}
-              onChange={this.onChange}
-              helperText={i18n.t(`${packageNS}:tr000091`)}
-              required={true}
-            />
-            <TextField
-              id="server"
-              label={i18n.t(`${packageNS}:tr000092`)}
-              fullWidth={true}
-              margin="normal"
-              value={this.state.object.server || ""}
-              onChange={this.onChange}
-              helperText={i18n.t(`${packageNS}:tr000093`)}
-              required={true}
-            />
-          </div>}
-          {this.state.tab === 1 && <div>
-            <FormControl
-              label={i18n.t(`${packageNS}:tr000095`)}
+              {i18n.t(`${packageNS}:tr000167`)}
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={classnames({ active: activeTab === '2' })}
+              onClick={() => { this.toggle('2'); }}
             >
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      id="gatewayDiscoveryEnabled"
-                      checked={!!this.state.object.gatewayDiscoveryEnabled}
+              {i18n.t(`${packageNS}:tr000095`)}
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={classnames({ active: activeTab === '3' })}
+              onClick={() => { this.toggle('3'); }}
+            >
+              {i18n.t(`${packageNS}:tr000104`)}
+            </NavLink>
+          </NavItem>
+        </Nav>
+        <TabContent activeTab={activeTab}>
+          <TabPane tabId="1">
+            <Row>
+              <Col sm="12">
+                <FormGroup row>
+                  <Label for="name" sm={3}>
+                    {i18n.t(`${packageNS}:tr000090`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="name"
+                      name="email"
                       onChange={this.onChange}
-                      value="true"
-                      color="primary"
+                      placeholder={i18n.t(`${packageNS}:tr000091`)}
+                      type="text"
+                      value={this.state.object.name || ""}
                     />
-                  }
-                  label={i18n.t(`${packageNS}:tr000096`)}
-                />
-              </FormGroup>
-              <FormHelperText>{i18n.t(`${packageNS}:tr000097`)}</FormHelperText>
-            </FormControl>
-            {this.state.object.gatewayDiscoveryEnabled && <TextField
-              id="gatewayDiscoveryInterval"
-              label={i18n.t(`${packageNS}:tr000098`)}
-              type="number"
-              fullWidth={true}
-              margin="normal"
-              value={this.state.object.gatewayDiscoveryInterval}
-              onChange={this.onChange}
-              helperText={i18n.t(`${packageNS}:tr000099`)}
-              required={true}
-            />}
-            {this.state.object.gatewayDiscoveryEnabled && <TextField
-              id="gatewayDiscoveryTXFrequency"
-              label={i18n.t(`${packageNS}:tr000100`)}
-              type="number"
-              fullWidth={true}
-              margin="normal"
-              value={this.state.object.gatewayDiscoveryTXFrequency}
-              onChange={this.onChange}
-              helperText={i18n.t(`${packageNS}:tr000101`)}
-              required={true}
-            />}
-            {this.state.object.gatewayDiscoveryEnabled && <TextField
-              id="gatewayDiscoveryDR"
-              label={i18n.t(`${packageNS}:tr000102`)}
-              type="number"
-              fullWidth={true}
-              margin="normal"
-              value={this.state.object.gatewayDiscoveryDR}
-              onChange={this.onChange}
-              helperText={i18n.t(`${packageNS}:tr000103`)}
-              required={true}
-            />}
-          </div>}
-          {this.state.tab === 2 && <div>
-            <FormControl
-              label={i18n.t(`${packageNS}:tr000105`)}
-            >
-              <FormGroup>
-                <TextField
-                  id="caCert"
-                  label={i18n.t(`${packageNS}:tr000106`)}
-                  fullWidth={true}
-                  margin="normal"
-                  value={this.state.object.caCert || ""}
-                  onChange={this.onChange}
-                  helperText={i18n.t(`${packageNS}:tr000107`)}
-                  multiline
-                  rows="4"
-                />
-                <TextField
-                  id="tlsCert"
-                  label={i18n.t(`${packageNS}:tr000110`)}
-                  fullWidth={true}
-                  margin="normal"
-                  value={this.state.object.tlsCert || ""}
-                  onChange={this.onChange}
-                  helperText={i18n.t(`${packageNS}:tr000109`)}
-                  multiline
-                  rows="4"
-                />
-                <TextField
-                  id="tlsKey"
-                  label={i18n.t(`${packageNS}:tr000108`)}
-                  fullWidth={true}
-                  margin="normal"
-                  value={this.state.object.tlsKey || ""}
-                  onChange={this.onChange}
-                  helperText={i18n.t(`${packageNS}:tr000109`)}
-                  multiline
-                  rows="4"
-                />
-              </FormGroup>
-            </FormControl>
-
-            <FormControl
-              label={i18n.t(`${packageNS}:tr000105`)}
-            >
-              <FormGroup>
-                <TextField
-                  id="routingProfileCACert"
-                  label={i18n.t(`${packageNS}:tr000106`)}
-                  fullWidth={true}
-                  margin="normal"
-                  value={this.state.object.routingProfileCACert || ""}
-                  onChange={this.onChange}
-                  helperText={i18n.t(`${packageNS}:tr000107`)}
-                  multiline
-                  rows="4"
-                />
-                <TextField
-                  id="routingProfileTLSCert"
-                  label={i18n.t(`${packageNS}:tr000110`)}
-                  fullWidth={true}
-                  margin="normal"
-                  value={this.state.object.routingProfileTLSCert || ""}
-                  onChange={this.onChange}
-                  helperText={i18n.t(`${packageNS}:tr000107`)}
-                  multiline
-                  rows="4"
-                />
-                <TextField
-                  id="routingProfileTLSKey"
-                  label={i18n.t(`${packageNS}:tr000108`)}
-                  fullWidth={true}
-                  margin="normal"
-                  value={this.state.object.routingProfileTLSKey || ""}
-                  onChange={this.onChange}
-                  helperText={i18n.t(`${packageNS}:tr000109`)}
-                  multiline
-                  rows="4"
-                />
-              </FormGroup>
-            </FormControl>
-          </div>}
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000091`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Label for="server" sm={3}>
+                    {i18n.t(`${packageNS}:tr000092`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="server"
+                      name="server"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000093`)}
+                      type="text"
+                      value={this.state.object.server || ""}
+                    />
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000093`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Col sm="12">
+                    <br />
+                    {submitButton()}
+                  </Col>
+                </FormGroup>
+              </Col>
+            </Row>
+          </TabPane>
+          <TabPane tabId="2">
+            <Row>
+              <Col sm="12">
+                <h5>{i18n.t(`${packageNS}:tr000095`)}</h5>
+                <br />
+                <FormGroup check>
+                  <Label check for="gatewayDiscoveryEnabled">
+                    <Input
+                      checked={!!this.state.object.gatewayDiscoveryEnabled}
+                      id="gatewayDiscoveryEnabled"
+                      name="gatewayDiscoveryEnabled"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000097`)}
+                      type="checkbox"
+                    />
+                    {i18n.t(`${packageNS}:tr000096`)}
+                  </Label>
+                  <FormText color="muted">
+                    {i18n.t(`${packageNS}:tr000097`)}
+                  </FormText>
+                </FormGroup>
+                {this.state.object.gatewayDiscoveryEnabled &&
+                  <>
+                    <br />
+                    <FormGroup row>
+                      <Label for="gatewayDiscoveryInterval" sm={3}>
+                        {i18n.t(`${packageNS}:tr000098`)}
+                      </Label>
+                      <Col sm={9}>
+                        <Input
+                          id="gatewayDiscoveryInterval"
+                          name="gatewayDiscoveryInterval"
+                          onChange={this.onChange}
+                          placeholder={i18n.t(`${packageNS}:tr000099`)}
+                          type="number"
+                          value={this.state.object.gatewayDiscoveryInterval || 0}
+                        />
+                        <FormText color="muted">
+                          {i18n.t(`${packageNS}:tr000099`)}
+                        </FormText>
+                      </Col>
+                    </FormGroup>
+                    <FormGroup row>
+                      <Label for="gatewayDiscoveryTXFrequency" sm={3}>
+                        {i18n.t(`${packageNS}:tr000100`)}
+                      </Label>
+                      <Col sm={9}>
+                        <Input
+                          id="gatewayDiscoveryTXFrequency"
+                          name="gatewayDiscoveryTXFrequency"
+                          onChange={this.onChange}
+                          placeholder={i18n.t(`${packageNS}:tr000101`)}
+                          type="number"
+                          value={this.state.object.gatewayDiscoveryTXFrequency || 0}
+                        />
+                        <FormText color="muted">
+                          {i18n.t(`${packageNS}:tr000101`)}
+                        </FormText>
+                      </Col>
+                    </FormGroup>
+                    <FormGroup row>
+                      <Label for="gatewayDiscoveryDR" sm={3}>
+                        {i18n.t(`${packageNS}:tr000102`)}
+                      </Label>
+                      <Col sm={9}>
+                        <Input
+                          id="gatewayDiscoveryDR"
+                          name="gatewayDiscoveryDR"
+                          onChange={this.onChange}
+                          placeholder={i18n.t(`${packageNS}:tr000103`)}
+                          type="number"
+                          value={this.state.object.gatewayDiscoveryDR || 0}
+                        />
+                        <FormText color="muted">
+                          {i18n.t(`${packageNS}:tr000103`)}
+                        </FormText>
+                      </Col>
+                    </FormGroup>
+                  </>
+                }
+                <FormGroup row>
+                  <Col sm="12">
+                    <br />
+                    {submitButton()}
+                  </Col>
+                </FormGroup>
+              </Col>
+            </Row>
+          </TabPane>
+          <TabPane tabId="3">
+            <Row>
+              <Col sm="12">
+                <h5>{i18n.t(`${packageNS}:tr000105`)}</h5>
+                <br />
+                <FormGroup row>
+                  <Label for="caCert" sm={3}>
+                    {i18n.t(`${packageNS}:tr000106`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="caCert"
+                      name="caCert"
+                      multiline="true"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000107`)}
+                      rows="4"
+                      type="textarea"
+                      value={this.state.object.caCert || ""}
+                    />
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000107`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Label for="tlsCert" sm={3}>
+                    {i18n.t(`${packageNS}:tr000110`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="tlsCert"
+                      name="tlsCert"
+                      multiline="true"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000109`)}
+                      rows="4"
+                      type="textarea"
+                      value={this.state.object.tlsCert || ""}
+                    />
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000109`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Label for="tlsKey" sm={3}>
+                    {i18n.t(`${packageNS}:tr000108`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="tlsKey"
+                      name="tlsKey"
+                      multiline="true"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000109`)}
+                      rows="4"
+                      type="textarea"
+                      value={this.state.object.tlsKey || ""}
+                    />
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000109`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <br />
+                <h5>{i18n.t(`${packageNS}:tr000105`)}</h5>
+                <br />
+                <FormGroup row>
+                  <Label for="routingProfileCACert" sm={3}>
+                    {i18n.t(`${packageNS}:tr000106`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="routingProfileCACert"
+                      name="routingProfileCACert"
+                      multiline="true"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000107`)}
+                      rows="4"
+                      type="textarea"
+                      value={this.state.object.routingProfileCACert || ""}
+                    />
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000107`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Label for="routingProfileTLSCert" sm={3}>
+                    {i18n.t(`${packageNS}:tr000110`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="routingProfileTLSCert"
+                      name="routingProfileTLSCert"
+                      multiline="true"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000107`)}
+                      rows="4"
+                      type="textarea"
+                      value={this.state.object.routingProfileTLSCert || ""}
+                    />
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000107`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Label for="routingProfileTLSKey" sm={3}>
+                    {i18n.t(`${packageNS}:tr000108`)}
+                  </Label>
+                  <Col sm={9}>
+                    <Input
+                      id="routingProfileTLSKey"
+                      name="routingProfileTLSKey"
+                      multiline="true"
+                      onChange={this.onChange}
+                      placeholder={i18n.t(`${packageNS}:tr000109`)}
+                      rows="4"
+                      type="textarea"
+                      value={this.state.object.routingProfileTLSKey || ""}
+                    />
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000109`)}
+                    </FormText>
+                  </Col>
+                </FormGroup>
+                <FormGroup row>
+                  <Col sm="12">
+                    <br />
+                    {submitButton()}
+                  </Col>
+                </FormGroup>
+              </Col>
+            </Row>
+          </TabPane>
+        </TabContent>
       </Form>
     );
   }

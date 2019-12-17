@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -44,7 +45,7 @@ class ListNetworkServers extends Component {
               <Row>
                 <Col md="8" xs="9">
                   <Breadcrumb>
-                    <BreadcrumbItem><a href="#">Home</a></BreadcrumbItem>
+                    <BreadcrumbItem><Link to={`/`}>Home</Link></BreadcrumbItem>
                     <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
                   </Breadcrumb>
                 </Col>
@@ -60,10 +61,12 @@ class ListNetworkServers extends Component {
                 </Col>
                 <Col md="3" xs="3">
                   <Button
+                    aria-label={i18n.t(`${packageNS}:tr000277`)}
+                    block
                     color="primary"
-                    href={`/network-servers/create`}
-                    outline
                     size="md"
+                    tag={Link}
+                    to="/network-servers/create"
                   >
                     {i18n.t(`${packageNS}:tr000277`)}
                   </Button>
