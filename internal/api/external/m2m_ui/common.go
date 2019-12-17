@@ -56,6 +56,10 @@ func getUserProfileByJwt(v auth.Validator, ctx context.Context, organizationID i
 		}
 	}
 
+	if organizationID == 0 && userProfile.User.IsAdmin {
+		orgDeleted = false
+	}
+
 	if orgDeleted {
 		return userProfile, errors.New(fmt.Sprintf("User does not have persmission to modify this organization: %d", organizationID))
 	}
