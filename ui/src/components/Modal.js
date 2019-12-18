@@ -5,6 +5,9 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 const CommonModal = (props) => {
     const {
         className,
+        callback,
+        showCloseButton = true,
+        showConfirmButton = true,
     } = props;
 
     const [modal, setModal] = useState(true);

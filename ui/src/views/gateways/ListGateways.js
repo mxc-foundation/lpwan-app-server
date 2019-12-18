@@ -20,88 +20,69 @@ import GatewayStore from "../../stores/GatewayStore";
 import MapTileLayer from "../../components/MapTileLayer";
 
 
+const GatewayActivityColumn = (cell, row, index, extraData) => {
+  const stats = extraData['stats'];
+  
+  const options = {
+    elements: {
+      rectangle: {
+        backgroundColor: 'rgb(0, 255, 217)',
+      }
+    },
+    scales: {
+      xAxes: [{ display: false }],
+      yAxes: [{ display: false }],
+    },
+    tooltips: {
+      enabled: false,
+    },
+    legend: {
+      display: false,
+    },
+    responsive: false,
+    animation: {
+      duration: 0,
+    },
+  };
 
-// class GatewayRow extends Component {
-//   constructor() {
-//     super();
+  let rowStats = stats && stats[row.id] ? stats[row.id]: null;
+  
+  let chartData = {
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        fillColor: "rgba(33, 150, 243, 1)",
+      },
+    ],
+  };
 
-//     this.state = {};
-//   }
+  if (rowStats) {
+    for (const row of rowStats) {
+      chartData.labels.push(row.timestamp);
+      chartData.datasets[0].data.push(row.rxPacketsReceivedOK + row.txPacketsEmitted);
+    }
+  }
+  return (
+    rowStats ? <Bar
+      width={380}
+      height={23}
+      data={chartData}
+      options={options}
+    /> : <React.Fragment></React.Fragment>
+  );
+}
 
-//   componentWillMount() {
-//     const start = moment().subtract(29, "days").toISOString();
-//     const end = moment().toISOString();
-
-//     GatewayStore.getStats(this.props.gateway.id, start, end, resp => {
-//       let stats = {
-//         labels: [],
-//         datasets: [
-//           {
-//             data: [],
-//             fillColor: "rgba(33, 150, 243, 1)",
-//           },
-//         ],
-//       };
-
-//       for (const row of resp.result) {
-//         stats.labels.push(row.timestamp);
-//         stats.datasets[0].data.push(row.rxPacketsReceivedOK + row.txPacketsEmitted);
-//       }
-
-//       this.setState({
-//         stats: stats,
-//       });
-//     });
-//   }
-
-//   render() {
-//     const options = {
-//       elements: {
-//         rectangle: {
-//           backgroundColor: 'rgb(0, 255, 217)',
-//         }
-//       },
-//       scales: {
-//         xAxes: [{display: false}],
-//         yAxes: [{display: false}],
-//       },
-//       tooltips: {
-//         enabled: false,
-//       },
-//       legend: {
-//         display: false,
-//       },
-//       responsive: false,
-//       animation: {
-//         duration: 0,
-//       },
-//     };
-
-//     return(
-//       <TableRow>
-//           <TableCellLink to={`/organizations/${this.props.gateway.organizationID}/gateways/${this.props.gateway.id}`}>{this.props.gateway.name}</TableCellLink>
-//           <TableCell>{this.props.gateway.id}</TableCell>
-//           <TableCell>
-//             {this.state.stats && <Bar
-//               width={380}
-//               height={23}
-//               data={this.state.stats}
-//               options={options}
-//             />}
-//           </TableCell>
-//       </TableRow>
-//     );
-//   }
-// }
 
 const GatewayColumn = (cell, row, index, extraData) => {
   const organizationId = extraData['organizationId'];
   return <Link to={`/organizations/${organizationId}/gateways/${row.id}`}>{row.name}</Link>;
 }
 
-const getColumns = (organizationId) => (
+
+const getColumns = (organizationId, stats) => (
   [{
-    dataField: 'test_gateway_profile',
+    dataField: 'name',
     text: i18n.t(`${packageNS}:tr000042`),
     sort: false,
     formatter: GatewayColumn,
@@ -113,6 +94,8 @@ const getColumns = (organizationId) => (
   }, {
     dataField: 'lastSeenAt',
     text: i18n.t(`${packageNS}:tr000075`),
+    formatter: GatewayActivityColumn,
+    formatExtraData: { stats },
     sort: false,
   }, {
     dataField: 'status',
@@ -135,8 +118,10 @@ class ListGatewaysTable extends Component {
 
     this.handleTableChange = this.handleTableChange.bind(this);
     this.getPage = this.getPage.bind(this);
+    this.getGateWayStats = this.getGateWayStats.bind(this);
     this.state = {
-      data: []
+      data: [],
+      stats: {}
     }
   }
 
@@ -158,9 +143,22 @@ class ListGatewaysTable extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
-    this.setState({loading: true});
+    this.setState({ loading: true });
     GatewayStore.list("", this.props.organizationID, limit, offset, (res) => {
       this.setState({ data: res.result, loading: false });
+    });
+  }
+
+  /**
+   * Gets the stats from server
+   */
+  getGateWayStats = (gatewayId) => {
+    const start = moment().subtract(29, "days").toISOString();
+    const end = moment().toISOString();
+    GatewayStore.getStats(gatewayId, start, end, resp => {
+      let stats = { ...this.state.stats };
+      stats[gatewayId] = resp.result;
+      this.setState({ stats: stats });
     });
   }
 
@@ -168,11 +166,19 @@ class ListGatewaysTable extends Component {
     this.getPage(10);
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state && prevState.data !== this.state.data) {
+      for (const item of this.state.data) {
+        this.getGateWayStats(item.id);
+      }
+    }
+  }
+
   render() {
     return (
       <div className="position-relative">
         {this.state.loading && <Loader />}
-        <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID)}
+        <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID, this.state.stats)}
           keyField="id" onTableChange={this.handleTableChange} searchEnabled={true} rowsPerPage={10}></AdvancedTable>
       </div>
     );
@@ -260,13 +266,13 @@ class ListGatewaysMap extends Component {
     }
 
     return (<React.Fragment>
-        {bounds && <Map bounds={bounds} maxZoom={19} style={style} animate={true} scrollWheelZoom={false}>
-          <MapTileLayer />
-          <MarkerClusterGroup>
-            {markers}
-          </MarkerClusterGroup>
-        </Map>}
-      </React.Fragment>
+      {bounds && <Map bounds={bounds} maxZoom={19} style={style} animate={true} scrollWheelZoom={false}>
+        <MapTileLayer />
+        <MarkerClusterGroup>
+          {markers}
+        </MarkerClusterGroup>
+      </Map>}
+    </React.Fragment>
     );
   }
 }
@@ -289,7 +295,7 @@ class ListGateways extends Component {
 
   locationToTab = () => {
     if (window.location.href.endsWith("/map")) {
-      this.setState({viewMode: 'map'});
+      this.setState({ viewMode: 'map' });
     }
   }
 
@@ -297,7 +303,7 @@ class ListGateways extends Component {
    * Switch to list
    */
   switchToList() {
-    this.setState({viewMode: 'list'});
+    this.setState({ viewMode: 'list' });
   }
 
   render() {
@@ -320,7 +326,7 @@ class ListGateways extends Component {
         <Col>
           <Card>
             <CardBody>
-              {this.state.viewMode === 'map' && 
+              {this.state.viewMode === 'map' &&
                 <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
 
               <Switch>
