@@ -163,6 +163,7 @@ class NetworkServerForm extends FormComponent {
                             <div>
                               <Input
                                 {...input}
+                                autoFocus
                                 id="name"
                                 name="name"
                                 type="text"
@@ -256,6 +257,7 @@ class NetworkServerForm extends FormComponent {
                                 <div>
                                   <Input
                                     {...input}
+                                    autoFocus
                                     id="gatewayDiscoveryInterval"
                                     invalid={meta.error && meta.touched}
                                     min="0" 
