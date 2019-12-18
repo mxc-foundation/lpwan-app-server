@@ -9,24 +9,32 @@ const CommonModal = (props) => {
         callback
     } = props;
 
-    const [modal, setModal] = useState(false);
+    const [modal, setModal] = useState(true);
 
     const toggle = () => setModal(!modal);
     const proc = () => {
         setModal(!modal);
-        callback();
+        props.callback();
     }
+    const buttonColor = props.buttonColor === undefined
+        ? 'primary'
+        : props.buttonColor;
+
+    const icon = props.icon === undefined
+        ? null
+        : props.icon;
+
     return (
         <div>
-            <Button color="danger" onClick={toggle}>{buttonLabel}</Button>
-            <Modal isOpen={modal} toggle={toggle} className={className}>
+            {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>}
+            <Modal isOpen={modal} toggle={toggle} className={className} centered={true}>
                 <ModalHeader toggle={toggle}>{props.title}</ModalHeader>
                 <ModalBody>
                     {props.context}
                 </ModalBody>
                 <ModalFooter>
-                    <Button color="secondary" onClick={toggle}>{props.left!==undefined?props.left:i18n.t(`${packageNS}:tr000424`)}</Button>{' '}
-                    <Button color="primary" onClick={proc}>{props.right!==undefined?props.right:i18n.t(`${packageNS}:tr000425`)}</Button>
+                    <Button color="secondary" onClick={toggle}>{props.left !== undefined ? props.left : i18n.t(`${packageNS}:tr000424`)}</Button>{' '}
+                    <Button color="primary" onClick={proc}>{props.right !== undefined ? props.right : i18n.t(`${packageNS}:tr000425`)}</Button>
                 </ModalFooter>
             </Modal>
         </div>
