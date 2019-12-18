@@ -414,9 +414,12 @@
   "tr000421": "Downlink Price",
   "tr000422": "Mode",
   "tr000423": "Gateway Details",
-  "tr000424": "Altitude",
-  "tr000425": "This field is required",
-  "tr000426": "The provided value invalid, please enter correct value",
+  "tr000424": "Cancel",
+  "tr000425": "Confirm",
+  "tr000426": "Are you sure, you want to delete this gateway-profile?",
+  "tr000427": "Altitude",
+  "tr000428": "This field is required",
+  "tr000429": "The provided value invalid, please enter correct value",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
