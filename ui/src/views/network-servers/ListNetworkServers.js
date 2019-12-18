@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody,
-  CardSubtitle, CardTitle, Col, Container, Row } from 'reactstrap';
+  CardSubtitle, CardTitle, Col, Container, Row, Spinner } from 'reactstrap';
 
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -86,17 +86,20 @@ class ListNetworkServers extends Component {
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
-
         <Row>
           <Col>
             <Card className="shadow-sm">
-              <CardBody>
-                <AdvancedTable
-                  data={this.state.data}
-                  columns={columns}
-                  keyField="id"
-                  onTableChange={this.handleTableChange}
-                />
+              <CardBody className="text-center">
+                {
+                  this.state.data.length
+                  ? <AdvancedTable
+                      data={this.state.data}
+                      columns={columns}
+                      keyField="id"
+                      onTableChange={this.handleTableChange}
+                    />
+                  : <Spinner color="primary" style={{ align: 'center', width: '3rem', height: '3rem' }} />
+                }
               </CardBody>
             </Card>
           </Col>
