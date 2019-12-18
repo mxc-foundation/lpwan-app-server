@@ -9,9 +9,11 @@ const CommonModal = (props) => {
         callback,
         showCloseButton = true,
         showConfirmButton = true,
+        show = false,
+        showToggleButton = true
     } = props;
 
-    const [modal, setModal] = useState(false);
+    const [modal, setModal] = useState(show);
 
     const toggle = () => setModal(!modal);
     const proc = () => {
@@ -19,7 +21,7 @@ const CommonModal = (props) => {
         callback();
     }
     return (<React.Fragment>
-        <Button color={props.buttonColor || "danger"} outline={props.outline} onClick={toggle}>{buttonLabel}</Button>
+        {showToggleButton && <Button color={props.buttonColor || "danger"} outline={props.outline} onClick={toggle}>{buttonLabel}</Button>}
 
         <Modal isOpen={modal} toggle={toggle} className={className}>
             <ModalHeader toggle={toggle}>{props.title}</ModalHeader>

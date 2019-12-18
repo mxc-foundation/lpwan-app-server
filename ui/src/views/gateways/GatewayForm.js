@@ -112,6 +112,15 @@ class GatewayForm extends Component {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state && (prevState.object && prevState.object.networkServerID !== this.state.object.networkServerID)) {
+      let object = this.state.object;
+      object.gatewayProfileID = null;
+      this.setState({
+        object: object,
+      });
+    }
+  }
 
   render() {
     if (this.state.object === undefined) {
@@ -215,6 +224,7 @@ class GatewayForm extends Component {
                     getOption={this.getGatewayProfileOption}
                     getOptions={this.getGatewayProfileOptions}
                     setFieldValue={setFieldValue}
+                    helpText={i18n.t(`${packageNS}:tr000227`)}
                     inputProps={{
                       clearable: true,
                       cache: false,
@@ -300,7 +310,7 @@ class GatewayForm extends Component {
                       </div>)}
                     ></FieldArray>
               
-                  <Button type="submit" color="primary">{i18n.t(`${packageNS}:tr000066`)}</Button>
+                  <Button type="submit" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button>
                 </Form>
               )}
           </Formik>
