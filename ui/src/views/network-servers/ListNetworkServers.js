@@ -43,15 +43,22 @@ class ListNetworkServers extends Component {
     this.handleTableChange = this.handleTableChange.bind(this);
     this.getPage = this.getPage.bind(this);
     this.state = {
-      data: []
+      data: [],
+      loading: true
     }
   }
 
   /**
    * Handles table changes including pagination, sorting, etc
    */
-  handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
+  handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage + 1;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+
     this.getPage(sizePerPage, offset);
   }
 
@@ -60,8 +67,12 @@ class ListNetworkServers extends Component {
    */
   getPage = (limit, offset) => {
     const defaultOrgId = 0;
+    this.setState({ loading: true });
     NetworkServerStore.list(defaultOrgId, limit, offset, (res) => {
-      this.setState({ data: res.result });
+      this.setState({
+        data: res.result,
+        loading: false
+      });
     });
   }
 
@@ -97,6 +108,8 @@ class ListNetworkServers extends Component {
                       columns={columns}
                       keyField="id"
                       onTableChange={this.handleTableChange}
+                      rowsPerPage={10}
+                      searchEnabled={false}
                     />
                   : <Spinner color="primary" style={{ align: 'center', width: '3rem', height: '3rem' }} />
                 }
