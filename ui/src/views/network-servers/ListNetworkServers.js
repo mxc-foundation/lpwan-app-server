@@ -7,8 +7,10 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 
 import i18n, { packageNS } from '../../i18n';
+import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
+import TitleBarButton from "../../components/TitleBarButton";
 
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
@@ -85,12 +87,14 @@ class ListNetworkServers extends Component {
       <React.Fragment>
         <TitleBar
           buttons={[
-            <Link
+            <TitleBarButton
               aria-label={i18n.t(`${packageNS}:tr000277`)}
+              icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+              label={i18n.t(`${packageNS}:tr000277`)}
               key={'b-1'}
               to={`/network-servers/create`}
               className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
-            </Link>,
+            </TitleBarButton>,
           ]}
         >
           <Breadcrumb style={{ fontSize: "1.25rem", margin: "0rem" }}>
@@ -100,19 +104,16 @@ class ListNetworkServers extends Component {
         <Row>
           <Col>
             <Card className="shadow-sm">
-              <CardBody className="text-center">
-                {
-                  this.state.data.length && this.state.data[0].name
-                  ? <AdvancedTable
-                      data={this.state.data}
-                      columns={columns}
-                      keyField="id"
-                      onTableChange={this.handleTableChange}
-                      rowsPerPage={10}
-                      searchEnabled={false}
-                    />
-                  : <Spinner color="primary" style={{ align: 'center', width: '3rem', height: '3rem' }} />
-                }
+              <CardBody className="position-relative">
+                {this.state.loading && <Loader />}
+                <AdvancedTable
+                  data={this.state.data}
+                  columns={columns}
+                  keyField="id"
+                  onTableChange={this.handleTableChange}
+                  rowsPerPage={10}
+                  searchEnabled={true}
+                />
               </CardBody>
             </Card>
           </Col>
