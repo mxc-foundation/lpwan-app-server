@@ -6,7 +6,9 @@ const CommonModal = (props) => {
     const {
         buttonLabel,
         className,
-        callback
+        callback,
+        showCloseButton = true,
+        showConfirmButton = true,
     } = props;
 
     const [modal, setModal] = useState(false);
@@ -16,20 +18,21 @@ const CommonModal = (props) => {
         setModal(!modal);
         callback();
     }
-    return (
-        <div>
-            <Button color="danger" onClick={toggle}>{buttonLabel}</Button>
-            <Modal isOpen={modal} toggle={toggle} className={className}>
-                <ModalHeader toggle={toggle}>{props.title}</ModalHeader>
-                <ModalBody>
-                    {props.context}
-                </ModalBody>
-                <ModalFooter>
-                    <Button color="secondary" onClick={toggle}>{props.left!==undefined?props.left:i18n.t(`${packageNS}:tr000424`)}</Button>{' '}
-                    <Button color="primary" onClick={proc}>{props.right!==undefined?props.right:i18n.t(`${packageNS}:tr000425`)}</Button>
-                </ModalFooter>
-            </Modal>
-        </div>
+    return (<React.Fragment>
+        <Button color={props.buttonColor || "danger"} outline={props.outline} onClick={toggle}>{buttonLabel}</Button>
+
+        <Modal isOpen={modal} toggle={toggle} className={className}>
+            <ModalHeader toggle={toggle}>{props.title}</ModalHeader>
+            <ModalBody>
+                {props.context}
+            </ModalBody>
+
+            <ModalFooter>
+                {showCloseButton && <Button color="secondary" onClick={toggle}>{props.left !== undefined ? props.left : i18n.t(`${packageNS}:tr000424`)}</Button>}{' '}
+                {showConfirmButton && <Button color="primary" onClick={proc}>{props.right !== undefined ? props.right : i18n.t(`${packageNS}:tr000425`)}</Button>}
+            </ModalFooter>
+        </Modal>
+    </React.Fragment>
     );
 }
 

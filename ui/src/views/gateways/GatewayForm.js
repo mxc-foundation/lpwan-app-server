@@ -132,19 +132,19 @@ class GatewayForm extends Component {
 
 
     let fieldsSchema = {
-      name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000426`))
-        .required(i18n.t(`${packageNS}:tr000425`)),
+      name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
+        .required(i18n.t(`${packageNS}:tr000428`)),
       description: Yup.string()
-        .required(i18n.t(`${packageNS}:tr000425`)),
+        .required(i18n.t(`${packageNS}:tr000428`)),
       gatewayProfileID: Yup.string(),
       discoveryEnabled: Yup.bool(),
       location: Yup.object().shape({
-        altitude: Yup.number().required(i18n.t(`${packageNS}:tr000425`))
+        altitude: Yup.number().required(i18n.t(`${packageNS}:tr000428`))
       })
     }
 
     if (!this.props.update) {
-      fieldsSchema['id'] = Yup.string().required(i18n.t(`${packageNS}:tr000425`));
+      fieldsSchema['id'] = Yup.string().required(i18n.t(`${packageNS}:tr000428`));
       fieldsSchema['networkServerID'] = Yup.string();
     }
     const formSchema = Yup.object().shape(fieldsSchema);

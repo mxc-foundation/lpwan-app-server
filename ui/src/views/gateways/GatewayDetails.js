@@ -120,7 +120,7 @@ class GatewayDetails extends Component {
               </p>
 
               <h6 className="text-primary font-16">
-                {i18n.t(`${packageNS}:tr000424`)}
+                {i18n.t(`${packageNS}:tr000427`)}
               </h6>
               <p>
                 {this.props.gateway.location.altitude} meters
