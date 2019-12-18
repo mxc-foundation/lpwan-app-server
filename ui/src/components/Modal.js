@@ -4,9 +4,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 const CommonModal = (props) => {
     const {
-        buttonLabel,
         className,
-        callback
     } = props;
 
     const [modal, setModal] = useState(true);
@@ -16,17 +14,17 @@ const CommonModal = (props) => {
         setModal(!modal);
         props.callback();
     }
-    const buttonColor = props.buttonColor === undefined
+    /* const buttonColor = props.buttonColor === undefined
         ? 'primary'
-        : props.buttonColor;
+        : props.buttonColor; 
 
     const icon = props.icon === undefined
         ? null
-        : props.icon;
+        : props.icon;*/
 
     return (
         <div>
-            {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>}
+            {/* {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>} */}
             <Modal isOpen={modal} toggle={toggle} className={className} centered={true}>
                 <ModalHeader toggle={toggle}>{props.title}</ModalHeader>
                 <ModalBody>
