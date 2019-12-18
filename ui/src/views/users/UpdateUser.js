@@ -1,9 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import { CardContent } from "@material-ui/core";
+import { Container, Row, Card, CardBody } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
@@ -22,20 +20,22 @@ class UpdateUser extends Component {
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <UserForm
-                submitLabel={i18n.t(`${packageNS}:tr000066`)}
-                object={this.props.user}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+    return (
+      <React.Fragment>
+        <Container>
+          <Row xs="1" lg="1">
+            <Card>
+              <CardBody>
+                <UserForm
+                  submitLabel={i18n.t(`${packageNS}:tr000066`)}
+                  object={this.props.user}
+                  onSubmit={this.onSubmit}
+                />
+              </CardBody>
+            </Card>
+          </Row>
+        </Container>
+      </React.Fragment>
     );
   }
 }

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Row, Button, Col, Card, CardBody } from 'reactstrap';
 
-import { Row, Col, Card, CardBody } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -75,7 +75,9 @@ class ListGatewayProfiles extends Component {
           </Link>,
         ]}
       >
-        <TitleBarTitle title={i18n.t(`${packageNS}:tr000046`)} />
+        <Breadcrumb>
+          <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+        </Breadcrumb>
       </TitleBar>
 
       <Row>
