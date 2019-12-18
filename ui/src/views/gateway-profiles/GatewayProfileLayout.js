@@ -40,16 +40,14 @@ class GatewayProfileLayout extends Component {
     if (this.state.gatewayProfile === undefined) {
       return (<div></div>);
     }
-
+    const icon = <i class="mdi mdi-delete-empty"></i>;
     return (
       <React.Fragment>
         <TitleBar
           buttons={[
-            <Modal buttonLabel={i18n.t(`${packageNS}:tr000401`)} title={""} context={i18n.t(`${packageNS}:tr000426`)} callback={this.deleteGatewayProfile} />
+            <Modal buttonLabel={i18n.t(`${packageNS}:tr000401`)} buttonColor={'danger'} icon={icon} title={""} context={i18n.t(`${packageNS}:tr000426`)} callback={this.deleteGatewayProfile} />
           ]}
         >
-
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000063`)} />
           <Breadcrumb>
             <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{this.state.gatewayProfile.gatewayProfile.name}</BreadcrumbItem>
