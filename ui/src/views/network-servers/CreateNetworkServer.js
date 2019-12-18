@@ -32,7 +32,7 @@ class CreateNetworkServer extends Component {
         <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
           <NetworkServerForm
             onSubmit={this.onSubmit}
-            submitLabel={i18n.t(`${packageNS}:tr000277`)}
+            submitLabel={i18n.t(`${packageNS}:tr000041`)}
           />
         </Card>
       </React.Fragment>
