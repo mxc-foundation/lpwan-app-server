@@ -91,7 +91,7 @@ class ListNetworkServers extends Component {
             <Card className="shadow-sm">
               <CardBody className="text-center">
                 {
-                  this.state.data.length
+                  this.state.data.length && this.state.data[0].name
                   ? <AdvancedTable
                       data={this.state.data}
                       columns={columns}
