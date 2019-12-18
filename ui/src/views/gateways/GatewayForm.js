@@ -1,106 +1,21 @@
 import React, { Component } from "react";
 
-import { Row, Col, Button as RButton } from 'reactstrap';
-import { Formik, Form as BForm, Field } from 'formik';
+import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
+import { Formik, Form, Field, FieldArray } from 'formik';
 import * as Yup from 'yup';
-
-import { withStyles } from "@material-ui/core/styles";
-import TextField from '@material-ui/core/TextField';
-import FormControl from "@material-ui/core/FormControl";
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormHelperText from "@material-ui/core/FormHelperText";
-import FormGroup from "@material-ui/core/FormGroup";
-import FormLabel from "@material-ui/core/FormLabel";
-import Checkbox from '@material-ui/core/Checkbox';
-import Button from "@material-ui/core/Button";
 
 import { Map, Marker } from 'react-leaflet';
 
 import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
-import Form from "../../components/Form";
 
-import AutocompleteSelect from "../../components/AutocompleteSelect";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import LocationStore from "../../stores/LocationStore";
 import MapTileLayer from "../../components/MapTileLayer";
-import EUI64Field from "../../components/EUI64Field";
-import AESKeyField from "../../components/AESKeyField";
-import theme from "../../theme";
+import EUI64Field from "../../components/FormikEUI64Field";
+import AESKeyField from "../../components/FormikAESKeyField";
 
-
-const boardStyles = {
-  formLabel: {
-    color: theme.palette.primary.main,
-  },
-  a: {
-    color: theme.palette.primary.main,
-  },
-};
-
-class GatewayBoardForm extends Component {
-  constructor() {
-    super();
-
-    this.onChange = this.onChange.bind(this);
-    this.onDelete = this.onDelete.bind(this);
-  }
-
-  onChange(e) {
-    let board = this.props.board;
-    const field = e.target.id;
-
-    board[field] = e.target.value;
-    this.props.onChange(board);
-  }
-
-  onDelete(e) {
-    e.preventDefault();
-    this.props.onDelete();
-  }
-
-  render() {
-    return (
-      <FormControl fullWidth margin="normal">
-        <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000400`)} #{this.props.i} (<a href="#delete" onClick={this.onDelete} className={this.props.classes.a}>{i18n.t(`${packageNS}:tr000401`)}</a>)</FormLabel>
-        <EUI64Field
-          id="fpgaID"
-          label={i18n.t(`${packageNS}:tr000236`)}
-          margin="normal"
-          value={this.props.board.fpgaID || ""}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000237`)}
-          fullWidth
-        />
-        <AESKeyField
-          id="fineTimestampKey"
-          label={i18n.t(`${packageNS}:tr000238`)}
-          margin="normal"
-          value={this.props.board.fineTimestampKey || ""}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000239`)}
-          fullWidth
-        />
-      </FormControl>
-    );
-  }
-}
-
-GatewayBoardForm = withStyles(boardStyles)(GatewayBoardForm);
-
-
-const styles = {
-  mapLabel: {
-    marginBottom: theme.spacing(1),
-  },
-  link: {
-    color: theme.palette.primary.main,
-  },
-  formLabel: {
-    fontSize: 12,
-  },
-};
 
 class GatewayForm extends Component {
   constructor(props) {
@@ -117,7 +32,8 @@ class GatewayForm extends Component {
     this.setCurrentPosition = this.setCurrentPosition.bind(this);
     this.updatePosition = this.updatePosition.bind(this);
     this.updateZoom = this.updateZoom.bind(this);
-    this.addGatewayBoard = this.addGatewayBoard.bind(this);
+
+    this.markerRef = React.createRef(null);
   }
 
   componentDidMount() {
@@ -129,18 +45,6 @@ class GatewayForm extends Component {
       this.setCurrentPosition();
     }
   }
-
-  // onChange(e) {
-  //   if (e.target.id === "networkServerID" && e.target.value !== this.state.object.networkServerID) {
-  //     let object = this.state.object;
-  //     object.gatewayProfileID = null;
-  //     this.setState({
-  //       object: object,
-  //     });
-  //   }
-
-  //   super.onChange(e);
-  // }
 
   setCurrentPosition(e) {
     if (e !== undefined) {
@@ -160,7 +64,7 @@ class GatewayForm extends Component {
   }
 
   updatePosition() {
-    const position = this.refs.marker.leafletElement.getLatLng();
+    const position = this.markerRef.leafletElement.getLatLng();
     let object = this.state.object;
     object.location = {
       latitude: position.lat,
@@ -208,34 +112,6 @@ class GatewayForm extends Component {
     });
   }
 
-  addGatewayBoard() {
-    let object = this.state.object;
-    if (object.boards === undefined) {
-      object.boards = [{}];
-    } else {
-      object.boards.push({});
-    }
-
-    this.setState({
-      object: object,
-    });
-  }
-
-  deleteGatewayBoard(i) {
-    let object = this.state.object;
-    object.boards.splice(i, 1);
-    this.setState({
-      object: object,
-    });
-  }
-
-  updateGatewayBoard(i, board) {
-    let object = this.state.object;
-    object.boards[i] = board;
-    this.setState({
-      object: object,
-    });
-  }
 
   render() {
     if (this.state.object === undefined) {
@@ -244,6 +120,7 @@ class GatewayForm extends Component {
 
     const style = {
       height: 400,
+      zIndex: 1,
     };
 
     let position = [];
@@ -253,25 +130,22 @@ class GatewayForm extends Component {
       position = [0, 0];
     }
 
-    let boards = [];
-    if (this.state.object.boards !== undefined) {
-      boards = this.state.object.boards.map((b, i) => <GatewayBoardForm key={i} i={i} board={b} onDelete={() => this.deleteGatewayBoard(i)} onChange={board => this.updateGatewayBoard(i, board)} />);
-    }
-
 
     let fieldsSchema = {
-      name: Yup.string()
+      name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000426`))
         .required(i18n.t(`${packageNS}:tr000425`)),
       description: Yup.string()
         .required(i18n.t(`${packageNS}:tr000425`)),
       gatewayProfileID: Yup.string(),
       discoveryEnabled: Yup.bool(),
-      'location.altitude': Yup.number().required(i18n.t(`${packageNS}:tr000425`)),
+      location: Yup.object().shape({
+        altitude: Yup.number().required(i18n.t(`${packageNS}:tr000425`))
+      })
     }
 
     if (!this.props.update) {
       fieldsSchema['id'] = Yup.string().required(i18n.t(`${packageNS}:tr000425`));
-      fieldsSchema['networkServerID'] =  Yup.string();
+      fieldsSchema['networkServerID'] = Yup.string();
     }
     const formSchema = Yup.object().shape(fieldsSchema);
 
@@ -281,15 +155,13 @@ class GatewayForm extends Component {
           <Formik
             initialValues={this.state.object}
             validationSchema={formSchema}
-            onSubmit={values => {
-              // same shape as initial values
-              console.log(values);
-            }}>
+            onSubmit={this.props.onSubmit}>
             {({
               handleSubmit,
-              setFieldValue
+              setFieldValue,
+              values
             }) => (
-                <BForm noValidate>
+                <Form onSubmit={handleSubmit} noValidate>
                   <Field
                     type="text"
                     label={i18n.t(`${packageNS}:tr000218`)}
@@ -332,7 +204,7 @@ class GatewayForm extends Component {
                     }}
                     component={AsyncAutoComplete}
                   />}
-                  
+
 
                   <Field
                     type="text"
@@ -363,140 +235,80 @@ class GatewayForm extends Component {
                     type="number"
                     label={i18n.t(`${packageNS}:tr000230`)}
                     name="location.altitude"
-                    id="location.altitude"
-                    value={this.state.object.location.altitude || 0}
+                    id="location-altitude"
                     component={ReactstrapInput}
                     helpText={i18n.t(`${packageNS}:tr000231`)}
                   />
 
-                  <RButton type="submit" color="primary">Submit</RButton>
-                  {/* <Button onClick={this.addGatewayBoard}>{i18n.t(`${packageNS}:tr000234`)}</Button>   */}
-                </BForm>
+                  <FormGroup>
+                    <Label>{i18n.t(`${packageNS}:tr000232`)} (<a onClick={this.setCurrentPosition} href="#getlocation">{i18n.t(`${packageNS}:tr000328`)}</a>)</Label>
+                    <Map
+                      center={position}
+                      zoom={this.state.mapZoom}
+                      style={style}
+                      animate={true}
+                      scrollWheelZoom={false}
+                      onZoomend={this.updateZoom}
+                    >
+                      <MapTileLayer />
+                      <Marker position={position} draggable={true} onDragend={this.updatePosition} ref={this.markerRef} />
+                    </Map>
+                    <FormText color="muted">
+                      {i18n.t(`${packageNS}:tr000233`)}
+                    </FormText>
+                  </FormGroup>
+
+
+                  { /* boards */}
+
+                  <FieldArray
+                    name="boards"
+                    render={arrayHelpers => (
+                      <div>
+                        {values.boards && values.boards.length > 0 && values.boards.map((b, index) => (
+                          <React.Fragment key={index}>
+                            <Row>
+                              <Col>
+                                <Card className="shadow-none border">
+                                  <CardBody>
+                                    <h5>{i18n.t(`${packageNS}:tr000400`)} #{index} (<Button color="link" className="p-0" onClick={() => arrayHelpers.remove(index)}>{i18n.t(`${packageNS}:tr000401`)}</Button>)</h5>
+
+                                    <EUI64Field
+                                      label={i18n.t(`${packageNS}:tr000236`)}
+                                      name={`boards[${index}].fpgaID`}
+                                      id={`boards-${index}-fpgaID`}
+                                      value={b.fpgaID || ""}
+                                      helpText={i18n.t(`${packageNS}:tr000237`)}
+                                    />
+
+                                    <AESKeyField
+                                      name={`boards[${index}].fineTimestampKey`}
+                                      id={`boards-${index}-fineTimestampKey`}
+                                      label={i18n.t(`${packageNS}:tr000238`)}
+                                      value={b.fineTimestampKey || ""}
+                                      helpText={i18n.t(`${packageNS}:tr000239`)}
+                                    />
+                                  </CardBody>
+                                </Card>
+                              </Col>
+                            </Row>
+                          </React.Fragment>
+                        ))}
+
+                        <Button type="button" color="primary" outline className="mb-2" 
+                          onClick={() => {arrayHelpers.push({});}}>{i18n.t(`${packageNS}:tr000234`)}</Button>
+                      </div>)}
+                    ></FieldArray>
+              
+                  <Button type="submit" color="primary">{i18n.t(`${packageNS}:tr000066`)}</Button>
+                </Form>
               )}
           </Formik>
         </Col>
       </Row>
-
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-        {/* <TextField
-          id="name"
-          label={i18n.t(`${packageNS}:tr000218`)}
-          margin="normal"
-          value={this.state.object.name || ""}
-          onChange={this.onChange}
-          inputProps={{
-            pattern: "[\\w-]+",
-          }}
-          helperText={i18n.t(`${packageNS}:tr000062`)}
-          required
-          fullWidth
-        />
-        <TextField
-          id="description"
-          label={i18n.t(`${packageNS}:tr000219`)}
-          margin="normal"
-          value={this.state.object.description || ""}
-          onChange={this.onChange}
-          rows={4}
-          multiline
-          required
-          fullWidth
-        /> */}
-        {/* {!this.props.update && <EUI64Field
-          id="id"
-          label={i18n.t(`${packageNS}:tr000074`)}
-          margin="normal"
-          value={this.state.object.id || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-          random
-        />} */}
-        {/* {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
-          <AutocompleteSelect
-            id="networkServerID"
-            label={i18n.t(`${packageNS}:tr000115`)}
-            value={this.state.object.networkServerID || ""}
-            onChange={(e) => { console.log(e) }}
-            getOption={this.getNetworkServerOption}
-            getOptions={this.getNetworkServerOptions}
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000223`)}
-          </FormHelperText>
-        </FormControl>}
-        <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000224`)}</FormLabel>
-          <AutocompleteSelect
-            id="gatewayProfileID"
-            label={i18n.t(`${packageNS}:tr000225`)}
-            value={this.state.object.gatewayProfileID || ""}
-            triggerReload={this.state.object.networkServerID || ""}
-            onChange={(e) => { console.log(e) }}
-            getOption={this.getGatewayProfileOption}
-            getOptions={this.getGatewayProfileOptions}
-            inputProps={{
-              clearable: true,
-              cache: false,
-            }}
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000227`)}
-          </FormHelperText>
-        </FormControl> */}
-        {/* <FormGroup>
-          <FormControlLabel
-            label={i18n.t(`${packageNS}:tr000228`)}
-            control={
-              <Checkbox
-                id="discoveryEnabled"
-                checked={!!this.state.object.discoveryEnabled}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000229`)}
-          </FormHelperText>
-        </FormGroup> */}
-        {/* <TextField
-          id="location.altitude"
-          label={i18n.t(`${packageNS}:tr000230`)}
-          margin="normal"
-          type="number"
-          value={this.state.object.location.altitude || 0}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000231`)}
-          required
-          fullWidth
-        /> */}
-        <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.mapLabel}>{i18n.t(`${packageNS}:tr000232`)} (<a onClick={this.setCurrentPosition} href="#getlocation" className={this.props.classes.link}>{i18n.t(`${packageNS}:tr000328`)}</a>)</FormLabel>
-          <Map
-            center={position}
-            zoom={this.state.mapZoom}
-            style={style}
-            animate={true}
-            scrollWheelZoom={false}
-            onZoomend={this.updateZoom}
-          >
-            <MapTileLayer />
-            <Marker position={position} draggable={true} onDragend={this.updatePosition} ref="marker" />
-          </Map>
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000233`)}
-          </FormHelperText>
-        </FormControl>
-        {/* {boards} */}
-      </Form>
     </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(GatewayForm);
+export default GatewayForm;

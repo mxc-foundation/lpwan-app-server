@@ -416,6 +416,7 @@
   "tr000423": "Gateway Details",
   "tr000424": "Altitude",
   "tr000425": "This field is required",
+  "tr000426": "The provided value invalid, please enter correct value",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
