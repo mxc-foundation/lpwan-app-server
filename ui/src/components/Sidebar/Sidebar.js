@@ -9,6 +9,7 @@ import MetisMenu from 'metismenujs/dist/metismenujs';
 import OrganizationStore from '../../stores/OrganizationStore';
 import ServerInfoStore from '../../stores/ServerInfoStore';
 import SessionStore from '../../stores/SessionStore';
+import UserStore from '../../stores/UserStore';
 import { SUPERNODE_WALLET, SUPERNODE_SETTING, DEFAULT, WALLET, SETTING } from '../../util/Data';
 
 import SideNavContent from './SideNavContent';
@@ -16,7 +17,6 @@ import SideNavSettingContent from './SideNavSettingContent';
 import SideNavSupernodeSettingContent from './SideNavSupernodeSettingContent';
 import SideNavSupernodeWalletContent from './SideNavSupernodeWalletContent';
 import SideNavWalletContent from './SideNavWalletContent';
-import UserProfile from './UserProfile';
 
 const ProfileMenus = [{
     label: 'My Account',
@@ -276,6 +276,7 @@ class Sidebar extends Component {
     render() {
         const isCondensed = this.props.isCondensed || false;
         const orgId = SessionStore.getOrganizationID();
+        const user = SessionStore.getUser();
         const version = this.state.version;
         let sidebar = this.state.sidebar;
 
@@ -290,7 +291,7 @@ class Sidebar extends Component {
                 sidebar = <SideNavWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case SETTING:
-                sidebar = <SideNavSettingContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebar = <SideNavSettingContent orgId={orgId} user={user} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             default:
                 sidebar = <SideNavContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;

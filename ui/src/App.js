@@ -54,6 +54,9 @@ import ChangeUserPassword from "./views/users/ChangeUserPassword";
 import PasswordRecovery from "./views/users/PasswordRecovery";
 import PasswordResetConfirm from "./views/users/PasswordResetConfirm";
 
+// user-profile
+import UserProfile from "./views/user-profiles/UserProfile";
+
 // service-profile
 import ListServiceProfiles from "./views/service-profiles/ListServiceProfiles";
 import CreateServiceProfile from "./views/service-profiles/CreateServiceProfile";
@@ -364,6 +367,15 @@ class App extends Component {
                 <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
 
                 <Route exact path="/search" component={Search} />
+
+                <Route exact path="/modify-account/:organizationID(\d+)/users/:userID(\d+)/user-profile" 
+                  render={props =>
+                    <UserProfile {...props}
+                      language={language}
+                      onChangeLanguage={this.onChangeLanguage}
+                    />
+                  }
+                />
               </Switch>
             </Layout>
 

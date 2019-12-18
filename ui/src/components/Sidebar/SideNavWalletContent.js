@@ -12,7 +12,8 @@ const SideNavWalletContent = (props) => {
                   <li>
                       <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
                           <span className="mdi mdi-arrow-left-bold"></span>
-                          <span> {'back'} </span>
+                          <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                          <span>{i18n.t(`${packageNS}:tr000428`)}</span>
                       </Link>
                   </li>
 

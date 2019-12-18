@@ -12,7 +12,8 @@ const SideNavSettingContent = (props) => {
                   <li>
                       <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
                           <span className="mdi mdi-arrow-left-bold"></span>
-                          <span> {'back'} </span>
+                          <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                          <span>{i18n.t(`${packageNS}:tr000428`)}</span>
                       </Link>
                   </li>
                   
@@ -21,6 +22,17 @@ const SideNavSettingContent = (props) => {
                   <li>
                       <DropdownMenu2 default={props.default} onChange={props.onChange} />
                   </li>
+
+                  {
+                      props.user ? (
+                        <li>
+                            <Link to={`/modify-account/${props.orgId}/users/${props.user.id}/user-profile`} className="waves-effect side-nav-link-ref">
+                                <i className="mdi mdi-account-circle"></i>
+                                <span> {i18n.t(`${packageNS}:tr000430`)} </span>
+                            </Link>
+                        </li>
+                      ) : null
+                  }
 
                   <li>
                       <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref">
