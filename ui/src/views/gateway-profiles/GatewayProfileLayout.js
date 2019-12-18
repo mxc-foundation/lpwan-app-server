@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
 import Modal from '../../components/Modal';
-import { Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
+import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -15,7 +15,9 @@ class GatewayProfileLayout extends Component {
   constructor() {
     super();
 
-    this.state = {};
+    this.state = {
+      nsDialog: false
+    };
 
     this.deleteGatewayProfile = this.deleteGatewayProfile.bind(this);
   }
@@ -29,11 +31,15 @@ class GatewayProfileLayout extends Component {
   }
 
   deleteGatewayProfile = () => {
-    if (window.confirm("Are you sure you want to delete this gateway-profile?")) {
-      GatewayProfileStore.delete(this.props.match.params.gatewayProfileID, () => {
-        this.props.history.push("/gateway-profiles");
-      });
-    }
+    GatewayProfileStore.delete(this.props.match.params.gatewayProfileID, () => {
+      this.props.history.push("/gateway-profiles");
+    });
+  }
+
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
   }
 
   render() {
@@ -43,9 +49,17 @@ class GatewayProfileLayout extends Component {
     const icon = <i class="mdi mdi-delete-empty"></i>;
     return (
       <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:tr000426`)}
+          callback={this.deleteGatewayProfile} />}
         <TitleBar
           buttons={[
-            <Modal buttonLabel={i18n.t(`${packageNS}:tr000401`)} buttonColor={'danger'} icon={icon} title={""} context={i18n.t(`${packageNS}:tr000426`)} callback={this.deleteGatewayProfile} />
+            <Button color="danger"
+              key={1}
+              onClick={this.openModal}
+              className=""><i class="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:tr000401`)}
+            </Button>
           ]}
         >
           <Breadcrumb>
