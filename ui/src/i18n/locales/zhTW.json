@@ -413,5 +413,6 @@
   "tr000421": "Downlink Price",
   "tr000422": "Mode",
   "tr000423": "Gateway Details",
-  "tr000426": "Are you sure you want to delete this gateway-profile?"
+  "tr000426": "Are you sure you want to delete this gateway-profile?",
+  "tr000427": "將LPWAN App Server的配置文件證書路由到LPWAN Server連接"
 }
