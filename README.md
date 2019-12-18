@@ -72,8 +72,17 @@ npm install
 
 ## Build Docker container and start container shell session:
 
+If you want to use __local__ postgresql and mqtt service, do following command in directory where Makefile is:
 ```bash
-docker-compose up -d && docker-compose exec appserver bash
+$ make server_local
+```
+
+If you want to use __remote__ postgresql and mqtt service, do following command in directory where Makefile is, and insert remote server domain name after the prompt:
+```bash
+$ make server_remote
+Start docker container with remote database and mqtt service
+Insert remote server domain name: 
+
 ```
 
 ## Start LPWAN App Server:
