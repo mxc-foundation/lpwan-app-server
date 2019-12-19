@@ -130,7 +130,7 @@ class WithPromises extends Component {
     const { selectedOption } = this.state;
 
     return (
-      <div className={classNames('Select-menu-outer', this.props.classes.languageWrapper)}>
+      <div className={classNames(this.props.classes.languageWrapper)}>
         {/* {
           selectedOption && selectedOption.code
           ? (
