@@ -19,7 +19,7 @@ const NetworkColumn = (cell, row, index, extraData) => {
 }
 
 const columns = [{
-  dataField: 'test_gateway_profile',
+  dataField: 'name',
   text: i18n.t(`${packageNS}:tr000042`),
   sort: false,
   formatter: GatewayColumn
@@ -56,6 +56,7 @@ class ListGatewayProfiles extends Component {
    */
   getPage = (limit, offset) => {
     GatewayProfileStore.list(0, limit, offset, (res) => {
+      console.log('res', res);
       this.setState({ data: res.result });
     });
   }
