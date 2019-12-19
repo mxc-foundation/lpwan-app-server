@@ -10,7 +10,8 @@ import AdvancedTable from "../../components/AdvancedTable";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
 
-class ListServiceProfiles extends Component {
+class ListServiceProfilesAdmin extends Component {
+
   constructor(props) {
     super(props);
 
@@ -33,7 +34,7 @@ class ListServiceProfiles extends Component {
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
     const offset = (page - 1) * sizePerPage + 1;
-    this.getPage(this.props.match.params.organizationID, sizePerPage, offset);
+    this.getPage(0, sizePerPage, offset);
   }
 
   /**
@@ -46,17 +47,24 @@ class ListServiceProfiles extends Component {
   }
 
   serviceProfileColumn = (cell, row, index, extraData) => {
-    return <Link to={`/organizations/${this.props.match.params.organizationID}/service-profiles/${row.id}`}>{row.name}</Link>;
+    return <Link to={`/service-profiles/${row.id}`}>{row.name}</Link>;
   }
 
   componentDidMount() {
-    this.getPage(this.props.match.params.organizationID, 10);
+    this.getPage(0, 10);
   }
 
   render() {
-
     return (<React.Fragment>
-      <TitleBar>
+      <TitleBar
+        buttons={[
+          <Link
+            key={'b-1'}
+            to={`/service-profiles/create`}
+            className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
+          </Link>,
+        ]}
+      >
         <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
       </TitleBar>
 
@@ -74,4 +82,4 @@ class ListServiceProfiles extends Component {
   }
 }
 
-export default ListServiceProfiles;
+export default ListServiceProfilesAdmin;

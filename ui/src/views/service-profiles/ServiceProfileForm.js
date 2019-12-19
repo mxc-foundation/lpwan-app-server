@@ -1,23 +1,28 @@
-import React from "react";
+import React, { Component } from "react";
 
-import { withStyles } from "@material-ui/core/styles";
-import TextField from '@material-ui/core/TextField';
+import { withStyles } from '@material-ui/core/styles';
+import FormControlOrig from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from "@material-ui/core/FormGroup";
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControl from "@material-ui/core/FormControl";
-import FormHelperText from "@material-ui/core/FormHelperText";
 
+
+import { Button, Form, FormGroup, Label, Input, FormText, Row, Col } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
+import FormSubmit from "../../components/Form";
+import FormControl from "../../components/FormControl";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
+import theme from "../../theme";
+
 
 const styles = {
-  fontSize: 12,
+    a: {
+        color: theme.palette.primary.main,
+    },
+    formLabel: {
+        fontSize: 12,
+    },
 };
 
 
@@ -28,54 +33,63 @@ class ServiceProfileForm extends FormComponent {
     this.getNetworkServerOptions = this.getNetworkServerOptions.bind(this);
   }
 
-  getNetworkServerOption(id, callbackFunc) {
-    NetworkServerStore.get(id, resp => {
-      callbackFunc({label: resp.networkServer.name, value: resp.networkServer.id});
-    });
-  }
-
-  getNetworkServerOptions(search, callbackFunc) {
-    NetworkServerStore.list(0, 999, 0, resp => {
-      const options = resp.result.map((ns, i) => {return {label: ns.name, value: ns.id}});
-      callbackFunc(options);
-    });
-  }
-
-  render() {
-    if (this.state.object === undefined) {
-      return(<div></div>);
+    getNetworkServerOption(id, callbackFunc) {
+        NetworkServerStore.get(id, resp => {
+            callbackFunc({ label: resp.name, value: resp.id });
+        });
     }
 
+    getNetworkServerOptions() {
+        NetworkServerStore.list(0, 999, 0, resp => {
+            const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
+            let object = this.state.object;
+            object.options = options;
+
+            this.setState({
+                object
+            })
+        });
+    }
+
+    render() {
+        if (this.state.object === undefined) {
+            return (<div></div>);
+        }
+
     return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-        disabled={this.props.disabled}
-      >
-        <TextField
-          id="name"
-          label={i18n.t(`${packageNS}:tr000149`)}
-          margin="normal"
-          value={this.state.object.name || ""}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000150`)}
-          required
-          fullWidth
-        />
-        {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.FormLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
-          <AutocompleteSelect
-            id="networkServerID"
-            label={i18n.t(`${packageNS}:tr000047`)}
-            value={this.state.object.networkServerID || null}
-            onChange={this.onChange}
-            getOption={this.getNetworkServerOption}
-            getOptions={this.getNetworkServerOptions}
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000171`)}
-          </FormHelperText>
-        </FormControl>}
+    <React.Fragment>
+      <Form>
+          <FormGroup row>
+              <Label for="name" sm={2}>{i18n.t(`${packageNS}:tr000149`)}</Label>
+              <Col sm={10}>
+                  <Input type="text" name="name" id="name" value={this.state.object.name || ""} onChange={this.onChange} />
+                  <FormText color="muted">{i18n.t(`${packageNS}:tr000150`)}</FormText>
+              </Col>
+          </FormGroup>
+
+          {!this.props.update && <FormGroup row>
+              <Label for="networkServerID" sm={2}>{i18n.t(`${packageNS}:tr000047`)}</Label>
+              <Col sm={10}>
+                  <Input type="select" name="networkServerID" id="networkServerID" value={this.state.object.networkServerID || ""} onChange={this.onChange}>
+                      <option value={''}>{i18n.t(`${packageNS}:tr000171`)}</option>
+                      {this.state.object.options && this.state.object.options.map(project => {
+                          return (
+                              <option value={project.value}>{project.label}</option>
+                          )
+                      })}
+                  </Input>
+              </Col>
+          </FormGroup>}
+
+
+         {/* <FormGroup row>
+              <Label for="addGWMetaData" sm={2}>{i18n.t(`${packageNS}:tr000149`)}</Label>
+              <Col sm={10}>
+                  <Input type="text" name="name" id="name" value={this.state.object.name || ""} onChange={this.onChange} />
+                  <FormText color="muted">{i18n.t(`${packageNS}:tr000150`)}</FormText>
+              </Col>
+          </FormGroup>
+
         <FormControl fullWidth margin="normal">
           <FormControlLabel
             label={i18n.t(`${packageNS}:tr000151`)}
@@ -165,8 +179,9 @@ class ServiceProfileForm extends FormComponent {
           helperText="Maximum allowed data rate. Used for ADR."
           fullWidth
           required
-        />
+        />*/}
       </Form>
+      </React.Fragment>
     );
   }
 }

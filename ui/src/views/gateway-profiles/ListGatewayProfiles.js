@@ -56,7 +56,6 @@ class ListGatewayProfiles extends Component {
    */
   getPage = (limit, offset) => {
     GatewayProfileStore.list(0, limit, offset, (res) => {
-      console.log('res', res);
       this.setState({ data: res.result });
     });
   }

@@ -98,7 +98,7 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/organizations/${props.orgId}/service-profiles`}>
+                        <Link to={`/service-profiles`}>
                             <i className="mdi mdi-folder-account"></i>
                             <span> {i18n.t(`${packageNS}:tr000078`)} </span>
                         </Link>

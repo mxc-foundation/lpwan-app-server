@@ -1,23 +1,36 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import Grid from '@material-ui/core/Grid';
+import { withStyles } from '@material-ui/core/styles';
+import Modal from '../../components/Modal';
+import { Button, Breadcrumb, BreadcrumbItem, Form, FormGroup, Label, Input, FormText, Container, Row, Col, Card, CardBody } from 'reactstrap';
+
+
+
+/* import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
+import { CardContent } from "@material-ui/core";
+
+
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
+import DialogTitle from '@material-ui/core/DialogTitle'; */
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 
 import ServiceProfileForm from "./ServiceProfileForm";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
+
+
+const styles = {
+  card: {
+    overflow: "visible",
+  },
+};
 
 
 class CreateServiceProfile extends Component {
@@ -56,46 +69,28 @@ class CreateServiceProfile extends Component {
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <Dialog
-          open={this.state.nsDialog}
-          onClose={this.closeDialog}
-        >
-          <DialogTitle>{i18n.t(`${packageNS}:tr000394`)}</DialogTitle>
-          <DialogContent>
-            <DialogContentText paragraph>
-              {i18n.t(`${packageNS}:tr000377`)}
-              {i18n.t(`${packageNS}:tr000378`)}
-            </DialogContentText>
-            <DialogContentText>
-              {i18n.t(`${packageNS}:tr000379`)}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000041`)}</Button>
-            <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
-          </DialogActions>
-        </Dialog>
-
+    return (
+      <Form>
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} to={`/organizations/${this.props.match.params.organizationID}/service-profiles`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+          <Breadcrumb>
+            <BreadcrumbItem><Link to={`/service-profiles`}>{i18n.t(`${packageNS}:tr000078`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <ServiceProfileForm
+                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                  onSubmit={this.onSubmit}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Form>
 
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <ServiceProfileForm
-                submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                onSubmit={this.onSubmit}
-                match={this.props.match}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
     );
   }
 }
