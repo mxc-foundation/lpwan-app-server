@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Row, Button, Col, Card, CardBody } from 'reactstrap';
 
-import { Row, Col, Card, CardBody } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -19,7 +19,7 @@ const NetworkColumn = (cell, row, index, extraData) => {
 }
 
 const columns = [{
-  dataField: 'test_gateway_profile',
+  dataField: 'name',
   text: i18n.t(`${packageNS}:tr000042`),
   sort: false,
   formatter: GatewayColumn
@@ -56,6 +56,7 @@ class ListGatewayProfiles extends Component {
    */
   getPage = (limit, offset) => {
     GatewayProfileStore.list(0, limit, offset, (res) => {
+      console.log('res', res);
       this.setState({ data: res.result });
     });
   }
@@ -75,7 +76,9 @@ class ListGatewayProfiles extends Component {
           </Link>,
         ]}
       >
-        <TitleBarTitle title={i18n.t(`${packageNS}:tr000046`)} />
+        <Breadcrumb>
+          <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+        </Breadcrumb>
       </TitleBar>
 
       <Row>

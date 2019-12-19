@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
 import Modal from '../../components/Modal';
-import { Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
+import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
@@ -15,7 +15,9 @@ class GatewayProfileLayout extends Component {
   constructor() {
     super();
 
-    this.state = {};
+    this.state = {
+      nsDialog: false
+    };
 
     this.deleteGatewayProfile = this.deleteGatewayProfile.bind(this);
   }
@@ -29,27 +31,37 @@ class GatewayProfileLayout extends Component {
   }
 
   deleteGatewayProfile = () => {
-    if (window.confirm("Are you sure you want to delete this gateway-profile?")) {
-      GatewayProfileStore.delete(this.props.match.params.gatewayProfileID, () => {
-        this.props.history.push("/gateway-profiles");
-      });
-    }
+    GatewayProfileStore.delete(this.props.match.params.gatewayProfileID, () => {
+      this.props.history.push("/gateway-profiles");
+    });
+  }
+
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
   }
 
   render() {
     if (this.state.gatewayProfile === undefined) {
       return (<div></div>);
     }
-
+    const icon = <i class="mdi mdi-delete-empty"></i>;
     return (
       <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:tr000426`)}
+          callback={this.deleteGatewayProfile} />}
         <TitleBar
           buttons={[
-            <Modal buttonLabel={i18n.t(`${packageNS}:tr000401`)} title={""} context={i18n.t(`${packageNS}:tr000426`)} callback={this.deleteGatewayProfile} />
+            <Button color="danger"
+              key={1}
+              onClick={this.openModal}
+              className=""><i class="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:tr000401`)}
+            </Button>
           ]}
         >
-
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000063`)} />
           <Breadcrumb>
             <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{this.state.gatewayProfile.gatewayProfile.name}</BreadcrumbItem>

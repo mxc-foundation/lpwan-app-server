@@ -1,48 +1,13 @@
 import React, { Component } from "react";
 import ReactDOM from 'react-dom';
 
-import { withStyles } from "@material-ui/core/styles";
-import Paper from '@material-ui/core/Paper';
-import Card from "@material-ui/core/Card";
-import CardContent from "@material-ui/core/CardContent";
-import Typography from "@material-ui/core/Typography";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-
+import { Row, Col, Card, CardBody } from 'reactstrap';
 import L from 'leaflet';
 import { Map, Marker, Polyline, Popup, MapControl, withLeaflet } from 'react-leaflet';
 
 import i18n, { packageNS } from '../../i18n';
 import MapTileLayer from "../../components/MapTileLayer";
 import GatewayStore from "../../stores/GatewayStore";
-
-
-const styles = {
-  mapLegend: {
-    background: "rgba(255,255,255,0.7)",
-    padding: 10,
-    borderRadius: 5,
-  },
-
-  mapLegendList: {
-    listStyle: "none",
-    padding: 0,
-    margin: 0,
-    opacity: 1,
-  },
-
-  mapLegendListItem: {
-    fontWeight: "bold",
-    padding: 3,
-  },
-
-  label: {
-    display: "block",
-    float: "left",
-    marginRight: 10,
-    width: 24,
-  },
-};
 
 
 class GatewayDiscovery extends Component {
@@ -70,37 +35,26 @@ class GatewayDiscovery extends Component {
       return "#00FF00";
     } else if (dbm >= -120) {
       return "#00FFFF";
-    } 
+    }
     return "#0000FF";
   }
 
   render() {
     if (this.state.ping === undefined || this.state.ping.pingRX.length === 0) {
-      return(
-        <Card>
-          <CardContent>
-            <Typography variant="body1">
-              {i18n.t(`${packageNS}:tr000246`)}
-            </Typography>
-            <List>
-              <ListItem dense>
-                <Typography variant="body1">
-                  {i18n.t(`${packageNS}:tr000329`)}
-                </Typography>
-              </ListItem>
-              <ListItem dense>
-                <Typography variant="body1">
-                  {i18n.t(`${packageNS}:tr000330`)}
-                </Typography>
-              </ListItem>
-              <ListItem dense>
-                <Typography variant="body1">
-                  {i18n.t(`${packageNS}:tr000331`)}
-                </Typography>
-              </ListItem>
-            </List>
-          </CardContent>
-        </Card>
+      return (<Row>
+        <Col>
+          <Card className="shadow-none border">
+            <CardBody>
+              <p className="font-16">{i18n.t(`${packageNS}:tr000246`)}</p>
+              <ul>
+                <li>{i18n.t(`${packageNS}:tr000329`)}</li>
+                <li>{i18n.t(`${packageNS}:tr000330`)}</li>
+                <li>{i18n.t(`${packageNS}:tr000331`)}</li>
+              </ul>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
       );
     }
 
@@ -122,7 +76,7 @@ class GatewayDiscovery extends Component {
         <Popup>
           <span>
             {this.props.gateway.id}<br />
-            Freq: {this.state.ping.frequency/1000000} MHz<br />
+            Freq: {this.state.ping.frequency / 1000000} MHz<br />
             DR: {this.state.ping.dr}<br />
             Altitude: {this.props.gateway.location.altitude} meter(s)
           </span>
@@ -139,7 +93,7 @@ class GatewayDiscovery extends Component {
         <Marker position={pingPos} key={`gw-${rx.gatewayID}`}>
           <Popup>
             <span>
-              {rx.gatewayID}<br/>
+              {rx.gatewayID}<br />
               RSSI: {rx.rssi} dBm<br />
               SNR: {rx.LoRaSNR} dB<br />
               Altitude: {rx.altitude} meter(s)
@@ -161,38 +115,44 @@ class GatewayDiscovery extends Component {
       );
     }
 
-    return(
-      <Paper>
-        <Map bounds={bounds} maxZoom={19} style={style} animate={true} scrollWheelZoom={false}>
-          <MapTileLayer />
-          {markers}
-          {lines}
-          <LegendControl className={this.props.classes.mapLegend}>
-            <ul className={this.props.classes.mapLegendList}>
-              <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{background: this.getColor(-100)}}>&nbsp;</span> &gt;= -100 dBm</li>
-              <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{background: this.getColor(-105)}}>&nbsp;</span> &gt;= -105 dBm</li>
-              <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{background: this.getColor(-110)}}>&nbsp;</span> &gt;= -110 dBm</li>
-              <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{background: this.getColor(-115)}}>&nbsp;</span> &gt;= -115 dBm</li>
-              <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{background: this.getColor(-120)}}>&nbsp;</span> &gt;= -120 dBm</li>
-              <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{background: this.getColor(-121)}}>&nbsp;</span> &lt; -120 dBm</li>
-            </ul>
-          </LegendControl>
-        </Map>
-      </Paper>
+    return (
+      <Row>
+        <Col>
+          <Card className="shadow-none border">
+            <CardBody>
+              <Map bounds={bounds} maxZoom={19} style={style} animate={true} scrollWheelZoom={false}>
+                <MapTileLayer />
+                {markers}
+                {lines}
+                <LegendControl className={this.props.classes.mapLegend}>
+                  <ul className={this.props.classes.mapLegendList}>
+                    <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{ background: this.getColor(-100) }}>&nbsp;</span> &gt;= -100 dBm</li>
+                    <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{ background: this.getColor(-105) }}>&nbsp;</span> &gt;= -105 dBm</li>
+                    <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{ background: this.getColor(-110) }}>&nbsp;</span> &gt;= -110 dBm</li>
+                    <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{ background: this.getColor(-115) }}>&nbsp;</span> &gt;= -115 dBm</li>
+                    <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{ background: this.getColor(-120) }}>&nbsp;</span> &gt;= -120 dBm</li>
+                    <li className={this.props.classes.mapLegendListItem}><span className={this.props.classes.label} style={{ background: this.getColor(-121) }}>&nbsp;</span> &lt; -120 dBm</li>
+                  </ul>
+                </LegendControl>
+              </Map>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
     );
   };
 }
 
 class LegendControl extends MapControl {
   componentWillMount() {
-    const legend = L.control({position: "bottomleft"});
+    const legend = L.control({ position: "bottomleft" });
     const jsx = (
       <div {...this.props}>
         {this.props.children}
       </div>
     );
 
-    legend.onAdd = function(map) {
+    legend.onAdd = function (map) {
       let div = L.DomUtil.create("div", '');
       ReactDOM.render(jsx, div);
       return div;
@@ -201,10 +161,10 @@ class LegendControl extends MapControl {
     this.leafletElement = legend;
   }
 
-  createLeafletElement () {}
+  createLeafletElement() { }
 }
 
 LegendControl = withLeaflet(LegendControl);
 
-export default withStyles(styles)(GatewayDiscovery);
+export default GatewayDiscovery;
 

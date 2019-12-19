@@ -67,6 +67,14 @@ const SideNavContent = (props) => {
                   </li>
 
                   <li>
+                      <Link to={`/organizations/${props.orgId}/service-profiles`}>
+                          <i className="mdi mdi-folder-account"></i>
+                          <span> {i18n.t(`${packageNS}:tr000078`)} </span>
+                      </Link>
+                  </li>
+
+
+                  <li>
                       <Link to="/control-panel/wallet/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_SETTING)}>
                           <i className="mdi mdi-settings"></i>
                           <span> Setting </span>
