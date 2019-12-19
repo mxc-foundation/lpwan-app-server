@@ -233,7 +233,7 @@ const SideNavSupernodeWalletContent = (props) => {
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.control_panel`)}</li>
 
                     <li>
-                        <Link to={`/control-panel/withdraw/`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
+                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
                             <span className="mdi mdi-arrow-left-bold"></span>
                             <span> {'back to control pannel'} </span>
                         </Link>
@@ -267,14 +267,14 @@ const SideNavSupernodeSettingContent = (props) => {
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.control_panel`)}</li>
 
                     <li>
-                        <Link to={`/control-panel/withdraw/`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
+                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
                             <span className="mdi mdi-arrow-left-bold"></span>
                             <span> {'back to control pannel'} </span>
                         </Link>
                     </li>
 
                     <li>
-                        <Link to={`/control-panel/withdraw/`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/control-panel/modify-account`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-ethereum"></i>
                             <span> {i18n.t(`${packageNS}:menu.eth_account.eth_account`)} </span>
                         </Link>
@@ -298,7 +298,7 @@ const SideNavWalletContent = (props) => {
         <div id="sidebar-menu">
             <ul className="metismenu" id="side-menu">
                     <li>
-                        <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
+                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
                             <span className="mdi mdi-arrow-left-bold"></span>
                             <span> {'back'} </span>
                         </Link>
@@ -344,7 +344,7 @@ const SideNavSettingContent = (props) => {
         <div id="sidebar-menu">
             <ul className="metismenu" id="side-menu">
                     <li>
-                        <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
+                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
                             <span className="mdi mdi-arrow-left-bold"></span>
                             <span> {'back'} </span>
                         </Link>
@@ -358,8 +358,6 @@ const SideNavSettingContent = (props) => {
 
                     <li>
                         <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref">
-                            {/* <i className="mdi mdi-inbox-arrow-down"></i>
-                        <i className="mdi mdi-basket-fill"></i> */}
                             <i className="mdi mdi-ethereum"></i>
                             <span> {i18n.t(`${packageNS}:menu.eth_account.eth_account`)} </span>
                         </Link>
