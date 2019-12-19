@@ -74,7 +74,7 @@ class UserForm extends FormComponent {
             value.match(validEmailFormat) ? true : false;
 
           if (values.email && !isValidEmail(values.email)) {
-            errors.email = i18n.t(`${packageNS}:tr000433`);
+            errors.email = i18n.t(`${packageNS}:tr000455`);
           }
         
           return errors;
@@ -99,11 +99,11 @@ class UserForm extends FormComponent {
                       )}
                     </Field>
                   </FormGroup>
-                  <h4>{i18n.t(`${packageNS}:tr000430`)}</h4>
+                  <h4>{i18n.t(`${packageNS}:tr000452`)}</h4>
                   <br />
                   <FormGroup row>
                     <Label for="profilePic" sm={3}>
-                      {i18n.t(`${packageNS}:tr000432`)}
+                      {i18n.t(`${packageNS}:tr000454`)}
                     </Label>
                     <Col sm={9}>
                       <Row style={{ marginBottom: "10px" }}>

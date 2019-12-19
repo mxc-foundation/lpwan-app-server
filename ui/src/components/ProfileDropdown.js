@@ -41,7 +41,7 @@ class ProfileDropdown extends Component {
                                 <div className="dropdown-header noti-title">
                                     <Link to={`/users/${id}`} className="waves-effect side-nav-link-ref">
                                         <i className="mdi mdi-account-circle"></i>
-                                        <span> {i18n.t(`${packageNS}:tr000430`)} </span>
+                                        <span> {i18n.t(`${packageNS}:tr000452`)} </span>
                                     </Link>
                                 </div>
                             ) : null

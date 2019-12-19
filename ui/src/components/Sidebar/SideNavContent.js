@@ -143,7 +143,7 @@ const SideNavContent = (props) => {
                   <li>
                       <Link to={`/modify-account/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
                           <i className="mdi mdi-settings"></i>
-                          <span> {i18n.t(`${packageNS}:tr000429`)} </span>
+                          <span> {i18n.t(`${packageNS}:tr000451`)} </span>
                           <span className="menu-arrow"></span>
                       </Link>
                   </li>

@@ -13,18 +13,18 @@ function UserProfilePicFile(props) {
       const reader = new FileReader();
 
       reader.onabort = (err) => {
-        output.errorMessage = i18n.t(`${packageNS}:tr000435`, { error: err });
+        output.errorMessage = i18n.t(`${packageNS}:tr000457`, { error: err });
         onChange && onChange(output);
       };
 
       reader.onerror = (err) => {
-        output.errorMessage = i18n.t(`${packageNS}:tr000436`, { error: err });
+        output.errorMessage = i18n.t(`${packageNS}:tr000458`, { error: err });
         onChange && onChange(output);
       };
 
       reader.onload = () => {
         output.result = reader.result;
-        output.successMessage = i18n.t(`${packageNS}:tr000437`, { filename: file.name });
+        output.successMessage = i18n.t(`${packageNS}:tr000459`, { filename: file.name });
         onChange && onChange(output);
       };
 
@@ -36,7 +36,7 @@ function UserProfilePicFile(props) {
   const onDropRejected = useCallback((files) => {
     const { onChange } = props;
     let output = {};
-    const errorMessage = i18n.t(`${packageNS}:tr000438`, { maxFileSizeMegabytes: MAX_FILE_SIZE_MEGABYTES, filename: files[0].name });//`Maximum file upload size of ${MAX_FILE_SIZE_MEGABYTES} MB exceeded by file ${files[0].name}`;
+    const errorMessage = i18n.t(`${packageNS}:tr000460`, { maxFileSizeMegabytes: MAX_FILE_SIZE_MEGABYTES, filename: files[0].name });//`Maximum file upload size of ${MAX_FILE_SIZE_MEGABYTES} MB exceeded by file ${files[0].name}`;
     console.error(errorMessage);
     output.errorMessage = errorMessage;
     onChange && onChange(output);
@@ -56,7 +56,7 @@ function UserProfilePicFile(props) {
     <div className='input-file' style={{ padding: "10px" }} {...getRootProps()}>
       <input {...getInputProps()} />
       <span>{props.profilePicImage}</span>
-      <span className='label' style={{ marginLeft: "20px", marginRight: "10px" }}>{i18n.t(`${packageNS}:tr000434`)}</span>
+      <span className='label' style={{ marginLeft: "20px", marginRight: "10px" }}>{i18n.t(`${packageNS}:tr000456`)}</span>
       <i className="mdi mdi-upload"></i>
     </div>
   );

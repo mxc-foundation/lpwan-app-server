@@ -54,9 +54,6 @@ import ChangeUserPassword from "./views/users/ChangeUserPassword";
 import PasswordRecovery from "./views/users/PasswordRecovery";
 import PasswordResetConfirm from "./views/users/PasswordResetConfirm";
 
-// user-profile
-import UserProfile from "./views/user-profiles/UserProfile";
-
 // service-profile
 import ListServiceProfiles from "./views/service-profiles/ListServiceProfiles";
 import CreateServiceProfile from "./views/service-profiles/CreateServiceProfile";
