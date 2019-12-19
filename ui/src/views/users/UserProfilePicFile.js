@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import i18n, { packageNS } from '../../i18n';
 
-const MAX_FILE_SIZE_MEGABYTES = 1;
+const MAX_FILE_SIZE_MEGABYTES = 10;
 
 function UserProfilePicFile(props) {
   const onDrop = useCallback((files) => {
