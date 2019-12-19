@@ -26,7 +26,7 @@ const SideNavSettingContent = (props) => {
                   {
                       props.user ? (
                         <li>
-                            <Link to={`/modify-account/${props.orgId}/users/${props.user.id}/user-profile`} className="waves-effect side-nav-link-ref">
+                            <Link to={`/users/${props.user.id}`} className="waves-effect side-nav-link-ref">
                                 <i className="mdi mdi-account-circle"></i>
                                 <span> {i18n.t(`${packageNS}:tr000430`)} </span>
                             </Link>

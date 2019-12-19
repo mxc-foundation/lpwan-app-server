@@ -367,15 +367,6 @@ class App extends Component {
                 <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
 
                 <Route exact path="/search" component={Search} />
-
-                <Route exact path="/modify-account/:organizationID(\d+)/users/:userID(\d+)/user-profile" 
-                  render={props =>
-                    <UserProfile {...props}
-                      language={language}
-                      onChangeLanguage={this.onChangeLanguage}
-                    />
-                  }
-                />
               </Switch>
             </Layout>
 

@@ -25,7 +25,7 @@ class UserLayout extends Component {
   componentDidMount() {
     UserStore.get(this.props.match.params.userID, resp => {
       this.setState({
-        user: resp,
+        user: resp.user,
       });
     });
   }
@@ -43,10 +43,12 @@ class UserLayout extends Component {
   }
 
   render() {
-    if (this.state.user === undefined) {
+    const { user } = this.state;
+
+    if (user === undefined) {
       return (<div></div>);
     }
-    const isDisabled = (this.state.user.user.username === process.env.REACT_APP_DEMO_USER)
+    const isDisabled = (this.state.user.username === process.env.REACT_APP_DEMO_USER)
       ? true
       : false;
 
@@ -58,17 +60,17 @@ class UserLayout extends Component {
               key={1}
               onClick={this.changePassword}
               disabled={isDisabled}
-              className=""><i class="mdi mdi-key-change"></i>{' '}{i18n.t(`${packageNS}:tr000038`)}
+              className=""><i className="mdi mdi-key-change"></i>{' '}{i18n.t(`${packageNS}:tr000038`)}
             </Button>,
           ]}
         >
           <Breadcrumb>
             <BreadcrumbItem><Link to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
-            <BreadcrumbItem active>{this.state.user.user.username}</BreadcrumbItem>
+            <BreadcrumbItem active>{user.username}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
         <Row xs={12} lg={12}>
-          <UpdateUser user={this.state.user.user} />
+          <UpdateUser user={user} />
         </Row>
       </React.Fragment>
     );
