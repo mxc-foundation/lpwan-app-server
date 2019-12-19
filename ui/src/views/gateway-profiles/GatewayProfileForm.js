@@ -81,15 +81,15 @@ class ExtraChannel extends Component {
             >
                 <Form>
                     <FormGroup row>
-                        <Label for="modulation" sm={1}>{i18n.t(`${packageNS}:tr000118`)}</Label>
-                        <Col sm={5}>
+                        <Label for="modulation" sm={2}>{i18n.t(`${packageNS}:tr000118`)}</Label>
+                        <Col sm={4}>
                             <Input type="select" name="modulation" id="modulation" value={this.props.channel.modulation || ""} onChange={this.onChange}>
                                 <option value="LORA">{i18n.t(`${packageNS}:tr000119`)}</option>
                                 <option value="FSK">{i18n.t(`${packageNS}:tr000120`)}</option>
                             </Input>
                         </Col>
-                        <Label for="bandwidth" sm={1}>{i18n.t(`${packageNS}:tr000121`)}</Label>
-                        <Col sm={5}>
+                        <Label for="bandwidth" sm={2}>{i18n.t(`${packageNS}:tr000121`)}</Label>
+                        <Col sm={4}>
                             <Input type="select" name="bandwidth" id="bandwidth" value={this.props.channel.bandwidth || ""} onChange={this.onChange}>
                                 <option value={125}>125 {i18n.t(`${packageNS}:tr000122`)}</option>
                                 <option value={250}>250 {i18n.t(`${packageNS}:tr000122`)}</option>
@@ -98,14 +98,14 @@ class ExtraChannel extends Component {
                         </Col>
                     </FormGroup>
                     <FormGroup row>
-                        <Label for="frequency" sm={1}>Frequency (Hz)</Label>
-                        <Col sm={5}>
+                        <Label for="frequency" sm={2}>Frequency (Hz)</Label>
+                        <Col sm={4}>
                             <Input type="number" name="frequency" id="frequency" value={this.props.channel.frequency || ""} onChange={this.onChange} />
                             <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
                         </Col>
-                        {this.props.channel.modulation === "LORA" && <><Label for="spreadingFactorsStr" sm={1}>{i18n.t(`${packageNS}:tr000123`)}</Label>
-                            <Col sm={5}>
-                                <Input type="number"
+                        {this.props.channel.modulation === "LORA" && <><Label for="spreadingFactorsStr" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
+                            <Col sm={4}>
+                                <Input type="text"
                                     name="spreadingFactorsStr"
                                     id="spreadingFactorsStr"
                                     placeholder="7, 8, 9, 10, 11, 12"
@@ -114,8 +114,8 @@ class ExtraChannel extends Component {
                                     onChange={this.onChange} />
                                 <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
                             </Col></>}
-                        {this.props.channel.modulation === "FSK" && <><Label for="bitrate" sm={1}>{i18n.t(`${packageNS}:tr000123`)}</Label>
-                            <Col sm={5}>
+                        {this.props.channel.modulation === "FSK" && <><Label for="bitrate" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
+                            <Col sm={4}>
                                 <Input type="number"
                                     name="bitrate"
                                     id="bitrate"
@@ -146,7 +146,7 @@ class GatewayProfileForm extends FormComponent {
 
     componentDidMount() {
         super.componentDidMount();
-
+        this.getNetworkServerOptions();
         if (this.props.object !== undefined && this.props.object.channels !== undefined && this.props.object.channelsStr === undefined) {
             let object = this.props.object;
             object.channelsStr = object.channels.join(", ");
@@ -221,10 +221,15 @@ class GatewayProfileForm extends FormComponent {
         });
     }
 
-    getNetworkServerOptions(search, callbackFunc) {
+    getNetworkServerOptions() {
         NetworkServerStore.list(0, 999, 0, resp => {
             const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
-            callbackFunc(options);
+            let object = this.state.object;
+            object.options = options;
+
+            this.setState({
+                object
+            })
         });
     }
 
@@ -241,38 +246,43 @@ class GatewayProfileForm extends FormComponent {
 
         return (
             <React.Fragment>
-                <FormSubmit
-                    submitLabel={this.props.submitLabel}
-                    onSubmit={this.onSubmit}
-                    extraButtons={<Button className="btn-block" onClick={this.addExtraChannel}>{i18n.t(`${packageNS}:tr000116`)}</Button>}>
-                    <Form>
-                        <FormGroup row>
-                            <Label for="name" sm={2}>{i18n.t(`${packageNS}:tr000042`)}</Label>
-                            <Col sm={10}>
-                                <Input type="text" name="name" id="name" value={this.state.object.name || ""} onChange={this.onChange} />
-                                <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
-                            </Col>
-                        </FormGroup>
-                        <FormGroup row>
-                            <Label for="channelsStr" sm={2}>{i18n.t(`${packageNS}:tr000113`)}</Label>
-                            <Col sm={10}>
-                                <Input type="text" name="channelsStr" id="channelsStr" placeholder="0, 1, 2" pattern="[0-9]+(,[\\s]*[0-9]+)*" value={this.state.object.channelsStr || ""} onChange={this.onChange} />
-                                <FormText color="muted">{i18n.t(`${packageNS}:tr000114`)}</FormText>
-                            </Col>
-                        </FormGroup>
-                        {!this.props.update && <FormControlOrig margin="normal" fullWidth>
-                            <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
-                            <AutocompleteSelect
-                                id="networkServerID"
-                                label={i18n.t(`${packageNS}:tr000115`)}
-                                value={this.state.object.networkServerID || ""}
-                                onChange={this.onChange}
-                                getOptions={this.getNetworkServerOptions}
-                            />
-                        </FormControlOrig>}
-                        {extraChannels}
-                    </Form>
-                </FormSubmit>
+                <Form>
+                    <FormGroup row>
+                        <Label for="name" sm={2}>{i18n.t(`${packageNS}:tr000042`)}</Label>
+                        <Col sm={10}>
+                            <Input type="text" name="name" id="name" value={this.state.object.name || ""} onChange={this.onChange} />
+                            <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
+                        </Col>
+                    </FormGroup>
+                    <FormGroup row>
+                        <Label for="channelsStr" sm={2}>{i18n.t(`${packageNS}:tr000113`)}</Label>
+                        <Col sm={10}>
+                            <Input type="text" name="channelsStr" id="channelsStr" placeholder="0, 1, 2" pattern="[0-9]+(,[\\s]*[0-9]+)*" value={this.state.object.channelsStr || ""} onChange={this.onChange} />
+                            <FormText color="muted">{i18n.t(`${packageNS}:tr000114`)}</FormText>
+                        </Col>
+                    </FormGroup>
+                    {!this.props.update && <FormGroup row>
+                        <Label for="networkServerID" sm={2}>{i18n.t(`${packageNS}:tr000047`)}</Label>
+                        <Col sm={10}>
+                            <Input type="select" name="networkServerID" id="networkServerID" value={this.state.object.networkServerID || ""} onChange={this.onChange}>
+                                <option value={''}>{i18n.t(`${packageNS}:tr000115`)}</option>
+                                {this.state.object.options && this.state.object.options.map(project => {
+                                    return (
+                                        <option value={project.value}>{project.label}</option>
+                                    )
+                                })}
+                            </Input>
+                        </Col>
+                    </FormGroup>}
+                    {extraChannels}
+
+                    <Button className="btn-block" onClick={this.addExtraChannel}>{i18n.t(`${packageNS}:tr000116`)}</Button>
+                    {this.props.submitLabel && <Button color="primary"
+                        onClick={this.onSubmit}
+                        disabled={this.props.disabled}
+                        className="btn-block">{this.props.submitLabel}
+                    </Button>}
+                </Form>
             </React.Fragment>
         );
     }

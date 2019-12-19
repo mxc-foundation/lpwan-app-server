@@ -4,7 +4,8 @@
 
 See MXC Developer Handbook for further information.
 
-Note: Only lpwan-app-server is required
+Note: UI part from m2m has been merged into lpwan-app-server, m2m no longer contains UI part.  
+However part of the APIs get data from m2m service, you need to start m2m service for accessing all features correctly.
 
 ## Environment
 
@@ -71,8 +72,17 @@ npm install
 
 ## Build Docker container and start container shell session:
 
+If you want to use __local__ postgresql and mqtt service, do following command in directory where Makefile is:
 ```bash
-docker-compose up -d && docker-compose exec appserver bash
+$ make server_local
+```
+
+If you want to use __remote__ postgresql and mqtt service, do following command in directory where Makefile is, and insert remote server domain name after the prompt:
+```bash
+$ make server_remote
+Start docker container with remote database and mqtt service
+Insert remote server domain name: 
+
 ```
 
 ## Start LPWAN App Server:

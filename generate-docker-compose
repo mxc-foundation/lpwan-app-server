@@ -1,0 +1,42 @@
+#!/bin/sh
+
+if [ $# -ne 1 ]; then
+  echo "Usage : generate-docker-compose [local|remote|image]"
+  echo ""
+  echo "generate docker-compose.yml based on template and user's input"
+  echo ""
+  echo "Commands : "
+  echo "   local           Generate docker-compose.yml that contains local postgresql, mosquitto services"
+  echo "   remote          Generate docker-compose.yml that uses remote postgresql, mosquitto services"
+  echo "   image           Generate docker-compose.yml that builds docker image"
+  echo ""
+  exit
+fi
+
+if [ -f tmp ]; then
+  rm -f tmp
+fi
+
+if [ "$1" = "remote" ]; then
+  echo "Insert remote server domain name: "
+  read REMOTE_SERVER
+  python docker-compose-template.py "$@" $REMOTE_SERVER |tee tmp
+else
+  python docker-compose-template.py "$@" |tee tmp
+fi
+
+[ "$(cat tmp)" = "invalid argument" ] && exit
+
+
+if [ -f docker-compose.yml ]; then
+  mv docker-compose.yml docker-compose.yml.bak
+fi
+
+mv tmp docker-compose.yml
+
+if [ "$1" = "image" ]; then
+  docker login
+fi
+
+docker-compose -f docker-compose.yml up -d --remove-orphans && docker-compose exec appserver bash
+
