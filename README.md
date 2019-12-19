@@ -70,6 +70,16 @@ cd ui/ &&
 npm install
 ```
 
+**HACK 1**
+If you get error `npm ERR! Cannot read property 'match' of undefined`
+when running `npm install` then remove both `package-lock.json` and `yarn.lock` (if it exists),
+and then try running `npm install` again.
+
+```bash
+rm package-lock.json &&
+rm yarn.lock
+```
+
 ## Build Docker container and start container shell session:
 
 If you want to use __local__ postgresql and mqtt service, do following command in directory where Makefile is:
@@ -95,7 +105,16 @@ make build &&
 ./build/lora-app-server
 ```
 
-**HACK**
+**HACK 2**
+If you get error `npm ERR! Cannot read property 'match' of undefined`
+when running `make ui-requirements` then keep the Docker container running, and outside the Docker container, in terminal run the following to remove `package-lock.json` and `yarn.lock` (if it exists).
+
+```bash
+rm package-lock.json &&
+rm yarn.lock
+```
+
+**HACK 3**
 If it then gives a `Failed to compile` error as shown below:
 ```
 Failed to compile.
@@ -117,7 +136,7 @@ and outside the Docker container, in terminal run:
 ```bash
 cd ui/ &&
 cd node_modules/node-sass &&
-sudo npm install &&
+npm install &&
 cd ../../../
 ```
 
