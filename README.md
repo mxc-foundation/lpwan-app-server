@@ -63,12 +63,40 @@ git pull --rebase origin feature/MCL-117
 git checkout -b luke/MCL-118-page-network-servers
 ```
 
-## Install dependencies:
+## Stop any existing processes in other terminal tabs
+
+Check that you haven't left any existing instances of lpwan-app-server running (i.e. if you're already running the UI with `npm start`).
+
+## Change to compatible version of Node.js
+
+Since the Docker container will use Node.js v10.16.3, switch to that version on your local machine.
+[Node Version Manager](https://github.com/nvm-sh/nvm#install--update-script) makes this convenient to do:
 
 ```bash
-cd ui/ &&
-npm install
+nvm install v10.16.3 &&
+nvm use v10.16.3
 ```
+
+## Install dependencies
+
+We'll install dependencies as follows **OUTSIDE** the Docker container:
+
+```bash
+cd lpwan-app-server/ &&
+cd ui/ &&
+rm package-lock.json &&
+rm -rf ./node_modules/node-sass/ &&
+rm -rf ~/.npm/node-sass &&
+npm install &&
+cd ./node_modules/node-sass &&
+npm install &&
+cd ../../ &&
+npm rebuild node-sass --force &&
+rm package-lock.json &&
+cd ../
+```
+
+> Note: The above strange sequence of steps should avoid encountering error `npm ERR! Cannot read property 'match' of undefined` or `Failed to compile. ... Node Sass could not find a binding for your current environment ...` by removing the node-sass from cache and re-installing it after installing other dependencies, and then removing the package-lock.json again to avoid encountering the same error in the Docker container. See https://stackoverflow.com/questions/37986800/node-sass-couldnt-find-a-binding-for-your-current-environment. If you accidently ran `yarn`, then remove `yarn.lock` too (i.e. `rm yarn.lock`), otherwise you'll encounter errors due to conflicts between package-lock.json and yarn.lock.
 
 ## Build Docker container and start container shell session:
 
@@ -81,11 +109,13 @@ If you want to use __remote__ postgresql and mqtt service, do following command 
 ```bash
 $ make server_remote
 Start docker container with remote database and mqtt service
-Insert remote server domain name: 
+Insert remote server domain name (excluding the port): 
 
 ```
 
 ## Start LPWAN App Server:
+
+Run the following **INSIDE** the Docker container that was started from the previous step:
 
 ```bash
 make ui-requirements &&
@@ -95,37 +125,16 @@ make build &&
 ./build/lora-app-server
 ```
 
-**HACK**
-If it then gives a `Failed to compile` error as shown below:
-```
-Failed to compile.
-
-./src/assets/scss/DefaultTheme.scss
-Error: Missing binding /lora-app-server/ui/node_modules/node-sass/vendor/linux_musl-x64-64/binding.node
-Node Sass could not find a binding for your current environment: Linux/musl 64-bit with Node.js 10.x
-
-Found bindings for the following environments:
-  - OS X 64-bit with Node.js 12.x
-
-This usually happens because your environment has changed since running `npm install`.
-Run `npm rebuild node-sass` to download the binding for your current environment.
-```
-
 Then keep the Docker container running,
-and outside the Docker container, in terminal run:
+and **OUTSIDE** the Docker container, in terminal run:
 
 ```bash
+cd lpwan-app-server/ &&
 cd ui/ &&
 cd node_modules/node-sass &&
-sudo npm install &&
-cd ../../../
-```
-
-Then back in the Docker container run the following commands again, and it should compile successfully and run:
-
-```
-make build &&
-./build/lora-app-server
+npm install &&
+cd ../../ &&
+npm start
 ```
 
 Open web browser at: http://localhost:8080
@@ -142,6 +151,8 @@ git pull --rebase origin feature/MCL-117
 git checkout luke/MCL-118-page-network-servers
 git rebase -i feature/MCL-117
 ```
+
+> Note: An alternative to running `git rebase -i feature/MCL-117` is to merge and resolve conflicts instead with `git merge feature/MCL-117` 
 
 ## Debugging with live reload:
 
@@ -175,6 +186,20 @@ After changing config file, simply restart the service in docker container again
 ```bash
 $ ./build/lora-app-server -c configuration/lora-app-server.toml
 ```
+
+## Development
+
+### Library Requirements
+
+All libraries used in the UI should provide React Native support
+
+### Database Access
+
+Try using a PostgreSQL GUI to easily resolve issues in the test database
+
+Example:
+* Download http://www.psequel.com/
+* Enter connection details that are either in your .env file, or in your custom configuration file: configuration/lora-app-server.toml
 
 # Intro
 

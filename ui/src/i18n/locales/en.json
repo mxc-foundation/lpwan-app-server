@@ -7,7 +7,7 @@
   "tr000006": "REGISTER",
   "tr000007": "LOGIN",
   "tr000008": "MXProtocol",
-  "tr000009": "FORGOT MY PASSWORD",
+  "tr000009": "Forgot your password?",
   "tr000010": "You can access right now as a demo user",
   "tr000011": "Login",
   "tr000012": "Password Recovery",
@@ -70,7 +70,7 @@
   "tr000069": "Service-profiles",
   "tr000070": "Device-profiles",
   "tr000071": "Profile-1",
-  "tr000072": "Gateways",
+  "tr000072": "Gateway",
   "tr000073": "LIST",
   "tr000074": "Gateway ID",
   "tr000075": "Gateway activity (30d)",
@@ -434,6 +434,8 @@
   "tr000458": "Error uploading profile pic {{error}}",
   "tr000459": "Successfully uploaded file {{filename}}",
   "tr000460": "Maximum file upload size of {{maxFileSizeMegabytes}} MB exceeded by file {{filename}}",
+  "tr000461": "Gateway map",
+  "tr000462": "Back to Login",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",

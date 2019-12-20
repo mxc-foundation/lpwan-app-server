@@ -23,3 +23,40 @@ body.authentication-bg {
 .logout-icon {
     width: 140px;
 }
+
+// new styles
+.map-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    height: 100%;
+    width: 100%;
+}
+
+.login-form-container {
+    position: absolute;
+    background: rgba(233, 238, 239, 0.75);
+    top: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 1000;
+    width: 430px;
+
+    @media (max-width: 767.98px) {
+        width: 100%;
+    }
+
+    .logo {
+        height: 90px;
+    }
+}
+
+.back-to-login-btn {
+    z-index: 1000;
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+}

@@ -22,7 +22,6 @@ class Form extends Component {
         <Grid container justify="flex-end" className={this.props.classes.formControl}>
           {this.props.extraButtons}
           {this.props.submitLabel && <Button color="primary" 
-              onClick={this.deleteOrganization}
               disabled={this.props.disabled}
               className="btn-block">{this.props.submitLabel}
           </Button>} 
