@@ -9,15 +9,13 @@ const ReactstrapInput = (
         form: { touched, errors, ...rest },
         helpText,
         ...props
-    }) => (
-        <FormGroup>
-            <Label for={props.id} >{props.label}</Label>
-            <Input {...props} {...fields} invalid={Boolean(touched[fields.name] && errors[fields.name])} />
-            {touched[fields.name] && errors[fields.name] ? <FormFeedback>{errors[fields.name]}</FormFeedback> : ''}
-            {helpText && <FormText color="muted">{helpText}</FormText>}
-        </FormGroup>
+    }) => (<FormGroup>
+        <Label for={props.id}>{props.label}</Label>
+        <Input {...props} {...fields} invalid={Boolean(touched[fields.name] && errors[fields.name])} />
+        {touched[fields.name] && errors[fields.name] ? <FormFeedback>{errors[fields.name]}</FormFeedback> : null}
+        {helpText && <FormText color="muted">{helpText}</FormText>}
+    </FormGroup>
     );
-
 
 const ReactstrapCheckbox = ({
     field,
@@ -222,4 +220,52 @@ class AutocompleteSelect extends Component {
 const AsyncAutoComplete = withRouter(AutocompleteSelect);
 
 
-export { ReactstrapInput, ReactstrapCheckbox, ReactstrapRadio, ReactstrapSelect, ReactstrapInputGroup, AsyncAutoComplete };
+const ReactstrapPasswordInput = ({
+    field: { ...fields },
+    form: { touched, errors, setFieldTouched, ...rest },
+    helpText = false,
+    ...props
+}) => {
+    const [values, setValues] = React.useState({
+        password: fields.value ? fields.value : '',
+        showPassword: false,
+    });
+
+    const handleChange = prop => event => {
+        setValues({ ...values, [prop]: event.target.value });
+        if (props.onChange) props.onChange(event.target.valu);
+        if (fields.onChange) fields.onChange(event);
+    };
+
+    const handleClickShowPassword = () => {
+        setValues({ ...values, showPassword: !values.showPassword });
+    };
+
+    const handleMouseDownPassword = event => {
+        event.preventDefault();
+    };
+
+    return (
+        <FormGroup>
+            <Label for={props.id}>{props.label}</Label>
+
+            <InputGroup>
+                <Input {...props} {...fields} type={values.showPassword ? 'text' : 'password'} defaultValue={values.password}
+                    onChange={handleChange('password')} invalid={Boolean(touched[fields.name] && errors[fields.name])} />
+
+                {touched[fields.name] && errors[fields.name] ? <FormFeedback className="order-last">{errors[fields.name]}</FormFeedback> : null}
+
+                <InputGroupAddon addonType="append">
+                    <button className="btn btn-secondary" type="button" onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword}>
+                        {values.showPassword ? <i className="mdi mdi-eye"></i> : <i className="mdi mdi-eye-off"></i>}
+                    </button>
+                </InputGroupAddon>
+            </InputGroup>
+            
+            {helpText && <FormText color="muted">{helpText}</FormText>}
+        </FormGroup>
+    );
+}
+
+
+export { ReactstrapInput, ReactstrapCheckbox, ReactstrapRadio, ReactstrapSelect, ReactstrapInputGroup, AsyncAutoComplete, ReactstrapPasswordInput };

@@ -143,6 +143,7 @@ class WithPromises extends Component {
         } */}
         <Select
           className={classNames('react-select', this.props.classes.languageSelection)}
+          menuPlacement="auto"
           classNamePrefix="react-select"
           styles={customStyles}
           theme={(theme) => ({

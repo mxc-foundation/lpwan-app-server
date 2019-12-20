@@ -7,7 +7,7 @@
   "tr000006": "REGISTER",
   "tr000007": "LOGIN",
   "tr000008": "MXProtocol",
-  "tr000009": "FORGOT MY PASSWORD",
+  "tr000009": "Forgot your password?",
   "tr000010": "You can access right now as a demo user",
   "tr000011": "Login",
   "tr000012": "Password Recovery",
@@ -421,7 +421,9 @@
   "tr000428": "Routing Profile TLS Certificates",
   "tr000429": "The provided value invalid, please enter correct value",
   "tr000430": "Close",
-  "tr000431": "Settings",
+  "tr000431": "This field is required",
+  "tr000432": "Gateway map",
+  "tr000433": "Back to Login",
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
