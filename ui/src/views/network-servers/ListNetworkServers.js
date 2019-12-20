@@ -97,7 +97,7 @@ class ListNetworkServers extends Component {
             </TitleBarButton>,
           ]}
         >
-          <Breadcrumb style={{ fontSize: "1.25rem", margin: "0rem" }}>
+          <Breadcrumb>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
