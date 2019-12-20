@@ -45,6 +45,7 @@
     "react-router-dom": "^5.0.1",
     "react-scripts": "^3.0.1",
     "react-select": "^3.0.4",
+    "react-spinners": "^0.6.1",
     "react-text-mask": "^5.4.3",
     "reactstrap": "^8.2.0",
     "robust-websocket": "^1.0.0",
