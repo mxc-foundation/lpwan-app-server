@@ -9,9 +9,6 @@ import SessionStore from "../stores/SessionStore";
 
 import logoSm from '../assets/images/logo-sm.png';
 import logo from '../assets/images/logos_wallet_light.png';
-import profilePic from '../assets/images/users/profile-icon.png';
-
-
 
 /* function getWalletBalance() {
   var organizationId = SessionStore.getOrganizationID();
@@ -98,9 +95,9 @@ class Topbar extends Component {
     const balanceEl = balance === null ?
       <span className="color-gray">(no org selected)</span> :
       balance + " MXC";
-    let username = null;
+    let user = null;
     if (SessionStore.getUser()) {
-      username = SessionStore.getUser().username;
+      user = SessionStore.getUser();
     }
 
     return (
@@ -135,7 +132,7 @@ class Topbar extends Component {
             </li>
 
             <li>
-              <ProfileDropdown profilePic={profilePic} menuItems={this.state.ProfileMenus} username={username} />
+              <ProfileDropdown menuItems={this.state.ProfileMenus} user={user} />
             </li>
           </ul>
 

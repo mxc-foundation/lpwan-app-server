@@ -418,5 +418,19 @@
   "tr000428": "Routing Profile TLS Certificates",
   "tr000429": "The provided value invalid, please enter correct value",
   "tr000430": "Close",
-  "tr000431": "Settings"
+  "tr000431": "This field is required",
+  "tr000432": "Altitude",
+  "tr000450": "Back to Control Panel",
+  "tr000451": "Settings",
+  "tr000452": "Profile Settings",
+  "tr000453": "Edit Profile Picture",
+  "tr000454": "Profile Picture",
+  "tr000455": "Invalid Email Address",
+  "tr000456": "Edit your profile picture. Drag and drop an image file here, or click to select and upload an image file.",
+  "tr000457": "Aborted uploading profile pic {{error}",
+  "tr000458": "Error uploading profile pic {{error}}",
+  "tr000459": "Successfully uploaded file {{filename}}",
+  "tr000460": "Maximum file upload size of {{maxFileSizeMegabytes}} MB exceeded by file {{filename}}",
+  "tr000461": "Gateway map",
+  "tr000462": "Back to Login"
 }

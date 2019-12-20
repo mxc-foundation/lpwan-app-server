@@ -202,7 +202,7 @@ class Login extends Component {
           <FoundLocationMap />
 
           {!this.state.showLoginContainer && <Button type="button" color="primary" className="back-to-login-btn" onClick={this.showLoginContainer}>
-              <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000433`)}</Button>}
+              <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000462`)}</Button>}
         </Map>
 
         {this.state.showLoginContainer && <div className="login-form-container">
@@ -223,7 +223,7 @@ class Login extends Component {
                     <Row>
                       <Col>
                         <Button type="button" color="link" className="p-0 btn-block text-muted align-middle" onClick={this.hideLoginContainer}>
-                            <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000432`)}</Button>
+                            <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000461`)}</Button>
                       </Col>
                       <Col className="text-right">
                         <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />

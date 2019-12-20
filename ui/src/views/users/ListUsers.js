@@ -101,7 +101,7 @@ class ListUsers extends Component {
             <Button color="primary"
               key={1}
               onClick={this.createUser}
-              className=""><i class="mdi mdi-account-multiple-plus"></i>{' '}{i18n.t(`${packageNS}:tr000277`)}
+              className=""><i className="mdi mdi-account-multiple-plus"></i>{' '}{i18n.t(`${packageNS}:tr000277`)}
             </Button>,
           ]}
         >

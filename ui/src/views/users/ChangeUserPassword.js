@@ -3,8 +3,6 @@ import { withRouter, Link } from 'react-router-dom';
 
 import { Breadcrumb, BreadcrumbItem, Form, FormGroup, Label, Input, Button, Container, Row, Col, Card, CardBody } from 'reactstrap';
 
-import TextField from '@material-ui/core/TextField';
-
 import TitleBar from "../../components/TitleBar";
 import UserStore from "../../stores/UserStore";
 import FormComponent from "../../classes/FormComponent";
@@ -67,7 +65,7 @@ class ChangeUserPassword extends Component {
     }
 
     return(
-      <Form>
+      <React.Fragment>
         <TitleBar>
           <Breadcrumb>
           <BreadcrumbItem><Link to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
@@ -87,7 +85,7 @@ class ChangeUserPassword extends Component {
             </Card>
           </Row>
         </Container>
-      </Form>
+      </React.Fragment>
     );
   }
 }
