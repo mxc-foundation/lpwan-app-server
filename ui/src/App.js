@@ -95,7 +95,7 @@ import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
 //M2M
 import ModifyEthAccount from "./views/ethAccount/ModifyEthAccount";
-import Withdraw from "./views/ethAccount/ModifyEthAccount";
+import Withdraw from "./views/withdraw/Withdraw";
 import Topup from "./views/topup/Topup";
 import HistoryLayout from "./views/history/HistoryLayout";
 
