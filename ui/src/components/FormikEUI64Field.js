@@ -4,17 +4,18 @@ import { Field, connect } from 'formik';
 import { Button, UncontrolledTooltip } from 'reactstrap';
 import { ReactstrapInputGroup } from './FormInputs';
 import MaskedInput from "react-text-mask";
+import classNames from 'classnames';
 
 import i18n, { packageNS } from '../i18n';
 
 
 class EUI64HEXMask extends Component {
   render() {
-    const { inputRef, inputComponent, helpText, ...other } = this.props;
+    const { inputRef, inputComponent, helpText, classes, ...other } = this.props;
 
     return (
       <MaskedInput
-        className="form-control"
+        className={classNames('form-control', classes)}
         {...other}
         ref={inputRef}
         mask={[

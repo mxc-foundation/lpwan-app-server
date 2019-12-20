@@ -60,7 +60,7 @@ class CreateGateway extends Component {
     return (<React.Fragment>
 
       <TitleBar>
-        <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`) + " " + i18n.t(`${packageNS}:tr000063`)} />
+        <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`) + " " + i18n.t(`${packageNS}:tr000072`)} />
         <Breadcrumb>
           <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/gateways`}>{i18n.t(`${packageNS}:tr000063`)}</Link></BreadcrumbItem>
           <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
@@ -78,7 +78,7 @@ class CreateGateway extends Component {
                   match={this.props.match}
                   submitLabel={i18n.t(`${packageNS}:tr000277`)}
                   onSubmit={this.onSubmit}
-                  object={{ location: {} }}
+                  object={{ name: '', description: '', id: '', location: { altitude: 0 } }}
                 />
               </div>
             </CardBody>

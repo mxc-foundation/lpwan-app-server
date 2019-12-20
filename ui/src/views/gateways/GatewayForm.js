@@ -23,6 +23,7 @@ class GatewayForm extends Component {
 
     this.state = {
       mapZoom: 15,
+      object: this.props.object || {},
     };
 
     this.getNetworkServerOption = this.getNetworkServerOption.bind(this);
@@ -37,10 +38,6 @@ class GatewayForm extends Component {
   }
 
   componentDidMount() {
-    this.setState({
-      object: this.props.object || {},
-    });
-
     if (!this.props.update) {
       this.setCurrentPosition();
     }
@@ -112,10 +109,11 @@ class GatewayForm extends Component {
     });
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState !== this.state && (prevState.object && prevState.object.networkServerID !== this.state.object.networkServerID)) {
+  onNetworkSelect = (v) => {
+    if (!this.state.object.networkServerID || (this.state.object.networkServerID && this.state.object.networkServerID !== v.id)) {
       let object = this.state.object;
       object.gatewayProfileID = null;
+      object.networkServerID = v.value;
       this.setState({
         object: object,
       });
@@ -139,21 +137,20 @@ class GatewayForm extends Component {
       position = [0, 0];
     }
 
-
     let fieldsSchema = {
       name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
-        .required(i18n.t(`${packageNS}:tr000428`)),
+        .required(i18n.t(`${packageNS}:tr000431`)),
       description: Yup.string()
-        .required(i18n.t(`${packageNS}:tr000428`)),
+        .required(i18n.t(`${packageNS}:tr000431`)),
       gatewayProfileID: Yup.string(),
       discoveryEnabled: Yup.bool(),
       location: Yup.object().shape({
-        altitude: Yup.number().required(i18n.t(`${packageNS}:tr000428`))
+        altitude: Yup.number()
       })
     }
 
     if (!this.props.update) {
-      fieldsSchema['id'] = Yup.string().required(i18n.t(`${packageNS}:tr000428`));
+      fieldsSchema['id'] = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema['networkServerID'] = Yup.string();
     }
     const formSchema = Yup.object().shape(fieldsSchema);
@@ -162,13 +159,15 @@ class GatewayForm extends Component {
       <Row>
         <Col>
           <Formik
+            enableReinitialize
             initialValues={this.state.object}
             validationSchema={formSchema}
             onSubmit={this.props.onSubmit}>
             {({
               handleSubmit,
               setFieldValue,
-              values
+              values,
+              handleBlur,
             }) => (
                 <Form onSubmit={handleSubmit} noValidate>
                   <Field
@@ -178,6 +177,7 @@ class GatewayForm extends Component {
                     id="name"
                     helpText={i18n.t(`${packageNS}:tr000062`)}
                     component={ReactstrapInput}
+                    onBlur={handleBlur}
                   />
 
                   <Field
@@ -186,6 +186,7 @@ class GatewayForm extends Component {
                     name="description"
                     id="description"
                     component={ReactstrapInput}
+                    onBlur={handleBlur}
                   />
 
                   {!this.props.update && <EUI64Field
@@ -193,6 +194,7 @@ class GatewayForm extends Component {
                     label={i18n.t(`${packageNS}:tr000074`)}
                     name="id"
                     value={this.state.object.id || ""}
+                    onBlur={handleBlur}
                     required
                     random
                   />}
@@ -202,29 +204,32 @@ class GatewayForm extends Component {
                     label={i18n.t(`${packageNS}:tr000047`)}
                     name="networkServerID"
                     id="networkServerID"
-                    value={this.state.object.networkServerID || ""}
-                    getOption={this.getNetworkServerOption}
+                    // value={this.state.object.networkServerID || ""}
+                    // getOption={this.getNetworkServerOption}
                     getOptions={this.getNetworkServerOptions}
                     setFieldValue={setFieldValue}
                     helpText={i18n.t(`${packageNS}:tr000223`)}
+                    onBlur={handleBlur}
                     inputProps={{
                       clearable: true,
                       cache: false,
                     }}
+                    onChange={this.onNetworkSelect}
                     component={AsyncAutoComplete}
                   />}
-
 
                   <Field
                     type="text"
                     label={i18n.t(`${packageNS}:tr000224`)}
                     name="gatewayProfileID"
                     id="gatewayProfileID"
-                    value={this.state.object.gatewayProfileID || ""}
+                    triggerReload={this.state.object.networkServerID || values.networkServerID || ""}
+                    // value={this.state.object.gatewayProfileID || ""}
                     getOption={this.getGatewayProfileOption}
                     getOptions={this.getGatewayProfileOptions}
                     setFieldValue={setFieldValue}
                     helpText={i18n.t(`${packageNS}:tr000227`)}
+                    onBlur={handleBlur}
                     inputProps={{
                       clearable: true,
                       cache: false,
@@ -238,6 +243,7 @@ class GatewayForm extends Component {
                     name="discoveryEnabled"
                     id="discoveryEnabled"
                     component={ReactstrapCheckbox}
+                    onBlur={handleBlur}
                     helpText={i18n.t(`${packageNS}:tr000229`)}
                   />
 
@@ -248,6 +254,7 @@ class GatewayForm extends Component {
                     id="location-altitude"
                     component={ReactstrapInput}
                     helpText={i18n.t(`${packageNS}:tr000231`)}
+                    onBlur={handleBlur}
                   />
 
                   <FormGroup>
