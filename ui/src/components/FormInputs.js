@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import AsyncSelect from 'react-select/async';
 import { withRouter } from "react-router-dom";
 import { FormFeedback, FormGroup, Input, Label, FormText, InputGroup, InputGroupAddon, CustomInput } from "reactstrap";
+import classNames from 'classnames';
 
 const ReactstrapInput = (
     {
@@ -94,13 +95,16 @@ const ReactstrapInputGroup = (
             <InputRenderControl {...props} {...fields} onChange={(e) => {
                 if (props.onChange) props.onChange(e);
                 if (fields.onChange) fields.onChange(e);
-            }} invalid={Boolean(touched[fields.name] && errors[fields.name]).toString()} />
+            }} invalid={Boolean(touched[fields.name] && errors[fields.name])}
+                classes={classNames({ 'is-invalid': Boolean(touched[fields.name] && errors[fields.name]) })} />
+
+            {touched[fields.name] && errors[fields.name] ? <FormFeedback className="order-last">{errors[fields.name]}</FormFeedback> : ''}
 
             {props.append && <InputGroupAddon addonType="append">
                 {props.append}
             </InputGroupAddon>}
         </InputGroup>
-        {touched[fields.name] && errors[fields.name] ? <FormFeedback>{errors[fields.name]}</FormFeedback> : ''}
+
         {props.helpText && <FormText color="muted">{props.helpText}</FormText>}
 
     </FormGroup>
@@ -128,7 +132,6 @@ class AutocompleteSelect extends Component {
         if (prevProps.value === this.props.value && prevProps.triggerReload === this.props.triggerReload) {
             return;
         }
-
         this.setInitialOptions(this.setSelectedOption);
     }
 
@@ -209,7 +212,7 @@ class AutocompleteSelect extends Component {
                     defaultOptions={this.state.options}
                     loadOptions={this.onAutocomplete}
                     value={this.state.selectedOption || ""}
-                    onChange={(option) => { this.setState({ selectedOption: option }); setFieldValue(field.name, option.value) }}
+                    onChange={(option) => { this.setState({ selectedOption: option }); setFieldValue(field.name, option.value); if(props.onChange) props.onChange(option); }}
                 />
                 {props.helpText && <FormText color="muted">{props.helpText}</FormText>}
             </FormGroup>
