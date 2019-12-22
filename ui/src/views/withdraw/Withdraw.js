@@ -102,7 +102,7 @@ class Withdraw extends Component {
   }
 
   componentDidMount() {
-    this.loadData();
+    //this.loadData();
   }
 
   componentDidUpdate(oldProps) {

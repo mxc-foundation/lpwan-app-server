@@ -464,7 +464,12 @@
       "no_data_to_display": "THERE IS NO DATA TO DISPLAY",
       "can_not_find_any_account": "Can not find any account.",
       "synchronize_your_eth_account": "Synchronize your ETH Account",
-      "note": "Adding your ETH Account to your M2M Wallet increase your safety. "
+      "note": "Adding your ETH Account to your M2M Wallet increase your safety. ",
+      "notice": "NOTICE.",
+      "notice001": "Please, Change the ETH account for your Supernode before topping up.",
+      "notice002": "Please, Register your ETH account before topping up MXC.",
+      "notice003": "Would you like to go to the ETH account menu to update your account?"
+
     },
     "history": {
       "history": "History",
