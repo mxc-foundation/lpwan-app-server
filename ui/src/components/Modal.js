@@ -7,7 +7,7 @@ const CommonModal = (props) => {
         className,
         showCloseButton = true,
         showConfirmButton = true,
-        show = false,
+        show = true,
     } = props;
 
     const [modal, setModal] = useState(show);
