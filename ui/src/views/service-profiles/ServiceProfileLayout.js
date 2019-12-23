@@ -1,9 +1,8 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { Route, Switch, Link, withRouter } from "react-router-dom";
+import classNames from "classnames";
+import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-
-import Delete from "mdi-material-ui/Delete";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
@@ -36,6 +35,12 @@ class ServiceProfileLayout extends Component {
     this.setIsAdmin();
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props === prevProps) {
+      return;
+    }
+  }
+
   componentWillUnmount() {
     SessionStore.removeListener("change", this.setIsAdmin);
   }
@@ -55,33 +60,39 @@ class ServiceProfileLayout extends Component {
   }
 
   render() {
-    if (this.state.serviceProfile === undefined) {
-      return(<div></div>);
-    }
-
-    return(
-      <Grid container spacing={4}>
+    return (
+      this.state.serviceProfile ? <React.Fragment>
         <TitleBar
           buttons={
             <Admin>
               <TitleBarButton
                 key={1}
+              color="danger"
                 label={i18n.t(`${packageNS}:tr000061`)}
-                icon={<Delete />}
+              icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
                 onClick={this.deleteServiceProfile}
               />
             </Admin>
           }
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/service-profiles`} title={i18n.t(`${packageNS}:tr000069`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.serviceProfile.serviceProfile.name} />
+
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
+          <Breadcrumb>
+            <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/service-profiles`}>{i18n.t(`${packageNS}:tr000069`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{this.state.serviceProfile.serviceProfile.name}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <UpdateServiceProfile serviceProfile={this.state.serviceProfile.serviceProfile} admin={this.state.admin} />
-        </Grid>
-      </Grid>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <UpdateServiceProfile serviceProfile={this.state.serviceProfile.serviceProfile} admin={this.state.admin} />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment> : <div></div>
     );
   }
 }

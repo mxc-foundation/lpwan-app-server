@@ -37,6 +37,7 @@ class ListOrganizations extends Component {
         <TableCellLink to={`/organizations/${obj.id}`}>{obj.name}</TableCellLink>
         <TableCell>{obj.displayName}</TableCell>
         <TableCell>{icon}</TableCell>
+        <TableCellLink to={`/organizations/${obj.id}/service-profiles/create`}>Add Service Profile</TableCellLink>
       </TableRow>
     );
   }
@@ -63,6 +64,7 @@ class ListOrganizations extends Component {
                 <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000126`)}</TableCell>
                 <TableCell>{i18n.t(`${packageNS}:tr000380`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000078`)}</TableCell>
               </TableRow>
             }
             getPage={this.getPage}
