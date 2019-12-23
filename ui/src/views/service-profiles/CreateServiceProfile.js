@@ -9,6 +9,7 @@ import TitleBar from "../../components/TitleBar";
 import ServiceProfileForm from "./ServiceProfileForm";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
+import TitleBarTitle from "../../components/TitleBarTitle";
 
 
 class CreateServiceProfile extends Component {
@@ -50,6 +51,7 @@ class CreateServiceProfile extends Component {
     return (
       <Form>
         <TitleBar>
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
           <Breadcrumb>
             <BreadcrumbItem>
               <Link to={`/organizations/`}>{i18n.t(`${packageNS}:tr000078`)}</Link>

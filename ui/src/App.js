@@ -302,7 +302,6 @@ class App extends Component {
       Layout = AuthLayout;
     }
 
-    console.log("#####", Layout)
     return (
       <Router history={history}>
         <React.Fragment>

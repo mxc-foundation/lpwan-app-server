@@ -318,7 +318,7 @@ class GatewayForm extends Component {
                       </div>)}
                     ></FieldArray>
               
-                  <Button type="submit" color="primary">{this.props.submitLabel}</Button>
+                  <Button type="submit" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button>
                 </Form>
               )}
           </Formik>

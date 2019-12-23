@@ -173,7 +173,6 @@ class Login extends Component {
         const orgs = SessionStore.getOrganizations();
         
         if (SessionStore.getToken() && orgs.length > 0) {
-          console.log("########", orgs)
           this.props.history.push(`/organizations/${orgs[0].organizationID}`);
         } else {
           console.log('User has no organisations. Redirecting to login');
