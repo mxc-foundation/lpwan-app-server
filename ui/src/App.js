@@ -106,6 +106,8 @@ import SuperAdminWithdraw from "./views/controlPanel/withdraw/withdraw"
 import SupernodeHistory from "./views/controlPanel/history/History"
 import SystemSettings from "./views/controlPanel/settings/Settings"
 
+// home
+import HomeComponent from './views/Home';
 
 //Temp banner
 import TopBanner from "./components/TopBanner";
@@ -310,7 +312,8 @@ class App extends Component {
 
             <Layout topBar={topNav} topBanner={topbanner} sideNav={sideNav}>
               <Switch>
-                <Redirect exact from="/" to="/login" />
+                <Route exact path="/" component={HomeComponent} />
+
                 <Route exact path="/logout" component={Logout} />
                 <Route exact path="/login"
                   render={props =>

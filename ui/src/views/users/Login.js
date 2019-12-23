@@ -137,6 +137,7 @@ class Login extends Component {
     this.hideLoginContainer = this.hideLoginContainer.bind(this);
   }
 
+  
   componentDidMount() {
     SessionStore.getBranding(resp => {
       if (resp.registration !== "") {
