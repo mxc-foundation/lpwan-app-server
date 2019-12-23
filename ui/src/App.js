@@ -93,6 +93,20 @@ import Search from "./views/search/Search";
 import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentForDevice";
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
 
+//M2M
+import ModifyEthAccount from "./views/ethAccount/ModifyEthAccount";
+import Withdraw from "./views/withdraw/Withdraw";
+import Topup from "./views/topup/Topup";
+import HistoryLayout from "./views/history/HistoryLayout";
+
+import StakeLayout from "./views/stake/StakeLayout";
+import SetStake from "./views/stake/SetStake";
+import SuperNodeEth from "./views/controlPanel/superNodeEth/superNodeEth"
+import SuperAdminWithdraw from "./views/controlPanel/withdraw/withdraw"
+import SupernodeHistory from "./views/controlPanel/history/History"
+import SystemSettings from "./views/controlPanel/settings/Settings"
+
+
 //Temp banner
 import TopBanner from "./components/TopBanner";
 
@@ -286,6 +300,7 @@ class App extends Component {
       Layout = AuthLayout;
     }
 
+    console.log("#####", Layout)
     return (
       <Router history={history}>
         <React.Fragment>
@@ -362,6 +377,17 @@ class App extends Component {
                 <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
                 <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
                 <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
+
+                <Route path="/modify-account/:organizationID" component={ModifyEthAccount} />
+                <Route path="/withdraw/:organizationID" component={Withdraw} />
+                <Route path="/topup/:organizationID" component={Topup} />
+                <Route path="/history/:organizationID" component={HistoryLayout} />
+                <Route exact path="/stake/:organizationID" component={StakeLayout} />
+                <Route exact path="/stake/:organizationID/set-stake" component={SetStake} />
+                <Route path="/control-panel/modify-account" component={SuperNodeEth} />
+                <Route path="/control-panel/withdraw" component={SuperAdminWithdraw} />
+                <Route path="/control-panel/history" component={SupernodeHistory} />
+                <Route path="/control-panel/system-settings" component={SystemSettings} />
 
                 <Route exact path="/search" component={Search} />
               </Switch>

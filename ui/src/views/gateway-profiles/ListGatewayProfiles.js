@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Row, Button, Col, Card, CardBody } from 'reactstrap';
+import { withRouter, Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import AdvancedTable from "../../components/AdvancedTable";
 
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
@@ -15,21 +14,22 @@ const GatewayColumn = (cell, row, index, extraData) => {
 }
 
 const NetworkColumn = (cell, row, index, extraData) => {
-  return <Link to={`/network-servers/${row.id}`}>{row.networkServerName}</Link>;
+  return <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link>;
 }
 
-const columns = [{
-  dataField: 'name',
-  text: i18n.t(`${packageNS}:tr000042`),
-  sort: false,
-  formatter: GatewayColumn
-}, {
-  dataField: 'networkServerName',
-  text: i18n.t(`${packageNS}:tr000047`),
-  sort: false,
-  formatter: NetworkColumn
-}];
-
+const getColumns = () => (
+  [{
+    dataField: 'name',
+    text: i18n.t(`${packageNS}:tr000042`),
+    sort: false,
+    formatter: GatewayColumn
+  }, {
+    dataField: 'networkServerName',
+    text: i18n.t(`${packageNS}:tr000047`),
+    sort: false,
+    formatter: NetworkColumn,
+  }]
+);
 
 class ListGatewayProfiles extends Component {
 
@@ -84,7 +84,7 @@ class ListGatewayProfiles extends Component {
         <Col>
           <Card>
             <CardBody>
-              <AdvancedTable data={this.state.data} columns={columns} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+              <AdvancedTable data={this.state.data} columns={getColumns()} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
             </CardBody>
           </Card>
         </Col>
@@ -94,4 +94,4 @@ class ListGatewayProfiles extends Component {
   }
 }
 
-export default ListGatewayProfiles;
+export default withRouter(ListGatewayProfiles);

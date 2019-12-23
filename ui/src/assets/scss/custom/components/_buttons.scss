@@ -5,13 +5,17 @@
 .btn {
     color: $white;
     font-weight: $font-weight-bold;
-    font-size: 1.1em;
+    // font-size: 1.1em;
 
     .mdi {
         &:before {
             margin-top: -1px;
         }
     }
+}
+
+.btn-rp {
+    margin-right:5px;
 }
 
 .btn-block {

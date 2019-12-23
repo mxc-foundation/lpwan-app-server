@@ -13,16 +13,16 @@ import NetworkServerStore from "../../stores/NetworkServerStore";
 class ServiceProfileForm extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      object: this.props.object || {},
+    };
+
     this.getNetworkServerOption = this.getNetworkServerOption.bind(this);
     this.getNetworkServerOptions = this.getNetworkServerOptions.bind(this);
-    this.state = {};
   }
 
-  componentDidMount() {
-    this.setState({
-      object: this.props.object || {},
-    });
-  }
+  
 
   getNetworkServerOption(id, callbackFunc) {
     NetworkServerStore.get(id, resp => {
@@ -38,6 +38,17 @@ class ServiceProfileForm extends Component {
   }
 
 
+  onNetworkSelect = (v) => {
+    if (!this.state.object.networkServerID || (this.state.object.networkServerID && this.state.object.networkServerID !== v.id)) {
+      let object = this.state.object;
+      object.gatewayProfileID = null;
+      object.networkServerID = v.value;
+      this.setState({
+        object: object,
+      });
+    }
+  }
+
   render() {
     if (this.state.object === undefined) {
         return (<div></div>);
@@ -47,11 +58,14 @@ class ServiceProfileForm extends Component {
       <Row>
         <Col>
           <Formik
+            enableReinitialize
             initialValues={this.state.object}
             onSubmit={this.props.onSubmit}>
             {({
-                handleSubmit,
-                setFieldValue
+              handleSubmit,
+              setFieldValue,
+              values,
+              handleBlur,
             }) => (
                 <Form onSubmit={handleSubmit} noValidate>
                   <Field
@@ -61,6 +75,7 @@ class ServiceProfileForm extends Component {
                     id="name"
                     helpText={i18n.t(`${packageNS}:tr000150`)}
                     component={ReactstrapInput}
+                    onBlur={handleBlur}
                     required
                   />
 
@@ -69,15 +84,17 @@ class ServiceProfileForm extends Component {
                         label={i18n.t(`${packageNS}:tr000047`)+"*"}
                         name="networkServerID"
                         id="networkServerID"
-                        value={this.state.object.networkServerID || ""}
-                        getOption={this.getNetworkServerOption}
+                    // value={this.state.object.networkServerID || ""}
+                    // getOption={this.getNetworkServerOption}
                         getOptions={this.getNetworkServerOptions}
                         setFieldValue={setFieldValue}
                         helpText={i18n.t(`${packageNS}:tr000223`)}
+                    onBlur={handleBlur}
                         inputProps={{
                             clearable: true,
                             cache: false,
                         }}
+                    onChange={this.onNetworkSelect}
                         component={AsyncAutoComplete}
                         required
                     />}
@@ -89,6 +106,7 @@ class ServiceProfileForm extends Component {
                         id="addGWMetaData"
                         component={ReactstrapCheckbox}
                         helpText={i18n.t(`${packageNS}:tr000152`)}
+                    onBlur={handleBlur}
                     />
 
                     <Field
@@ -97,6 +115,7 @@ class ServiceProfileForm extends Component {
                         name="nwkGeoLoc"
                         id="nwkGeoLoc"
                         component={ReactstrapCheckbox}
+                    onBlur={handleBlur}
                         helpText={i18n.t(`${packageNS}:tr000154`)}
                     />
 
@@ -108,6 +127,7 @@ class ServiceProfileForm extends Component {
                         value={this.state.object.devStatusReqFreq || 0}
                         helpText={i18n.t(`${packageNS}:tr000156`)}
                         component={ReactstrapInput}
+                    onBlur={handleBlur}
                     />
 
                     {this.state.object.devStatusReqFreq > 0 && <FormGroup>

@@ -7,7 +7,7 @@
   "tr000006": "REGISTER",
   "tr000007": "LOGIN",
   "tr000008": "MXProtocol",
-  "tr000009": "FORGOT MY PASSWORD",
+  "tr000009": "Forgot your password?",
   "tr000010": "You can access right now as a demo user",
   "tr000011": "Login",
   "tr000012": "Password Recovery",
@@ -70,7 +70,7 @@
   "tr000069": "Service-profiles",
   "tr000070": "Device-profiles",
   "tr000071": "Profile-1",
-  "tr000072": "Gateways",
+  "tr000072": "Gateway",
   "tr000073": "LIST",
   "tr000074": "Gateway ID",
   "tr000075": "Gateway activity (30d)",
@@ -145,7 +145,7 @@
   "tr000144": "A gateway admin user is able to add and modify gateways part of the organization.",
   "tr000145": "objects does not exist (code:5)",
   "tr000146": "Create and assign user",
-  "tr000147": "E-mail address",
+  "tr000147": "Email Address",
   "tr000148": "Service-profiles/Create",
   "tr000149": "Service-profile name",
   "tr000150": "A name to identify the service-profile.",
@@ -423,6 +423,30 @@
   "tr000428": "Routing Profile TLS Certificates",
   "tr000429": "The provided value invalid, please enter correct value",
   "tr000430": "Close",
+  "tr000431": "This field is required",
+  "tr000432": "Altitude",
+  "tr000450": "Back to Control Panel",
+  "tr000451": "Settings",
+  "tr000452": "Profile Settings",
+  "tr000453": "Edit Profile Picture",
+  "tr000454": "Profile Picture",
+  "tr000455": "Invalid Email Address",
+  "tr000456": "Edit your profile picture. Drag and drop an image file here, or click to select and upload an image file.",
+  "tr000457": "Aborted uploading profile pic {{error}",
+  "tr000458": "Error uploading profile pic {{error}}",
+  "tr000459": "Successfully uploaded file {{filename}}",
+  "tr000460": "Maximum file upload size of {{maxFileSizeMegabytes}} MB exceeded by file {{filename}}",
+  "tr000461": "Gateway map",
+  "tr000462": "Back to Login",
+  "tr000463": "Back",
+  "common": {
+    "delete": "DELETE"
+  },
+  "lpwan": {
+    "org_users" : {
+      "goto_user": "GOTO USER"
+    }
+  },
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
@@ -450,7 +474,12 @@
       "no_data_to_display": "THERE IS NO DATA TO DISPLAY",
       "can_not_find_any_account": "Can not find any account.",
       "synchronize_your_eth_account": "Synchronize your ETH Account",
-      "note": "Adding your ETH Account to your M2M Wallet increase your safety. "
+      "note": "Adding your ETH Account to your M2M Wallet increase your safety. ",
+      "notice": "NOTICE.",
+      "notice001": "Please, Change the ETH account for your Supernode before topping up.",
+      "notice002": "Please, Register your ETH account before topping up MXC.",
+      "notice003": "Would you like to go to the ETH account menu to update your account?"
+
     },
     "history": {
       "history": "History",
@@ -642,7 +671,7 @@
       "create": "Create",
       "create_user": "Create user",
       "update_user": "Update user",
-      "email_address": "E-mail address",
+      "email_address": "E-mail Address",
       "optional_note": "Optional note",
       "optional_note_details": "Optional note, e.g. a phone number, address, comment...",
       "permissions": "Permissions",
