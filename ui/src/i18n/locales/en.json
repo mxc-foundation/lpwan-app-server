@@ -437,6 +437,14 @@
   "tr000461": "Gateway map",
   "tr000462": "Back to Login",
   "tr000463": "Back",
+  "common": {
+    "delete": "DELETE"
+  },
+  "lpwan": {
+    "org_users" : {
+      "goto_user": "GOTO USER"
+    }
+  },
   "menu": {
     "withdraw": {
       "withdraw": "Withdraw",
