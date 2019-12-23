@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 
+import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
 import Grid from '@material-ui/core/Grid';
 
 import Delete from "mdi-material-ui/Delete";
@@ -60,33 +61,30 @@ class OrganizationUserLayout extends Component {
     }
 
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar
-          buttons={
-            <div>
-              {this.state.admin && <TitleBarButton
-                label="Goto user" 
-                icon={<Account />}
-                to={`/users/${this.state.organizationUser.organizationUser.userID}`}
-              />}
-              <TitleBarButton
-                label={i18n.t(`${packageNS}:tr000061`)}
-                icon={<Delete />}
-                color="secondary"
-                onClick={this.deleteOrganizationUser}
-              />
-            </div>
-          }
+          buttons={[
+            <Button color="secondary"
+              key={1}
+              onClick={this.openModal}
+              className="btn-rp"><i class="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
+            </Button>,
+            <Button color="danger"
+              key={1}
+              onClick={this.openModal}
+              className=""><i class="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
+            </Button>
+          ]}
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/users`} title={i18n.t(`${packageNS}:tr000068`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.organizationUser.organizationUser.username} />
+          <Breadcrumb>
+            <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/users`} title={i18n.t(`${packageNS}:tr000068`)}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{this.state.organizationUser.organizationUser.username}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-
-        <Grid item xs={12}>
-          <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
-        </Grid>
-      </Grid>
+        <Row>
+        <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
+        </Row>
+      </React.Fragment>
     );
   }
 }
