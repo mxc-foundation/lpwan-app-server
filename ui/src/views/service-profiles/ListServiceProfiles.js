@@ -20,7 +20,7 @@ class ListServiceProfiles extends Component {
     this.state = {
       data: [],
       columns: [{
-        dataField: 'test_gateway_profile',
+        dataField: 'name',
         text: i18n.t(`${packageNS}:tr000042`),
         sort: false,
         formatter: this.serviceProfileColumn,

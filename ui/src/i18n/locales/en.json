@@ -159,6 +159,8 @@
   "tr000158": "Report device link margin to application-server",
   "tr000159": "Minimum allowed data-rate",
   "tr000160": "Minimum allowed data rate. Used for ADR.",
+  "tr000161": "Maximum allowed data-rate",
+  "tr000162": "Maximum allowed data rate. Used for ADR.",
   "tr000164": "Add a service-profile?",
   "tr000165": "The selected organization does not have a service-profile yet.",
   "tr000166": "Dismiss",

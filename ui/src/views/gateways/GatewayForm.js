@@ -300,7 +300,7 @@ class GatewayForm extends Component {
                       </div>)}
                     ></FieldArray>
               
-                  <Button type="submit" color="primary">{i18n.t(`${packageNS}:tr000066`)}</Button>
+                  <Button type="submit" color="primary">{this.props.submitLabel}</Button>
                 </Form>
               )}
           </Formik>

@@ -1,189 +1,165 @@
 import React, { Component } from "react";
 
-import { withStyles } from '@material-ui/core/styles';
-import FormControlOrig from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
+import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
+import { Formik, Form, Field, FieldArray } from 'formik';
+import * as Yup from 'yup';
 
-
-import { Button, Form, FormGroup, Label, Input, FormText, Row, Col } from 'reactstrap';
+import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
-import FormComponent from "../../classes/FormComponent";
-import FormSubmit from "../../components/Form";
-import FormControl from "../../components/FormControl";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
+
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
-import theme from "../../theme";
 
-
-const styles = {
-    a: {
-        color: theme.palette.primary.main,
-    },
-    formLabel: {
-        fontSize: 12,
-    },
-};
-
-
-class ServiceProfileForm extends FormComponent {
-  constructor() {
-    super();
+class ServiceProfileForm extends Component {
+  constructor(props) {
+    super(props);
     this.getNetworkServerOption = this.getNetworkServerOption.bind(this);
     this.getNetworkServerOptions = this.getNetworkServerOptions.bind(this);
+    this.state = {};
   }
 
-    getNetworkServerOption(id, callbackFunc) {
-        NetworkServerStore.get(id, resp => {
-            callbackFunc({ label: resp.name, value: resp.id });
-        });
+  componentDidMount() {
+    this.setState({
+      object: this.props.object || {},
+    });
+  }
+
+  getNetworkServerOption(id, callbackFunc) {
+    NetworkServerStore.get(id, resp => {
+      callbackFunc({ label: resp.networkServer.name, value: resp.networkServer.id });
+    });
+  }
+
+  getNetworkServerOptions(search, callbackFunc) {
+    NetworkServerStore.list(this.props.match.params.organizationID, 999, 0, resp => {
+      const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
+      callbackFunc(options);
+    });
+  }
+
+
+  render() {
+    if (this.state.object === undefined) {
+        return (<div></div>);
     }
 
-    getNetworkServerOptions() {
-        NetworkServerStore.list(0, 999, 0, resp => {
-            const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
-            let object = this.state.object;
-            object.options = options;
+    return(<React.Fragment>
+      <Row>
+        <Col>
+          <Formik
+            initialValues={this.state.object}
+            onSubmit={this.props.onSubmit}>
+            {({
+                handleSubmit,
+                setFieldValue
+            }) => (
+                <Form onSubmit={handleSubmit} noValidate>
+                  <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:tr000149`)+"*"}
+                    name="name"
+                    id="name"
+                    helpText={i18n.t(`${packageNS}:tr000150`)}
+                    component={ReactstrapInput}
+                    required
+                  />
 
-            this.setState({
-                object
-            })
-        });
-    }
+                    {!this.props.update && <Field
+                        type="text"
+                        label={i18n.t(`${packageNS}:tr000047`)+"*"}
+                        name="networkServerID"
+                        id="networkServerID"
+                        value={this.state.object.networkServerID || ""}
+                        getOption={this.getNetworkServerOption}
+                        getOptions={this.getNetworkServerOptions}
+                        setFieldValue={setFieldValue}
+                        helpText={i18n.t(`${packageNS}:tr000223`)}
+                        inputProps={{
+                            clearable: true,
+                            cache: false,
+                        }}
+                        component={AsyncAutoComplete}
+                        required
+                    />}
 
-    render() {
-        if (this.state.object === undefined) {
-            return (<div></div>);
-        }
+                    <Field
+                        type="checkbox"
+                        label={i18n.t(`${packageNS}:tr000151`)}
+                        name="addGWMetaData"
+                        id="addGWMetaData"
+                        component={ReactstrapCheckbox}
+                        helpText={i18n.t(`${packageNS}:tr000152`)}
+                    />
 
-    return(
-    <React.Fragment>
-      <Form>
-          <FormGroup row>
-              <Label for="name" sm={2}>{i18n.t(`${packageNS}:tr000149`)}</Label>
-              <Col sm={10}>
-                  <Input type="text" name="name" id="name" value={this.state.object.name || ""} onChange={this.onChange} />
-                  <FormText color="muted">{i18n.t(`${packageNS}:tr000150`)}</FormText>
-              </Col>
-          </FormGroup>
+                    <Field
+                        type="checkbox"
+                        label={i18n.t(`${packageNS}:tr000153`)}
+                        name="nwkGeoLoc"
+                        id="nwkGeoLoc"
+                        component={ReactstrapCheckbox}
+                        helpText={i18n.t(`${packageNS}:tr000154`)}
+                    />
 
-          {!this.props.update && <FormGroup row>
-              <Label for="networkServerID" sm={2}>{i18n.t(`${packageNS}:tr000047`)}</Label>
-              <Col sm={10}>
-                  <Input type="select" name="networkServerID" id="networkServerID" value={this.state.object.networkServerID || ""} onChange={this.onChange}>
-                      <option value={''}>{i18n.t(`${packageNS}:tr000171`)}</option>
-                      {this.state.object.options && this.state.object.options.map(project => {
-                          return (
-                              <option value={project.value}>{project.label}</option>
-                          )
-                      })}
-                  </Input>
-              </Col>
-          </FormGroup>}
+                    <Field
+                        type="number"
+                        label={i18n.t(`${packageNS}:tr000155`)}
+                        name="devStatusReqFreq"
+                        id="devStatusReqFreq"
+                        value={this.state.object.devStatusReqFreq || 0}
+                        helpText={i18n.t(`${packageNS}:tr000156`)}
+                        component={ReactstrapInput}
+                    />
 
+                    {this.state.object.devStatusReqFreq > 0 && <FormGroup>
+                        <Field
+                            type="checkbox"
+                            label={i18n.t(`${packageNS}:tr000157`)}
+                            name="reportDevStatusBattery"
+                            id="reportDevStatusBattery"
+                            component={ReactstrapCheckbox}
+                        />
 
-         {/* <FormGroup row>
-              <Label for="addGWMetaData" sm={2}>{i18n.t(`${packageNS}:tr000149`)}</Label>
-              <Col sm={10}>
-                  <Input type="text" name="name" id="name" value={this.state.object.name || ""} onChange={this.onChange} />
-                  <FormText color="muted">{i18n.t(`${packageNS}:tr000150`)}</FormText>
-              </Col>
-          </FormGroup>
+                        <Field
+                            type="checkbox"
+                            label={i18n.t(`${packageNS}:tr000158`)}
+                            name="reportDevStatusMargin"
+                            id="reportDevStatusMargin"
+                            component={ReactstrapCheckbox}
+                            />
 
-        <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label={i18n.t(`${packageNS}:tr000151`)}
-            control={
-              <Checkbox
-                id="addGWMetaData"
-                checked={!!this.state.object.addGWMetaData}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000152`)}
-          </FormHelperText>
-        </FormControl>
-        <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label={i18n.t(`${packageNS}:tr000153`)}
-            control={
-              <Checkbox
-                id="nwkGeoLoc"
-                checked={!!this.state.object.nwkGeoLoc}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000154`)}
-          </FormHelperText>
-        </FormControl>
-        <TextField
-          id="devStatusReqFreq"
-          label={i18n.t(`${packageNS}:tr000155`)}
-          margin="normal"
-          type="number"
-          value={this.state.object.devStatusReqFreq || 0}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000156`)}
-          fullWidth
-        />
-        {this.state.object.devStatusReqFreq > 0 && <FormControl fullWidth margin="normal">
-          <FormGroup>
-            <FormControlLabel
-              label={i18n.t(`${packageNS}:tr000157`)}
-              control={
-                <Checkbox
-                  id="reportDevStatusBattery"
-                  checked={!!this.state.object.reportDevStatusBattery}
-                  onChange={this.onChange}
-                  color="primary"
-                />
-              }
-            />
-            <FormControlLabel
-              label={i18n.t(`${packageNS}:tr000158`)}
-              control={
-                <Checkbox
-                  id="reportDevStatusMargin"
-                  checked={!!this.state.object.reportDevStatusMargin}
-                  onChange={this.onChange}
-                  color="primary"
-                />
-              }
-            />
-          </FormGroup>
-        </FormControl>}
-        <TextField
-          id="drMin"
-          label={i18n.t(`${packageNS}:tr000159`)}
-          margin="normal"
-          type="number"
-          value={this.state.object.drMin || 0}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000160`)}
-          fullWidth
-          required
-        />
-        <TextField
-          id="drMax"
-          label="Maximum allowed data-rate"
-          margin="normal"
-          type="number"
-          value={this.state.object.drMax || 0}
-          onChange={this.onChange}
-          helperText="Maximum allowed data rate. Used for ADR."
-          fullWidth
-          required
-        />*/}
-      </Form>
-      </React.Fragment>
+                    </FormGroup>}
+
+                    <Field
+                        type="number"
+                        label={i18n.t(`${packageNS}:tr000159`)+"*"}
+                        name="drMin"
+                        id="drMin"
+                        value={this.state.object.drMin || 0}
+                        helpText={i18n.t(`${packageNS}:tr000160`)}
+                        component={ReactstrapInput}
+                        required
+                    />
+
+                    <Field
+                        type="number"
+                        label={i18n.t(`${packageNS}:tr000161`)+"*"}
+                        name="drMax"
+                        id="drMax"
+                        value={this.state.object.drMax || 0}
+                        helpText={i18n.t(`${packageNS}:tr000162`)}
+                        component={ReactstrapInput}
+                        required
+                    />
+
+                  <Button type="submit" color="primary">{this.props.submitLabel}</Button>
+                </Form>
+            )}
+          </Formik>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(ServiceProfileForm);
+export default ServiceProfileForm;

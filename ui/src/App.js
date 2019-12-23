@@ -58,8 +58,7 @@ import PasswordResetConfirm from "./views/users/PasswordResetConfirm";
 import ListServiceProfiles from "./views/service-profiles/ListServiceProfiles";
 import CreateServiceProfile from "./views/service-profiles/CreateServiceProfile";
 import ServiceProfileLayout from "./views/service-profiles/ServiceProfileLayout";
-import ListServiceProfilesAdmin from "./views/service-profiles/ListServiceProfilesAdmin";
-import ServiceProfileLayoutAdmin from "./views/service-profiles/ServiceProfileLayoutAdmin";
+
 // device-profile
 import ListDeviceProfiles from "./views/device-profiles/ListDeviceProfiles";
 import CreateDeviceProfile from "./views/device-profiles/CreateDeviceProfile";
@@ -329,10 +328,6 @@ class App extends Component {
                 <Route exact path="/gateway-profiles" component={ListGatewayProfiles} />
                 <Route exact path="/gateway-profiles/create" component={CreateGatewayProfile} />
                 <Route path="/gateway-profiles/:gatewayProfileID([\w-]{36})" component={GatewayProfileLayout} />
-
-                <Route exact path="/service-profiles" component={ListServiceProfilesAdmin} />
-                <Route exact path="/service-profiles/create" component={CreateServiceProfile} />
-                <Route path="/service-profiles/:serviceProfileID([\w-]{36})" component={ServiceProfileLayoutAdmin} />
 
                 <Route exact path="/organizations/:organizationID(\d+)/service-profiles" component={ListServiceProfiles} />
                 <Route exact path="/organizations/:organizationID(\d+)/service-profiles/create" component={CreateServiceProfile} />
