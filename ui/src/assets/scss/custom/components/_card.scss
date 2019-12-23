@@ -37,6 +37,15 @@
 .card-title,
 .card-header {
     margin-top: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    background: rgba($white, 0.8);
+    //background: rgba($grey, 0.8);
+    //color: rgba($white, 0.8);
+}
+
+.card-footer {
+    background: rgba($white, 0.8);
 }
 
 
