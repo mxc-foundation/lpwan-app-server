@@ -48,14 +48,11 @@ class CreateServiceProfile extends Component {
   }
 
   render() {
-    return (
-      <Form>
+    return (<React.Fragment>
         <TitleBar>
           <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
           <Breadcrumb>
-            <BreadcrumbItem>
-              <Link to={`/organizations/`}>{i18n.t(`${packageNS}:tr000078`)}</Link>
-            </BreadcrumbItem>
+            <BreadcrumbItem><Link to={`/organizations/`}>{i18n.t(`${packageNS}:tr000078`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -73,7 +70,7 @@ class CreateServiceProfile extends Component {
             </Card>
           </Col>
         </Row>
-      </Form>
+        </React.Fragment>
 
     );
   }
