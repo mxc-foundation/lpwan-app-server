@@ -14,15 +14,17 @@ class ServiceProfileForm extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      object: this.props.object || {},
-    };
+    this.state = {};
 
     this.getNetworkServerOption = this.getNetworkServerOption.bind(this);
     this.getNetworkServerOptions = this.getNetworkServerOptions.bind(this);
   }
 
-  
+  componentDidMount() {
+    this.setState({
+      object: this.props.object,
+    });
+  }
 
   getNetworkServerOption(id, callbackFunc) {
     NetworkServerStore.get(id, resp => {
@@ -31,7 +33,7 @@ class ServiceProfileForm extends Component {
   }
 
   getNetworkServerOptions(search, callbackFunc) {
-    NetworkServerStore.list(this.props.match.params.organizationID, 999, 0, resp => {
+    NetworkServerStore.list(0, 999, 0, resp => {
       const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
       callbackFunc(options);
     });
@@ -47,7 +49,8 @@ class ServiceProfileForm extends Component {
         object: object,
       });
     }
-  }
+  };
+
 
   render() {
     if (this.state.object === undefined) {
@@ -84,8 +87,6 @@ class ServiceProfileForm extends Component {
                         label={i18n.t(`${packageNS}:tr000047`)+"*"}
                         name="networkServerID"
                         id="networkServerID"
-                    // value={this.state.object.networkServerID || ""}
-                    // getOption={this.getNetworkServerOption}
                         getOptions={this.getNetworkServerOptions}
                         setFieldValue={setFieldValue}
                         helpText={i18n.t(`${packageNS}:tr000223`)}
@@ -126,13 +127,12 @@ class ServiceProfileForm extends Component {
                         label={i18n.t(`${packageNS}:tr000155`)}
                         name="devStatusReqFreq"
                         id="devStatusReqFreq"
-                        value={this.state.object.devStatusReqFreq || 0}
                         helpText={i18n.t(`${packageNS}:tr000156`)}
                         component={ReactstrapInput}
                         onBlur={handleBlur}
                     />
 
-                    {this.state.object.devStatusReqFreq > 0 && <FormGroup>
+                    <FormGroup>
                         <Field
                             type="checkbox"
                             label={i18n.t(`${packageNS}:tr000157`)}
@@ -149,16 +149,14 @@ class ServiceProfileForm extends Component {
                             id="reportDevStatusMargin"
                             component={ReactstrapCheckbox}
                             onChange={handleChange}
-                            />
-
-                    </FormGroup>}
+                        />
+                    </FormGroup>
 
                     <Field
                         type="number"
                         label={i18n.t(`${packageNS}:tr000159`)+"*"}
                         name="drMin"
                         id="drMin"
-                        value={this.state.object.drMin || 0}
                         helpText={i18n.t(`${packageNS}:tr000160`)}
                         component={ReactstrapInput}
                         required
@@ -169,7 +167,6 @@ class ServiceProfileForm extends Component {
                         label={i18n.t(`${packageNS}:tr000161`)+"*"}
                         name="drMax"
                         id="drMax"
-                        value={this.state.object.drMax || 0}
                         helpText={i18n.t(`${packageNS}:tr000162`)}
                         component={ReactstrapInput}
                         required
