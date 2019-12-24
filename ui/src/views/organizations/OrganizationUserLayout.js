@@ -2,15 +2,9 @@ import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
 import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
-import Grid from '@material-ui/core/Grid';
-
-import Delete from "mdi-material-ui/Delete";
-import Account from "mdi-material-ui/Account";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
 import SessionStore from "../../stores/SessionStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganizationUser from "./UpdateOrganizationUser";
@@ -57,10 +51,10 @@ class OrganizationUserLayout extends Component {
 
   render() {
     if (this.state.organizationUser === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
-    return(
+    return (
       <React.Fragment>
         <TitleBar
           buttons={[
@@ -82,7 +76,7 @@ class OrganizationUserLayout extends Component {
           </Breadcrumb>
         </TitleBar>
         <Row>
-        <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
+          <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
         </Row>
       </React.Fragment>
     );
