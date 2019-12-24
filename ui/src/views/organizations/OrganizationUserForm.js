@@ -1,84 +1,107 @@
-import React from "react";
-
-import Typography from '@material-ui/core/Typography';
-import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import Checkbox from '@material-ui/core/Checkbox';
+import React, { Component } from "react";
 
 import i18n, { packageNS } from '../../i18n';
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
 
+import { Button, FormGroup, Label, Input, FormText } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+import { ReactstrapInput, ReactstrapCheckbox } from '../../components/FormInputs';
 
-class OrganizationUserForm extends FormComponent {
+class OrganizationUserForm extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loading: false,
+      object: this.props.object || {},
+    };
+
+  }
+
   render() {
     if (this.state.object === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-          <TextField
-            label={i18n.t(`${packageNS}:tr000056`)}
-            margin="normal"
-            value={this.state.object.username || ""}
-            required
-            fullWidth
-            InputProps={{
-              readOnly: true,
-            }}
-          />
-          <Typography variant="body1">
-            {i18n.t(`${packageNS}:tr000138`)}
-          </Typography>
-          <FormControl fullWidth margin="normal">
-            <FormControlLabel
-              label={i18n.t(`${packageNS}:tr000139`)}
-              control={
-                <Checkbox
-                  id="isAdmin"
-                  checked={!!this.state.object.isAdmin}
-                  onChange={this.onChange}
-                  color="primary"
+    let fieldsSchema = {
+      username: Yup.string().required("Required"),
+      isAdmin: Yup.bool(),
+      isDeviceAdmin: Yup.bool(),
+      isGatewayAdmin: Yup.bool(),
+    }
+
+    const formSchema = Yup.object().shape(fieldsSchema);
+
+    if (this.state.object === undefined) {
+      return (<div></div>);
+    }
+
+    return (
+      <React.Fragment>
+        <Formik
+          enableReinitialize
+          initialValues={this.state.object}
+          validationSchema={formSchema}
+          onSubmit={this.props.onSubmit}>
+          {({
+            handleSubmit,
+            handleChange,
+            setFieldValue,
+            values,
+            handleBlur,
+          }) => (
+              <Form onSubmit={handleSubmit} noValidate>
+                <Field
+                  type="text"
+                  label={i18n.t(`${packageNS}:tr000056`)}
+                  name="username"
+                  id="username"
+                  value={this.state.object.username || ""}
+                  helpText={i18n.t(`${packageNS}:tr000138`)}
+                  component={ReactstrapInput}
+                  onBlur={handleBlur}
+                  inputProps={{
+                    clearable: true,
+                    cache: false,
+                  }}
                 />
-              }
-            />
-            <FormHelperText>{i18n.t(`${packageNS}:tr000140`)}</FormHelperText>
-          </FormControl>
-          {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
-            <FormControlLabel
-              label={i18n.t(`${packageNS}:tr000141`)}
-              control={
-                <Checkbox
+                
+                <Field
+                    type="checkbox"
+                    label={i18n.t(`${packageNS}:tr000139`)}
+                    name="isAdmin"
+                    id="isAdmin"
+
+                    component={ReactstrapCheckbox}
+                    onChange={handleChange}
+
+                    onBlur={handleBlur}
+                    helpText={i18n.t(`${packageNS}:tr000140`)}
+                  />
+                  <Field
+                  type="checkbox"
+                  label={i18n.t(`${packageNS}:tr000141`)}
+                  name="isDeviceAdmin"
                   id="isDeviceAdmin"
-                  checked={!!this.state.object.isDeviceAdmin}
-                  onChange={this.onChange}
-                  color="primary"
+                  component={ReactstrapCheckbox}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  helpText={i18n.t(`${packageNS}:tr000142`)}
                 />
-              }
-            />
-            <FormHelperText>{i18n.t(`${packageNS}:tr000142`)}</FormHelperText>
-          </FormControl>}
-          {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
-            <FormControlLabel
-              label={i18n.t(`${packageNS}:tr000143`)}
-              control={
-                <Checkbox
+                <Field
+                  type="checkbox"
+                  label={i18n.t(`${packageNS}:tr000143`)}
+                  name="isGatewayAdmin"
                   id="isGatewayAdmin"
-                  checked={!!this.state.object.isGatewayAdmin}
-                  onChange={this.onChange}
-                  color="primary"
+                  component={ReactstrapCheckbox}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  helpText={i18n.t(`${packageNS}:tr000144`)}
                 />
-              }
-            />
-            <FormHelperText>{i18n.t(`${packageNS}:tr000144`)}</FormHelperText>
-          </FormControl>}
-      </Form>
+                <Button type="submit" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button>
+              </Form>
+            )}
+        </Formik>
+      </React.Fragment>
     );
   }
 }
