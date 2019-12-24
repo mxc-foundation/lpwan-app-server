@@ -42,7 +42,6 @@ class OrganizationForm extends Component {
                       label={i18n.t(`${packageNS}:tr000030`)+'*'}
                       name="name"
                       id="name"
-                      value={this.state.object.name || ""}
                       helpText={i18n.t(`${packageNS}:tr000062`)}
                       component={ReactstrapInput}
                       required
@@ -53,7 +52,6 @@ class OrganizationForm extends Component {
                       label={i18n.t(`${packageNS}:tr000126`)+'*'}
                       name="displayName"
                       id="displayName"
-                      value={this.state.object.displayName || ""}
                       helpText={i18n.t(`${packageNS}:tr000031`)}
                       component={ReactstrapInput}
                       required
