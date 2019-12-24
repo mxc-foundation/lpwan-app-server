@@ -27,7 +27,7 @@ const ReactstrapCheckbox = ({
     return (
         <FormGroup >
             <CustomInput {...props} type="checkbox" checked={values[field.name]} value={field.value}
-                onChange={(event, value) => setFieldValue(field.name, event.checked)} />
+                /* onChange={(event, value) => setFieldValue(field.name, event.checked)} */ onChange={props.onChange} />
             {helpText && <FormText color="muted">{helpText}</FormText>}
         </FormGroup>
     )
