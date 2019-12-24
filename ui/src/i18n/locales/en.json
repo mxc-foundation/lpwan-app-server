@@ -444,7 +444,8 @@
   },
   "lpwan": {
     "org_users" : {
-      "goto_user": "GOTO USER"
+      "goto_user": "GOTO USER",
+      "delete_user": "Are you sure you want to delete this user?"
     }
   },
   "menu": {
