@@ -64,7 +64,7 @@ class ServiceProfileForm extends Component {
             {({
               handleSubmit,
               setFieldValue,
-              values,
+              handleChange,
               handleBlur,
             }) => (
                 <Form onSubmit={handleSubmit} noValidate>
@@ -89,12 +89,12 @@ class ServiceProfileForm extends Component {
                         getOptions={this.getNetworkServerOptions}
                         setFieldValue={setFieldValue}
                         helpText={i18n.t(`${packageNS}:tr000223`)}
-                    onBlur={handleBlur}
+                        onBlur={handleBlur}
                         inputProps={{
                             clearable: true,
                             cache: false,
                         }}
-                    onChange={this.onNetworkSelect}
+                        onChange={this.onNetworkSelect}
                         component={AsyncAutoComplete}
                         required
                     />}
@@ -105,8 +105,9 @@ class ServiceProfileForm extends Component {
                         name="addGWMetaData"
                         id="addGWMetaData"
                         component={ReactstrapCheckbox}
+                        onChange={handleChange}
                         helpText={i18n.t(`${packageNS}:tr000152`)}
-                    onBlur={handleBlur}
+                        onBlur={handleBlur}
                     />
 
                     <Field
@@ -115,7 +116,8 @@ class ServiceProfileForm extends Component {
                         name="nwkGeoLoc"
                         id="nwkGeoLoc"
                         component={ReactstrapCheckbox}
-                    onBlur={handleBlur}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
                         helpText={i18n.t(`${packageNS}:tr000154`)}
                     />
 
@@ -127,7 +129,7 @@ class ServiceProfileForm extends Component {
                         value={this.state.object.devStatusReqFreq || 0}
                         helpText={i18n.t(`${packageNS}:tr000156`)}
                         component={ReactstrapInput}
-                    onBlur={handleBlur}
+                        onBlur={handleBlur}
                     />
 
                     {this.state.object.devStatusReqFreq > 0 && <FormGroup>
@@ -137,6 +139,7 @@ class ServiceProfileForm extends Component {
                             name="reportDevStatusBattery"
                             id="reportDevStatusBattery"
                             component={ReactstrapCheckbox}
+                            onChange={handleChange}
                         />
 
                         <Field
@@ -145,6 +148,7 @@ class ServiceProfileForm extends Component {
                             name="reportDevStatusMargin"
                             id="reportDevStatusMargin"
                             component={ReactstrapCheckbox}
+                            onChange={handleChange}
                             />
 
                     </FormGroup>}

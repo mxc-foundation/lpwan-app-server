@@ -76,7 +76,7 @@
   "tr000075": "Gateway activity (30d)",
   "tr000076": "Applications",
   "tr000077": "ID",
-  "tr000078": "Service Profile",
+  "tr000078": "Service Profiles",
   "tr000079": "Description",
   "tr000080": "FutureOfIoT",
   "tr000081": "Profile1",
@@ -446,6 +446,12 @@
     "org_users" : {
       "goto_user": "GOTO USER",
       "delete_user": "Are you sure you want to delete this user?"
+    },
+    "organizations" : {
+      "delete_organization": "Are you sure you want to delete this organization?"
+    },
+    "service_profiles" : {
+      "delete_service_profile": "Are you sure you want to delete this service profile?"
     }
   },
   "menu": {

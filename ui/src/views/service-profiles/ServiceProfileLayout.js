@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
-import classNames from "classnames";
 import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 
 
@@ -8,10 +7,12 @@ import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
+
 import Admin from "../../components/Admin";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import SessionStore from "../../stores/SessionStore";
 import UpdateServiceProfile from "./UpdateServiceProfile";
+import Modal from "../../components/Modal";
 
 
 class ServiceProfileLayout extends Component {
@@ -19,6 +20,7 @@ class ServiceProfileLayout extends Component {
     super();
     this.state = {
       admin: false,
+      nsDialog: false,
     };
     this.deleteServiceProfile = this.deleteServiceProfile.bind(this);
     this.setIsAdmin = this.setIsAdmin.bind(this);
@@ -52,16 +54,24 @@ class ServiceProfileLayout extends Component {
   }
 
   deleteServiceProfile() {
-    if (window.confirm("Are you sure you want to delete this service-profile?")) {
-      ServiceProfileStore.delete(this.props.match.params.serviceProfileID, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-      });
-    }
+    ServiceProfileStore.delete(this.props.match.params.serviceProfileID, resp => {
+      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
+    });
   }
+
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
 
   render() {
     return (
       this.state.serviceProfile ? <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:lpwan.service_profiles.delete_service_profile`)}
+          callback={this.deleteServiceProfile} />}
         <TitleBar
           buttons={
             <Admin>
@@ -70,7 +80,7 @@ class ServiceProfileLayout extends Component {
               color="danger"
                 label={i18n.t(`${packageNS}:tr000061`)}
               icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
-                onClick={this.deleteServiceProfile}
+                onClick={this.openModal}
               />
             </Admin>
           }

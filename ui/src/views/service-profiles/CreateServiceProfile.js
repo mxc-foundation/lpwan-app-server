@@ -5,11 +5,11 @@ import { Breadcrumb, BreadcrumbItem, Form, Row, Col, Card, CardBody } from 'reac
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import TitleBarTitle from "../../components/TitleBarTitle";
 
 import ServiceProfileForm from "./ServiceProfileForm";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
-import TitleBarTitle from "../../components/TitleBarTitle";
 
 
 class CreateServiceProfile extends Component {
