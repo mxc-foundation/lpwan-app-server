@@ -446,6 +446,12 @@
     "org_users" : {
       "goto_user": "GOTO USER",
       "delete_user": "Are you sure you want to delete this user?"
+    },
+    "organizations" : {
+      "delete_organization": "Are you sure you want to delete this organization?"
+    },
+    "service_profiles" : {
+      "delete_service_profile": "Are you sure you want to delete this service profile?"
     }
   },
   "menu": {

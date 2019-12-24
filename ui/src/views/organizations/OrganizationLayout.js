@@ -12,12 +12,15 @@ import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganization from "./UpdateOrganization";
 import Admin from "../../components/Admin";
 import UpdateServiceProfile from "../service-profiles/UpdateServiceProfile";
+import Modal from "../../components/Modal";
 
 
 class OrganizationLayout extends Component {
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      nsDialog: false,
+    };
     this.loadData = this.loadData.bind(this);
     this.deleteOrganization = this.deleteOrganization.bind(this);
   }
@@ -43,16 +46,24 @@ class OrganizationLayout extends Component {
   }
 
   deleteOrganization() {
-    if (window.confirm("Are you sure you want to delete this organization?")) {
-      OrganizationStore.delete(this.props.match.params.organizationID, () => {
-        this.props.history.push("/organizations");
-      });
-    }
+    OrganizationStore.delete(this.props.match.params.organizationID, () => {
+      this.props.history.push("/organizations");
+    });
   }
+
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
 
   render() {
     return (
       this.state.organization ? <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:lpwan.organizations.delete_organization`)}
+          callback={this.deleteOrganization} />}
         <TitleBar
             buttons={
               <Admin>
@@ -61,7 +72,7 @@ class OrganizationLayout extends Component {
                     color="danger"
                     label={i18n.t(`${packageNS}:tr000061`)}
                     icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
-                    onClick={this.deleteOrganization}
+                    onClick={this.openModal}
                 />
               </Admin>
             }
