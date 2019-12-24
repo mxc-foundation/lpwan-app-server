@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
 import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
+import Modal from '../../components/Modal';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
@@ -15,6 +16,7 @@ class OrganizationUserLayout extends Component {
     super();
     this.state = {
       admin: false,
+      nsDialog: false
     };
     this.deleteOrganizationUser = this.deleteOrganizationUser.bind(this);
     this.setIsAdmin = this.setIsAdmin.bind(this);
@@ -42,11 +44,19 @@ class OrganizationUserLayout extends Component {
   }
 
   deleteOrganizationUser() {
-    if (window.confirm("Are you sure you want to remove this organization user (this does not remove the user itself)?")) {
-      OrganizationStore.deleteUser(this.props.match.params.organizationID, this.props.match.params.userID, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
-      });
-    }
+    OrganizationStore.deleteUser(this.props.match.params.organizationID, this.props.match.params.userID, resp => {
+      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
+    });
+  }
+
+  gotoUser = () => {
+    this.props.history.push(`/users/${this.props.match.params.organizationID}`);
+  }
+
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
   }
 
   render() {
@@ -56,11 +66,15 @@ class OrganizationUserLayout extends Component {
 
     return (
       <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:lpwan.org_users.delete_user`)}
+          callback={this.deleteOrganizationUser} />}
         <TitleBar
           buttons={[
             <Button color="secondary"
               key={1}
-              onClick={this.openModal}
+              onClick={this.gotoUser}
               className="btn-rp"><i class="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
             </Button>,
             <Button color="danger"
@@ -71,7 +85,7 @@ class OrganizationUserLayout extends Component {
           ]}
         >
           <Breadcrumb>
-            <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/users`} title={i18n.t(`${packageNS}:tr000068`)}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/users`} title={i18n.t(`${packageNS}:tr000068`)}>{i18n.t(`${packageNS}:tr000068`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{this.state.organizationUser.organizationUser.username}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
