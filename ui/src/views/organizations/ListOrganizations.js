@@ -10,6 +10,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import OrganizationStore from "../../stores/OrganizationStore";
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
+import TitleBarButton from "../../components/TitleBarButton";
 
 class ListOrganizations extends Component {
   constructor(props) {
@@ -27,74 +28,91 @@ class ListOrganizations extends Component {
     }
   }
 
-  getColumns = (canHaveGateways) => (
+  organizationNameColumn = (cell, row, index, extraData) => {
+    return <Link to={`/organizations/${row.id}`}>{row.name}</Link>;
+  };
+
+  canHaveGatewaysColumn = (cell, row, index, extraData) => {
+    if (row.canHaveGateways) {
+        return  <Check />;
+    } else {
+        return  <Close />;
+    }
+  };
+
+  serviceProfileColumn = (cell, row, index, extraData) => {
+      return <div>
+          <div>
+              <Link to={`/organizations/${row.id}/service-profiles/create`}>ADD</Link>
+          </div>
+          <div>
+            <Link to={`/organizations/${row.id}/service-profiles`}>CHECK</Link>
+          </div>
+      </div>;
+  };
+
+  getColumns = () => (
       [{
-            dataField: 'name',
-            text: i18n.t(`${packageNS}:tr000042`),
-            sort: false,
-            formatter: this.organizationNameColumn,
+        dataField: 'name',
+        text: i18n.t(`${packageNS}:tr000042`),
+        sort: false,
+        formatter: this.organizationNameColumn,
         },
         {
-            dataField: 'display_name',
-            text: i18n.t(`${packageNS}:tr000126`),
-            sort: false,
+        dataField: 'displayName',
+        text: i18n.t(`${packageNS}:tr000126`),
+        sort: false,
         },
         {
-            dataField: 'can_have_gateways',
-            text: i18n.t(`${packageNS}:tr000380`),
-            sort: false,
-            formatter: this.canHaveGatewaysColumn,
-            formatExtraData: {canHaveGateways: canHaveGateways},
+        dataField: 'canHaveGateways',
+        text: i18n.t(`${packageNS}:tr000380`),
+        sort: false,
+        formatter: this.canHaveGatewaysColumn,
         },
         {
-            dataField: 'service_profiles',
-            text: i18n.t(`${packageNS}:tr000078`),
-            sort: false,
-           /* formatter: this.serviceProfileColumn,*/
+        dataField: 'serviceProfiles',
+        text: i18n.t(`${packageNS}:tr000078`),
+        sort: false,
+        formatter: this.serviceProfileColumn,
         }]
-  )
+  );
 
   /**
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
     const offset = (page - 1) * sizePerPage + 1;
-    this.getPage(this.props.match.params.organizationID, sizePerPage, offset);
-  }
-  getPage(limit, offset, callbackFunc) {
+    this.getPage(sizePerPage, offset);
+  };
+
+  getPage(limit, offset) {
     OrganizationStore.list("", limit, offset,  (res) => {
       this.setState({ data: res.result });
     });
   }
 
-  organizationNameColumn = (cell, row, index, extraData) => {
-    return <Link to={`/organizations/${this.props.match.params.organizationID}`}>{row.name}</Link>;
-  }
-
-  canHaveGatewaysColumn = (cell, row, index, extraData) => {
-      if (extraData.canHaveGateways) {
-          return  <Check />;
-      } else {
-          return  <Close />;
-      }
-  }
-
   componentDidMount() {
-    this.getPage(this.props.match.params.organizationID, 10);
+    this.getPage(10, 0);
   }
 
   render() {
-
     return (<React.Fragment>
-      <TitleBar>
-        <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
-      </TitleBar>
+    <TitleBar buttons={
+        <TitleBarButton
+            key={1}
+            label={i18n.t(`${packageNS}:tr000277`)}
+            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+            to={`/organizations/create`}
+        />}
+    >
+        <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
+    </TitleBar>
 
       <Row>
         <Col>
           <Card>
             <CardBody>
-              <AdvancedTable data={this.state.data} columns={this.getColumns(this.state.data.canHaveGateways)} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+              <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
             </CardBody>
           </Card>
         </Col>

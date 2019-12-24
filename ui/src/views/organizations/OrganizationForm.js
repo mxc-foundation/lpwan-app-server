@@ -1,51 +1,83 @@
-import React from "react";
+import React, { Component } from "react";
 
-import FormHelperText from '@material-ui/core/FormHelperText';
-import { FormText } from 'reactstrap';
+import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
+import { Formik, Form, Field, FieldArray } from 'formik';
+import * as Yup from 'yup';
+
+import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
-import FormControl from "../../components/FormControl";
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
+import TitleBarTitle from "../../components/TitleBarTitle";
 
 
 
-class OrganizationForm extends FormComponent {
+class OrganizationForm extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      object: this.props.object || {},
+    };
+  }
+
+
   render() {
     if (this.state.object === undefined) {
       return (<div></div>);
     }
-    return (
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-        <div class="form-group row">
-          <label class="col-sm-2  col-form-label" for="example-helping">{i18n.t(`${packageNS}:tr000030`)}</label>
-          <div class="col-sm-10">
-            <input type="text" id="name" class="form-control" placeholder="Helping text" value={this.state.object.name || ""} onChange={this.onChange} />
-            <FormText color="muted">{i18n.t(`${packageNS}:tr000062`)}</FormText>
-          </div>
-        </div>
-        {/* pattern: "[\\w-]+", */}
-        <div class="form-group row">
-          <label class="col-sm-2  col-form-label" for="example-helping">{i18n.t(`${packageNS}:tr000126`)}</label>
-          <div class="col-sm-10">
-            <input type="text" id="displayName" class="form-control" placeholder="Helping text" value={this.state.object.displayName || ""} onChange={this.onChange} />
-          </div>
-        </div>
 
-        <FormControl
-          label={i18n.t(`${packageNS}:tr000063`)}
-        >
-          <div class="mt-3">
-            <div class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input" id="canHaveGateways" checked={!!this.state.object.canHaveGateways} onChange={this.onChange} value="true" />
-              <label class="custom-control-label" for="canHaveGateways">{i18n.t(`${packageNS}:tr000064`)}</label>
-            </div>
-          </div>
-          <FormHelperText>{i18n.t(`${packageNS}:tr000065`)}</FormHelperText>
-        </FormControl>
-      </Form>
+    return (<React.Fragment>
+      <Row>
+        <Col>
+          <Formik
+              enableReinitialize
+              initialValues={this.state.object}
+              onSubmit={this.props.onSubmit}>
+            {({
+                handleSubmit,
+                handleChange,
+              }) => (
+                <Form onSubmit={handleSubmit} noValidate>
+                  <Field
+                      type="text"
+                      label={i18n.t(`${packageNS}:tr000030`)+'*'}
+                      name="name"
+                      id="name"
+                      value={this.state.object.name || ""}
+                      helpText={i18n.t(`${packageNS}:tr000062`)}
+                      component={ReactstrapInput}
+                      required
+                  />
+
+                  <Field
+                      type="text"
+                      label={i18n.t(`${packageNS}:tr000126`)+'*'}
+                      name="displayName"
+                      id="displayName"
+                      value={this.state.object.displayName || ""}
+                      helpText={i18n.t(`${packageNS}:tr000031`)}
+                      component={ReactstrapInput}
+                      required
+                  />
+
+                  <TitleBarTitle title={i18n.t(`${packageNS}:tr000127`)} />
+
+                  <Field
+                      type="checkbox"
+                      label={i18n.t(`${packageNS}:tr000064`)}
+                      name="canHaveGateways"
+                      id="canHaveGateways"
+                      helpText={i18n.t(`${packageNS}:tr000065`)}
+                      component={ReactstrapCheckbox}
+                      onChange={handleChange}
+                  />
+
+                  <Button type="submit" color="primary">{this.props.submitLabel}</Button>
+                </Form>
+            )}
+          </Formik>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
