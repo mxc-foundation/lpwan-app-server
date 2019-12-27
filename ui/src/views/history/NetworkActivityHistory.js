@@ -1,101 +1,98 @@
 import React, { Component } from "react";
-
-import Grid from "@material-ui/core/Grid";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
+import { withRouter, Link } from "react-router-dom";
 
 import i18n, { packageNS } from '../../i18n';
-import WalletStore from "../../stores/WalletStore";
-import TitleBar from "../../components/TitleBar";
+import HistoryStore from "../../stores/HistoryStore";
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
+import LinkVariant from "mdi-material-ui/LinkVariant";
 
-import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
-import Admin from "../../components/Admin";
-import { withRouter } from "react-router-dom";
-import { withStyles } from "@material-ui/core/styles";
+const PckRcvColumn = (cell, row, index, extraData) => {
+  return parseInt(row.DlCntGw - row.DlCntGwFree);
+}
 
-const styles = {
-  maxW140: {
-    maxWidth: 140,
-    //backgroundColor: "#0C0270",
-    whiteSpace: 'nowrap', 
-    overflow: 'hidden',
-    textOverflow: 'ellipsis'
-  },
-  flex:{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
-
-  }
-};
+const getColumns = () => (
+  [{
+    dataField: 'StartAt',
+    text: i18n.t(`${packageNS}:menu.staking.time`),
+    sort: false,
+  }, {
+    dataField: 'DlCntDv',
+    text: i18n.t(`${packageNS}:menu.staking.packets_sent`),
+    sort: false,
+  }, {
+    dataField: 'DlCntDvFree',
+    text: i18n.t(`${packageNS}:menu.staking.free_packets`),
+    sort: false,
+  }, {
+    dataField: 'Packets Received',
+    text: i18n.t(`${packageNS}:menu.staking.packets_received`),
+    formatter: PckRcvColumn,
+    sort: false,
+  }, {
+    dataField: 'Income',
+    text: i18n.t(`${packageNS}:menu.staking.earned`),
+    sort: false,
+  }, {
+    dataField: 'Spend',
+    text: i18n.t(`${packageNS}:menu.staking.spent`),
+    sort: false,
+  },{
+    dataField: 'UpdatedBalance',
+    text: i18n.t(`${packageNS}:menu.staking.balance`),
+    sort: false,
+  }]
+);
 
 class NetworkActivityHistory extends Component {
   constructor(props) {
     super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
     this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+    this.state = {
+      data: [],
+      stats: {}
+    }
   }
 
-  getPage(limit, offset, callbackFunc) {
-    WalletStore.getWalletUsageHist(this.props.organizationID, offset, limit, data => {
-        callbackFunc({
-            totalCount: parseInt(data.count),
-            result: data.walletUsageHis
-          });
-      }); 
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage + 1;
+
+    /* let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    } */
+    // TODO - how can I pass search query to server?
+    this.getPage(sizePerPage, offset);
   }
-  
-  getRow(obj, index) {
-    const url = process.env.REACT_APP_ETHERSCAN_ROPSTEN_HOST + `/tx/${obj.txHash}`;
-    
-    return(
-      <TableRow key={index}>
-        <TableCell align={'center'} className={this.props.classes.maxW140} >{obj.StartAt.substring(0,19)}</TableCell>
-        <TableCell align={'right'} className={this.props.classes.maxW140}>{obj.DlCntDv}</TableCell>
-        <TableCell align={'right'} className={this.props.classes.maxW140}>{obj.DlCntDvFree}</TableCell>
-        <TableCell align={'right'}>{parseInt(obj.DlCntGw - obj.DlCntGwFree)}</TableCell>
-        <TableCell align={'right'}>{obj.Income}</TableCell>
-        <TableCell align={'right'}>{obj.Spend}</TableCell>
-        <TableCell align={'right'}>{obj.UpdatedBalance}</TableCell>
-      </TableRow>
-    );
+
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    this.setState({ loading: true });
+    HistoryStore.getWalletUsageHist(this.props.organizationID, offset, limit, data => {
+      this.setState({ data: data.walletUsageHis, loading: false });
+    }); 
+  }
+
+  componentDidMount() {
+    this.getPage(10);
   }
 
   render() {
     return(
-      <Grid container spacing={24}>
-{/*        <TitleBar
-          buttons={
-            <Admin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                label="Filter"
-                //icon={<Plus />}
-              />
-            </Admin>
-          }
-        >
-        </TitleBar>*/}
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell align={'center'}>{i18n.t(`${packageNS}:menu.staking.time`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.packets_sent`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.free_packets`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.packets_received`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.earned`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.spent`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.balance`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+      <div className="position-relative">
+        {this.state.loading && <Loader />}
+        <AdvancedTable data={this.state.data} columns={getColumns()}
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+      </div>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(NetworkActivityHistory));
+export default withRouter(NetworkActivityHistory);

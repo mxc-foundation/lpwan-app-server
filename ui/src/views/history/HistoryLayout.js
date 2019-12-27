@@ -1,27 +1,17 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
+import classNames from "classnames";
+import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 
-import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Button from "@material-ui/core/Button";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import Spinner from "../../components/ScaleLoader"
-//import SessionStore from "../../stores/SessionStore";
 
-//import Transactions from "./Transactions";
 import StakeStore from "../../stores/StakeStore";
 import EthAccount from "./EthAccount";
 import Transactions from "./Transactions";
 import NetworkActivityHistory from "./NetworkActivityHistory";
 import Stakes from "./Stakes";
-
-import styles from "./HistoryStyle";
-
 
 class HistoryLayout extends Component {
   constructor(props) {
@@ -84,54 +74,66 @@ class HistoryLayout extends Component {
     const organizationID = this.props.match.params.organizationID;
     
     return(
-      <Grid container alignContent={'center'} spacing={24}>
-        <Spinner on={this.state.loading}/>
-        <Grid item xs={12} md={12} lg={12} className={this.props.classes.divider}>
-          <div className={this.props.classes.TitleBar}>
-              <TitleBar className={this.props.classes.padding}>
-                <TitleBarTitle title={i18n.t(`${packageNS}:menu.history.history`)} />
-              </TitleBar>    
-              {/* <Divider light={true}/> */}
-              {/* <div className={this.props.classes.between}>
-              <TitleBar>
-                <TitleBarTitle component={Link} to="#" title="M2M Wallet" className={this.props.classes.link}/> 
-                <TitleBarTitle component={Link} to="#" title="/" className={this.props.classes.link}/>
-                <TitleBarTitle component={Link} to="#" title={i18n.t(`${packageNS}:menu.history.history`)} className={this.props.classes.link}/>
-              </TitleBar>
-              </div> */}
-          </div>
-        </Grid>
+      <React.Fragment>
+        <TitleBar>
 
-        <Grid item xs={12} md={12} lg={12} alignItems={'center'}>
-          <Tabs
-            value={this.state.tab}
-            onChange={this.onChangeTab}
-            indicatorColor="primary"
-            className={this.props.classes.tabs}
-            variant="scrollable"
-            scrollButtons="auto"
-            textColor="primary"
-          >
-            <Tab label={i18n.t(`${packageNS}:menu.history.transactions`)} component={Link} to={`/history/${organizationID}/`} />
-            <Tab label={i18n.t(`${packageNS}:menu.history.eth_account`)} component={Link} to={`/history/${organizationID}/eth-account`} />
-            <Tab label={i18n.t(`${packageNS}:menu.history.network_activity`)} component={Link} to={`/history/${organizationID}/network-activity`} />
-            <Tab label={i18n.t(`${packageNS}:menu.history.staking`)} component={Link} to={`/history/${organizationID}/stake`} />
-          </Tabs>
+          <Breadcrumb>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.history.history`)}</BreadcrumbItem>
+          </Breadcrumb>
+        </TitleBar>
 
-        </Grid>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <Nav tabs>
+                  <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '0' })}
+                      to={`/history/${this.props.match.params.organizationID}/`}
+                    >{i18n.t(`${packageNS}:menu.history.transactions`)}</Link>
+                  </NavItem>
+                  {this.state.admin && <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '1' })}
+                      to={`/history/${this.props.match.params.organizationID}/eth-account`}
+                    >{i18n.t(`${packageNS}:menu.history.eth_account`)}</Link>
+                  </NavItem>}
+                  <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '2' })}
+                      to={`/history/${this.props.match.params.organizationID}/network-activity`}
+                    >{i18n.t(`${packageNS}:menu.history.network_activity`)}</Link>
+                  </NavItem>
+                  <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '3' })}
+                      to={`/history/${this.props.match.params.organizationID}/stake`}
+                    >{i18n.t(`${packageNS}:menu.history.staking`)}</Link>
+                  </NavItem>
+                </Nav>
 
-        <Grid item xs={12} md={12} lg={12}>
-          <Switch>
-            <Route exact path={`${this.props.match.path}/`} render={props => <Transactions organizationID={organizationID} {...props} />} />
-            <Route exact path={`${this.props.match.path}/eth-account`} render={props => <EthAccount organizationID={organizationID} {...props} />} />
-            <Route exact path={`${this.props.match.path}/network-activity`} render={props => <NetworkActivityHistory organizationID={organizationID} {...props} />} />
-            <Route exact path={`${this.props.match.path}/stake`} render={props => <Stakes organizationID={organizationID} {...props} />} />
-            {/* <Redirect to={`/history/${organizationID}/transactions`} /> */}
-          </Switch>
-        </Grid>
-      </Grid>
+                <Row className="pt-3">
+                  <Col>
+                    <Switch>
+                      <Route exact path={`${this.props.match.path}`} render={props => <Transactions organizationID={organizationID} {...props} />} />
+                      <Route exact path={`${this.props.match.path}/eth-account`} render={props => <EthAccount organizationID={organizationID} {...props} />} />
+                      <Route exact path={`${this.props.match.path}/network-activity`} render={props => <NetworkActivityHistory organizationID={organizationID} {...props} />} />
+                      <Route exact path={`${this.props.match.path}/stake`} render={props => <Stakes organizationID={organizationID} {...props} />} />
+                    </Switch>
+                  </Col>
+                </Row>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
+
+
+      
     );
   }
 }
 
-export default withStyles(styles)(withRouter(HistoryLayout));
+export default withRouter(HistoryLayout);
+

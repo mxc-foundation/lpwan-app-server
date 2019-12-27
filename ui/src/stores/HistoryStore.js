@@ -4,7 +4,7 @@ import Swagger from "swagger-client";
 
 import i18n, { packageNS } from '../i18n';
 import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
+import { checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
 
 
@@ -24,62 +24,77 @@ class HistoryStore extends EventEmitter {
         offset,
         limit
       })
-      .then(checkStatus)
-      //.then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        //.then(updateOrganizations)
+        .then(resp => {
+          callbackFunc(resp.body);
+        })
+        .catch(errorHandler);
     });
   }
-  
+
   getWithdrawHistory(moneyAbbr, orgId, limit, offset, callbackFunc) {
-    this.withdrawSwagger.then((client) => {      
+    this.withdrawSwagger.then((client) => {
       client.apis.WithdrawService.GetWithdrawHistory({
         moneyAbbr,
         orgId,
         limit,
         offset,
       })
-      .then(checkStatus)
-      //.then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        //.then(updateOrganizations)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
   getVmxcTxHistory(orgId, limit, offset, callbackFunc) {
-    this.walletSwagger.then((client) => {      
+    this.walletSwagger.then((client) => {
       client.apis.WalletService.GetVmxcTxHistory({
         orgId,
         limit,
         offset,
       })
-      .then(checkStatus)
-      //.then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        //.then(updateOrganizations)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
   getChangeMoneyAccountHistory(moneyAbbr, orgId, limit, offset, callbackFunc) {
-    this.moneySwagger.then((client) => {      
+    this.moneySwagger.then((client) => {
       client.apis.MoneyService.GetChangeMoneyAccountHistory({
         moneyAbbr,
         orgId,
         limit,
         offset,
       })
-      .then(checkStatus)
-      //.then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.obj);
+        .then(checkStatus)
+        //.then(updateOrganizations)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
+    });
+  }
+
+  getWalletUsageHist(orgId, offset, limit, callbackFunc) {
+    this.walletSwagger.then(client => {
+      client.apis.WalletService.GetWalletUsageHist({
+        orgId,
+        offset,
+        limit
       })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.body);
+        })
+        .catch(errorHandler);
     });
   }
 
