@@ -31,10 +31,6 @@ class OrganizationUserForm extends Component {
 
     const formSchema = Yup.object().shape(fieldsSchema);
 
-    if (this.state.object === undefined) {
-      return (<div></div>);
-    }
-
     return (
       <React.Fragment>
         <Formik
