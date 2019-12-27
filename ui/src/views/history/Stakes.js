@@ -1,100 +1,107 @@
 import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
 
-import Grid from "@material-ui/core/Grid";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 
 import i18n, { packageNS } from '../../i18n';
 import StakeStore from "../../stores/StakeStore";
-import TitleBar from "../../components/TitleBar";
 
-import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
-import Admin from "../../components/Admin";
-import { withRouter } from "react-router-dom";
-import { withStyles } from "@material-ui/core/styles";
+const StartColumn = (cell, row, index, extraData) => {
+  return row.start.substring(0, 10);
+}
 
-const styles = {
-  maxW140: {
-    maxWidth: 140,
-    whiteSpace: 'nowrap', 
-    overflow: 'hidden',
-    textOverflow: 'ellipsis'
-  },
-  flex:{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
+const EndColumn = (cell, row, index, extraData) => {
+  return row.end.substring(0, 10);
+}
 
-  }
-};
+const getColumns = () => (
+  [{
+    dataField: 'stakeAmount',
+    text: i18n.t(`${packageNS}:menu.staking.stake_amount`),
+    sort: false,
+  }, {
+    dataField: 'start',
+    text: i18n.t(`${packageNS}:menu.staking.start`),
+    formatter: StartColumn,
+    sort: false,
+  }, {
+    dataField: 'end',
+    text: i18n.t(`${packageNS}:menu.staking.end`),
+    formatter: EndColumn,
+    sort: false,
+  }, {
+    dataField: 'revMonth',
+    text: i18n.t(`${packageNS}:menu.staking.revenue_month`),
+    sort: false,
+  }, {
+    dataField: 'networkIncome',
+    text: i18n.t(`${packageNS}:menu.staking.network_income`),
+    sort: false,
+  }, {
+    dataField: 'monthlyRate',
+    text: i18n.t(`${packageNS}:menu.staking.monthly_rate`),
+    sort: false,
+  }, {
+    dataField: 'revenue',
+    text: i18n.t(`${packageNS}:menu.staking.revenue`),
+    sort: false,
+  }, {
+    dataField: 'balance',
+    text: i18n.t(`${packageNS}:menu.staking.balance`),
+    sort: false,
+  }]
+);
 
 class Stakes extends Component {
   constructor(props) {
     super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
     this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+    this.state = {
+      data: [],
+      stats: {}
+    }
   }
 
-  getPage(limit, offset, callbackFunc) {
-    StakeStore.getStakingHistory(this.props.organizationID, offset, limit, data => {
-        callbackFunc({
-            totalCount: parseInt(data.count),
-            result: data.stakingHist
-          });
-      }); 
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage + 1;
+
+    /* let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    } */
+    // TODO - how can I pass search query to server?
+    this.getPage(sizePerPage, offset);
   }
-  
-  getRow(obj, index) {
-    return(
-      <TableRow key={index}>
-        <TableCell align={'right'} className={this.props.classes.maxW140} >{obj.stakeAmount}</TableCell>
-        <TableCell align={'center'} className={this.props.classes.maxW140}>{obj.start.substring(0,10)}</TableCell>
-        <TableCell align={'center'} className={this.props.classes.maxW140}>{obj.end.substring(0,10)}</TableCell>
-        <TableCell align={'center'}>{obj.revMonth}</TableCell>
-        <TableCell align={'right'}>{obj.networkIncome}</TableCell>
-        <TableCell align={'right'}>{obj.monthlyRate}</TableCell>
-        <TableCell align={'right'}>{obj.revenue}</TableCell>
-        <TableCell align={'right'}>{obj.balance}</TableCell>
-      </TableRow>
-    );
+
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    this.setState({ loading: true });
+    StakeStore.getStakingHistory(this.props.organizationID, offset, limit, data => {
+      this.setState({ data: data.stakingHist, loading: false });
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(10);
   }
 
   render() {
-    return(
-      <Grid container spacing={24}>
-        {/* <TitleBar
-          buttons={
-            <Admin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                label={i18n.t(`${packageNS}:menu.staking.filter`)}
-                //icon={<Plus />}
-              />
-            </Admin>
-          }
-        >
-        </TitleBar> */}
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.stake_amount`)}</TableCell>
-                <TableCell align={'center'}>{i18n.t(`${packageNS}:menu.staking.start`)}</TableCell>
-                <TableCell align={'center'}>{i18n.t(`${packageNS}:menu.staking.end`)}</TableCell>
-                <TableCell align={'center'}>{i18n.t(`${packageNS}:menu.staking.revenue_month`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.network_income`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.monthly_rate`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.revenue`)}</TableCell>
-                <TableCell align={'right'}>{i18n.t(`${packageNS}:menu.staking.balance`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+    return (
+      <div className="position-relative">
+        {this.state.loading && <Loader />}
+        <AdvancedTable data={this.state.data} columns={getColumns()}
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+      </div>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(Stakes));
+export default withRouter(Stakes);
