@@ -440,7 +440,8 @@
   "tr000462": "Back to Login",
   "tr000463": "Back",
   "common": {
-    "delete": "DELETE"
+    "delete": "DELETE",
+    "reset": "RESET"
   },
   "lpwan": {
     "org_users" : {
