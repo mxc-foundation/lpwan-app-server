@@ -17,7 +17,7 @@ class HistoryLayout extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      tab: 0,
+      activeTab: '0',
       loading: false,
       admin: false,
     };
@@ -59,7 +59,7 @@ class HistoryLayout extends Component {
     }
     
     this.setState({
-      tab,
+      activeTab:tab + '',
     });
   }
 

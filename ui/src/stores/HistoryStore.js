@@ -75,7 +75,6 @@ class HistoryStore extends EventEmitter {
         offset,
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.obj);
         })
