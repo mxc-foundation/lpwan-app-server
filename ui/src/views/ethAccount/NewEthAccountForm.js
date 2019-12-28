@@ -1,110 +1,125 @@
-import React from "react";
+import React, { Component } from "react";
 
-import TextField from '@material-ui/core/TextField';
-import Button from "@material-ui/core/Button";
+import { Button } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
+import { ReactstrapInput } from '../../components/FormInputs';
+import * as Yup from 'yup';
+
 import i18n, { packageNS } from '../../i18n';
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
-class NewEthAccountForm extends FormComponent {
+class NewEthAccountForm extends Component {
+  constructor(props) {
+    super(props);
 
-  state = {
-    createAccount: '',
-    username: '',
-    password: ''
+    this.state = {
+      object: {},
+    };
   }
- 
+
+
   onChange = (event) => {
     const { id, value } = event.target;
-    
+
     this.setState({
-      [id]: value
+      object: { [id]: value }
     });
   }
 
-  clear = () => {
+  reset = () => {
     this.setState({
+      object: {
         username: '',
         password: '',
         createAccount: ''
-      })
+      }
+    })
   }
 
   onSubmit = () => {
     this.props.onSubmit({
-      action: 'createAccount',  
-      createAccount: this.state.createAccount,
-      currentAccount: this.state.createAccount,
-      username: this.state.username,
-      password: this.state.password
+      action: 'createAccount',
+      createAccount: this.state.object.createAccount,
+      currentAccount: this.state.object.createAccount,
+      username: this.state.object.username,
+      password: this.state.object.password
     });
 
+    this.reset();
   }
 
   render() {
-    const extraButtons = <>
-      <Button  variant="outlined" color="inherit" onClick={this.clear} type="button" disabled={false}>{i18n.t(`${packageNS}:menu.staking.reset`)}</Button>
-    </>;
+    let fieldsSchema = {
+      createAccount: Yup.string(),
+      username: Yup.string(),
+      password: Yup.string(),
+    }
 
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        extraButtons={extraButtons}
-        onSubmit={this.onSubmit}
-      >
-        <TextField
-          id="createAccount"//it is defined current account in swagger
-          label={i18n.t(`${packageNS}:menu.eth_account.new_account`)}
-          margin="normal"
-          value={this.state.createAccount}
-          variant="filled"
-          InputLabelProps={{
-            shrink: true
-          }}
-          placeholder="0x0000000000000000000000000000000000000000" 
-          onChange={this.onChange}
-          inputProps={{
-            pattern: "^0x[a-fA-F0-9]{40}$",
-          }}
+    const formSchema = Yup.object().shape(fieldsSchema);
 
-          autoComplete='off'
-          required
-          fullWidth
-        />
+    return (
+      <React.Fragment>
+        <Formik
+          enableReinitialize
+          initialValues={this.state.object}
+          validationSchema={formSchema}
+          onSubmit={this.props.onSubmit}>
+          {({
+            handleSubmit,
+            handleChange,
+            setFieldValue,
+            values,
+            handleBlur,
+          }) => (
+              <Form onSubmit={handleSubmit} noValidate>
+                <Field
+                  type="text"
+                  label={i18n.t(`${packageNS}:menu.eth_account.new_account`)}
+                  name="createAccount"
+                  id="createAccount"
+                  value={this.state.object.createAccount || ""}
+                  placeholder="0x0000000000000000000000000000000000000000"
+                  component={ReactstrapInput}
+                  onBlur={handleBlur}
+                  inputProps={{
+                    clearable: true,
+                    cache: false,
+                  }}
+                />
 
-        <TextField
-          id="username"//it is defined current account in swagger
-          label={i18n.t(`${packageNS}:menu.withdraw.username`)}
-          margin="normal"
-          value={this.state.username}
-          variant="filled"
-          InputLabelProps={{
-            shrink: true
-          }}
-          placeholder={i18n.t(`${packageNS}:menu.withdraw.type_here`)}
-          onChange={this.onChange}
-          autoComplete='off'
-          required
-          fullWidth
-        />
+                <Field
+                  type="text"
+                  label={i18n.t(`${packageNS}:menu.withdraw.username`)}
+                  name="username"
+                  id="username"
+                  value={this.state.object.username || ""}
+                  component={ReactstrapInput}
+                  placeholder={i18n.t(`${packageNS}:menu.withdraw.type_here`)}
+                  onBlur={handleBlur}
+                  inputProps={{
+                    clearable: true,
+                    cache: false,
+                  }}
+                />
 
-        <TextField
-          id="password"//it is defined current account in swagger
-          label={i18n.t(`${packageNS}:menu.eth_account.password`)}
-          margin="normal"
-          value={this.state.password}
-          variant="filled"
-          InputLabelProps={{
-            shrink: true
-          }}
-          placeholder={i18n.t(`${packageNS}:menu.eth_account.type_here`)}
-          onChange={this.onChange}
-          type="password"
-          autoComplete="off"
-          required
-          fullWidth
-        />
-       
-      </Form>
+                <Field
+                  type="password"
+                  label={i18n.t(`${packageNS}:menu.eth_account.password`)}
+                  name="password"
+                  id="password"
+                  value={this.state.object.password || ""}
+                  component={ReactstrapInput}
+                  onBlur={handleBlur}
+                  inputProps={{
+                    clearable: true,
+                    cache: false,
+                  }}
+                />
+
+                <Button className="btn-block" onClick={this.reset}>{i18n.t(`${packageNS}:common.reset`)}</Button>
+                <Button type="submit" className="btn-block" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button>
+              </Form>
+            )}
+        </Formik>
+      </React.Fragment>
     );
   }
 }

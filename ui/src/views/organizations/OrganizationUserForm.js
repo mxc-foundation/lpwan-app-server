@@ -7,6 +7,33 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { ReactstrapInput, ReactstrapCheckbox } from '../../components/FormInputs';
 
+class NonAdminChoices extends Component {
+  render() {
+    const { handleChange, handleBlur } = this.props;
+
+    return (<><Field
+      type="checkbox"
+      label={i18n.t(`${packageNS}:tr000141`)}
+      name="isDeviceAdmin"
+      id="isDeviceAdmin"
+      component={ReactstrapCheckbox}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      helpText={i18n.t(`${packageNS}:tr000142`)}
+    />
+      <Field
+        type="checkbox"
+        label={i18n.t(`${packageNS}:tr000143`)}
+        name="isGatewayAdmin"
+        id="isGatewayAdmin"
+        component={ReactstrapCheckbox}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        helpText={i18n.t(`${packageNS}:tr000144`)}
+      /></>);
+  }
+}
+
 class OrganizationUserForm extends Component {
   constructor(props) {
     super(props);
@@ -60,39 +87,21 @@ class OrganizationUserForm extends Component {
                     cache: false,
                   }}
                 />
-                
-                <Field
-                    type="checkbox"
-                    label={i18n.t(`${packageNS}:tr000139`)}
-                    name="isAdmin"
-                    id="isAdmin"
 
-                    component={ReactstrapCheckbox}
-                    onChange={handleChange}
-
-                    onBlur={handleBlur}
-                    helpText={i18n.t(`${packageNS}:tr000140`)}
-                  />
-                  <Field
-                  type="checkbox"
-                  label={i18n.t(`${packageNS}:tr000141`)}
-                  name="isDeviceAdmin"
-                  id="isDeviceAdmin"
-                  component={ReactstrapCheckbox}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  helpText={i18n.t(`${packageNS}:tr000142`)}
-                />
                 <Field
                   type="checkbox"
-                  label={i18n.t(`${packageNS}:tr000143`)}
-                  name="isGatewayAdmin"
-                  id="isGatewayAdmin"
+                  label={i18n.t(`${packageNS}:tr000139`)}
+                  name="isAdmin"
+                  id="isAdmin"
+                  value={values.isAdmin}
+
                   component={ReactstrapCheckbox}
                   onChange={handleChange}
+
                   onBlur={handleBlur}
-                  helpText={i18n.t(`${packageNS}:tr000144`)}
+                  helpText={i18n.t(`${packageNS}:tr000140`)}
                 />
+                {!values.isAdmin && <NonAdminChoices handleChange={handleChange} handleBlur={handleBlur} />}
                 <Button type="submit" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button>
               </Form>
             )}
