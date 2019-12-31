@@ -282,9 +282,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	if err := pb.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register server info handler error")
 	}
-	if err := pb.RegisterProxyRequestHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
+	//if err := pb.RegisterProxyRequestHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	//	return nil, errors.Wrap(err, "register proxy request handler error")
+	//}
 	if err := m2m_pb.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
