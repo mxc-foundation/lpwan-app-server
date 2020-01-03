@@ -558,6 +558,7 @@
       "unstake": "Unstake",
       "set_stake": "Set Stake",
       "history": "HISTORY",
+      "can_not_stake_0_amount": "Please, check your amount.",
       "withdraw_stake": "Withdraw Stake",
       "set_stake_success": "Congratulations! Your stake is set.",
       "unstake_set_success": "Unstake successful. MXC has been added to your M2M Wallet balance.",

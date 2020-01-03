@@ -5,6 +5,8 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { ReactstrapInput } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
+import Modal from "../../components/Modal";
+import ModalWithProgress from "../../components/ModalWithProgress";
 
 import StakeStore from "../../stores/StakeStore";
 //import Spinner from "../../components/ScaleLoader"
@@ -14,7 +16,7 @@ import { withStyles } from "@material-ui/core/styles";
 import NumberFormat from 'react-number-format';
 import styles from "./StakeStyle"
 
-const NumberFormatMXC = (props) => {
+/* const NumberFormatMXC = (props) => {
   const { inputRef, onChange, ...other } = props;
 
   return (
@@ -31,7 +33,7 @@ const NumberFormatMXC = (props) => {
       suffix=" MXC"
     />
   );
-}
+} */
 
 class StakeForm extends Component {
 
@@ -41,20 +43,26 @@ class StakeForm extends Component {
     this.state = {
       object: {
         amount: 0,
-        revRate: 0
+        revRate: 0,
+        isUnstake: false,
+        info: '',
+        modal: null,
+        modalTimer: null,
+        infoStatus: 0,
+        notice: {
+          succeed: i18n.t(`${packageNS}:menu.messages.congratulations_stake_set`),
+          unstakeSucceed: i18n.t(`${packageNS}:menu.messages.unstake_successful`),
+          warning: i18n.t(`${packageNS}:menu.messages.close_to_acquiring`)
+        },
       }
     };
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({ amount: nextProps.amount });  
+    this.setState({ amount: nextProps.amount });
   }
 
   componentDidMount() {
-    if (this.props.amount > 0) {
-      this.state.object.amount = this.props.amount;
-      return;
-    }
     this.loadData();
   }
 
@@ -69,21 +77,28 @@ class StakeForm extends Component {
   loadData = async () => {
     let res = await StakeStore.getActiveStakes(this.props.match.params.organizationID);
     let amount = 0;
+    let isUnstake = false;
 
     if (res.actStake !== null) {
       amount = res.actStake.Amount;
+      if (res.actStake.StakeStatus === 'ACTIVE') {
+        isUnstake = true;
+      }
     }
-
+    
     res = await StakeStore.getStakingPercentage(this.props.match.params.organizationID);
     let revRate = 0;
     revRate = res.stakingPercentage;
-    
+
+    const object = this.state.object;
+    object.amount = amount;
+    object.revRate = revRate;
+    object.isUnstake = isUnstake;
+
     this.setState({
-      object: {
-        amount,
-        revRate,
-      }
+      object
     });
+    this.props.setTitle(this.state.object.isUnstake);
   }
 
   onChange = (event) => {
@@ -97,27 +112,208 @@ class StakeForm extends Component {
   }
 
   reset = () => {
-    this.props.reset();
+    const object = this.state.object;
+    object.amount = 0;
+
+    this.setState({
+      object
+    });
   }
 
-  fix = () => {
-    
+  onSubmit = (amount) => {
+    const orgId = this.props.match.params.organizationID;
+    const req = {
+      orgId,
+      amount: parseFloat(amount)
+    }
+
+    if (this.state.object.isUnstake) {
+      this.unstake(orgId);
+    } else {
+      this.stake(req);
+    }
+    const object = this.state.object;
+    object.modal = false
+    this.setState({ object });
   }
+
+  confirm = (data) => {
+    this.setState({ modal: false });
+    if (data.amount === 0) {
+      return false;
+    }
+
+    if (this.state.object.isUnstake) {
+      const orgId = this.props.match.params.organizationID;
+      this.unstake(orgId);
+    } else {
+      const object = this.state.object;
+      object.amount = data.amount;
+      object.modal = true
+
+      this.setState({
+        object
+      });
+    }
+  }
+
+  openModalTimer = () => {
+    const object = this.state.object;
+    object.modalTimer = true;
+    object.modal = null
+
+    this.setState({
+      object
+    });
+  }
+
+  stake = (req) => {
+    const resp = StakeStore.stake(req);
+    resp.then((res) => {
+      const object = this.state.object;
+      if (res.body.status === i18n.t(`${packageNS}:menu.staking.stake_success`)) {
+        object.isUnstake= true;
+        object.info= i18n.t(`${packageNS}:menu.messages.congratulations_stake_set`);
+        object.infoStatus= 1;
+        object.infoModal= true;
+        this.setState({
+          object
+        });
+        this.props.setTitle(this.state.object.isUnstake);
+        
+        //setInterval(() => this.displayInfo(), 8000);
+      } else {
+        object.info= res.body.status;
+        object.infoStatus= 2;
+        object.infoModal= true;
+        this.setState({
+          object
+        });
+        //setInterval(() => this.displayInfo(), 8000);
+      }
+    })
+  }
+
+  unstake = (orgId) => {
+    const resp = StakeStore.unstake(orgId);
+    resp.then((res) => {
+      const object = this.state.object;
+
+      if (res.body.status === i18n.t(`${packageNS}:menu.staking.unstake_success`)) {
+        object.isUnstake= false;
+        object.amount= 0;
+        /* info.text = i18n.t(`${packageNS}:menu.messages.unstake_successful`);
+        info.status= 1; */
+
+        this.setState({
+          ...object,
+          
+        });
+        this.props.setTitle(this.state.object.isUnstake);
+        //setInterval(() => this.displayInfo(), 8000);
+      } else {
+        object.info= res.body.status;
+        object.infoStatus= 2;
+        object.infoModal= true;
+        this.setState({
+          object
+        });
+        
+        //setInterval(() => this.displayInfo(), 8000);
+      }
+    })
+  }
+
+  displayInfo = () => {
+    const object = this.state.object;
+    object.info = i18n.t(`${packageNS}:menu.messages.staking_enhances`);
+    object.infoStatus = 0;
+
+    this.setState({
+      object
+    });
+  }
+
+  showModal = (modal) => {
+    const object = this.state.object;
+    object.modal = modal;
+    this.setState({ object });
+  }
+
+  handleCloseModal = () => {
+    const object = this.state.object;
+    object.modal = null;
+    this.setState({
+      object
+    })
+  }
+
+  closeInfoModal = () => {
+    const object = this.state.object;
+    object.infoModal = null;
+    this.setState({
+      object
+    })
+  }
+
+  handleOnclick = () => {
+    this.props.history.push(`/history/${this.props.match.params.organizationID}/stake`);
+  }
+
+  handleProgress = (oldCompleted) => {
+    const object = this.state.object;
+    object.modalTimer = null
+    this.setState({
+      object
+    })
+
+    if (oldCompleted === 100) {
+      this.onSubmit(this.state.object.amount);
+    }
+  }
+
   render() {
     let fieldsSchema = {
-      amount: Yup.number(),
+      amount: Yup.number().moreThan(0).required(),
       revRate: Yup.number(),
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
-    
+
     return (
       <React.Fragment>
+        {this.state.object.infoModal && <Modal
+          title={i18n.t(`${packageNS}:menu.topup.notice`)}
+          left={i18n.t(`${packageNS}:menu.staking.cancel`)}
+          right={i18n.t(`${packageNS}:menu.staking.confirm`)}
+          context={this.state.object.info}
+          callback={this.closeInfoModal}
+          />}
+
+        {this.state.object.modal && <Modal
+          title={i18n.t(`${packageNS}:menu.messages.confirmation`)}
+          left={i18n.t(`${packageNS}:menu.staking.cancel`)}
+          right={i18n.t(`${packageNS}:menu.staking.confirm`)}
+          onProgress={this.handleProgress}
+          onCancelProgress={this.handleCancel}
+          onClose={this.handleCloseModal}
+          context={i18n.t(`${packageNS}:menu.messages.stake_confirmation_text`)}
+          callback={this.openModalTimer} />}
+
+        {this.state.object.modalTimer && <ModalWithProgress
+          title={i18n.t(`${packageNS}:menu.messages.confirmation`)}
+          left={i18n.t(`${packageNS}:menu.staking.cancel`)}
+          right={i18n.t(`${packageNS}:menu.staking.confirm`)}
+          handleProgress={this.handleProgress}
+          onClose={this.handleCloseModal}
+          context={i18n.t(`${packageNS}:menu.messages.stake_confirmation_text`)}
+          callback={this.onSubmit} />}
+
         <Formik
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.props.confirm}>
+          onSubmit={this.confirm}>
           {({
             handleSubmit,
             handleChange,
@@ -136,7 +332,7 @@ class StakeForm extends Component {
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  readOnly={this.props.isUnstake}
+                  readOnly={this.state.object.isUnstake}
                   min={0}
                   inputProps={{
                     clearable: true,
@@ -161,7 +357,7 @@ class StakeForm extends Component {
                 />
 
                 <Button className="btn-block" onClick={this.reset}>{i18n.t(`${packageNS}:common.reset`)}</Button>
-                <Button type="submit" className="btn-block" color="primary">{this.props.isUnstake ? i18n.t(`${packageNS}:menu.messages.confirm_unstake`) : i18n.t(`${packageNS}:menu.messages.confirm_stake`)}</Button>
+                <Button type="submit" className="btn-block" color="primary">{this.state.object.isUnstake ? i18n.t(`${packageNS}:menu.messages.confirm_unstake`) : i18n.t(`${packageNS}:menu.messages.confirm_stake`)}</Button>
               </Form>
             )}
         </Formik>
