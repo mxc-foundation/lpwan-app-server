@@ -6,11 +6,17 @@
     margin-bottom: $grid-gutter-width;
     box-shadow: $shadow-sm;
     width: 100%;
+    height: 100%;
+    
     .card-drop {
         font-size: 20px;
         line-height: 0;
         color: inherit;
     }
+}
+
+.col {
+    margin-bottom: 16px;
 }
 
 .card-widgets {

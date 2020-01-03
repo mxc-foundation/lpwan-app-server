@@ -18,7 +18,6 @@ const CommonModal = (props) => {
         props.callback();
     }
 
-
     return (
         <div>
             {/* {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>} */}

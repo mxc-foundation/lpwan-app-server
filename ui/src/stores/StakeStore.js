@@ -30,24 +30,7 @@ class StakeStore extends EventEmitter {
         errorHandler(error);
     }
   }
-
-  /* stake(req, callbackFunc) {
-    this.swagger.then(client => {
-        client.apis.StakingService.Stake({
-          "orgId": req.orgId,
-          body: {
-            orgId: req.orgId,
-            amount: req.amount
-          },
-        })
-        .then(checkStatus)
-        .then(resp => {
-          callbackFunc(resp.body);
-        })
-        .catch(errorHandler);
-      });
-  } */
-
+  
   async unstake(orgId) {
     try {
         const client = await this.swagger.then((client) => client);

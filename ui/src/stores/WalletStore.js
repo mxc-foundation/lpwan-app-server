@@ -10,12 +10,12 @@ import dispatcher from "../dispatcher";
 class WalletStore extends EventEmitter {
   constructor() {
     super();
-    this.swagger = new Swagger("/swagger/proxyRequest.swagger.json", sessionStore.getClientOpts());
+    this.swagger = new Swagger("/swagger/wallet.swagger.json", sessionStore.getClientOpts());
   }
 
   getWalletBalance(orgId, callbackFunc) {
     this.swagger.then(client => {
-      client.apis.ProxyRequest.GetWalletBalance({
+      client.apis.WalletService.GetWalletBalance({
         orgId,
       })
         .then(checkStatus)

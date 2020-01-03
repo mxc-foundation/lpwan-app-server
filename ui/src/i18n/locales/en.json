@@ -550,6 +550,7 @@
     },
     "staking": {
       "staking": "Staking",
+      "staking_is_being_processed": "Staking is being processed...",
       "revenue_rate": "Revenue rate",
       "your_stake": "Your Stake is",
       "confirm_stake": "CONFIRM STAKE",
@@ -567,7 +568,9 @@
       "private": "Private",
       "network": "Network",
       "stake_success": "Stake successful",
+      "unstake_success": "Unstake successful",
       "cancel": "CANCEL",
+      "confirm": "CONFIRM",
       "reset": "RESET",
       "monthly": "Monthly",
       "stake_amount": "Stake Amount",
