@@ -85,7 +85,7 @@ class StakeForm extends Component {
         isUnstake = true;
       }
     }
-    
+
     res = await StakeStore.getStakingPercentage(this.props.match.params.organizationID);
     let revRate = 0;
     revRate = res.stakingPercentage;
@@ -138,7 +138,6 @@ class StakeForm extends Component {
   }
 
   confirm = (data) => {
-    this.setState({ modal: false });
     if (data.amount === 0) {
       return false;
     }
@@ -147,12 +146,13 @@ class StakeForm extends Component {
       const orgId = this.props.match.params.organizationID;
       this.unstake(orgId);
     } else {
-      const object = this.state.object;
-      object.amount = data.amount;
-      object.modal = true
-
+      const { object } = this.state;
       this.setState({
-        object
+        object: {
+          ...object,
+          amount: data.amount,
+          modal: true
+        }
       });
     }
   }
@@ -171,25 +171,24 @@ class StakeForm extends Component {
     const resp = StakeStore.stake(req);
     resp.then((res) => {
       const object = this.state.object;
-      if (res.body.status === i18n.t(`${packageNS}:menu.staking.stake_success`)) {
-        object.isUnstake= true;
-        object.info= i18n.t(`${packageNS}:menu.messages.congratulations_stake_set`);
-        object.infoStatus= 1;
-        object.infoModal= true;
+      if (res.body.status === 'Stake successful.') {
+        object.isUnstake = true;
+        object.info = i18n.t(`${packageNS}:menu.messages.congratulations_stake_set`);
+        object.infoStatus = 1;
+        object.infoModal = true;
         this.setState({
           object
         });
         this.props.setTitle(this.state.object.isUnstake);
-        
+
         //setInterval(() => this.displayInfo(), 8000);
       } else {
-        object.info= res.body.status;
-        object.infoStatus= 2;
-        object.infoModal= true;
+        object.info = res.body.status;
+        object.infoStatus = 2;
+        object.infoModal = true;
         this.setState({
           object
         });
-        //setInterval(() => this.displayInfo(), 8000);
       }
     })
   }
@@ -198,28 +197,21 @@ class StakeForm extends Component {
     const resp = StakeStore.unstake(orgId);
     resp.then((res) => {
       const object = this.state.object;
-
-      if (res.body.status === i18n.t(`${packageNS}:menu.staking.unstake_success`)) {
-        object.isUnstake= false;
-        object.amount= 0;
-        /* info.text = i18n.t(`${packageNS}:menu.messages.unstake_successful`);
-        info.status= 1; */
+      if (res.body.status === 'Unstake successful.') {
+        object.isUnstake = false;
+        object.amount = 0;
 
         this.setState({
-          ...object,
-          
+          object,
         });
         this.props.setTitle(this.state.object.isUnstake);
-        //setInterval(() => this.displayInfo(), 8000);
       } else {
-        object.info= res.body.status;
-        object.infoStatus= 2;
-        object.infoModal= true;
+        object.info = res.body.status;
+        object.infoStatus = 2;
+        object.infoModal = true;
         this.setState({
           object
         });
-        
-        //setInterval(() => this.displayInfo(), 8000);
       }
     })
   }
@@ -288,7 +280,7 @@ class StakeForm extends Component {
           right={i18n.t(`${packageNS}:menu.staking.confirm`)}
           context={this.state.object.info}
           callback={this.closeInfoModal}
-          />}
+        />}
 
         {this.state.object.modal && <Modal
           title={i18n.t(`${packageNS}:menu.messages.confirmation`)}

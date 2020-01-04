@@ -25,7 +25,7 @@ class ModalWithProgress extends Component {
     }
 
     componentDidMount() {
-        timer = setInterval(this.progress, 100);
+        timer = setInterval(this.progress, 800);
     }
 
     toggle = () => {
