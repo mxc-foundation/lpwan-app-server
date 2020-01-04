@@ -276,6 +276,9 @@ class Sidebar extends Component {
     render() {
         const isCondensed = this.props.isCondensed || false;
         const orgId = SessionStore.getOrganizationID();
+        if(orgId === undefined && orgId === ''){
+          orgId = this.state.organizationID;
+        }
         const user = SessionStore.getUser();
         const version = this.state.version;
         let sidebar = this.state.sidebar;

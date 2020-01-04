@@ -6,26 +6,27 @@ import DropdownMenuLanguage from "./DropdownMenuLanguage";
 
 import i18n, { packageNS } from '../i18n';
 import SessionStore from "../stores/SessionStore";
-
+import WithdrawStore from "../stores/WithdrawStore";
+import WalletStore from "../stores/WalletStore";
 import logoSm from '../assets/images/logo-sm.png';
 import logo from '../assets/images/logos_wallet_light.png';
 
-/* function getWalletBalance() {
+function getWalletBalance() {
   var organizationId = SessionStore.getOrganizationID();
   if (organizationId === undefined) {
     return null;
   }
 
-  if (SessionStore.isAdmin()) {
-    organizationId = SUPER_ADMIN
-  }
+  /* if (SessionStore.isAdmin()) {
+    organizationId = '0';
+  } */
 
   return new Promise((resolve, reject) => {
     WalletStore.getWalletBalance(organizationId, resp => {
       return resolve(resp);
     });
   });
-} */
+} 
 
 class Topbar extends Component {
   constructor(props) {
@@ -42,17 +43,17 @@ class Topbar extends Component {
   }
 
   componentDidMount() {
-    /* this.loadData();
+    this.loadData();
 
     SessionStore.on("organization.change", () => {
       this.loadData();
     });
     WithdrawStore.on("withdraw", () => {
       this.loadData();
-    }); */
+    });
   }
 
-  /* loadData = async () => {
+  loadData = async () => {
     try {
       var result = await getWalletBalance();
       this.setState({ balance: result.balance });
@@ -61,7 +62,7 @@ class Topbar extends Component {
       console.error(error);
       this.setState({ error });
     }
-  } */
+  }
 
   onChangeLanguage = (newLanguageState) => {
     this.props.onChangeLanguage(newLanguageState);

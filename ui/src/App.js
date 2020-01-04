@@ -156,6 +156,25 @@ const styles = {
   },
 };
 
+
+
+class NotLoggedinRoute extends Component {
+  route = (props) => {
+    const { Comp, user, ...otherProps } = this.props;
+    console.log('NotLoggedinRoute', Comp.name, user);
+    return !user ?
+      <Comp {...otherProps} /> :
+      <Redirect to='/' />;
+  };
+  render() {
+    return (
+      <Route {...this.props}
+        render={this.route}
+      />
+    )
+  }
+}
+
 class App extends Component {
   constructor() {
     super();
@@ -272,17 +291,16 @@ class App extends Component {
   }
 
   render() {
-    const { language } = this.state;
     let topNav = null;
     let sideNav = null;
     let topbanner = null;
 
-    const { width } = this.state;
+    const { width, sessionInitialized, user, language } = this.state;
     const isMobile = width <= 800;
 
     let Layout = NonAuthLayout;
 
-    if (this.state.user !== null) {
+    if (user !== null) {
       /* sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
       topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>; 
       topNav = (
@@ -302,6 +320,10 @@ class App extends Component {
       Layout = AuthLayout;
     }
 
+    // if (!sessionInitialized) {
+    //   return 'loading...';
+    // }
+
     return (
       <Router history={history}>
         <React.Fragment>
@@ -311,17 +333,13 @@ class App extends Component {
 
             <Layout topBar={topNav} topBanner={topbanner} sideNav={sideNav}>
               <Switch>
-                <Route exact path="/" component={HomeComponent} />
+                <NotLoggedinRoute exact path="/login" 
+                  Comp={Login} user={user}
+                  language={language}
+                  onChangeLanguage={this.onChangeLanguage} />
 
+                <Route exact path="/" component={HomeComponent} />
                 <Route exact path="/logout" component={Logout} />
-                <Route exact path="/login"
-                  render={props =>
-                    <Login {...props}
-                      language={language}
-                      onChangeLanguage={this.onChangeLanguage}
-                    />
-                  }
-                />
 
                 <Route exact path="/users" component={ListUsers} />
                 <Route exact path="/users/create" component={CreateUser} />

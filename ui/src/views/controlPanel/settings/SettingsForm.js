@@ -118,6 +118,7 @@ class SettingsForm extends Component {
                   value={this.state.object.withdrawFee || ""}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
+                  readOnly
                   inputProps={{
                     clearable: true,
                     cache: false,
@@ -132,6 +133,7 @@ class SettingsForm extends Component {
                   value={this.state.object.downlinkPrice || ""}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
+                  readOnly
                   inputProps={{
                     clearable: true,
                     cache: false,
@@ -146,6 +148,7 @@ class SettingsForm extends Component {
                   value={this.state.object.percentageShare || ""}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
+                  readOnly
                   inputProps={{
                     clearable: true,
                     cache: false,
@@ -160,14 +163,15 @@ class SettingsForm extends Component {
                   value={this.state.object.lbWarning || ""}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
+                  readOnly
                   inputProps={{
                     clearable: true,
                     cache: false,
                   }}
                 />
 
-                <Button className="btn-block" onClick={this.reset}>{i18n.t(`${packageNS}:common.reset`)}</Button>
-                <Button type="submit" className="btn-block" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button>
+                {/* <Button className="btn-block" onClick={this.reset}>{i18n.t(`${packageNS}:common.reset`)}</Button>
+                <Button type="submit" className="btn-block" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button> */}
               </Form>
             )}
         </Formik>
