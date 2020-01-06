@@ -13,8 +13,8 @@ const get = {
     "pingSlotFreq": 50,
     "supportsClassC": true,
     "classCTimeout": 5,
-    "macVersion": "1.0",
-    "regParamsRevision": "0.1",
+    "macVersion": "1.0.1",
+    "regParamsRevision": "B",
     "rxDelay1": 5,
     "rxDROffset1": 20,
     "rxDataRate2": 150,
@@ -25,7 +25,7 @@ const get = {
     "supportsJoin": false,
     "rfRegion": "region1",
     "supports32BitFCnt": true,
-    "payloadCodec": "abc",
+    "payloadCodec": "CAYENNE_LPP",
     "payloadEncoderScript": "",
     "payloadDecoderScript": "",
     "geolocBufferTTL": 3,
@@ -35,11 +35,33 @@ const get = {
   "updatedAt": "2019-12-18 12:53:17.306048"
 };
 
+const list = {
+  "result": [
+    {
+      "id": "1361C787-1EC4-48C2-86A7-2A7BA39AD4F3",
+      "name": "My Device Profile",
+      "organizationID": "2",
+      "networkServerID": "1",
+      "createdAt": "2019-12-18 12:53:17.306048",
+      "updatedAt": "2019-12-18 12:53:17.306048"
+    }
+  ],
+  "totalCount": "1"
+}
+
 class MockDeviceProfileStoreApi {
   static get() {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve(Object.assign({}, get));
+      }, delay);
+    });
+  }
+
+  static list() {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(Object.assign({}, list));
       }, delay);
     });
   }

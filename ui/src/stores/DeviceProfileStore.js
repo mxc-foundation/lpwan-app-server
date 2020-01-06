@@ -82,6 +82,12 @@ class DeviceProfileStore extends EventEmitter {
   }
 
   list(organizationID, applicationID, limit, offset, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockDeviceProfileStoreApi.list()))();
+      return;
+    }
+
     this.swagger.then(client => {
       client.apis.DeviceProfileService.List({
         organizationID: organizationID,

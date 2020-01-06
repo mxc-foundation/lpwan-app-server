@@ -1,20 +1,14 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
+import { Breadcrumb, BreadcrumbItem, Button,
+  Modal, ModalHeader, ModalBody, ModalFooter, NavLink,
+} from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 
 import DeviceProfileForm from "./DeviceProfileForm";
 import OrganizationDevices from "../devices/OrganizationDevices";
@@ -22,11 +16,28 @@ import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
 
-const styles = {
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  },
   card: {
     overflow: "visible",
   },
-};
+});
 
 
 class CreateDeviceProfile extends Component {
@@ -34,9 +45,8 @@ class CreateDeviceProfile extends Component {
     super();
     this.state = {
       spDialog: false,
+      loading: true,
     };
-    this.onSubmit = this.onSubmit.bind(this);
-    this.closeDialog = this.closeDialog.bind(this);
   }
 
   componentDidMount() {
@@ -46,20 +56,20 @@ class CreateDeviceProfile extends Component {
       if (resp.totalCount === "0") {
         this.setState({
           spDialog: true,
+          loading: false
         });
       }
     });
   }
 
-  closeDialog() {
+  toggleSpDialog = () => {
     this.setState({
-      spDialog: false,
+      spDialog: !this.state.spDialog,
     });
   }
 
-  onSubmit(deviceProfile) {
+  onSubmit = (deviceProfile) => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-
     let sp = deviceProfile;
     sp.organizationID = currentOrgID;
 
@@ -69,7 +79,10 @@ class CreateDeviceProfile extends Component {
   }
 
   render() {
+    const { loading } = this.state;
+    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const closeSpBtn = <button className="close" onClick={this.toggleSpDialog}>&times;</button>;
 
     return(
       <Grid container spacing={4}>
@@ -77,42 +90,59 @@ class CreateDeviceProfile extends Component {
           mainTabIndex={2}
           organizationID={currentOrgID}
         >
-          <Dialog
-            open={this.state.spDialog}
-            onClose={this.closeDialog}
+          <Modal
+            isOpen={this.state.spDialog}
+            toggle={this.toggleSpDialog}
+            aria-labelledby="help-dialog-title"
+            aria-describedby="help-dialog-description"
           >
-            <DialogTitle>{i18n.t(`${packageNS}:tr000164`)}</DialogTitle>
-            <DialogContent>
-              <DialogContentText paragraph>
-                {i18n.t(`${packageNS}:tr000165`)}
-                {i18n.t(`${packageNS}:tr000326`)}
-              </DialogContentText>
-              <DialogContentText>
-                {i18n.t(`${packageNS}:tr000327`)}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button color="primary.main" component={Link} to={`/organizations/${currentOrgID}/service-profiles/create`} onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000277`)}</Button>
-              <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
-            </DialogActions>
-          </Dialog>
+            <ModalHeader
+              toggle={this.toggleSpDialog}
+              close={closeSpBtn}
+              id="help-dialog-title"
+            >
+              {i18n.t(`${packageNS}:tr000164`)}
+            </ModalHeader>
+            <ModalBody id="help-dialog-description">
+              <p>{i18n.t(`${packageNS}:tr000165`)}</p>
+              <p>{i18n.t(`${packageNS}:tr000326`)}</p>
+              <p>{i18n.t(`${packageNS}:tr000327`)}</p>
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="outlined">
+                <NavLink
+                  style={{ color: "#fff", padding: "0" }}
+                  tag={Link}
+                  to={`/organizations/${currentOrgID}/service-profiles/create`}
+                >
+                  {i18n.t(`${packageNS}:tr000277`)}
+                </NavLink>
+              </Button>
+              <Button
+                color="primary"
+                onClick={this.toggleSpDialog}
+              >
+                {i18n.t(`${packageNS}:tr000166`)}
+              </Button>{' '}
+            </ModalFooter>
+          </Modal>
 
           <TitleBar>
-            <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} to={`/organizations/${currentOrgID}/device-profiles`} />
-            <TitleBarTitle title="/" />
-            <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+            <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                `/organizations/${currentOrgID}/device-profiles`
+              }>{i18n.t(`${packageNS}:tr000070`)}</Link></BreadcrumbItem>
+              <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+            </Breadcrumb>
           </TitleBar>
 
           <Grid item xs={12}>
-            <Card className={this.props.classes.card}>
-              <CardContent>
-                <DeviceProfileForm
-                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                  onSubmit={this.onSubmit}
-                  match={this.props.match}
-                />
-              </CardContent>
-            </Card>
+            <DeviceProfileForm
+              submitLabel={i18n.t(`${packageNS}:tr000277`)}
+              onSubmit={this.onSubmit}
+              match={this.props.match}
+              loading={loading}
+            />
           </Grid>
         </OrganizationDevices>
       </Grid>
