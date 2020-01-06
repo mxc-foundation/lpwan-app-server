@@ -36,6 +36,7 @@ File: Main Css File
 @import "custom/components/_preloader";
 @import "custom/components/_accordions";
 @import "custom/components/_input-file";
+@import "custom/components/_select";
 
 // pages
 @import "custom/pages/_components-demo";
@@ -55,6 +56,7 @@ File: Main Css File
 
 // Plugins
 @import "custom/plugins/_waves";
+@import "custom/plugins/_codemirror";
 @import "custom/plugins/_slimscroll";
 @import "custom/plugins/_sweetalert";
 @import "custom/plugins/_toastr";

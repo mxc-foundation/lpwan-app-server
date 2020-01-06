@@ -416,7 +416,7 @@
   "tr000426": "確定您要刪除此網關檔案嗎?",
   "tr000427": "將LPWAN App Server的配置文件證書路由到LPWAN Server連接",
   "tr000428": "Routing Profile TLS Certificates",
-  "tr000429": "The provided value invalid, please enter correct value",
+  "tr000429": "The provided value is invalid, please enter a valid value",
   "tr000430": "關閉",
   "tr000431": "This field is required",
   "tr000432": "Altitude",

@@ -11,6 +11,7 @@ import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import SessionStore from "../../stores/SessionStore";
+import OrganizationDevices from "../devices/OrganizationDevices";
 import UpdateDeviceProfile from "./UpdateDeviceProfile";
 
 
@@ -40,20 +41,26 @@ class DeviceProfileLayout extends Component {
   }
 
   setIsAdmin() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     this.setState({
-      admin: SessionStore.isAdmin() || SessionStore.isOrganizationDeviceAdmin(this.props.match.params.organizationID),
+      admin: SessionStore.isAdmin() || SessionStore.isOrganizationDeviceAdmin(currentOrgID),
     });
   }
 
   deleteDeviceProfile() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     if (window.confirm("Are you sure you want to delete this device-profile?")) {
       DeviceProfileStore.delete(this.props.match.params.deviceProfileID, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/device-profiles`);
+        this.props.history.push(`/organizations/${currentOrgID}/device-profiles`);
       });
     }
   }
 
   render() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     if (this.state.deviceProfile === undefined) {
       return(<div></div>);
     }
@@ -72,17 +79,22 @@ class DeviceProfileLayout extends Component {
 
     return(
       <Grid container spacing={4}>
-        <TitleBar
-          buttons={buttons}
+        <OrganizationDevices
+          mainTabIndex={2}
+          organizationID={currentOrgID}
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/device-profiles`} title={i18n.t(`${packageNS}:tr000070`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.deviceProfile.deviceProfile.name} />
-        </TitleBar>
+          <TitleBar
+            buttons={buttons}
+          >
+            <TitleBarTitle to={`/organizations/${currentOrgID}/device-profiles`} title={i18n.t(`${packageNS}:tr000070`)} />
+            <TitleBarTitle title="/" />
+            <TitleBarTitle title={this.state.deviceProfile.deviceProfile.name} />
+          </TitleBar>
 
-        <Grid item xs={12}>
-          <UpdateDeviceProfile deviceProfile={this.state.deviceProfile.deviceProfile} admin={this.state.admin} />
-        </Grid>
+          <Grid item xs={12}>
+            <UpdateDeviceProfile deviceProfile={this.state.deviceProfile.deviceProfile} admin={this.state.admin} />
+          </Grid>
+        </OrganizationDevices>
       </Grid>
     );
   }

@@ -73,8 +73,6 @@ import CreateGateway from "./views/gateways/CreateGateway";
 import ListApplications from "./views/applications/ListApplications";
 import CreateApplication from "./views/applications/CreateApplication";
 import ApplicationLayout from "./views/applications/ApplicationLayout";
-import CreateIntegration from "./views/applications/CreateIntegration";
-import UpdateIntegration from "./views/applications/UpdateIntegration";
 
 // multicast-groups
 import ListMulticastGroups from "./views/multicast-groups/ListMulticastGroups";
@@ -83,6 +81,9 @@ import MulticastGroupLayout from "./views/multicast-groups/MulticastGroupLayout"
 import AddDeviceToMulticastGroup from "./views/multicast-groups/AddDeviceToMulticastGroup";
 
 // device
+import DeviceLayoutM2M from "./views/devices/m2m/DeviceLayoutM2M";
+
+import OrganizationDevices from "./views/devices/OrganizationDevices";
 import CreateDevice from "./views/devices/CreateDevice";
 import DeviceLayout from "./views/devices/DeviceLayout";
 
@@ -92,7 +93,7 @@ import Search from "./views/search/Search";
 // FUOTA
 import CreateFUOTADeploymentForDevice from "./views/fuota/CreateFUOTADeploymentForDevice";
 import FUOTADeploymentLayout from "./views/fuota/FUOTADeploymentLayout";
-
+import FUOTADeploymentDetails from "./views/fuota/FUOTADeploymentDetails";
 //M2M
 import ModifyEthAccount from "./views/ethAccount/ModifyEthAccount";
 import Withdraw from "./views/withdraw/Withdraw";
@@ -376,10 +377,19 @@ class App extends Component {
                 <Route path="/organizations/:organizationID(\d+)/gateways/:gatewayID([\w]{16})" component={GatewayLayout} />
                 <Route path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
 
+                <Route exact path="/organizations/:organizationID(\d+)/devices/create" component={CreateDevice} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/edit" component={DeviceLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/keys" component={DeviceLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/activation" component={DeviceLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/data" component={DeviceLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/frames" component={DeviceLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments" component={DeviceLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})" component={DeviceLayout} />
+                <Route exact path="/organizations/:organizationID(\d+)/devices" component={DeviceLayoutM2M} />
+
                 <Route exact path="/organizations/:organizationID(\d+)/applications" component={ListApplications} />
                 <Route exact path="/organizations/:organizationID(\d+)/applications/create" component={CreateApplication} />
-                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/create" component={CreateIntegration} />
-                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/integrations/:kind" component={UpdateIntegration} />
                 <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/create" component={CreateDevice} />
                 <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
                 <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/fuota-deployments/:fuotaDeploymentID([\w-]{36})" component={FUOTADeploymentLayout} />

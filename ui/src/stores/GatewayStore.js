@@ -6,6 +6,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler, errorHandlerIgnoreNotFound } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockGatewayStoreApi from '../api/mockGatewayStoreApi';
+import isDev from '../util/isDev';
 
 
 class GatewayStore extends EventEmitter {
@@ -13,10 +15,83 @@ class GatewayStore extends EventEmitter {
     super();
     this.wsStatus = null;
     this.swagger = new Swagger("/swagger/gateway.swagger.json", sessionStore.getClientOpts());
+    this.swaggerM2M = new Swagger("/swagger/m2mserver_gateway.swagger.json", sessionStore.getClientOpts());
   }
 
   getWSStatus() {
     return this.wsStatus;
+  }
+
+  getGatewayList(orgId, offset, limit, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockGatewayStoreApi.getGatewayList(orgId)))();
+      return;
+    }
+
+    this.swaggerM2M.then(client => {
+      client.apis.GatewayService.GetGatewayList({
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      //.then(updateOrganizations)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  getGatewayProfile(gwId, callbackFunc) {
+    this.swaggerM2M.then(client => {
+      client.apis.GatewayService.GetGatewayProfile({
+        gwId,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  getGatewayHistory(orgId, gwId, offset, limit, callbackFunc) {    
+    this.swaggerM2M.then(client => {
+      client.apis.GatewayService.GetGatewayHistory({
+        orgId,
+        gwId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  setGatewayMode(orgId, gwId, gwMode, callbackFunc) {
+    this.swaggerM2M.then(client => {
+      client.apis.GatewayService.SetGatewayMode({
+        "orgId": orgId,
+        "gwId": gwId,
+        body: {
+          orgId,
+          gwId,
+          gwMode
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.emit("update");
+        this.notify("updated");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
   }
 
   create(gateway, callbackFunc) {

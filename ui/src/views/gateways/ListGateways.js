@@ -308,7 +308,6 @@ class ListGateways extends Component {
 
   render() {
     return (<React.Fragment>
-
       <TitleBar
         buttons={<GatewayAdmin organizationID={this.props.match.params.organizationID}>
           <TitleBarButton

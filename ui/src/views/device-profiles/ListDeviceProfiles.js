@@ -14,6 +14,8 @@ import TitleBarButton from "../../components/TitleBarButton";
 import DataTable from "../../components/DataTable";
 import DeviceAdmin from "../../components/DeviceAdmin";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
+import OrganizationDevices from "../devices/OrganizationDevices";
+
 
 
 class ListDeviceProfiles extends Component {
@@ -25,44 +27,56 @@ class ListDeviceProfiles extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
-    DeviceProfileStore.list(this.props.match.params.organizationID, 0, limit, offset, callbackFunc);
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    DeviceProfileStore.list(currentOrgID, 0, limit, offset, callbackFunc);
   }
 
   getRow(obj) {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return(
       <TableRow key={obj.id}>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/device-profiles/${obj.id}`}>{obj.name}</TableCellLink>
+        <TableCellLink to={`/organizations/${currentOrgID}/device-profiles/${obj.id}`}>{obj.name}</TableCellLink>
       </TableRow>
     );
   }
 
   render() {
+    // TODO - refactor this into a method or store in state on page load (apply to all components where this rushed approach used)
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return(
       <Grid container spacing={4}>
-        <TitleBar
-          buttons={
-            <DeviceAdmin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                label={i18n.t(`${packageNS}:tr000277`)}
-                icon={<Plus />}
-                to={`/organizations/${this.props.match.params.organizationID}/device-profiles/create`}
-              />
-            </DeviceAdmin>
-          }
+        <OrganizationDevices
+          mainTabIndex={2}
+          organizationID={currentOrgID}
         >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
-        </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-              </TableRow>
+          <TitleBar
+            buttons={
+              <DeviceAdmin organizationID={currentOrgID}>
+                <TitleBarButton
+                  label={i18n.t(`${packageNS}:tr000277`)}
+                  icon={<Plus />}
+                  to={`/organizations/${currentOrgID}/device-profiles/create`}
+                />
+              </DeviceAdmin>
             }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
+          >
+            <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
+          </TitleBar>
+          <Grid item xs={12}>
+            <DataTable
+              header={
+                <TableRow>
+                  <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
+                </TableRow>
+              }
+              getPage={this.getPage}
+              getRow={this.getRow}
+            />
+          </Grid>
+        </OrganizationDevices>
       </Grid>
     );
   }

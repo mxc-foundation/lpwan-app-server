@@ -125,13 +125,6 @@ const SideNavContent = (props) => {
                             <span> {i18n.t(`${packageNS}:tr000078`)} </span>
                         </Link>
                     </li>
-                    
-                    <li>
-                        <Link to={`/organizations/${props.orgId}/applications`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-apps"></i>
-                            <span> {i18n.t(`${packageNS}:tr000407`)} </span>
-                        </Link>
-                    </li>
 
                     <li>
                         <Link to={`/organizations/${props.orgId}/multicast-groups`} className="waves-effect side-nav-link-ref">
