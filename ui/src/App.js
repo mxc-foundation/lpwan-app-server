@@ -333,10 +333,20 @@ class App extends Component {
 
             <Layout topBar={topNav} topBanner={topbanner} sideNav={sideNav}>
               <Switch>
-                <NotLoggedinRoute exact path="/login" 
+                {/* <NotLoggedinRoute exact path="/login" 
                   Comp={Login} user={user}
                   language={language}
-                  onChangeLanguage={this.onChangeLanguage} />
+                  onChangeLanguage={this.onChangeLanguage} /> */}
+                  <Route exact path="/" component={HomeComponent} />
+                  <Route exact path="/login"
+                  render={props =>
+                    <Login {...props}
+                      language={language}
+                      onChangeLanguage={this.onChangeLanguage}
+                    />
+                  }
+                />
+
 
                 <Route exact path="/" component={HomeComponent} />
                 <Route exact path="/logout" component={Logout} />
