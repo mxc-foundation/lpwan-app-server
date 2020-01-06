@@ -146,7 +146,6 @@ class GatewayForm extends Component {
       discoveryEnabled: Yup.bool(),
       location: Yup.object().shape({
         altitude: Yup.number().required(i18n.t(`${packageNS}:tr000431`))
-        //altitude: Yup.number()
       })
     }
 

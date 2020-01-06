@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody,
   CardSubtitle, CardTitle, Col, Container, Row, Spinner } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
@@ -17,6 +18,26 @@ import DataTable from "../../components/DataTable";
 import AdvancedTable from "../../components/AdvancedTable";
 
 import NetworkServerStore from "../../stores/NetworkServerStore";
+
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  }
+});
 
 const NetworkServerColumn = (cell, row, index, extraData) => {
   return <Link to={`/network-servers/${row.id}`}>{row.name}</Link>;
@@ -83,6 +104,8 @@ class ListNetworkServers extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+
     return(
       <React.Fragment>
         <TitleBar
@@ -97,7 +120,7 @@ class ListNetworkServers extends Component {
             </TitleBarButton>,
           ]}
         >
-          <Breadcrumb>
+          <Breadcrumb className={classes.breadcrumb}>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -123,4 +146,4 @@ class ListNetworkServers extends Component {
   }
 }
 
-export default ListNetworkServers;
+export default withStyles(styles)(ListNetworkServers);

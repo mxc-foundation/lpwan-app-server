@@ -12,6 +12,18 @@
     z-index: 9999;
 }
 
+// Preloader configuration that does not disable access to
+// continue navigating in the UI
+.preloader-light {
+    position: static;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba($white, 0.75);
+    z-index: 9999;
+}
+
 .status {
     width: 40px;
     height: 40px;

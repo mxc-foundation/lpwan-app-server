@@ -91,8 +91,9 @@ class EUI64Field extends Component {
   }
 
   componentDidMount() {
+    const { value } = this.props;
     this.setState({
-      value: this.props.value.replace(/\s/g, "") || "",
+      value: (value && value.replace(/\s/g, "")) || "",
     });
   }
 

@@ -5,12 +5,33 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import { checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockWalletStoreApi from '../api/mockWalletStoreApi';
+import isDev from '../util/isDev';
 
 
 class WalletStore extends EventEmitter {
   constructor() {
     super();
     this.swagger = new Swagger("/swagger/wallet.swagger.json", sessionStore.getClientOpts());
+  }
+
+  getDlPrice(orgId, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockWalletStoreApi.getDlPrice(orgId)))();
+      return;
+    }
+
+    this.swagger.then(client => {
+      client.apis.ProxyRequest.GetDlPrice({
+        orgId,
+      })
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
+    });
   }
 
   getWalletBalance(orgId, callbackFunc) {

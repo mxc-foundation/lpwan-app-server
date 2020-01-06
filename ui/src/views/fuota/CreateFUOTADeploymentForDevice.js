@@ -1,87 +1,162 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 
+import { Breadcrumb, BreadcrumbItem, Card, Container, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 
+import OrganizationStore from "../../stores/OrganizationStore";
 import ApplicationStore from "../../stores/ApplicationStore";
 import DeviceStore from "../../stores/DeviceStore";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 import FUOTADeploymentForm from "./FUOTADeploymentForm";
 
 
-const styles = {
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  },
   card: {
     overflow: "visible",
   },
-};
+});
 
 
 class CreateFUOTADeploymentForDevice extends Component {
   constructor() {
     super();
     this.state = {};
-    this.onSubmit = this.onSubmit.bind(this);
   }
 
   componentDidMount() {
-    ApplicationStore.get(this.props.match.params.applicationID, resp => {
-      this.setState({
-        application: resp,
-      });
-    });
+    const { match } = this.props;
 
-    DeviceStore.get(this.props.match.params.devEUI, resp => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    const isApplication = currentApplicationID && currentApplicationID !== "0";
+
+    if (isApplication) {
+      ApplicationStore.get(match.params.applicationID, resp => {
+        this.setState({
+          application: resp,
+        });
+      });
+    }
+
+    DeviceStore.get(match.params.devEUI, resp => {
       this.setState({
         device: resp,
       });
     });
+  
+    OrganizationStore.get(currentOrgID, resp => {
+      this.setState({
+        organization: resp.organization
+      });
+    });
   }
 
-  onSubmit(fuotaDeployment) {
-    FUOTADeploymentStore.createForDevice(this.props.match.params.devEUI, fuotaDeployment, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments`);
+  onSubmit = (fuotaDeployment) => {
+    const { match } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    const isApplication = currentApplicationID && currentApplicationID !== "0";
+
+    FUOTADeploymentStore.createForDevice(match.params.devEUI, fuotaDeployment, resp => {
+      isApplication
+      ? this.props.history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/fuota-deployments`)
+      : this.props.history.push(`/organizations/${currentOrgID}/devices/${match.params.devEUI}/fuota-deployments`);
     });
   }
 
   render() {
-    if (this.state.application === undefined || this.state.device === undefined) {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    const isApplication = currentApplicationID && currentApplicationID !== "0";
+    const { application, device, organization } = this.state;
+    const { classes, match } = this.props;
+    const currentOrgName = organization && (organization.name || organization.displayName);
+
+    // if (this.state.application === undefined || this.state.device === undefined) {
+    if (this.state.device === undefined) {
       return null;
     }
 
     return(
-      <Grid container spacing={4}>
-        <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${this.props.match.params.organizationID}/applications`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.application.application.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000278`)} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.device.device.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title="Firmware" to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000381`)} />
-        </TitleBar>
+      <React.Fragment>
+        <Container>
+          <Row>
+            <Col xs={12}>
+              <TitleBar noButtons>
+                  {
+                    isApplication && application ? (
+                      <Breadcrumb className={classes.breadcrumb}>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}/applications`
+                        }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                        }>{application.application.name}</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                        }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}`
+                        }>{device.device.name}</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/fuota-deployments`
+                        }>Firmware</Link></BreadcrumbItem>
+                        <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000381`)}</BreadcrumbItem>
+                      </Breadcrumb>
+                    ) : (
+                      <Breadcrumb className={classes.breadcrumb}>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations`
+                        }>Organizations</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}`
+                        }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}/devices`
+                        }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}/devices/${match.params.devEUI}`
+                        }>{device.device.name}</Link></BreadcrumbItem>
+                        <BreadcrumbItem>Firmware</BreadcrumbItem>
+                        <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000381`)}</BreadcrumbItem>
+                      </Breadcrumb>
+                    )
+                  }
+                
+              </TitleBar>
 
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <FUOTADeploymentForm
-                submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              <Card body>
+                <FUOTADeploymentForm
+                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                  onSubmit={this.onSubmit}
+                />
+                <br />
+              </Card>
+            </Col>       
+          </Row>
+        </Container>
+      </React.Fragment>
     );
   }
 }

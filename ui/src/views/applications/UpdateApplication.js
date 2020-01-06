@@ -2,11 +2,10 @@ import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 
 import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
 
 import i18n, { packageNS } from '../../i18n';
+import TitleBar from "../../components/TitleBar";
+import TitleBarTitle from "../../components/TitleBarTitle";
 import ApplicationStore from "../../stores/ApplicationStore";
 import ApplicationForm from "./ApplicationForm";
 
@@ -32,20 +31,17 @@ class UpdateApplication extends Component {
 
   render() {
     return(
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <ApplicationForm
-                submitLabel={i18n.t(`${packageNS}:tr000066`)}
-                object={this.props.application}
-                onSubmit={this.onSubmit}
-                update={true}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <React.Fragment>
+        <TitleBar>
+          <TitleBarTitle title="Update Application" />
+        </TitleBar>
+        <ApplicationForm
+          submitLabel={i18n.t(`${packageNS}:tr000066`)}
+          object={this.props.application}
+          onSubmit={this.onSubmit}
+          update={true}
+        />
+      </React.Fragment>
     );
   }
 }

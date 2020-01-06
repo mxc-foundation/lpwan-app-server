@@ -89,10 +89,14 @@ class ApplicationStore extends EventEmitter {
     });
   }
 
-  listIntegrations(applicationID, callbackFunc) {
+  listIntegrations(search, applicationID, organizationID, limit, offset, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.ListIntegrations({
+        limit: limit,
+        offset: offset,
         applicationId: applicationID,
+        organizationID: organizationID,
+        search: search,
       })
       .then(checkStatus)
       .then(resp => {
