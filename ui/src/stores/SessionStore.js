@@ -74,12 +74,30 @@ class SessionStore extends EventEmitter {
     this.emit("organization.change");
   }
 
+  setUser(user) {
+    localStorage.setItem("user", JSON.stringify(user));
+  }
+
+  setOrganizations(organizations) {
+    localStorage.setItem("organizations", JSON.stringify(organizations));
+  }
+
   getUser() {
-    return this.user;
+    let user = this.user;
+    if (!user) {
+      user = localStorage.getItem("user");
+      if (user) user = JSON.parse(user);
+    }
+    return user;
   }
 
   getOrganizations() {
-    return this.organizations;
+    let organizations = this.organizations;
+    if (!organizations || (organizations && organizations.length === 0)) {
+      organizations = localStorage.getItem("organizations");
+      if (organizations) organizations = JSON.parse(organizations);
+    }
+    return organizations || [];
   }
 
   getSettings() {
@@ -130,7 +148,6 @@ class SessionStore extends EventEmitter {
   }
 
   logout(callBackFunc) {
-    console.log('Logging out')
     localStorage.clear();
     this.user = null;
     this.organizations = [];
@@ -157,9 +174,11 @@ class SessionStore extends EventEmitter {
         .then(checkStatus)
         .then(resp => {
           this.user = resp.obj.user;
+          this.setUser(this.user);
 
           if(resp.obj.organizations !== undefined) {
             this.organizations = resp.obj.organizations;
+            this.setOrganizations(this.organizations);
           }
 
           if(resp.obj.settings !== undefined) {
@@ -193,7 +212,6 @@ class SessionStore extends EventEmitter {
       client.apis.InternalService.Branding({})
         .then(checkStatus)
         .then(resp => {
-          console.log("#@@@@@ ", resp);
           callbackFunc(resp.obj);
         })
         .catch(errorHandler);

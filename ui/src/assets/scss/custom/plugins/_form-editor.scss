@@ -1,0 +1,20 @@
+
+//
+// quilljs-editor.scss
+//
+ 
+.ql-container {
+    font-family: $font-family-base;
+}
+
+.ql-bubble {
+    border: $input-border-width solid $input-border-color;
+    border-radius: $input-border-radius;
+}
+
+.ql-toolbar {
+    font-family: $font-family-base !important;
+    span {
+        outline: none !important;
+    }
+}

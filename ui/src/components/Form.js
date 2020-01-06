@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 
 import Grid from '@material-ui/core/Grid';
-import Button from "@material-ui/core/Button";
+//import Button from "@material-ui/core/Button";
+import { Button } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
 
@@ -20,7 +21,10 @@ class Form extends Component {
 
         <Grid container justify="flex-end" className={this.props.classes.formControl}>
           {this.props.extraButtons}
-          {this.props.submitLabel && <Button color="primary.main" type="submit" disabled={this.props.disabled}>{this.props.submitLabel}</Button>}
+          {this.props.submitLabel && <Button color="primary" 
+              disabled={this.props.disabled}
+              className="btn-block">{this.props.submitLabel}
+          </Button>} 
         </Grid>
       </form>
     );

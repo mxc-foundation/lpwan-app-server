@@ -1,18 +1,38 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
+
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import Grid from '@material-ui/core/Grid';
 
-import Delete from "mdi-material-ui/Delete";
-
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import SessionStore from "../../stores/SessionStore";
+import OrganizationDevices from "../devices/OrganizationDevices";
 import UpdateDeviceProfile from "./UpdateDeviceProfile";
 
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  }
+});
 
 class DeviceProfileLayout extends Component {
   constructor() {
@@ -20,8 +40,6 @@ class DeviceProfileLayout extends Component {
     this.state = {
       admin: false,
     };
-    this.deleteDeviceProfile = this.deleteDeviceProfile.bind(this);
-    this.setIsAdmin = this.setIsAdmin.bind(this);
   }
 
   componentDidMount() {
@@ -39,21 +57,28 @@ class DeviceProfileLayout extends Component {
     SessionStore.removeListener("change", this.setIsAdmin);
   }
 
-  setIsAdmin() {
+  setIsAdmin = () => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     this.setState({
-      admin: SessionStore.isAdmin() || SessionStore.isOrganizationDeviceAdmin(this.props.match.params.organizationID),
+      admin: SessionStore.isAdmin() || SessionStore.isOrganizationDeviceAdmin(currentOrgID),
     });
   }
 
-  deleteDeviceProfile() {
+  deleteDeviceProfile = () => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     if (window.confirm("Are you sure you want to delete this device-profile?")) {
       DeviceProfileStore.delete(this.props.match.params.deviceProfileID, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/device-profiles`);
+        this.props.history.push(`/organizations/${currentOrgID}/device-profiles`);
       });
     }
   }
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     if (this.state.deviceProfile === undefined) {
       return(<div></div>);
     }
@@ -61,31 +86,40 @@ class DeviceProfileLayout extends Component {
     let buttons = [];
     if (this.state.admin) {
       buttons = [
-          <TitleBarButton
-            label={i18n.t(`${packageNS}:tr000061`)}
-            icon={<Delete />}
-            color="secondary"
-            onClick={this.deleteDeviceProfile}
-          />,
+        <TitleBarButton
+          key={1}
+          label={i18n.t(`${packageNS}:tr000061`)}
+          icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+          color="danger"
+          onClick={this.deleteDeviceProfile}
+        />,
       ];
     }
 
     return(
       <Grid container spacing={4}>
-        <TitleBar
-          buttons={buttons}
+        <OrganizationDevices
+          mainTabIndex={2}
+          organizationID={currentOrgID}
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/device-profiles`} title={i18n.t(`${packageNS}:tr000070`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.deviceProfile.deviceProfile.name} />
-        </TitleBar>
+          <TitleBar
+            buttons={buttons}
+          >
+            <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                `/organizations/${currentOrgID}/device-profiles`
+              }>{i18n.t(`${packageNS}:tr000070`)}</Link></BreadcrumbItem>
+              <BreadcrumbItem active>{this.state.deviceProfile.deviceProfile.name}</BreadcrumbItem>
+            </Breadcrumb>
+          </TitleBar>
 
-        <Grid item xs={12}>
-          <UpdateDeviceProfile deviceProfile={this.state.deviceProfile.deviceProfile} admin={this.state.admin} />
-        </Grid>
+          <Grid item xs={12}>
+            <UpdateDeviceProfile deviceProfile={this.state.deviceProfile.deviceProfile} admin={this.state.admin} />
+          </Grid>
+        </OrganizationDevices>
       </Grid>
     );
   }
 }
 
-export default withRouter(DeviceProfileLayout);
+export default withStyles(styles)(withRouter(DeviceProfileLayout));

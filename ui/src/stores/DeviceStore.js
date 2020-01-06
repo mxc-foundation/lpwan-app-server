@@ -6,6 +6,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler, errorHandlerIgnoreNotFoundWithCallback } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockDeviceStoreApi from '../api/mockDeviceStoreApi';
+import isDev from '../util/isDev';
 
 
 class DeviceStore extends EventEmitter {
@@ -14,6 +16,7 @@ class DeviceStore extends EventEmitter {
     this.wsDataStatus = null;
     this.wsFramesStatus = null;
     this.swagger = new Swagger("/swagger/device.swagger.json", sessionStore.getClientOpts());
+    this.swaggerM2M = new Swagger("/swagger/m2mserver_device.swagger.json", sessionStore.getClientOpts());
   }
 
   getWSDataStatus() {
@@ -22,6 +25,64 @@ class DeviceStore extends EventEmitter {
 
   getWSFramesStatus() {
     return this.wsFramesStatus;
+  }
+
+  getDeviceList(orgId, offset, limit, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockDeviceStoreApi.getDeviceList()))();
+      return;
+    }
+
+    this.swaggerM2M.then(client => {
+      client.apis.DeviceService.GetDeviceList({
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      //.then(updateOrganizations)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  getDeviceHistory(orgId, offset, limit, callbackFunc) {    
+    this.swaggerM2M.then(client => {
+      client.apis.DeviceService.GetDeviceHistory({
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  setDeviceMode(orgId, devId, devMode, callbackFunc) {
+    this.swaggerM2M.then(client => {
+    client.apis.DeviceService.SetDeviceMode({
+      "orgId": orgId,
+      "devId": devId,
+      body: {
+        orgId,
+        devId,
+        devMode
+      },
+    })
+    .then(checkStatus)
+    .then(resp => {
+      this.emit("update");
+      this.notify("updated");
+      callbackFunc(resp.obj);
+    })
+    .catch(errorHandler);
+    });
   }
 
   create(device, callbackFunc) {
@@ -41,6 +102,12 @@ class DeviceStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockDeviceStoreApi.get()))();
+      return;
+    }
+
     this.swagger.then(client => {
       client.apis.DeviceService.Get({
         devEui: id,
@@ -56,7 +123,7 @@ class DeviceStore extends EventEmitter {
   update(device, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Update({
-        "device.devEui": device.devEUI,
+        "device.devEui": device.object.devEUI,
         body: {
           device: device,
         },
@@ -96,6 +163,37 @@ class DeviceStore extends EventEmitter {
       .catch(errorHandler);
     });
   }
+
+  // TODO - check if this is implemented in backend
+
+  // listLocations(callbackFunc) {
+  //   this.swagger.then(client => {
+  //     client.apis.DeviceService.ListLocations()
+  //     .then(checkStatus)
+  //     .then(resp => {
+  //       callbackFunc(resp.obj);
+  //     })
+  //     .catch(errorHandler);
+  //   });
+  // }
+
+  // TODO - check if this is implemented in backend
+
+  // getStats(devEUI, start, end, callbackFunc) {
+  //   this.swagger.then(client => {
+  //     client.apis.DeviceService.GetStats({
+  //       devEui: devEUI,
+  //       interval: "DAY",
+  //       startTimestamp: start,
+  //       endTimestamp: end,
+  //     })
+  //     .then(checkStatus)
+  //     .then(resp => {
+  //       callbackFunc(resp.obj);
+  //     })
+  //     .catch(errorHandler);
+  //   });
+  // }
 
   getKeys(devEUI, callbackFunc) {
     this.swagger.then(client => {
@@ -145,6 +243,12 @@ class DeviceStore extends EventEmitter {
   }
 
   getActivation(devEUI, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockDeviceStoreApi.getDeviceActivation()))();
+      return;
+    }
+
     this.swagger.then(client => {
       client.apis.DeviceService.GetActivation({
         "devEui": devEUI,

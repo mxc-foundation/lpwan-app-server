@@ -20,14 +20,18 @@ export function errorHandler(error) {
       },
     });
   } else {
-    if (error.response.obj.code === 16) {
+    console.error('Stores errorHandler error', error.response);
+    if (error.response.obj && error.response.obj.code === 16) {
       history.push("/login");
     } else {
       dispatcher.dispatch({
         type: "CREATE_NOTIFICATION",
         notification: {
           type: "error",
-          message: error.response.obj.error + " (code: " + error.response.obj.code + ")",
+          message: error.response.obj ? (
+            error.response.obj.error + " (code: " + error.response.obj.code + ")"
+            // Internal Server Error 500 returns object with the following
+          ) : error.message + " (code: " + error.status + ")",
         },
       });
     }

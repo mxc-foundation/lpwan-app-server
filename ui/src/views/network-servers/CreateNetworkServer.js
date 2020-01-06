@@ -1,17 +1,11 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
-
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-
-import { CardContent } from "@material-ui/core";
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import NetworkServerForm from "./NetworkServerForm";
 import NetworkServerStore from "../../stores/NetworkServerStore";
-
+import TitleBar from "../../components/TitleBar";
+import NetworkServerForm from "./NetworkServerForm";
 
 class CreateNetworkServer extends Component {
   constructor() {
@@ -27,23 +21,21 @@ class CreateNetworkServer extends Component {
 
   render() {
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000040`)} to="/network-servers" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000041`)} />
+          <Breadcrumb style={{ fontSize: "1.25rem", margin: "0rem", padding: "0rem" }}>
+            <BreadcrumbItem><Link to={`/network-servers`}>{i18n.t(`${packageNS}:tr000040`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <NetworkServerForm
-                submitLabel={i18n.t(`${packageNS}:tr000041`)}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+
+        <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+          <NetworkServerForm
+            onSubmit={this.onSubmit}
+            submitLabel={i18n.t(`${packageNS}:tr000041`)}
+          />
+        </Card>
+      </React.Fragment>
     );
   }
 }

@@ -1,85 +1,74 @@
-import React, { Component } from "react";
-
-import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import Typography from '@material-ui/core/Typography';
-
-import ChevronDown from "mdi-material-ui/ChevronDown";
-
+import React, { useState } from "react";
+import { Card, CardBody, Row, Col, Collapse, NavLink } from 'reactstrap';
 import moment from "moment";
 
 import JSONTree from "./JSONTree";
-import theme from "../theme";
 
 
-const styles = {
-  headerColumn: {
-    marginRight: 6 * theme.spacing(1),
-  },
-  headerColumnFixedSmall: {
-    width: 145,
-  },
-  headerColumnFixedWide: {
-    width: 175,
-  },
-  treeStyle: {
-    paddingTop: 0,
-    paddingBottom: 0,
-    fontSize: 12,
-    lineHeight: 1.5,
-  },
-};
+const LoRaWANFrameLog = (props) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const toggle = () => setIsOpen(!isOpen);
 
+  let dir = "";
+  let devID = "";
 
-class LoRaWANFrameLog extends Component {
-  render() {
-    let dir = "";
-    let devID = "";
-
-    if (this.props.frame.uplinkMetaData !== undefined) {
-      dir = "UPLINK";
-    } else {
-      dir = "DOWNLINK";
-    }
-
-    const receivedAt = moment(this.props.frame.receivedAt).format("LTS");
-    const mType = this.props.frame.phyPayload.mhdr.mType;
-
-    if (this.props.frame.phyPayload.macPayload !== undefined) {
-      if (this.props.frame.phyPayload.macPayload.devEUI !== undefined) {
-        devID = this.props.frame.phyPayload.macPayload.devEUI;
-      }
-
-      if (this.props.frame.phyPayload.macPayload.fhdr !== undefined) {
-        devID = this.props.frame.phyPayload.macPayload.fhdr.devAddr;
-      }
-    }
-
-    return(
-      <ExpansionPanel>
-        <ExpansionPanelSummary expandIcon={<ChevronDown />}>
-          <div className={this.props.classes.headerColumnFixedSmall}><Typography variant="body2">{dir}</Typography></div>
-          <div className={this.props.classes.headerColumnFixedSmall}><Typography variant="body2">{receivedAt}</Typography></div>
-          <div className={this.props.classes.headerColumnFixedWide}><Typography variant="body2">{mType}</Typography></div>
-          <div className={this.props.classes.headerColumn}><Typography variant="body2">{devID}</Typography></div>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
-          <Grid container spacing={4}>
-            <Grid item xs className={this.props.classes.treeStyle}>
-              {this.props.frame.uplinkMetaData && <JSONTree data={this.props.frame.uplinkMetaData} />}
-              {this.props.frame.downlinkMetaData && <JSONTree data={this.props.frame.downlinkMetaData} />}
-            </Grid>
-            <Grid item xs className={this.props.classes.treeStyle}>
-              <JSONTree data={{phyPayload: this.props.frame.phyPayload}} />
-            </Grid>
-          </Grid>
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-    );
+  if (props.frame.uplinkMetaData !== undefined) {
+    dir = "UPLINK";
+  } else {
+    dir = "DOWNLINK";
   }
+
+  const receivedAt = moment(props.frame.receivedAt).format("LTS");
+  const mType = props.frame.phyPayload.mhdr.mType;
+
+  if (props.frame.phyPayload.macPayload !== undefined) {
+    if (props.frame.phyPayload.macPayload.devEUI !== undefined) {
+      devID = props.frame.phyPayload.macPayload.devEUI;
+    }
+
+    if (props.frame.phyPayload.macPayload.fhdr !== undefined) {
+      devID = props.frame.phyPayload.macPayload.fhdr.devAddr;
+    }
+  }
+
+  return (<React.Fragment>
+
+    <Card className="border shadow-none mb-1">
+      <NavLink className="d-block pt-2 pb-2 text-dark" href="#" onClick={toggle}>
+        <div className="d-flex">
+          <div className="d-flex flex-row align-items-center">
+            <div className="px-2">{dir}</div>
+            <div className="px-2">{receivedAt}</div>
+            <div className="px-2">{mType}</div>
+            <div className="px-2">{devID}</div>
+          </div>
+          <div className="ml-auto">
+            {!isOpen && <i className="mdi mdi-chevron-down font-20"></i>}
+            {isOpen && <i className="mdi mdi-chevron-up font-20"></i>}
+          </div>
+        </div>
+      </NavLink>
+
+      <Collapse isOpen={isOpen}>
+        <CardBody>
+          <Row>
+            <Col>
+              <div className="p-2 border">
+                {props.frame.uplinkMetaData && <JSONTree data={props.frame.uplinkMetaData} />}
+                {props.frame.downlinkMetaData && <JSONTree data={props.frame.downlinkMetaData} />}
+              </div>
+            </Col>
+            <Col>
+              <div className="p-2 border">
+                <JSONTree data={{ phyPayload: props.frame.phyPayload }} />
+              </div>
+            </Col>
+          </Row>
+        </CardBody>
+      </Collapse>
+    </Card>
+  </React.Fragment>
+  );
 }
 
-export default withStyles(styles)(LoRaWANFrameLog);
+export default LoRaWANFrameLog;

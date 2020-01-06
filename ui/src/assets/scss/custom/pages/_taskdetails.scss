@@ -1,0 +1,56 @@
+// 
+// taskdetails.scss
+//
+
+
+.task-tags {
+    .bootstrap-tagsinput {
+        padding: 0px;
+        border: none;
+    }
+}
+
+.attached-files{
+    .files-list{
+        .file-box{
+            vertical-align: middle;
+        }
+    }
+}
+
+.assign-team{
+    a{
+        margin-right: 7px;
+    }
+}
+
+/* File Upload */
+.fileupload {
+    overflow: hidden;
+    position: relative;
+    input{
+        &.upload {
+            cursor: pointer;
+            filter: alpha(opacity=0);
+            font-size: 20px;
+            margin: 0;
+            opacity: 0;
+            padding: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+    }
+}
+
+.add-new-plus {
+    height: 32px;
+    text-align: center;
+    width: 32px;
+    display: inline-block;
+    line-height: 32px;
+    color: $gray-600;
+    font-weight: 700;
+    background-color: $gray-300;
+    border-radius: 50%;
+}
