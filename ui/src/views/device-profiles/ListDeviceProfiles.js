@@ -1,48 +1,103 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 
+import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
-import Plus from "mdi-material-ui/Plus";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
 import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
 import DeviceAdmin from "../../components/DeviceAdmin";
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import OrganizationDevices from "../devices/OrganizationDevices";
 
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  }
+});
 
+const DeviceProfileNameColumn = (cell, row, index, extraData) => {
+  const currentOrgID = extraData['currentOrgID'];
+
+  return <Link to={`/organizations/${currentOrgID}/device-profiles/${row.id}`}>{row.name}</Link>;
+}
+
+const getColumns = (currentOrgID) => (
+  [
+    {
+      dataField: 'name',
+      text: i18n.t(`${packageNS}:tr000042`),
+      sort: false,
+      formatter: DeviceProfileNameColumn,
+      formatExtraData: {
+        currentOrgID: currentOrgID
+      }
+    }
+  ]
+);
 
 class ListDeviceProfiles extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
-    this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+    this.state = {
+      data: [],
+      loading: true
+    }
   }
 
-  getPage(limit, offset, callbackFunc) {
-    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage + 1;
 
-    DeviceProfileStore.list(currentOrgID, 0, limit, offset, callbackFunc);
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+    // TODO - how can I pass search query to server?
+    this.getPage(sizePerPage, offset);
   }
 
-  getRow(obj) {
+  getPage = (limit, offset) => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/organizations/${currentOrgID}/device-profiles/${obj.id}`}>{obj.name}</TableCellLink>
-      </TableRow>
-    );
+    this.setState({ loading: true });
+
+    // FIXME - should we be associating the Device Profile optionally with an Application ID?
+    DeviceProfileStore.list(currentOrgID, 0, limit, offset, (res) => {
+      this.setState({
+        data: res.result,
+        loading: false
+      });
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(10);
   }
 
   render() {
+    const { classes } = this.props;
     // TODO - refactor this into a method or store in state on page load (apply to all components where this rushed approach used)
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
@@ -56,25 +111,31 @@ class ListDeviceProfiles extends Component {
             buttons={
               <DeviceAdmin organizationID={currentOrgID}>
                 <TitleBarButton
+                  key={1}
                   label={i18n.t(`${packageNS}:tr000277`)}
-                  icon={<Plus />}
+                  icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+                  color="primary"
                   to={`/organizations/${currentOrgID}/device-profiles/create`}
-                />
+                />,
               </DeviceAdmin>
             }
           >
-            <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
+            <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000070`)}</BreadcrumbItem>
+            </Breadcrumb>
           </TitleBar>
           <Grid item xs={12}>
-            <DataTable
-              header={
-                <TableRow>
-                  <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-                </TableRow>
-              }
-              getPage={this.getPage}
-              getRow={this.getRow}
+          <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+            {this.state.loading && <Loader />}
+            <AdvancedTable
+              data={this.state.data}
+              columns={getColumns(currentOrgID)}
+              keyField="id"
+              onTableChange={this.handleTableChange}
+              rowsPerPage={10}
+              searchEnabled={true}
             />
+            </Card>
           </Grid>
         </OrganizationDevices>
       </Grid>
@@ -82,4 +143,4 @@ class ListDeviceProfiles extends Component {
   }
 }
 
-export default ListDeviceProfiles;
+export default withStyles(styles)(ListDeviceProfiles);
