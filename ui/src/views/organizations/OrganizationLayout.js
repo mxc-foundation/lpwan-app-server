@@ -1,22 +1,26 @@
 import React, { Component } from "react";
-import { Route, Redirect, Switch, withRouter } from "react-router-dom";
+import { Route, Switch, Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-
-import Delete from "mdi-material-ui/Delete";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
+
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganization from "./UpdateOrganization";
+import Admin from "../../components/Admin";
+import UpdateServiceProfile from "../service-profiles/UpdateServiceProfile";
+import Modal from "../../components/Modal";
 
 
 class OrganizationLayout extends Component {
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      nsDialog: false,
+    };
     this.loadData = this.loadData.bind(this);
     this.deleteOrganization = this.deleteOrganization.bind(this);
   }
@@ -42,43 +46,55 @@ class OrganizationLayout extends Component {
   }
 
   deleteOrganization() {
-    if (window.confirm("Are you sure you want to delete this organization?")) {
-      OrganizationStore.delete(this.props.match.params.organizationID, () => {
-        this.props.history.push("/organizations");
-      });
-    }
+    OrganizationStore.delete(this.props.match.params.organizationID, () => {
+      this.props.history.push("/organizations");
+    });
   }
 
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
+
   render() {
-    if (this.state.organization === undefined) {
-      return(<div></div>);
-    }
-
-
-    return(
-      <Grid container spacing={4}>
+    return (
+      this.state.organization ? <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:lpwan.organizations.delete_organization`)}
+          callback={this.deleteOrganization} />}
         <TitleBar
-          buttons={[
-            <TitleBarButton
-              key={1}
-              label={i18n.t(`${packageNS}:tr000061`)}
-              icon={<Delete />}
-              onClick={this.deleteOrganization}
-            />,
-          ]}
+            buttons={
+              <Admin>
+                <TitleBarButton
+                    key={1}
+                    color="danger"
+                    label={i18n.t(`${packageNS}:tr000061`)}
+                    icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+                    onClick={this.openModal}
+                />
+              </Admin>
+            }
         >
+
           <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.organization.name} />
+          <Breadcrumb>
+            <BreadcrumbItem><Link to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{this.state.organization.organization.name}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <Switch>
-            <Route exact path={this.props.match.path} render={() => <Redirect to={`${this.props.match.url}/edit`} />} />
-            <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateOrganization organization={this.state.organization} {...props} />} />
-          </Switch>
-        </Grid>
-      </Grid>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <UpdateOrganization organization={this.state.organization} />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment> : <div></div>
     );
   }
 }

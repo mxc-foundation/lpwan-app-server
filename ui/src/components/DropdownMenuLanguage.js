@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import Select from "react-select";
+import Select, {components} from "react-select";
 import { withStyles } from "@material-ui/core/styles";
 import classNames from "classnames";
-import i18n, { packageNS, DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "../i18n";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "../i18n";
 import SessionStore from "../stores/SessionStore";
 import FlagIcon from "./FlagIcon";
 
@@ -11,7 +11,7 @@ const styles = {
     display: "inline-flex"
   },
   languageIcon: {
-    display: "inline-block",
+    display: "inline-block"
   },
   languageSelection: {
     display: "inline-block"
@@ -21,8 +21,8 @@ const styles = {
 const customStyles = {
   control: (base, state) => ({
     ...base,
-    color: "#FFFFFF",
-    width: "180px",
+    //color: "#FFFFFF",
+    width: "70px",
     margin: 20,
     // match with the menu
     borderRadius: state.isFocused ? "3px 3px 0 0" : 3,
@@ -37,7 +37,7 @@ const customStyles = {
   }),
   menu: base => ({
     ...base,
-    background:"#101c4a",
+    background:'white',
     // override border radius to match the box
     borderRadius: 0,
     // kill the gap
@@ -47,7 +47,7 @@ const customStyles = {
   }),
   menuList: base => ({
     ...base,
-    background: "#1a2d6e",
+    background: 'white',
     // kill the white space on first and last option
     paddingTop: 0,
   }),
@@ -60,6 +60,20 @@ const customStyles = {
     overflow: "hidden",
     textOverflow: "ellipsis"
   }),
+};
+
+
+const customSelectComponents = {
+  SingleValue: ({ children, ...props }) => {
+    
+    const {code} = props.data || {};
+    return (<components.SingleValue {...props}>
+      {<FlagIcon
+              code={code}
+              // size='1x'
+            />}
+    </components.SingleValue>);
+  }
 };
 
 class WithPromises extends Component {
@@ -79,7 +93,7 @@ class WithPromises extends Component {
 
     if (!language || !language.id) {
       selectedOption = DEFAULT_LANGUAGE;
-    } else if (language.id && language.label && language.value && language.code) {
+    } else if (language.label && language.label && language.value && language.code) {
       selectedOption = {
         id: language.id,
         label: language.label,
@@ -117,18 +131,20 @@ class WithPromises extends Component {
 
     return (
       <div className={classNames(this.props.classes.languageWrapper)}>
-        {
+        {/* {
           selectedOption && selectedOption.code
           ? (
             <FlagIcon
               className={classNames(this.props.classes.languageIcon)}
               code={selectedOption.code}
-              size="2x"
+              size='2x'
             />
           ) : null
-        }
+        } */}
         <Select
-          className={classNames(this.props.classes.languageSelection)}
+          className={classNames('react-select', this.props.classes.languageSelection)}
+          menuPlacement="auto"
+          classNamePrefix="react-select"
           styles={customStyles}
           theme={(theme) => ({
             ...theme,
@@ -138,10 +154,12 @@ class WithPromises extends Component {
               primary: "#00FFD950",
             },
           })}
-          placeholder={i18n.t(`${packageNS}:tr000415`)}
+          isSearchable={false}
+          placeholder="Select Language"
           onChange={this.onChangeLanguage}
           options={SUPPORTED_LANGUAGES}
           value={selectedOption}
+          components={customSelectComponents}
         />
       </div>
     );

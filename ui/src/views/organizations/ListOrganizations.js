@@ -1,75 +1,123 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
-import Check from "mdi-material-ui/Check";
-import Close from "mdi-material-ui/Close";
-import Plus from "mdi-material-ui/Plus";
-
+import { Row, Col, Card, CardBody } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
+import AdvancedTable from "../../components/AdvancedTable";
 
 import OrganizationStore from "../../stores/OrganizationStore";
-
+import Check from "mdi-material-ui/Check";
+import Close from "mdi-material-ui/Close";
+import TitleBarButton from "../../components/TitleBarButton";
 
 class ListOrganizations extends Component {
-  getPage(limit, offset, callbackFunc) {
-    OrganizationStore.list("", limit, offset, callbackFunc);
+  constructor(props) {
+    super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
+    this.getPage = this.getPage.bind(this);
+
+    this.getColumns = this.getColumns.bind(this);
+    this.organizationNameColumn = this.organizationNameColumn.bind(this);
+    this.canHaveGatewaysColumn = this.canHaveGatewaysColumn.bind(this);
+
+    this.state = {
+      data: []
+    }
   }
 
-  getRow(obj) {
-    let icon = null;
+  organizationNameColumn = (cell, row, index, extraData) => {
+    return <Link to={`/organizations/${row.id}`}>{row.name}</Link>;
+  };
 
-    if (obj.canHaveGateways) {
-      icon = <Check />;
+  canHaveGatewaysColumn = (cell, row, index, extraData) => {
+    if (row.canHaveGateways) {
+        return  <Check />;
     } else {
-      icon = <Close />;
+        return  <Close />;
     }
+  };
 
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/organizations/${obj.id}`}>{obj.name}</TableCellLink>
-        <TableCell>{obj.displayName}</TableCell>
-        <TableCell>{icon}</TableCell>
-      </TableRow>
-    );
+  serviceProfileColumn = (cell, row, index, extraData) => {
+      return <div>
+          <div>
+              <Link to={`/organizations/${row.id}/service-profiles/create`}>ADD</Link>
+          </div>
+          <div>
+            <Link to={`/organizations/${row.id}/service-profiles`}>CHECK</Link>
+          </div>
+      </div>;
+  };
+
+  getColumns = () => (
+      [{
+        dataField: 'name',
+        text: i18n.t(`${packageNS}:tr000042`),
+        sort: false,
+        formatter: this.organizationNameColumn,
+        },
+        {
+        dataField: 'displayName',
+        text: i18n.t(`${packageNS}:tr000126`),
+        sort: false,
+        },
+        {
+        dataField: 'canHaveGateways',
+        text: i18n.t(`${packageNS}:tr000380`),
+        sort: false,
+        formatter: this.canHaveGatewaysColumn,
+        },
+        {
+        dataField: 'serviceProfiles',
+        text: i18n.t(`${packageNS}:tr000078`),
+        sort: false,
+        formatter: this.serviceProfileColumn,
+        }]
+  );
+
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
+    const offset = (page - 1) * sizePerPage + 1;
+    this.getPage(sizePerPage, offset);
+  };
+
+  getPage(limit, offset) {
+    OrganizationStore.list("", limit, offset,  (res) => {
+      this.setState({ data: res.result });
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(10, 0);
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <TitleBar
-          buttons={[
-            <TitleBarButton
-              key={1}
-              label={i18n.t(`${packageNS}:tr000277`)}
-              icon={<Plus />}
-              to={`/organizations/create`}
-            />,
-          ]}
-        >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
-        </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000126`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000380`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+    return (<React.Fragment>
+    <TitleBar buttons={
+        <TitleBarButton
+            key={1}
+            label={i18n.t(`${packageNS}:tr000277`)}
+            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+            to={`/organizations/create`}
+        />}
+    >
+        <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
+    </TitleBar>
+
+      <Row>
+        <Col>
+          <Card>
+            <CardBody>
+              <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }

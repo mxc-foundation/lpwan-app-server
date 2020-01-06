@@ -1,18 +1,36 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-
-import Grid from '@material-ui/core/Grid';
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import Delete from "mdi-material-ui/Delete";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import UpdateNetworkServer from "./UpdateNetworkServer";
 
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  }
+});
 
 class NetworkServerLayout extends Component {
   constructor() {
@@ -40,15 +58,18 @@ class NetworkServerLayout extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+
     if (this.state.networkServer === undefined) {
       return(<div></div>);
     }
 
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar
           buttons={[
             <TitleBarButton
+              color="danger"
               key={1}
               icon={<Delete />}
               label={i18n.t(`${packageNS}:tr000061`)}
@@ -56,17 +77,19 @@ class NetworkServerLayout extends Component {
             />,
           ]}
         >
-          <TitleBarTitle to="/network-servers" title={i18n.t(`${packageNS}:tr000040`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={`${this.state.networkServer.networkServer.name} (${this.state.networkServer.region} @ ${this.state.networkServer.version})`} />
+          <Breadcrumb className={classes.breadcrumb} style={{ fontSize: "1.25rem", margin: "0rem" }}>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+              `/network-servers`}>{i18n.t(`${packageNS}:tr000040`)
+            }</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
+            <BreadcrumbItem active>{`${this.state.networkServer.networkServer.id}`}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} />
-        </Grid>
-      </Grid>
+        <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} />
+      </React.Fragment>
     );
   }
 }
 
-export default withRouter(NetworkServerLayout);
+export default withStyles(styles)(withRouter(NetworkServerLayout));

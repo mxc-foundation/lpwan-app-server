@@ -1,65 +1,97 @@
 import React, { Component } from "react";
-
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
-import Plus from "mdi-material-ui/Plus";
+import { withRouter, Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
+import AdvancedTable from "../../components/AdvancedTable";
 
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 
 
+const GatewayColumn = (cell, row, index, extraData) => {
+  return <Link to={`/gateway-profiles/${row.id}`}>{row.name}</Link>;
+}
+
+const NetworkColumn = (cell, row, index, extraData) => {
+  return <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link>;
+}
+
+const getColumns = () => (
+  [{
+    dataField: 'name',
+    text: i18n.t(`${packageNS}:tr000042`),
+    sort: false,
+    formatter: GatewayColumn
+  }, {
+    dataField: 'networkServerName',
+    text: i18n.t(`${packageNS}:tr000047`),
+    sort: false,
+    formatter: NetworkColumn,
+  }]
+);
+
 class ListGatewayProfiles extends Component {
-  getPage(limit, offset, callbackFunc) {
-    GatewayProfileStore.list(0, limit, offset, callbackFunc);
+
+  constructor(props) {
+    super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
+    this.getPage = this.getPage.bind(this);
+    this.state = {
+      data: []
+    }
   }
 
-  getRow(obj) {
-    return(
-      <TableRow id={obj.id}>
-        <TableCellLink to={`/gateway-profiles/${obj.id}`}>{obj.name}</TableCellLink>
-        <TableCellLink to={`/network-servers/${obj.networkServerID}`}>{obj.networkServerName}</TableCellLink>
-      </TableRow>
-    );
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
+    const offset = (page - 1) * sizePerPage + 1;
+    this.getPage(sizePerPage, offset);
+  }
+
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    GatewayProfileStore.list(0, limit, offset, (res) => {
+      this.setState({ data: res.result });
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(10);
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <TitleBar
-          buttons={[
-            <TitleBarButton
-              key={1}
-              label={i18n.t(`${packageNS}:tr000277`)}
-              icon={<Plus />}
-              to={`/gateway-profiles/create`}
-            />,
-          ]}
-        >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000046`)} />
-        </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000047`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+    return (<React.Fragment>
+      <TitleBar
+        buttons={[
+          <Link
+            key={'b-1'}
+            to={`/gateway-profiles/create`}
+            className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
+          </Link>,
+        ]}
+      >
+        <Breadcrumb>
+          <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+        </Breadcrumb>
+      </TitleBar>
+
+      <Row>
+        <Col>
+          <Card>
+            <CardBody>
+              <AdvancedTable data={this.state.data} columns={getColumns()} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
 
-export default ListGatewayProfiles;
+export default withRouter(ListGatewayProfiles);

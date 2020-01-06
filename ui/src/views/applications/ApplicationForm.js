@@ -1,55 +1,40 @@
 import React from "react";
 
 import { withStyles } from "@material-ui/core/styles";
-import TextField from '@material-ui/core/TextField';
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import Typography from '@material-ui/core/Typography';
 
 import {Controlled as CodeMirror} from "react-codemirror2";
 import "codemirror/mode/javascript/javascript";
 
+import { Button, Label, FormText } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+import { ReactstrapInput, AsyncAutoComplete } from '../../components/FormInputs';
 import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import i18n, { packageNS } from '../../i18n';
-
 
 const styles = {
   codeMirror: {
     zIndex: 1,
-  },
-  formLabel: {
-    fontSize: 12,
-  },
+  }
 };
 
-
 class ApplicationForm extends FormComponent {
-  constructor() {
-    super();
-    this.getServiceProfileOption = this.getServiceProfileOption.bind(this);
-    this.getServiceProfileOptions = this.getServiceProfileOptions.bind(this);
-    this.getPayloadCodecOptions = this.getPayloadCodecOptions.bind(this);
-    this.onCodeChange = this.onCodeChange.bind(this);
-  }
-
-  getServiceProfileOption(id, callbackFunc) {
+  getServiceProfileOption = (id, callbackFunc) => {
     ServiceProfileStore.get(id, resp => {
       callbackFunc({label: resp.serviceProfile.name, value: resp.serviceProfile.id});
     });
   }
 
-  getServiceProfileOptions(search, callbackFunc) {
+  getServiceProfileOptions = (search, callbackFunc) => {
     ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0, resp => {
       const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
       callbackFunc(options);
     });
   }
 
-  getPayloadCodecOptions(search, callbackFunc) {
+  getPayloadCodecOptions = (search, callbackFunc) => {
     const payloadCodecOptions = [
       {value: "", label: i18n.t(`${packageNS}:tr000211`)},
       {value: "CAYENNE_LPP", label: i18n.t(`${packageNS}:tr000212`)},
@@ -59,7 +44,7 @@ class ApplicationForm extends FormComponent {
     callbackFunc(payloadCodecOptions);
   }
 
-  onCodeChange(field, editor, data, newCode) {
+  onCodeChange = (field, editor, data, newCode) => {
     let object = this.state.object;
     object[field] = newCode;
     this.setState({
@@ -68,6 +53,8 @@ class ApplicationForm extends FormComponent {
   }
 
   render() {
+    const { submitLabel } = this.props;
+
     if (this.state.object === undefined) {
       return(<div></div>);
     }
@@ -101,87 +88,146 @@ function Decode(fPort, bytes) {
 }`;
     }
 
+    let fieldsSchema = {
+      name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
+        .required(i18n.t(`${packageNS}:tr000431`)),
+      description: Yup.string()
+        .required(i18n.t(`${packageNS}:tr000431`)),
+      serviceProfileID: Yup.string()
+        .required(i18n.t(`${packageNS}:tr000431`)),
+    }
+
+    if (!this.props.update) {
+      fieldsSchema['name'] = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema['serviceProfileID'] = Yup.string();
+    }
+    const formSchema = Yup.object().shape(fieldsSchema);
+
     return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-        <TextField
-          id="name"
-          label={i18n.t(`${packageNS}:tr000254`)}
-          margin="normal"
-          value={this.state.object.name || ""}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000062`)}
-          fullWidth
-          required
-        />
-        <TextField
-          id="description"
-          label={i18n.t(`${packageNS}:tr000255`)}
-          margin="normal"
-          value={this.state.object.description || ""}
-          onChange={this.onChange}
-          fullWidth
-          required
-        />
-        {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>{i18n.t(`${packageNS}:tr000078`)}</FormLabel>
-          <AutocompleteSelect
-            id="serviceProfileID"
-            label={i18n.t(`${packageNS}:tr000256`)}
-            value={this.state.object.serviceProfileID || ""}
-            onChange={this.onChange}
-            getOption={this.getServiceProfileOption}
-            getOptions={this.getServiceProfileOptions}
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000257`)}
-          </FormHelperText>
-        </FormControl>}
-        {this.state.object.payloadCodec !== "" && <div>
-          <FormControl fullWidth margin="normal">
-            <FormLabel className={this.props.classes.formLabel}>{i18n.t(`${packageNS}:tr000209`)}</FormLabel>
-            <AutocompleteSelect
-              id="payloadCodec"
-              label={i18n.t(`${packageNS}:tr000210`)}
-              value={this.state.object.payloadCodec || ""}
-              onChange={this.onChange}
-              getOptions={this.getPayloadCodecOptions}
-            />
-            <FormHelperText>
-              {i18n.t(`${packageNS}:tr000258`)}
-            </FormHelperText>
-          </FormControl>
-          {this.state.object.payloadCodec === "CUSTOM_JS" && <FormControl fullWidth margin="normal">
-            <CodeMirror
-              value={payloadDecoderScript}
-              options={codeMirrorOptions}
-              onBeforeChange={this.onCodeChange.bind(this, 'payloadDecoderScript')}
-              className={this.props.classes.codeMirror}
-            />
-            <FormHelperText>
-              {i18n.t(`${packageNS}:tr000215`)}
-            </FormHelperText>
-          </FormControl>}
-          {this.state.object.payloadCodec === "CUSTOM_JS" && <FormControl fullWidth margin="normal">
-            <CodeMirror
-              value={payloadEncoderScript}
-              options={codeMirrorOptions}
-              onBeforeChange={this.onCodeChange.bind(this, 'payloadEncoderScript')}
-              className={this.props.classes.codeMirror}
-            />
-            <FormHelperText>
-              {i18n.t(`${packageNS}:tr000216`)}
-            </FormHelperText>
-          </FormControl>}
-        </div>}
-        {this.state.object.payloadCodec === "" && <FormControl fullWidth margin="normal">
-          <Typography variant="body1">
-            {i18n.t(`${packageNS}:tr000259`)}
-          </Typography>
-        </FormControl>}
-      </Form>
+      <React.Fragment>
+        <Formik
+          initialValues={this.state.object}
+          validationSchema={formSchema}
+          onSubmit={this.props.onSubmit}
+        >
+          {
+            ({
+              handleSubmit,
+              setFieldValue,
+              values
+            }) => (
+            <Form onSubmit={handleSubmit} noValidate>
+              <Field
+                type="text"
+                label={i18n.t(`${packageNS}:tr000254`)}
+                name="name"
+                id="name"
+                helpText={i18n.t(`${packageNS}:tr000062`)}
+                component={ReactstrapInput}
+              />
+
+              <Field
+                type="text"
+                label={i18n.t(`${packageNS}:tr000255`)}
+                name="description"
+                id="description"
+                component={ReactstrapInput}
+              />
+
+              {!this.props.update &&
+                <Field
+                  type="text"
+                  label={i18n.t(`${packageNS}:tr000078`)}
+                  name="serviceProfileID"
+                  id="serviceProfileID"
+                  value={this.state.object.serviceProfileID || ""}
+                  getOption={this.getServiceProfileOption}
+                  getOptions={this.getServiceProfileOptions}
+                  setFieldValue={setFieldValue}
+                  helpText={i18n.t(`${packageNS}:tr000257`)}
+                  inputProps={{
+                    clearable: true,
+                    cache: false,
+                  }}
+                  component={AsyncAutoComplete}
+                />
+              }
+
+              {this.state.object.payloadCodec !== "" &&
+                <Field
+                  type="text"
+                  label={i18n.t(`${packageNS}:tr000209`)}
+                  name="payloadCodec"
+                  id="payloadCodec"
+                  value={this.state.object.payloadCodec || ""}
+                  getOption={this.getPayloadCodecOption}
+                  getOptions={this.getPayloadCodecOptions}
+                  setFieldValue={setFieldValue}
+                  helpText={i18n.t(`${packageNS}:tr000258`)}
+                  inputProps={{
+                    clearable: true,
+                    cache: false,
+                  }}
+                  component={AsyncAutoComplete}
+                />
+              }
+
+              {this.state.object.payloadCodec === "CUSTOM_JS" &&
+                <>
+                  <Label for="payloadEncoderScript">
+                    {i18n.t(`${packageNS}:tr000551`)}
+                  </Label>
+                  <CodeMirror
+                    value={payloadDecoderScript}
+                    options={codeMirrorOptions}
+                    onBeforeChange={this.onCodeChange.bind(this, 'payloadDecoderScript')}
+                    className={this.props.classes.codeMirror}
+                  />
+                  <FormText>
+                    {i18n.t(`${packageNS}:tr000215`)}
+                  </FormText>
+                  <br />
+                </>
+              }
+
+              {this.state.object.payloadCodec === "CUSTOM_JS" &&
+                <>
+                  <Label for="payloadEncoderScript">
+                    {i18n.t(`${packageNS}:tr000552`)}
+                  </Label>
+                  <CodeMirror
+                    value={payloadEncoderScript}
+                    options={codeMirrorOptions}
+                    onBeforeChange={this.onCodeChange.bind(this, 'payloadEncoderScript')}
+                    className={this.props.classes.codeMirror}
+                  />
+                  <FormText>
+                    {i18n.t(`${packageNS}:tr000216`)}
+                  </FormText>
+                </>
+              }
+
+              {this.state.object.payloadCodec === "" &&
+                <Typography variant="body1">
+                  <br />
+                  {i18n.t(`${packageNS}:tr000259`)}
+                </Typography>
+              }
+
+              <br />
+              <Button
+                aria-label={submitLabel}
+                block
+                color="primary"
+                size="md"
+                type="submit"
+              >
+                {submitLabel}
+              </Button>
+            </Form>
+          )}
+        </Formik>
+      </React.Fragment>
     );
   }
 }

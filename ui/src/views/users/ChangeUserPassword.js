@@ -1,16 +1,11 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
-import TextField from '@material-ui/core/TextField';
+import { Breadcrumb, BreadcrumbItem, Form, FormGroup, Label, Input, Button, Container, Row, Col, Card, CardBody } from 'reactstrap';
 
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import UserStore from "../../stores/UserStore";
 import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
 import i18n, { packageNS } from '../../i18n';
 
 
@@ -25,16 +20,17 @@ class PasswordForm  extends FormComponent {
         submitLabel={this.props.submitLabel}
         onSubmit={this.onSubmit}
       >
-        <TextField
-          id="password"
-          label={i18n.t(`${packageNS}:tr000004`)}
-          type="password"
-          margin="normal"
-          value={this.state.object.password || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-        />
+        <FormGroup row>
+          <Label for="password" sm={2}>{i18n.t(`${packageNS}:tr000004`)}</Label>
+          <Col sm={10}>
+            <Input type="password" name="password" id="password" value={this.state.object.password || ""} onChange={this.onChange} />
+          </Col>
+        </FormGroup>
+        {this.props.submitLabel && <Button color="primary"
+          onClick={this.onSubmit}
+          disabled={this.props.disabled}
+          className="btn-block">{this.props.submitLabel}
+        </Button>}
       </Form>
     );
   }
@@ -69,26 +65,27 @@ class ChangeUserPassword extends Component {
     }
 
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000036`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.user.user.username} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000038`)} />
+          <Breadcrumb>
+          <BreadcrumbItem><Link to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem><Link to={`/users/${this.state.user.user.id}`}>{this.state.user.user.username}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000038`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
+        <Container>
+          <Row xs="1" lg="1">
+            <Card>
+              <CardBody>
               <PasswordForm
                 submitLabel={i18n.t(`${packageNS}:tr000022`)}
                 onSubmit={this.onSubmit}
               />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              </CardBody>
+            </Card>
+          </Row>
+        </Container>
+      </React.Fragment>
     );
   }
 }

@@ -1,69 +1,75 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
-import Plus from "mdi-material-ui/Plus";
-
+import { Row, Col, Card, CardBody } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import Admin from "../../components/Admin";
-import DataTable from "../../components/DataTable";
+import AdvancedTable from "../../components/AdvancedTable";
+
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
 
 class ListServiceProfiles extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
+    this.handleTableChange = this.handleTableChange.bind(this);
     this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+    this.serviceProfileColumn = this.serviceProfileColumn.bind(this)
+    this.state = {
+      data: [],
+      columns: [{
+        dataField: 'name',
+        text: i18n.t(`${packageNS}:tr000042`),
+        sort: false,
+        formatter: this.serviceProfileColumn,
+      }]
+    }
   }
 
-  getPage(limit, offset, callbackFunc) {
-    ServiceProfileStore.list(this.props.match.params.organizationID, limit, offset, callbackFunc);
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
+    const offset = (page - 1) * sizePerPage + 1;
+    this.getPage(this.props.match.params.organizationID, sizePerPage, offset);
   }
 
-  getRow(obj) {
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/service-profiles/${obj.id}`}>{obj.name}</TableCellLink>
-      </TableRow>
-    );
+  /**
+   * Fetches data from server
+   */
+  getPage = (organizationID, limit, offset) => {
+    ServiceProfileStore.list(organizationID, limit, offset, (res) => {
+      this.setState({ data: res.result });
+    });
+  }
+
+  serviceProfileColumn = (cell, row, index, extraData) => {
+    return <Link to={`/organizations/${this.props.match.params.organizationID}/service-profiles/${row.id}`}>{row.name}</Link>;
+  }
+
+  componentDidMount() {
+    this.getPage(this.props.match.params.organizationID, 10);
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <TitleBar
-          buttons={
-            <Admin>
-              <TitleBarButton
-                label={i18n.t(`${packageNS}:tr000277`)}
-                icon={<Plus />}
-                to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`}
-              />
-            </Admin>
-          }
-        >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
-        </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+
+    return (<React.Fragment>
+      <TitleBar>
+        <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
+      </TitleBar>
+
+      <Row>
+        <Col>
+          <Card>
+            <CardBody>
+              <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }

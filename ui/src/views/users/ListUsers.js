@@ -1,83 +1,126 @@
 import React, { Component } from "react";
-
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import { Link } from "react-router-dom";
 
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
-import Plus from "mdi-material-ui/Plus";
-
+import AdvancedTable from "../../components/AdvancedTable";
+import { Button, Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
 
 import UserStore from "../../stores/UserStore";
 
+const GatewayColumn = (cell, row, index, extraData) => {
+  const organizationId = extraData['organizationId'];
+  return <Link to={`/users/${row.id}`}>{row.username}</Link>;
+}
+
+const ActiveColumn = (cell, row, index, extraData) => {
+  if (row.isActive) {
+    return <Check/>;
+  } else {
+    return <Close />;
+  }
+}
+
+const AdminColumn = (cell, row, index, extraData) => {
+  if (row.isAdmin) {
+    return <Check />;
+  } else {
+    return <Close />;
+  }
+}
+
+const getColumns = (organizationId) => (
+  [{
+    dataField: 'username',
+    text: i18n.t(`${packageNS}:tr000056`),
+    sort: false,
+    formatter: GatewayColumn,
+    formatExtraData: { organizationId: organizationId }
+  }, {
+    dataField: 'isActive',
+    text: i18n.t(`${packageNS}:tr000057`),
+    sort: false,
+    formatter: ActiveColumn,
+  }, {
+    dataField: 'isAdmin',
+    text: i18n.t(`${packageNS}:tr000058`),
+    sort: false,
+    formatter: AdminColumn,
+  }]
+);
 
 class ListUsers extends Component {
-  getPage(limit, offset, callbackFunc) {
-    UserStore.list("", limit, offset, callbackFunc);
+  constructor(props) {
+    super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
+    this.getPage = this.getPage.bind(this);
+    this.state = {
+      data: []
+    }
+  }
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage + 1;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+    // TODO - how can I pass search query to server?
+    this.getPage(sizePerPage, offset);
   }
 
-  getRow(obj) {
-    let active = null;
-    let admin = null;
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    this.setState({ loading: true });
+    UserStore.list("", limit, offset, (res) => {
+      this.setState({ data: res.result, loading: false });
+    });
+  }
 
-    if (obj.isAdmin) {
-      admin = <Check />;
-    } else {
-      admin = <Close />;
-    }
+  componentDidMount() {
+    this.getPage(10);
+  }
 
-    if (obj.isActive) {
-      active = <Check />;
-    } else {
-      active = <Close />;
-    }
-
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/users/${obj.id}`}>{obj.username}</TableCellLink>
-        <TableCell>{active}</TableCell>
-        <TableCell>{admin}</TableCell>
-      </TableRow>
-    );
+  createUser = () => {
+    this.props.history.push(`/users/create`);
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
+    return (
+      <React.Fragment>
         <TitleBar
-          title={i18n.t(`${packageNS}:tr000036`)}
           buttons={[
-            <TitleBarButton
+            <Button color="primary"
               key={1}
-              label={i18n.t(`${packageNS}:tr000277`)}
-              icon={<Plus />}
-              to={`/users/create`}
-            />,
+              onClick={this.createUser}
+              className=""><i className="mdi mdi-account-multiple-plus"></i>{' '}{i18n.t(`${packageNS}:tr000277`)}
+            </Button>,
           ]}
         >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000036`)} />
+          <Breadcrumb>
+            <BreadcrumbItem><Link to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000056`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000057`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000058`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID)}
+                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={true} rowsPerPage={10}></AdvancedTable>
+
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }

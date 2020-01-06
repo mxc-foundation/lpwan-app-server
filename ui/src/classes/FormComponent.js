@@ -12,6 +12,10 @@ class FormComponent extends Component {
   }
 
   onChange(e) {
+    if (!e.target.id) {
+      console.error("Missing form field id attribute");
+      return;
+    }
     let lookup = e.target.id.split(".");
     const field = lookup[lookup.length-1];
     lookup.pop(); // remove last item

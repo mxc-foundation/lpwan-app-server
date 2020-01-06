@@ -1,15 +1,13 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-
-import Grid from '@material-ui/core/Grid';
+import { withRouter, Link } from "react-router-dom";
 
 import Delete from "mdi-material-ui/Delete";
 import KeyVariant from "mdi-material-ui/KeyVariant";
+import { Breadcrumb, BreadcrumbItem, Row, Button } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
 import UserStore from "../../stores/UserStore";
 import UpdateUser from "./UpdateUser";
 
@@ -25,7 +23,7 @@ class UserLayout extends Component {
   componentDidMount() {
     UserStore.get(this.props.match.params.userID, resp => {
       this.setState({
-        user: resp,
+        user: resp.user,
       });
     });
   }
@@ -38,42 +36,41 @@ class UserLayout extends Component {
     }
   }
 
+  changePassword = () => {
+    this.props.history.push(`/users/${this.props.match.params.userID}/password`);
+  }
+
   render() {
-    if (this.state.user === undefined) {
-      return(<div></div>);
+    const { user } = this.state;
+
+    if (user === undefined) {
+      return (<div></div>);
     }
-    const isDisabled = (this.state.user.user.username === process.env.REACT_APP_DEMO_USER)
-                        ?true
-                        :false; 
-                        
-    return(
-      <Grid container spacing={4}>
+    const isDisabled = (this.state.user.username === process.env.REACT_APP_DEMO_USER)
+      ? true
+      : false;
+
+    return (
+      <React.Fragment>
         <TitleBar
           buttons={[
-            <TitleBarButton
+            <Button color="danger"
               key={1}
-              label={i18n.t(`${packageNS}:tr000038`)}
-              icon={<KeyVariant />}
-              to={`/users/${this.props.match.params.userID}/password`}
+              onClick={this.changePassword}
               disabled={isDisabled}
-            />,
-            <TitleBarButton
-              key={2}
-              label={i18n.t(`${packageNS}:tr000061`)}
-              icon={<Delete />}
-              onClick={this.deleteUser}
-            />,
+              className=""><i className="mdi mdi-key-change"></i>{' '}{i18n.t(`${packageNS}:tr000038`)}
+            </Button>,
           ]}
         >
-          <TitleBarTitle to="/users" title={i18n.t(`${packageNS}:tr000036`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.user.user.username} />
+          <Breadcrumb>
+            <BreadcrumbItem><Link to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{user.username}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-
-        <Grid item xs={12}>
-          <UpdateUser user={this.state.user.user} />
-        </Grid>
-      </Grid>
+        <Row xs={12} lg={12}>
+          <UpdateUser user={user} />
+        </Row>
+      </React.Fragment>
     );
   }
 }

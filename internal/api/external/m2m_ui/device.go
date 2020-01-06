@@ -24,7 +24,7 @@ func NewDeviceServerAPI(validator auth.Validator) *DeviceServerAPI {
 func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceList")
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -56,7 +56,7 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDeviceProfileRequest) (*api.GetDeviceProfileResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceProfile")
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -86,7 +86,7 @@ func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDevi
 func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceHistory")
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -118,7 +118,7 @@ func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDevi
 func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/SetDeviceMode")
 
-	prof, err := getUserProfileByJwt(ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}

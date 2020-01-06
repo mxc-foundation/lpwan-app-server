@@ -1,0 +1,28 @@
+//
+// britechart.scss
+//
+
+.irs--flat{
+  .irs-bar, .irs-to, .irs-from, .irs-single {
+    background: $primary !important;
+  }
+  .irs-to, .irs-from, .irs-single{
+    &:before{
+      border-top-color: $primary;
+    }
+  }
+
+  .irs-min, .irs-max{
+    color: $gray-600;
+  }
+  .irs-grid-text{
+    font-size: 12px;
+  }
+  .irs-handle {
+    > i{
+      &:first-child{
+        background-color: $primary !important;
+      }
+    }
+  }
+}
