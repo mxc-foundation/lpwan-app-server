@@ -8,18 +8,15 @@ import UserStore from "../../stores/UserStore";
 import UserForm from "./UserForm";
 
 class UpdateUser extends Component {
-  constructor() {
-    super();
-    this.onSubmit = this.onSubmit.bind(this);
-  }
-
-  onSubmit(user) {
+  onSubmit = (user) => {
     UserStore.update(user, resp => {
       this.props.history.push("/users");
     });
   }
 
   render() {
+    const { loading, user } = this.props;
+
     return (
       <React.Fragment>
         <Container>
@@ -28,8 +25,10 @@ class UpdateUser extends Component {
               <CardBody>
                 <UserForm
                   submitLabel={i18n.t(`${packageNS}:tr000066`)}
-                  object={this.props.user}
+                  loading={loading}
+                  object={user}
                   onSubmit={this.onSubmit}
+                  update={true}
                 />
               </CardBody>
             </Card>

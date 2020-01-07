@@ -5,13 +5,34 @@ import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
 import AdvancedTable from "../../components/AdvancedTable";
 import { Button, Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-
+import TitleBarButton from "../../components/TitleBarButton";
+import Loader from "../../components/Loader";
 import UserStore from "../../stores/UserStore";
 
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  }
+});
+
 const GatewayColumn = (cell, row, index, extraData) => {
-  const organizationId = extraData['organizationId'];
   return <Link to={`/users/${row.id}`}>{row.username}</Link>;
 }
 
@@ -31,13 +52,12 @@ const AdminColumn = (cell, row, index, extraData) => {
   }
 }
 
-const getColumns = (organizationId) => (
+const getColumns = () => (
   [{
     dataField: 'username',
     text: i18n.t(`${packageNS}:tr000056`),
     sort: false,
-    formatter: GatewayColumn,
-    formatExtraData: { organizationId: organizationId }
+    formatter: GatewayColumn
   }, {
     dataField: 'isActive',
     text: i18n.t(`${packageNS}:tr000057`),
@@ -55,10 +75,9 @@ class ListUsers extends Component {
   constructor(props) {
     super(props);
 
-    this.handleTableChange = this.handleTableChange.bind(this);
-    this.getPage = this.getPage.bind(this);
     this.state = {
-      data: []
+      data: [],
+      loading: true
     }
   }
   /**
@@ -80,8 +99,12 @@ class ListUsers extends Component {
    */
   getPage = (limit, offset) => {
     this.setState({ loading: true });
+
     UserStore.list("", limit, offset, (res) => {
-      this.setState({ data: res.result, loading: false });
+      this.setState({
+        data: res.result,
+        loading: false
+      });
     });
   }
 
@@ -89,34 +112,44 @@ class ListUsers extends Component {
     this.getPage(10);
   }
 
-  createUser = () => {
-    this.props.history.push(`/users/create`);
-  }
-
   render() {
+    const { classes } = this.props;
+
     return (
       <React.Fragment>
         <TitleBar
           buttons={[
-            <Button color="primary"
+            <TitleBarButton
               key={1}
-              onClick={this.createUser}
-              className=""><i className="mdi mdi-account-multiple-plus"></i>{' '}{i18n.t(`${packageNS}:tr000277`)}
-            </Button>,
+              label={i18n.t(`${packageNS}:tr000277`)}
+              icon={<i className="mdi mdi-account-multiple-plus mr-1 align-middle"></i>}
+              to={`/users/create`}
+            />
           ]}
         >
-          <Breadcrumb>
-            <BreadcrumbItem><Link to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/users`}
+              >
+                {i18n.t(`${packageNS}:tr000036`)}
+              </Link>
+            </BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
         <Row>
           <Col>
-            <Card>
-              <CardBody>
-                <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID)}
-                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={true} rowsPerPage={10}></AdvancedTable>
-
-              </CardBody>
+            <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+              {this.state.loading && <Loader />}
+              <AdvancedTable
+                data={this.state.data}
+                columns={getColumns()}
+                keyField="id"
+                onTableChange={this.handleTableChange}
+                searchEnabled={true}
+                rowsPerPage={10}
+              />
             </Card>
           </Col>
         </Row>
@@ -125,4 +158,4 @@ class ListUsers extends Component {
   }
 }
 
-export default ListUsers;
+export default withStyles(styles)(ListUsers);

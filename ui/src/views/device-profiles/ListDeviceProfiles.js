@@ -125,16 +125,16 @@ class ListDeviceProfiles extends Component {
             </Breadcrumb>
           </TitleBar>
           <Grid item xs={12}>
-          <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
-            {this.state.loading && <Loader />}
-            <AdvancedTable
-              data={this.state.data}
-              columns={getColumns(currentOrgID)}
-              keyField="id"
-              onTableChange={this.handleTableChange}
-              rowsPerPage={10}
-              searchEnabled={true}
-            />
+            <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+              {this.state.loading && <Loader />}
+              <AdvancedTable
+                data={this.state.data}
+                columns={getColumns(currentOrgID)}
+                keyField="id"
+                onTableChange={this.handleTableChange}
+                rowsPerPage={10}
+                searchEnabled={true}
+              />
             </Card>
           </Grid>
         </OrganizationDevices>
