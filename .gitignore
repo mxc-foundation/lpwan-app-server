@@ -9,7 +9,7 @@
 /coverage.out
 # builds
 /dist
-/build
+build
 /cache
 /internal/static/static_gen.go
 /internal/migrations/migrations_gen.go

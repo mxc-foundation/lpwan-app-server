@@ -1,0 +1,50 @@
+#!/bin/sh
+
+PARENT_PATH=$(dirname $0)
+
+echo $0 "$@"
+
+if [ "$1" = "-h" ]; then
+  echo "Invalid argument for command: generate-docker-compose"
+  echo ""
+  echo "Usage : generate-docker-compose [local|remote <remote_data_server>|image]"
+  echo ""
+  echo "generate docker-compose.yml based on template and user's input"
+  echo ""
+  echo "Commands : "
+  echo "   local                         Generate docker-compose.yml that contains local postgresql, mosquitto services"
+  echo "   remote  <remote_data_server>  Generate docker-compose.yml that uses remote postgresql, mosquitto services"
+  echo "   image                         Generate docker-compose.yml that builds docker image"
+  echo ""
+  exit
+fi
+
+if [ -f tmp ]; then
+  rm -f tmp
+fi
+
+if [ "$1" = "remote" ] && [ $# -eq 2 ]; then
+  python "$PARENT_PATH"/docker-compose-template.py "$@" |tee tmp
+elif [ "$*" = "local" ]; then
+  python "$PARENT_PATH"/docker-compose-template.py "$@" |tee tmp
+elif [ "$*" = "image" ]; then
+  python "$PARENT_PATH"/docker-compose-template.py "$@" |tee tmp
+else
+  "$PARENT_PATH"/generate-docker-compose -h
+  exit
+fi
+
+[ "$(cat tmp)" = "invalid argument" ] && exit
+
+
+if [ -f docker-compose.yml ]; then
+  mv "$PARENT_PATH"/../../docker-compose.yml "$PARENT_PATH"/../../docker-compose.yml.bak
+fi
+
+mv tmp "$PARENT_PATH"/../../docker-compose.yml
+
+if [ "$1" = "image" ]; then
+  docker login
+fi
+
+
