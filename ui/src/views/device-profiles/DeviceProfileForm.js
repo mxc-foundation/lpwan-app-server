@@ -191,6 +191,7 @@ class DeviceProfileForm extends Component {
       return null;
     }
 
+    // FIXME - shouldn't this be `isLoading = isUpdatePage ? isLoading : false;`
     isLoading = isUpdatePage ? false : isLoading;
 
     const codeMirrorOptions = {
