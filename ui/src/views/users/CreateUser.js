@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import { Breadcrumb, BreadcrumbItem,Container, Row, Card, CardBody } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
+import Grid from '@material-ui/core/Grid';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
@@ -41,32 +42,27 @@ class CreateUser extends Component {
     const { classes } = this.props;
 
     return (
-      <React.Fragment>
-        <TitleBar>
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/users`}>
-                {i18n.t(`${packageNS}:tr000036`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-          </Breadcrumb>
-        </TitleBar>
-        <Container>
-          <Row xs="1" lg="1">
-            <Card>
-              <CardBody>
-                <UserForm
-                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                  onSubmit={this.onSubmit}
-                />
-              </CardBody>
-            </Card>
-          </Row>
-        </Container>
-      </React.Fragment>
+      <Grid container spacing={4}>
+        <Grid item xs={12}>
+          <TitleBar noButtons>
+            <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/users`}>
+                  {i18n.t(`${packageNS}:tr000036`)}
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem active>Create Profile</BreadcrumbItem>
+            </Breadcrumb>
+          </TitleBar>
+        
+          <UserForm
+            submitLabel={i18n.t(`${packageNS}:tr000277`)}
+            onSubmit={this.onSubmit}
+          />
+        </Grid>
+      </Grid>
     );
   }
 }

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Col, Container, FormFeedback, FormGroup, FormText, Input, Label, Row } from 'reactstrap';
+import { Button, FormGroup, Card } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 
@@ -128,242 +128,211 @@ class UserForm extends Component {
               } = props;
               return ( 
                 <Form style={{ padding: "0px", backgroundColor: "#ebeff2" }} onSubmit={handleSubmit} noValidate>
-                  <Container
-                    style={{
-                      backgroundColor: "#fff",
-                      borderRadius: "2px",
-                      borderStyle: "solid",
-                      borderWidth: "0 1px 1px 1px",
-                      borderColor: "#ddd"
-                    }}
-                  >
-                    <Row>
-                      <Col sm="12">
-                        {isLoading && <Loader light />}
+                  <Card body style={{ backgroundColor: "#fff" }}>
+                    {isLoading && <Loader light />}
 
-                        {this.props.update &&
-                          <>
-                            {/* <label htmlFor="object.id" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
-                              {i18n.t(`${packageNS}:tr000077`)}
-                            </label>
-                            &nbsp;&nbsp;{values.object.id} */}
+                    {this.props.update &&
+                      <>
+                        {/* <label htmlFor="object.id" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                          {i18n.t(`${packageNS}:tr000077`)}
+                        </label>
+                        &nbsp;&nbsp;{values.object.id} */}
 
-                            <input
-                              type="hidden"
-                              id="id"
-                              name="object.id"
-                              disabled
-                              value={values.object.id}
-                            />
-                            {
-                              errors.object && errors.object.id
-                                ? (
-                                  <div
-                                    className="invalid-feedback"
-                                    style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                                  >
-                                    {errors.object.id}
-                                  </div>
-                                ) : null
-                            }
-                            <br /><br />
-                          </>
-                        }
-                      </Col>
-                    </Row>
-
-                    <h4>{i18n.t(`${packageNS}:tr000452`)}</h4>
-                    <br />
-                    <FormGroup row>
-                      <Label for="object.profilePic" sm={3}>
-                        {i18n.t(`${packageNS}:tr000454`)}
-                      </Label>
-                      <Col sm={9}>
-                        <Row style={{ marginBottom: "10px" }}>
-                          <UserProfilePicFile
-                            profilePicImage={
-                              <img
-                                src={(object && object.profilePic) || uploadedProfilePic || defaultProfilePic}
-                                className="rounded-circle"
-                                alt="Profile Picture"
-                                style={{ width: "100px", height: "100px" }}
-                              />
-                            }
-                            onChange={this.handleUploadedProfilePic}
-                          />
-                          {successMessageUploadingProfilePic}
-                          {errorMessageUploadingProfilePic}
-                        </Row>
-
-                        <Field
-                          id="profilePic"
-                          name="object.profilePic"
+                        <input
                           type="hidden"
-                          value={values.object.profilePic}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          component={ReactstrapInput}
-                          className={
-                            errors.object && errors.object.profilePic
-                              ? 'is-invalid form-control'
-                              : ''
-                          }
+                          id="id"
+                          name="object.id"
+                          disabled
+                          value={values.object.id}
                         />
                         {
-                          errors.object && errors.object.profilePic
+                          errors.object && errors.object.id
                             ? (
                               <div
                                 className="invalid-feedback"
                                 style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                               >
-                                {errors.object.profilePic}
+                                {errors.object.id}
                               </div>
                             ) : null
                         }
-                      </Col>
-                    </FormGroup>
-                    <FormGroup row>
-                      <Label for="object.username" sm={3}>
-                        {i18n.t(`${packageNS}:tr000056`)}
-                      </Label>
-                      <Col sm={9}>
-                        <Field
-                          id="username"
-                          name="object.username"
-                          type="text"
-                          value={values.object.username}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          component={ReactstrapInput}
-                        />
-                      </Col>
-                    </FormGroup>
-                    <FormGroup row>
-                      <Label for="object.email" sm={3}>
-                        {i18n.t(`${packageNS}:tr000147`)}
-                      </Label>
-                      <Col sm={9}>
-                        <Field
-                          id="email"
-                          name="object.email"
-                          type="email"
-                          value={values.object.email}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          label={i18n.t(`${packageNS}:tr000168`)}
-                          component={ReactstrapInput}
-                          className={
-                            errors.object && errors.object.email
-                              ? 'is-invalid form-control'
-                              : ''
-                          }
-                        />
-                        {
-                          errors.object && errors.object.email
-                            ? (
-                              <div
-                                className="invalid-feedback"
-                                style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                              >
-                                {errors.object.email}
-                              </div>
-                            ) : null
-                        }
-                      </Col>
-                    </FormGroup>
-                    <FormGroup row>
-                      <Label for="object.note" sm={3}>
-                        {i18n.t(`${packageNS}:tr000129`)}
-                      </Label>
-                      <Col sm={9}>
-                        <Field
-                          id="note"
-                          name="object.note"
-                          type="textarea"
-                          multiline="true"
-                          rows="4"
-                          value={values.object.note}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          label={i18n.t(`${packageNS}:tr000129`)}
-                          helpText={i18n.t(`${packageNS}:tr000130`)}
-                          component={ReactstrapInput}
-                          className={
-                            errors.object && errors.object.note
-                              ? 'is-invalid form-control'
-                              : ''
-                          }
-                        />
-                        {
-                          errors.object && errors.object.note
-                            ? (
-                              <div
-                                className="invalid-feedback"
-                                style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                              >
-                                {errors.object.note}
-                              </div>
-                            ) : null
-                        }
-                      </Col>
-                    </FormGroup>
-                    {
-                      values.object.id === "" &&
-                        <>
-                          <FormGroup row>
-                            <Label for="object.password" sm={3}>
-                              {i18n.t(`${packageNS}:tr000004`)}
-                            </Label>
-                            <Col sm={9}>
-                              <Field
-                                id="password"
-                                name="object.password"
-                                type="password"
-                                value={values.object.password}
-                                onChange={handleChange}
-                                onBlur={handleBlur}
-                                // label={i18n.t(`${packageNS}:tr000168`)}
-                                // helpText={i18n.t(`${packageNS}:tr000130`)}
-                                component={ReactstrapInput}
-                                className={
-                                  errors.object && errors.object.password
-                                    ? 'is-invalid form-control'
-                                    : ''
-                                }
-                              />
-                              {
-                                errors.object && errors.object.password
-                                  ? (
-                                    <div
-                                      className="invalid-feedback"
-                                      style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                                    >
-                                      {errors.object.password}
-                                    </div>
-                                  ) : null
-                              }
-                            </Col>
-                          </FormGroup>
-                        </>
+                      </>
                     }
 
-                    <div style={{ marginTop: "10px" }}>
-                      <FormGroup check>
-                        <FormControlLabel
-                          label={i18n.t(`${packageNS}:tr000133`)}
-                          control={
-                            <Checkbox
-                              id="isAdmin"
-                              name="object.isAdmin"
-                              onChange={handleChange}
-                              color="primary"
-                              value={!!values.object.isAdmin}
-                              checked={!!values.object.isAdmin}
-                            />
+                    <label htmlFor="object.profilePic" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                      {i18n.t(`${packageNS}:tr000454`)}
+                    </label>
+                    <UserProfilePicFile
+                      profilePicImage={
+                        <img
+                          src={(object && object.profilePic) || uploadedProfilePic || defaultProfilePic}
+                          className="rounded-circle"
+                          alt="Profile Picture"
+                          style={{ width: "100px", height: "100px" }}
+                        />
+                      }
+                      onChange={this.handleUploadedProfilePic}
+                    />
+                    {successMessageUploadingProfilePic}
+                    {errorMessageUploadingProfilePic}
+
+                    <Field
+                      id="profilePic"
+                      name="object.profilePic"
+                      type="hidden"
+                      value={values.object.profilePic}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      component={ReactstrapInput}
+                      className={
+                        errors.object && errors.object.profilePic
+                          ? 'is-invalid form-control'
+                          : ''
+                      }
+                    />
+                    {
+                      errors.object && errors.object.profilePic
+                        ? (
+                          <div
+                            className="invalid-feedback"
+                            style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                          >
+                            {errors.object.profilePic}
+                          </div>
+                        ) : null
+                    }
+
+                    <Field
+                      id="username"
+                      name="object.username"
+                      type="text"
+                      value={values.object.username}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      helpText="Username must only contain letters, and digits"
+                      label={i18n.t(`${packageNS}:tr000056`)}
+                      component={ReactstrapInput}
+                      className={
+                        errors.object && errors.object.username
+                          ? 'is-invalid form-control'
+                          : ''
+                      }
+                    />
+                    {
+                      errors.object && errors.object.username
+                        ? (
+                          <div
+                            className="invalid-feedback"
+                            style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                          >
+                            {errors.object.username}
+                          </div>
+                        ) : null
+                    }
+
+                    <Field
+                      id="email"
+                      name="object.email"
+                      type="email"
+                      value={values.object.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      label={i18n.t(`${packageNS}:tr000147`)}
+                      component={ReactstrapInput}
+                      className={
+                        errors.object && errors.object.email
+                          ? 'is-invalid form-control'
+                          : ''
+                      }
+                    />
+                    {
+                      errors.object && errors.object.email
+                        ? (
+                          <div
+                            className="invalid-feedback"
+                            style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                          >
+                            {errors.object.email}
+                          </div>
+                        ) : null
+                    }
+
+                    <Field
+                      id="note"
+                      name="object.note"
+                      type="textarea"
+                      multiline="true"
+                      rows="4"
+                      value={values.object.note}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      label={i18n.t(`${packageNS}:tr000129`)}
+                      helpText={i18n.t(`${packageNS}:tr000130`)}
+                      component={ReactstrapInput}
+                      className={
+                        errors.object && errors.object.note
+                          ? 'is-invalid form-control'
+                          : ''
+                      }
+                    />
+                    {
+                      errors.object && errors.object.note
+                        ? (
+                          <div
+                            className="invalid-feedback"
+                            style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                          >
+                            {errors.object.note}
+                          </div>
+                        ) : null
+                    }
+
+                    {values.object.id === "" &&
+                      <>
+                        <Field
+                          id="password"
+                          name="object.password"
+                          type="password"
+                          value={values.object.password}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          label={i18n.t(`${packageNS}:tr000004`)}
+                          component={ReactstrapInput}
+                          className={
+                            errors.object && errors.object.password
+                              ? 'is-invalid form-control'
+                              : ''
                           }
                         />
-                      </FormGroup>
-                    </div>
+                        {
+                          errors.object && errors.object.password
+                            ? (
+                              <div
+                                className="invalid-feedback"
+                                style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                              >
+                                {errors.object.password}
+                              </div>
+                            ) : null
+                        }
+                      </>
+                    }
+
+                    <FormGroup check>
+                      <FormControlLabel
+                        label={i18n.t(`${packageNS}:tr000133`)}
+                        control={
+                          <Checkbox
+                            id="isAdmin"
+                            name="object.isAdmin"
+                            onChange={handleChange}
+                            color="primary"
+                            value={!!values.object.isAdmin}
+                            checked={!!values.object.isAdmin}
+                          />
+                        }
+                      />
+                    </FormGroup>
 
                     <div style={{ margin: "20px 0 10px 20px" }}>
                       {isValidating
@@ -412,8 +381,7 @@ class UserForm extends Component {
                     >
                       {this.props.submitLabel || (this.props.deviceProfile ? "Update" : "Create")}
                     </Button>
-
-                  </Container>
+                  </Card>
                 </Form>
               );
             }

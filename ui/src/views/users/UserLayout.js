@@ -1,14 +1,12 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import Delete from "mdi-material-ui/Delete";
-import KeyVariant from "mdi-material-ui/KeyVariant";
 import { Breadcrumb, BreadcrumbItem, Row, Button } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
+import Grid from '@material-ui/core/Grid';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import UserStore from "../../stores/UserStore";
 import UpdateUser from "./UpdateUser";
 
@@ -74,44 +72,45 @@ class UserLayout extends Component {
       : false;
 
     return (
-      <React.Fragment>
-        <TitleBar
-          buttons={[
-            <Button color="danger"
-              key={1}
-              onClick={this.changePassword}
-              disabled={isDisabled}
-              className=""><i className="mdi mdi-key-change"></i>{' '}{i18n.t(`${packageNS}:tr000038`)}
-            </Button>,
-          ]}
-        >
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/users`}
-              >
-                  {i18n.t(`${packageNS}:tr000036`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/users/${user.id}`}
-              >
-                {user.username}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>Edit</BreadcrumbItem>
-          </Breadcrumb>
-        </TitleBar>
-        <Row xs={12} lg={12}>
+      <Grid container spacing={4}>
+        <Grid item xs={12}>
+          <TitleBar
+            buttons={[
+              <Button color="danger"
+                key={1}
+                onClick={this.changePassword}
+                disabled={isDisabled}
+                className=""><i className="mdi mdi-key-change"></i>{' '}{i18n.t(`${packageNS}:tr000038`)}
+              </Button>,
+            ]}
+          >
+            <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/users`}
+                >
+                    {i18n.t(`${packageNS}:tr000036`)}
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/users/${user.id}`}
+                >
+                  {user.username}
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem active>Edit Profile</BreadcrumbItem>
+            </Breadcrumb>
+          </TitleBar>
+
           <UpdateUser
             user={user}
             loading={loading}
           />
-        </Row>
-      </React.Fragment>
+        </Grid>
+      </Grid>
     );
   }
 }

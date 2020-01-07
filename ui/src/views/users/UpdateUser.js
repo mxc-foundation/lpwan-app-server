@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 
-import { Container, Row, Card, CardBody } from 'reactstrap';
+import Grid from '@material-ui/core/Grid';
 
 import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
@@ -18,23 +18,13 @@ class UpdateUser extends Component {
     const { loading, user } = this.props;
 
     return (
-      <React.Fragment>
-        <Container>
-          <Row xs="1" lg="1">
-            <Card>
-              <CardBody>
-                <UserForm
-                  submitLabel={i18n.t(`${packageNS}:tr000066`)}
-                  loading={loading}
-                  object={user}
-                  onSubmit={this.onSubmit}
-                  update={true}
-                />
-              </CardBody>
-            </Card>
-          </Row>
-        </Container>
-      </React.Fragment>
+      <UserForm
+        submitLabel={i18n.t(`${packageNS}:tr000066`)}
+        loading={loading}
+        object={user}
+        onSubmit={this.onSubmit}
+        update={true}
+      />
     );
   }
 }
