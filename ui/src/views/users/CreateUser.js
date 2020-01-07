@@ -33,6 +33,8 @@ const styles = theme => ({
 
 class CreateUser extends Component {
   onSubmit = (user) => {
+    console.log('user', user);
+    return false;
     UserStore.create(user, user.password, [], resp => {
       this.props.history.push("/users");
     });
