@@ -19,10 +19,10 @@ class HomeComponent extends Component {
                 return <Redirect to={`/organizations/${orgs[0].organizationID}`}></Redirect>;
             } else {
                 console.log('User has no organisations. Redirecting to login');
-                return <Redirect to={"/login"}></Redirect>;
+                return <Redirect to={"/logout"}></Redirect>;
             }
         } else {
-            return <Redirect to={"/login"}></Redirect>;
+            return <Redirect to={"/logout"}></Redirect>;
         }
     }
 

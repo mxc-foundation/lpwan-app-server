@@ -334,11 +334,11 @@ class App extends Component {
 
             <Layout topBar={topNav} topBanner={topbanner} sideNav={sideNav}>
               <Switch>
-                {/* <NotLoggedinRoute exact path="/login" 
+                <NotLoggedinRoute exact path="/login" 
                   Comp={Login} user={user}
                   language={language}
-                  onChangeLanguage={this.onChangeLanguage} /> */}
-                  <Route exact path="/" component={HomeComponent} />
+                  onChangeLanguage={this.onChangeLanguage} />
+                  {/* <Route exact path="/" component={HomeComponent} />
                   <Route exact path="/login"
                   render={props =>
                     <Login {...props}
@@ -346,7 +346,7 @@ class App extends Component {
                       onChangeLanguage={this.onChangeLanguage}
                     />
                   }
-                />
+                /> */}
 
 
                 <Route exact path="/" component={HomeComponent} />
