@@ -35,10 +35,10 @@ class UserStore extends EventEmitter {
 
   get(id, callbackFunc) {
     // Run the following in development environment and early exit from function
-    if (isDev) {
-      (async () => callbackFunc(await MockUserStoreApi.get()))();
-      return;
-    }
+    // if (isDev) {
+    //   (async () => callbackFunc(await MockUserStoreApi.get()))();
+    //   return;
+    // }
 
     this.swagger.then(client => {
       client.apis.UserService.Get({

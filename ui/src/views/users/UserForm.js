@@ -58,7 +58,7 @@ class UserForm extends Component {
       fieldsSchema.object._nodes.push("id");
     }
 
-    if (this.state.object.id === "") {
+    if (!this.props.update) {
       fieldsSchema.object.fields.password = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("password");
     }
@@ -85,7 +85,7 @@ class UserForm extends Component {
           initialValues={
             {
               object: {
-                id: object.id || "",
+                id: object.id || undefined,
                 profilePic: object.profilePic || uploadedProfilePic || defaultProfilePic,
                 username: object.username || "",
                 email: object.email || "",
@@ -287,7 +287,7 @@ class UserForm extends Component {
                         ) : null
                     }
 
-                    {values.object.id === "" &&
+                    {!this.props.update &&
                       <>
                         <Field
                           id="password"
