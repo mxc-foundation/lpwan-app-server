@@ -18,12 +18,12 @@ if [ "$1" = "remote_database" ] && [ $# -eq 2 ]; then
   "$PARENT_PATH"/scripts/docker/generate-docker-compose remote $2
 
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
-  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/build/develop-compile
+  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
 
 elif [ "$*" = "local_database" ]; then
   "$PARENT_PATH"/scripts/docker/generate-docker-compose local
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
-  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/build/develop-compile
+  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
 
 elif [ "$*" = "create_image" ]; then
   "$PARENT_PATH"/scripts/docker/generate-docker-compose image
@@ -34,7 +34,7 @@ elif [ "$*" = "create_image" ]; then
   "$PARENT_PATH"/scripts/image/generateAndPushDockerImage $DOCKER_HUB_USERNAME $DOCKER_HUB_PASSWORD $DOCKER_HUB_REPOSITORY
 
 elif [ "$*" = "build" ]; then
-  "$PARENT_PATH"/scripts/build/develop-compile
+  "$PARENT_PATH"/scripts/compile/develop-compile
 
 else
   "$PARENT_PATH"/appserver -h
