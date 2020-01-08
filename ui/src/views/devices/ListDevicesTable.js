@@ -259,7 +259,7 @@ class ListDevicesTable extends Component {
           keyField="devEUI"
           onTableChange={this.handleTableChange}
           rowsPerPage={10}
-          searchEnabled={true}
+          searchEnabled={false}
         />
       </div>
     );

@@ -104,7 +104,7 @@ class ListOrganizationUsers extends Component {
             <Card>
               <CardBody>
                 <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
-                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={true} rowsPerPage={10}></AdvancedTable>
+                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
 
               </CardBody>
             </Card>

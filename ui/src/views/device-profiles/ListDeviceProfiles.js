@@ -133,7 +133,7 @@ class ListDeviceProfiles extends Component {
                 keyField="id"
                 onTableChange={this.handleTableChange}
                 rowsPerPage={10}
-                searchEnabled={true}
+                searchEnabled={false}
               />
             </Card>
           </Grid>
