@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import { Button, Card, Container, Modal, ModalHeader, ModalBody, ModalFooter, NavLink, Row, Col } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Button, Card, Container, Modal, ModalHeader, ModalBody, ModalFooter, NavLink, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
@@ -13,11 +13,28 @@ import ApplicationStore from "../../stores/ApplicationStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
 
-const styles = {
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  },
   card: {
     overflow: "visible",
   },
-};
+});
 
 
 class CreateApplication extends Component {
@@ -59,8 +76,8 @@ class CreateApplication extends Component {
 
   render() {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-
     const closeBtn = <button className="close" onClick={this.toggleDialog}>&times;</button>;
+    const { classes } = this.props;
 
     return(
       <Container fluid>
@@ -103,11 +120,12 @@ class CreateApplication extends Component {
             </Modal>
 
             <TitleBar>
-              <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${currentOrgID}/applications`} />
-              <span>&nbsp;</span>
-              <TitleBarTitle title="/" />
-              <span>&nbsp;</span>
-              <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+              <Breadcrumb className={classes.breadcrumb}>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications`
+                }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+              </Breadcrumb>
             </TitleBar>
 
             <Card body>

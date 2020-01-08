@@ -2,12 +2,33 @@ import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
 import { Breadcrumb, BreadcrumbItem, Form, FormGroup, Label, Input, Button, Container, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import TitleBar from "../../components/TitleBar";
 import UserStore from "../../stores/UserStore";
 import FormComponent from "../../classes/FormComponent";
 import i18n, { packageNS } from '../../i18n';
 
+
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  }
+});
 
 class PasswordForm  extends FormComponent {
   render() {
@@ -60,6 +81,8 @@ class ChangeUserPassword extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+
     if (this.state.user === undefined) {
       return(<div></div>);
     }
@@ -67,9 +90,9 @@ class ChangeUserPassword extends Component {
     return(
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb>
-          <BreadcrumbItem><Link to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
-            <BreadcrumbItem><Link to={`/users/${this.state.user.user.id}`}>{this.state.user.user.username}</Link></BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/users`}>{i18n.t(`${packageNS}:tr000036`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/users/${this.state.user.user.id}`}>{this.state.user.user.username}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000038`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -90,4 +113,4 @@ class ChangeUserPassword extends Component {
   }
 }
 
-export default withRouter(ChangeUserPassword);
+export default withStyles(styles)(withRouter(ChangeUserPassword));

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Container, Row, Col, Card, CardBody,
+import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
   TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
@@ -13,7 +13,24 @@ import TitleBarButton from "../../components/TitleBarButton";
 import DeviceAdmin from "../../components/DeviceAdmin";
 import Admin from "../../components/Admin";
 
-const styles = {
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  },
   tabs: {
     borderBottom: "1px solid " + theme.palette.divider,
     height: "48px",
@@ -23,7 +40,7 @@ const styles = {
     backgroundColor: "#FFFFFF",
     borderRadius: "5px"
   }
-};
+});
 
 class ApplicationFUOTADeploymentTabs extends Component {
   constructor() {
@@ -55,7 +72,7 @@ class ApplicationFUOTADeploymentTabs extends Component {
 
   render() {
     const { activeMainTabAppIndex } = this.state;
-    const { admin, application, children, deleteApplication, fuotaDeployment, mainTabAppIndex } = this.props;
+    const { admin, application, children, classes, deleteApplication, fuotaDeployment, mainTabAppIndex } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
 
@@ -74,25 +91,18 @@ class ApplicationFUOTADeploymentTabs extends Component {
                 </Admin>
               }
             >
-              <TitleBarTitle 
-                to={`/organizations/${currentOrgID}/applications`}
-                title={i18n.t(`${packageNS}:tr000076`)} />
-              <span>&nbsp;</span>
-              <TitleBarTitle title="/" />
-              <span>&nbsp;</span>
-              <TitleBarTitle 
-                to={`/organizations/${currentOrgID}/applications/${currentApplicationID}`}
-                title={application.application.name} />
-              <span>&nbsp;</span>
-              <TitleBarTitle title="/" />
-              <span>&nbsp;</span>
-              <TitleBarTitle
-                to={`/organizations/${currentOrgID}/applications/${currentApplicationID}/fuota-deployments`}
-                title="FUOTA (Firmware update jobs)" />
-              <span>&nbsp;</span>
-              <TitleBarTitle title="/" />
-              <span>&nbsp;</span>
-              <TitleBarTitle title={fuotaDeployment.fuotaDeployment.name} />
+              <Breadcrumb className={classes.breadcrumb}>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications`
+                }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                }>{application.application.name}</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications/${currentApplicationID}/fuota-deployments`
+                }>FUOTA (Firmware update jobs)</Link></BreadcrumbItem>
+                <BreadcrumbItem active>{fuotaDeployment.fuotaDeployment.name}</BreadcrumbItem>
+            </Breadcrumb>
             </TitleBar>
           </Col>
         </Row>

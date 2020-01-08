@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 
 import OrganizationStore from "../../stores/OrganizationStore";
@@ -14,6 +13,28 @@ import Admin from "../../components/Admin";
 import UpdateServiceProfile from "../service-profiles/UpdateServiceProfile";
 import Modal from "../../components/Modal";
 
+const styles = theme => ({
+  [theme.breakpoints.down('sm')]: {
+    breadcrumb: {
+      fontSize: "1.1rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  [theme.breakpoints.up('sm')]: {
+    breadcrumb: {
+      fontSize: "1.25rem",
+      margin: "0rem",
+      padding: "0rem"
+    },
+  },
+  breadcrumbItemLink: {
+    color: "#71b6f9 !important"
+  },
+  card: {
+    overflow: "visible",
+  },
+});
 
 class OrganizationLayout extends Component {
   constructor() {
@@ -58,6 +79,8 @@ class OrganizationLayout extends Component {
   };
 
   render() {
+    const { classes } = this.props;
+
     return (
       this.state.organization ? <React.Fragment>
         {this.state.nsDialog && <Modal
@@ -77,10 +100,8 @@ class OrganizationLayout extends Component {
               </Admin>
             }
         >
-
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
-          <Breadcrumb>
-            <BreadcrumbItem><Link to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{this.state.organization.organization.name}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -100,4 +121,4 @@ class OrganizationLayout extends Component {
 }
 
 
-export default withRouter(OrganizationLayout);
+export default withStyles(styles)(withRouter(OrganizationLayout));

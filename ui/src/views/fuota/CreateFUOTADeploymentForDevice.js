@@ -99,64 +99,61 @@ class CreateFUOTADeploymentForDevice extends Component {
     }
 
     return(
-      // <React.Fragment>
-        <Container fluid>
-          <Row>
-            <Col xs={12}>
-              <TitleBar noButtons>
-                  {
-                    isApplication && application ? (
-                      <Breadcrumb className={classes.breadcrumb}>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}/applications`
-                        }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                        }>{application.application.name}</Link></BreadcrumbItem>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                        }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}`
-                        }>{device.device.name}</Link></BreadcrumbItem>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/fuota-deployments`
-                        }>Firmware</Link></BreadcrumbItem>
-                        <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000381`)}</BreadcrumbItem>
-                      </Breadcrumb>
-                    ) : (
-                      <Breadcrumb className={classes.breadcrumb}>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations`
-                        }>Organizations</Link></BreadcrumbItem>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}`
-                        }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}/devices`
-                        }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
-                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                          `/organizations/${currentOrgID}/devices/${match.params.devEUI}`
-                        }>{device.device.name}</Link></BreadcrumbItem>
-                        <BreadcrumbItem>Firmware</BreadcrumbItem>
-                        <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000381`)}</BreadcrumbItem>
-                      </Breadcrumb>
-                    )
-                  }
-                
-              </TitleBar>
+      <Container fluid>
+        <Row>
+          <Col xs={12}>
+            <TitleBar noButtons>
+              {
+                isApplication && application ? (
+                  <Breadcrumb className={classes.breadcrumb}>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/applications`
+                    }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                    }>{application.application.name}</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                    }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}`
+                    }>{device.device.name}</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/fuota-deployments`
+                    }>Firmware</Link></BreadcrumbItem>
+                    <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000381`)}</BreadcrumbItem>
+                  </Breadcrumb>
+                ) : (
+                  <Breadcrumb className={classes.breadcrumb}>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations`
+                    }>Organizations</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}`
+                    }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/devices`
+                    }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/devices/${match.params.devEUI}`
+                    }>{device.device.name}</Link></BreadcrumbItem>
+                    <BreadcrumbItem>Firmware</BreadcrumbItem>
+                    <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000381`)}</BreadcrumbItem>
+                  </Breadcrumb>
+                )
+              }      
+            </TitleBar>
 
-              <Card body>
-                <FUOTADeploymentForm
-                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                  onSubmit={this.onSubmit}
-                />
-                <br />
-              </Card>
-            </Col>       
-          </Row>
-        </Container>
-      // </React.Fragment>
+            <Card body>
+              <FUOTADeploymentForm
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                onSubmit={this.onSubmit}
+              />
+              <br />
+            </Card>
+          </Col>       
+        </Row>
+      </Container>
     );
   }
 }
