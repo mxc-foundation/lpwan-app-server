@@ -487,9 +487,9 @@ class App extends Component {
 
                 <Route exact path="/search" component={Search} />
               </Switch>
+            <Footer />
             </Layout>
 
-            <Footer />
             <Notifications />
           </MuiThemeProvider>
         </React.Fragment>

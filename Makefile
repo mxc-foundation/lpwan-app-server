@@ -1,4 +1,4 @@
-.PHONY: build clean server_local server_remote image test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: build clean test package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags |sed -e "s/^v//")
 
@@ -15,18 +15,6 @@ clean:
 	@rm -f static/swagger/*.json
 	@rm -rf docs/public
 	@rm -rf dist
-
-server_local:
-	@echo "Start docker container with local database and mqtt service"
-	@./generate-docker-compose local
-
-server_remote:
-	@echo "Start docker container with remote database and mqtt service"
-	@./generate-docker-compose remote
-
-image:
-	@echo "Create docker image for LPWAN-app-server"
-	@./generate-docker-compose image
 
 test: internal/statics internal/migrations
 	@echo "Running tests"
@@ -47,10 +35,14 @@ dist: ui/build internal/statics internal/migrations
 snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
 
-ui/build:
+ui/build: ui/build_dep
 	@echo "Building ui"
 	@cd ui && npm run build
 	@mv ui/build/* static
+
+ui/build_dep:
+	@echo "Building node-sass"
+	@cd ui/node_modules/node-sass/ && npm install && npm run build
 
 api:
 	@echo "Generating API code from .proto files"
