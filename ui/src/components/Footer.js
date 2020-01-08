@@ -35,13 +35,14 @@ class Footer extends Component {
   }
 
   render() {
-    if (this.state.footer === null) {
+    /* if (this.state.footer === null) {
       return(null);
-    }
+    } */
 
     return(
       <footer className={this.props.classes.footer}>
-        <Typography align="center" dangerouslySetInnerHTML={{__html: this.state.footer}}></Typography>
+        {/* <Typography align="center" dangerouslySetInnerHTML={{__html: this.state.footer}}></Typography> */}
+        <span>2018-2020 Copyright LPWAN-app-server Powered by MXC </span>
       </footer>
     );
   }
