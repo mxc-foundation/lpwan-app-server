@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
 import classNames from "classnames";
 import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../../i18n';
 import TitleBar from "../../../components/TitleBar";
@@ -10,7 +11,14 @@ import SuperNodeEthAccount from "./EthAccount";
 import topupStore from "../../../stores/TopupStore";
 import { SUPER_ADMIN } from "../../../util/M2mUtil";
 
+import breadcrumbStyles from "../../common/BreadcrumbStyles";
 
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class SupernodeHistory extends Component {
   constructor(props) {
@@ -67,11 +75,25 @@ class SupernodeHistory extends Component {
   }
 
   render() {
-      
+    const { classes } = this.props;
+
     return(
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+                onClick={() => {
+                  // Change the sidebar content
+                  this.props.switchToSidebarId('DEFAULT');
+                }}
+              >
+                Control Panel
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.history.history`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -92,7 +114,7 @@ class SupernodeHistory extends Component {
                 <Row className="pt-3">
                   <Col>
                     <Switch>
-                    <Route exact path={`${this.props.match.path}/`} render={props => <SuperNodeEthAccount organizationID={SUPER_ADMIN} {...props} />} />
+                      <Route exact path={`${this.props.match.path}/`} render={props => <SuperNodeEthAccount organizationID={SUPER_ADMIN} {...props} />} />
                     </Switch>
                   </Col>
                 </Row>
@@ -105,4 +127,4 @@ class SupernodeHistory extends Component {
   }
 }
 
-export default withRouter(SupernodeHistory);
+export default withStyles(styles)(withRouter(SupernodeHistory));

@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
 import { Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../../i18n';
 import TitleBar from "../../../components/TitleBar";
@@ -12,6 +13,14 @@ import NewEthAccountForm from "../../ethAccount/NewEthAccountForm";
 import { ETHER } from "../../../util/CoinType";
 import { SUPER_ADMIN } from "../../../util/M2mUtil";
 
+import breadcrumbStyles from "../../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class SuperNodeEth extends Component {
   constructor() {
@@ -91,10 +100,25 @@ class SuperNodeEth extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+
     return (
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+                onClick={() => {
+                  // Change the sidebar content
+                  this.props.switchToSidebarId('DEFAULT');
+                }}
+              >
+                Control Panel
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:tr000451`)}</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.eth_account.eth_account`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -118,4 +142,4 @@ class SuperNodeEth extends Component {
   }
 }
 
-export default withRouter(SuperNodeEth);
+export default withStyles(styles)(withRouter(SuperNodeEth));

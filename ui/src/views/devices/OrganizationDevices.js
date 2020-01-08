@@ -16,24 +16,9 @@ import Loader from "../../components/Loader";
 
 import OrganizationStore from "../../stores/OrganizationStore";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  },
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {
   tabs: {
     borderBottom: "1px solid " + theme.palette.divider,
     height: "48px",
@@ -48,7 +33,12 @@ const styles = theme => ({
     borderRadius: "5px",
     padding: "20px"
   }
-});
+};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class OrganizationDevices extends Component {
   constructor() {
@@ -101,7 +91,7 @@ class OrganizationDevices extends Component {
     const currentOrgName = organization && (organization.name || organization.displayName);
 
     return(
-      <Container>
+      <Container fluid>
         <Row>
           <Col xs={12}>
             <TitleBar

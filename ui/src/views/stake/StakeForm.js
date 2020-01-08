@@ -79,7 +79,7 @@ class StakeForm extends Component {
     let amount = 0;
     let isUnstake = false;
 
-    if (res.actStake !== null) {
+    if (res && res.actStake !== null) {
       amount = res.actStake.Amount;
       if (res.actStake.StakeStatus === 'ACTIVE') {
         isUnstake = true;
@@ -88,7 +88,9 @@ class StakeForm extends Component {
 
     res = await StakeStore.getStakingPercentage(this.props.match.params.organizationID);
     let revRate = 0;
-    revRate = res.stakingPercentage;
+    if (res) {
+      revRate = res.stakingPercentage;
+    }
 
     const object = this.state.object;
     object.amount = amount;
@@ -171,6 +173,17 @@ class StakeForm extends Component {
     const resp = StakeStore.stake(req);
     resp.then((res) => {
       const object = this.state.object;
+
+      if (!res) {
+        object.info = "Service unavailable. Try again later.";
+        object.infoStatus = 3;
+        object.infoModal = true;
+        this.setState({
+          object
+        });
+        return;
+      }
+
       if (res.body.status === 'Stake successful.') {
         object.isUnstake = true;
         object.info = i18n.t(`${packageNS}:menu.messages.congratulations_stake_set`);
@@ -197,6 +210,17 @@ class StakeForm extends Component {
     const resp = StakeStore.unstake(orgId);
     resp.then((res) => {
       const object = this.state.object;
+
+      if (!res) {
+        object.info = "Service unavailable. Try again later.";
+        object.infoStatus = 3;
+        object.infoModal = true;
+        this.setState({
+          object
+        });
+        return;
+      }
+
       if (res.body.status === 'Unstake successful.') {
         object.isUnstake = false;
         object.amount = 0;

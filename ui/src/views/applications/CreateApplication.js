@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import { Button, Card, Container, Modal, ModalHeader, ModalBody, ModalFooter, NavLink, Row, Col } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Button, Card, Container, Modal, ModalHeader, ModalBody, ModalFooter, NavLink, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
@@ -12,13 +12,14 @@ import ApplicationForm from "./ApplicationForm";
 import ApplicationStore from "../../stores/ApplicationStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
 
 const styles = {
-  card: {
-    overflow: "visible",
-  },
+  ...breadcrumbStyles,
+  ...localStyles
 };
-
 
 class CreateApplication extends Component {
   constructor() {
@@ -59,70 +60,69 @@ class CreateApplication extends Component {
 
   render() {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-
     const closeBtn = <button className="close" onClick={this.toggleDialog}>&times;</button>;
+    const { classes } = this.props;
 
     return(
-      <React.Fragment>
-        <Container>
-          <Row>
-            <Col xs={12}>
-              <Modal
-                isOpen={this.state.spDialog}
+      <Container fluid>
+        <Row>
+          <Col xs={12}>
+            <Modal
+              isOpen={this.state.spDialog}
+              toggle={this.toggleDialog}
+              aria-labelledby="help-dialog-title"
+              aria-describedby="help-dialog-description"
+            >
+              <ModalHeader
                 toggle={this.toggleDialog}
-                aria-labelledby="help-dialog-title"
-                aria-describedby="help-dialog-description"
+                close={closeBtn}
+                id="help-dialog-title"
               >
-                <ModalHeader
-                  toggle={this.toggleDialog}
-                  close={closeBtn}
-                  id="help-dialog-title"
-                >
-                  {i18n.t(`${packageNS}:tr000164`)}
-                </ModalHeader>
-                <ModalBody id="help-dialog-description">
-                  <p>
-                    {i18n.t(`${packageNS}:tr000165`)}
-                    {i18n.t(`${packageNS}:tr000326`)}
-                  </p>
-                  <p>
-                    {i18n.t(`${packageNS}:tr000327`)}
-                  </p>
-                </ModalBody>
-                <ModalFooter>
-                  <Button variant="outlined">
-                    <NavLink
-                      style={{ color: "#fff", padding: "0" }}
-                      tag={Link}
-                      to={`/organizations/${currentOrgID}/service-profiles/create`}
-                    >
-                      {i18n.t(`${packageNS}:tr000277`)}
-                    </NavLink>
-                  </Button>
-                  <Button color="primary" onClick={this.toggleDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
-                </ModalFooter>
-              </Modal>
+                {i18n.t(`${packageNS}:tr000164`)}
+              </ModalHeader>
+              <ModalBody id="help-dialog-description">
+                <p>
+                  {i18n.t(`${packageNS}:tr000165`)}
+                  {i18n.t(`${packageNS}:tr000326`)}
+                </p>
+                <p>
+                  {i18n.t(`${packageNS}:tr000327`)}
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="outlined">
+                  <NavLink
+                    style={{ color: "#fff", padding: "0" }}
+                    tag={Link}
+                    to={`/organizations/${currentOrgID}/service-profiles/create`}
+                  >
+                    {i18n.t(`${packageNS}:tr000277`)}
+                  </NavLink>
+                </Button>
+                <Button color="primary" onClick={this.toggleDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
+              </ModalFooter>
+            </Modal>
 
-              <TitleBar>
-                <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${currentOrgID}/applications`} />
-                <span>&nbsp;</span>
-                <TitleBarTitle title="/" />
-                <span>&nbsp;</span>
-                <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
-              </TitleBar>
+            <TitleBar>
+              <Breadcrumb className={classes.breadcrumb}>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications`
+                }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+              </Breadcrumb>
+            </TitleBar>
 
-              <Card body>
-                <ApplicationForm
-                  match={this.props.match}
-                  onSubmit={this.onSubmit}
-                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                />
-                <br />
-              </Card>
-            </Col>       
-          </Row>
-        </Container>
-      </React.Fragment>
+            <Card body>
+              <ApplicationForm
+                match={this.props.match}
+                onSubmit={this.onSubmit}
+                submitLabel={i18n.t(`${packageNS}:tr000277`)}
+              />
+              <br />
+            </Card>
+          </Col>       
+        </Row>
+      </Container>
     );
   }
 }

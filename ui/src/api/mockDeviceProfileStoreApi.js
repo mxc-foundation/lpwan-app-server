@@ -8,7 +8,7 @@ const get = {
     "networkServerID": "1",
     "supportsClassB": true,
     "classBTimeout": 5,
-    "pingSlotPeriod": 50,
+    "pingSlotPeriod": 1024,
     "pingSlotDR": 50,
     "pingSlotFreq": 50,
     "supportsClassC": true,

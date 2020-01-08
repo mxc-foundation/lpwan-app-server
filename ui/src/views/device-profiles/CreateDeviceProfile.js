@@ -15,37 +15,20 @@ import OrganizationDevices from "../devices/OrganizationDevices";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  },
-  card: {
-    overflow: "visible",
-  },
-});
+const localStyles = {};
 
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class CreateDeviceProfile extends Component {
   constructor() {
     super();
     this.state = {
-      spDialog: false,
-      loading: true,
+      spDialog: false
     };
   }
 
@@ -56,7 +39,6 @@ class CreateDeviceProfile extends Component {
       if (resp.totalCount === "0") {
         this.setState({
           spDialog: true,
-          loading: false
         });
       }
     });
@@ -79,7 +61,6 @@ class CreateDeviceProfile extends Component {
   }
 
   render() {
-    const { loading } = this.state;
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const closeSpBtn = <button className="close" onClick={this.toggleSpDialog}>&times;</button>;
@@ -141,7 +122,6 @@ class CreateDeviceProfile extends Component {
               submitLabel={i18n.t(`${packageNS}:tr000277`)}
               onSubmit={this.onSubmit}
               match={this.props.match}
-              loading={loading}
             />
           </Grid>
         </OrganizationDevices>

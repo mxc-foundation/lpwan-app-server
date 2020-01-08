@@ -25,13 +25,14 @@ import GatewayProfileForm from "./GatewayProfileForm";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
 
 const styles = {
-  card: {
-    overflow: "visible",
-  },
+  ...breadcrumbStyles,
+  ...localStyles
 };
-
 
 class CreateGatewayProfile extends Component {
   constructor() {
@@ -66,6 +67,8 @@ class CreateGatewayProfile extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+
     return (
       <Form>
         {this.state.nsDialog && <Modal
@@ -76,8 +79,9 @@ class CreateGatewayProfile extends Component {
           callback={this.deleteGatewayProfile} />}
 
         <TitleBar>
-          <Breadcrumb>
-            <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
-
+import { withStyles } from "@material-ui/core/styles";
 import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
@@ -10,6 +10,15 @@ import TitleBar from "../../components/TitleBar";
 import SessionStorage from "../../stores/SessionStore";
 import TopupForm from "./TopupForm";
 import InfoCard from "./InfoCard";
+
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class Topup extends Component {
   constructor(props) {
@@ -32,13 +41,35 @@ class Topup extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const path = `/modify-account/${this.props.match.params.organizationID}`;
 
     return (<React.Fragment>
       <TitleBar>
-        <Breadcrumb>
+        <Breadcrumb className={classes.breadcrumb}>
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations`}
+              onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+            >
+                Organizations
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations/${currentOrgID}`}
+              onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+            >
+              {currentOrgID}
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
           <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.topup.topup`)}</BreadcrumbItem>
-        </Breadcrumb>
+        </Breadcrumb>    
       </TitleBar>
 
       <Row>
@@ -63,4 +94,4 @@ class Topup extends Component {
   }
 }
 
-export default withRouter(Topup);
+export default withStyles(styles)(withRouter(Topup));

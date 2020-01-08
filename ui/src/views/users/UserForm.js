@@ -130,7 +130,6 @@ class UserForm extends Component {
                 <Form style={{ padding: "0px", backgroundColor: "#ebeff2" }} onSubmit={handleSubmit} noValidate>
                   <Card body style={{ backgroundColor: "#fff" }}>
                     {isLoading && <Loader light />}
-
                     {this.props.update &&
                       <>
                         {/* <label htmlFor="object.id" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
