@@ -43,8 +43,5 @@ fi
 
 mv tmp "$PARENT_PATH"/../../docker-compose.yml
 
-if [ "$1" = "image" ]; then
-  docker login
-fi
 
 
