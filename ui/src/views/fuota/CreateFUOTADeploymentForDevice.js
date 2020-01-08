@@ -99,8 +99,8 @@ class CreateFUOTADeploymentForDevice extends Component {
     }
 
     return(
-      <React.Fragment>
-        <Container>
+      // <React.Fragment>
+        <Container fluid>
           <Row>
             <Col xs={12}>
               <TitleBar noButtons>
@@ -156,7 +156,7 @@ class CreateFUOTADeploymentForDevice extends Component {
             </Col>       
           </Row>
         </Container>
-      </React.Fragment>
+      // </React.Fragment>
     );
   }
 }

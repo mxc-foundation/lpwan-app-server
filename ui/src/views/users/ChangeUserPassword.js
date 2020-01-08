@@ -73,7 +73,7 @@ class ChangeUserPassword extends Component {
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000038`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
-        <Container>
+        <Container fluid>
           <Row xs="1" lg="1">
             <Card>
               <CardBody>

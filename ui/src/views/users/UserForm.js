@@ -82,7 +82,7 @@ class UserForm extends FormComponent {
 
         render={({ handleSubmit, form, submitting, pristine, values }) => (
           <form onSubmit={handleSubmit}>
-            <Container>
+            <Container fluid>
               <Row>
                 <Col sm="12">
                   <FormGroup row>

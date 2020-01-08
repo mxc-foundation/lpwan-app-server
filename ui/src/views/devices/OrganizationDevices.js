@@ -101,7 +101,7 @@ class OrganizationDevices extends Component {
     const currentOrgName = organization && (organization.name || organization.displayName);
 
     return(
-      <Container>
+      <Container fluid>
         <Row>
           <Col xs={12}>
             <TitleBar

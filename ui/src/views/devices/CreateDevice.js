@@ -134,125 +134,118 @@ class CreateDevice extends Component {
 
     return(
       <React.Fragment>
-        {/* <Container>
-          <Row>
-            <Col xs={12}> */}
-              <Modal
-                isOpen={this.state.appDialog}
-                toggle={this.toggleAppDialog}
-                aria-labelledby="help-dialog-title"
-                aria-describedby="help-dialog-description"
+        <Modal
+          isOpen={this.state.appDialog}
+          toggle={this.toggleAppDialog}
+          aria-labelledby="help-dialog-title"
+          aria-describedby="help-dialog-description"
+        >
+          <ModalHeader
+            toggle={this.toggleAppDialog}
+            close={closeAppBtn}
+            id="help-dialog-title"
+          >
+            Add an Application?
+          </ModalHeader>
+          <ModalBody id="help-dialog-description">
+            <p>
+              You can create an application for your device to belong to.
+            </p>
+            <p>
+              Would you like to create an application?
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="outlined">
+              <NavLink
+                style={{ color: "#fff", padding: "0" }}
+                tag={Link}
+                to={`/organizations/${currentOrgID}/applications/create`}
               >
-                <ModalHeader
-                  toggle={this.toggleAppDialog}
-                  close={closeAppBtn}
-                  id="help-dialog-title"
-                >
-                  Add an Application?
-                </ModalHeader>
-                <ModalBody id="help-dialog-description">
-                  <p>
-                    You can create an application for your device to belong to.
-                  </p>
-                  <p>
-                    Would you like to create an application?
-                  </p>
-                </ModalBody>
-                <ModalFooter>
-                  <Button variant="outlined">
-                    <NavLink
-                      style={{ color: "#fff", padding: "0" }}
-                      tag={Link}
-                      to={`/organizations/${currentOrgID}/applications/create`}
-                    >
-                      {i18n.t(`${packageNS}:tr000277`)}
-                    </NavLink>
-                  </Button>
-                  <Button color="primary" onClick={this.toggleAppDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
-                </ModalFooter>
-              </Modal>            
+                {i18n.t(`${packageNS}:tr000277`)}
+              </NavLink>
+            </Button>
+            <Button color="primary" onClick={this.toggleAppDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
+          </ModalFooter>
+        </Modal>            
 
-              <Modal
-                isOpen={this.state.dpDialog}
-                toggle={this.toggleDpDialog}
-                aria-labelledby="help-dialog-title"
-                aria-describedby="help-dialog-description"
+        <Modal
+          isOpen={this.state.dpDialog}
+          toggle={this.toggleDpDialog}
+          aria-labelledby="help-dialog-title"
+          aria-describedby="help-dialog-description"
+        >
+          <ModalHeader
+            toggle={this.toggleDpDialog}
+            close={closeDpBtn}
+            id="help-dialog-title"
+          >
+            Add a Device Profile?
+          </ModalHeader>
+          <ModalBody id="help-dialog-description">
+            <p>
+              The selected application does not have access to any device-profiles.
+              A device-profile defines the capabilities and boot parameters of a device. You can create multiple device-profiles for different kind of devices.
+            </p>
+            <p>
+              Would you like to create a device-profile?
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="outlined">
+              <NavLink
+                style={{ color: "#fff", padding: "0" }}
+                tag={Link}
+                to={`/organizations/${currentOrgID}/device-profiles/create`}
               >
-                <ModalHeader
-                  toggle={this.toggleDpDialog}
-                  close={closeDpBtn}
-                  id="help-dialog-title"
-                >
-                  Add a Device Profile?
-                </ModalHeader>
-                <ModalBody id="help-dialog-description">
-                  <p>
-                    The selected application does not have access to any device-profiles.
-                    A device-profile defines the capabilities and boot parameters of a device. You can create multiple device-profiles for different kind of devices.
-                  </p>
-                  <p>
-                    Would you like to create a device-profile?
-                  </p>
-                </ModalBody>
-                <ModalFooter>
-                  <Button variant="outlined">
-                    <NavLink
-                      style={{ color: "#fff", padding: "0" }}
-                      tag={Link}
-                      to={`/organizations/${currentOrgID}/device-profiles/create`}
-                    >
-                      {i18n.t(`${packageNS}:tr000277`)}
-                    </NavLink>
-                  </Button>
-                  <Button color="primary" onClick={this.toggleDpDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
-                </ModalFooter>
-              </Modal>
+                {i18n.t(`${packageNS}:tr000277`)}
+              </NavLink>
+            </Button>
+            <Button color="primary" onClick={this.toggleDpDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
+          </ModalFooter>
+        </Modal>
 
-              <TitleBar>
-                {
-                  currentApplicationID ? (
-                    <Breadcrumb className={classes.breadcrumb}>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}/applications`
-                      }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                        }>{application.application.name}</Link></BreadcrumbItem>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                      }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
-                      <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-                    </Breadcrumb>
-                  ) : (
-                    <Breadcrumb className={classes.breadcrumb}>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations`
-                      }>Organizations</Link></BreadcrumbItem>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}`
-                      }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}/devices`
-                      }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
-                      <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-                    </Breadcrumb>
-                  )
-                }
-              </TitleBar>
+        <TitleBar>
+          {
+            currentApplicationID ? (
+              <Breadcrumb className={classes.breadcrumb}>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications`
+                }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                  }>{application.application.name}</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+              </Breadcrumb>
+            ) : (
+              <Breadcrumb className={classes.breadcrumb}>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations`
+                }>Organizations</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}`
+                }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/devices`
+                }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+              </Breadcrumb>
+            )
+          }
+        </TitleBar>
 
-              {/* <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}> */}
-              {/* <Card body> */}
-                <DeviceForm
-                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                  onSubmit={this.onSubmit}
-                  match={this.props.match}
-                  loading={loading}
-                />
-                <br />
-              {/* </Card> */}
-            {/* </Col>       
-          </Row>
-        </Container> */}
+        {/* <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}> */}
+        {/* <Card body> */}
+          <DeviceForm
+            submitLabel={i18n.t(`${packageNS}:tr000277`)}
+            onSubmit={this.onSubmit}
+            match={this.props.match}
+            loading={loading}
+          />
+          <br />
       </React.Fragment>
     );
   }

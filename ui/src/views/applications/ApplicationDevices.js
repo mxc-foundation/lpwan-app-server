@@ -59,7 +59,7 @@ class ApplicationDevices extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return(
-      <Container>
+      <Container fluid>
         <Row>
           <Col xs={12}>
             <TitleBar

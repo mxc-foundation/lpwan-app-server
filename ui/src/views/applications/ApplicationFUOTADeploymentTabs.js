@@ -60,7 +60,7 @@ class ApplicationFUOTADeploymentTabs extends Component {
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
 
     return(
-      <Container>
+      <Container fluid>
         <Row>
           <Col xs={12}>
             <TitleBar

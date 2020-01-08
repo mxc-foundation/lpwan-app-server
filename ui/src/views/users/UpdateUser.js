@@ -21,21 +21,19 @@ class UpdateUser extends Component {
 
   render() {
     return (
-      <React.Fragment>
-        <Container>
-          <Row xs="1" lg="1">
-            <Card>
-              <CardBody>
-                <UserForm
-                  submitLabel={i18n.t(`${packageNS}:tr000066`)}
-                  object={this.props.user}
-                  onSubmit={this.onSubmit}
-                />
-              </CardBody>
-            </Card>
-          </Row>
-        </Container>
-      </React.Fragment>
+      <Container fluid>
+        <Row xs="1" lg="1">
+          <Card>
+            <CardBody>
+              <UserForm
+                submitLabel={i18n.t(`${packageNS}:tr000066`)}
+                object={this.props.user}
+                onSubmit={this.onSubmit}
+              />
+            </CardBody>
+          </Card>
+        </Row>
+      </Container>
     );
   }
 }
