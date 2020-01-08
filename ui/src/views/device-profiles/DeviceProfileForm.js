@@ -229,7 +229,7 @@ function Decode(fPort, bytes) {
           initialValues={
             {
               object: {
-                id: object.id || "",
+                id: object.id || undefined, // should be `undefined` when creating Device Profile
                 name: object.name || "",
                 networkServerID: object.networkServerID || "",
                 macVersion: object.macVersion || "",

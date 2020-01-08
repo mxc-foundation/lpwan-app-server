@@ -82,16 +82,19 @@ class DeviceActivation extends Component {
         deviceActivation: Yup.object().shape({
           // https://regexr.com/4rg3a
           devEUI: Yup.string()
-            .trim().matches(/([A-Fa-f0-9]){16}/, "Must be length 16")
+            // .trim().matches(/([A-Fa-f0-9]){16}/, "Must be length 16")
             .required(i18n.t(`${packageNS}:tr000431`)),
           devAddr: Yup.string()
-            .trim().matches(/([A-Fa-f0-9]){8}/, "Must be length 8")
+            // FIXME - changes to DevAddr component required to get these to work
+            // since the length of the value when debugging `values.object.deviceActivation.devAddr`
+            // changes from 8 to 11 if you change the value in the UI from 8 to 7.
+            // .trim().matches(/([A-Fa-f0-9]){8}/, "Must be length 8")
             .required(i18n.t(`${packageNS}:tr000431`)),
           appSKey: Yup.string()
-            .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
+            // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
             .required(i18n.t(`${packageNS}:tr000431`)),
           nwkSEncKey: Yup.string()
-            .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
+            // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
             .required(i18n.t(`${packageNS}:tr000431`)),
           fCntUp: Yup.number()
             .required(i18n.t(`${packageNS}:tr000431`)),
@@ -102,13 +105,17 @@ class DeviceActivation extends Component {
     }
 
     if (this.props.deviceProfile.macVersion.startsWith("1.1")) {
-      fieldsSchema['object.deviceActivation.sNwkSIntKey'] = Yup.string()
-        .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
+      fieldsSchema.object.fields.deviceActivation.fields.sNwkSIntKey = Yup.string()
+        // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
         .required(i18n.t(`${packageNS}:tr000431`));
-      fieldsSchema['object.deviceActivation.fNwkSIntKey'] = Yup.string()
-        .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
+      fieldsSchema.object.fields.deviceActivation._nodes.push("sNwkSIntKey");
+      fieldsSchema.object.fields.deviceActivation.fields.fNwkSIntKey = Yup.string()
+        // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
         .required(i18n.t(`${packageNS}:tr000431`));
-      fieldsSchema['object.deviceActivation.aFCntDown'] = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.deviceActivation._nodes.push("fNwkSIntKey");
+      fieldsSchema.object.fields.deviceActivation.fields.aFCntDown = Yup.number()
+        .required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.deviceActivation._nodes.push("aFCntDown");
     }
 
     return Yup.object().shape(fieldsSchema);
