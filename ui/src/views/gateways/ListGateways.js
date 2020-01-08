@@ -179,7 +179,7 @@ class ListGatewaysTable extends Component {
       <div className="position-relative">
         {this.state.loading && <Loader />}
         <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID, this.state.stats)}
-          keyField="id" onTableChange={this.handleTableChange} searchEnabled={true} rowsPerPage={10}></AdvancedTable>
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
       </div>
     );
   }

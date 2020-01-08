@@ -166,7 +166,7 @@ class ListFUOTADeploymentsForApplication extends Component {
             keyField="id"
             onTableChange={this.handleTableChange}
             rowsPerPage={10}
-            searchEnabled={true}
+            searchEnabled={false}
           />
         </div>
       </React.Fragment>

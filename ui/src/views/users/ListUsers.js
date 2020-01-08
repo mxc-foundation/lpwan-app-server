@@ -147,7 +147,7 @@ class ListUsers extends Component {
                 columns={getColumns()}
                 keyField="id"
                 onTableChange={this.handleTableChange}
-                searchEnabled={true}
+                searchEnabled={false}
                 rowsPerPage={10}
               />
             </Card>
