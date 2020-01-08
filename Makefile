@@ -2,7 +2,7 @@
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags |sed -e "s/^v//")
 
-build: ui/build internal/statics internal/migrations
+build: internal/statics internal/migrations
 	mkdir -p build cache
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
 
@@ -35,7 +35,7 @@ dist: ui/build internal/statics internal/migrations
 snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
 
-ui/build: ui/build_dep
+ui/build:
 	@echo "Building ui"
 	@cd ui && npm run build
 	@mv ui/build/* static
