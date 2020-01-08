@@ -32,9 +32,6 @@ const styles = {
   ...localStyles
 };
 
-
-
-
 class ListMulticastGroups extends Component {
   constructor() {
     super();
