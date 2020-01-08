@@ -6,7 +6,8 @@ import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
 import i18n, { packageNS } from '../i18n';
-
+import MockUserStoreApi from '../api/mockUserStoreApi';
+import isDev from '../util/isDev';
 
 class UserStore extends EventEmitter {
   constructor() {
@@ -33,6 +34,12 @@ class UserStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    // if (isDev) {
+    //   (async () => callbackFunc(await MockUserStoreApi.get()))();
+    //   return;
+    // }
+
     this.swagger.then(client => {
       client.apis.UserService.Get({
         id: id,

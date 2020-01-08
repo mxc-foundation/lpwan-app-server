@@ -8,7 +8,7 @@ import i18n, { packageNS } from '../../i18n';
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceProfileForm from "./DeviceProfileForm";
 
-
+// FIXME - this isn't being used, and we can also remove `withStyles` here
 const styles = {
   card: {
     overflow: "visible",

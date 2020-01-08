@@ -158,7 +158,9 @@ class RegistrationConfirm extends Component {
       }
 
       SessionStore.finishRegistration(request, (responseData) => {
-        this.props.history.push("/");
+        SessionStore.logout(() => {
+          this.props.history.push("/logout");
+        });
       })
     } else {
       this.setState({

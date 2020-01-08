@@ -22,6 +22,9 @@ class ProfileDropdown extends Component {
     }
 
     render() {
+        if (!this.props.user) {
+            return null;
+        }
         const { user: { id, profilePic, username } } = this.props;
 
         return (

@@ -4,6 +4,8 @@ import Swagger from "swagger-client";
 import { checkStatus, errorHandler, errorHandlerLogin } from "./helpers";
 import dispatcher from "../dispatcher";
 import i18n, { packageNS } from '../i18n';
+import MockSessionStoreApi from '../api/mockSessionStoreApi';
+import isDev from '../util/isDev';
 
 class SessionStore extends EventEmitter {
   constructor() {
@@ -83,6 +85,12 @@ class SessionStore extends EventEmitter {
   }
 
   getUser() {
+    // Run the following in development environment and early exit from function
+    // Uncomment to show mock profile pic 
+    // if (isDev) {
+    //   return MockSessionStoreApi.getUser();
+    // }
+
     let user = this.user;
     if (!user) {
       user = localStorage.getItem("user");

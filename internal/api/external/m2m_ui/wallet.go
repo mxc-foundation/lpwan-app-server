@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-	"fmt"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -25,14 +24,10 @@ func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletBalance")
 
-	fmt.Println("1")
-
 	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
 	if err != nil{
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
-
-	fmt.Println("2")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -40,11 +35,7 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	fmt.Println("3")
-
 	walletClient := api.NewWalletServiceClient(m2mClient)
-
-	fmt.Println("4")
 
 	resp, err := walletClient.GetWalletBalance(ctx, &api.GetWalletBalanceRequest{
 		OrgId: req.OrgId,
@@ -52,8 +43,6 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 	if err != nil {
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
-
-	fmt.Println("5")
 
 	return &api.GetWalletBalanceResponse{
 		Balance:     resp.Balance,

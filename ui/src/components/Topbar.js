@@ -9,7 +9,7 @@ import SessionStore from "../stores/SessionStore";
 import WithdrawStore from "../stores/WithdrawStore";
 import WalletStore from "../stores/WalletStore";
 import logoSm from '../assets/images/logo-sm.png';
-import logo from '../assets/images/logos_wallet_light.png';
+import logo from '../assets/images/MATCHX-SUPERNODE2.png';
 
 function getWalletBalance() {
   var organizationId = SessionStore.getOrganizationID();
@@ -140,10 +140,10 @@ class Topbar extends Component {
           <div className="logo-box">
             <div to="/" className="logo text-center">
               <span className="logo-lg">
-                <img src={logo} alt="" height="16" />
+                <img src={logo} alt="" height="53" />
               </span>
               <span className="logo-sm">
-                <img src={logoSm} alt="" height="24" />
+                <img src={logoSm} alt="" height="16" />
               </span>
             </div>
           </div>
