@@ -13,28 +13,14 @@ import Admin from "../../components/Admin";
 import UpdateServiceProfile from "../service-profiles/UpdateServiceProfile";
 import Modal from "../../components/Modal";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  },
-  card: {
-    overflow: "visible",
-  },
-});
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class OrganizationLayout extends Component {
   constructor() {
@@ -91,17 +77,21 @@ class OrganizationLayout extends Component {
             buttons={
               <Admin>
                 <TitleBarButton
-                    key={1}
-                    color="danger"
-                    label={i18n.t(`${packageNS}:tr000061`)}
-                    icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
-                    onClick={this.openModal}
+                  key={1}
+                  color="danger"
+                  label={i18n.t(`${packageNS}:tr000061`)}
+                  icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+                  onClick={this.openModal}
                 />
               </Admin>
             }
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+              `/organizations`}>{i18n.t(`${packageNS}:tr000049`)
+            }</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
             <BreadcrumbItem active>{this.state.organization.organization.name}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>

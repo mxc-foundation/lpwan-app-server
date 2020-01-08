@@ -1,13 +1,12 @@
 import React from "react";
-
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody, CardHeader, CardFooter, CardText } from 'reactstrap';
 import { withRouter, Link } from "react-router-dom";
 
+import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody, CardHeader, CardFooter, CardText } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
 import TitleBar from "../../components/TitleBar";
-
 
 import ExtLink from "../../components/ExtLink";
 import Typography from '@material-ui/core/Typography';
@@ -18,10 +17,16 @@ import StakeStore from "../../stores/StakeStore";
 import ModalTimer from "../common/ModalTimer";
 //import Button from "@material-ui/core/Button";
 import Spinner from "../../components/ScaleLoader";
-
 import { EXT_URL_STAKE } from "../../util/Data"
-
 import InfoCard from "../topup/InfoCard";
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class SetStake extends FormComponent {
 
@@ -62,18 +67,40 @@ class SetStake extends FormComponent {
   }
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     let path = null;
-    if (this.props.match.params.organizationID === process.env.REACT_APP_SUPER_ADMIN_LPWAN) {
+    if (currentOrgID === process.env.REACT_APP_SUPER_ADMIN_LPWAN) {
       path = '/control-panel/modify-account/';
     } else {
-      path = `/modify-account/${this.props.match.params.organizationID}`;
+      path = `/modify-account/${currentOrgID}`;
     }
 
     return (
       <>
         <TitleBar>
           <Breadcrumb>
-            <BreadcrumbItem active>{this.state.title}</BreadcrumbItem>
+            <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations`}
+                >
+                    Organizations
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations/${currentOrgID}`}
+                >
+                  {currentOrgID}
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem className={classes.breadcrumbItem}>Set Stake</BreadcrumbItem>
+              <BreadcrumbItem active>{this.state.title}</BreadcrumbItem>
+            </Breadcrumb>
           </Breadcrumb>
         </TitleBar>
 
@@ -104,4 +131,4 @@ class SetStake extends FormComponent {
   }
 }
 
-export default withRouter(SetStake);
+export default withStyles(styles)(withRouter(SetStake));

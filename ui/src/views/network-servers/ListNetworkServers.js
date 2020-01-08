@@ -4,40 +4,23 @@ import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody,
   CardSubtitle, CardTitle, Col, Container, Row, Spinner } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
 import i18n, { packageNS } from '../../i18n';
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 
-import TableCellLink from "../../components/TableCellLink";
-import DataTable from "../../components/DataTable";
 import AdvancedTable from "../../components/AdvancedTable";
 
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  }
-});
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 const NetworkServerColumn = (cell, row, index, extraData) => {
   return <Link to={`/network-servers/${row.id}`}>{row.name}</Link>;
@@ -121,6 +104,7 @@ class ListNetworkServers extends Component {
           ]}
         >
           <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>

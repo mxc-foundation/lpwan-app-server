@@ -12,25 +12,14 @@ import TitleBarButton from "../../components/TitleBarButton";
 import Loader from "../../components/Loader";
 import UserStore from "../../stores/UserStore";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  }
-});
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 const GatewayColumn = (cell, row, index, extraData) => {
   return <Link to={`/users/${row.id}`}>{row.username}</Link>;
@@ -128,6 +117,7 @@ class ListUsers extends Component {
           ]}
         >
           <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}

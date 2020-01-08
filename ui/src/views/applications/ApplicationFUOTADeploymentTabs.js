@@ -13,24 +13,9 @@ import TitleBarButton from "../../components/TitleBarButton";
 import DeviceAdmin from "../../components/DeviceAdmin";
 import Admin from "../../components/Admin";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  },
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {
   tabs: {
     borderBottom: "1px solid " + theme.palette.divider,
     height: "48px",
@@ -40,7 +25,12 @@ const styles = theme => ({
     backgroundColor: "#FFFFFF",
     borderRadius: "5px"
   }
-});
+};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class ApplicationFUOTADeploymentTabs extends Component {
   constructor() {

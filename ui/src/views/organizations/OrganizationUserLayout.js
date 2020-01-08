@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Button, Row } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
+
 import Modal from '../../components/Modal';
 
 import i18n, { packageNS } from '../../i18n';
@@ -10,6 +12,14 @@ import SessionStore from "../../stores/SessionStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganizationUser from "./UpdateOrganizationUser";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class OrganizationUserLayout extends Component {
   constructor() {
@@ -60,6 +70,9 @@ class OrganizationUserLayout extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     if (this.state.organizationUser === undefined) {
       return (<div></div>);
     }
@@ -84,8 +97,31 @@ class OrganizationUserLayout extends Component {
             </Button>
           ]}
         >
-          <Breadcrumb>
-            <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/users`} title={i18n.t(`${packageNS}:tr000068`)}>{i18n.t(`${packageNS}:tr000068`)}</Link></BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                  Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}/users`}
+              >
+                {i18n.t(`${packageNS}:tr000068`)}
+              </Link>
+            </BreadcrumbItem>
             <BreadcrumbItem active>{this.state.organizationUser.organizationUser.username}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -97,4 +133,4 @@ class OrganizationUserLayout extends Component {
   }
 }
 
-export default withRouter(OrganizationUserLayout);
+export default withStyles(styles)(withRouter(OrganizationUserLayout));

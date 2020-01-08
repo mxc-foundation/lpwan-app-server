@@ -1,15 +1,21 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
-
 import { Breadcrumb, BreadcrumbItem, Form, Row, Col, Card, CardBody } from 'reactstrap';
 
+import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-
 import OrganizationForm from "./OrganizationForm";
 import OrganizationStore from "../../stores/OrganizationStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class CreateOrganization extends Component {
   constructor() {
@@ -26,14 +32,17 @@ class CreateOrganization extends Component {
   }
 
   render() {
-    return (<React.Fragment>
-      <TitleBar>
-        <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
-        <Breadcrumb>
-          <BreadcrumbItem><Link to={`/organizations/`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
-          <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-        </Breadcrumb>
-      </TitleBar>
+    const { classes } = this.props;
+
+    return (
+      <React.Fragment>
+        <TitleBar>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
+        </TitleBar>
 
         <Row>
           <Col>
@@ -54,4 +63,4 @@ class CreateOrganization extends Component {
   }
 }
 
-export default withRouter(CreateOrganization);
+export default withStyles(styles)(withRouter(CreateOrganization));

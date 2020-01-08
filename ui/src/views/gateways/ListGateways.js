@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Switch, Link } from "react-router-dom";
+import { withRouter, Route, Switch, Link } from "react-router-dom";
 
 import moment from "moment";
 import { Bar } from "react-chartjs-2";
@@ -7,11 +7,11 @@ import { Map, Marker, Popup } from 'react-leaflet';
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
 import "leaflet.awesome-markers";
-import { Row, Col, Card, CardBody } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
@@ -19,6 +19,14 @@ import GatewayAdmin from "../../components/GatewayAdmin";
 import GatewayStore from "../../stores/GatewayStore";
 import MapTileLayer from "../../components/MapTileLayer";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 const GatewayActivityColumn = (cell, row, index, extraData) => {
   const stats = extraData['stats'];
@@ -73,12 +81,10 @@ const GatewayActivityColumn = (cell, row, index, extraData) => {
   );
 }
 
-
 const GatewayColumn = (cell, row, index, extraData) => {
   const organizationId = extraData['organizationId'];
   return <Link to={`/organizations/${organizationId}/gateways/${row.id}`}>{row.name}</Link>;
 }
-
 
 const getColumns = (organizationId, stats) => (
   [{
@@ -307,6 +313,9 @@ class ListGateways extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return (<React.Fragment>
       <TitleBar
         buttons={<GatewayAdmin organizationID={this.props.match.params.organizationID}>
@@ -318,7 +327,25 @@ class ListGateways extends Component {
           />
         </GatewayAdmin>}
       >
-        <TitleBarTitle title={i18n.t(`${packageNS}:tr000063`)} />
+        <Breadcrumb className={classes.breadcrumb}>
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations`}
+            >
+                Organizations
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations/${currentOrgID}`}
+            >
+              {currentOrgID}
+            </Link>
+          </BreadcrumbItem>
+          <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000063`)}</BreadcrumbItem>
+        </Breadcrumb>
       </TitleBar>
 
       <Row>
@@ -342,4 +369,4 @@ class ListGateways extends Component {
   }
 }
 
-export default ListGateways;
+export default withStyles(styles)(withRouter(ListGateways));

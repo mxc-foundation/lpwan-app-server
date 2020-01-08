@@ -9,26 +9,14 @@ import UserStore from "../../stores/UserStore";
 import FormComponent from "../../classes/FormComponent";
 import i18n, { packageNS } from '../../i18n';
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  }
-});
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class PasswordForm  extends FormComponent {
   render() {

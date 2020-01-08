@@ -12,25 +12,14 @@ import TitleBarButton from "../../components/TitleBarButton";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import UpdateNetworkServer from "./UpdateNetworkServer";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  }
-});
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class NetworkServerLayout extends Component {
   constructor() {
@@ -77,12 +66,13 @@ class NetworkServerLayout extends Component {
             />,
           ]}
         >
-          <Breadcrumb className={classes.breadcrumb} style={{ fontSize: "1.25rem", margin: "0rem" }}>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
             <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
               `/network-servers`}>{i18n.t(`${packageNS}:tr000040`)
             }</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
-            <BreadcrumbItem active>{`${this.state.networkServer.networkServer.id}`}</BreadcrumbItem>
+            <BreadcrumbItem active>{this.state.networkServer.networkServer.id}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
 

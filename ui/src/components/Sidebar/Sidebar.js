@@ -53,13 +53,13 @@ class Sidebar extends Component {
         super(props);
 
         this.state = {
+            currentSidebarId: props.currentSidebarId || DEFAULT,
             open: true,
             //organization: {},
             organization: null,
             organizationID: '',
             cacheCounter: 0,
-            version: '1.0.0',
-            sidebar: DEFAULT
+            version: '1.0.0'
         };
 
         this.handleOtherClick = this.handleOtherClick.bind(this);
@@ -127,7 +127,7 @@ class Sidebar extends Component {
           });
       
           this.getOrganizationFromLocation();
-    }
+      }
     
       onChange = (e) => {
         SessionStore.setOrganizationID(e.target.value);
@@ -202,6 +202,12 @@ class Sidebar extends Component {
             return;
         }
 
+        if (this.props.currentSidebarId !== this.state.currentSidebarId) {
+          this.setState({
+            currentSidebarId: this.props.currentSidebarId
+          })
+        }
+
         this.getOrganizationFromLocation();
     }
 
@@ -269,43 +275,46 @@ class Sidebar extends Component {
         }
     }
 
-    switchSidebar = (sidebarNo) => {
-        this.setState({ sidebarNo })
+    switchSidebar = (newSidebarId) => {
+        const { switchToSidebarId } = this.props;
+        switchToSidebarId(newSidebarId);
     }
 
     render() {
+        const { version } = this.state;
+        const { currentSidebarId } = this.props;
+
         const isCondensed = this.props.isCondensed || false;
         const orgId = SessionStore.getOrganizationID();
         if(orgId === undefined && orgId === ''){
           orgId = this.state.organizationID;
         }
         const user = SessionStore.getUser();
-        const version = this.state.version;
-        let sidebar = this.state.sidebar;
 
-        switch (this.state.sidebarNo) {
+        let sidebarComponent;
+        switch (currentSidebarId) {
             case SUPERNODE_WALLET:
-                sidebar = <SideNavSupernodeWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSupernodeWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case SUPERNODE_SETTING:
-                sidebar = <SideNavSupernodeSettingContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSupernodeSettingContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case WALLET:
-                sidebar = <SideNavWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case SETTING:
-                sidebar = <SideNavSettingContent orgId={orgId} user={user} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSettingContent orgId={orgId} user={user} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             default:
-                sidebar = <SideNavContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
         }
 
         return (
             <React.Fragment>
                 <div className='left-side-menu' ref={node => this.menuNodeRef = node}>
-                    {!isCondensed && <PerfectScrollbar>{sidebar}</PerfectScrollbar>}
-                    {isCondensed && <PerfectScrollbar>{sidebar}</PerfectScrollbar>}
+                    {!isCondensed && <PerfectScrollbar>{sidebarComponent}</PerfectScrollbar>}
+                    {isCondensed && <PerfectScrollbar>{sidebarComponent}</PerfectScrollbar>}
                 </div>
             </React.Fragment>
         );

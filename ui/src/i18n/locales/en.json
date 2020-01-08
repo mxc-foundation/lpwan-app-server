@@ -66,8 +66,8 @@
   "tr000065": "When checked, it means that organization administrators are able to add their own gateways to the network. Note that the usage of the gateways is not limited to this organization.",
   "tr000066": "Update",
   "tr000067": "Org. users",
-  "tr000068": "Organization users",
-  "tr000069": "Service-profiles",
+  "tr000068": "Organization Users",
+  "tr000069": "Service Profiles",
   "tr000070": "Device Profiles",
   "tr000071": "Profile-1",
   "tr000072": "Gateway",
@@ -658,12 +658,12 @@
       "control_panel": "Control Panel"
     },
     "system_settings": {
-      "system_settings": "System Settings"
+      "system_settings": "System Fees"
     },
     "settings": {
       "save_changes": "SAVE CHANGES",
       "proceed": "PROCEED",
-      "system_settings": "System Settings",
+      "system_settings": "System Fees",
       "control_panel": "Control Panel",
       "withdraw_fee": "Withdraw Fee",
       "downlink_price": "Downlink Price",

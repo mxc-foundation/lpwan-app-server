@@ -1,14 +1,24 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
 import AdvancedTable from "../../components/AdvancedTable";
-import { Button, Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Button, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 
 import OrganizationStore from "../../stores/OrganizationStore";
+
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 const UserNameColumn = (cell, row, index, extraData) => {
   const organizationId = extraData['organizationId'];
@@ -84,6 +94,9 @@ class ListOrganizationUsers extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return (
       <React.Fragment>
         <TitleBar
@@ -95,8 +108,24 @@ class ListOrganizationUsers extends Component {
             </Button>,
           ]}
         >
-          <Breadcrumb>
-            <BreadcrumbItem>{i18n.t(`${packageNS}:tr000068`)}</BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                  Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000068`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
         <Row>
@@ -115,4 +144,4 @@ class ListOrganizationUsers extends Component {
   }
 }
 
-export default ListOrganizationUsers;
+export default withStyles(styles)(withRouter(ListOrganizationUsers));

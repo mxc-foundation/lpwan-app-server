@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
@@ -26,8 +27,9 @@ import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
 import i18n, { packageNS } from '../../i18n';
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
 
-const styles = {
+const localStyles = {
   card: {
     overflow: "visible",
   },
@@ -41,6 +43,10 @@ const styles = {
   },
 };
 
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 
 class AssignUserForm extends FormComponent {
@@ -295,12 +301,39 @@ class CreateOrganizationUser extends Component {
   };
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return(
       <Grid container spacing={4}>
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000068`)} to={`/organizations/${this.props.match.params.organizationID}/users`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                  Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}/users`}
+              >
+                {i18n.t(`${packageNS}:tr000068`)}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
 
         <Grid item xs={12}>
