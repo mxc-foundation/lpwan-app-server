@@ -229,7 +229,7 @@ function Decode(fPort, bytes) {
           initialValues={
             {
               object: {
-                id: object.id || undefined, // should be `undefined` when creating Device Profile
+                id: object.id || undefined,
                 name: object.name || "",
                 networkServerID: object.networkServerID || "",
                 macVersion: object.macVersion || "",
@@ -247,7 +247,7 @@ function Decode(fPort, bytes) {
                   : "",
                 supportsClassB: !!object.supportsClassB || false,
                 classBTimeout: object.classBTimeout || 0,
-                pingSlotPeriod: object.pingSlotPeriod || "",
+                pingSlotPeriod: object.pingSlotPeriod || 0,
                 pingSlotDR: object.pingSlotDR || 0,
                 pingSlotFreq: object.pingSlotFreq || 0,
                 supportsClassC: !!object.supportsClassC || false,
@@ -258,7 +258,14 @@ function Decode(fPort, bytes) {
           }
           validateOnBlur
           validateOnChange
-          validateOnMount
+          // FIXME - temporarily disabled validate on mount, because when
+          // the user switches between tabs after correcting an invalid input field
+          // (i.e. reducing the detected invalid inputs from say 3 to 2), it restores
+          // the validation errors back to 3 again, even though that input field
+          // has a correct input field value in the UI. fix this after MVP when
+          // we have more time to investigate.
+
+          // validateOnMount
           validationSchema={this.formikFormSchema}
           // Formik Nested Schema Example https://codesandbox.io/s/y7q2v45xqx
           onSubmit={

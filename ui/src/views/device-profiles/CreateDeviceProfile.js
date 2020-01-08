@@ -44,8 +44,7 @@ class CreateDeviceProfile extends Component {
   constructor() {
     super();
     this.state = {
-      spDialog: false,
-      loading: true,
+      spDialog: false
     };
   }
 
@@ -56,7 +55,6 @@ class CreateDeviceProfile extends Component {
       if (resp.totalCount === "0") {
         this.setState({
           spDialog: true,
-          loading: false
         });
       }
     });
@@ -79,7 +77,6 @@ class CreateDeviceProfile extends Component {
   }
 
   render() {
-    const { loading } = this.state;
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const closeSpBtn = <button className="close" onClick={this.toggleSpDialog}>&times;</button>;
@@ -141,7 +138,6 @@ class CreateDeviceProfile extends Component {
               submitLabel={i18n.t(`${packageNS}:tr000277`)}
               onSubmit={this.onSubmit}
               match={this.props.match}
-              loading={loading}
             />
           </Grid>
         </OrganizationDevices>
