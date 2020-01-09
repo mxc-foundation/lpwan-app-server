@@ -98,7 +98,8 @@ class ListUsers extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    // Note: If you do not provide a limit, then nothing is returned
+    this.getPage(Number.MAX_SAFE_INTEGER);
   }
 
   render() {
