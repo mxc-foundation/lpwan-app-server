@@ -5,6 +5,7 @@ import moment from "moment";
 import { Bar } from "react-chartjs-2";
 
 import i18n, { packageNS } from "../../i18n";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import DeviceStore from "../../stores/DeviceStore";
@@ -239,7 +240,7 @@ class ListDevicesTable extends Component {
   // }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   componentDidUpdate(prevProps, prevState) {

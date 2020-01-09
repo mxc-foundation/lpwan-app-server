@@ -74,8 +74,6 @@ class TopupForm extends Component {
         superNodeAccount: superNodeAccount,
         account: account,
       }
-      
-
 
       if (SessionStorage.getUser().isAdmin && !superNodeAccount) {
         this.showModal(true);

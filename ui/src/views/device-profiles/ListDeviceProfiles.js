@@ -1,12 +1,14 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
+import { Card } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
+import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 import DeviceAdmin from "../../components/DeviceAdmin";
 import AdvancedTable from "../../components/AdvancedTable";
@@ -14,25 +16,14 @@ import Loader from "../../components/Loader";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import OrganizationDevices from "../devices/OrganizationDevices";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  }
-});
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 const DeviceProfileNameColumn = (cell, row, index, extraData) => {
   const currentOrgID = extraData['currentOrgID'];
@@ -95,7 +86,7 @@ class ListDeviceProfiles extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -122,9 +113,7 @@ class ListDeviceProfiles extends Component {
               </DeviceAdmin>
             }
           >
-            <Breadcrumb className={classes.breadcrumb}>
-              <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000070`)}</BreadcrumbItem>
-            </Breadcrumb>
+            <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
           </TitleBar>
           <Grid item xs={12}>
             <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>

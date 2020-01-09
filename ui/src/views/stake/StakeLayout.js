@@ -1,20 +1,30 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
+
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
+import Typography from '@material-ui/core/Typography';
+
 import Grid from "@material-ui/core/Grid";
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import WalletStore from "../../stores/WalletStore.js";
 import GatewayStore from "../../stores/GatewayStore.js";
 import Button from "@material-ui/core/Button";
 import StakeStore from "../../stores/StakeStore";
 import ExtLink from "../../components/ExtLink";
-import Typography from '@material-ui/core/Typography';
+
 //import WithdrawBalanceInfo from "./WithdrawBalanceInfo";
-import { withRouter } from "react-router-dom";
-import { withStyles } from "@material-ui/core/styles";
-import styles from "./StakeStyle"
+
 import { EXT_URL_STAKE } from "../../util/Data"
 import i18n, { packageNS } from '../../i18n';
+
+import localStyles from "./StakeStyle";
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 function doIHaveGateway(orgId) {
   return new Promise((resolve, reject) => {
@@ -83,30 +93,65 @@ class StakeLayout extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return (
       <Grid container spacing={24} className={this.props.classes.backgroundColor}>
         <Grid item xs={12} md={12} lg={12} className={this.props.classes.divider}>
-          <div className={this.props.classes.TitleBar}>
+          <TitleBar
+            buttons={
+              <Button
+                color="primary.main"
+                component={Link}
+                to={`/stake/${this.props.match.params.organizationID}/set-stake`}
+                /* onClick={this.handleOpenAXS} */
+                type="button"
+                disabled={false}>{i18n.t(`${packageNS}:menu.staking.set_stake_caps`)}
+              </Button>
+            }
+          >
+            <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations`}
+                >
+                    Organizations
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations/${currentOrgID}`}
+                >
+                  {currentOrgID}
+                </Link>
+              </BreadcrumbItem>
+              <BreadcrumbItem active>Stake</BreadcrumbItem>
+            </Breadcrumb>
+          </TitleBar>
+          
+          {/* <div className={this.props.classes.TitleBar}> */}
             {/* <TitleBar className={this.props.classes.padding}>
                 <TitleBarTitle title="Stake" />
               </TitleBar> */}
             {/* <Divider light={true}/> */}
-            <div className={this.props.classes.between}>
-              <TitleBar>
-                <TitleBarTitle title="Stake" />
+            {/* <div className={this.props.classes.between}> */}
+              {/* <TitleBar> */}
+                {/* <TitleBarTitle title="Stake" /> */}
                 {/* <TitleBarTitle component={Link} to="#" title="M2M Wallet" className={this.props.classes.link}/> 
                 <TitleBarTitle component={Link} to="#" title="/" className={this.props.classes.link}/>
                 <TitleBarTitle component={Link} to="#" title="Devices" className={this.props.classes.link}/> */}
-              </TitleBar>
-              <Button color="primary.main" component={Link} to={`/stake/${this.props.match.params.organizationID}/set-stake`} /* onClick={this.handleOpenAXS} */ type="button" disabled={false}>{i18n.t(`${packageNS}:menu.staking.set_stake_caps`)}</Button>
+              {/* </TitleBar> */}
               {/* <TitleBarButton
                 label="SET STAKE"
                 color="primary"
                 to={`/stake/${this.props.match.params.organizationID}/set-stake`}
                 classes={this.props.classes}
               /> */}
-            </div>
-          </div>
+            {/* </div> */}
+          {/* </div> */}
         </Grid>
         <Grid item xs={12} className={this.props.classes.divider}>
           <Grid item xs={12} md={12} lg={6} >

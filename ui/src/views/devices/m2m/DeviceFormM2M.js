@@ -10,6 +10,7 @@ import { withRouter } from 'react-router-dom';
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../../i18n';
+import { MAX_DATA_LIMIT } from '../../../util/pagination';
 import DeviceStore from "../../../stores/DeviceStore.js";
 import AdvancedTable from "../../../components/AdvancedTable";
 import Loader from "../../../components/Loader";
@@ -66,7 +67,7 @@ class DeviceFormM2M extends Component {
       this.forceUpdate();
     });
 
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   componentWillUnmount() {

@@ -1,16 +1,27 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Row, Col, Card, CardBody } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
+
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import AdvancedTable from "../../components/AdvancedTable";
 
 import OrganizationStore from "../../stores/OrganizationStore";
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
 import TitleBarButton from "../../components/TitleBarButton";
+
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class ListOrganizations extends Component {
   constructor(props) {
@@ -53,29 +64,31 @@ class ListOrganizations extends Component {
   };
 
   getColumns = () => (
-      [{
+    [
+      {
         dataField: 'name',
         text: i18n.t(`${packageNS}:tr000042`),
         sort: false,
         formatter: this.organizationNameColumn,
-        },
-        {
+      },
+      {
         dataField: 'displayName',
         text: i18n.t(`${packageNS}:tr000126`),
         sort: false,
-        },
-        {
+      },
+      {
         dataField: 'canHaveGateways',
         text: i18n.t(`${packageNS}:tr000380`),
         sort: false,
         formatter: this.canHaveGatewaysColumn,
-        },
-        {
+      },
+      {
         dataField: 'serviceProfiles',
         text: i18n.t(`${packageNS}:tr000078`),
         sort: false,
         formatter: this.serviceProfileColumn,
-        }]
+      }
+    ]
   );
 
   /**
@@ -97,34 +110,40 @@ class ListOrganizations extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10, 0);
+    this.getPage(MAX_DATA_LIMIT, 0);
   }
 
   render() {
-    return (<React.Fragment>
-    <TitleBar buttons={
-        <TitleBarButton
-            key={1}
-            label={i18n.t(`${packageNS}:tr000277`)}
-            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-            to={`/organizations/create`}
-        />}
-    >
-        <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
-    </TitleBar>
+    const { classes } = this.props;
 
-      <Row>
-        <Col>
-          <Card>
-            <CardBody>
-              <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
-            </CardBody>
-          </Card>
-        </Col>
-      </Row>
-    </React.Fragment>
+    return (
+      <React.Fragment>
+        <TitleBar buttons={
+            <TitleBarButton
+                key={1}
+                label={i18n.t(`${packageNS}:tr000277`)}
+                icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+                to={`/organizations/create`}
+            />}
+        >
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000049`)}</BreadcrumbItem>
+          </Breadcrumb>
+        </TitleBar>
+
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }
 
-export default ListOrganizations;
+export default withStyles(styles)(ListOrganizations);

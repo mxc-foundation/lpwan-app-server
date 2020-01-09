@@ -326,29 +326,29 @@ class SideNav extends Component {
           </ListItem>
         </List>
         <Divider />
-              <List className={this.props.classes.static}>
-                <ListItem button onClick={this.handlingExtLink} >
-                  <ListItemIcon>
-                    <Wallet />
-                  </ListItemIcon>
-                  <ListItemText primary={i18n.t(`${packageNS}:tr000084`)} />
-                </ListItem>
-                <ListItem button className={this.props.classes.static}>  
-                  <ListItemIcon>
-                    <AccessPoint />
-                  </ListItemIcon>
-                  <ListItemText primary={i18n.t(`${packageNS}:tr000085`)} />
-                </ListItem>
-                <ListItem>
-                  <ListItemText primary={i18n.t(`${packageNS}:tr000086`)} />
-                  <ListItemIcon>
-                    <img src="/logo/mxc_logo.png" className="iconStyle" alt={i18n.t(`${packageNS}:tr000051`)} onClick={this.handleMXC} />
-                  </ListItemIcon>
-                </ListItem>
-                <ListItem>
-                  <ListItemText secondary={`${i18n.t(`${packageNS}:tr000087`)} ${this.state.version}`} />
-                </ListItem>
-              </List>
+        <List className={this.props.classes.static}>
+          <ListItem button onClick={this.handlingExtLink} >
+            <ListItemIcon>
+              <Wallet />
+            </ListItemIcon>
+            <ListItemText primary={i18n.t(`${packageNS}:tr000084`)} />
+          </ListItem>
+          <ListItem button className={this.props.classes.static}>  
+            <ListItemIcon>
+              <AccessPoint />
+            </ListItemIcon>
+            <ListItemText primary={i18n.t(`${packageNS}:tr000085`)} />
+          </ListItem>
+          <ListItem>
+            <ListItemText primary={i18n.t(`${packageNS}:tr000086`)} />
+            <ListItemIcon>
+              <img src="/logo/mxc_logo.png" className="iconStyle" alt={i18n.t(`${packageNS}:tr000051`)} onClick={this.handleMXC} />
+            </ListItemIcon>
+          </ListItem>
+          <ListItem>
+            <ListItemText secondary={`${i18n.t(`${packageNS}:tr000087`)} ${this.state.version}`} />
+          </ListItem>
+        </List>
         </>}
       </Drawer>
     );

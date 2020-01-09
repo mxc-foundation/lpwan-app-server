@@ -3,12 +3,13 @@
 PARENT_PATH=$(dirname $0)
 
 if [ "$1" = "-h" ]; then
-  echo "Usage : appserver [local_database|remote_database <remote_data_server>|create_image]"
+  echo "Usage : appserver [local_database|remote_database <remote_data_server>|create_image|build]"
   echo ""
   echo "Commands : "
   echo "   local_database                        Start docker container with local database and mqtt service"
   echo "   remote_database <remote_data_server>  Start docker container with remote database and mqtt service"
-  echo "   create_image                           Create docker image for LPWAN-app-server"
+  echo "   create_image                          Create docker image for LPWAN-app-server"
+  echo "   build                                 Command for building the code, only run in docker container"
   echo ""
   exit
 fi
@@ -17,12 +18,12 @@ if [ "$1" = "remote_database" ] && [ $# -eq 2 ]; then
   "$PARENT_PATH"/scripts/docker/generate-docker-compose remote $2
 
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
-  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/build/develop-compile
+  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
 
 elif [ "$*" = "local_database" ]; then
   "$PARENT_PATH"/scripts/docker/generate-docker-compose local
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
-  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/build/develop-compile
+  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
 
 elif [ "$*" = "create_image" ]; then
   "$PARENT_PATH"/scripts/docker/generate-docker-compose image
@@ -31,6 +32,9 @@ elif [ "$*" = "create_image" ]; then
   read -p "Insert docker hub password: " DOCKER_HUB_PASSWORD
   read -p "Insert docker hub repository: " DOCKER_HUB_REPOSITORY
   "$PARENT_PATH"/scripts/image/generateAndPushDockerImage $DOCKER_HUB_USERNAME $DOCKER_HUB_PASSWORD $DOCKER_HUB_REPOSITORY
+
+elif [ "$*" = "build" ]; then
+  "$PARENT_PATH"/scripts/compile/develop-compile
 
 else
   "$PARENT_PATH"/appserver -h

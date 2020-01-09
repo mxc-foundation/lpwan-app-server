@@ -10,30 +10,19 @@ import TitleBar from "../../components/TitleBar";
 import UserForm from "./UserForm";
 import UserStore from "../../stores/UserStore";
 
-const styles = theme => ({
-  [theme.breakpoints.down('sm')]: {
-    breadcrumb: {
-      fontSize: "1.1rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  [theme.breakpoints.up('sm')]: {
-    breadcrumb: {
-      fontSize: "1.25rem",
-      margin: "0rem",
-      padding: "0rem"
-    },
-  },
-  breadcrumbItemLink: {
-    color: "#71b6f9 !important"
-  }
-});
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 
 class CreateUser extends Component {
-  onSubmit = (user) => {
-    UserStore.create(user, user.password, [], resp => {
+  onSubmit = (newUserObject) => {
+    UserStore.create(newUserObject, resp => {
       this.props.history.push("/users");
     });
   }
@@ -46,6 +35,7 @@ class CreateUser extends Component {
         <Grid item xs={12}>
           <TitleBar noButtons>
             <Breadcrumb className={classes.breadcrumb}>
+              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
               <BreadcrumbItem>
                 <Link
                   className={classes.breadcrumbItemLink}

@@ -3,13 +3,21 @@ import { withRouter, Link } from "react-router-dom";
 
 import Modal from '../../components/Modal';
 import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
+
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import UpdateGatewayProfile from "./UpdateGatewayProfile";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class GatewayProfileLayout extends Component {
   constructor() {
@@ -43,6 +51,8 @@ class GatewayProfileLayout extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+
     if (this.state.gatewayProfile === undefined) {
       return (<div></div>);
     }
@@ -62,9 +72,13 @@ class GatewayProfileLayout extends Component {
             </Button>
           ]}
         >
-          <Breadcrumb>
-            <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
-            <BreadcrumbItem active>{this.state.gatewayProfile.gatewayProfile.name}</BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb} style={{ fontSize: "1.25rem", margin: "0rem" }}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+              `/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)
+            }</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
+            <BreadcrumbItem active>{`${this.state.gatewayProfile.gatewayProfile.name}`}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
         <Row>
@@ -75,4 +89,4 @@ class GatewayProfileLayout extends Component {
   }
 }
 
-export default withRouter(GatewayProfileLayout);
+export default withStyles(styles)(withRouter(GatewayProfileLayout));

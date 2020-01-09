@@ -16,6 +16,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import moment from "moment";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import TableCellLink from "../../components/TableCellLink";
@@ -149,7 +150,7 @@ class FUOTADeploymentDevices extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {

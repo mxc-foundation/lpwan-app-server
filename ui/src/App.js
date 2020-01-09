@@ -271,8 +271,8 @@ class App extends Component {
   }
 
   /**
-     * toggle Menu
-     */
+   * toggle Menu
+   */
   toggleMenu = (e) => {
     e.preventDefault();
     this.setState({ isCondensed: !this.state.isCondensed });
@@ -283,6 +283,12 @@ class App extends Component {
    */
   toggleRightSidebar = () => {
     document.body.classList.toggle("right-bar-enabled");
+  }
+
+  switchToSidebarId = (newSidebarId) => {
+    this.setState({
+      currentSidebarId: newSidebarId
+    })
   }
 
   logout = () => {
@@ -296,7 +302,8 @@ class App extends Component {
     let sideNav = null;
     let topbanner = null;
 
-    const { width, sessionInitialized, user, language } = this.state;
+    const { currentSidebarId, isCondensed, language, sessionInitialized, user, width } = this.state;
+
     const isMobile = width <= 800;
 
     let Layout = NonAuthLayout;
@@ -315,7 +322,7 @@ class App extends Component {
         /> 
         ); */
       topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
-      sideNav = <Sidebar isCondensed={this.state.isCondensed} {...this.props} />;
+      sideNav = <Sidebar isCondensed={isCondensed} currentSidebarId={currentSidebarId} switchToSidebarId={this.switchToSidebarId} {...this.props} />;
 
       // if user is logged in - set auth layout
       Layout = AuthLayout;
@@ -419,15 +426,64 @@ class App extends Component {
                 <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
 
                 <Route path="/modify-account/:organizationID" component={ModifyEthAccount} />
-                <Route path="/withdraw/:organizationID" component={Withdraw} />
-                <Route path="/topup/:organizationID" component={Topup} />
-                <Route path="/history/:organizationID" component={HistoryLayout} />
+                <Route path="/withdraw/:organizationID"
+                  render={props =>
+                    <Withdraw
+                      {...props}
+                      switchToSidebarId={this.switchToSidebarId}
+                    />
+                  }
+                />
+                <Route path="/topup/:organizationID"
+                  render={props =>
+                    <Topup
+                      {...props}
+                      switchToSidebarId={this.switchToSidebarId}
+                    />
+                  }
+                />
+                <Route path="/history/:organizationID"
+                  render={props =>
+                    <HistoryLayout
+                      {...props}
+                      switchToSidebarId={this.switchToSidebarId}
+                    />
+                  }
+                />
                 <Route exact path="/stake/:organizationID" component={StakeLayout} />
                 <Route exact path="/stake/:organizationID/set-stake" component={SetStake} />
-                <Route path="/control-panel/modify-account" component={SuperNodeEth} />
-                <Route path="/control-panel/withdraw" component={SuperAdminWithdraw} />
-                <Route path="/control-panel/history" component={SupernodeHistory} />
-                <Route path="/control-panel/system-settings" component={SystemSettings} />
+                <Route path="/control-panel/modify-account"
+                  render={props =>
+                    <SuperNodeEth
+                      {...props}
+                      switchToSidebarId={this.switchToSidebarId}
+                    />
+                  }
+                />
+                <Route path="/control-panel/withdraw"
+                  render={props =>
+                    <SuperAdminWithdraw
+                      {...props}
+                      switchToSidebarId={this.switchToSidebarId}
+                    />
+                  }
+                />
+                <Route path="/control-panel/history"
+                  render={props =>
+                    <SupernodeHistory
+                      {...props}
+                      switchToSidebarId={this.switchToSidebarId}
+                    />
+                  }
+                />
+                <Route path="/control-panel/system-settings"
+                  render={props =>
+                    <SystemSettings
+                      {...props}
+                      switchToSidebarId={this.switchToSidebarId}
+                    />
+                  }
+                />
 
                 <Route exact path="/search" component={Search} />
               </Switch>

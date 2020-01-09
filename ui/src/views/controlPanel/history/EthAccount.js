@@ -3,6 +3,7 @@ import AdvancedTable from "../../../components/AdvancedTable";
 import Loader from "../../../components/Loader";
 
 import i18n, { packageNS } from '../../../i18n';
+import { MAX_DATA_LIMIT } from '../../../util/pagination';
 import HistoryStore from "../../../stores/HistoryStore";
 
 import { ETHER } from "../../../util/CoinType"
@@ -71,7 +72,7 @@ class SuperNodeEthAccount extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {

@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 
 import Admin from "../../components/Admin";
@@ -14,6 +13,14 @@ import SessionStore from "../../stores/SessionStore";
 import UpdateServiceProfile from "./UpdateServiceProfile";
 import Modal from "../../components/Modal";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class ServiceProfileLayout extends Component {
   constructor() {
@@ -66,6 +73,9 @@ class ServiceProfileLayout extends Component {
   };
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return (
       this.state.serviceProfile ? <React.Fragment>
         {this.state.nsDialog && <Modal
@@ -85,10 +95,31 @@ class ServiceProfileLayout extends Component {
             </Admin>
           }
         >
-
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
-          <Breadcrumb>
-            <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/service-profiles`}>{i18n.t(`${packageNS}:tr000069`)}</Link></BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                  Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}/service-profiles`}
+              >
+                {i18n.t(`${packageNS}:tr000069`)}
+              </Link>
+            </BreadcrumbItem>
             <BreadcrumbItem active>{this.state.serviceProfile.serviceProfile.name}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -107,4 +138,4 @@ class ServiceProfileLayout extends Component {
   }
 }
 
-export default withRouter(ServiceProfileLayout);
+export default withStyles(styles)(withRouter(ServiceProfileLayout));

@@ -16,7 +16,7 @@ import Modal from "../../../components/m2m/ModalM2M";
 //import WithdrawBalanceInfo from "./WithdrawBalanceInfo";
 import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import styles from "./DeviceStylesM2M"
+import styles from "./DeviceStylesM2M";
 import { DV_INACTIVE, DV_FREE_GATEWAYS_LIMITED, DV_WHOLE_NETWORK } from "../../../util/Data"
 import OrganizationDevices from "../OrganizationDevices";
 
@@ -140,6 +140,7 @@ class DeviceLayoutM2M extends Component {
 
   render() {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const { classes } = this.props;
     const { loading } = this.state;
 
     return (

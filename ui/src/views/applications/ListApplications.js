@@ -4,6 +4,7 @@ import { Card, CardBody, Row, Col } from 'reactstrap';
 import Grid from "@material-ui/core/Grid";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
@@ -97,7 +98,7 @@ class ListApplications extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {

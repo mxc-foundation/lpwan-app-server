@@ -1,19 +1,20 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Container, Row, Col, Card, CardBody,
+import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
   TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
 import theme from "../../theme";
 import i18n, { packageNS } from "../../i18n";
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 import DeviceAdmin from "../../components/DeviceAdmin";
 import Admin from "../../components/Admin";
 
-const styles = {
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {
   tabs: {
     borderBottom: "1px solid " + theme.palette.divider,
     height: "48px",
@@ -23,6 +24,11 @@ const styles = {
     backgroundColor: "#FFFFFF",
     borderRadius: "5px"
   }
+};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
 };
 
 class ApplicationDevices extends Component {
@@ -55,11 +61,11 @@ class ApplicationDevices extends Component {
 
   render() {
     const { activeMainTabAppIndex } = this.state;
-    const { admin, application, children, deleteApplication, mainTabAppIndex } = this.props;
+    const { admin, application, children, classes, deleteApplication, mainTabAppIndex } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return(
-      <Container>
+      <Container fluid>
         <Row>
           <Col xs={12}>
             <TitleBar
@@ -73,11 +79,12 @@ class ApplicationDevices extends Component {
                 </Admin>
               }
             >
-              <TitleBarTitle to={`/organizations/${currentOrgID}/applications`} title={i18n.t(`${packageNS}:tr000076`)} />
-              <span>&nbsp;</span>
-              <TitleBarTitle title="/" />
-              <span>&nbsp;</span>
-              <TitleBarTitle title={application.application.name} />
+              <Breadcrumb className={classes.breadcrumb}>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications`
+                }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem active>{application.application.name}</BreadcrumbItem>
+              </Breadcrumb>
             </TitleBar>
           </Col>
         </Row>

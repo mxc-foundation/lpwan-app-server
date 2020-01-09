@@ -2,11 +2,10 @@ import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
 import classNames from "classnames";
 import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
 import GatewayAdmin from "../../components/GatewayAdmin";
 import GatewayStore from "../../stores/GatewayStore";
@@ -16,6 +15,14 @@ import UpdateGateway from "./UpdateGateway";
 import GatewayDiscovery from "./GatewayDiscovery";
 import GatewayFrames from "./GatewayFrames";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class GatewayLayout extends Component {
   constructor() {
@@ -88,6 +95,9 @@ class GatewayLayout extends Component {
   }
 
   render() {
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return (
       this.state.gateway ? <React.Fragment>
         <TitleBar
@@ -101,10 +111,31 @@ class GatewayLayout extends Component {
             />
           </GatewayAdmin>}
         >
-
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000063`)} />
-          <Breadcrumb>
-            <BreadcrumbItem><Link to={`/organizations/${this.props.match.params.organizationID}/gateways`}>{i18n.t(`${packageNS}:tr000063`)}</Link></BreadcrumbItem>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                  Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}/gateways`}
+              >
+                {i18n.t(`${packageNS}:tr000063`)}
+              </Link>
+            </BreadcrumbItem>
             <BreadcrumbItem active>{this.state.gateway.gateway.name}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -160,4 +191,4 @@ class GatewayLayout extends Component {
   }
 }
 
-export default withRouter(GatewayLayout);
+export default withStyles(styles)(withRouter(GatewayLayout));
