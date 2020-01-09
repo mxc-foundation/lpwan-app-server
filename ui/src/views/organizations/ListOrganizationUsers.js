@@ -7,6 +7,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import { Breadcrumb, BreadcrumbItem, Button, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 
 import OrganizationStore from "../../stores/OrganizationStore";
@@ -90,7 +91,7 @@ class ListOrganizationUsers extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {

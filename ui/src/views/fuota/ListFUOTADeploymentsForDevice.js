@@ -13,6 +13,7 @@ import TableBody from '@material-ui/core/TableBody';
 import moment from "moment";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import DeviceAdmin from "../../components/DeviceAdmin";
@@ -147,7 +148,7 @@ class ListFUOTADeploymentsForDevice extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {

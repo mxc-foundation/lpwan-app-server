@@ -9,6 +9,7 @@ import Refresh from "mdi-material-ui/Refresh";
 import Delete from "mdi-material-ui/Delete";
 
 import i18n, { packageNS } from '../../../../i18n';
+import { MAX_DATA_LIMIT } from '../../../../util/pagination';
 import AdvancedTable from "../../../../components/AdvancedTable";
 import Loader from "../../../../components/Loader";
 import DeviceQueueStore from "../../../../stores/DeviceQueueStore";
@@ -65,7 +66,7 @@ class QueueCard extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
 
     DeviceQueueStore.on("enqueue", this.getQueue);
   }
