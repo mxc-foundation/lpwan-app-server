@@ -90,9 +90,8 @@ class ListUsers extends Component {
    */
   getPage = (limit, offset) => {
     this.setState({ loading: true });
-console.log('numbers ', limit, offset);
+
     UserStore.list("", limit, offset, (res) => {
-      console.log('res.result ', res.result);
       const object = this.state;
       object.totalSize = res.totalCount;
       object.data = res.result;
