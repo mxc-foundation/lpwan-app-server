@@ -54,6 +54,7 @@ build_image()
   echo "docker push image"
   docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
   docker push $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
+  docker image rm $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
 
   echo "Build image successfully, rm error.txt"
   # delete error message only when everything is done successfully
