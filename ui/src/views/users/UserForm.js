@@ -97,7 +97,6 @@ class UserForm extends Component {
           }
           validateOnBlur
           validateOnChange
-          validateOnMount
           validationSchema={this.formikFormSchema}
           // Formik Nested Schema Example https://codesandbox.io/s/y7q2v45xqx
           onSubmit={
