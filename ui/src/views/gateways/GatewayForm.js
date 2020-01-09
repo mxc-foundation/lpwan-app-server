@@ -71,13 +71,14 @@ class GatewayForm extends Component {
     return arr;
   }
 
+  // key: fpgaID, value: fineTimestampKey
   convertArrayToObj = (arr, key) => {
     const formatKey = (k) => k.trim().split(' ').join('_');
 
     let asObject = {};
     for (const el of arr.object[key]) {
-      if (el.key !== "") {
-        asObject[formatKey(el.key)] = el.value;
+      if (el.fpgaID !== "") {
+        asObject[formatKey(el.fpgaID)] = el.fineTimestampKey;
       }
     };
 
@@ -380,6 +381,83 @@ class GatewayForm extends Component {
                     <Form onSubmit={handleSubmit} noValidate>
                       {isLoading && <Loader light />}
 
+                      {!this.props.update &&
+                        <>
+                          <Field
+                            id="networkServerID"
+                            name="object.networkServerID"
+                            type="text"
+                            value={values.object.networkServerID}
+                            onChange={this.onNetworkSelect}
+                            onBlur={handleBlur}
+                            label={i18n.t(`${packageNS}:tr000047`)}
+                            helpText={i18n.t(`${packageNS}:tr000223`)}
+                            // value={values.object.networkServerID}
+                            // getOption={this.getNetworkServerOption}
+                            getOptions={this.getNetworkServerOptions}
+                            setFieldValue={setFieldValue}
+                            inputProps={{
+                              clearable: true,
+                              cache: false,
+                            }}
+                            component={AsyncAutoComplete}
+                            className={
+                              errors.object && errors.object.networkServerID
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                          {
+                            errors.object && errors.object.networkServerID
+                              ? (
+                                <div
+                                  className="invalid-feedback"
+                                  style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                                >
+                                  {errors.object.networkServerID}
+                                </div>
+                              ) : null
+                          }
+                        </>
+                      }
+
+                      <Field
+                        id="gatewayProfileID"
+                        name="object.gatewayProfileID"
+                        type="text"
+                        value={values.object.gatewayProfileID}
+                        // onChange={handleChange}
+                        onChange={this.onGatewayProfileIDSelect}
+                        onBlur={handleBlur}
+                        label={i18n.t(`${packageNS}:tr000224`)}
+                        helpText={i18n.t(`${packageNS}:tr000227`)}
+                        // value={values.object.gatewayProfileID}
+                        getOption={this.getGatewayProfileOption}
+                        getOptions={this.getGatewayProfileOptions}
+                        setFieldValue={setFieldValue}
+                        inputProps={{
+                          clearable: true,
+                          cache: false,
+                        }}
+                        component={AsyncAutoComplete}
+                        className={
+                          errors.object && errors.object.gatewayProfileID
+                            ? 'is-invalid form-control'
+                            : ''
+                        }
+                      />
+                      {
+                        errors.object && errors.object.gatewayProfileID
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {errors.object.gatewayProfileID}
+                            </div>
+                          ) : null
+                      }
+
                       <Field
                         id="name"
                         name="object.name"
@@ -463,83 +541,6 @@ class GatewayForm extends Component {
                               ) : null
                           } */}
                         </>
-                      }
-
-                      {!this.props.update &&
-                        <>
-                          <Field
-                            id="networkServerID"
-                            name="object.networkServerID"
-                            type="text"
-                            value={values.object.networkServerID}
-                            onChange={this.onNetworkSelect}
-                            onBlur={handleBlur}
-                            label={i18n.t(`${packageNS}:tr000047`)}
-                            helpText={i18n.t(`${packageNS}:tr000223`)}
-                            // value={values.object.networkServerID}
-                            getOption={this.getNetworkServerOption}
-                            getOptions={this.getNetworkServerOptions}
-                            setFieldValue={setFieldValue}
-                            inputProps={{
-                              clearable: true,
-                              cache: false,
-                            }}
-                            component={AsyncAutoComplete}
-                            className={
-                              errors.object && errors.object.networkServerID
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                          {
-                            errors.object && errors.object.networkServerID
-                              ? (
-                                <div
-                                  className="invalid-feedback"
-                                  style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                                >
-                                  {errors.object.networkServerID}
-                                </div>
-                              ) : null
-                          }
-                        </>
-                      }
-
-                      <Field
-                        id="gatewayProfileID"
-                        name="object.gatewayProfileID"
-                        type="text"
-                        value={values.object.gatewayProfileID}
-                        // onChange={handleChange}
-                        onChange={this.onGatewayProfileIDSelect}
-                        onBlur={handleBlur}
-                        label={i18n.t(`${packageNS}:tr000224`)}
-                        helpText={i18n.t(`${packageNS}:tr000227`)}
-                        // value={values.object.gatewayProfileID}
-                        getOption={this.getGatewayProfileOption}
-                        getOptions={this.getGatewayProfileOptions}
-                        setFieldValue={setFieldValue}
-                        inputProps={{
-                          clearable: true,
-                          cache: false,
-                        }}
-                        component={AsyncAutoComplete}
-                        className={
-                          errors.object && errors.object.gatewayProfileID
-                            ? 'is-invalid form-control'
-                            : ''
-                        }
-                      />
-                      {
-                        errors.object && errors.object.gatewayProfileID
-                          ? (
-                            <div
-                              className="invalid-feedback"
-                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                            >
-                              {errors.object.gatewayProfileID}
-                            </div>
-                          ) : null
                       }
 
                       <Field
