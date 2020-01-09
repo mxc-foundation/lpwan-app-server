@@ -15,14 +15,10 @@ class UserStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/user.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(user, password, organizations, callbackFunc) {
+  create(newUserObject, callbackFunc) {
     this.swagger.then(client => {
       client.apis.UserService.Create({
-        body: {
-          organizations: organizations,
-          password: password,
-          user: user,
-        },
+        body: newUserObject,
       })
       .then(checkStatus)
       .then(resp => {
