@@ -60,7 +60,7 @@ Again, after building, the service will start running with config file ./configu
 
 You can visit http://localhost:8080 in your browser to preview the service.
 
-> __Hint:__ if you have any difficulty building UI, try inside of container:  
+> __Hint-1:__ if you have any difficulty building UI, try inside of container:  
 > ```bash
 > cd $LPWAN-APP-SERVER-PATH/ui
 > rm package-lock.json
@@ -68,6 +68,12 @@ You can visit http://localhost:8080 in your browser to preview the service.
 > cd ..
 > ./appserver build
 > ```
+
+> __Hint-2:__ if you wanna connect mxprotcol-server, you need to do __outside__ container:
+>```bash
+> docker network connect NETWORK_NAME_APPSERVER MXPROTOCOL_CONTGAINER_ID
+> docker network connect MXPROTOCOL_CONTGAINER_ID NETWORK_NAME_APPSERVER 
+>```
 
 # Development
 ## Existing or new feature branch
