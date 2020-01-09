@@ -1,4 +1,4 @@
-const MAX_DATA_LIMIT = Number.MAX_SAFE_INTEGER;
+const MAX_DATA_LIMIT = 2000000000;
 
 export {
   MAX_DATA_LIMIT
