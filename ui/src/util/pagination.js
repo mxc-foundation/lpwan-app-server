@@ -1,0 +1,5 @@
+const MAX_DATA_LIMIT = 2000000000;
+
+export {
+  MAX_DATA_LIMIT
+}

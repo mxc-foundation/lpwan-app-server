@@ -7,6 +7,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import { Button, Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import Loader from "../../components/Loader";
@@ -98,7 +99,8 @@ class ListUsers extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    // Note: If you do not provide a limit, then nothing is returned
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
