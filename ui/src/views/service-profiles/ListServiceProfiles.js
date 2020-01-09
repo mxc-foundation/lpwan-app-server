@@ -100,7 +100,7 @@ class ListServiceProfiles extends Component {
           <Col>
             <Card>
               <CardBody>
-                <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+                <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
               </CardBody>
             </Card>
           </Col>
