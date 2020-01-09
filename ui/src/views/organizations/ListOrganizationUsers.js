@@ -47,7 +47,8 @@ class ListOrganizationUsers extends Component {
     super(props);
 
     this.state = {
-      data: []
+      data: [],
+      totalSize: 0
     }
   }
 
@@ -75,7 +76,11 @@ class ListOrganizationUsers extends Component {
   getPage = (limit, offset) => {
     this.setState({ loading: true });
     OrganizationStore.listUsers(this.props.match.params.organizationID, limit, offset, (res) => {
-      this.setState({ data: res.result, loading: false });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -104,7 +109,7 @@ class ListOrganizationUsers extends Component {
             <Card>
               <CardBody>
                 <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
-                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
 
               </CardBody>
             </Card>

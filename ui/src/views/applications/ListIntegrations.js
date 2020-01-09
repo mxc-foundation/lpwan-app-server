@@ -55,7 +55,8 @@ class ListIntegrations extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -81,10 +82,11 @@ class ListIntegrations extends Component {
     this.setState({ loading: true });
 
     ApplicationStore.listIntegrations("", this.props.match.params.applicationID, currentOrgID, limit, offset, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -119,6 +121,7 @@ class ListIntegrations extends Component {
             keyField="kind"
             onTableChange={this.handleTableChange}
             rowsPerPage={10}
+            totalSize={this.state.totalSize}
             searchEnabled={false}
           />
         </div>

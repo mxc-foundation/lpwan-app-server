@@ -24,7 +24,8 @@ class ListOrganizations extends Component {
     this.canHaveGatewaysColumn = this.canHaveGatewaysColumn.bind(this);
 
     this.state = {
-      data: []
+      data: [],
+      totalSize: 0
     }
   }
 
@@ -87,7 +88,11 @@ class ListOrganizations extends Component {
 
   getPage(limit, offset) {
     OrganizationStore.list("", limit, offset,  (res) => {
-      this.setState({ data: res.result });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -112,7 +117,7 @@ class ListOrganizations extends Component {
         <Col>
           <Card>
             <CardBody>
-              <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
+              <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
             </CardBody>
           </Card>
         </Col>

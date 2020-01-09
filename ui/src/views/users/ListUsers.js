@@ -77,7 +77,8 @@ class ListUsers extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
   /**
@@ -101,10 +102,11 @@ class ListUsers extends Component {
     this.setState({ loading: true });
 
     UserStore.list("", limit, offset, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -114,7 +116,7 @@ class ListUsers extends Component {
 
   render() {
     const { classes } = this.props;
-
+    
     return (
       <React.Fragment>
         <TitleBar
@@ -149,6 +151,7 @@ class ListUsers extends Component {
                 onTableChange={this.handleTableChange}
                 searchEnabled={false}
                 rowsPerPage={10}
+                totalSize={this.state.totalSize}
               />
             </Card>
           </Col>

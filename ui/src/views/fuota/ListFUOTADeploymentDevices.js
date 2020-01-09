@@ -28,8 +28,8 @@ const FUOTADeploymentDeviceNameColumn = (cell, row, index, extraData) => {
   const applicationId = extraData['applicationId'];
   return <Link to={
     applicationId
-    ? `/organizations/${currentOrgID}/applications/${applicationId}/devices/${row.devEUI}`
-    : `/organizations/${currentOrgID}/devices/${row.devEUI}`
+      ? `/organizations/${currentOrgID}/applications/${applicationId}/devices/${row.devEUI}`
+      : `/organizations/${currentOrgID}/devices/${row.devEUI}`
   }>{row.deviceName}</Link>;
 }
 
@@ -48,7 +48,8 @@ class FUOTADeploymentDevices extends Component {
     this.state = {
       detailDialog: false,
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     };
   }
 
@@ -124,10 +125,11 @@ class FUOTADeploymentDevices extends Component {
       limit: limit,
       offset: offset,
     }, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
@@ -160,7 +162,7 @@ class FUOTADeploymentDevices extends Component {
       fddUpdatedAt = moment(data[0].updatedAt).format('lll');
     }
 
-    return(
+    return (
       <React.Fragment>
         {data[0] && <Dialog
           open={this.state.detailDialog}
@@ -198,6 +200,7 @@ class FUOTADeploymentDevices extends Component {
             keyField="devEUI"
             onTableChange={this.handleTableChange}
             rowsPerPage={10}
+            totalSize={this.state.totalSize}
             searchEnabled={false}
           />
         </div>

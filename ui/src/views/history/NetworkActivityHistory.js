@@ -52,7 +52,8 @@ class NetworkActivityHistory extends Component {
     this.getPage = this.getPage.bind(this);
     this.state = {
       data: [],
-      stats: {}
+      stats: {},
+      totalSize: 0
     }
   }
 
@@ -75,8 +76,12 @@ class NetworkActivityHistory extends Component {
    */
   getPage = (limit, offset) => {
     this.setState({ loading: true });
-    HistoryStore.getWalletUsageHist(this.props.organizationID, offset, limit, data => {
-      this.setState({ data: data.walletUsageHis, loading: false });
+    HistoryStore.getWalletUsageHist(this.props.organizationID, offset, limit, res => {
+      const object = this.state;
+      object.totalSize = res.count;
+      object.data = res.walletUsageHis;
+      object.loading = false;
+      this.setState({object});
     }); 
   }
 
@@ -89,7 +94,7 @@ class NetworkActivityHistory extends Component {
       <div className="position-relative">
         {this.state.loading && <Loader />}
         <AdvancedTable data={this.state.data} columns={getColumns()}
-          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
       </div>
     );
   }

@@ -121,7 +121,8 @@ class ListGatewaysTable extends Component {
     this.getGateWayStats = this.getGateWayStats.bind(this);
     this.state = {
       data: [],
-      stats: {}
+      stats: {},
+      totalSize: 0
     }
   }
 
@@ -145,7 +146,11 @@ class ListGatewaysTable extends Component {
   getPage = (limit, offset) => {
     this.setState({ loading: true });
     GatewayStore.list("", this.props.organizationID, limit, offset, (res) => {
-      this.setState({ data: res.result, loading: false });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -179,7 +184,7 @@ class ListGatewaysTable extends Component {
       <div className="position-relative">
         {this.state.loading && <Loader />}
         <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID, this.state.stats)}
-          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
       </div>
     );
   }

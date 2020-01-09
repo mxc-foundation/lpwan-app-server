@@ -126,7 +126,7 @@ class Registration extends Component {
             <Col md={8} lg={6} xl={5}>
               <div className="text-center mb-3">
                 <Link to="/">
-                  <span><img src="/logo/mxc_logo-social.png" alt="" height="72" /></span>
+                  <span><img src="/logo/MATCHX-SUPERNODE2.png" alt="" height="54" /></span>
                 </Link>
               </div>
 
