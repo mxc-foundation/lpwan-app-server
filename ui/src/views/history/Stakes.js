@@ -5,6 +5,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import StakeStore from "../../stores/StakeStore";
 
 const StartColumn = (cell, row, index, extraData) => {
@@ -90,7 +91,7 @@ class Stakes extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {

@@ -11,6 +11,7 @@ import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
@@ -169,7 +170,7 @@ class ListGatewaysTable extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   componentDidUpdate(prevProps, prevState) {

@@ -5,6 +5,7 @@ import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import AdvancedTable from "../../components/AdvancedTable";
 
@@ -59,7 +60,7 @@ class ListServiceProfiles extends Component {
   }
 
   componentDidMount() {
-    this.getPage(this.props.match.params.organizationID, 10);
+    this.getPage(this.props.match.params.organizationID, MAX_DATA_LIMIT);
   }
 
   render() {
