@@ -7,6 +7,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 
 import i18n, { packageNS } from '../../i18n';
+import Admin from '../../components/Admin';
 import { ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
 import defaultProfilePic from '../../assets/images/users/profile-icon.png';
@@ -91,7 +92,8 @@ class UserForm extends Component {
                 email: object.email || "",
                 note: object.note || "",
                 password: object.password || "",
-                isAdmin: object.isAdmin || false
+                isAdmin: object.isAdmin || false,
+                isActive: object.isActive || false
               }
             }
           }
@@ -317,21 +319,39 @@ class UserForm extends Component {
                       </>
                     }
 
-                    <FormGroup check>
-                      <FormControlLabel
-                        label={i18n.t(`${packageNS}:tr000133`)}
-                        control={
-                          <Checkbox
-                            id="isAdmin"
-                            name="object.isAdmin"
-                            onChange={handleChange}
-                            color="primary"
-                            value={!!values.object.isAdmin}
-                            checked={!!values.object.isAdmin}
-                          />
-                        }
-                      />
-                    </FormGroup>
+                    <Admin>
+                      <FormGroup check>
+                        <FormControlLabel
+                          label={i18n.t(`${packageNS}:tr000133`)}
+                          control={
+                            <Checkbox
+                              id="isAdmin"
+                              name="object.isAdmin"
+                              onChange={handleChange}
+                              color="primary"
+                              value={!!values.object.isAdmin}
+                              checked={!!values.object.isAdmin}
+                            />
+                          }
+                        />
+                      </FormGroup>
+
+                      <FormGroup check>
+                        <FormControlLabel
+                          label={i18n.t(`${packageNS}:tr000132`)}
+                          control={
+                            <Checkbox
+                              id="isActive"
+                              name="object.isActive"
+                              onChange={handleChange}
+                              color="primary"
+                              value={!!values.object.isActive}
+                              checked={!!values.object.isActive}
+                            />
+                          }
+                        />
+                      </FormGroup>
+                    </Admin>
 
                     <div style={{ margin: "20px 0 10px 20px" }}>
                       {isValidating
