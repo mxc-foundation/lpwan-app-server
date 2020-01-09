@@ -158,7 +158,6 @@ class DeviceForm extends Component {
       // Obtain the existing tags that are already in the local state
       let existingStateTags = prevState.object.tags;
       let existingStateTagsAsArray = this.convertObjToArray(existingStateTags);
-      console.log('existingStateTagsAsArray', existingStateTagsAsArray)
 
       // Retrieve the tags array passed as props from the parent component
       let propTags = propAsArray; // this.props.object.tags;
