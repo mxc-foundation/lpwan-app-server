@@ -95,12 +95,14 @@ class ListOrganizations extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage;
+    
     this.getPage(sizePerPage, offset);
   };
 
   getPage(limit, offset) {
     OrganizationStore.list("", limit, offset,  (res) => {
+      console.log('res', res);
       const object = this.state;
       object.totalSize = res.totalCount;
       object.data = res.result;

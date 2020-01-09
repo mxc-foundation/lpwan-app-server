@@ -59,7 +59,7 @@ class ListGatewayProfiles extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
     this.getPage(sizePerPage, offset);
   }
 

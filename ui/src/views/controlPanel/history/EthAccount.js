@@ -47,7 +47,7 @@ class SuperNodeEthAccount extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
