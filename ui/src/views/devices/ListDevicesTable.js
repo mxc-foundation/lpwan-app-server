@@ -176,7 +176,8 @@ class ListDevicesTable extends Component {
 
     this.state = {
       data: [],
-      stats: {}
+      stats: {},
+      totalSize: 0
     }
   }
 
@@ -213,7 +214,12 @@ class ListDevicesTable extends Component {
       // we need to filter so we only list devices that are part of the current Application
       const getOnlyDevicesFromCurrentApplication = (devices) =>
         devices.filter(device => device.applicationID === currentApplicationID)
-      this.setState({ data: getOnlyDevicesFromCurrentApplication(res.result), loading: false });
+        
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = getOnlyDevicesFromCurrentApplication(res.result);
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -260,6 +266,7 @@ class ListDevicesTable extends Component {
           keyField="devEUI"
           onTableChange={this.handleTableChange}
           rowsPerPage={10}
+          totalSize={this.state.totalSize}
           searchEnabled={false}
         />
       </div>

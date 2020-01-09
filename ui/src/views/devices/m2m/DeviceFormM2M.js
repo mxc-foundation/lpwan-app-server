@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { getLoraHost } from "../../../util/M2mUtil"; 
+import { getLoraHost } from "../../../util/M2mUtil";
 //import Wallet from "mdi-material-ui/OpenInNew";
 //import Typography from '@material-ui/core/Typography';
 import { DV_MODE_OPTION, DV_INACTIVE } from "../../../util/Data"
@@ -21,13 +21,13 @@ import SwitchLabels from "../../../components/m2m/SwitchM2M";
 
 const styles = {
   flex: {
-      display: 'flex',
-      alignItems: 'center',
+    display: 'flex',
+    alignItems: 'center',
   },
   flex2: {
     left: 'calc(100%/3)',
   },
-  maxW:{
+  maxW: {
     maxWidth: 120
   }
 };
@@ -37,7 +37,7 @@ const DeviceM2MNameColumn = (cell, row, index, extraData) => {
   const currentApplicationID = extraData['currentApplicationID'] || row.applicationId; // Here we get the applicationId from the fetched data (elsewhere we get it from URL params or props)
 
   // return <Link to={`/organizations/${currentOrgID}/applications/${currentApplicationID ? currentApplicationID : 0}/devices/${row.devEui}`}>{row.name}</Link>;
-  return currentApplicationID 
+  return currentApplicationID
     ? <Link to={`/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${row.devEui}`}>{row.name}</Link>
     : <Link to={`/organizations/${currentOrgID}/devices/${row.devEui}`}>{row.name}</Link>;
 }
@@ -54,7 +54,8 @@ class DeviceFormM2M extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -86,7 +87,7 @@ class DeviceFormM2M extends Component {
       </span>
     );
   }
-  
+
   DeviceM2MModeColumn = (cell, row, index, extraData) => {
     /*
     let dValue = null;
@@ -106,7 +107,7 @@ class DeviceFormM2M extends Component {
     */
     const options = DV_MODE_OPTION;
     const dValue = options[1];
-    
+
     let on = (row.mode !== DV_INACTIVE) ? true : false;
     const isDisabled = on ? false : true;
     return (
@@ -182,30 +183,30 @@ class DeviceFormM2M extends Component {
 
     DeviceStore.getDeviceList(this.props.match.params.organizationID, offset, limit, (res) => {
       if (this._isMounted) {
-        this.setState({
-          data: res.devProfile,
-          loading: false,
-          totalCount: parseInt(res.count),
-        });
+        const object = this.state;
+        object.totalSize = res.count;
+        object.data = res.devProfile;
+        object.loading = false;
+        this.setState({ object });
       }
     });
   }
 
   onSelectChange = (e) => {
     const device = {
-      dvId: e.dvId, 
+      dvId: e.dvId,
       dvMode: e.target.value
     }
-  
+
     this.props.onSelectChange(device);
   }
 
   onSwitchChange = (dvId, available, e) => {
     const device = {
-      dvId, 
+      dvId,
       available
     }
-  
+
     this.props.onSwitchChange(device, e);
   }
 
@@ -216,7 +217,7 @@ class DeviceFormM2M extends Component {
     const { loading: loadingProps } = this.props;
     const isLoading = (loadingState || loadingProps);
 
-    return(
+    return (
       <React.Fragment>
         <div className="position-relative">
           {isLoading && <Loader />}
@@ -226,6 +227,7 @@ class DeviceFormM2M extends Component {
             keyField="id"
             onTableChange={this.handleTableChange}
             rowsPerPage={10}
+            totalSize={this.state.totalSize}
             searchEnabled={false}
           />
         </div>

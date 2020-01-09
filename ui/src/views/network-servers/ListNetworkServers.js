@@ -51,7 +51,8 @@ class ListNetworkServers extends Component {
     this.getPage = this.getPage.bind(this);
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -76,10 +77,11 @@ class ListNetworkServers extends Component {
     const defaultOrgId = 0;
     this.setState({ loading: true });
     NetworkServerStore.list(defaultOrgId, limit, offset, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -112,7 +114,7 @@ class ListNetworkServers extends Component {
         <Row>
           <Col>
             <Card className="shadow-sm">
-              <CardBody className="position-relative">
+              {/* <CardBody className="position-relative"> */}
                 {this.state.loading && <Loader />}
                 <AdvancedTable
                   data={this.state.data}
@@ -120,9 +122,10 @@ class ListNetworkServers extends Component {
                   keyField="id"
                   onTableChange={this.handleTableChange}
                   rowsPerPage={10}
+                  totalSize={this.state.totalSize}
                   searchEnabled={false}
                 />
-              </CardBody>
+              {/* </CardBody> */}
             </Card>
           </Col>
         </Row>

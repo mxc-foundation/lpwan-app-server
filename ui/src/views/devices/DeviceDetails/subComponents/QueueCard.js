@@ -62,6 +62,7 @@ class QueueCard extends Component {
 
     this.state = {
       data: [],
+      totalSize: 0
     };
   }
 
@@ -106,11 +107,12 @@ class QueueCard extends Component {
   getQueue = () => {
     this.setState({ loading: true });
 
-    DeviceQueueStore.list(this.props.match.params.devEUI, resp => {
-      this.setState({
-        data: resp.deviceQueueItems,
-        loading: false
-      });
+    DeviceQueueStore.list(this.props.match.params.devEUI, res => {
+      const object = this.state;
+      //object.totalSize = res.totalCount;
+      object.data = res.deviceQueueItems;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -162,6 +164,7 @@ class QueueCard extends Component {
               keyField="devEUI"
               onTableChange={this.handleTableChange}
               rowsPerPage={10}
+              //totalSize={this.state.totalSize}
               searchEnabled={false}
             />
           </CardContent>

@@ -97,7 +97,8 @@ class ListFUOTADeploymentsForApplication extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -126,10 +127,11 @@ class ListFUOTADeploymentsForApplication extends Component {
       limit: limit,
       offset: offset,
     }, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
@@ -167,6 +169,7 @@ class ListFUOTADeploymentsForApplication extends Component {
             keyField="id"
             onTableChange={this.handleTableChange}
             rowsPerPage={10}
+            totalSize={this.state.totalSize}
             searchEnabled={false}
           />
         </div>

@@ -35,7 +35,8 @@ class ListOrganizations extends Component {
     this.canHaveGatewaysColumn = this.canHaveGatewaysColumn.bind(this);
 
     this.state = {
-      data: []
+      data: [],
+      totalSize: 0
     }
   }
 
@@ -100,7 +101,11 @@ class ListOrganizations extends Component {
 
   getPage(limit, offset) {
     OrganizationStore.list("", limit, offset,  (res) => {
-      this.setState({ data: res.result });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 

@@ -127,7 +127,7 @@ class Login extends Component {
       open: true,
       accessOn: false,
       isVerified: false,
-      logoPath: "/logo/mxc_logo-social.png",
+      logoPath: "/logo/MATCHX-SUPERNODE2.png",
       loading: false,
       showLoginContainer: true
     };
@@ -209,7 +209,7 @@ class Login extends Component {
         {this.state.showLoginContainer && <div className="login-form-container">
           <div className="d-flex align-items-center w-100 h-100 p-2 p-sm-3 mx-auto">
             <div className="w-100">
-              <img src={this.state.logoPath} className="mx-auto d-block img-fluid logo" alt={i18n.t(`${packageNS}:tr000051`)} />
+              <img src={this.state.logoPath} className="mx-auto d-block img-fluid logo" alt={i18n.t(`${packageNS}:tr000051`)} height="54" />
 
               <div className="mt-2">
                 <Card className="shadow-sm">

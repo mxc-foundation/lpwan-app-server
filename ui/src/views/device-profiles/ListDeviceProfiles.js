@@ -51,7 +51,8 @@ class ListDeviceProfiles extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -76,10 +77,11 @@ class ListDeviceProfiles extends Component {
 
     // FIXME - should we be associating the Device Profile optionally with an Application ID?
     DeviceProfileStore.list(currentOrgID, 0, limit, offset, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -122,6 +124,7 @@ class ListDeviceProfiles extends Component {
                 keyField="id"
                 onTableChange={this.handleTableChange}
                 rowsPerPage={10}
+                totalSize={this.state.totalSize}
                 searchEnabled={false}
               />
             </Card>

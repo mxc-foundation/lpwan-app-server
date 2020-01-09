@@ -9,7 +9,8 @@ class AdvancedTable extends Component {
     const { SearchBar } = Search;
     const { ExportCSVButton } = CSVExport;
     const rowsPerPage = this.props.rowsPerPage || 10;
-    
+    const totalSize = this.props.totalSize;
+
     return (
       <React.Fragment>
         <ToolkitProvider
@@ -26,20 +27,19 @@ class AdvancedTable extends Component {
                 {this.props.searchEnabled && <Col>
                   <SearchBar {...props.searchProps} />
                 </Col>}
-
                 {this.props.exportEnabled && <Col className="text-right">
                   <ExportCSVButton {...props.csvProps} className="btn btn-primary">{this.props.exportButtonLabel}</ExportCSVButton>
                 </Col>}
               </Row>}
-
               <BootstrapTable
                 {...props.baseProps}
                 remote
-                onTableChange={ this.props.onTableChange }
+                onTableChange={this.props.onTableChange}
                 bordered={false}
-                pagination={paginationFactory({ sizePerPage: rowsPerPage, hideSizePerPage: true })}
+                pagination={paginationFactory({ sizePerPage: rowsPerPage, hideSizePerPage: true, totalSize })}
                 wrapperClasses="table-responsive"
               />
+
             </React.Fragment>
           )}
         </ToolkitProvider>
