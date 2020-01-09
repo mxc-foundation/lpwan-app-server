@@ -54,11 +54,13 @@ class UserForm extends Component {
       })
     }
 
+    // Update
     if (this.props.update) {
       fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("id");
     }
 
+    // Create
     if (!this.props.update) {
       fieldsSchema.object.fields.password = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("password");
@@ -105,7 +107,32 @@ class UserForm extends Component {
             (values, { setSubmitting }) => {
               console.log('Submitted values: ', values);
 
-              this.props.onSubmit(values.object);
+              let newValues;
+              // Create
+              if (!this.props.update) {
+                newValues = {
+                  // Organization Users
+                  organizations: [],
+                  // FIXME - currently we aren't creating an "Organization User" at the same time.
+                  // Do this separately by going to http://lora.test.cloud.mxc.org/#/organizations/5/users/create
+                  //
+                  // organizations: [
+                  //   {
+                  //     organizationID: "20",
+                  //     isAdmin: true,
+                  //     isDeviceAdmin: true,
+                  //     isGatewayAdmin: true
+                  //   }
+                  // ],
+                  password: values.object.password,
+                  user: values.object,
+                }
+              // Update
+              } else {
+                newValues = values.object;
+              }
+              console.log('Prepared values: ', newValues);
+              this.props.onSubmit(newValues);
               setSubmitting(false);
             }
           }
@@ -297,6 +324,7 @@ class UserForm extends Component {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           label={i18n.t(`${packageNS}:tr000004`)}
+                          helpText="Password must be at least 6 characters long"
                           component={ReactstrapInput}
                           className={
                             errors.object && errors.object.password
