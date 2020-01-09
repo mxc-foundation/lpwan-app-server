@@ -49,9 +49,6 @@ class CreateGateway extends Component {
   }
 
   onSubmit = (gateway) => {
-    let gw = gateway;
-    gw.organizationID = this.props.match.params.organizationID;
-
     GatewayStore.create(gateway, resp => {
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
     });

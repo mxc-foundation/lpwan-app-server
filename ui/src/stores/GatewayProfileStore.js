@@ -74,6 +74,7 @@ class GatewayProfileStore extends EventEmitter {
   }
 
   list(networkServerID, limit, offset, callbackFunc) {
+    console.log('GatewayProfileStore list');
     this.swagger.then((client) => {
       client.apis.GatewayProfileService.List({
         networkServerID: networkServerID,
