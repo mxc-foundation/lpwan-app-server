@@ -107,7 +107,7 @@ class LoginForm extends Component {
               <div className="mt-1">
                 <Button type="submit" color="primary" className="btn-block" disabled={!this.state.isVerified}>{i18n.t(`${packageNS}:tr000011`)}</Button>
                 <Link to={`/registration`} className="btn btn-outline-primary btn-block mt-2">{i18n.t(`${packageNS}:tr000020`)}</Link>
-                <Link to={`/password-recovery`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000009`)}</Link>
+                {/* <Link to={`/password-recovery`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000009`)}</Link> */}
               </div>
             </Form>
           )}
