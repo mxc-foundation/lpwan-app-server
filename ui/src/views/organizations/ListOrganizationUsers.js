@@ -71,7 +71,7 @@ class ListOrganizationUsers extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage ;
+    const offset = (page - 1) * sizePerPage;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -91,7 +91,7 @@ class ListOrganizationUsers extends Component {
       object.totalSize = res.totalCount;
       object.data = res.result;
       object.loading = false;
-      this.setState({object});
+      this.setState({ object });
     });
   }
 
@@ -120,7 +120,7 @@ class ListOrganizationUsers extends Component {
                 className={classes.breadcrumbItemLink}
                 to={`/organizations`}
               >
-                  Organizations
+                Organizations
               </Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -136,12 +136,9 @@ class ListOrganizationUsers extends Component {
         </TitleBar>
         <Row>
           <Col>
-            <Card>
-              <CardBody>
-                <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
-                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
-
-              </CardBody>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
+                keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
             </Card>
           </Col>
         </Row>

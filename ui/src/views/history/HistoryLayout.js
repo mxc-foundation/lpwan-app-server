@@ -37,9 +37,9 @@ class HistoryLayout extends Component {
   componentDidMount() {
     /*window.analytics.page();*/
     const prevLoc = this.props.location.search.split('=')[1];
-    this.setState({loading:true});
+    this.setState({ loading: true });
     this.locationToTab(prevLoc);
-    this.setState({loading:false});
+    this.setState({ loading: false });
   }
 
   componentDidUpdate(oldProps) {
@@ -65,9 +65,9 @@ class HistoryLayout extends Component {
     } else if (window.location.href.endsWith("/stake")) {
       tab = 3;
     }
-    
+
     this.setState({
-      activeTab:tab + '',
+      activeTab: tab + '',
     });
   }
 
@@ -80,9 +80,9 @@ class HistoryLayout extends Component {
 
   render() {
     const { classes } = this.props;
-    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;    
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    return(
+    return (
       <React.Fragment>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
@@ -92,7 +92,7 @@ class HistoryLayout extends Component {
                 to={`/organizations`}
                 onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
               >
-                  Organizations
+                Organizations
               </Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -142,12 +142,14 @@ class HistoryLayout extends Component {
 
                 <Row className="pt-3">
                   <Col>
-                    <Switch>
-                      <Route exact path={`${this.props.match.path}`} render={props => <Transactions organizationID={currentOrgID} {...props} />} />
-                      <Route exact path={`${this.props.match.path}/eth-account`} render={props => <EthAccount organizationID={currentOrgID} {...props} />} />
-                      <Route exact path={`${this.props.match.path}/network-activity`} render={props => <NetworkActivityHistory organizationID={currentOrgID} {...props} />} />
-                      <Route exact path={`${this.props.match.path}/stake`} render={props => <Stakes organizationID={currentOrgID} {...props} />} />
-                    </Switch>
+                    <Card className="card-box shadow-sm">
+                      <Switch>
+                        <Route exact path={`${this.props.match.path}`} render={props => <Transactions organizationID={currentOrgID} {...props} />} />
+                        <Route exact path={`${this.props.match.path}/eth-account`} render={props => <EthAccount organizationID={currentOrgID} {...props} />} />
+                        <Route exact path={`${this.props.match.path}/network-activity`} render={props => <NetworkActivityHistory organizationID={currentOrgID} {...props} />} />
+                        <Route exact path={`${this.props.match.path}/stake`} render={props => <Stakes organizationID={currentOrgID} {...props} />} />
+                      </Switch>
+                    </Card>
                   </Col>
                 </Row>
               </CardBody>
@@ -157,7 +159,7 @@ class HistoryLayout extends Component {
       </React.Fragment>
 
 
-      
+
     );
   }
 }
