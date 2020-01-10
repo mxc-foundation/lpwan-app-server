@@ -163,6 +163,7 @@ class NotLoggedinRoute extends Component {
   route = (props) => {
     const { Comp, user, ...otherProps } = this.props;
     console.log('NotLoggedinRoute', Comp.name, user);
+    
     return !user ?
       <Comp {...otherProps} /> :
       <Redirect to='/' />;
