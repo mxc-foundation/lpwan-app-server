@@ -321,9 +321,9 @@ class GatewayForm extends Component {
                     name: object.name || '',
                     description: object.description || '',
                     location: {
-                      altitude: 0,
-                      latitude: 0,
-                      longitude: 0,
+                      altitude: 0.0,
+                      latitude: 0.0,
+                      longitude: 0.0,
                       source: "UNKNOWN",
                       accuracy: 0
                     },
@@ -349,12 +349,18 @@ class GatewayForm extends Component {
                   // Reference: https://medium.com/javascript-in-plain-english/how-to-deep-copy-objects-and-arrays-in-javascript-7c911359b089
                   let newValues = clone(values);
                   console.log('Deep copied submitted values: ', newValues !== values);
+
                   let boardsAsObject;
                   if (Array.isArray(values.object.boards)) {
                     boardsAsObject = this.convertArrayToObj(values, "boards");
                     newValues.object.boards = boardsAsObject;
+                    // e.g.
+                    // newValues.object.boards = [{ fpgaID: "9999999999999999", fineTimestampKey: "99999999999999999999999999999999"}];
                   }
+
                   newValues.object.organizationID = currentOrgID;
+                  // delete newValues.object.location.source;
+                  // delete newValues.object.location.accuracy;
                   
                   console.log('Prepared values: ', newValues);
 
