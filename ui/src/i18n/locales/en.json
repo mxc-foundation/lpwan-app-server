@@ -220,7 +220,7 @@
   "tr000221": "LSB",
   "tr000222": "Toggle the byte order of the imput. Some devices use LSB.",
   "tr000223": "Select the network-server to which the gateway will connect. When no network-servers are available in the dropdown, make sure a service-profile exists for this organization.",
-  "tr000224": "Gateway-profile",
+  "tr000224": "Gateway Profile",
   "tr000225": "Select gateway-profile",
   "tr000226": "No options",
   "tr000227": "An optional gateway-profile which can be assigned to a gateway. This configuration can be used to automatically re-configure the gateway when LoRa Gateway Bridge is configured so that it manages the packet-forwarder configuration.",

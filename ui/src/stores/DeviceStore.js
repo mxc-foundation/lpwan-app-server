@@ -123,7 +123,7 @@ class DeviceStore extends EventEmitter {
   update(device, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Update({
-        "device.devEui": device.object.devEUI,
+        "device.devEui": device.devEUI,
         body: {
           device: device,
         },

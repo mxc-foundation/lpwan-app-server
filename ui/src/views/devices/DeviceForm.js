@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 import { withStyles } from "@material-ui/core/styles";
 import { TabContent, TabPane, Nav, NavItem, NavLink, Card, Button, Row, Col } from 'reactstrap';
-import { ErrorMessage, Formik, Form, Field, FieldArray, getIn } from 'formik';
+import { Formik, Form, Field, FieldArray } from 'formik';
 import * as Yup from 'yup';
 import classnames from 'classnames';
 
@@ -17,7 +17,7 @@ import Typography from "@material-ui/core/Typography";
 import Delete from "mdi-material-ui/Delete";
 
 import i18n, { packageNS } from '../../i18n';
-import { ReactstrapInput, ReactstrapCheckbox } from '../../components/FormInputs';
+import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
 import EUI64Field from "../../components/FormikEUI64Field";
 import AutocompleteSelect from "../../components/AutocompleteSelect";
 import Loader from "../../components/Loader";
@@ -158,7 +158,6 @@ class DeviceForm extends Component {
       // Obtain the existing tags that are already in the local state
       let existingStateTags = prevState.object.tags;
       let existingStateTagsAsArray = this.convertObjToArray(existingStateTags);
-      console.log('existingStateTagsAsArray', existingStateTagsAsArray)
 
       // Retrieve the tags array passed as props from the parent component
       let propTags = propAsArray; // this.props.object.tags;
@@ -203,6 +202,7 @@ class DeviceForm extends Component {
   getApplicationOptions = (search, callbackFunc) => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
+    this.setState({ loading: true });
     ApplicationStore.list("", currentOrgID, 999, 0, resp => {
       const options = resp.result.map((app, i) => {return {label: app.name, value: app.id}});
       this.setState({
@@ -222,13 +222,49 @@ class DeviceForm extends Component {
   }
 
   getDeviceProfileOptions = (search, callbackFunc) => {
-    DeviceProfileStore.list(0, this.props.match.params.applicationID, 999, 0, resp => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const { object: { applicationID } } = this.state;
+    this.setState({ loading: true });
+    const deviceProfileForApplicationToFetch = applicationID || this.props.match.params.applicationID;
+    console.log('Fetching device profiles for application: ', deviceProfileForApplicationToFetch);
+    // Fetch Device Profiles associate with the Application ID that was selected in the Application selection box.
+    // Otherwise if fallback to fetching the Device Profiles associated with the current user's Application ID (if any).
+    const orgIDToFetch = currentOrgID;
+    DeviceProfileStore.list(orgIDToFetch, deviceProfileForApplicationToFetch, 999, 0, resp => {
       const options = resp.result.map((dp, i) => {return {label: dp.name, value: dp.id}});
       this.setState({
         loading: false
       })
       callbackFunc(options);
     });
+  }
+
+  onApplicationSelect = (v) => {
+    if (!this.state.object.applicationID || (this.state.object.applicationID && this.state.object.applicationID !== v.id)) {
+      let newState = {
+        ...this.state,
+        object: {
+          ...this.state.object,
+          deviceProfileID: null,
+          applicationID: v.value
+        }
+      };
+  
+      this.setState(newState);
+    }
+  }
+
+  onDeviceProfileSelect = (v) => {
+    if (!this.state.object.deviceProfileID || (this.state.object.deviceProfileID && this.state.object.deviceProfileID !== v.id)) {
+      let newState = {
+        ...this.state,
+        object: {
+          ...this.state.object,
+          deviceProfileID: v.value
+        }
+      };
+      this.setState(newState);
+    }
   }
 
   setActiveTab = (tab) => {
@@ -245,17 +281,29 @@ class DeviceForm extends Component {
     }
   }
 
+  setValidationErrors = (errors) => {
+    this.setState({
+      validationErrors: errors
+    })
+  }
+
   formikFormSchema = () => {
     let fieldsSchema = {
       object: Yup.object().shape({
         // https://regexr.com/4rg3a
-        name: Yup.string().trim().matches(/^[0-9A-Za-z-]*$/g, i18n.t(`${packageNS}:tr000429`))
+        name: Yup.string()//.trim().matches(/^[0-9A-Za-z-]*$/g, i18n.t(`${packageNS}:tr000429`))
           .required(i18n.t(`${packageNS}:tr000431`)),
         description: Yup.string()
           .required(i18n.t(`${packageNS}:tr000431`)),
         deviceProfileID: Yup.string()
           .required(i18n.t(`${packageNS}:tr000431`))
       })
+    }
+
+    if (!this.props.update) {
+      fieldsSchema.object.fields.devEUI = Yup.string()
+        .required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object._nodes.push("devEUI");
     }
 
     return Yup.object().shape(fieldsSchema);
@@ -320,7 +368,7 @@ class DeviceForm extends Component {
               console.log('Prepared values', newValues);
 
               // return;
-              this.props.onSubmit(newValues);
+              this.props.onSubmit(newValues.object);
               setSubmitting(false);
             }
           }
@@ -334,6 +382,7 @@ class DeviceForm extends Component {
                 handleChange,
                 handleReset,
                 handleSubmit,
+                initialErrors,
                 isSubmitting,
                 isValidating,
                 setFieldValue,
@@ -386,6 +435,97 @@ class DeviceForm extends Component {
                         {isLoading && <Loader light />}
 
                         <Field
+                          id="applicationID"
+                          name="object.applicationID"
+                          type="text"
+                          value={values.object.applicationID}
+                          onChange={this.onApplicationSelect}
+                          onBlur={handleBlur}
+                          label={i18n.t(`${packageNS}:tr000407`)}
+                          helpText="Select an application for the device to load only device profiles associated with the application"
+                          getOption={this.getApplicationOption}
+                          getOptions={this.getApplicationOptions}
+                          triggerReload={this.state.object.deviceProfileID || values.object.deviceProfileID || ""}
+                          // Hack: we want to trigger Device Profile ID list to populate
+                          // whenever the Application ID changes
+                          setFieldValue={(objName, value) => {
+                              setFieldValue("object.deviceProfileID", "", false);
+                              setFieldValue("object.applicationID", value, false);
+                            }
+                          }
+                          inputProps={{
+                            clearable: true,
+                            cache: false,
+                          }}
+                          noFirstItemSelected
+                          component={AsyncAutoComplete}
+                        />
+
+                        <Field
+                          id="deviceProfileID"
+                          name="object.deviceProfileID"
+                          type="text"
+                          value={values.object.deviceProfileID}
+                          onChange={this.onDeviceProfileSelect}
+                          onBlur={handleBlur}
+                          label={i18n.t(`${packageNS}:tr000281`)}
+                          helpText="Select a device profile to associate with the device"
+                          getOption={this.getDeviceProfileOption}
+                          getOptions={this.getDeviceProfileOptions}
+                          triggerReload={this.state.object.applicationID || values.object.applicationID || ""}
+                          setFieldValue={(objName, value) => {
+                            setFieldValue("object.deviceProfileID", value, false);
+                          }}
+                          inputProps={{
+                            clearable: true,
+                            cache: false,
+                          }}
+                          noFirstItemSelected
+                          component={AsyncAutoComplete}
+                          // FIXME - should show red border around input field
+                          // className={
+                          //   errors.object && errors.object.deviceProfileID
+                          //     ? 'is-invalid form-control'
+                          //     : ''
+                          // }
+                        />
+                        {
+                          errors.object && errors.object.deviceProfileID
+                            ? (
+                              <div
+                                className="invalid-feedback"
+                                style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-1.75rem" }}
+                              >
+                                <br />
+                                {errors.object.deviceProfileID}
+                              </div>
+                            ) : null
+                        }
+
+                        {!this.props.update && 
+                          <>
+                            <EUI64Field
+                              id="devEUI"
+                              name="object.devEUI"
+                              value={values.object.devEUI}
+                              label={i18n.t(`${packageNS}:tr000371`)}
+                              random
+                            />
+                            {
+                              errors.object && errors.object.devEUI
+                                ? (
+                                  <div
+                                    className="invalid-feedback"
+                                    style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                                  >
+                                    {errors.object.devEUI}
+                                  </div>
+                                ) : null
+                            }
+                          </>
+                        }
+
+                        <Field
                           id="name"
                           name="object.name"
                           type="text"
@@ -404,7 +544,6 @@ class DeviceForm extends Component {
                               : ''
                           }
                         />
-
                         {/* FIXME - to show form validation errors this approach isn't usually necessary
                             but they aren't appearing automatically so i've had to do it manually
                         */}
@@ -435,7 +574,6 @@ class DeviceForm extends Component {
                               : ''
                           }
                         />
-
                         {
                           errors.object && errors.object.description
                             ? (
@@ -447,44 +585,8 @@ class DeviceForm extends Component {
                               </div>
                             ) : null
                         }
-                        <br />
 
-                        {!this.props.update && 
-                          <EUI64Field
-                            id="devEUI"
-                            name="object.devEUI"
-                            label={i18n.t(`${packageNS}:tr000371`)}
-                            random
-                          />
-                        }
-
-                        <label htmlFor="object.applicationID" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
-                          {i18n.t(`${packageNS}:tr000407`)}
-                        </label>
-                        <AutocompleteSelect
-                          id="applicationID"
-                          name="object.applicationID"
-                          label={i18n.t(`${packageNS}:tr000407`)}
-                          // FIXME - show loading until an option is available
-                          onChange={handleChange}
-                          getOption={this.getApplicationOption}
-                          getOptions={this.getApplicationOptions}
-                        />
-
-                        <label htmlFor="object.deviceProfileID" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
-                          {i18n.t(`${packageNS}:tr000281`)}
-                        </label>
-                        <AutocompleteSelect
-                          id="deviceProfileID"
-                          name="object.deviceProfileID"
-                          label={i18n.t(`${packageNS}:tr000281`)}
-                          // FIXME - show loading until an option is available
-                          onChange={handleChange}
-                          getOption={this.getDeviceProfileOption}
-                          getOptions={this.getDeviceProfileOptions}
-                        />
-
-                        <div style={{ marginTop: "10px" }}>
+                        <div>
                           <FormGroup>
                             <FormControlLabel
                               label={i18n.t(`${packageNS}:tr000303`)}
@@ -654,6 +756,10 @@ class DeviceForm extends Component {
                       </TabPane>
                     </TabContent>
                     <div style={{ margin: "20px 0 10px 20px" }}>
+                      {/* Debugging only */}
+                      {/* { this.state.object.deviceProfileID} */}
+                      {/* { this.state.object.applicationID} */}
+                      {/* { values.object && JSON.stringify(values.object)} */}
                       {isValidating
                         ? <div style={{ display: "block", color: "orange", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
                             Validating. Please wait...
@@ -666,11 +772,25 @@ class DeviceForm extends Component {
                           </div>
                         : ''
                       }
-                      {errors.object
-                        ? <div style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
-                            Form Validation Errors. Please enter valid inputs and try again...
-                          </div>
-                        : ''
+                      {/* `initialErrors` does not work for some reason */}
+                      {/* {initialErrors.length && JSON.stringify(initialErrors)} */}
+
+                      {/* {errors.object && JSON.stringify(errors.object)} */}
+
+                      {/* Show error count when page loads, before user submits the form */}
+                      {errors.object && Object.keys(errors.object).length
+                        ? (<div style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
+                          Detected {Object.keys(errors.object).length} errors. Please fix the validation errors shown in each tab before resubmitting.
+                        </div>)
+                        : null
+                      }
+
+                      {/* Show error count when user submits the form */}
+                      {this.state.validationErrors && this.state.validationErrors.length
+                        ? (<div style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
+                          Detected {Object.keys(this.state.validationErrors.object).length} errors. Please fix the validation errors shown in each tab before resubmitting.
+                        </div>)
+                        : null
                       }
                     </div>
                     {/* <Button
@@ -686,11 +806,13 @@ class DeviceForm extends Component {
                       color="primary"
                       disabled={(errors.object && Object.keys(errors.object).length > 0) || isLoading || isSubmitting}
                       onClick={
-                        () => validateForm().then((formValidationErrors) =>
-                          console.log('Validated form with errors: ', formValidationErrors))
+                        () => validateForm().then((formValidationErrors) => {
+                          console.log('Validated form with errors: ', formValidationErrors);
+                          this.setValidationErrors(formValidationErrors);
+                        })
                       }
                     >
-                      {this.props.submitLabel || i18n.t(`${packageNS}:tr000292`)}
+                      {this.props.submitLabel || (this.props.deviceProfile ? "Update" : "Create")}
                     </Button>
                   {/* </Card> */}
                 </Form>
