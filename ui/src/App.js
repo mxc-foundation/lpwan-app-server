@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { Router, Route, Switch, Redirect } from 'react-router-dom';
-import classNames from "classnames";
+import jwt from "jsonwebtoken";
 
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { MuiThemeProvider, withStyles } from "@material-ui/core/styles";
-import { Container } from 'reactstrap';
+import Modal from "./components/Modal";
 
 import history from "./history";
 import themeChinese from "./themeChinese";
@@ -163,7 +163,7 @@ class NotLoggedinRoute extends Component {
   route = (props) => {
     const { Comp, user, ...otherProps } = this.props;
     console.log('NotLoggedinRoute', Comp.name, user);
-    
+
     return !user ?
       <Comp {...otherProps} /> :
       <Redirect to='/' />;
@@ -186,6 +186,7 @@ class App extends Component {
       organizationId: null,
       drawerOpen: false,
       language: null,
+      nsDialog: null,
       theme: theme
     };
 
@@ -207,6 +208,16 @@ class App extends Component {
   };
 
   componentDidMount() {
+    const token = SessionStore.getToken();
+    if (token) {
+      jwt.verify(token, process.env.REACT_APP_JWT_SECRET, function(err, decoded) {
+        if (err) {
+          console.log('err.message', err.message);
+          localStorage.clear();
+        }
+      });
+    } 
+
     SessionStore.on("change", () => {
       this.setState({
         user: SessionStore.getUser(),
@@ -293,12 +304,15 @@ class App extends Component {
   }
 
   logout = () => {
-    SessionStore.logout(() => {
+    localStorage.clear();
+    /* SessionStore.logout(() => {
       this.props.history.push("/login");
-    });
+    }); */
   }
 
   render() {
+    
+
     let topNav = null;
     let sideNav = null;
     let topbanner = null;
@@ -336,17 +350,23 @@ class App extends Component {
     return (
       <Router history={history}>
         <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={i18n.t(`${packageNS}:menu.topup.notice`)}
+          left={"DISMISS"}
+          right={"ADD ETH ACCOUNT"}
+          context={"Session was expired. Please, login again."}
+          callback={this.logout} />}
           <MuiThemeProvider theme={this.state.theme}>
             <CssBaseline />
             {/* <div className={this.props.classes.root}> */}
 
             <Layout topBar={topNav} topBanner={topbanner} sideNav={sideNav}>
               <Switch>
-                <NotLoggedinRoute exact path="/login" 
+                <NotLoggedinRoute exact path="/login"
                   Comp={Login} user={user}
                   language={language}
                   onChangeLanguage={this.onChangeLanguage} />
-                  {/* <Route exact path="/" component={HomeComponent} />
+                {/* <Route exact path="/" component={HomeComponent} />
                   <Route exact path="/login"
                   render={props =>
                     <Login {...props}
@@ -488,7 +508,7 @@ class App extends Component {
 
                 <Route exact path="/search" component={Search} />
               </Switch>
-            <Footer />
+              <Footer />
             </Layout>
 
             <Notifications />

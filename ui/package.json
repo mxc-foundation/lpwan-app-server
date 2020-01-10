@@ -16,6 +16,7 @@
     "formik": "^2.0.8",
     "i18next": "^19.0.0",
     "js-file-download": "^0.4.7",
+    "jsonwebtoken": "^8.5.1",
     "leaflet": "^1.5.1",
     "leaflet.awesome-markers": "^2.0.5",
     "leaflet.markercluster": "^1.4.1",
