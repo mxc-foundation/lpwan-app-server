@@ -112,6 +112,7 @@ class CreateDevice extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
     const currentOrgName = organization && (organization.name || organization.displayName);
+    const currentAppName = application && (application.name);
 
     const closeAppBtn = <button className="close" onClick={this.toggleAppDialog}>&times;</button>;
     const closeDpBtn = <button className="close" onClick={this.toggleDpDialog}>&times;</button>;
@@ -199,7 +200,7 @@ class CreateDevice extends Component {
                 }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
                 <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                   `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                  }>{application.application.name}</Link></BreadcrumbItem>
+                  }>{currentApplicationID || currentAppName || '???'}</Link></BreadcrumbItem>
                 <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                   `/organizations/${currentOrgID}/applications/${currentApplicationID}`
                 }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
