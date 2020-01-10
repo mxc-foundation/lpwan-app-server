@@ -47,7 +47,10 @@ class IntegrationForm extends FormComponent {
   }
 
   render() {
-    if (this.state.object === undefined) {
+    const { classes } = this.props;
+    const { object } = this.state;
+
+    if (object === undefined) {
       return(<div></div>);
     }
 
@@ -57,19 +60,19 @@ class IntegrationForm extends FormComponent {
         onSubmit={this.onSubmit}
       >
         {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.formLabel} required>Integration kind</FormLabel>
+          <FormLabel className={classes.formLabel} required>Integration Kind</FormLabel>
           <AutocompleteSelect
             id="kind"
             style={{ width: '100px' }}
             label={i18n.t(`${packageNS}:tr000413`)}
-            value={this.state.object.kind || ""}
+            value={object.kind || ""}
             onChange={this.onChange}
             getOptions={this.getKindOptions}
           />
         </FormControl>}
-        {this.state.object.kind === "http" && <HTTPIntegrationForm object={this.state.object} onChange={this.onFormChange} />}
-        {this.state.object.kind === "influxdb" && <InfluxDBIntegrationForm classes={this.props.classes} object={this.state.object} onChange={this.onFormChange} />}
-        {this.state.object.kind === "thingsboard" && <ThingsBoardIntegrationForm object={this.state.object} onChange={this.onFormChange} />}
+        {object.kind === "http" && <HTTPIntegrationForm classes={classes} object={object} onChange={this.onFormChange} />}
+        {object.kind === "influxdb" && <InfluxDBIntegrationForm classes={classes} object={object} onChange={this.onFormChange} />}
+        {object.kind === "thingsboard" && <ThingsBoardIntegrationForm classes={classes} object={object} onChange={this.onFormChange} />}
       </Form>
     );
   }
