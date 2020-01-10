@@ -71,21 +71,25 @@ class GatewayForm extends Component {
     return arr;
   }
 
-  // key: fpgaID, value: fineTimestampKey
-  convertArrayToObj = (arr, key) => {
-    const formatKey = (k) => k.trim().split(' ').join('_');
+  // // key: fpgaID, value: fineTimestampKey
+  // convertArrayToObj = (arr, key) => {
+  //   const formatKey = (k) => k.trim().split(' ').join('_');
 
-    let asObject = {};
-    for (const el of arr.object[key]) {
-      if (el.fpgaID !== "") {
-        asObject[formatKey(el.fpgaID)] = el.fineTimestampKey;
-      }
-    };
+  //   let asObject = {};
+  //   for (const el of arr.object[key]) {
+  //     if (el.fpgaID !== "") {
+  //       asObject[formatKey(el.fpgaID)] = el.fineTimestampKey;
+  //     }
+  //   };
 
-    return asObject;
-  }
+  //   return asObject;
+  // }
 
   setKVArrayVariables = () => {
+    if (this.props.object && !Array.isArray(this.props.object.boards)) {
+      return;
+    }
+
     if (this.props.object && this.props.object.boards.length === 0) {
       return;
     }
@@ -350,13 +354,13 @@ class GatewayForm extends Component {
                   let newValues = clone(values);
                   console.log('Deep copied submitted values: ', newValues !== values);
 
-                  let boardsAsObject;
-                  if (Array.isArray(values.object.boards)) {
-                    boardsAsObject = this.convertArrayToObj(values, "boards");
-                    newValues.object.boards = boardsAsObject;
+                  // let boardsAsObject;
+                  // if (Array.isArray(values.object.boards)) {
+                  //   boardsAsObject = this.convertArrayToObj(values, "boards");
+                  //   newValues.object.boards = boardsAsObject;
                     // e.g.
                     // newValues.object.boards = [{ fpgaID: "9999999999999999", fineTimestampKey: "99999999999999999999999999999999"}];
-                  }
+                  // }
 
                   newValues.object.organizationID = currentOrgID;
                   // delete newValues.object.location.source;
