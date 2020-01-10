@@ -191,6 +191,9 @@ class GatewayForm extends Component {
   }
 
   getGatewayProfileOptions = (search, callbackFunc) => {
+    this.setState({ loading: true });
+    // Only fetch Gateway Profiles associated with the Network Server that the
+    // user must have chosen first.
     if (this.state.object === undefined || this.state.object.networkServerID === undefined) {
       callbackFunc([]);
       return;
@@ -198,6 +201,7 @@ class GatewayForm extends Component {
 
     GatewayProfileStore.list(this.state.object.networkServerID, 999, 0, resp => {
       const options = resp.result.map((gp, i) => { return { label: gp.name, value: gp.id } });
+      this.setState({ loading: false });
       callbackFunc(options);
     });
   }
@@ -224,9 +228,8 @@ class GatewayForm extends Component {
     }
   }
 
-  onGatewayProfileIDSelection = (v) => {
-    const { object } = this.state;
-    if (!object.gatewayProfileID || (object.gatewayProfileID && object.gatewayProfileID !== v.id)) {
+  onGatewayProfileSelect = (v) => {
+    if (!this.state.object.gatewayProfileID || (this.state.object.gatewayProfileID && this.state.object.gatewayProfileID !== v.id)) {
       let object = this.state.object;
       object.gatewayProfileID = v.value;
       this.setState({
@@ -395,7 +398,9 @@ class GatewayForm extends Component {
                             // value={values.object.networkServerID}
                             // getOption={this.getNetworkServerOption}
                             getOptions={this.getNetworkServerOptions}
-                            setFieldValue={setFieldValue}
+                            // Hack: we want to trigger Gateway Profild ID list to populate
+                            // whenever the Network Server ID changes
+                            setFieldValue={() => setFieldValue("object.gatewayProfileID", "0", false)}
                             inputProps={{
                               clearable: true,
                               cache: false,
@@ -421,41 +426,45 @@ class GatewayForm extends Component {
                         </>
                       }
 
-                      <Field
-                        id="gatewayProfileID"
-                        name="object.gatewayProfileID"
-                        type="text"
-                        value={values.object.gatewayProfileID}
-                        // onChange={handleChange}
-                        onChange={this.onGatewayProfileIDSelect}
-                        onBlur={handleBlur}
-                        label={i18n.t(`${packageNS}:tr000224`)}
-                        helpText={i18n.t(`${packageNS}:tr000227`)}
-                        // value={values.object.gatewayProfileID}
-                        getOption={this.getGatewayProfileOption}
-                        getOptions={this.getGatewayProfileOptions}
-                        setFieldValue={setFieldValue}
-                        inputProps={{
-                          clearable: true,
-                          cache: false,
-                        }}
-                        component={AsyncAutoComplete}
-                        className={
-                          errors.object && errors.object.gatewayProfileID
-                            ? 'is-invalid form-control'
-                            : ''
-                        }
-                      />
-                      {
-                        errors.object && errors.object.gatewayProfileID
-                          ? (
-                            <div
-                              className="invalid-feedback"
-                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                            >
-                              {errors.object.gatewayProfileID}
-                            </div>
-                          ) : null
+                      {values.object.networkServerID &&
+                        <>
+                          <Field
+                            id="gatewayProfileID"
+                            name="object.gatewayProfileID"
+                            type="text"
+                            value={values.object.gatewayProfileID}
+                            // onChange={handleChange}
+                            onChange={this.onGatewayProfileSelect}
+                            onBlur={handleBlur}
+                            label={i18n.t(`${packageNS}:tr000224`)}
+                            helpText={i18n.t(`${packageNS}:tr000227`)}
+                            // value={values.object.gatewayProfileID}
+                            getOption={this.getGatewayProfileOption}
+                            getOptions={this.getGatewayProfileOptions}
+                            setFieldValue={setFieldValue}
+                            inputProps={{
+                              clearable: true,
+                              cache: false,
+                            }}
+                            component={AsyncAutoComplete}
+                            className={
+                              errors.object && errors.object.gatewayProfileID
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                          {
+                            errors.object && errors.object.gatewayProfileID
+                              ? (
+                                <div
+                                  className="invalid-feedback"
+                                  style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                                >
+                                  {errors.object.gatewayProfileID}
+                                </div>
+                              ) : null
+                          }
+                        </>
                       }
 
                       <Field
