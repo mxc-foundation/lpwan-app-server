@@ -356,8 +356,7 @@ class ListGateways extends Component {
 
       <Row>
         <Col>
-          <Card>
-            <CardBody>
+          <Card className="card-box shadow-sm">
               {this.state.viewMode === 'map' &&
                 <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
 
@@ -365,8 +364,6 @@ class ListGateways extends Component {
                 <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
                 <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
               </Switch>
-
-            </CardBody>
           </Card>
         </Col>
       </Row>

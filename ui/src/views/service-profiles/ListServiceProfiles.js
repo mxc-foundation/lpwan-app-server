@@ -43,7 +43,7 @@ class ListServiceProfiles extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
-    const offset = (page - 1) * sizePerPage ;
+    const offset = (page - 1) * sizePerPage;
     this.getPage(this.props.match.params.organizationID, sizePerPage, offset);
   }
 
@@ -56,7 +56,7 @@ class ListServiceProfiles extends Component {
       object.totalSize = res.totalCount;
       object.data = res.result;
       object.loading = false;
-      this.setState({object});
+      this.setState({ object });
     });
   }
 
@@ -81,7 +81,7 @@ class ListServiceProfiles extends Component {
                 className={classes.breadcrumbItemLink}
                 to={`/organizations`}
               >
-                  Organizations
+                Organizations
               </Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -98,10 +98,8 @@ class ListServiceProfiles extends Component {
 
         <Row>
           <Col>
-            <Card>
-              <CardBody>
-                <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
-              </CardBody>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
             </Card>
           </Col>
         </Row>

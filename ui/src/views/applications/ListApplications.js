@@ -126,7 +126,7 @@ class ListApplications extends Component {
           </TitleBar>
           <Row>
             <Col>
-              <Card className="shadow-sm">
+              <Card className="card-box shadow-sm">
                 <CardBody className="position-relative">
                   {this.state.loading && <Loader />}
                   <AdvancedTable

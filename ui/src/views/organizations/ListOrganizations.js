@@ -46,21 +46,21 @@ class ListOrganizations extends Component {
 
   canHaveGatewaysColumn = (cell, row, index, extraData) => {
     if (row.canHaveGateways) {
-        return  <Check />;
+      return <Check />;
     } else {
-        return  <Close />;
+      return <Close />;
     }
   };
 
   serviceProfileColumn = (cell, row, index, extraData) => {
-      return <div>
-          <div>
-              <Link to={`/organizations/${row.id}/service-profiles/create`}>ADD</Link>
-          </div>
-          <div>
-            <Link to={`/organizations/${row.id}/service-profiles`}>CHECK</Link>
-          </div>
-      </div>;
+    return <div>
+      <div>
+        <Link to={`/organizations/${row.id}/service-profiles/create`}>ADD</Link>
+      </div>
+      <div>
+        <Link to={`/organizations/${row.id}/service-profiles`}>CHECK</Link>
+      </div>
+    </div>;
   };
 
   getColumns = () => (
@@ -96,18 +96,18 @@ class ListOrganizations extends Component {
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
     const offset = (page - 1) * sizePerPage;
-    
+
     this.getPage(sizePerPage, offset);
   };
 
   getPage(limit, offset) {
-    OrganizationStore.list("", limit, offset,  (res) => {
+    OrganizationStore.list("", limit, offset, (res) => {
       console.log('res', res);
       const object = this.state;
       object.totalSize = res.totalCount;
       object.data = res.result;
       object.loading = false;
-      this.setState({object});
+      this.setState({ object });
     });
   }
 
@@ -121,12 +121,12 @@ class ListOrganizations extends Component {
     return (
       <React.Fragment>
         <TitleBar buttons={
-            <TitleBarButton
-                key={1}
-                label={i18n.t(`${packageNS}:tr000277`)}
-                icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-                to={`/organizations/create`}
-            />}
+          <TitleBarButton
+            key={1}
+            label={i18n.t(`${packageNS}:tr000277`)}
+            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+            to={`/organizations/create`}
+          />}
         >
           <Breadcrumb className={classes.breadcrumb}>
             <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
@@ -136,10 +136,8 @@ class ListOrganizations extends Component {
 
         <Row>
           <Col>
-            <Card>
-              <CardBody>
-                <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
-              </CardBody>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
             </Card>
           </Col>
         </Row>
