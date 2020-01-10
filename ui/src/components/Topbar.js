@@ -13,8 +13,8 @@ import logo from '../assets/images/MATCHX-SUPERNODE2.png';
 
 function getWalletBalance() {
   var organizationId = SessionStore.getOrganizationID();
-  if (organizationId === undefined) {
-    return null;
+  if (organizationId) {
+    return 0;
   }
 
   /* if (SessionStore.isAdmin()) {
