@@ -82,25 +82,23 @@ class CreateDevice extends Component {
 
   onSubmit = (device) => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
-    const isApplication = currentApplicationID && currentApplicationID !== "0"; 
-    let dev = device;
-    dev.applicationID = this.props.match.params.applicationID;
+    const deviceApplicationID = device.applicationID;
+    const isDeviceApplication = deviceApplicationID !== undefined; 
 
-    DeviceStore.create(dev, resp => {
-      if (dev.applicationID === undefined) {
+    DeviceStore.create(device, resp => {
+      if (!isDeviceApplication) {
         this.props.history.push(`/organizations/${this.props.match.params.organizationID}/devices`);
       }
 
-      DeviceProfileStore.get(dev.deviceProfileID, resp => {
+      DeviceProfileStore.get(device.deviceProfileID, resp => {
         if (resp.deviceProfile.supportsJoin) {
-          isApplication
-          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${dev.devEUI}/keys`)
-          : this.props.history.push(`/organizations/${currentOrgID}/devices/${dev.devEUI}/keys`);
+          isDeviceApplication
+          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/keys`)
+          : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/keys`);
         } else {
-          isApplication
-          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${dev.devEUI}/activation`)
-          : this.props.history.push(`/organizations/${currentOrgID}/devices/${dev.devEUI}/activation`);
+          isDeviceApplication
+          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/activation`)
+          : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/activation`);
         }
       });
 
