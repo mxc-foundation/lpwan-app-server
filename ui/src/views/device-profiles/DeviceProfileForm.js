@@ -244,8 +244,11 @@ function Decode(fPort, bytes) {
                 rxDataRate2: object.rxDataRate2 || 0,
                 rxFreq2: object.rxFreq2 || 0,
                 factoryPresetFreqs: object.factoryPresetFreqs
-                  ? object.factoryPresetFreqs.join(",")
-                  : "",
+                  ? object.factoryPresetFreqs.length
+                    ? object.factoryPresetFreqs.join(",")
+                    : ","
+                  // China, Europe, US (i.e. 433MHz)
+                  : "433000000,868000000,915000000",
                 supportsClassB: !!object.supportsClassB || false,
                 classBTimeout: object.classBTimeout || 0,
                 pingSlotPeriod: object.pingSlotPeriod || 0,
@@ -278,7 +281,7 @@ function Decode(fPort, bytes) {
 
               let newFactoryPresetFreqsArr;
               if (values.object.factoryPresetFreqs) {
-                newFactoryPresetFreqsArr = values.object.factoryPresetFreqs.split(",");
+                newFactoryPresetFreqsArr = values.object.factoryPresetFreqs.split(",").filter((v) => v !== '');
                 newValues.object.factoryPresetFreqs = newFactoryPresetFreqsArr;
               }
 
@@ -302,6 +305,7 @@ function Decode(fPort, bytes) {
                 isSubmitting,
                 isValidating,
                 setFieldValue,
+                setValues,
                 touched,
                 validateForm,
                 values
@@ -551,9 +555,28 @@ function Decode(fPort, bytes) {
                                   id="supportsJoin"
                                   name="object.supportsJoin"
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   color="primary"
                                   value={!!values.object.supportsJoin}
                                   checked={!!values.object.supportsJoin}
+                                  // Note: This approach did not work.
+                                  // Instead we just set the default value of
+                                  // `factoryPresetFreqs` to ',' if existing
+                                  // Device Profile does not have a value, or
+                                  // LPWAN default frequencies.
+                                  //
+                                  // setFieldValue={() =>
+                                  //   setFieldValue(
+                                  //     "object.factoryPresetFreqs",
+                                  //     // If "Device Supports OTAA" is checked, then
+                                  //     // the `factoryPresetFreqs` field is no longer shown,
+                                  //     // but we'll temporarily give it a value so the validation
+                                  //     // error disappears. If it's unchecked again, we'll reset
+                                  //     // the value to `""`
+                                  //     !!values.object.supportsJoin ? "0" : "",
+                                  //     true
+                                  //   )
+                                  // }
                                 />
                               }
                             />
