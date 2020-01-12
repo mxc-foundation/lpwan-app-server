@@ -7,7 +7,8 @@ import { ReactstrapInput } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
 import Modal from "../../components/Modal";
 import ModalWithProgress from "../../components/ModalWithProgress";
-
+import SessionStore from "../../stores/SessionStore";
+import WalletStore from "../../stores/WalletStore";
 import StakeStore from "../../stores/StakeStore";
 //import Spinner from "../../components/ScaleLoader"
 import { withRouter } from "react-router-dom";
@@ -34,6 +35,22 @@ import styles from "./StakeStyle"
     />
   );
 } */
+function getWalletBalance() {
+  var organizationId = SessionStore.getOrganizationID();
+  if (!organizationId) {
+    return 0;
+  }
+
+  /* if (SessionStore.isAdmin()) {
+    organizationId = '0';
+  } */
+
+  return new Promise((resolve, reject) => {
+    WalletStore.getWalletBalance(organizationId, resp => {
+      return resolve(resp);
+    });
+  });
+} 
 
 class StakeForm extends Component {
 
@@ -75,6 +92,9 @@ class StakeForm extends Component {
   }
 
   loadData = async () => {
+    var result = await getWalletBalance();
+    const balance = result.balance;
+
     let res = await StakeStore.getActiveStakes(this.props.match.params.organizationID);
     let amount = 0;
     let isUnstake = false;
@@ -96,6 +116,7 @@ class StakeForm extends Component {
     object.amount = amount;
     object.revRate = revRate;
     object.isUnstake = isUnstake;
+    object.balance = balance;
 
     this.setState({
       object
@@ -289,8 +310,15 @@ class StakeForm extends Component {
   }
 
   render() {
+    const {
+      object: {
+        balance,
+        infoModal
+      }
+    } = this.state;
+
     let fieldsSchema = {
-      amount: Yup.number().moreThan(0).required(),
+      amount: Yup.number().moreThan(0).lessThan(balance).required(),
       revRate: Yup.number(),
     }
 
@@ -298,7 +326,7 @@ class StakeForm extends Component {
 
     return (
       <React.Fragment>
-        {this.state.object.infoModal && <Modal
+        {infoModal && <Modal
           title={i18n.t(`${packageNS}:menu.topup.notice`)}
           left={i18n.t(`${packageNS}:menu.staking.cancel`)}
           right={i18n.t(`${packageNS}:menu.staking.confirm`)}
@@ -372,7 +400,7 @@ class StakeForm extends Component {
                   }}
                 />
 
-                <Button className="btn-block" onClick={this.reset}>{i18n.t(`${packageNS}:common.reset`)}</Button>
+                {/* <Button className="btn-block" onClick={this.reset}>{i18n.t(`${packageNS}:common.reset`)}</Button> */}
                 <Button type="submit" className="btn-block" color="primary">{this.state.object.isUnstake ? i18n.t(`${packageNS}:menu.messages.confirm_unstake`) : i18n.t(`${packageNS}:menu.messages.confirm_stake`)}</Button>
               </Form>
             )}
