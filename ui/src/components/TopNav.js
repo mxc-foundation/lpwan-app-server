@@ -178,7 +178,7 @@ class TopNav extends Component {
 
   onLogout() {
     SessionStore.logout(() => {
-      this.props.history.push("/login");
+      
     });
   }
 

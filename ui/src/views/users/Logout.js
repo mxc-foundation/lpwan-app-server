@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter, Link, Redirect } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
 import SessionStore from "../../stores/SessionStore";
 
@@ -9,15 +9,16 @@ class Logout extends Component {
   }
 
   componentDidMount() {
-    SessionStore.logout(() => {
-        this.props.history.push("/login");
-    });
+    setTimeout(() => { 
+      SessionStore.logout(() => {
+      });
+    }, 300);
   }
 
   render() {
     return(
       <>
-        
+        {/* <Redirect path="/login" /> */}
       </>
     );
   }

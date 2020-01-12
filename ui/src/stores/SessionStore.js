@@ -161,7 +161,7 @@ class SessionStore extends EventEmitter {
     this.organizations = [];
     this.settings = {};
     this.emit("change");
-    callBackFunc();
+    callBackFunc && callBackFunc();
   }
 
   async getProfile(){
