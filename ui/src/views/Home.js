@@ -16,7 +16,11 @@ class HomeComponent extends Component {
             const orgs = SessionStore.getOrganizations();
             
             if (SessionStore.getToken() && orgs.length > 0) {
-                return <Redirect to={`/organizations/${orgs[0].organizationID}`}></Redirect>;
+                if(SessionStore.isAdmin()){
+                    return <Redirect to={`/organizations/${orgs[0].organizationID}`}></Redirect>;
+                }else{
+                    return <Redirect to={`/stake/${orgs[0].organizationID}`}></Redirect>;
+                }
             } else {
                 console.log('User has no organisations. Redirecting to login');
                 return <Redirect to={"/logout"}></Redirect>;

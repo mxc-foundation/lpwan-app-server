@@ -126,12 +126,12 @@ const SideNavContent = (props) => {
                         </Link>
                     </li>
 
-                    <li>
+                    {/* <li>
                         <Link to={`/organizations/${props.orgId}/multicast-groups`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-podcast"></i>
                             <span> {i18n.t(`${packageNS}:tr000083`)} </span>
                         </Link>
-                    </li>
+                    </li> */}
 
                     <li>
                         <Link to={`/users/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>

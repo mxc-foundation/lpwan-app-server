@@ -17,9 +17,9 @@ function getWalletBalance() {
     return 0;
   }
 
-  /* if (SessionStore.isAdmin()) {
+  if (SessionStore.isAdmin()) {
     organizationId = '0';
-  } */
+  }
 
   return new Promise((resolve, reject) => {
     WalletStore.getWalletBalance(organizationId, resp => {
