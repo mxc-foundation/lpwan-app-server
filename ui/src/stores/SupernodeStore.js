@@ -35,7 +35,7 @@ class SupernodeStore extends EventEmitter {
         "moneyAbbr": req.moneyAbbr,
         body: {
             moneyAbbr: req.moneyAbbr,
-            accountAddr: req.createAccount
+            accountAddr: req.newAccount
         },
       })
       .then(checkStatus)

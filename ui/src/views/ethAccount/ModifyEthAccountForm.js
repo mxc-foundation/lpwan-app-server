@@ -46,12 +46,12 @@ class ModifyEthAccountForm extends Component {
       object: {
         username: '',
         password: '',
-        newaccount: ''
+        newAccount: ''
       }
     })
   }
 
-  submit = () => {
+  /* submit = () => {
     this.props.onSubmit({
       action: 'modifyAccount',
       currentAccount: this.state.object.newaccount,
@@ -61,7 +61,7 @@ class ModifyEthAccountForm extends Component {
     })
 
     this.reset();
-  }
+  } */
 
   render() {
     if (this.props.activeAccount == '0') {
@@ -69,15 +69,13 @@ class ModifyEthAccountForm extends Component {
     }
     let fieldsSchema = {
       activeAccount: Yup.string(),
-      newaccount: Yup.string(),
+      newAccount: Yup.string(),
       username: Yup.string(),
       password: Yup.string(),
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
 
-    console.log('ModfyEthAccountForm.render', this.state.object);
-      
     return (
       <React.Fragment>
         <Formik
@@ -111,10 +109,11 @@ class ModifyEthAccountForm extends Component {
 
                 <Field
                   type="text"
-                  label={i18n.t(`${packageNS}:menu.withdraw.username`)}
-                  name="newaccount"
-                  id="newaccount"
-                  value={this.state.object.newaccount || ""}
+                  label={i18n.t(`${packageNS}:menu.eth_account.new_account`)}
+                  name="newAccount"
+                  id="newAccount"
+                  value={this.state.object.newAccount || ""}
+                  placeholder="0x0000000000000000000000000000000000000000"
                   component={ReactstrapInput}
                   placeholder={i18n.t(`${packageNS}:menu.eth_account.new_account`)}
                   onBlur={handleBlur}
@@ -131,7 +130,7 @@ class ModifyEthAccountForm extends Component {
                   id="username"
                   value={this.state.object.username || ""}
                   component={ReactstrapInput}
-                  placeholder={i18n.t(`${packageNS}:menu.withdraw.type_here`)}
+                  placeholder={i18n.t(`${packageNS}:menu.eth_account.type_here`)}
                   onBlur={handleBlur}
                   inputProps={{
                     clearable: true,
@@ -146,6 +145,7 @@ class ModifyEthAccountForm extends Component {
                   id="password"
                   value={this.state.object.password || ""}
                   component={ReactstrapInput}
+                  placeholder={i18n.t(`${packageNS}:menu.eth_account.type_here`)}
                   onBlur={handleBlur}
                   inputProps={{
                     clearable: true,
