@@ -35,7 +35,7 @@ class MoneyStore extends EventEmitter {
         "orgId": req.orgId,
         "moneyAbbr": req.moneyAbbr,
         body: {
-          currentAccount: req.currentAccount,
+          currentAccount: req.newAccount,
           orgId: req.orgId,
           moneyAbbr: req.moneyAbbr
         },

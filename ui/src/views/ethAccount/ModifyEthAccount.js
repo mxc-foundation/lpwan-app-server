@@ -27,6 +27,7 @@ class ModifyEthAccount extends Component {
 
   loadData() {
     const orgId = this.props.match.params.organizationID;
+    
     MoneyStore.getActiveMoneyAccount(ETHER, orgId, resp => {
       this.setState({
         activeAccount: resp.activeAccount,
@@ -73,10 +74,18 @@ class ModifyEthAccount extends Component {
     const orgId = this.props.match.params.organizationID;
 
     try {
-      if (resp.username !== SessionStore.getUsername()) {
+      const userProfile = await SessionStore.getProfile();
+      
+      let username = '';
+      if(userProfile.body.user.username){
+        username = userProfile.body.user.username;
+      } 
+
+      if (resp.username !== username) {
         alert(`${i18n.t(`${packageNS}:menu.withdraw.incorrect_username_or_password`)}`);
         return false;
       }
+
       const isOK = await this.verifyUser(resp);
 
       if (isOK) {
