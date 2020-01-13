@@ -218,17 +218,7 @@ class LoggedInRoutes extends Component {
         <Route exact path="/users/create" component={CreateUser} />
         <Route exact path="/users/:userID(\d+)" component={UserLayout} />
         <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
-        <Route exact path="/registration" component={Registration} />
-        <Route exact path="/password-recovery" component={PasswordRecovery} />
-        <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
-        <Route exact path="/registration-confirm/:securityToken"
-          render={props =>
-            <RegistrationConfirm {...props}
-              language={language}
-              onChangeLanguage={this.onChangeLanguage}
-            />
-          }
-        />
+        
         <Route exact path="/network-servers" component={ListNetworkServers} />
         <Route exact path="/network-servers/create" component={CreateNetworkServer} />
         <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
@@ -536,16 +526,17 @@ class App extends Component {
                   Comp={Login} user={user}
                   language={language}
                   onChangeLanguage={this.onChangeLanguage} />
-                {/* <Route exact path="/" component={HomeComponent} />
-                  <Route exact path="/login"
+                <Route exact path="/registration" component={Registration} />
+                <Route exact path="/password-recovery" component={PasswordRecovery} />
+                <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
+                <Route exact path="/registration-confirm/:securityToken"
                   render={props =>
-                    <Login {...props}
+                    <RegistrationConfirm {...props}
                       language={language}
                       onChangeLanguage={this.onChangeLanguage}
                     />
                   }
-                /> */}
-
+                />
                 <LoggedInRoutes />
 
               </Switch>
