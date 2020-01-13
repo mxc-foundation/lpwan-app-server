@@ -57,6 +57,7 @@ class GatewayProfileLayout extends Component {
       return (<div></div>);
     }
     const icon = <i class="mdi mdi-delete-empty"></i>;
+
     return (
       <React.Fragment>
         {this.state.nsDialog && <Modal
@@ -78,7 +79,7 @@ class GatewayProfileLayout extends Component {
               `/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)
             }</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
-            <BreadcrumbItem active>{`${this.state.gatewayProfile.gatewayProfile.name}`}</BreadcrumbItem>
+            <BreadcrumbItem active>{`${this.state.gatewayProfile.gatewayProfile.apiGatewayProfile.name}`}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
         <Row>

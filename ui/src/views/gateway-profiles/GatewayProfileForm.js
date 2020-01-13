@@ -75,7 +75,13 @@ class ExtraChannel extends Component {
             <FormControl
                 label={
                     <span>
-                        Extra channel {this.props.i + 1} (<a href="#delete" onClick={this.onDelete} className={this.props.classes.a}>{i18n.t(`${packageNS}:tr000401`)}</a>)
+                        {i18n.t(`${packageNS}:tr000117`)} {this.props.i + 1}
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <Button variant="outlined" color="danger" onClick={this.onDelete}>
+                                <span style={{ display: "flex" }}>
+                                    <i className="mdi mdi-delete"></i>&nbsp;{i18n.t(`${packageNS}:tr000061`)}
+                                </span>
+                            </Button>
                     </span>
                 }
             >
