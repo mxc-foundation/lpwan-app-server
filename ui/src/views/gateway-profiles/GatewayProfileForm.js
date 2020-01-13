@@ -107,7 +107,6 @@ class ExtraChannel extends Component {
                         <Label for="frequency" sm={2}>Frequency (Hz)</Label>
                         <Col sm={4}>
                             <Input type="number" name="frequency" id="frequency" value={this.props.channel.frequency || ""} onChange={this.onChange} />
-                            <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
                         </Col>
                         {this.props.channel.modulation === "LORA" && <><Label for="spreadingFactorsStr" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
                             <Col sm={4}>
@@ -118,7 +117,7 @@ class ExtraChannel extends Component {
                                     pattern="[0-9]+(,[\\s]*[0-9]+)*"
                                     value={spreadingFactorsStr || ""}
                                     onChange={this.onChange} />
-                                <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
+                                <FormText color="muted">{i18n.t(`${packageNS}:tr000124`)}</FormText>
                             </Col></>}
                         {this.props.channel.modulation === "FSK" && <><Label for="bitrate" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
                             <Col sm={4}>
