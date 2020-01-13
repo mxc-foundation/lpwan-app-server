@@ -216,7 +216,7 @@ class ListDevicesTable extends Component {
         devices.filter(device => device.applicationID === currentApplicationID)
         
       const object = this.state;
-      object.totalSize = res.totalCount;
+      object.totalSize = Number(res.totalCount);
       object.data = getOnlyDevicesFromCurrentApplication(res.result);
       object.loading = false;
       this.setState({object});

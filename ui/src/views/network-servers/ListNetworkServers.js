@@ -78,7 +78,7 @@ class ListNetworkServers extends Component {
     this.setState({ loading: true });
     NetworkServerStore.list(defaultOrgId, limit, offset, (res) => {
       const object = this.state;
-      object.totalSize = res.totalCount;
+      object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({object});

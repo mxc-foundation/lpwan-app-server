@@ -56,7 +56,7 @@ class GatewayProfileLayout extends Component {
     if (this.state.gatewayProfile === undefined) {
       return (<div></div>);
     }
-    const icon = <i class="mdi mdi-delete-empty"></i>;
+    const icon = <i className="mdi mdi-delete-empty"></i>;
 
     return (
       <React.Fragment>
@@ -69,7 +69,7 @@ class GatewayProfileLayout extends Component {
             <Button color="danger"
               key={1}
               onClick={this.openModal}
-              className=""><i class="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:tr000401`)}
+              className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:tr000401`)}
             </Button>
           ]}
         >

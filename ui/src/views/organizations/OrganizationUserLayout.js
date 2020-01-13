@@ -88,12 +88,12 @@ class OrganizationUserLayout extends Component {
             <Button color="secondary"
               key={1}
               onClick={this.gotoUser}
-              className="btn-rp"><i class="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
+              className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
             </Button>,
             <Button color="danger"
               key={1}
               onClick={this.openModal}
-              className=""><i class="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
+              className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
             </Button>
           ]}
         >
