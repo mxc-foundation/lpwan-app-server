@@ -85,53 +85,51 @@ class ExtraChannel extends Component {
                     </span>
                 }
             >
-                <Form>
-                    <FormGroup row>
-                        <Label for="modulation" sm={2}>{i18n.t(`${packageNS}:tr000118`)}</Label>
+                <FormGroup row>
+                    <Label for="modulation" sm={2}>{i18n.t(`${packageNS}:tr000118`)}</Label>
+                    <Col sm={4}>
+                        <Input type="select" name="modulation" id="modulation" value={this.props.channel.modulation || ""} onChange={this.onChange}>
+                            <option value="LORA">{i18n.t(`${packageNS}:tr000119`)}</option>
+                            <option value="FSK">{i18n.t(`${packageNS}:tr000120`)}</option>
+                        </Input>
+                    </Col>
+                    <Label for="bandwidth" sm={2}>{i18n.t(`${packageNS}:tr000121`)}</Label>
+                    <Col sm={4}>
+                        <Input type="select" name="bandwidth" id="bandwidth" value={this.props.channel.bandwidth || ""} onChange={this.onChange}>
+                            <option value={125}>125 {i18n.t(`${packageNS}:tr000122`)}</option>
+                            <option value={250}>250 {i18n.t(`${packageNS}:tr000122`)}</option>
+                            <option value={500}>500 {i18n.t(`${packageNS}:tr000122`)}</option>
+                        </Input>
+                    </Col>
+                </FormGroup>
+                <FormGroup row>
+                    <Label for="frequency" sm={2}>Frequency (Hz)</Label>
+                    <Col sm={4}>
+                        <Input type="number" name="frequency" id="frequency" value={this.props.channel.frequency || ""} onChange={this.onChange} />
+                    </Col>
+                    {this.props.channel.modulation === "LORA" && <><Label for="spreadingFactorsStr" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
                         <Col sm={4}>
-                            <Input type="select" name="modulation" id="modulation" value={this.props.channel.modulation || ""} onChange={this.onChange}>
-                                <option value="LORA">{i18n.t(`${packageNS}:tr000119`)}</option>
-                                <option value="FSK">{i18n.t(`${packageNS}:tr000120`)}</option>
-                            </Input>
-                        </Col>
-                        <Label for="bandwidth" sm={2}>{i18n.t(`${packageNS}:tr000121`)}</Label>
+                            <Input type="text"
+                                name="spreadingFactorsStr"
+                                id="spreadingFactorsStr"
+                                placeholder="7, 8, 9, 10, 11, 12"
+                                pattern="[0-9]+(,[\\s]*[0-9]+)*"
+                                value={spreadingFactorsStr || ""}
+                                onChange={this.onChange} />
+                            <FormText color="muted">{i18n.t(`${packageNS}:tr000124`)}</FormText>
+                        </Col></>}
+                    {this.props.channel.modulation === "FSK" && <><Label for="bitrate" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
                         <Col sm={4}>
-                            <Input type="select" name="bandwidth" id="bandwidth" value={this.props.channel.bandwidth || ""} onChange={this.onChange}>
-                                <option value={125}>125 {i18n.t(`${packageNS}:tr000122`)}</option>
-                                <option value={250}>250 {i18n.t(`${packageNS}:tr000122`)}</option>
-                                <option value={500}>500 {i18n.t(`${packageNS}:tr000122`)}</option>
-                            </Input>
-                        </Col>
-                    </FormGroup>
-                    <FormGroup row>
-                        <Label for="frequency" sm={2}>Frequency (Hz)</Label>
-                        <Col sm={4}>
-                            <Input type="number" name="frequency" id="frequency" value={this.props.channel.frequency || ""} onChange={this.onChange} />
-                        </Col>
-                        {this.props.channel.modulation === "LORA" && <><Label for="spreadingFactorsStr" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
-                            <Col sm={4}>
-                                <Input type="text"
-                                    name="spreadingFactorsStr"
-                                    id="spreadingFactorsStr"
-                                    placeholder="7, 8, 9, 10, 11, 12"
-                                    pattern="[0-9]+(,[\\s]*[0-9]+)*"
-                                    value={spreadingFactorsStr || ""}
-                                    onChange={this.onChange} />
-                                <FormText color="muted">{i18n.t(`${packageNS}:tr000124`)}</FormText>
-                            </Col></>}
-                        {this.props.channel.modulation === "FSK" && <><Label for="bitrate" sm={2}>{i18n.t(`${packageNS}:tr000123`)}</Label>
-                            <Col sm={4}>
-                                <Input type="number"
-                                    name="bitrate"
-                                    id="bitrate"
-                                    placeholder="50000"
-                                    pattern="[0-9]+(,[\\s]*[0-9]+)*"
-                                    value={this.props.channel.bitrate || ""}
-                                    onChange={this.onChange} />
-                                <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
-                            </Col></>}
-                    </FormGroup>
-                </Form>
+                            <Input type="number"
+                                name="bitrate"
+                                id="bitrate"
+                                placeholder="50000"
+                                pattern="[0-9]+(,[\\s]*[0-9]+)*"
+                                value={this.props.channel.bitrate || ""}
+                                onChange={this.onChange} />
+                            <FormText color="muted">{i18n.t(`${packageNS}:tr000112`)}</FormText>
+                        </Col></>}
+                </FormGroup>
             </FormControl>
         );
     }
