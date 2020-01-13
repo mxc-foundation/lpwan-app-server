@@ -102,7 +102,6 @@ class ListOrganizations extends Component {
 
   getPage(limit, offset) {
     OrganizationStore.list("", limit, offset, (res) => {
-      console.log('res', res);
       const object = this.state;
       object.totalSize = res.totalCount;
       object.data = res.result;

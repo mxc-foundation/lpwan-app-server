@@ -151,9 +151,9 @@ class TopNav extends Component {
     try {
       let organizationId = SessionStore.getOrganizationID();
 
-      var result = await getWalletBalance(organizationId);
+      //var result = await getWalletBalance(organizationId);
       
-      this.setState({ balance: result.balance });
+      //this.setState({ balance: result.balance });
     } catch (error) {
       console.error(error);
       this.setState({ error });
