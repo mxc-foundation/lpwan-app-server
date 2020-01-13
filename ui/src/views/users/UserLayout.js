@@ -4,7 +4,7 @@ import { withRouter, Link } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Row, Button } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-
+import Admin from '../../components/Admin';
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import UserStore from "../../stores/UserStore";
@@ -74,6 +74,7 @@ class UserLayout extends Component {
             ]}
           >
             <Breadcrumb className={classes.breadcrumb}>
+              <Admin>
               <BreadcrumbItem>
                 <Link
                   className={classes.breadcrumbItemLink}
@@ -82,6 +83,7 @@ class UserLayout extends Component {
                     {i18n.t(`${packageNS}:tr000036`)}
                 </Link>
               </BreadcrumbItem>
+              </Admin>
               <BreadcrumbItem>
                 <Link
                   className={classes.breadcrumbItemLink}
