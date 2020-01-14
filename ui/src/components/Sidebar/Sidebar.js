@@ -42,7 +42,7 @@ const ProfileMenus = [{
 
 function loadServerVersion() {
     return new Promise((resolve, reject) => {
-        ServerInfoStore.getVersion(data => {
+        ServerInfoStore.getAppserverVersion(data => {
             resolve(data);
         });
     });
@@ -59,7 +59,7 @@ class Sidebar extends Component {
             organization: null,
             organizationID: '',
             cacheCounter: 0,
-            version: '1.0.0'
+            version: ''
         };
 
         this.handleOtherClick = this.handleOtherClick.bind(this);
@@ -68,12 +68,12 @@ class Sidebar extends Component {
     loadData = async () => {
         try {
           const organizationIDs = SessionStore.getOrganizations();
-          /* var data = await loadServerVersion();
-          const serverInfo = JSON.parse(data); */
+           var data = await loadServerVersion();
+          const serverInfo = JSON.parse(data);
           
           this.setState({
-            organizationID: organizationIDs[0].organizationID
-            //version: serverInfo.version
+            organizationID: organizationIDs[0].organizationID,
+            version: serverInfo.version
           })
     
           this.setState({loading: true})
