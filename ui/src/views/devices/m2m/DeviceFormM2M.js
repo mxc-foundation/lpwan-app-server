@@ -177,6 +177,7 @@ class DeviceFormM2M extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     if (this._isMounted) {
       this.setState({ loading: true });
     }

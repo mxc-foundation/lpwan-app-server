@@ -76,6 +76,7 @@ class NetworkActivityHistory extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
     HistoryStore.getWalletUsageHist(this.props.organizationID, offset, limit, res => {
       const object = this.state;

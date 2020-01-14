@@ -101,6 +101,7 @@ class ListOrganizations extends Component {
   };
 
   getPage(limit, offset) {
+    limit = MAX_DATA_LIMIT;
     OrganizationStore.list("", limit, offset, (res) => {
       const object = this.state;
       object.totalSize = res.totalCount;

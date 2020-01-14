@@ -74,6 +74,7 @@ class ListNetworkServers extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     const defaultOrgId = 0;
     this.setState({ loading: true });
     NetworkServerStore.list(defaultOrgId, limit, offset, (res) => {

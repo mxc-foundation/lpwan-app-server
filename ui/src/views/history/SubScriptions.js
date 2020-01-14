@@ -12,6 +12,7 @@ import TitleBarButton from "../../components/TitleBarButton";
 import DataTable from "../../components/DataTable";
 import Admin from "../../components/Admin";
 import { ETHER } from "../../util/CoinType";
+import {MAX_DATA_LIMIT} from "../../util/pagination";
 
 class SubScriptions extends Component {
   constructor() {
@@ -21,6 +22,7 @@ class SubScriptions extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
+      limit = MAX_DATA_LIMIT;
     HistoryStore.getWithdrawHistory(ETHER, this.props.match.params.organizationID, limit, offset, (data) => {
       callbackFunc({
         totalCount: offset + 2 * limit,

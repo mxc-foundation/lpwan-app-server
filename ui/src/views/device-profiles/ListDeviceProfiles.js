@@ -71,6 +71,7 @@ class ListDeviceProfiles extends Component {
   }
 
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     this.setState({ loading: true });
