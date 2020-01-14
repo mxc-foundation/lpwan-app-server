@@ -9,6 +9,7 @@ import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import UpdateGatewayProfile from "./UpdateGatewayProfile";
+import Admin from "../../components/Admin";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 
@@ -73,10 +74,12 @@ class GatewayProfileLayout extends Component {
           ]}
         >
           <Breadcrumb className={classes.breadcrumb} style={{ fontSize: "1.25rem", margin: "0rem" }}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <Admin>
+              <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:maenu.control_panel`)}</BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
               `/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)
-            }</Link></BreadcrumbItem>
+              }</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
             <BreadcrumbItem active>{`${this.state.gatewayProfile.gatewayProfile.name}`}</BreadcrumbItem>
           </Breadcrumb>

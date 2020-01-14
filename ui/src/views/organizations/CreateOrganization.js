@@ -7,6 +7,7 @@ import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import OrganizationForm from "./OrganizationForm";
 import OrganizationStore from "../../stores/OrganizationStore";
+import Admin from "../../components/Admin";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 
@@ -38,7 +39,9 @@ class CreateOrganization extends Component {
       <React.Fragment>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <Admin>
+              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
           </Breadcrumb>
@@ -49,10 +52,10 @@ class CreateOrganization extends Component {
             <Card>
               <CardBody>
                 <OrganizationForm
-                    match={this.props.match}
-                    submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                    onSubmit={this.onSubmit}
-                    object={{}}
+                  match={this.props.match}
+                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                  onSubmit={this.onSubmit}
+                  object={{}}
                 />
               </CardBody>
             </Card>

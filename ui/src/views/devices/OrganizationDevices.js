@@ -1,8 +1,11 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
-  TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
+import Admin from "../../components/Admin";
+import {
+  Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
+  TabContent, TabPane, Nav, NavItem, NavLink
+} from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import classnames from 'classnames';
 
@@ -90,7 +93,7 @@ class OrganizationDevices extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentOrgName = organization && (organization.name || organization.displayName);
 
-    return(
+    return (
       <Container fluid>
         <Row>
           <Col xs={12}>
@@ -109,12 +112,14 @@ class OrganizationDevices extends Component {
               </DeviceAdmin>}
             >
               <Breadcrumb className={classes.breadcrumb}>
-                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                  `/organizations`
-                }>Organizations</Link></BreadcrumbItem>
-                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                  `/organizations/${currentOrgID}`
-                }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                <Admin>
+                  <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                    `/organizations`
+                  }>Organizations</Link></BreadcrumbItem>
+                  <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                    `/organizations/${currentOrgID}`
+                  }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                </Admin>
                 <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000278`)}</BreadcrumbItem>
               </Breadcrumb>
             </TitleBar>
@@ -124,54 +129,54 @@ class OrganizationDevices extends Component {
           <Col xs={12}>
             {/* <Card>
               <CardBody> */}
-                <Nav tabs>
-                  <NavItem>
-                    <NavLink
-                      active={activeMainTabIndex === 0}
-                      onClick={() => { this.toggleMainTabIndex(0); }}
-                      tag={Link}
-                      to={`/organizations/${currentOrgID}/devices`}
-                    >
-                      <i className="mdi mdi-information-outline"></i>
-                      <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000554`)}</span>
-                    </NavLink>
-                  </NavItem>
-                  <NavItem>
-                    <NavLink
-                      active={activeMainTabIndex === 1}
-                      onClick={() => { this.toggleMainTabIndex(1); }}
-                      tag={Link}
-                      to={`/organizations/${currentOrgID}/applications`}
-                    >
-                      <i className="mdi mdi-apps"></i>
-                      <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000076`)}</span>
-                    </NavLink>
-                  </NavItem>
-                  <NavItem>
-                    <NavLink
-                      active={activeMainTabIndex === 2}
-                      onClick={() => { this.toggleMainTabIndex(2); }}
-                      tag={Link}
-                      to={`/organizations/${currentOrgID}/device-profiles`}
-                    >
-                      <i className="mdi mdi-folder-multiple"></i>
-                      <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000501`)}</span>
-                    </NavLink>
-                  </NavItem>
-                </Nav>
-                <TabContent className={this.props.classes.tabContent} activeTab={activeMainTabIndex}>
-                  {loading && <Loader light />}
-                  <TabPane tabId={0} className={this.props.classes.tabPane}>
-                    {children}
-                  </TabPane>
-                  <TabPane tabId={1} className={this.props.classes.tabPane}>
-                    {children}
-                  </TabPane>
-                  <TabPane tabId={2} className={this.props.classes.tabPane}>
-                    {children}
-                  </TabPane>
-                </TabContent>
-              {/* </CardBody>
+            <Nav tabs>
+              <NavItem>
+                <NavLink
+                  active={activeMainTabIndex === 0}
+                  onClick={() => { this.toggleMainTabIndex(0); }}
+                  tag={Link}
+                  to={`/organizations/${currentOrgID}/devices`}
+                >
+                  <i className="mdi mdi-information-outline"></i>
+                  <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000554`)}</span>
+                </NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink
+                  active={activeMainTabIndex === 1}
+                  onClick={() => { this.toggleMainTabIndex(1); }}
+                  tag={Link}
+                  to={`/organizations/${currentOrgID}/applications`}
+                >
+                  <i className="mdi mdi-apps"></i>
+                  <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000076`)}</span>
+                </NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink
+                  active={activeMainTabIndex === 2}
+                  onClick={() => { this.toggleMainTabIndex(2); }}
+                  tag={Link}
+                  to={`/organizations/${currentOrgID}/device-profiles`}
+                >
+                  <i className="mdi mdi-folder-multiple"></i>
+                  <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000501`)}</span>
+                </NavLink>
+              </NavItem>
+            </Nav>
+            <TabContent className={this.props.classes.tabContent} activeTab={activeMainTabIndex}>
+              {loading && <Loader light />}
+              <TabPane tabId={0} className={this.props.classes.tabPane}>
+                {children}
+              </TabPane>
+              <TabPane tabId={1} className={this.props.classes.tabPane}>
+                {children}
+              </TabPane>
+              <TabPane tabId={2} className={this.props.classes.tabPane}>
+                {children}
+              </TabPane>
+            </TabContent>
+            {/* </CardBody>
             </Card> */}
           </Col>
         </Row>

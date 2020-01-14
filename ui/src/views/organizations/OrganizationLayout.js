@@ -74,23 +74,25 @@ class OrganizationLayout extends Component {
           context={i18n.t(`${packageNS}:lpwan.organizations.delete_organization`)}
           callback={this.deleteOrganization} />}
         <TitleBar
-            buttons={
-              <Admin>
-                <TitleBarButton
-                  key={1}
-                  color="danger"
-                  label={i18n.t(`${packageNS}:tr000061`)}
-                  icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
-                  onClick={this.openModal}
-                />
-              </Admin>
-            }
+          buttons={
+            <Admin>
+              <TitleBarButton
+                key={1}
+                color="danger"
+                label={i18n.t(`${packageNS}:tr000061`)}
+                icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+                onClick={this.openModal}
+              />
+            </Admin>
+          }
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
-            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-              `/organizations`}>{i18n.t(`${packageNS}:tr000049`)
-            }</Link></BreadcrumbItem>
+            <Admin>
+              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+              <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                `/organizations`}>{i18n.t(`${packageNS}:tr000049`)
+                }</Link></BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
             <BreadcrumbItem active>{this.state.organization.organization.name}</BreadcrumbItem>
           </Breadcrumb>

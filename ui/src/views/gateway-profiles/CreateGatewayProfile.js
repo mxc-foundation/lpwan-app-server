@@ -26,6 +26,7 @@ import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import Admin from "../../components/Admin";
 
 const localStyles = {};
 
@@ -80,7 +81,9 @@ class CreateGatewayProfile extends Component {
 
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <Admin>
+              <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:maenu.control_panel`)}</BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
           </Breadcrumb>

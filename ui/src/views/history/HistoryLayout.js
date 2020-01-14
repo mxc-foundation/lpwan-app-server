@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
+import Admin from "../../components/Admin";
+
 import classNames from "classnames";
 import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
@@ -86,24 +88,26 @@ class HistoryLayout extends Component {
       <React.Fragment>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-                onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-              >
-                Organizations
+            <Admin>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations`}
+                  onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+                >
+                  Organizations
               </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-                onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations/${currentOrgID}`}
+                  onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+                >
+                  {currentOrgID}
+                </Link>
+              </BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.history.history`)}</BreadcrumbItem>
           </Breadcrumb>
