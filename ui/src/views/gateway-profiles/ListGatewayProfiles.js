@@ -67,6 +67,7 @@ class ListGatewayProfiles extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     GatewayProfileStore.list(0, limit, offset, (res) => {
       const object = this.state;
       object.totalSize = res.totalCount;
