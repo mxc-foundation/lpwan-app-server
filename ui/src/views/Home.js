@@ -18,7 +18,7 @@ class HomeComponent extends Component {
                 if(user.isAdmin){
                     return <Redirect to={`/users`}></Redirect>;
                 }else{
-                    return <Redirect to={`/stake/${orgs[0].organizationID}`}></Redirect>;
+                    return <Redirect to={`/stake/${orgs[0].organizationID}/set-stake`}></Redirect>;
                 }
             } else {
                 console.log('User has no organisations. Redirecting to login');
