@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import Admin from "../../components/Admin";
 import { Breadcrumb, BreadcrumbItem, Button, Card, Container, Modal, ModalHeader, ModalBody, ModalFooter, NavLink, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
@@ -84,7 +83,7 @@ class CreateDevice extends Component {
   onSubmit = (device) => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const deviceApplicationID = device.applicationID;
-    const isDeviceApplication = deviceApplicationID !== undefined;
+    const isDeviceApplication = deviceApplicationID !== undefined; 
 
     DeviceStore.create(device, resp => {
       if (!isDeviceApplication) {
@@ -94,12 +93,12 @@ class CreateDevice extends Component {
       DeviceProfileStore.get(device.deviceProfileID, resp => {
         if (resp.deviceProfile.supportsJoin) {
           isDeviceApplication
-            ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/keys`)
-            : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/keys`);
+          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/keys`)
+          : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/keys`);
         } else {
           isDeviceApplication
-            ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/activation`)
-            : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/activation`);
+          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/activation`)
+          : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/activation`);
         }
       });
 
@@ -117,7 +116,7 @@ class CreateDevice extends Component {
     const closeAppBtn = <button className="close" onClick={this.toggleAppDialog}>&times;</button>;
     const closeDpBtn = <button className="close" onClick={this.toggleDpDialog}>&times;</button>;
 
-    return (
+    return(
       <React.Fragment>
         <Modal
           isOpen={this.state.appDialog}
@@ -152,7 +151,7 @@ class CreateDevice extends Component {
             </Button>
             <Button color="primary" onClick={this.toggleAppDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
           </ModalFooter>
-        </Modal>
+        </Modal>            
 
         <Modal
           isOpen={this.state.dpDialog}
@@ -194,49 +193,43 @@ class CreateDevice extends Component {
           {
             currentApplicationID ? (
               <Breadcrumb className={classes.breadcrumb}>
-                <Admin>
-                  <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                    `/organizations/${currentOrgID}/applications`
-                  }>{i18n.t(`${packageNS}:tr000076`)}</Link>
-                  </BreadcrumbItem>
-                  <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                    `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                  }>{currentAppName || currentApplicationID || '???'}</Link>
-                  </BreadcrumbItem>
-                </Admin>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications`
+                }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                  }>{currentAppName || currentApplicationID || '???'}</Link></BreadcrumbItem>
                 <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                   `/organizations/${currentOrgID}/applications/${currentApplicationID}`
                 }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
                 <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
               </Breadcrumb>
             ) : (
-                <Breadcrumb className={classes.breadcrumb}>
-                  <Admin>
-                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                      `/organizations`
-                    }>Organizations</Link></BreadcrumbItem>
-                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                      `/organizations/${currentOrgID}`
-                    }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
-                  </Admin>
-                  <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                    `/organizations/${currentOrgID}/devices`
-                  }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
-                  <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-                </Breadcrumb>
-              )
+              <Breadcrumb className={classes.breadcrumb}>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations`
+                }>Organizations</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}`
+                }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                  `/organizations/${currentOrgID}/devices`
+                }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+              </Breadcrumb>
+            )
           }
         </TitleBar>
 
         {/* <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}> */}
         {/* <Card body> */}
-        <DeviceForm
-          submitLabel={i18n.t(`${packageNS}:tr000277`)}
-          onSubmit={this.onSubmit}
-          match={this.props.match}
-          loading={loading}
-        />
-        <br />
+          <DeviceForm
+            submitLabel={i18n.t(`${packageNS}:tr000277`)}
+            onSubmit={this.onSubmit}
+            match={this.props.match}
+            loading={loading}
+          />
+          <br />
       </React.Fragment>
     );
   }

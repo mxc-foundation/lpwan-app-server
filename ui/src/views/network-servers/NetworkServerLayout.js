@@ -13,7 +13,6 @@ import NetworkServerStore from "../../stores/NetworkServerStore";
 import UpdateNetworkServer from "./UpdateNetworkServer";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
-import Admin from "../../components/Admin";
 
 const localStyles = {};
 
@@ -68,9 +67,7 @@ class NetworkServerLayout extends Component {
           ]}
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
-              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
-            </Admin>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
             <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
               `/network-servers`}>{i18n.t(`${packageNS}:tr000040`)
             }</Link></BreadcrumbItem>

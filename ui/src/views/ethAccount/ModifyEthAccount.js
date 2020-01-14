@@ -9,12 +9,7 @@ import SessionStore from "../../stores/SessionStore";
 import ModifyEthAccountForm from "./ModifyEthAccountForm";
 import NewEthAccountForm from "./NewEthAccountForm";
 import { ETHER } from "../../util/CoinType";
-import { withStyles } from "@material-ui/core/styles";
-import breadcrumbStyles from "../common/BreadcrumbStyles";
 
-const styles = {
-  ...breadcrumbStyles,
-};
 
 class ModifyEthAccount extends Component {
   constructor() {
@@ -133,4 +128,4 @@ class ModifyEthAccount extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(ModifyEthAccount));
+export default withRouter(ModifyEthAccount);

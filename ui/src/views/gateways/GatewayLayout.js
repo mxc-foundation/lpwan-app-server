@@ -16,7 +16,6 @@ import GatewayDiscovery from "./GatewayDiscovery";
 import GatewayFrames from "./GatewayFrames";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
-import Admin from "../../components/Admin";
 
 const localStyles = {};
 
@@ -113,24 +112,22 @@ class GatewayLayout extends Component {
           </GatewayAdmin>}
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                >
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
                   Organizations
               </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations/${currentOrgID}`}
-                >
-                  {currentOrgID}
-                </Link>
-              </BreadcrumbItem>
-            </Admin>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}
@@ -163,7 +160,7 @@ class GatewayLayout extends Component {
                   <NavItem>
                     <Link
                       className={classNames('nav-link', { active: this.state.activeTab === '2' })}
-                      disabled={!this.state.gateway.gateway.discoveryEnabled}
+                      disabled={!this.state.gateway.gateway.discoveryEnabled} 
                       to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/discovery`}
                     >{i18n.t(`${packageNS}:tr000095`)}</Link>
                   </NavItem>

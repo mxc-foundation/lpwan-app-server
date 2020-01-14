@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
-import Admin from "../../components/Admin";
+
 import { withStyles } from "@material-ui/core/styles";
 import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 
@@ -49,29 +49,27 @@ class Topup extends Component {
     return (<React.Fragment>
       <TitleBar>
         <Breadcrumb className={classes.breadcrumb}>
-          <Admin>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-                onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-              >
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations`}
+              onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+            >
                 Organizations
             </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-                onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-          </Admin>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations/${currentOrgID}`}
+              onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+            >
+              {currentOrgID}
+            </Link>
+          </BreadcrumbItem>
           <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
           <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.topup.topup`)}</BreadcrumbItem>
-        </Breadcrumb>
+        </Breadcrumb>    
       </TitleBar>
 
       <Row>

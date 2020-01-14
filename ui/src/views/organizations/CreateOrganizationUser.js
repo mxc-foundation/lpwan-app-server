@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import Admin from "../../components/Admin";
 import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
@@ -61,17 +60,17 @@ class AssignUserForm extends FormComponent {
 
   getUserOptions(search, callbackFunc) {
     UserStore.list(search, 10, 0, resp => {
-      const options = resp.result.map((u, i) => { return { label: u.username, value: u.id } });
+      const options = resp.result.map((u, i) => {return {label: u.username, value: u.id}});
       callbackFunc(options);
     });
   }
 
   render() {
     if (this.state.object === undefined) {
-      return (<div></div>);
+      return(<div></div>);
     }
 
-    return (
+    return(
       <Form
         submitLabel={i18n.t(`${packageNS}:tr000041`)}
         onSubmit={this.onSubmit}
@@ -142,10 +141,10 @@ AssignUserForm = withStyles(styles)(AssignUserForm);
 class CreateUserForm extends FormComponent {
   render() {
     if (this.state.object === undefined) {
-      return (<div></div>);
+      return(<div></div>);
     }
 
-    return (
+    return(
       <Form
         submitLabel={i18n.t(`${packageNS}:tr000277`)}
         onSubmit={this.onSubmit}
@@ -286,7 +285,7 @@ class CreateOrganizationUser extends Component {
 
   onCreateUser(user) {
     const orgs = [
-      { isAdmin: user.isAdmin, isDeviceAdmin: user.isDeviceAdmin, isGatewayAdmin: user.isGatewayAdmin, organizationID: this.props.match.params.organizationID },
+      {isAdmin: user.isAdmin, isDeviceAdmin: user.isDeviceAdmin, isGatewayAdmin: user.isGatewayAdmin, organizationID: this.props.match.params.organizationID},
     ];
 
     let u = user;
@@ -305,28 +304,26 @@ class CreateOrganizationUser extends Component {
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    return (
+    return(
       <Grid container spacing={4}>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                >
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
                   Organizations
               </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations/${currentOrgID}`}
-                >
-                  {currentOrgID}
-                </Link>
-              </BreadcrumbItem>
-            </Admin>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}

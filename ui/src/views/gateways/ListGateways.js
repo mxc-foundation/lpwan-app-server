@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Route, Switch, Link } from "react-router-dom";
 
-import Admin from "../../components/Admin";
 import moment from "moment";
 import { Bar } from "react-chartjs-2";
 import { Map, Marker, Popup } from 'react-leaflet';
@@ -32,7 +31,7 @@ const styles = {
 
 const GatewayActivityColumn = (cell, row, index, extraData) => {
   const stats = extraData['stats'];
-
+  
   const options = {
     elements: {
       rectangle: {
@@ -55,8 +54,8 @@ const GatewayActivityColumn = (cell, row, index, extraData) => {
     },
   };
 
-  let rowStats = stats && stats[row.id] ? stats[row.id] : null;
-
+  let rowStats = stats && stats[row.id] ? stats[row.id]: null;
+  
   let chartData = {
     labels: [],
     datasets: [
@@ -138,7 +137,7 @@ class ListGatewaysTable extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -158,7 +157,7 @@ class ListGatewaysTable extends Component {
       object.totalSize = res.totalCount;
       object.data = res.result;
       object.loading = false;
-      this.setState({ object });
+      this.setState({object});
     });
   }
 
@@ -335,24 +334,22 @@ class ListGateways extends Component {
         </GatewayAdmin>}
       >
         <Breadcrumb className={classes.breadcrumb}>
-          <Admin>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations`}
+            >
                 Organizations
             </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-          </Admin>
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            <Link
+              className={classes.breadcrumbItemLink}
+              to={`/organizations/${currentOrgID}`}
+            >
+              {currentOrgID}
+            </Link>
+          </BreadcrumbItem>
           <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000063`)}</BreadcrumbItem>
         </Breadcrumb>
       </TitleBar>
@@ -360,13 +357,13 @@ class ListGateways extends Component {
       <Row>
         <Col>
           <Card className="card-box shadow-sm">
-            {this.state.viewMode === 'map' &&
-              <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
+              {this.state.viewMode === 'map' &&
+                <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
 
-            <Switch>
-              <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
-              <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
-            </Switch>
+              <Switch>
+                <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
+                <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
+              </Switch>
           </Card>
         </Col>
       </Row>

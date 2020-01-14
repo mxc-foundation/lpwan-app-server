@@ -75,14 +75,14 @@ class UserLayout extends Component {
           >
             <Breadcrumb className={classes.breadcrumb}>
               <Admin>
-                <BreadcrumbItem>
-                  <Link
-                    className={classes.breadcrumbItemLink}
-                    to={`/users`}
-                  >
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/users`}
+                >
                     {i18n.t(`${packageNS}:tr000036`)}
-                  </Link>
-                </BreadcrumbItem>
+                </Link>
+              </BreadcrumbItem>
               </Admin>
               <BreadcrumbItem>
                 <Link

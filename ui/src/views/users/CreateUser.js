@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import Admin from "../../components/Admin";
 import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
@@ -36,9 +35,7 @@ class CreateUser extends Component {
         <Grid item xs={12}>
           <TitleBar noButtons>
             <Breadcrumb className={classes.breadcrumb}>
-              <Admin>
-                <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
-              </Admin>
+              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
               <BreadcrumbItem>
                 <Link
                   className={classes.breadcrumbItemLink}
