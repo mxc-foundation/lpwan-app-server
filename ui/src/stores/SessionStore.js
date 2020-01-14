@@ -77,6 +77,14 @@ class SessionStore extends EventEmitter {
     this.emit("organization.change");
   }
 
+  setLogoPath(path) {
+    localStorage.setItem("logopath", path);
+  }
+
+  getLogoPath() {
+    return localStorage.getItem("logopath");
+  }
+
   setUser(user) {
     localStorage.setItem("user", JSON.stringify(user));
   }
@@ -193,6 +201,10 @@ class SessionStore extends EventEmitter {
           if(this.organizations.length > 0){
             this.setOrganizationID(this.organizations[0].organizationID);  
           }
+
+          this.getBranding((resp)=>{
+            this.setLogoPath(resp.logoPath);
+          });
 
           if(resp.obj.settings !== undefined) {
             this.settings = resp.obj.settings;

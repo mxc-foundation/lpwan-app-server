@@ -56,11 +56,13 @@ class Topbar extends Component {
   loadData = async () => {
     try {
       let orgid = await SessionStore.getOrganizationID();
-      var result = await getWalletBalance(orgid);
+      let result = await getWalletBalance(orgid);
+      let logoPath = '';
+      
       
       const balance = (SessionStore.isAdmin()) ?  result.amount : result.balance;
 
-      this.setState({ balance });
+      this.setState({ balance, logoPath });
 
     } catch (error) {
       console.error(error);
@@ -144,7 +146,7 @@ class Topbar extends Component {
           <div className="logo-box">
             <div to="/" className="logo text-center">
               <span className="logo-lg">
-                <img src={logo} alt="" height="53" />
+                <img src={SessionStore.getLogoPath()} alt="" height="53" />
               </span>
               <span className="logo-sm">
                 <img src={logoSm} alt="" height="16" />
