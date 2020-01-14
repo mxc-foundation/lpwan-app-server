@@ -27,12 +27,12 @@ const SideNavSupernodeSettingContent = (props) => {
                         </Link>
                     </li>
 
-                    <li>
+{/*                    <li>
                         <Link to={`/control-panel/system-settings`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-settings"></i>
                             <span> {i18n.t(`${packageNS}:tr000417`)} </span>
                         </Link>
-                    </li>
+                    </li>*/}
                 </Admin>
             </ul>
         </div>
