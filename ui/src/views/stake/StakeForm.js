@@ -50,7 +50,7 @@ function getWalletBalance() {
       return resolve(resp);
     });
   });
-} 
+}
 
 class StakeForm extends Component {
 
@@ -313,12 +313,16 @@ class StakeForm extends Component {
     const {
       object: {
         balance,
+        amount,
+        isUnstake,
         infoModal
       }
     } = this.state;
 
+    let trashold = (isUnstake) ? amount : balance;
+
     let fieldsSchema = {
-      amount: Yup.number().moreThan(0).lessThan(balance).required(),
+      amount: Yup.number().moreThan(0).max(trashold).required(),
       revRate: Yup.number(),
     }
 
