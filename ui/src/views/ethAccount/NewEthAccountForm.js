@@ -29,16 +29,16 @@ class NewEthAccountForm extends Component {
       object: {
         username: '',
         password: '',
-        createAccount: ''
+        newAccount: ''
       }
     })
   }
 
   onSubmit = () => {
     this.props.onSubmit({
-      action: 'createAccount',
-      createAccount: this.state.object.createAccount,
-      currentAccount: this.state.object.createAccount,
+      action: 'newAccount',
+      newAccount: this.state.object.newAccount,
+      currentAccount: this.state.object.newAccount,
       username: this.state.object.username,
       password: this.state.object.password
     });
@@ -48,7 +48,7 @@ class NewEthAccountForm extends Component {
 
   render() {
     let fieldsSchema = {
-      createAccount: Yup.string(),
+      newAccount: Yup.string(),
       username: Yup.string(),
       password: Yup.string(),
     }
@@ -73,9 +73,9 @@ class NewEthAccountForm extends Component {
                 <Field
                   type="text"
                   label={i18n.t(`${packageNS}:menu.eth_account.new_account`)}
-                  name="createAccount"
-                  id="createAccount"
-                  value={this.state.object.createAccount || ""}
+                  name="newAccount"
+                  id="newAccount"
+                  value={this.state.object.newAccount || ""}
                   placeholder="0x0000000000000000000000000000000000000000"
                   component={ReactstrapInput}
                   onBlur={handleBlur}
@@ -84,7 +84,6 @@ class NewEthAccountForm extends Component {
                     cache: false,
                   }}
                 />
-
                 <Field
                   type="text"
                   label={i18n.t(`${packageNS}:menu.withdraw.username`)}
@@ -99,7 +98,6 @@ class NewEthAccountForm extends Component {
                     cache: false,
                   }}
                 />
-
                 <Field
                   type="password"
                   label={i18n.t(`${packageNS}:menu.eth_account.password`)}
@@ -113,7 +111,6 @@ class NewEthAccountForm extends Component {
                     cache: false,
                   }}
                 />
-
                 <Button className="btn-block" onClick={this.reset}>{i18n.t(`${packageNS}:common.reset`)}</Button>
                 <Button type="submit" className="btn-block" color="primary">{this.props.submitLabel || i18n.t(`${packageNS}:tr000066`)}</Button>
               </Form>

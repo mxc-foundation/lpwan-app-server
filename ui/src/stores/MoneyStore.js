@@ -7,7 +7,6 @@ import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
 
-
 class MoneyStore extends EventEmitter {
   constructor() {
     super();
