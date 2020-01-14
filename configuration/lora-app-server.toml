@@ -356,7 +356,7 @@ gateways_locations_limit=100000
   #registration="{{ .ApplicationServer.Branding.Registration }}"
 
   # Logo Path
-  logo_path = "/logo/logo.png"
+  logo_path = "https://lora.supernode.matchx.io/branding.png"
 
 
 
