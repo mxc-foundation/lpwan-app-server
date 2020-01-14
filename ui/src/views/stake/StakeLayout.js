@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import Admin from "../../components/Admin";
 import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Typography from '@material-ui/core/Typography';
@@ -57,7 +56,7 @@ class StakeLayout extends Component {
     StakeStore.getStakingHistory(this.props.match.params.organizationID, 0, 1, data => {
       let amount = 0;
       let isFirst = true;
-      if (data.stakingHist.length > 0) {
+      if( data.stakingHist.length > 0){
         this.props.history.push(`/stake/${this.props.match.params.organizationID}/set-stake`);
       }
       this.setState({
@@ -113,47 +112,45 @@ class StakeLayout extends Component {
             }
           >
             <Breadcrumb className={classes.breadcrumb}>
-              <Admin>
-                <BreadcrumbItem>
-                  <Link
-                    className={classes.breadcrumbItemLink}
-                    to={`/organizations`}
-                  >
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations`}
+                >
                     Organizations
                 </Link>
-                </BreadcrumbItem>
-                <BreadcrumbItem>
-                  <Link
-                    className={classes.breadcrumbItemLink}
-                    to={`/organizations/${currentOrgID}`}
-                  >
-                    {currentOrgID}
-                  </Link>
-                </BreadcrumbItem>
-              </Admin>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations/${currentOrgID}`}
+                >
+                  {currentOrgID}
+                </Link>
+              </BreadcrumbItem>
               <BreadcrumbItem active>Stake</BreadcrumbItem>
             </Breadcrumb>
           </TitleBar>
-
+          
           {/* <div className={this.props.classes.TitleBar}> */}
-          {/* <TitleBar className={this.props.classes.padding}>
+            {/* <TitleBar className={this.props.classes.padding}>
                 <TitleBarTitle title="Stake" />
               </TitleBar> */}
-          {/* <Divider light={true}/> */}
-          {/* <div className={this.props.classes.between}> */}
-          {/* <TitleBar> */}
-          {/* <TitleBarTitle title="Stake" /> */}
-          {/* <TitleBarTitle component={Link} to="#" title="M2M Wallet" className={this.props.classes.link}/> 
+            {/* <Divider light={true}/> */}
+            {/* <div className={this.props.classes.between}> */}
+              {/* <TitleBar> */}
+                {/* <TitleBarTitle title="Stake" /> */}
+                {/* <TitleBarTitle component={Link} to="#" title="M2M Wallet" className={this.props.classes.link}/> 
                 <TitleBarTitle component={Link} to="#" title="/" className={this.props.classes.link}/>
                 <TitleBarTitle component={Link} to="#" title="Devices" className={this.props.classes.link}/> */}
-          {/* </TitleBar> */}
-          {/* <TitleBarButton
+              {/* </TitleBar> */}
+              {/* <TitleBarButton
                 label="SET STAKE"
                 color="primary"
                 to={`/stake/${this.props.match.params.organizationID}/set-stake`}
                 classes={this.props.classes}
               /> */}
-          {/* </div> */}
+            {/* </div> */}
           {/* </div> */}
         </Grid>
         <Grid item xs={12} className={this.props.classes.divider}>

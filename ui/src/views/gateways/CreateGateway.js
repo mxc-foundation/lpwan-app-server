@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import Admin from "../../components/Admin";
 import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
@@ -73,24 +72,22 @@ class CreateGateway extends Component {
       <React.Fragment>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                >
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
                   Organizations
               </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations/${currentOrgID}`}
-                >
-                  {currentOrgID}
-                </Link>
-              </BreadcrumbItem>
-            </Admin>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}
@@ -135,7 +132,7 @@ class CreateGateway extends Component {
               </p>
             </React.Fragment>
           } title={i18n.t(`${packageNS}:tr000164`)}
-          showConfirmButton={true} left={i18n.t(`${packageNS}:tr000166`)} right={i18n.t(`${packageNS}:tr000277`)}>
+          showConfirmButton={true} left={i18n.t(`${packageNS}:tr000166`)} right={i18n.t(`${packageNS}:tr000277`)}>    
         </CommonModal>
       </React.Fragment>
     );

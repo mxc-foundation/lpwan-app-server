@@ -19,7 +19,6 @@ import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import theme from "../../theme";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
-import Admin from "../../components/Admin";
 
 const localStyles = {
   idColumn: {
@@ -45,7 +44,7 @@ class ListMulticastGroups extends Component {
   }
 
   getRow(obj) {
-    return (
+    return(
       <TableRow key={obj.id}>
         <TableCell>{obj.id}</TableCell>
         <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${obj.id}`}>{obj.name}</TableCellLink>
@@ -58,7 +57,7 @@ class ListMulticastGroups extends Component {
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    return (
+    return(
       <Grid container spacing={4}>
         <TitleBar
           buttons={
@@ -72,24 +71,22 @@ class ListMulticastGroups extends Component {
           }
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                >
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
                   Organizations
               </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations/${currentOrgID}`}
-                >
-                  {currentOrgID}
-                </Link>
-              </BreadcrumbItem>
-            </Admin>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000083`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>

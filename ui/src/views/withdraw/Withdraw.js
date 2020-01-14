@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import Admin from "../../components/Admin";
 import Grid from "@material-ui/core/Grid";
 import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
@@ -36,25 +35,25 @@ function loadWithdrawFee(ETHER, organizationID) {
         resolve(resp);
       })
   });
-}
+}  
 
 function loadCurrentAccount(ETHER, orgId) {
   return new Promise((resolve, reject) => {
     if (orgId === SUPER_ADMIN) {
       SupernodeStore.getSuperNodeActiveMoneyAccount(ETHER, orgId, resp => {
         resolve(resp.supernodeActiveAccount);
-
+        
       });
-    } else {
+    }else{
       MoneyStore.getActiveMoneyAccount(ETHER, orgId, resp => {
         resolve(resp.activeAccount);
-
+        
       });
     }
   });
 }
 
-
+      
 function loadWalletBalance(orgId) {
   return new Promise((resolve, reject) => {
     WalletStore.getWalletBalance(orgId,
@@ -83,11 +82,11 @@ class Withdraw extends Component {
   loadData = async () => {
     try {
       const orgId = this.props.match.params.organizationID;
-      this.setState({ loading: true })
+      this.setState({loading: true})
       var result = await loadWithdrawFee(ETHER, orgId);
       var wallet = await loadWalletBalance(orgId);
       var account = await loadCurrentAccount(ETHER, orgId);
-
+      
       /* this.setState({
         activeAccount: resp.supernodeActiveAccount,
       }); */
@@ -95,15 +94,15 @@ class Withdraw extends Component {
       const txinfo = {};
       txinfo.withdrawFee = result.withdrawFee;
       txinfo.balance = wallet.balance;
-
+      
       txinfo.account = account;
 
       this.setState({
         txinfo
       });
-      this.setState({ loading: false })
+      this.setState({loading: false})
     } catch (error) {
-      this.setState({ loading: false })
+      this.setState({loading: false})
       console.error(error);
       this.setState({ error });
     }
@@ -119,7 +118,7 @@ class Withdraw extends Component {
     }
     this.loadData();
   }
-
+  
   showModal(modal) {
     this.setState({ modal });
   }
@@ -138,19 +137,19 @@ class Withdraw extends Component {
   onConfirm = (data) => {
     data.moneyAbbr = ETHER;
     data.orgId = this.props.match.params.organizationID;
-    if (data.amount === 0) {
+    if(data.amount === 0){
       alert(i18n.t(`${packageNS}:menu.messages.invalid_amount`));
       return false;
-    }
+    } 
 
-    if (data.destination) {
+    if(data.destination){
       alert(i18n.t(`${packageNS}:menu.messages.invalid_account`));
       return false;
     }
-
-    this.setState({ loading: true });
+    
+    this.setState({loading: true});
     WithdrawStore.WithdrawReq(data, resp => {
-      this.setState({ loading: false });
+      this.setState({loading: false});
     });
 
   }
@@ -161,34 +160,32 @@ class Withdraw extends Component {
 
     return (
       <Grid container spacing={24} className={this.props.classes.backgroundColor}>
-        {this.state.modal &&
+        {this.state.modal && 
           <Modal title={i18n.t(`${packageNS}:menu.messages.confirmation`)} description={i18n.t(`${packageNS}:menu.messages.confirmation_text`)} onClose={this.handleCloseModal} open={!!this.state.modal} data={this.state.modal} onConfirm={this.onConfirm} />}
         <Grid item xs={12} className={this.props.classes.divider}>
           <div className={this.props.classes.TitleBar}>
             <Breadcrumb className={classes.breadcrumb}>
-              <Admin>
-                <BreadcrumbItem>
-                  <Link
-                    className={classes.breadcrumbItemLink}
-                    to={`/organizations`}
-                    onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-                  >
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations`}
+                  onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+                >
                     Organizations
                 </Link>
-                </BreadcrumbItem>
-                <BreadcrumbItem>
-                  <Link
-                    className={classes.breadcrumbItemLink}
-                    to={`/organizations/${currentOrgID}`}
-                    onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-                  >
-                    {currentOrgID}
-                  </Link>
-                </BreadcrumbItem>
-              </Admin>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations/${currentOrgID}`}
+                  onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
+                >
+                  {currentOrgID}
+                </Link>
+              </BreadcrumbItem>
               <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
               <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
-            </Breadcrumb>
+            </Breadcrumb>    
           </div>
 
         </Grid>
@@ -208,7 +205,7 @@ class Withdraw extends Component {
                 }
               }
             } className={this.props.classes.link} >
-              {i18n.t(`${packageNS}:menu.messages.coming_soon`)}
+                {i18n.t(`${packageNS}:menu.messages.coming_soon`)}
             </span>
           </TableCell>
           {/*<WithdrawForm

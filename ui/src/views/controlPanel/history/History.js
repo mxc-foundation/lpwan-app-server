@@ -12,7 +12,6 @@ import topupStore from "../../../stores/TopupStore";
 import { SUPER_ADMIN } from "../../../util/M2mUtil";
 
 import breadcrumbStyles from "../../common/BreadcrumbStyles";
-import Admin from "../../../components/Admin";
 
 const localStyles = {};
 
@@ -82,7 +81,6 @@ class SupernodeHistory extends Component {
       <React.Fragment>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}
@@ -95,7 +93,6 @@ class SupernodeHistory extends Component {
                 Control Panel
               </Link>
             </BreadcrumbItem>
-            </Admin>
             <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.history.history`)}</BreadcrumbItem>
           </Breadcrumb>

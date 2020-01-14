@@ -4,7 +4,7 @@
 //
 .breadcrumb {
     padding-top: 0px;
-    font-size: 1.25rem;
+    // font-size: 1.1rem;
     margin: 0px;
 }
 
@@ -22,20 +22,3 @@
     }
 }
   
-@media only screen and (max-width: 800px) {
-    .breadcrumb {
-        padding-top: 0px;
-        font-size: 1.1rem;
-        margin: 0px;
-    }
-    
-}
-
-@media only screen and (max-width: 600px) {
-    .breadcrumb {
-        padding-top: 0px;
-        font-size: 0.8rem;
-        margin: 0px;
-    }
-    
-}

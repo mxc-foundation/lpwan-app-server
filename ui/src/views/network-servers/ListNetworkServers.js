@@ -15,7 +15,6 @@ import AdvancedTable from "../../components/AdvancedTable";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
-import Admin from "../../components/Admin";
 
 const localStyles = {};
 
@@ -108,9 +107,7 @@ class ListNetworkServers extends Component {
           ]}
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
-              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
-            </Admin>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>

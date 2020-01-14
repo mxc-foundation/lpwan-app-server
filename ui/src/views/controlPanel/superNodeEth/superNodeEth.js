@@ -12,7 +12,6 @@ import ModifyEthAccountForm from "../../ethAccount/ModifyEthAccountForm";
 import NewEthAccountForm from "../../ethAccount/NewEthAccountForm";
 import { ETHER } from "../../../util/CoinType";
 import { SUPER_ADMIN } from "../../../util/M2mUtil";
-import Admin from "../../../components/Admin";
 
 import breadcrumbStyles from "../../common/BreadcrumbStyles";
 
@@ -107,20 +106,18 @@ class SuperNodeEth extends Component {
       <React.Fragment>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <Admin>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                  onClick={() => {
-                    // Change the sidebar content
-                    this.props.switchToSidebarId('DEFAULT');
-                  }}
-                >
-                  Control Panel
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+                onClick={() => {
+                  // Change the sidebar content
+                  this.props.switchToSidebarId('DEFAULT');
+                }}
+              >
+                Control Panel
               </Link>
-              </BreadcrumbItem>
-            </Admin>
+            </BreadcrumbItem>
             <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:tr000451`)}</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.eth_account.eth_account`)}</BreadcrumbItem>
           </Breadcrumb>
