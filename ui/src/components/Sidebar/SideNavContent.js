@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Divider from '@material-ui/core/Divider';
 
 import i18n, { packageNS } from '../../i18n';
-import mxcLogo from '../../assets/images/mxc_logo.png';
+import mxcLogo from '../../assets/images/mxc_logo-social_2.png';
 import { SUPERNODE_WALLET, SUPERNODE_SETTING, WALLET, SETTING } from '../../util/Data';
 import Admin from '../Admin';
 import NonAdmin from '../NonAdmin';
@@ -98,7 +98,7 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/stake/${props.orgId}`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/stake/${props.orgId}/set-stake`} className="waves-effect side-nav-link-ref">
                             {/* <i className="mdi mdi-cloud-print-outline"></i> */}
                             <i className="mdi mdi-vote"></i>
                             <span> {i18n.t(`${packageNS}:menu.staking.staking`)} </span>
