@@ -6,7 +6,13 @@ table {
     text-align: left;
 
     td,th {
-        vertical-align: middle !important;     
+        vertical-align: middle !important;
+
+        @media (min-width: 0px) and (max-width: 575.98px) {
+            // Default padding is 0.85rem, so we'll half it
+            // on smaller screen sizes so the table fits better
+            padding: 0.425rem !important;
+        }
     }
 }
 
@@ -22,6 +28,12 @@ table {
 // that they may be able to scroll down to view
 .react-bootstrap-table.table-responsive {
     height: 100%;
+}
+
+// This is required to for the horizontal scrollbar to appear
+// when some columns do not fit in the screen on smaller devices
+.card {
+    overflow-x: auto !important;
 }
 
 // Override the default bottom border
