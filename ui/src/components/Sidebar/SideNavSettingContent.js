@@ -6,7 +6,6 @@ import { DEFAULT } from '../../util/Data';
 import DropdownMenu2 from '../DropdownMenu';
 
 const SideNavSettingContent = (props) => {
-    console.log(props.user);
   return <React.Fragment>
       <div id="sidebar-menu">
           <ul className="metismenu" id="side-menu">

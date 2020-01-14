@@ -68,7 +68,6 @@ class Sidebar extends Component {
     loadData = async () => {
         try {
           const organizationIDs = SessionStore.getOrganizations();
-          console.log(organizationIDs)
           /* var data = await loadServerVersion();
           const serverInfo = JSON.parse(data); */
           

@@ -106,7 +106,6 @@ class ModifyEthAccountForm extends Component {
                     cache: false,
                   }}
                 />
-
                 <Field
                   type="text"
                   label={i18n.t(`${packageNS}:menu.eth_account.new_account`)}
@@ -137,7 +136,6 @@ class ModifyEthAccountForm extends Component {
                     cache: false,
                   }}
                 />
-
                 <Field
                   type="password"
                   label={i18n.t(`${packageNS}:menu.eth_account.password`)}

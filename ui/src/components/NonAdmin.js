@@ -33,7 +33,7 @@ class NonAdmin extends Component {
   setRole() {
     let orgList = SessionStore.getOrganizations()
 
-    if ((orgList.length === 0) || (orgList.length === 1 && orgList[0].value === "0") || SessionStore.isAdmin()) {
+    if ((orgList.length === 0) || (orgList.length === 1 && orgList[0].value === "0") || SessionStore.isAdmin() ) {
       this.setState({
         hasOrg: false ,
       });
