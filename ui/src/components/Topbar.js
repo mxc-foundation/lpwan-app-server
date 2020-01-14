@@ -8,25 +8,25 @@ import i18n, { packageNS } from '../i18n';
 import SessionStore from "../stores/SessionStore";
 import WithdrawStore from "../stores/WithdrawStore";
 import WalletStore from "../stores/WalletStore";
+import TopupStore from "../stores/TopupStore";
 import logoSm from '../assets/images/logo-sm.png';
 import logo from '../assets/images/MATCHX-SUPERNODE2.png';
 
-function getWalletBalance() {
-  var organizationId = SessionStore.getOrganizationID();
-  if (!organizationId) {
-    return 0;
-  }
-
+function getWalletBalance(orgId) {
   if (SessionStore.isAdmin()) {
-    organizationId = '0';
-  }
-
-  return new Promise((resolve, reject) => {
-    WalletStore.getWalletBalance(organizationId, resp => {
-      return resolve(resp);
+    return new Promise((resolve, reject) => {
+      TopupStore.getIncome('0', resp => {
+        return resolve(resp);
+      });
     });
-  });
-} 
+  } else {
+    return new Promise((resolve, reject) => {
+      WalletStore.getWalletBalance(orgId, resp => {
+        return resolve(resp);
+      });
+    });
+  }
+}
 
 class Topbar extends Component {
   constructor(props) {
@@ -55,8 +55,12 @@ class Topbar extends Component {
 
   loadData = async () => {
     try {
-      var result = await getWalletBalance();
-      this.setState({ balance: result.balance });
+      let orgid = await SessionStore.getOrganizationID();
+      var result = await getWalletBalance(orgid);
+      
+      const balance = (SessionStore.isAdmin()) ?  result.amount : result.balance;
+
+      this.setState({ balance });
 
     } catch (error) {
       console.error(error);
@@ -92,10 +96,10 @@ class Topbar extends Component {
     //                 </InputAdornment>
     //               }
     //             />
+    const balanceEl = (balance !== null && balance !== undefined)
+      ? balance + " MXC"
+      : <span className="color-gray">(no org selected)</span>;
 
-    const balanceEl = balance === null ?
-      <span className="color-gray">(no org selected)</span> :
-      balance + " MXC";
     let user = null;
     if (SessionStore.getUser()) {
       user = SessionStore.getUser();

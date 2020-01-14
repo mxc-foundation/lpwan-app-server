@@ -190,6 +190,10 @@ class SessionStore extends EventEmitter {
             this.setOrganizations(this.organizations);
           }
 
+          if(this.organizations.length > 0){
+            this.setOrganizationID(this.organizations[0].organizationID);  
+          }
+
           if(resp.obj.settings !== undefined) {
             this.settings = resp.obj.settings;
           }
