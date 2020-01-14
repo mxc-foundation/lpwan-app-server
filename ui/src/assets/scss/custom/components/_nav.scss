@@ -24,18 +24,18 @@
         border-style: solid;
         border-color: #ccc;
         background-color: #00FFD950;
-        transition: opacity .75s ease-in-out;
-        -moz-transition: opacity .75s ease-in-out;
-        -webkit-transition: opacity .75s ease-in-out;
-        transition: background-color .75s ease-in-out;
-        -moz-transition: background-color .75s ease-in-out;
-        -webkit-transition: background-color .75s ease-in-out;
+        // transition: opacity .75s ease-in-out;
+        // -moz-transition: opacity .75s ease-in-out;
+        // -webkit-transition: opacity .75s ease-in-out;
+        // transition: background-color .75s ease-in-out;
+        // -moz-transition: background-color .75s ease-in-out;
+        // -webkit-transition: background-color .75s ease-in-out;
     }
 }
 
 div > li:hover > .nav-tabs .nav-link,
 div > li:hover > .nav .nav-item .nav-link {
-    opacity: 0.6;
+    // opacity: 0.6;
     background-color: #fff;
 }
 
