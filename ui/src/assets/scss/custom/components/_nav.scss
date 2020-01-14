@@ -11,7 +11,8 @@
     }
 }
 
-.nav-tabs .nav-link {
+.nav-tabs .nav-link,
+.nav-item .nav-link {
     border-width: 1px 1px 0 1px;
     border-style: solid;
     border-color: #ddd;
@@ -32,7 +33,8 @@
     }
 }
 
-div > li:hover > .nav-tabs .nav-link {
+div > li:hover > .nav-tabs .nav-link,
+div > li:hover > .nav .nav-item .nav-link {
     opacity: 0.6;
     background-color: #fff;
 }
