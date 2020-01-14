@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
+import Admin from "../../components/Admin";
 import Grid from "@material-ui/core/Grid";
 import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
@@ -165,6 +166,7 @@ class Withdraw extends Component {
         <Grid item xs={12} className={this.props.classes.divider}>
           <div className={this.props.classes.TitleBar}>
             <Breadcrumb className={classes.breadcrumb}>
+              <Admin>
               <BreadcrumbItem>
                 <Link
                   className={classes.breadcrumbItemLink}
@@ -183,6 +185,7 @@ class Withdraw extends Component {
                   {currentOrgID}
                 </Link>
               </BreadcrumbItem>
+              </Admin>
               <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
               <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
             </Breadcrumb>    

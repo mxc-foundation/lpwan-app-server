@@ -1,6 +1,6 @@
 import React from "react";
 import { withRouter, Link } from "react-router-dom";
-
+import Admin from "../../components/Admin";
 import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody, CardHeader, CardFooter, CardText } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
@@ -82,6 +82,7 @@ class SetStake extends FormComponent {
         <TitleBar>
           <Breadcrumb>
             <Breadcrumb className={classes.breadcrumb}>
+              <Admin>
               <BreadcrumbItem>
                 <Link
                   className={classes.breadcrumbItemLink}
@@ -98,6 +99,7 @@ class SetStake extends FormComponent {
                   {currentOrgID}
                 </Link>
               </BreadcrumbItem>
+              </Admin>
               <BreadcrumbItem className={classes.breadcrumbItem}>Set Stake</BreadcrumbItem>
               <BreadcrumbItem active>{this.state.title}</BreadcrumbItem>
             </Breadcrumb>

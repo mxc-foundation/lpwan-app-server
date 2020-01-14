@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
+import Admin from "../../components/Admin";
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
 import AdvancedTable from "../../components/AdvancedTable";
@@ -115,22 +116,24 @@ class ListOrganizationUsers extends Component {
           ]}
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
-                Organizations
+            <Admin>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations`}
+                >
+                  Organizations
               </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations/${currentOrgID}`}
+                >
+                  {currentOrgID}
+                </Link>
+              </BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000068`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>

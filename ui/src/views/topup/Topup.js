@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
-
+import Admin from "../../components/Admin";
 import { withStyles } from "@material-ui/core/styles";
 import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 
@@ -49,6 +49,7 @@ class Topup extends Component {
     return (<React.Fragment>
       <TitleBar>
         <Breadcrumb className={classes.breadcrumb}>
+          <Admin>
           <BreadcrumbItem>
             <Link
               className={classes.breadcrumbItemLink}
@@ -67,6 +68,7 @@ class Topup extends Component {
               {currentOrgID}
             </Link>
           </BreadcrumbItem>
+          </Admin>
           <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
           <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.topup.topup`)}</BreadcrumbItem>
         </Breadcrumb>    
