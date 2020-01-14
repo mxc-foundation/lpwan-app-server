@@ -67,12 +67,13 @@ class Sidebar extends Component {
     }
     loadData = async () => {
         try {
-          const organizationID = SessionStore.getOrganizationID();
+          const organizationIDs = SessionStore.getOrganizations();
+          console.log(organizationIDs)
           /* var data = await loadServerVersion();
           const serverInfo = JSON.parse(data); */
           
           this.setState({
-            organizationID,
+            organizationID: organizationIDs[0].organizationID
             //version: serverInfo.version
           })
     
@@ -285,28 +286,24 @@ class Sidebar extends Component {
         const { currentSidebarId } = this.props;
 
         const isCondensed = this.props.isCondensed || false;
-        const orgId = SessionStore.getOrganizationID();
-        if(orgId === undefined && orgId === ''){
-          orgId = this.state.organizationID;
-        }
         const user = SessionStore.getUser();
 
         let sidebarComponent;
         switch (currentSidebarId) {
             case SUPERNODE_WALLET:
-                sidebarComponent = <SideNavSupernodeWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSupernodeWalletContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case SUPERNODE_SETTING:
-                sidebarComponent = <SideNavSupernodeSettingContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSupernodeSettingContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case WALLET:
-                sidebarComponent = <SideNavWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavWalletContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case SETTING:
-                sidebarComponent = <SideNavSettingContent orgId={orgId} user={user} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSettingContent orgId={this.state.organizationID} user={user} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             default:
-                sidebarComponent = <SideNavContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
         }
 
