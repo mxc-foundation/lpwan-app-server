@@ -275,7 +275,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <Withdraw
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -283,7 +283,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <Topup
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -291,7 +291,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <HistoryLayout
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -301,7 +301,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SuperNodeEth
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -309,7 +309,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SuperAdminWithdraw
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -317,7 +317,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SupernodeHistory
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -325,7 +325,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SystemSettings
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -537,7 +537,7 @@ class App extends Component {
                     />
                   }
                 />
-                <LoggedInRoutes />
+                <LoggedInRoutes switchToSidebarId={this.switchToSidebarId}/>
 
               </Switch>
               <Footer />
