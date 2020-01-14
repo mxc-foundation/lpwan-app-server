@@ -177,7 +177,7 @@ class NotLoggedinRoute extends Component {
     )
   }
 }
-
+/*
 class HomeRoute extends Component {
   route = () => {
     const { Comp, user, ...otherProps } = this.props;
@@ -198,7 +198,7 @@ class HomeRoute extends Component {
       />
     )
   }
-}
+}*/
 
 class LoggedInRoutes extends Component {
   render() {
@@ -211,7 +211,7 @@ class LoggedInRoutes extends Component {
 
     return (<>
       <Switch>
-        <HomeRoute exact path="/" component={HomeComponent} />
+        <Route exact path="/" component={HomeComponent} />
         <Route exact path="/logout" component={Logout} />
 
         <Route exact path="/users" component={ListUsers} />

@@ -59,12 +59,12 @@ const SideNavContent = (props) => {
                         </Link>
                     </li>
 
-                    <li>
+                    {/*<li>
                         <Link to={`/organizations/${props.orgId}/edit`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-domain"></i>
                             <span> {i18n.t(`${packageNS}:tr000418`)} </span>
                         </Link>
-                    </li>
+                    </li>*/}
 
                     <li>
                         <Link to="/control-panel/modify-account/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_SETTING)}>
@@ -134,8 +134,7 @@ const SideNavContent = (props) => {
                     </li> */}
 
                     <li>
-                        {/* <Link to={`/users/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}> */}
-                        <Link to={`/modify-account/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
+                        <Link to={`/organizations/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
                             <i className="mdi mdi-settings"></i>
                             <span> {i18n.t(`${packageNS}:tr000451`)} </span>
                             <span className="menu-arrow"></span>

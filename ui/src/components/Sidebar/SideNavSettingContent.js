@@ -6,6 +6,7 @@ import { DEFAULT } from '../../util/Data';
 import DropdownMenu2 from '../DropdownMenu';
 
 const SideNavSettingContent = (props) => {
+    console.log(props.user);
   return <React.Fragment>
       <div id="sidebar-menu">
           <ul className="metismenu" id="side-menu">
@@ -26,7 +27,7 @@ const SideNavSettingContent = (props) => {
                 {
                     props.user ? (
                     <li>
-                        <Link to={`/users/${props.user.id}`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/organizations/${props.orgId}`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-account-circle"></i>
                             <span> {i18n.t(`${packageNS}:tr000452`)} </span>
                         </Link>
