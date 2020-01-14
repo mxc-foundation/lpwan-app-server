@@ -87,31 +87,33 @@ class ServiceProfileLayout extends Component {
             <Admin>
               <TitleBarButton
                 key={1}
-              color="danger"
+                color="danger"
                 label={i18n.t(`${packageNS}:tr000061`)}
-              icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+                icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
                 onClick={this.openModal}
               />
             </Admin>
           }
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
+            <Admin>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations`}
+                >
                   Organizations
               </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                <Link
+                  className={classes.breadcrumbItemLink}
+                  to={`/organizations/${currentOrgID}`}
+                >
+                  {currentOrgID}
+                </Link>
+              </BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}

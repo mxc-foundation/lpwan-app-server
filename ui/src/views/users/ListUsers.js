@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
+import Admin from "../../components/Admin";
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
 import AdvancedTable from "../../components/AdvancedTable";
@@ -121,7 +121,9 @@ class ListUsers extends Component {
           ]}
         >
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <Admin>
+              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}

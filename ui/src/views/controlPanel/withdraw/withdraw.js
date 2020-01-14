@@ -7,13 +7,14 @@ import { withStyles } from "@material-ui/core/styles";
 import localStyles from "../../withdraw/WithdrawStyle"
 import theme from "../../../theme";
 import TableCell from "@material-ui/core/TableCell";
-import i18n, {packageNS} from "../../../i18n";
+import i18n, { packageNS } from "../../../i18n";
+import Admin from "../../../components/Admin";
 
 import breadcrumbStyles from "../../common/BreadcrumbStyles";
 
 const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
+    ...breadcrumbStyles,
+    ...localStyles
 };
 
 class SuperAdminWithdraw extends Component {
@@ -30,21 +31,23 @@ class SuperAdminWithdraw extends Component {
                 <Grid item xs={12} className={this.props.classes.divider}>
                     <div className={this.props.classes.TitleBar}>
                         <Breadcrumb className={classes.breadcrumb}>
-                            <BreadcrumbItem>
-                                <Link
-                                    className={classes.breadcrumbItemLink}
-                                    to={`/organizations`}
-                                    onClick={() => {
-                                        // Change the sidebar content
-                                        this.props.switchToSidebarId('DEFAULT');
-                                    }}
-                                >
-                                    Control Panel
+                            <Admin>
+                                <BreadcrumbItem>
+                                    <Link
+                                        className={classes.breadcrumbItemLink}
+                                        to={`/organizations`}
+                                        onClick={() => {
+                                            // Change the sidebar content
+                                            this.props.switchToSidebarId('DEFAULT');
+                                        }}
+                                    >
+                                        Control Panel
                                 </Link>
-                            </BreadcrumbItem>
+                                </BreadcrumbItem>
+                            </Admin>
                             <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
                             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
-                        </Breadcrumb>    
+                        </Breadcrumb>
                     </div>
                 </Grid>
 

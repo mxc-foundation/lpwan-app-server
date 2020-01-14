@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
-  TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
+import {
+  Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
+  TabContent, TabPane, Nav, NavItem, NavLink
+} from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
 import theme from "../../theme";
@@ -73,7 +75,7 @@ class DeviceDetailsDevicesTabs extends Component {
     const isApplication = currentApplicationID && currentApplicationID !== "0" && application;
     const currentOrgName = organization && (organization.name || organization.displayName);
 
-    return(
+    return (
       <Container fluid>
         <Row>
           <Col xs={12}>
@@ -88,31 +90,35 @@ class DeviceDetailsDevicesTabs extends Component {
                 </DeviceAdmin>
               }
             >
-               {
-                  isApplication ? (
-                    <Breadcrumb className={classes.breadcrumb}>
+              {
+                isApplication ? (
+                  <Breadcrumb className={classes.breadcrumb}>
+                    <Admin>
                       <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                         `/organizations/${currentOrgID}/applications`
                       }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
                       <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                         `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                        }>{application.application.name}</Link></BreadcrumbItem>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                      }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}`
-                      }>{device.device.name}</Link></BreadcrumbItem>
-                      <BreadcrumbItem active>Show</BreadcrumbItem>
-                    </Breadcrumb>
-                  ) : (
+                      }>{application.application.name}</Link></BreadcrumbItem>
+                    </Admin>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/applications/${currentApplicationID}`
+                    }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
+                    <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                      `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}`
+                    }>{device.device.name}</Link></BreadcrumbItem>
+                    <BreadcrumbItem active>Show</BreadcrumbItem>
+                  </Breadcrumb>
+                ) : (
                     <Breadcrumb className={classes.breadcrumb}>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations`
-                      }>Organizations</Link></BreadcrumbItem>
-                      <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                        `/organizations/${currentOrgID}`
-                      }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                      <Admin>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations`
+                        }>Organizations</Link></BreadcrumbItem>
+                        <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+                          `/organizations/${currentOrgID}`
+                        }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                      </Admin>
                       <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                         `/organizations/${currentOrgID}/devices`
                       }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
@@ -122,7 +128,7 @@ class DeviceDetailsDevicesTabs extends Component {
                       <BreadcrumbItem active>Show</BreadcrumbItem>
                     </Breadcrumb>
                   )
-                }
+              }
             </TitleBar>
           </Col>
         </Row>
@@ -136,8 +142,8 @@ class DeviceDetailsDevicesTabs extends Component {
                   tag={Link}
                   to={
                     currentApplicationID
-                    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}`
-                    : `/organizations/${currentOrgID}/devices/${match.params.devEUI}`
+                      ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}`
+                      : `/organizations/${currentOrgID}/devices/${match.params.devEUI}`
                   }
                 >
                   <i className="mdi mdi-information-outline"></i>
@@ -151,8 +157,8 @@ class DeviceDetailsDevicesTabs extends Component {
                   tag={Link}
                   to={
                     currentApplicationID
-                    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/edit`
-                    : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/edit`
+                      ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/edit`
+                      : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/edit`
                   }
                 >
                   <i className="mdi mdi-pencil"></i>
@@ -169,8 +175,8 @@ class DeviceDetailsDevicesTabs extends Component {
                   tag={Link}
                   to={
                     currentApplicationID
-                    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/keys`
-                    : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/keys`
+                      ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/keys`
+                      : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/keys`
                   }
                 >
                   <i className="mdi mdi-key"></i>
@@ -185,8 +191,8 @@ class DeviceDetailsDevicesTabs extends Component {
                   tag={Link}
                   to={
                     currentApplicationID
-                    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/activation`
-                    : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/activation`
+                      ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/activation`
+                      : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/activation`
                   }
                 >
                   <i className="mdi mdi-cloud-check"></i>
@@ -200,8 +206,8 @@ class DeviceDetailsDevicesTabs extends Component {
                   tag={Link}
                   to={
                     currentApplicationID
-                    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/data`
-                    : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/data`
+                      ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/data`
+                      : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/data`
                   }
                 >
                   <i className="mdi mdi-poll"></i>
@@ -215,8 +221,8 @@ class DeviceDetailsDevicesTabs extends Component {
                   tag={Link}
                   to={
                     currentApplicationID
-                    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/frames`
-                    : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/frames`
+                      ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/frames`
+                      : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/frames`
                   }
                 >
                   <i className="mdi mdi-video"></i>
@@ -230,8 +236,8 @@ class DeviceDetailsDevicesTabs extends Component {
                   tag={Link}
                   to={
                     currentApplicationID
-                    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/fuota-deployments`
-                    : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/fuota-deployments`
+                      ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${match.params.devEUI}/fuota-deployments`
+                      : `/organizations/${currentOrgID}/devices/${match.params.devEUI}/fuota-deployments`
                   }
                 >
                   <i className="mdi mdi-cloud-upload"></i>

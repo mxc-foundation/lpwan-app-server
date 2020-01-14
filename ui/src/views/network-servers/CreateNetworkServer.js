@@ -9,6 +9,7 @@ import TitleBar from "../../components/TitleBar";
 import NetworkServerForm from "./NetworkServerForm";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import Admin from "../../components/Admin";
 
 const localStyles = {};
 
@@ -36,7 +37,9 @@ class CreateNetworkServer extends Component {
       <React.Fragment>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <Admin>
+              <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            </Admin>
             <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/network-servers`}>{i18n.t(`${packageNS}:tr000040`)}</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
           </Breadcrumb>

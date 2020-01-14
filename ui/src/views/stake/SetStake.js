@@ -83,22 +83,22 @@ class SetStake extends FormComponent {
           <Breadcrumb>
             <Breadcrumb className={classes.breadcrumb}>
               <Admin>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                >
+                <BreadcrumbItem>
+                  <Link
+                    className={classes.breadcrumbItemLink}
+                    to={`/organizations`}
+                  >
                     Organizations
                 </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations/${currentOrgID}`}
-                >
-                  {currentOrgID}
-                </Link>
-              </BreadcrumbItem>
+                </BreadcrumbItem>
+                <BreadcrumbItem>
+                  <Link
+                    className={classes.breadcrumbItemLink}
+                    to={`/organizations/${currentOrgID}`}
+                  >
+                    {currentOrgID}
+                  </Link>
+                </BreadcrumbItem>
               </Admin>
               <BreadcrumbItem className={classes.breadcrumbItem}>Set Stake</BreadcrumbItem>
               <BreadcrumbItem active>{this.state.title}</BreadcrumbItem>
