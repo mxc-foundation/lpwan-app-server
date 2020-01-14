@@ -62,7 +62,7 @@ class RegistrationForm extends Component {
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                 />
-
+javaman00001@gmail.com
                 <FormGroup className="mt-2">
                   <ReCAPTCHA
                     sitekey={process.env.REACT_APP_PUBLIC_KEY}
