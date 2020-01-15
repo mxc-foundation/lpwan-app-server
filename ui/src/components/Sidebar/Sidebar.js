@@ -10,13 +10,14 @@ import OrganizationStore from '../../stores/OrganizationStore';
 import ServerInfoStore from '../../stores/ServerInfoStore';
 import SessionStore from '../../stores/SessionStore';
 import UserStore from '../../stores/UserStore';
-import { SUPERNODE_WALLET, SUPERNODE_SETTING, DEFAULT, WALLET, SETTING } from '../../util/Data';
+import { SUPERNODE_WALLET, SUPERNODE_SETTING, DEFAULT, WALLET, SETTING, ORGANIZATIONS } from '../../util/Data';
 
 import SideNavContent from './SideNavContent';
 import SideNavSettingContent from './SideNavSettingContent';
 import SideNavSupernodeSettingContent from './SideNavSupernodeSettingContent';
 import SideNavSupernodeWalletContent from './SideNavSupernodeWalletContent';
 import SideNavWalletContent from './SideNavWalletContent';
+import SideNavOrganizationsContent from './SideNavOrganizationsContent';
 
 const ProfileMenus = [{
     label: 'My Account',
@@ -294,6 +295,9 @@ class Sidebar extends Component {
                 break;
             case SUPERNODE_SETTING:
                 sidebarComponent = <SideNavSupernodeSettingContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                break;
+            case ORGANIZATIONS:
+                sidebarComponent = <SideNavOrganizationsContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case WALLET:
                 sidebarComponent = <SideNavWalletContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
