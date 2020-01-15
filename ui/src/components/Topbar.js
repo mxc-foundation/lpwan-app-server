@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
+import { Badge } from 'reactstrap';
 
 import ProfileDropdown from './ProfileDropdown';
 import DropdownMenuLanguage from "./DropdownMenuLanguage";
@@ -9,8 +10,8 @@ import SessionStore from "../stores/SessionStore";
 import WithdrawStore from "../stores/WithdrawStore";
 import WalletStore from "../stores/WalletStore";
 import TopupStore from "../stores/TopupStore";
-import logoSm from '../assets/images/logo-sm.png';
-import logo from '../assets/images/MATCHX-SUPERNODE2.png';
+/* import logoSm from '../assets/images/logo-sm.png';
+import logo from '../assets/images/MATCHX-SUPERNODE2.png'; */
 
 function getWalletBalance(orgId) {
   if (SessionStore.isAdmin()) {
@@ -58,9 +59,9 @@ class Topbar extends Component {
       let orgid = await SessionStore.getOrganizationID();
       let result = await getWalletBalance(orgid);
       let logoPath = '';
-      
-      
-      const balance = (SessionStore.isAdmin()) ?  result.amount : result.balance;
+
+
+      const balance = (SessionStore.isAdmin()) ? result.amount : result.balance;
 
       this.setState({ balance, logoPath });
 
@@ -108,12 +109,14 @@ class Topbar extends Component {
     }
 
     return (
+
       <React.Fragment>
         <div className="navbar-custom">
-          <ul className="list-unstyled topnav-menu float-right mb-0">
+          <div>
+            <ul className="list-unstyled topnav-menu float-right mb-0">
 
-            <li className="d-none d-sm-block">
-              {/* <form className="app-search">
+              <li className="d-none d-sm-block">
+                {/* <form className="app-search">
                 <div className="app-search-box">
                   <div className="input-group">
                     <input type="text" className="form-control" placeholder="Search..." />
@@ -125,47 +128,62 @@ class Topbar extends Component {
                   </div>
                 </div>
               </form> */}
-            </li>
+              </li>
+              {!this.props.isMobile &&
+                <li className="dropdown notification-list">
+                  <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
+                    <i className="mdi mdi-wallet-outline"></i>
+                    <span> {balanceEl}</span>
+                  </button>
+                </li>
+              }
+              {this.props.isMobile &&
+                <li className="dropdown notification-list">
+                  <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
+                    <span className="logo-sm">
+                      <img src={SessionStore.getLogoPath()} alt="" height="36" />
+                    </span>
+                  </button>
+                </li>
+              }
 
-            <li className="dropdown notification-list">
-              <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
-                <i className="mdi mdi-wallet-outline"></i>
-                <span> {balanceEl}</span>
-              </button>
-            </li>
+              <li>
+                <DropdownMenuLanguage isMobile={this.props.isMobile} onChangeLanguage={this.onChangeLanguage} />
+              </li>
 
-            <li>
-              <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
-            </li>
+              <li>
+                <ProfileDropdown menuItems={this.state.ProfileMenus} user={user} />
+              </li>
+            </ul>
 
-            <li>
-              <ProfileDropdown menuItems={this.state.ProfileMenus} user={user} />
-            </li>
-          </ul>
-
-          <div className="logo-box">
-            <div to="/" className="logo text-center">
-              <span className="logo-lg">
-                <img src={SessionStore.getLogoPath()} alt="" height="53" />
-              </span>
-              <span className="logo-sm">
-                <img src={logoSm} alt="" height="16" />
-              </span>
+            <div className="logo-box">
+              <div to="/" className="logo text-center">
+                <span className="logo-lg">
+                  <img src={SessionStore.getLogoPath()} alt="" height="53" />
+                </span>
+                {/* <span className="logo-sm">
+                  <img src={logoSm} alt="" height="16" />
+                </span> */}
+              </div>
             </div>
+
+            <ul className="list-unstyled topnav-menu topnav-menu-left m-0">
+              <li>
+                <button className="button-menu-mobile disable-btn waves-effect" onClick={this.props.menuToggle}>
+                  <i className="fe-menu"></i>
+                </button>
+              </li>
+
+              <li>
+                <h4 className="page-title-main">{this.props.title}</h4>
+              </li>
+            </ul>
           </div>
-
-          <ul className="list-unstyled topnav-menu topnav-menu-left m-0">
-            <li>
-              <button className="button-menu-mobile disable-btn waves-effect" onClick={this.props.menuToggle}>
-                <i className="fe-menu"></i>
-              </button>
-            </li>
-
-            <li>
-              <h4 className="page-title-main">{this.props.title}</h4>
-            </li>
-          </ul>
-
+          {this.props.isMobile &&
+            <div className="navbar-custom-subbar">
+              <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>
+            </div>
+          }
         </div>
       </React.Fragment >
     );
