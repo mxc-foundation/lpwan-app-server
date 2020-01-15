@@ -58,12 +58,10 @@ class Topbar extends Component {
     try {
       let orgid = await SessionStore.getOrganizationID();
       let result = await getWalletBalance(orgid);
-      let logoPath = '';
-
 
       const balance = (SessionStore.isAdmin()) ? result.amount : result.balance;
 
-      this.setState({ balance, logoPath });
+      this.setState({ balance });
 
     } catch (error) {
       console.error(error);
@@ -129,23 +127,21 @@ class Topbar extends Component {
                 </div>
               </form> */}
               </li>
-              {!this.props.isMobile &&
-                <li className="dropdown notification-list">
+              
+                <li className="dropdown notification-list isDesk">
                   <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
                     <i className="mdi mdi-wallet-outline"></i>
                     <span> {balanceEl}</span>
                   </button>
                 </li>
-              }
-              {this.props.isMobile &&
-                <li className="dropdown notification-list">
-                  <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
-                    <span className="logo-sm">
-                      <img src={SessionStore.getLogoPath()} alt="" height="36" />
-                    </span>
-                  </button>
-                </li>
-              }
+
+              <li className="dropdown notification-list isMobile">
+                <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
+                  <span className="logo-sm">
+                    <img src={SessionStore.getLogoPath()} alt="" height="36" />
+                  </span>
+                </button>
+              </li>
 
               <li>
                 <DropdownMenuLanguage isMobile={this.props.isMobile} onChangeLanguage={this.onChangeLanguage} />
@@ -179,11 +175,11 @@ class Topbar extends Component {
               </li>
             </ul>
           </div>
-          {this.props.isMobile &&
+          
             <div className="navbar-custom-subbar">
               <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>
             </div>
-          }
+          
         </div>
       </React.Fragment >
     );
