@@ -1,0 +1,30 @@
+/*
+Template Name: Adminto - Responsive Bootstrap 4 Admin Dashboard
+Author: CoderThemes
+Website: https://coderthemes.com/
+Contact: support@coderthemes.com
+File: Custom Bootstrap Css File
+*/
+
+//Core files
+@import "../../../node_modules/bootstrap/scss/functions";
+@import "../../../node_modules/bootstrap/scss/_variables";
+@import "_variables";
+@import "../../../node_modules/bootstrap/scss/bootstrap";
+
+//Components
+@import "custom/components/_accordions";
+@import "custom/components/_badge";
+@import "custom/components/backgrounds";
+@import "custom/components/_breadcrumb";
+@import "custom/components/_buttons";
+@import "custom/components/_card";
+@import "custom/components/_dropdown";
+@import "custom/components/_forms";
+@import "custom/components/_modal";
+@import "custom/components/_nav";
+@import "custom/components/_popover";
+@import "custom/components/_progress";
+@import "custom/components/_reboot";
+@import "custom/components/_tables";
+@import "custom/components/_type";

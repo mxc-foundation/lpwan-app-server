@@ -1,6 +1,6 @@
 import dispatcher from "../dispatcher";
 import history from '../history';
-
+import SessionStore from '../stores/SessionStore';
 
 export function checkStatus(response) {
   if (response.status >= 200 && response.status < 300) {
@@ -20,14 +20,21 @@ export function errorHandler(error) {
       },
     });
   } else {
-    if (error.response.obj.code === 16) {
-      history.push("/login");
+    console.error('Stores errorHandler error', error.response);
+    if (error.response.obj && error.response.obj.code === 16) {
+      // TODO: handle this error properly. do NOT route or logout here (since it can cause logout bugs)!
+      setTimeout(() => {
+        SessionStore.logout();
+      }, 1000);
     } else {
       dispatcher.dispatch({
         type: "CREATE_NOTIFICATION",
         notification: {
           type: "error",
-          message: error.response.obj.error + " (code: " + error.response.obj.code + ")",
+          message: error.response.obj ? (
+            error.response.obj.error + " (code: " + error.response.obj.code + ")"
+            // Internal Server Error 500 returns object with the following
+          ) : error.message + " (code: " + error.status + ")",
         },
       });
     }

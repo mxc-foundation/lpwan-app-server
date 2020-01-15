@@ -140,7 +140,7 @@ message MulticastGroupListItem {
     string service_profile_id = 3 [json_name = "serviceProfileID"];
 
     // Service-profile name.
-    string service_profile_name = 4;
+    string service_profile_name = 4; 
 }
 
 message CreateMulticastGroupRequest {

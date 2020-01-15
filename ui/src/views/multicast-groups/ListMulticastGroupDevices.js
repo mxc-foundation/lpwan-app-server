@@ -18,6 +18,7 @@ import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
 import multicastGroupStore from "../../stores/MulticastGroupStore";
+import {MAX_DATA_LIMIT} from "../../util/pagination";
 
 
 const styles = {
@@ -42,6 +43,7 @@ class ListMulticastGroupDevices extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
+    limit = MAX_DATA_LIMIT;
     DeviceStore.list({
       multicastGroupID: this.props.match.params.multicastGroupID,
       limit: limit,

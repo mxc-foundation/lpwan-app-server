@@ -3,14 +3,12 @@ import { withRouter } from 'react-router-dom';
 
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
 
 import i18n, { packageNS } from '../../i18n';
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceProfileForm from "./DeviceProfileForm";
 
-
+// FIXME - this isn't being used, and we can also remove `withStyles` here
 const styles = {
   card: {
     overflow: "visible",
@@ -34,18 +32,14 @@ class UpdateDeviceProfile extends Component {
     return(
       <Grid container spacing={4}>
         <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <DeviceProfileForm
-                submitLabel={i18n.t(`${packageNS}:tr000066`)}
-                object={this.props.deviceProfile}
-                onSubmit={this.onSubmit}
-                match={this.props.match}
-                disabled={!this.props.admin}
-                update={true}
-              />
-            </CardContent>
-          </Card>
+          <DeviceProfileForm
+            submitLabel={i18n.t(`${packageNS}:tr000066`)}
+            object={this.props.deviceProfile}
+            onSubmit={this.onSubmit}
+            match={this.props.match}
+            disabled={!this.props.admin}
+            update={true}
+          />
         </Grid>
       </Grid>
     );

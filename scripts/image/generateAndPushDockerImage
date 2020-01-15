@@ -3,7 +3,7 @@
 if [ $# -ne 3 ]; then
   echo "[ Usage ]"
   echo " ./generateAndPushDockerImage <DOCKER_HUB_USERNAME> <DOCKER_HUB_PASSWORD> <DOCKER_HUB_REPOSITORY>"
-  exit 1
+  exit
 fi
 
 TAG=$(git describe --tags)
@@ -15,18 +15,15 @@ DOCKER_HUB_PASSWORD=$2
 DOCKER_HUB_REPOSITORY=$3
 
 if [ x"$DOCKER_HUB_USERNAME" == x ]; then
-  echo "DOCKER_HUB_USERNAME is invalid"
-  exit 1
+  { echo "DOCKER_HUB_USERNAME is invalid"; exit $ERRCODE; }
 fi
 
 if [ x"$DOCKER_HUB_PASSWORD" == x ]; then
-  echo "DOCKER_HUB_PASSWORD is invalid"
-  exit 1
+  { echo "DOCKER_HUB_PASSWORD is invalid"; exit $ERRCODE; }
 fi
 
 if [ x"$DOCKER_HUB_REPOSITORY" == x ]; then
-  echo "DOCKER_HUB_REPOSITORY is invalid"
-  exit 1
+  { echo "DOCKER_HUB_REPOSITORY is invalid"; exit $ERRCODE; }
 fi
 
 build_image()
@@ -57,6 +54,7 @@ build_image()
   echo "docker push image"
   docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
   docker push $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
+  docker image rm $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$1
 
   echo "Build image successfully, rm error.txt"
   # delete error message only when everything is done successfully

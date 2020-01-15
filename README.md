@@ -18,24 +18,64 @@ Just follow __Install Compose on Linux systems__
 
 - Add user to docker group
 ```bash
-$ sudo usermod -aG docker $USER
+sudo usermod -aG docker $USER
 ```
 
-## Clone the repo:
+# Quick Start
+## Clone the repo and fetch latest develop branch:
 
 ```bash
-git clone git@gitlab.com:MXCFoundation/cloud/lpwan-app-server.git &&
+git clone git@gitlab.com:MXCFoundation/cloud/lpwan-app-server.git 
 cd lpwan-app-server
+git checkout develop
+git pull
 ```
-
-## Fetch latest develop branch:
-
+## Start container and build service with local database&mqtt
+- Outside of container, do
 ```bash
-git fetch origin develop:develop &&
-git checkout develop &&
-git pull --rebase origin develop
+$LPWAN-APP-SERVER-PATH/appserver local_database
 ```
+After building, the service will start running with config file ./configuration/lora-app-server.toml.  
 
+- When you stop the service with Ctrl+c, you wil be inside of the container, after modifying the code, if you wanna rebuild, just stay inside of container and do:
+```bash
+$LPWAN-APP-SERVER-PATH/appserver build
+```
+Again, after building, the service will start running with config file ./configuration/lora-app-server.toml.  
+
+You can visit http://localhost:8080 in your browser to preview the service.
+
+## Build service with remote database&mqtt
+- Outside of container, do
+```bash
+$LPWAN-APP-SERVER-PATH/appserver remote_database REMOTE_SEVER
+```
+After building, the service will start running with config file ./configuration/lora-app-server.toml.  
+
+- When you stop the service with Ctrl+c, you wil be inside of the container, after modifying the code, if you wanna rebuild, just stay inside of container and do:
+```bash
+$LPWAN-APP-SERVER-PATH/appserver build
+```
+Again, after building, the service will start running with config file ./configuration/lora-app-server.toml.  
+
+You can visit http://localhost:8080 in your browser to preview the service.
+
+> __Hint-1:__ if you have any difficulty building UI, try inside of container:  
+> ```bash
+> cd $LPWAN-APP-SERVER-PATH/ui
+> rm package-lock.json
+> npm install
+> cd ..
+> ./appserver build
+> ```
+
+> __Hint-2:__ if you wanna connect mxprotcol-server, you need to do __outside__ container:
+>```bash
+> docker network connect NETWORK_NAME_APPSERVER MXPROTOCOL_CONTGAINER_ID
+> docker network connect MXPROTOCOL_CONTGAINER_ID NETWORK_NAME_APPSERVER 
+>```
+
+# Development
 ## Existing or new feature branch
 
 * New feature branch required?
@@ -63,76 +103,19 @@ git pull --rebase origin feature/MCL-117
 git checkout -b luke/MCL-118-page-network-servers
 ```
 
-## Install dependencies:
+## Stop any existing processes in other terminal tabs
+
+Check that you haven't left any existing instances of lpwan-app-server running (i.e. if you're already running the UI with `npm start`).
+
+## Change to compatible version of Node.js
+
+Since the Docker container will use Node.js v10.16.3, switch to that version on your local machine.
+[Node Version Manager](https://github.com/nvm-sh/nvm#install--update-script) makes this convenient to do:
 
 ```bash
-cd ui/ &&
-npm install
+nvm install v10.16.3 &&
+nvm use v10.16.3
 ```
-
-## Build Docker container and start container shell session:
-
-If you want to use __local__ postgresql and mqtt service, do following command in directory where Makefile is:
-```bash
-$ make server_local
-```
-
-If you want to use __remote__ postgresql and mqtt service, do following command in directory where Makefile is, and insert remote server domain name after the prompt:
-```bash
-$ make server_remote
-Start docker container with remote database and mqtt service
-Insert remote server domain name: 
-
-```
-
-## Start LPWAN App Server:
-
-```bash
-make ui-requirements &&
-make dev-requirements &&
-make clean &&
-make build &&
-./build/lora-app-server
-```
-
-**HACK**
-If it then gives a `Failed to compile` error as shown below:
-```
-Failed to compile.
-
-./src/assets/scss/DefaultTheme.scss
-Error: Missing binding /lora-app-server/ui/node_modules/node-sass/vendor/linux_musl-x64-64/binding.node
-Node Sass could not find a binding for your current environment: Linux/musl 64-bit with Node.js 10.x
-
-Found bindings for the following environments:
-  - OS X 64-bit with Node.js 12.x
-
-This usually happens because your environment has changed since running `npm install`.
-Run `npm rebuild node-sass` to download the binding for your current environment.
-```
-
-Then keep the Docker container running,
-and outside the Docker container, in terminal run:
-
-```bash
-cd ui/ &&
-cd node_modules/node-sass &&
-sudo npm install &&
-cd ../../../
-```
-
-Then back in the Docker container run the following commands again, and it should compile successfully and run:
-
-```
-make build &&
-./build/lora-app-server
-```
-
-Open web browser at: http://localhost:8080
-
-Enter credentials to login: admin, password: admin
-
-See below how to enable debugging and live reload.
 
 ## Frequently apply latest from feature branch into your task branch:
 
@@ -142,6 +125,8 @@ git pull --rebase origin feature/MCL-117
 git checkout luke/MCL-118-page-network-servers
 git rebase -i feature/MCL-117
 ```
+
+> Note: An alternative to running `git rebase -i feature/MCL-117` is to merge and resolve conflicts instead with `git merge feature/MCL-117` 
 
 ## Debugging with live reload:
 
@@ -160,21 +145,17 @@ Then open in your web browser: http://localhost:3000
 
 Now when you make changes it will automatically refresh
 
-## Configuration
+## Library Requirements
 
-##### - redirect database
-For sharing testing data during development, set postgresql service server wherever it is needed.
-Change in configuration/lora-app-server.toml
-```toml
-[postgresql]
-dsn="postgres://USERNAME:PASSWORD@SERVICE_SERVER_DOMAIN_NAME:5432/DATABASE_NAME?sslmode=disable"
-```
+All libraries used in the UI should provide React Native support
 
-After changing config file, simply restart the service in docker container again
+## Database Access
 
-```bash
-$ ./build/lora-app-server -c configuration/lora-app-server.toml
-```
+Try using a PostgreSQL GUI to easily resolve issues in the test database
+
+Example:
+* Download http://www.psequel.com/
+* Enter connection details that are either in your .env file, or in your custom configuration file: configuration/lora-app-server.toml
 
 # Intro
 
@@ -189,7 +170,7 @@ and payloads can be enqueued by using MQTT or the API.
 ## Architecture
 
 
-### Component links
+## Component links
 
 * [LPWAN Gateway Bridge](https://www.loraserver.io/lora-gateway-bridge)
 * [LPWAN Gateway Config](https://www.loraserver/lora-gateway-config)

@@ -1,0 +1,55 @@
+//
+// multi-select.scss
+//
+
+.ms-container {
+    background: transparent url('../images/multiple-arrow.png') no-repeat 50% 50%;
+    width: auto;
+    max-width: 370px;
+    
+    .ms-list {
+        box-shadow: none;
+        border: $input-border-width solid $input-border-color;
+
+        &.ms-focus {
+            box-shadow: none;
+            border: $input-border-width solid $input-focus-border-color;
+        }
+    }
+    .ms-selectable {
+        li {
+            &.ms-elem-selectable {
+                border: none;
+                padding: 5px 10px;
+            }
+            &.ms-hover {
+                background-color: $primary;
+            }
+        }
+    }
+    .ms-selection {
+        li.ms-elem-selection {
+            border: none;
+            padding: 5px 10px;
+        }
+        li.ms-hover {
+            background-color: $primary;
+        }
+    }
+}
+
+.ms-selectable {
+    box-shadow: none;
+    outline: none !important;
+}
+
+.search-input {
+    margin-bottom: 10px;
+}
+
+.ms-optgroup-label {
+    font-weight: $font-weight-medium;
+    font-family: $font-family-secondary;
+    color: $dark !important;
+    font-size: 13px;
+}

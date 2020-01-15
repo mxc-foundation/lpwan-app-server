@@ -1,73 +1,149 @@
 import React, { Component } from "react";
-
+import { Link } from "react-router-dom";
+import { Card, CardBody, Row, Col } from 'reactstrap';
 import Grid from "@material-ui/core/Grid";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-
-import Plus from "mdi-material-ui/Plus";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
 import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
 import Admin from "../../components/Admin";
 import ApplicationStore from "../../stores/ApplicationStore";
+import OrganizationDevices from "../devices/OrganizationDevices";
 
+const ApplicationNameColumn = (cell, row, index, extraData) => {
+  const currentOrgID = extraData['currentOrgID'];
+  return <Link to={`/organizations/${currentOrgID}/applications/${row.id}`}>{row.name}</Link>;
+}
+
+const ApplicationServiceProfileNameColumn = (cell, row, index, extraData) => {
+  const currentOrgID = extraData['currentOrgID'];
+  return <Link to={`/organizations/${currentOrgID}/service-profiles/${row.serviceProfileID}`}>{row.serviceProfileName}</Link>;
+}
+
+const ApplicationDescriptionColumn = (cell, row, index, extraData) => {
+  return <div>{row.description}</div>;
+}
+
+const getColumns = (currentOrgID) => (
+  [
+    {
+      dataField: 'id',
+      text: i18n.t(`${packageNS}:tr000077`),
+      sort: false
+    },
+    {
+      dataField: 'name',
+      text: i18n.t(`${packageNS}:tr000042`),
+      sort: false,
+      formatter: ApplicationNameColumn,
+      formatExtraData: { currentOrgID: currentOrgID }
+    }, {
+      dataField: 'serviceProfileName',
+      text: i18n.t(`${packageNS}:tr000078`),
+      sort: false,
+      formatter: ApplicationServiceProfileNameColumn,
+      formatExtraData: { currentOrgID: currentOrgID }
+    }, {
+      dataField: 'description',
+      text: i18n.t(`${packageNS}:tr000079`),
+      sort: false,
+      formatter: ApplicationDescriptionColumn
+    }
+  ]
+);
 
 class ListApplications extends Component {
   constructor() {
     super();
-    this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+
+    this.state = {
+      data: [],
+      loading: true,
+      totalSize: 0
+    }
   }
 
-  getPage(limit, offset, callbackFunc) {
-    ApplicationStore.list("", this.props.match.params.organizationID, limit, offset, callbackFunc);
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage ;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+
+    this.getPage(sizePerPage, offset);
   }
 
-  getRow(obj) {
-    return(
-      <TableRow key={obj.id}>
-        <TableCell>{obj.id}</TableCell>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/applications/${obj.id}`}>{obj.name}</TableCellLink>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/service-profiles/${obj.serviceProfileID}`}>{obj.serviceProfileName}</TableCellLink>
-        <TableCell>{obj.description}</TableCell>
-      </TableRow>
-    );
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    this.setState({ loading: true });
+
+    ApplicationStore.list("", currentOrgID, limit, offset, (res) => {
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return(
       <Grid container spacing={4}>
-        <TitleBar
-          buttons={
-            <Admin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                label={i18n.t(`${packageNS}:tr000277`)}
-                icon={<Plus />}
-                to={`/organizations/${this.props.match.params.organizationID}/applications/create`}
-              />
-            </Admin>
-          }
+        <OrganizationDevices
+          mainTabIndex={1}
+          organizationID={currentOrgID}
         >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} />
-        </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000077`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000078`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000079`)}</TableCell>
-              </TableRow>
+          <TitleBar
+            buttons={
+              <Admin organizationID={currentOrgID}>
+                <TitleBarButton
+                  key={1}
+                  label={i18n.t(`${packageNS}:tr000277`)}
+                  icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+                  to={`/organizations/${currentOrgID}/applications/create`}
+                />
+              </Admin>
             }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
+          >
+            <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} />
+          </TitleBar>
+          <Row>
+            <Col>
+              <Card className="card-box shadow-sm">
+                <CardBody className="position-relative">
+                  {this.state.loading && <Loader />}
+                  <AdvancedTable
+                    data={this.state.data}
+                    columns={getColumns(currentOrgID)}
+                    keyField="id"
+                    onTableChange={this.handleTableChange}
+                    rowsPerPage={10}
+                    totalSize={this.state.totalSize}
+                    searchEnabled={false}
+                  />
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </OrganizationDevices>
       </Grid>
     );
   }

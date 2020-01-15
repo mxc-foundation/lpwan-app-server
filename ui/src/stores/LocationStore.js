@@ -13,18 +13,39 @@ function checkStatus(response) {
 };
 
 function errorHandler(error) {
-  error.then((data) => {
-    if (data.code === 16) {
+  // error.then((data) => {
+  //   if (data.code === 16) {
+  //     history.push("/login");
+  //   } else {
+  //     dispatcher.dispatch({
+  //       type: "CREATE_ERROR",
+  //       error: data,
+  //     });
+  //   }
+  // });
+
+  if (error.response === undefined) {
+    dispatcher.dispatch({
+      type: "CREATE_NOTIFICATION",
+      notification: {
+        type: "error",
+        message: error.message,
+      },
+    });
+  } else {
+    if (error.response.obj.code === 16) {
       history.push("/login");
     } else {
       dispatcher.dispatch({
-        type: "CREATE_ERROR",
-        error: data,
+        type: "CREATE_NOTIFICATION",
+        notification: {
+          type: "error",
+          message: error.response.obj.error + " (code: " + error.response.obj.code + ")",
+        },
       });
     }
-  });
+  }
 };
-
 
 class LocationStore extends EventEmitter {
   getLocation(callbackFunc) {

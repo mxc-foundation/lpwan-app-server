@@ -1,0 +1,38 @@
+//
+// toastr.scss
+//
+
+
+/* =============
+   Notification
+============= */
+#toast-container {
+    > div {
+        box-shadow: $shadow;
+        opacity: 1;
+    }
+    >:hover {
+        box-shadow: $shadow;
+        opacity: 0.9;
+    }
+    
+}
+
+@mixin toast-variant($bg) {
+    border: 2px solid $bg !important;
+    background-color: rgba($bg, 0.8) !important;
+}
+
+@each $color, $value in $theme-colors {
+    .toast-#{$color} {
+      @include toast-variant($value);
+    }
+}
+
+
+// for error
+
+.toast-error {
+    background-color: rgba($danger,0.8);
+    border: 2px solid $danger;
+}
