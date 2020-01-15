@@ -2,30 +2,37 @@ import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
+import Modal from '../../components/Modal';
+import { Button, Breadcrumb, BreadcrumbItem, Form, FormGroup, Label, Input, FormText, Container, Row, Col, Card, CardBody } from 'reactstrap';
+
+
+
+/* import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import { CardContent } from "@material-ui/core";
+
+
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
+import DialogTitle from '@material-ui/core/DialogTitle'; */
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
+
 import GatewayProfileForm from "./GatewayProfileForm";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
 
 const styles = {
-  card: {
-    overflow: "visible",
-  },
+  ...breadcrumbStyles,
+  ...localStyles
 };
-
 
 class CreateGatewayProfile extends Component {
   constructor() {
@@ -60,45 +67,38 @@ class CreateGatewayProfile extends Component {
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <Dialog
-          open={this.state.nsDialog}
-          onClose={this.closeDialog}
-        >
-          <DialogTitle>{i18n.t(`${packageNS}:tr000394`)}</DialogTitle>
-          <DialogContent>
-            <DialogContentText paragraph>
-              {i18n.t(`${packageNS}:tr000377`)}
-              {i18n.t(`${packageNS}:tr000378`)}
-            </DialogContentText>
-            <DialogContentText>
-              {i18n.t(`${packageNS}:tr000379`)}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000041`)}</Button>
-            <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
-          </DialogActions>
-        </Dialog>
+    const { classes } = this.props;
+
+    return (
+      <Form>
+        {this.state.nsDialog && <Modal
+          title={""}
+          left={"DISMISS"}
+          right={"ADD"}
+          context={i18n.t(`${packageNS}:tr000377`)}
+          callback={this.deleteGatewayProfile} />}
 
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000046`)} to="/gateway-profiles" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <GatewayProfileForm
+                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                  onSubmit={this.onSubmit}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Form>
 
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <GatewayProfileForm
-                submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
     );
   }
 }

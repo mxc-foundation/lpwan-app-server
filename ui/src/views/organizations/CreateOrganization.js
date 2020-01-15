@@ -1,21 +1,27 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Form, Row, Col, Card, CardBody } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-
-import { CardContent } from "@material-ui/core";
-
+import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import OrganizationForm from "./OrganizationForm";
 import OrganizationStore from "../../stores/OrganizationStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class CreateOrganization extends Component {
   constructor() {
     super();
+    this.state = {};
+
     this.onSubmit = this.onSubmit.bind(this);
   }
 
@@ -26,26 +32,35 @@ class CreateOrganization extends Component {
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
+    const { classes } = this.props;
+
+    return (
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} to="/organizations" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <OrganizationForm
-                submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <OrganizationForm
+                    match={this.props.match}
+                    submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                    onSubmit={this.onSubmit}
+                    object={{}}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }
 
-export default withRouter(CreateOrganization);
+export default withStyles(styles)(withRouter(CreateOrganization));

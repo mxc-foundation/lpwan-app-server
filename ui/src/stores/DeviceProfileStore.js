@@ -5,6 +5,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockDeviceProfileStoreApi from '../api/mockDeviceProfileStoreApi';
+import isDev from '../util/isDev';
 
 
 class DeviceProfileStore extends EventEmitter {
@@ -30,6 +32,12 @@ class DeviceProfileStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockDeviceProfileStoreApi.get()))();
+      return;
+    }
+
     this.swagger.then(client => {
       client.apis.DeviceProfileService.Get({
         id: id,
@@ -74,6 +82,12 @@ class DeviceProfileStore extends EventEmitter {
   }
 
   list(organizationID, applicationID, limit, offset, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockDeviceProfileStoreApi.list()))();
+      return;
+    }
+
     this.swagger.then(client => {
       client.apis.DeviceProfileService.List({
         organizationID: organizationID,

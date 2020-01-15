@@ -1,174 +1,186 @@
-import React from "react";
+import React, { Component } from "react";
 
-import { withStyles } from "@material-ui/core/styles";
-import TextField from '@material-ui/core/TextField';
-import FormLabel from "@material-ui/core/FormLabel";
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from "@material-ui/core/FormGroup";
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControl from "@material-ui/core/FormControl";
-import FormHelperText from "@material-ui/core/FormHelperText";
+import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
+import { Formik, Form, Field, FieldArray } from 'formik';
+import * as Yup from 'yup';
 
+import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
+
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
 
-const styles = {
-  fontSize: 12,
-};
+class ServiceProfileForm extends Component {
+  constructor(props) {
+    super(props);
 
+    this.state = {};
 
-class ServiceProfileForm extends FormComponent {
-  constructor() {
-    super();
     this.getNetworkServerOption = this.getNetworkServerOption.bind(this);
     this.getNetworkServerOptions = this.getNetworkServerOptions.bind(this);
   }
 
+  componentDidMount() {
+    this.setState({
+      object: this.props.object,
+    });
+  }
+
   getNetworkServerOption(id, callbackFunc) {
     NetworkServerStore.get(id, resp => {
-      callbackFunc({label: resp.networkServer.name, value: resp.networkServer.id});
+      callbackFunc({ label: resp.networkServer.name, value: resp.networkServer.id });
     });
   }
 
   getNetworkServerOptions(search, callbackFunc) {
     NetworkServerStore.list(0, 999, 0, resp => {
-      const options = resp.result.map((ns, i) => {return {label: ns.name, value: ns.id}});
+      const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
       callbackFunc(options);
     });
   }
 
+
+  onNetworkSelect = (v) => {
+    if (!this.state.object.networkServerID || (this.state.object.networkServerID && this.state.object.networkServerID !== v.id)) {
+      let object = this.state.object;
+      object.gatewayProfileID = null;
+      object.networkServerID = v.value;
+      this.setState({
+        object: object,
+      });
+    }
+  };
+
+
   render() {
     if (this.state.object === undefined) {
-      return(<div></div>);
+        return (<div></div>);
     }
 
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-        disabled={this.props.disabled}
-      >
-        <TextField
-          id="name"
-          label={i18n.t(`${packageNS}:tr000149`)}
-          margin="normal"
-          value={this.state.object.name || ""}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000150`)}
-          required
-          fullWidth
-        />
-        {!this.props.update && <FormControl fullWidth margin="normal">
-          <FormLabel className={this.props.classes.FormLabel} required>{i18n.t(`${packageNS}:tr000047`)}</FormLabel>
-          <AutocompleteSelect
-            id="networkServerID"
-            label={i18n.t(`${packageNS}:tr000047`)}
-            value={this.state.object.networkServerID || null}
-            onChange={this.onChange}
-            getOption={this.getNetworkServerOption}
-            getOptions={this.getNetworkServerOptions}
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000171`)}
-          </FormHelperText>
-        </FormControl>}
-        <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label={i18n.t(`${packageNS}:tr000151`)}
-            control={
-              <Checkbox
-                id="addGWMetaData"
-                checked={!!this.state.object.addGWMetaData}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000152`)}
-          </FormHelperText>
-        </FormControl>
-        <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label={i18n.t(`${packageNS}:tr000153`)}
-            control={
-              <Checkbox
-                id="nwkGeoLoc"
-                checked={!!this.state.object.nwkGeoLoc}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>
-            {i18n.t(`${packageNS}:tr000154`)}
-          </FormHelperText>
-        </FormControl>
-        <TextField
-          id="devStatusReqFreq"
-          label={i18n.t(`${packageNS}:tr000155`)}
-          margin="normal"
-          type="number"
-          value={this.state.object.devStatusReqFreq || 0}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000156`)}
-          fullWidth
-        />
-        {this.state.object.devStatusReqFreq > 0 && <FormControl fullWidth margin="normal">
-          <FormGroup>
-            <FormControlLabel
-              label={i18n.t(`${packageNS}:tr000157`)}
-              control={
-                <Checkbox
-                  id="reportDevStatusBattery"
-                  checked={!!this.state.object.reportDevStatusBattery}
-                  onChange={this.onChange}
-                  color="primary"
-                />
-              }
-            />
-            <FormControlLabel
-              label={i18n.t(`${packageNS}:tr000158`)}
-              control={
-                <Checkbox
-                  id="reportDevStatusMargin"
-                  checked={!!this.state.object.reportDevStatusMargin}
-                  onChange={this.onChange}
-                  color="primary"
-                />
-              }
-            />
-          </FormGroup>
-        </FormControl>}
-        <TextField
-          id="drMin"
-          label={i18n.t(`${packageNS}:tr000159`)}
-          margin="normal"
-          type="number"
-          value={this.state.object.drMin || 0}
-          onChange={this.onChange}
-          helperText={i18n.t(`${packageNS}:tr000160`)}
-          fullWidth
-          required
-        />
-        <TextField
-          id="drMax"
-          label="Maximum allowed data-rate"
-          margin="normal"
-          type="number"
-          value={this.state.object.drMax || 0}
-          onChange={this.onChange}
-          helperText="Maximum allowed data rate. Used for ADR."
-          fullWidth
-          required
-        />
-      </Form>
+    return(<React.Fragment>
+      <Row>
+        <Col>
+          <Formik
+            enableReinitialize
+            initialValues={this.state.object}
+            onSubmit={this.props.onSubmit}>
+            {({
+              handleSubmit,
+              setFieldValue,
+              handleChange,
+              handleBlur,
+            }) => (
+                <Form onSubmit={handleSubmit} noValidate>
+                  <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:tr000149`)+"*"}
+                    name="name"
+                    id="name"
+                    helpText={i18n.t(`${packageNS}:tr000150`)}
+                    component={ReactstrapInput}
+                    onBlur={handleBlur}
+                    required
+                  />
+
+                    {!this.props.update && <Field
+                        type="text"
+                        label={i18n.t(`${packageNS}:tr000047`)+"*"}
+                        name="networkServerID"
+                        id="networkServerID"
+                        getOptions={this.getNetworkServerOptions}
+                        setFieldValue={setFieldValue}
+                        helpText={i18n.t(`${packageNS}:tr000223`)}
+                        onBlur={handleBlur}
+                        inputProps={{
+                            clearable: true,
+                            cache: false,
+                        }}
+                        onChange={this.onNetworkSelect}
+                        component={AsyncAutoComplete}
+                        required
+                    />}
+
+                    <Field
+                        type="checkbox"
+                        label={i18n.t(`${packageNS}:tr000151`)}
+                        name="addGWMetaData"
+                        id="addGWMetaData"
+                        component={ReactstrapCheckbox}
+                        onChange={handleChange}
+                        helpText={i18n.t(`${packageNS}:tr000152`)}
+                        onBlur={handleBlur}
+                    />
+
+                    <Field
+                        type="checkbox"
+                        label={i18n.t(`${packageNS}:tr000153`)}
+                        name="nwkGeoLoc"
+                        id="nwkGeoLoc"
+                        component={ReactstrapCheckbox}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        helpText={i18n.t(`${packageNS}:tr000154`)}
+                    />
+
+                    <Field
+                        type="number"
+                        label={i18n.t(`${packageNS}:tr000155`)}
+                        name="devStatusReqFreq"
+                        id="devStatusReqFreq"
+                        helpText={i18n.t(`${packageNS}:tr000156`)}
+                        component={ReactstrapInput}
+                        onBlur={handleBlur}
+                    />
+
+                    <FormGroup>
+                        <Field
+                            type="checkbox"
+                            label={i18n.t(`${packageNS}:tr000157`)}
+                            name="reportDevStatusBattery"
+                            id="reportDevStatusBattery"
+                            component={ReactstrapCheckbox}
+                            onChange={handleChange}
+                        />
+
+                        <Field
+                            type="checkbox"
+                            label={i18n.t(`${packageNS}:tr000158`)}
+                            name="reportDevStatusMargin"
+                            id="reportDevStatusMargin"
+                            component={ReactstrapCheckbox}
+                            onChange={handleChange}
+                        />
+                    </FormGroup>
+
+                    <Field
+                        type="number"
+                        label={i18n.t(`${packageNS}:tr000159`)+"*"}
+                        name="drMin"
+                        id="drMin"
+                        helpText={i18n.t(`${packageNS}:tr000160`)}
+                        component={ReactstrapInput}
+                        required
+                    />
+
+                    <Field
+                        type="number"
+                        label={i18n.t(`${packageNS}:tr000161`)+"*"}
+                        name="drMax"
+                        id="drMax"
+                        helpText={i18n.t(`${packageNS}:tr000162`)}
+                        component={ReactstrapInput}
+                        required
+                    />
+
+                  <Button type="submit" color="primary">{this.props.submitLabel}</Button>
+                </Form>
+            )}
+          </Formik>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(ServiceProfileForm);
+export default ServiceProfileForm;

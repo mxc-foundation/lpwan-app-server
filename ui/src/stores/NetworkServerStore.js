@@ -23,7 +23,7 @@ class NetworkServerStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notifiy("created");
+        this.notify("created");
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);
@@ -53,14 +53,14 @@ class NetworkServerStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notifiy("updated");
+        this.notify("updated");
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);
     });
   }
 
-  notifiy(action) {
+  notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
       notification: {
@@ -77,7 +77,7 @@ class NetworkServerStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notifiy("deleted");
+        this.notify("deleted");
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);

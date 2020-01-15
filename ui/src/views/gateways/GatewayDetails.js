@@ -1,12 +1,6 @@
 import React, { Component } from "react";
 
-import { withStyles } from "@material-ui/core/styles";
-import Paper from '@material-ui/core/Paper';
-import Card from "@material-ui/core/Card";
-import CardHeader from "@material-ui/core/CardHeader";
-import CardContent from "@material-ui/core/CardContent";
-import Typography from "@material-ui/core/Typography";
-import Grid from '@material-ui/core/Grid';
+import { Row, Col, Card, CardTitle, CardBody } from 'reactstrap';
 
 import moment from "moment";
 import { Map, Marker } from 'react-leaflet';
@@ -15,13 +9,6 @@ import { Line } from "react-chartjs-2";
 import i18n, { packageNS } from '../../i18n';
 import MapTileLayer from "../../components/MapTileLayer";
 import GatewayStore from "../../stores/GatewayStore";
-
-
-const styles = {
-  chart: {
-    height: 300,
-  },
-};
 
 
 class GatewayDetails extends Component {
@@ -84,11 +71,12 @@ class GatewayDetails extends Component {
 
   render() {
     if (this.props.gateway === undefined || this.state.statsDown === undefined || this.state.statsUp === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
     const style = {
-      height: 400,
+      height: 322,
+      zIndex: 1
     };
 
     const statsOptions = {
@@ -106,10 +94,10 @@ class GatewayDetails extends Component {
     }
 
     let position = [];
-    if (typeof(this.props.gateway.location.latitude) !== "undefined" && typeof(this.props.gateway.location.longitude !== "undefined")) {
-      position = [this.props.gateway.location.latitude, this.props.gateway.location.longitude]; 
+    if (typeof (this.props.gateway.location.latitude) !== "undefined" && typeof (this.props.gateway.location.longitude !== "undefined")) {
+      position = [this.props.gateway.location.latitude, this.props.gateway.location.longitude];
     } else {
-      position = [0,0];
+      position = [0, 0];
     }
 
     let lastseen = "";
@@ -117,68 +105,85 @@ class GatewayDetails extends Component {
       lastseen = moment(this.props.lastSeenAt).fromNow();
     }
 
-    return(
-      <Grid container spacing={4}>
-        <Grid item xs={6}>
-          <Card>
-            <CardHeader
-              title="Gateway details"
-            />
-            <CardContent>
-              <Typography variant="subtitle1" color="primary">
+    return (<React.Fragment>
+      <Row>
+        <Col lg={6}>
+          <Card className="border shadow-none">
+            <CardBody>
+              <CardTitle tag="h4">{i18n.t(`${packageNS}:tr000423`)}</CardTitle>
+
+              <h6 className="text-primary font-16">
                 {i18n.t(`${packageNS}:tr000074`)}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
+              </h6>
+              <p>
                 {this.props.gateway.id}
-              </Typography>
-              <Typography variant="subtitle1" color="primary">
-                Altitude
-              </Typography>
-              <Typography variant="body1" gutterBottom>
+              </p>
+
+              <h6 className="text-primary font-16">
+                {i18n.t(`${packageNS}:tr000432`)}
+              </h6>
+              <p>
                 {this.props.gateway.location.altitude} meters
-              </Typography>
-              <Typography variant="subtitle1" color="primary">
+              </p>
+
+              <h6 className="text-primary font-16">
                 {i18n.t(`${packageNS}:tr000241`)}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
+              </h6>
+              <p>
                 {this.props.gateway.location.latitude}, {this.props.gateway.location.longitude}
-              </Typography>
-              <Typography variant="subtitle1" color="primary">
+              </p>
+
+              <h6 className="text-primary font-16">
                 {i18n.t(`${packageNS}:tr000242`)}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
+              </h6>
+              <p>
                 {lastseen}
-              </Typography>
-            </CardContent>
+              </p>
+            </CardBody>
           </Card>
-        </Grid>
-        <Grid item xs={6}>
-          <Paper>
-            <Map center={position} zoom={15} style={style} animate={true} scrollWheelZoom={false}>
-              <MapTileLayer />
-              <Marker position={position} />
-            </Map>
-          </Paper>
-        </Grid>
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title={i18n.t(`${packageNS}:tr000243`)} />
-            <CardContent className={this.props.classes.chart}>
-              <Line height={75} options={statsOptions} data={this.state.statsDown} redraw />
-            </CardContent>
+        </Col>
+
+        <Col lg={6}>
+          <Card className="border shadow-none">
+            <CardBody className="p-1">
+              <Map center={position} zoom={15} style={style} animate={true} scrollWheelZoom={false}>
+                <MapTileLayer />
+                <Marker position={position} />
+              </Map>
+            </CardBody>
           </Card>
-        </Grid>
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title={i18n.t(`${packageNS}:tr000244`)} />
-            <CardContent className={this.props.classes.chart}>
-              <Line height={75} options={statsOptions} data={this.state.statsUp} redraw />
-            </CardContent>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={12}>
+          <Card className="border shadow-none">
+            <CardBody>
+              <CardTitle tag="h4">{i18n.t(`${packageNS}:tr000243`)}</CardTitle>
+
+              <div style={{height: '300px'}}>
+                <Line height={75} options={statsOptions} data={this.state.statsDown} redraw />
+              </div>
+            </CardBody>
           </Card>
-        </Grid>
-      </Grid>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col lg={12}>
+          <Card className="border shadow-none">
+            <CardBody>
+              <CardTitle tag="h4">{i18n.t(`${packageNS}:tr000244`)}</CardTitle>
+              <div style={{ height: '300px' }}>
+                <Line height={75} options={statsOptions} data={this.state.statsUp} redraw />
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(GatewayDetails);
+export default GatewayDetails;

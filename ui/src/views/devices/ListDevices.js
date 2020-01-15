@@ -1,22 +1,17 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { Route, Switch, Link } from "react-router-dom";
 
+import { Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-import Button from '@material-ui/core/Button';
 
-import moment from "moment";
-import Plus from "mdi-material-ui/Plus";
-import PowerPlug from "mdi-material-ui/PowerPlug";
-
-import i18n, { packageNS } from '../../i18n';
-import TableCellLink from "../../components/TableCellLink";
-import DataTable from "../../components/DataTable";
-import DeviceAdmin from "../../components/DeviceAdmin";
-import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
+import i18n, { packageNS } from "../../i18n";
+import TitleBar from "../../components/TitleBar";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import TitleBarButton from "../../components/TitleBarButton";
+import DeviceAdmin from "../../components/DeviceAdmin";
+import ListDevicesTable from "./ListDevicesTable";
+import ListDevicesMap from "./ListDevicesTable";
 
 
 const styles = {
@@ -31,81 +26,78 @@ const styles = {
   },
 };
 
-
 class ListDevices extends Component {
   constructor() {
     super();
-    this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+
+    this.switchToList = this.switchToList.bind(this);
+    this.locationToTab = this.locationToTab.bind(this);
+    this.state = {
+      viewMode: 'list'
+    };
   }
 
-  getPage(limit, offset, callbackFunc) {
-    DeviceStore.list({
-      applicationID: this.props.match.params.applicationID,
-      limit: limit,
-      offset: offset,
-    }, callbackFunc);
+  componentDidMount() {
+    this.locationToTab();
   }
 
-  getRow(obj) {
-    let lastseen = "n/a";
-    let margin = "n/a";
-    let battery = "n/a";
-
-    if (obj.lastSeenAt !== undefined && obj.lastSeenAt !== null) {
-      lastseen = moment(obj.lastSeenAt).fromNow();
+  locationToTab = () => {
+    if (window.location.href.endsWith("/map")) {
+      this.setState({ viewMode: 'map' });
     }
+  }
 
-    if (!obj.deviceStatusExternalPowerSource && !obj.deviceStatusBatteryLevelUnavailable) {
-      battery = `${obj.deviceStatusBatteryLevel}%`
-    }
-
-    if (obj.deviceStatusExternalPowerSource) {
-      battery = <PowerPlug />;
-    }
-
-    if (obj.deviceStatusMargin !== undefined && obj.deviceStatusMargin !== 256) {
-      margin = `${obj.deviceStatusMargin} dB`;
-    }
-
-    return(
-      <TableRow key={obj.devEUI}>
-        <TableCell>{lastseen}</TableCell>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${obj.devEUI}`}>{obj.name}</TableCellLink>
-        <TableCell>{obj.devEUI}</TableCell>
-        <TableCell>{margin}</TableCell>
-        <TableCell>{battery}</TableCell>
-      </TableRow>
-    );
+  /**
+   * Switch to list
+   */
+  switchToList() {
+    this.setState({ viewMode: 'list' });
   }
 
   render() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+
     return(
-      <Grid container spacing={4}>
-        <DeviceAdmin organizationID={this.props.match.params.organizationID}>
-          <Grid item xs={12} className={this.props.classes.buttons}>
-            <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/create`}>
-              <Plus className={this.props.classes.icon} />
-              {i18n.t(`${packageNS}:tr000277`)}
-            </Button>
-          </Grid>
-        </DeviceAdmin>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000242`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000300`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000371`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000382`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000383`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+      <React.Fragment>
+        <TitleBar
+          buttons={<DeviceAdmin organizationID={currentOrgID}>
+            <TitleBarButton
+              key={1}
+              label={i18n.t(`${packageNS}:tr000277`)}
+              icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+              to={
+                currentApplicationID
+                ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/create`
+                : `/organizations/${currentOrgID}/devices/create`
+              }
+            />
+          </DeviceAdmin>}
+        >
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000278`)} />
+        </TitleBar>
+
+        {
+          this.state.viewMode === 'map' && (
+            <Link
+              to={
+                currentApplicationID
+                ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices`
+                : `/organizations/${currentOrgID}/devices`
+              }
+              className="btn btn-primary mb-3"
+              onClick={this.switchToList}>
+                Show List
+            </Link>
+          )
+        }
+        <Switch>
+          <Route exact path={this.props.match.path} render={props =>
+            <ListDevicesTable {...props} organizationID={currentOrgID} applicationID={currentApplicationID} />} />
+          <Route exact path={`${this.props.match.path}/map`} render={props =>
+            <ListDevicesMap {...props} organizationID={currentOrgID} applicationID={currentApplicationID} />} />
+        </Switch>
+      </React.Fragment>
     );
   }
 }
