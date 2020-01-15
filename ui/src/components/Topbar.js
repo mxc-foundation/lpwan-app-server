@@ -107,7 +107,7 @@ class Topbar extends Component {
     if (SessionStore.getUser()) {
       user = SessionStore.getUser();
     }
-    
+
     return (
 
       <React.Fragment>
@@ -130,13 +130,13 @@ class Topbar extends Component {
               </form> */}
               </li>
               {!this.props.isMobile &&
-              <li className="dropdown notification-list">
-              <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
-                <i className="mdi mdi-wallet-outline"></i>
-                <span> {balanceEl}</span>
-              </button>
-            </li>
-  }
+                <li className="dropdown notification-list">
+                  <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
+                    <i className="mdi mdi-wallet-outline"></i>
+                    <span> {balanceEl}</span>
+                  </button>
+                </li>
+              }
               {this.props.isMobile &&
                 <li className="dropdown notification-list">
                   <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
@@ -180,10 +180,10 @@ class Topbar extends Component {
             </ul>
           </div>
           {this.props.isMobile &&
-          <div className="navbar-custom-subbar">
-            <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>
-          </div>
-  }
+            <div className="navbar-custom-subbar">
+              <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>
+            </div>
+          }
         </div>
       </React.Fragment >
     );
