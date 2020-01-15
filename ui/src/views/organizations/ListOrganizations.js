@@ -1,77 +1,149 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
 
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
-import Check from "mdi-material-ui/Check";
-import Close from "mdi-material-ui/Close";
-import Plus from "mdi-material-ui/Plus";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
+import AdvancedTable from "../../components/AdvancedTable";
 
 import OrganizationStore from "../../stores/OrganizationStore";
+import Check from "mdi-material-ui/Check";
+import Close from "mdi-material-ui/Close";
+import TitleBarButton from "../../components/TitleBarButton";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class ListOrganizations extends Component {
-  getPage(limit, offset, callbackFunc) {
-    OrganizationStore.list("", limit, offset, callbackFunc);
+  constructor(props) {
+    super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
+    this.getPage = this.getPage.bind(this);
+
+    this.getColumns = this.getColumns.bind(this);
+    this.organizationNameColumn = this.organizationNameColumn.bind(this);
+    this.canHaveGatewaysColumn = this.canHaveGatewaysColumn.bind(this);
+
+    this.state = {
+      data: [],
+      totalSize: 0
+    }
   }
 
-  getRow(obj) {
-    let icon = null;
+  organizationNameColumn = (cell, row, index, extraData) => {
+    return <Link to={`/organizations/${row.id}`}>{row.name}</Link>;
+  };
 
-    if (obj.canHaveGateways) {
-      icon = <Check />;
+  canHaveGatewaysColumn = (cell, row, index, extraData) => {
+    if (row.canHaveGateways) {
+      return <Check />;
     } else {
-      icon = <Close />;
+      return <Close />;
     }
+  };
 
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/organizations/${obj.id}`}>{obj.name}</TableCellLink>
-        <TableCell>{obj.displayName}</TableCell>
-        <TableCell>{icon}</TableCell>
-      </TableRow>
-    );
+  serviceProfileColumn = (cell, row, index, extraData) => {
+    return <div>
+      <div>
+        <Link to={`/organizations/${row.id}/service-profiles/create`}>ADD</Link>
+      </div>
+      <div>
+        <Link to={`/organizations/${row.id}/service-profiles`}>CHECK</Link>
+      </div>
+    </div>;
+  };
+
+  getColumns = () => (
+    [
+      {
+        dataField: 'name',
+        text: i18n.t(`${packageNS}:tr000042`),
+        sort: false,
+        formatter: this.organizationNameColumn,
+      },
+      {
+        dataField: 'displayName',
+        text: i18n.t(`${packageNS}:tr000126`),
+        sort: false,
+      },
+      {
+        dataField: 'canHaveGateways',
+        text: i18n.t(`${packageNS}:tr000380`),
+        sort: false,
+        formatter: this.canHaveGatewaysColumn,
+      },
+      {
+        dataField: 'serviceProfiles',
+        text: i18n.t(`${packageNS}:tr000078`),
+        sort: false,
+        formatter: this.serviceProfileColumn,
+      }
+    ]
+  );
+
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
+    const offset = (page - 1) * sizePerPage;
+
+    this.getPage(sizePerPage, offset);
+  };
+
+  getPage(limit, offset) {
+    limit = MAX_DATA_LIMIT;
+    OrganizationStore.list("", limit, offset, (res) => {
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(MAX_DATA_LIMIT, 0);
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <TitleBar
-          buttons={[
-            <TitleBarButton
-              key={1}
-              label={i18n.t(`${packageNS}:tr000277`)}
-              icon={<Plus />}
-              to={`/organizations/create`}
-            />,
-          ]}
+    const { classes } = this.props;
+
+    return (
+      <React.Fragment>
+        <TitleBar buttons={
+          <TitleBarButton
+            key={1}
+            label={i18n.t(`${packageNS}:tr000277`)}
+            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+            to={`/organizations/create`}
+          />}
         >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000049`)} />
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000049`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000126`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000380`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+
+        <Row>
+          <Col>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }
 
-export default ListOrganizations;
+export default withStyles(styles)(ListOrganizations);

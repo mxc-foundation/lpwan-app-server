@@ -1,0 +1,30 @@
+// 
+// tables.scss
+//
+
+table {
+    text-align: left;
+
+    td,th {
+        vertical-align: middle !important;     
+    }
+}
+
+//Table centered (Custom)
+.table-centered {
+    td,th {
+        vertical-align: middle !important;
+    }
+}
+
+// Allow sufficient height in the table so that if a column has a selection box value
+// at least two of the list items appear so the user knows that there are more values
+// that they may be able to scroll down to view
+.react-bootstrap-table.table-responsive {
+    height: 100%;
+}
+
+// Override the default bottom border
+.MuiTable-root tr td {
+    border-bottom: 1px solid #dee2e6;
+}

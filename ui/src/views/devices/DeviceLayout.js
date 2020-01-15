@@ -18,12 +18,14 @@ import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import SessionStore from "../../stores/SessionStore";
 import DeviceAdmin from "../../components/DeviceAdmin";
 import DeviceStore from "../../stores/DeviceStore";
+import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateDevice from "./UpdateDevice";
 import DeviceKeys from "./DeviceKeys";
 import DeviceActivation from "./DeviceActivation"
 import DeviceData from "./DeviceData";
 import DeviceFrames from "./DeviceFrames";
 import ListFUOTADeploymentsForDevice from "../../views/fuota/ListFUOTADeploymentsForDevice";
+import DeviceDetailsDevicesTabs from "../../views/applications/DeviceDetailsDevicesTabs";
 import DeviceDetails from "./DeviceDetails";
 
 import theme from "../../theme";
@@ -44,26 +46,31 @@ class DeviceLayout extends Component {
       tab: 0,
       admin: false,
     };
-
-    this.onChangeTab = this.onChangeTab.bind(this);
-    this.deleteDevice = this.deleteDevice.bind(this);
-    this.locationToTab = this.locationToTab.bind(this);
-    this.setIsAdmin = this.setIsAdmin.bind(this);
-    this.getDevice = this.getDevice.bind(this);
   }
 
   componentDidMount() {
-    ApplicationStore.get(this.props.match.params.applicationID, resp => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+
+    if (currentApplicationID) {
+      ApplicationStore.get(this.props.match.params.applicationID, resp => {
+        this.setState({
+          application: resp,
+        });
+      });
+    }
+
+    OrganizationStore.get(currentOrgID, resp => {
       this.setState({
-        application: resp,
+        organization: resp.organization,
+        loading: false
       });
     });
-
 
     DeviceStore.on("update", this.getDevice);
     SessionStore.on("change", this.setIsAdmin);
 
-    this.locationToTab();
+    this.getMainTabDeviceIndexFromLocation();
     this.setIsAdmin();
     this.getDevice();
   }
@@ -78,39 +85,42 @@ class DeviceLayout extends Component {
       return;
     }
 
-    this.locationToTab();
+    this.getMainTabDeviceIndexFromLocation();
   }
 
-  getDevice() {
+  getDevice = () => {
     DeviceStore.get(this.props.match.params.devEUI, resp => {
       this.setState({
         device: resp,
       });
 
-      DeviceProfileStore.get(resp.device.deviceProfileID, resp => {
-        this.setState({
-          deviceProfile: resp,
+      if (resp.device.deviceProfileID) {
+        DeviceProfileStore.get(resp.device.deviceProfileID, resp => {
+          this.setState({
+            deviceProfile: resp,
+          });
         });
-      });
+      }
+
     });
   }
 
-  setIsAdmin() {
+  setIsAdmin = () => {
     this.setState({
       admin: SessionStore.isAdmin() || SessionStore.isOrganizationDeviceAdmin(this.props.match.params.organizationID),
     }, () => {
       // we need to update the tab index, as for non-admins, some tabs are hidden
-      this.locationToTab();
+      this.getMainTabDeviceIndexFromLocation();
     });
   }
 
-  onChangeTab(e, v) {
+  onChangeTab = (e, v) => {
     this.setState({
       tab: v,
     });
   }
 
-  locationToTab() {
+  getMainTabDeviceIndexFromLocation = () => {
     let tab = 0;
 
     if (window.location.href.endsWith("/edit")) {
@@ -136,71 +146,65 @@ class DeviceLayout extends Component {
     });
   }
 
-  deleteDevice() {
+  deleteDevice = () => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    const isApplication = currentApplicationID && currentApplicationID !== "0"; 
+
     if (window.confirm("Are you sure you want to delete this device?")) {
       DeviceStore.delete(this.props.match.params.devEUI, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`);
+        isApplication
+        ? this.props.history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}`)
+        : this.props.history.push(`/organizations/${currentOrgID}`);
       });
     }
   }
 
   render() {
-    if (this.state.application === undefined || this.state.device === undefined|| this.state.deviceProfile === undefined) {
+    const { admin, application, device, deviceProfile, organization, tab } = this.state;
+    const { children, match } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    // Note: Must prefix with `\\d+` and `\\w` here instead of `\d+` and `\w` as we've done in App.js
+    const urlPrefixDeviceNoApp = `/organizations/:organizationID(\\d+)/devices/:devEUI([\\w]{16})`;
+
+    // if (application === undefined || device === undefined|| deviceProfile === undefined) {
+    if (device === undefined) {
       return(<div></div>);
     }
 
     return(
       <Grid container spacing={4}>
-        <TitleBar
-          buttons={
-            <DeviceAdmin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                label={i18n.t(`${packageNS}:tr000061`)}
-                icon={<Delete />}
-                onClick={this.deleteDevice}
-              />
-            </DeviceAdmin>
-          }
+        <DeviceDetailsDevicesTabs
+          {...this.props}
+          admin={admin}
+          application={application}
+          deleteDevice={this.deleteDevice}
+          device={device}
+          deviceProfile={deviceProfile}
+          mainTabDeviceIndex={tab}
+          organizationID={currentOrgID}
+          organization={organization}
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title={i18n.t(`${packageNS}:tr000076`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} title={this.state.application.application.name} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} title={i18n.t(`${packageNS}:tr000278`)} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`} title={this.state.device.device.name} />
-        </TitleBar>
-
-        <Grid item xs={12}>
-          <Tabs
-            value={this.state.tab}
-            onChange={this.onChangeTab}
-            indicatorColor="primary"
-            className={this.props.classes.tabs}
-                        variant="scrollable"
-            scrollButtons="auto"
-          >
-            <Tab label={i18n.t(`${packageNS}:tr000280`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`} />
-            <Tab label={i18n.t(`${packageNS}:tr000298`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/edit`} />
-            {this.state.admin && <Tab label="Keys (OTAA)" disabled={!this.state.deviceProfile.deviceProfile.supportsJoin} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/keys`} />}
-            <Tab label={i18n.t(`${packageNS}:tr000311`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/activation`} />
-            <Tab label={i18n.t(`${packageNS}:tr000317`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/data`} />
-            <Tab label={i18n.t(`${packageNS}:tr000318`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/frames`} />
-            <Tab label={i18n.t(`${packageNS}:tr000319`)} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments`} />
-          </Tabs>
-        </Grid>
-
-        <Grid item xs={12}>
+          {children}
           <Switch>
-            <Route exact path={`${this.props.match.path}`} render={props => <DeviceDetails device={this.state.device} deviceProfile={this.state.deviceProfile} admin={this.state.admin} {...props} />} />
-            <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateDevice device={this.state.device.device} admin={this.state.admin} {...props} />} />
-            <Route exact path={`${this.props.match.path}/keys`} render={props => <DeviceKeys device={this.state.device.device} admin={this.state.admin} deviceProfile={this.state.deviceProfile.deviceProfile} {...props} />} />
-            <Route exact path={`${this.props.match.path}/activation`} render={props => <DeviceActivation device={this.state.device.device} admin={this.state.admin} deviceProfile={this.state.deviceProfile.deviceProfile} {...props} />} />
-            <Route exact path={`${this.props.match.path}/data`} render={props => <DeviceData device={this.state.device.device} admin={this.state.admin} {...props} />} />
-            <Route exact path={`${this.props.match.path}/frames`} render={props => <DeviceFrames device={this.state.device.device} admin={this.state.admin} {...props} />} />
-            <Route exact path={`${this.props.match.path}/fuota-deployments`} render={props => <ListFUOTADeploymentsForDevice device={this.state.device.device} admin={this.state.admin} {...props} /> } />
+            <Route exact path={`${urlPrefixDeviceNoApp}/edit`} render={props => <UpdateDevice device={device.device} admin={admin} {...props} />} />
+            <Route exact path={`${urlPrefixDeviceNoApp}/keys`} render={props => <DeviceKeys device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
+            <Route exact path={`${urlPrefixDeviceNoApp}/activation`} render={props => <DeviceActivation device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
+            <Route exact path={`${urlPrefixDeviceNoApp}/data`} render={props => <DeviceData device={device.device} admin={admin} {...props} />} />
+            <Route exact path={`${urlPrefixDeviceNoApp}/frames`} render={props => <DeviceFrames device={device.device} admin={admin} {...props} />} />
+            <Route exact path={`${urlPrefixDeviceNoApp}/fuota-deployments`} render={props => <ListFUOTADeploymentsForDevice device={device.device} admin={admin} {...props} /> } />
+            <Route exact path={`${urlPrefixDeviceNoApp}`} render={props => <DeviceDetails device={device} deviceProfile={deviceProfile} admin={admin} {...props} />} />
+            
+            <Route exact path={`${match.path}/edit`} render={props => <UpdateDevice device={device.device} admin={admin} {...props} />} />
+            <Route exact path={`${match.path}/keys`} render={props => <DeviceKeys device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
+            <Route exact path={`${match.path}/activation`} render={props => <DeviceActivation device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
+            <Route exact path={`${match.path}/data`} render={props => <DeviceData device={device.device} admin={admin} {...props} />} />
+            <Route exact path={`${match.path}/frames`} render={props => <DeviceFrames device={device.device} admin={admin} {...props} />} />
+            <Route exact path={`${match.path}/fuota-deployments`} render={props => <ListFUOTADeploymentsForDevice device={device.device} admin={admin} {...props} /> } />
+            <Route exact path={`${match.path}`} render={props => <DeviceDetails device={device} deviceProfile={deviceProfile} admin={admin} {...props} />} />
           </Switch>
-        </Grid>
+        </DeviceDetailsDevicesTabs>
       </Grid>
     );
   }

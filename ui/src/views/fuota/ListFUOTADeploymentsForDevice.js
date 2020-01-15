@@ -1,24 +1,21 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, NavLink } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
+
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 
 import moment from "moment";
-import CloudUpload from "mdi-material-ui/CloudUpload";
 
 import i18n, { packageNS } from '../../i18n';
-import TableCellLink from "../../components/TableCellLink";
-import DataTable from "../../components/DataTable";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 import DeviceAdmin from "../../components/DeviceAdmin";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 import theme from "../../theme";
@@ -30,127 +27,217 @@ const styles = {
   },
   button: {
     marginLeft: 2 * theme.spacing(1),
-  },
-  icon: {
-    marginRight: theme.spacing(1),
-  },
+  }
 };
 
+const FUOTADeploymentNameColumn = (cell, row, index, extraData) => {
+  const currentOrgID = extraData['currentOrgID'];
+  const currentApplicationID = extraData['currentApplicationID'];
+  return <Link to={
+    currentApplicationID
+    ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/fuota-deployments/${row.id}`
+    : `/organizations/${currentOrgID}/fuota-deployments/${row.id}`
+  }>{row.name}</Link>;
+}
+
+const FUOTADeploymentCreatedAtColumn = (cell, row, index) => {
+  return moment(row.createdAt).format('lll');
+}
+
+const FUOTADeploymentUpdatedAtColumn = (cell, row, index) => {
+  return moment(row.updatedAt).format('lll');
+}
 
 class ListFUOTADeploymentsForDevice extends Component {
   constructor() {
     super();
 
     this.state = {
+      data: [],
+      loading: true,
       detailDialog: false,
+      totalSize: 0
     };
-
-    this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
-    this.onCloseDialog = this.onCloseDialog.bind(this);
-    this.showDetails = this.showDetails.bind(this);
   }
 
-  getPage(limit, offset, callbackFunc) {
-    FUOTADeploymentStore.list({
-      devEUI: this.props.match.params.devEUI,
-      limit: limit,
-      offset: offset,
-    }, callbackFunc);
+  fUOTADeploymentShowDetailsColumn = (cell, row, index) => {
+    return <Button size="small" onClick={() => this.showDetails(row.id)}>Show</Button>;
   }
 
-  getRow(obj) {
-    const createdAt = moment(obj.createdAt).format('lll');
-    const updatedAt = moment(obj.updatedAt).format('lll');
-
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${obj.id}`}>{obj.name}</TableCellLink>
-        <TableCell>{createdAt}</TableCell>
-        <TableCell>{updatedAt}</TableCell>
-        <TableCell>{obj.state}</TableCell>
-        <TableCell><Button size="small" onClick={() => this.showDetails(obj.id)}>Show</Button></TableCell>
-      </TableRow>
-    );
-  }
-
-  showDetails(fuotaDeploymentID) {
-    FUOTADeploymentStore.getDeploymentDevice(fuotaDeploymentID, this.props.match.params.devEUI, resp => {
+  showDetails = (fuotaDeploymentID) => {
+    const devEUI = this.props.devEUI || this.props.match.params.devEUI;
+    FUOTADeploymentStore.getDeploymentDevice(fuotaDeploymentID, devEUI, resp => {
       this.setState({
-        deploymentDevice: resp.deploymentDevice,
+        data: new Array(Object.assign({}, this.state.data[0], resp.deploymentDevice)),
         fuotaDeploymentID: fuotaDeploymentID,
         detailDialog: true,
       });
     });
   }
 
-  onCloseDialog() {
+  toggleDialog = () => {
     this.setState({
-      detailDialog: false,
+      detailDialog: !this.state.detailDialog,
     });
   }
 
-  render() {
-    let fddUpdatedAt = "";
-    if (this.state.deploymentDevice !== undefined) {
-      fddUpdatedAt = moment(this.state.deploymentDevice.updatedAt).format('lll');
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage ;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
     }
 
-    return(
-      <Grid container spacing={4}>
-        {this.state.deploymentDevice && <Dialog
-          open={this.state.detailDialog}
-          onClose={this.onCloseDialog}
-        >
-          <DialogTitle>{i18n.t(`${packageNS}:tr000339`)}</DialogTitle>
-          <DialogContent>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell>{i18n.t(`${packageNS}:tr000340`)}</TableCell>
-                  <TableCell>{fddUpdatedAt}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
-                  <TableCell>{this.state.deploymentDevice.state}</TableCell>
-                </TableRow>
-                {this.state.deploymentDevice.state === "ERROR" && <TableRow>
-                  <TableCell>{i18n.t(`${packageNS}:tr000341`)}</TableCell>
-                  <TableCell>{this.state.deploymentDevice.errorMessage}</TableCell>
-                </TableRow>}
-              </TableBody>
-            </Table>
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary.main" onClick={this.onCloseDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
-          </DialogActions>
-        </Dialog>}
+    this.getPage(sizePerPage, offset);
+  }
 
-        <DeviceAdmin organizationID={this.props.match.params.organizationID}>
+  getColumns = (currentOrgID, currentApplicationID) => (
+    [
+      {
+        dataField: 'name',
+        text: i18n.t(`${packageNS}:tr000320`),
+        sort: false,
+        formatter: FUOTADeploymentNameColumn,
+        formatExtraData: {
+          currentOrgID: currentOrgID,
+          currentApplicationID: currentApplicationID
+        }
+      }, {
+        dataField: 'createdAt',
+        text: i18n.t(`${packageNS}:tr000321`),
+        sort: false,
+        formatter: FUOTADeploymentCreatedAtColumn,
+      }, {
+        dataField: 'updatedAt',
+        text: i18n.t(`${packageNS}:tr000322`),
+        sort: false,
+        formatter: FUOTADeploymentUpdatedAtColumn,
+      }, {
+        dataField: 'state',
+        text: i18n.t(`${packageNS}:tr000323`),
+        sort: false,
+      }, {
+        dataField: 'showDetails',
+        text: "Show Details", // tr000324
+        sort: false,
+        formatter: this.fUOTADeploymentShowDetailsColumn,
+      }
+    ]
+  );
+
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    const devEUI = this.props.devEUI || this.props.match.params.devEUI;
+    this.setState({ loading: true });
+
+    FUOTADeploymentStore.list({
+      devEUI: devEUI,
+      limit: limit,
+      offset: offset,
+    }, (res) => {
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(MAX_DATA_LIMIT);
+  }
+
+  render() {
+    const { data } = this.state;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    const devEUI = this.props.devEUI || this.props.match.params.devEUI;
+
+    let fddUpdatedAt = "";
+    if (data[0] !== undefined) {
+      fddUpdatedAt = moment(data[0].updatedAt).format('lll');
+    }
+
+    const closeBtn = <button className="close" onClick={this.toggleDialog}>&times;</button>;
+
+    return(
+      <React.Fragment>
+        {data[0] &&
+          <Modal
+            isOpen={this.state.detailDialog}
+            toggle={this.toggleDialog}
+            aria-labelledby="help-dialog-title"
+            aria-describedby="help-dialog-description"
+          >
+            <ModalHeader
+              toggle={this.toggleDialog}
+              close={closeBtn}
+              id="help-dialog-title"
+            >
+              {i18n.t(`${packageNS}:tr000339`)}
+            </ModalHeader>
+            <ModalBody id="help-dialog-description">
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell>{i18n.t(`${packageNS}:tr000340`)}</TableCell>
+                    <TableCell>{fddUpdatedAt}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
+                    <TableCell>{data[0].state}</TableCell>
+                  </TableRow>
+                  {data[0].state === "ERROR" && <TableRow>
+                    <TableCell>{i18n.t(`${packageNS}:tr000341`)}</TableCell>
+                    <TableCell>{data[0].errorMessage}</TableCell>
+                  </TableRow>}
+                </TableBody>
+              </Table>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="primary" onClick={this.toggleDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>{' '}
+            </ModalFooter>
+          </Modal>
+        }
+
+        <DeviceAdmin organizationID={currentOrgID}>
           <Grid item xs={12} className={this.props.classes.buttons}>
-            <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}/fuota-deployments/create`}>
-              <CloudUpload className={this.props.classes.icon} />
+          <Button variant="outlined" style={{ marginBottom: "1em" }}>
+            <NavLink
+              style={{ color: "#fff", padding: "0" }}
+              tag={Link}
+              to={
+                currentApplicationID
+                ? `/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${devEUI}/fuota-deployments/create`
+                : `/organizations/${currentOrgID}/devices/${devEUI}/fuota-deployments/create`
+              }
+            >
+              <i className="mdi mdi-cloud-upload"></i>&nbsp;
               {/* Create */} {i18n.t(`${packageNS}:tr000342`)} {/* Job */}
-            </Button>
+              {/* TODO - either Create or Add depending on whether any firmware update jobs already exist or not for the device */}
+            </NavLink>
+          </Button>
           </Grid>
         </DeviceAdmin>
-
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000320`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000321`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000322`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000323`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000324`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+          <div className="position-relative">
+            {this.state.loading && <Loader />}
+            <AdvancedTable
+              data={data}
+              columns={this.getColumns(currentOrgID, currentApplicationID)}
+              keyField="id"
+              onTableChange={this.handleTableChange}
+              rowsPerPage={10}
+              totalSize={this.state.totalSize}
+              searchEnabled={false}
+            />
+          </div>
+      </React.Fragment>
     );
   }
 }

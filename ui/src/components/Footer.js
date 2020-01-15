@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 import { withStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-
+import moment from "moment";
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
 
@@ -16,11 +16,21 @@ const styles = {
   },
 };
 
+const footerHtml = `<!-- Footer -->
+<footer class="page-footer font-small blue pt-4">
+  <!-- Copyright -->
+  <div class="footer-copyright text-center py-3">© ${moment().format('YYYY')} Powered by 
+    <a href="https://www.matchx.io/"> MXC</a>
+  </div>
+  <!-- Copyright -->
+</footer>
+</footer>`
+
 class Footer extends Component {
   constructor() {
     super();
     this.state = {
-      footer: null,
+      footer: footerHtml,
     };
   }
 
@@ -35,13 +45,13 @@ class Footer extends Component {
   }
 
   render() {
-    if (this.state.footer === null) {
+    /* if (this.state.footer === null) {
       return(null);
-    }
+    } */
 
     return(
       <footer className={this.props.classes.footer}>
-        <Typography align="center" dangerouslySetInnerHTML={{__html: this.state.footer}}></Typography>
+        <span dangerouslySetInnerHTML={{__html: footerHtml}}></span>
       </footer>
     );
   }

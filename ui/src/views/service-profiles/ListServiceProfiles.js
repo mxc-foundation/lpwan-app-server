@@ -1,71 +1,112 @@
 import React, { Component } from "react";
+import { withRouter, Link } from "react-router-dom";
 
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
-import Plus from "mdi-material-ui/Plus";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import Admin from "../../components/Admin";
-import DataTable from "../../components/DataTable";
+import AdvancedTable from "../../components/AdvancedTable";
+
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
 
 class ListServiceProfiles extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
+    this.handleTableChange = this.handleTableChange.bind(this);
     this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+    this.serviceProfileColumn = this.serviceProfileColumn.bind(this)
+    this.state = {
+      data: [],
+      columns: [{
+        dataField: 'name',
+        text: i18n.t(`${packageNS}:tr000042`),
+        sort: false,
+        formatter: this.serviceProfileColumn,
+      }],
+      totalSize: 0
+    }
   }
 
-  getPage(limit, offset, callbackFunc) {
-    ServiceProfileStore.list(this.props.match.params.organizationID, limit, offset, callbackFunc);
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
+    const offset = (page - 1) * sizePerPage;
+    this.getPage(this.props.match.params.organizationID, sizePerPage, offset);
   }
 
-  getRow(obj) {
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/service-profiles/${obj.id}`}>{obj.name}</TableCellLink>
-      </TableRow>
-    );
+  /**
+   * Fetches data from server
+   */
+  getPage = (organizationID, limit, offset) => {
+    ServiceProfileStore.list(organizationID, limit, offset, (res) => {
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
+    });
+  }
+
+  serviceProfileColumn = (cell, row, index, extraData) => {
+    return <Link to={`/organizations/${this.props.match.params.organizationID}/service-profiles/${row.id}`}>{row.name}</Link>;
+  }
+
+  componentDidMount() {
+    this.getPage(this.props.match.params.organizationID, MAX_DATA_LIMIT);
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <TitleBar
-          buttons={
-            <Admin>
-              <TitleBarButton
-                label={i18n.t(`${packageNS}:tr000277`)}
-                icon={<Plus />}
-                to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`}
-              />
-            </Admin>
-          }
-        >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000069`)} />
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    return (
+      <React.Fragment>
+        <TitleBar>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000069`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000042`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+
+        <Row>
+          <Col>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }
 
-export default ListServiceProfiles;
+export default withStyles(styles)(withRouter(ListServiceProfiles));
+

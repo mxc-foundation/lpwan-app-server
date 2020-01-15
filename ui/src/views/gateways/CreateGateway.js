@@ -1,32 +1,26 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
+import Loader from "../../components/Loader";
+import CommonModal from '../../components/Modal';
 
 import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
 
 const styles = {
-  card: {
-    overflow: "visible",
-  },
+  ...breadcrumbStyles,
+  ...localStyles
 };
-
 
 class CreateGateway extends Component {
   constructor() {
@@ -34,9 +28,11 @@ class CreateGateway extends Component {
 
     this.state = {
       spDialog: false,
+      loading: false
     };
 
     this.onSubmit = this.onSubmit.bind(this);
+    this.redirectToCreateServiceProfile = this.redirectToCreateServiceProfile.bind(this);
   }
 
   componentDidMount() {
@@ -64,48 +60,83 @@ class CreateGateway extends Component {
     });
   }
 
+  redirectToCreateServiceProfile = () => {
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles/create`);
+  }
+
   render() {
-    return(
-      <Grid container spacing={4}>
-        <Dialog
-          open={this.state.spDialog}
-          onClose={this.closeDialog}
-        >
-          <DialogTitle>{i18n.t(`${packageNS}:tr000164`)}</DialogTitle>
-          <DialogContent>
-            <DialogContentText paragraph>
-              {i18n.t(`${packageNS}:tr000165`)}
-              {i18n.t(`${packageNS}:tr000326`)}
-            </DialogContentText>
-            <DialogContentText>
-              {i18n.t(`${packageNS}:tr000327`)}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary.main" component={Link} to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`} onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000277`)}</Button>
-            <Button color="primary.main" onClick={this.closeDialog}>{i18n.t(`${packageNS}:tr000166`)}</Button>
-          </DialogActions>
-        </Dialog>
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    return (
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000063`)} to={`/organizations/${this.props.match.params.organizationID}/gateways`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                  Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}/gateways`}
+              >
+                {i18n.t(`${packageNS}:tr000063`)}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <GatewayForm
-                match={this.props.match}
-                submitLabel={i18n.t(`${packageNS}:tr000277`)}
-                onSubmit={this.onSubmit}
-                object={{location: {}}}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <div className="position-relative">
+                  {this.state.loading && <Loader />}
+
+                  <GatewayForm
+                    match={this.props.match}
+                    submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                    onSubmit={this.onSubmit}
+                    object={{ name: '', description: '', id: '', location: { altitude: 0 } }}
+                  />
+                </div>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+        <CommonModal showToggleButton={false} callback={this.redirectToCreateServiceProfile}
+          show={this.state.spDialog}
+          context={
+            <React.Fragment>
+              <p>
+                {i18n.t(`${packageNS}:tr000165`)}
+                {i18n.t(`${packageNS}:tr000326`)}
+              </p>
+              <p>
+                {i18n.t(`${packageNS}:tr000327`)}
+              </p>
+            </React.Fragment>
+          } title={i18n.t(`${packageNS}:tr000164`)}
+          showConfirmButton={true} left={i18n.t(`${packageNS}:tr000166`)} right={i18n.t(`${packageNS}:tr000277`)}>    
+        </CommonModal>
+      </React.Fragment>
     );
   }
 }
 
-export default withRouter(withStyles(styles)(CreateGateway));
+export default withStyles(styles)(withRouter(CreateGateway));

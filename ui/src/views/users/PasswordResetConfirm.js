@@ -149,7 +149,6 @@ class PasswordResetConfirm extends Component {
         alert(PASSWORD_RECOVERY_ERROR_MISMATCH);
         return false;
     }  
-    console.log('user', passwords);
   }
 
   render() {

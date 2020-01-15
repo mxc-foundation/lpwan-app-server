@@ -165,8 +165,9 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	dvClient :=  m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
-		_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
+		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
 			OrgId: app.OrganizationID,
 			DevProfile: &m2m_api.AppServerDeviceProfile{
 				DevEui:        d.DevEUI.String(),
@@ -495,8 +496,9 @@ func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error 
 	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	dvClient :=  m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
-		_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
+		_, err = dvClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
 			DevEui: devEUI.String(),
 		})
 		if err != nil && grpc.Code(err) != codes.NotFound {

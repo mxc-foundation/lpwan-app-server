@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 
+import { Alert, Button, Modal, ModalHeader, ModalBody, ModalFooter, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import Avatar from "@material-ui/core/Avatar";
 import Chip from "@material-ui/core/Chip";
 import Grid from "@material-ui/core/Grid";
-import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -22,8 +22,11 @@ import AlertCircleOutline from "mdi-material-ui/AlertCircleOutline";
 import fileDownload from "js-file-download";
 
 import i18n, { packageNS } from '../../i18n';
+import mockDeviceFrame from '../../api/data/mockDeviceFrame';
+import isDev from '../../util/isDev';
 import LoRaWANFrameLog from "../../components/LoRaWANFrameLog";
 import DeviceStore from "../../stores/DeviceStore";
+import Loader from "../../components/Loader";
 import theme from "../../theme";
 
 
@@ -45,7 +48,6 @@ const styles = {
   },
 };
 
-
 class DeviceFrames extends Component {
   constructor() {
     super();
@@ -56,17 +58,13 @@ class DeviceFrames extends Component {
       frames: [],
       dialogOpen: false,
     };
-
-    this.setConnected = this.setConnected.bind(this);
-    this.onFrame = this.onFrame.bind(this);
-    this.onDownload = this.onDownload.bind(this);
-    this.togglePause = this.togglePause.bind(this);
-    this.onClear = this.onClear.bind(this);
-    this.toggleHelpDialog = this.toggleHelpDialog.bind(this);
   }
 
   componentDidMount() {
     const conn = DeviceStore.getFrameLogsConnection(this.props.match.params.devEUI, this.onFrame);
+    if (isDev) {
+      this.onFrame(mockDeviceFrame);
+    }
     this.setState({
       wsConn: conn,
     });
@@ -76,12 +74,15 @@ class DeviceFrames extends Component {
   }
 
   componentWillUnmount() {
+    if (isDev) {
+      return;
+    }
     this.state.wsConn.close();
 
     DeviceStore.removeListener("ws.status.change", this.setConnected);
   }
 
-  onDownload() {
+  onDownload = () => {
     const dl = this.state.frames.map((frame, i) => {
       return {
         uplinkMetaData: frame.uplinkMetaData,
@@ -93,31 +94,33 @@ class DeviceFrames extends Component {
     fileDownload(JSON.stringify(dl, null, 4), `gateway-${this.props.match.params.gatewayID}.json`);
   }
 
-  togglePause() {
+  togglePause = () => {
     this.setState({
       paused: !this.state.paused,
     });
   }
 
-  toggleHelpDialog() {
+  toggleHelpDialog = () => {
     this.setState({
       dialogOpen: !this.state.dialogOpen,
     });
   }
 
-  onClear() {
+  onClear = () => {
     this.setState({
       frames: [],
     });
   }
 
-  setConnected() {
+  setConnected = () => {
     this.setState({
       connected: DeviceStore.getWSFramesStatus(),
     });
   }
 
-  onFrame(frame) {
+  onFrame = (frame) => {
+    let _frame = isDev ? mockDeviceFrame : frame;
+
     if (this.state.paused) {
       return;
     }
@@ -125,30 +128,28 @@ class DeviceFrames extends Component {
     let frames = this.state.frames;
     const now = new Date();
 
-    if (frame.uplinkFrame !== undefined) {
+    if (_frame.uplinkFrame !== undefined) {
       frames.unshift({
         id: now.getTime(),
         receivedAt: now,
         uplinkMetaData: {
-          rxInfo: frame.uplinkFrame.rxInfo,
-          txInfo: frame.uplinkFrame.txInfo,
+          rxInfo: _frame.uplinkFrame.rxInfo,
+          txInfo: _frame.uplinkFrame.txInfo,
         },
-        phyPayload: JSON.parse(frame.uplinkFrame.phyPayloadJSON),
+        phyPayload: JSON.parse(_frame.uplinkFrame.phyPayloadJSON),
       });
     }
 
-    if (frame.downlinkFrame !== undefined) {
+    if (_frame.downlinkFrame !== undefined) {
       frames.unshift({
         id: now.getTime(),
         receivedAt: now,
         downlinkMetaData: {
-          txInfo: frame.downlinkFrame.txInfo,
+          txInfo: _frame.downlinkFrame.txInfo,
         },
-        phyPayload: JSON.parse(frame.downlinkFrame.phyPayloadJSON),
+        phyPayload: JSON.parse(_frame.downlinkFrame.phyPayloadJSON),
       });
     }
-
-    //console.log(frame);
 
     this.setState({
       frames: frames,
@@ -156,61 +157,98 @@ class DeviceFrames extends Component {
   }
 
   render() {
+    const { dialogOpen } = this.state;
     const frames = this.state.frames.map((frame, i) => <LoRaWANFrameLog key={frame.id} frame={frame} />);
+    const closeBtn = <button className="close" onClick={this.toggleHelpDialog}>&times;</button>;
 
     return(
-      <Grid container spacing={4}>
-        <Dialog
-          open={this.state.dialogOpen}
-          onClose={this.toggleHelpDialog}
+      <React.Fragment>
+        <Modal
+          isOpen={dialogOpen}
+          toggle={this.toggleHelpDialog}
           aria-labelledby="help-dialog-title"
           aria-describedby="help-dialog-description"
         >
-          <DialogTitle id="help-dialog-title">{i18n.t(`${packageNS}:tr000248`)}</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="help-dialog-description">
-              {i18n.t(`${packageNS}:tr000249`)}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.toggleHelpDialog} color="primary.main">Close</Button>
-          </DialogActions>
-        </Dialog>
-
-        <Grid item xs={12} className={this.props.classes.buttons}>
-          <Button variant="outlined" className={this.props.classes.button} onClick={this.toggleHelpDialog}>
-            <HelpCircleOutline className={this.props.classes.icon} />
+          <ModalHeader
+            toggle={this.toggleHelpDialog}
+            close={closeBtn}
+            id="help-dialog-title"
+          >
             {i18n.t(`${packageNS}:tr000248`)}
-          </Button>
-          {!this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
-            <Pause className={this.props.classes.icon} />
-            {i18n.t(`${packageNS}:tr000250`)}
-          </Button>}
-          {this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
-            <Play className={this.props.classes.icon} />
-            {i18n.t(`${packageNS}:tr000355`)}
-          </Button>}
-          <Button variant="outlined" className={this.props.classes.button} onClick={this.onDownload}>
-            <Download className={this.props.classes.icon} />
-            {i18n.t(`${packageNS}:tr000251`)}
-          </Button>
-          <Button variant="outlined" className={this.props.classes.button} color="secondary" onClick={this.onClear}>
-            <Delete className={this.props.classes.icon} />
-            {i18n.t(`${packageNS}:tr000252`)}
-          </Button>
-        </Grid>
-        <Grid item xs={12}>
-          {!this.state.connected && <div className={this.props.classes.center}>
-            <Chip
-              color="secondary"
-              label={i18n.t(`${packageNS}:tr000392`)}
-              avatar={<Avatar><AlertCircleOutline /></Avatar>}
-            />
-          </div>}
-          {(this.state.connected && frames.length === 0 && !this.state.paused) && <div className={this.props.classes.center}><CircularProgress className={this.props.classes.progress} /></div>}
-          {frames.length > 0 && frames}
-        </Grid>
-      </Grid>
+          </ModalHeader>
+          <ModalBody id="help-dialog-description">
+            {i18n.t(`${packageNS}:tr000249`)}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onClick={this.toggleHelpDialog}>Close</Button>{' '}
+          </ModalFooter>
+        </Modal>
+
+        <Row xs={1}>
+          <Col xs={6} sm={{ size: 3, offset: 3 }}>
+            <Button
+              variant="outlined"
+              className={this.props.classes.button}
+              onClick={this.toggleHelpDialog}
+            >
+              <span style={{ display: "flex" }}>
+                <i className="mdi mdi-help"></i>&nbsp;{i18n.t(`${packageNS}:tr000248`)}
+              </span>
+            </Button>
+          </Col>
+          <Col xs={6} sm={{ size: 3, offset: 0 }}>
+            {!this.state.paused &&
+              <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
+                <span style={{ display: "flex" }}>
+                  <i className="mdi mdi-pause"></i>&nbsp;{i18n.t(`${packageNS}:tr000250`)}
+                </span>
+              </Button>
+            }
+            {this.state.paused &&
+              <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
+                <span style={{ display: "flex" }}>
+                  <i className="mdi mdi-play"></i>&nbsp;{i18n.t(`${packageNS}:tr000355`)}
+                </span>
+              </Button>
+            }
+          </Col>
+          <Col xs={12} sm={0}><br /></Col>
+          <Col xs={6} sm={{ size: 3, offset: 3 }}>
+            <Button variant="outlined" className={this.props.classes.button} onClick={this.onDownload}>
+              <span style={{ display: "flex" }}>
+                <i className="mdi mdi-download"></i>&nbsp;{i18n.t(`${packageNS}:tr000251`)}
+              </span>
+            </Button>
+          </Col>
+          <Col xs={6} sm={{ size: 3, offset: 0 }}>
+            <Button variant="outlined" className={this.props.classes.button} color="secondary" onClick={this.onClear}>
+              <span style={{ display: "flex" }}>
+                <i className="mdi mdi-delete"></i>&nbsp;{i18n.t(`${packageNS}:tr000252`)}
+              </span>
+            </Button>
+          </Col>
+        </Row>
+
+        <Row xs={1}>
+          <Col xs={12} sm={0}><br /></Col>
+          <Col xs={12}>
+            {!this.state.connected &&
+              <div className={this.props.classes.center}>
+                <Alert color="info" style={{ fontSize: "1.25em" }}>
+                <i className="mdi mdi-information-outline mr-1"></i>&nbsp;{i18n.t(`${packageNS}:tr000392`)}
+                </Alert>
+              </div>
+            }
+            <br />
+            {(this.state.connected && frames.length === 0 && !this.state.paused) &&
+              <div className={this.props.classes.center}>
+                <Loader light />
+              </div>
+            }
+            {frames.length > 0 && frames}
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }

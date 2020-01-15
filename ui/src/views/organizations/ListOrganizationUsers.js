@@ -1,83 +1,151 @@
 import React, { Component } from "react";
-
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
+import { withRouter, Link } from "react-router-dom";
 
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
-import Plus from "mdi-material-ui/Plus";
-
+import AdvancedTable from "../../components/AdvancedTable";
+import { Breadcrumb, BreadcrumbItem, Button, Row, Col, Card, CardBody } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
-import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
 
 import OrganizationStore from "../../stores/OrganizationStore";
 
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+const localStyles = {};
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
+
+const UserNameColumn = (cell, row, index, extraData) => {
+  const organizationId = extraData['organizationId'];
+  return <Link to={`/organizations/${organizationId}/users/${row.userID}`}>{row.username}</Link>;
+}
+
+const AdminColumn = (cell, row, index, extraData) => {
+  if (row.isAdmin) {
+    return <Check />;
+  } else {
+    return <Close />;
+  }
+}
+
+const getColumns = (organizationId) => (
+  [{
+    dataField: 'userID',
+    text: i18n.t(`${packageNS}:tr000077`),
+    sort: false,
+  }, {
+    dataField: 'username',
+    text: i18n.t(`${packageNS}:tr000056`),
+    sort: false,
+    formatter: UserNameColumn,
+    formatExtraData: { organizationId: organizationId }
+  }, {
+    dataField: 'isAdmin',
+    text: i18n.t(`${packageNS}:tr000058`),
+    sort: false,
+    formatter: AdminColumn,
+  }]
+);
 
 class ListOrganizationUsers extends Component {
-  constructor() {
-    super();
-    this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
-  }
-  
-  getPage(limit, offset, callbackFunc) {
-    OrganizationStore.listUsers(this.props.match.params.organizationID, limit, offset, callbackFunc);
-  }
+  constructor(props) {
+    super(props);
 
-  getRow(obj) {
-    let icon = null;
-
-    if (obj.isAdmin) {
-      icon = <Check />
-    } else {
-      icon = <Close />
+    this.state = {
+      data: [],
+      totalSize: 0
     }
+  }
 
-    return(
-      <TableRow key={obj.userID}>
-        <TableCell>{obj.userID}</TableCell>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/users/${obj.userID}`}>{obj.username}</TableCellLink>
-        <TableCell>{icon}</TableCell>
-      </TableRow>
-    );
+  createUser = () => {
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users/create`);
+  }
+
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+    // TODO - how can I pass search query to server?
+    this.getPage(sizePerPage, offset);
+  }
+
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
+    this.setState({ loading: true });
+    OrganizationStore.listUsers(this.props.match.params.organizationID, limit, offset, (res) => {
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    return (
+      <React.Fragment>
         <TitleBar
           buttons={[
-            <TitleBarButton
+            <Button color="primary"
               key={1}
-              label={i18n.t(`${packageNS}:tr000041`)}
-              icon={<Plus />}
-              to={`/organizations/${this.props.match.params.organizationID}/users/create`}
-            />,
+              onClick={this.createUser}
+              className=""><i className="mdi mdi-account-multiple-plus"></i>{' '}{i18n.t(`${packageNS}:tr000041`)}
+            </Button>,
           ]}
         >
-          <TitleBarTitle title={i18n.t(`${packageNS}:tr000068`)} />
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000068`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>{i18n.t(`${packageNS}:tr000077`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000056`)}</TableCell>
-                <TableCell>{i18n.t(`${packageNS}:tr000058`)}</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+        <Row>
+          <Col>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
+                keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }
 
-export default ListOrganizationUsers;
+export default withStyles(styles)(withRouter(ListOrganizationUsers));

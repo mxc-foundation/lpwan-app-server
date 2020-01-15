@@ -1,8 +1,8 @@
-.PHONY: build clean test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: build clean test package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags |sed -e "s/^v//")
 
-build: ui/build internal/statics internal/migrations
+build: internal/statics internal/migrations
 	mkdir -p build cache
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
 
@@ -40,10 +40,15 @@ ui/build:
 	@cd ui && npm run build
 	@mv ui/build/* static
 
+ui/build_dep:
+	@echo "Building node-sass"
+	@cd ui/node_modules/node-sass/ && npm install && npm run build
+
 api:
 	@echo "Generating API code from .proto files"
 	@go mod vendor
 	@go generate api/api.go
+	@go generate api/m2m_ui/api.go
 	@rm -rf vendor/
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
@@ -54,6 +59,7 @@ internal/statics internal/migrations: static/swagger/api.swagger.json
 
 static/swagger/api.swagger.json:
 	@echo "Generating combined Swagger JSON"
+	@cp api/m2m_ui/swagger/*.json api/swagger
 	@GOOS="" GOARCH="" go run api/swagger/main.go api/swagger > static/swagger/api.swagger.json
 	@cp api/swagger/*.json static/swagger
 
