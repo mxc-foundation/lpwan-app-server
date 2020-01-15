@@ -5,6 +5,8 @@ import classNames from "classnames";
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "../i18n";
 import SessionStore from "../stores/SessionStore";
 import FlagIcon from "./FlagIcon";
+import DropdownMenuLanguageStyle from "./DropdownMenuLanguageStyle";
+import DropdownMenuLanguageMobileStyle from "./DropdownMenuLanguageMobileStyle";
 
 const styles = {
   languageWrapper: {
@@ -16,50 +18,6 @@ const styles = {
   languageSelection: {
     display: "inline-block"
   }
-};
-
-const customStyles = {
-  control: (base, state) => ({
-    ...base,
-    //color: "#FFFFFF",
-    width: "70px",
-    margin: 20,
-    // match with the menu
-    borderRadius: state.isFocused ? "3px 3px 0 0" : 3,
-    // Overwrittes the different states of border
-    borderColor: state.isFocused ? "#00FFD9" : "white",
-    // Removes weird border around container
-    boxShadow: state.isFocused ? null : null,
-    "&:hover": {
-      // Overwrittes the different states of border
-      borderColor: state.isFocused ? "#00FFD9" : "white"
-    }
-  }),
-  menu: base => ({
-    ...base,
-    background:'white',
-    // override border radius to match the box
-    borderRadius: 0,
-    // kill the gap
-    marginTop: 0,
-    // paddingLeft: 20,
-    // paddingRight: 20,
-  }),
-  menuList: base => ({
-    ...base,
-    background: 'white',
-    // kill the white space on first and last option
-    paddingTop: 0,
-  }),
-  option: base => ({
-    ...base,
-    // kill the white space on first and last option
-    padding: "10px",
-    maxWidth: 229,
-    whiteSpace: "nowrap", 
-    overflow: "hidden",
-    textOverflow: "ellipsis"
-  }),
 };
 
 
@@ -128,7 +86,12 @@ class WithPromises extends Component {
 
   render() {
     const { selectedOption } = this.state;
-
+    let isMobile = this.props.isMobile;
+    let customStyle = DropdownMenuLanguageStyle;
+    if(isMobile){
+      customStyle = DropdownMenuLanguageMobileStyle;
+    }
+    
     return (
       <div className={classNames(this.props.classes.languageWrapper)}>
         {/* {
@@ -145,7 +108,7 @@ class WithPromises extends Component {
           className={classNames('react-select', this.props.classes.languageSelection)}
           menuPlacement="auto"
           classNamePrefix="react-select"
-          styles={customStyles}
+          styles={customStyle}
           theme={(theme) => ({
             ...theme,
             borderRadius: 4,

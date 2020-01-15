@@ -346,6 +346,7 @@ class App extends Component {
       drawerOpen: false,
       language: null,
       nsDialog: null,
+      width: null,
       theme: theme
     };
 
@@ -494,7 +495,7 @@ class App extends Component {
           user={this.state.user}
         /> 
         ); */
-      topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
+      topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} isMobile={isMobile} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
       sideNav = <Sidebar isCondensed={isCondensed} currentSidebarId={currentSidebarId} switchToSidebarId={this.switchToSidebarId} {...this.props} />;
 
       // if user is logged in - set auth layout
