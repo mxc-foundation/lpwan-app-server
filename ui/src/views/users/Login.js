@@ -97,7 +97,7 @@ class LoginForm extends Component {
                 onBlur={handleBlur}
               />
 
-              <FormGroup className="mt-2">
+              <FormGroup className="mt-2 small">
                 <ReCAPTCHA
                   sitekey={process.env.REACT_APP_PUBLIC_KEY}
                   onChange={this.onReCapChange}

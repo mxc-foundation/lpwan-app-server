@@ -478,7 +478,7 @@ class App extends Component {
 
     const { currentSidebarId, isCondensed, language, sessionInitialized, user, width } = this.state;
 
-    const isMobile = width <= 800;
+    let isMobile = width <= 800;
 
     let Layout = NonAuthLayout;
 
