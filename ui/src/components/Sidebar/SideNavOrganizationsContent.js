@@ -24,6 +24,13 @@ const SideNavOrganizationsContent = (props) => {
                 </li>
 
                 <li>
+                    <Link to={`/organizations`} className="waves-effect side-nav-link-ref" >
+                        <i className="mdi mdi-domain"></i>
+                        <span> {i18n.t(`${packageNS}:tr000049`)} </span>
+                    </Link>
+                </li>
+                
+                <li>
                     <Link to={`/topup/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
                         <i className="mdi mdi-wallet"></i>
                         <span> {i18n.t(`${packageNS}:tr000084`)} </span>
