@@ -23,12 +23,12 @@ const SideNavOrganizationsContent = (props) => {
                     <DropdownMenu2 default={props.default} onChange={props.onChange} />
                 </li>
 
-                <li>
+                {/* <li>
                     <Link to={`/organizations`} className="waves-effect side-nav-link-ref" >
                         <i className="mdi mdi-domain"></i>
                         <span> {i18n.t(`${packageNS}:tr000049`)} </span>
                     </Link>
-                </li>
+                </li> */}
                 
                 <li>
                     <Link to={`/topup/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
