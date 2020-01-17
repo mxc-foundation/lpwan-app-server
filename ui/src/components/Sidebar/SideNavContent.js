@@ -4,7 +4,7 @@ import Divider from '@material-ui/core/Divider';
 
 import i18n, { packageNS } from '../../i18n';
 import mxcLogo from '../../assets/images/mxc_logo-social_2.png';
-import { SUPERNODE_WALLET, SUPERNODE_SETTING, WALLET, SETTING } from '../../util/Data';
+import { SUPERNODE_WALLET, SUPERNODE_SETTING, WALLET, SETTING, ORGANIZATIONS } from '../../util/Data';
 import Admin from '../Admin';
 import NonAdmin from '../NonAdmin';
 import DropdownMenu2 from '../DropdownMenu';
@@ -46,9 +46,10 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(ORGANIZATIONS)}>
                             <i className="mdi mdi-domain"></i>
                             <span> {i18n.t(`${packageNS}:tr000049`)} </span>
+                            <span className="menu-arrow"></span>
                         </Link>
                     </li>
 

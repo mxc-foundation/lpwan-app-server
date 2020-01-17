@@ -10,7 +10,7 @@
         display: block;
     }
     span.logo-sm {
-        display: hide !important;
+        display: none !important;
     }
     .logo-lg-text-dark {
         color: $dark;
@@ -26,7 +26,7 @@
     }
 }
 
-@media only screen and (max-width: 578px){
+@media only screen and (max-width: 320px){
     .logo {
         span.logo-sm {
             display: block !important;
@@ -49,11 +49,7 @@
     background-color: $logo-box-background;
 }
 
-.navbar-custom-subbar {
-    display: flex;
-    justify-content: flex-end;
-    
-}
+
 
 .navbar-custom {
     background-color: $bg-topbar-light;
