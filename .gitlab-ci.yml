@@ -63,7 +63,7 @@ variables:
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
-build:
+qa-build:
   stage: build
   image: docker:19.03.1
   services:
@@ -73,6 +73,8 @@ build:
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
+  only:
+    - buildserver
 
 # disabling until clarified    
 #release-image:
