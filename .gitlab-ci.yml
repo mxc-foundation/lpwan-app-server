@@ -69,7 +69,7 @@ build:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
 
-  release-image:
+  release-qa-image:
     stage: qarelease
     script:
       - docker pull $CONTAINER_TEST_IMAGE
@@ -78,7 +78,7 @@ build:
     only:
       - buildserver
 
-  release-image:
+  release-prod-image:
     stage: prodrelease
     script:
       - docker pull $CONTAINER_TEST_IMAGE
