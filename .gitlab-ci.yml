@@ -7,6 +7,7 @@ stages:
   - build
 #  - release
 #  - deploy
+
 syntax_test_frontend:
   image: golang:1.12-alpine
   stage: test
@@ -63,8 +64,6 @@ build:
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
-  only:
-    - develop
 
 # disabling until clarified    
 #release-image:
