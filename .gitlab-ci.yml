@@ -1,7 +1,7 @@
 stages:
   - test
   - build
-#  - release
+  - release
 #  - deploy
 
 default:
