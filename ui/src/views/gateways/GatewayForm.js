@@ -138,8 +138,7 @@ class GatewayForm extends Component {
     }
 
     let fieldsSchema = {
-      name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
-        .required(i18n.t(`${packageNS}:tr000431`)),
+      name: Yup.string().trim().matches(/^[a-zA-Z0-9\-]+$/, i18n.t(`${packageNS}:tr000429`)).required(i18n.t(`${packageNS}:tr000431`)),
       description: Yup.string()
         .required(i18n.t(`${packageNS}:tr000431`)),
       gatewayProfileID: Yup.string(),
