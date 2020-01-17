@@ -11,6 +11,8 @@ export const SUPERNODE_WALLET = 'SUPERNODE_WALLET';
 export const SUPERNODE_SETTING = 'SUPERNODE_SETTING';
 export const WALLET = 'WALLET';
 export const SETTING = 'SETTING';
+export const ORGANIZATIONS = 'ORGANIZATIONS';
+export const BACK_TO_CONTROL = '/control-panel/modify-account/';
 
 export const INACTIVE = i18n.t(`${packageNS}:menu.staking.inactive`);
 export const PRIVATE = i18n.t(`${packageNS}:menu.staking.private`);
