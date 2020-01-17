@@ -23,6 +23,8 @@ build:
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
+  only:
+    - develop
 
 release-image:
   stage: release
