@@ -36,8 +36,8 @@ unit_test_backend:
   script:
     - export CGO_ENABLED=0
     - export GO_EXTRA_BUILD_ARGS="-a -installsuffix cgo"
-    - go test -timeout 60s -covermode=count -coverprofile count.out ./...
-    - go tool cover -html=count.out -o coverage.html
+    - "go test -timeout 60s -covermode=count -coverprofile count.out ./..."
+    - "go tool cover -html=count.out -o coverage.html"
   artifacts:
     paths:
       - coverage.html
@@ -52,47 +52,3 @@ security_test_backend:
   script:
     - gosec ./...
   allow_failure: true
-
-build:
-  stage: build
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  script:
-    variables:
-    - export DOCKER_HOST="tcp://docker:2376"
-    - export DOCKER_TLS_CERTDIR="/certs"
-    - export CONTAINER_TEST_IMAGE=$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    - export CONTAINER_RELEASE_IMAGE=$CI_REGISTRY_IMAGE:latest
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
-
-release-qa-image:
-  stage: qarelease
-  script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
-  only:
-    - buildserver
-
-release-prod-image:
-  stage: prodrelease
-  script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
-  only:
-    - master
-    
-      
-deploy:
-  stage: deploy
-  tags:
-    - buildserver
-  script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - ./appserver local_database
-  only:
-    - buildserver
