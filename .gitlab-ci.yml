@@ -23,7 +23,7 @@ build:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
   only:
-    - develop
+    - buildserver
 
 release-image:
   stage: release
@@ -34,7 +34,7 @@ release-image:
     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
     - docker push $CONTAINER_RELEASE_IMAGE
   only:
-    - develop
+    - buildserver
 
 deploy:
   stage: deploy
@@ -43,4 +43,4 @@ deploy:
   script:
     - ./appserver local_database
   only:
-    - develop
+    - buildserver
