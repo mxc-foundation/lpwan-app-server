@@ -1,54 +1,43 @@
+image: docker:19.03.1
+services:
+  - docker:19.03.1-dind
+
 stages:
-  - tests
   - build
+  - test
   - release
   - deploy
 
-syntax_test_frontend:
-  image: golang:1.12-alpine
-  stage: tests
-  except:
-    - master
+variables:
+  # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+  DOCKER_HOST: tcp://docker:2376
+  DOCKER_TLS_CERTDIR: "/certs"
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+build:
+  stage: build
   script:
-    - cd ui
-    - npm install
-    - npm run test
-  artifacts:
-    paths:
-      - /root/.npm/_logs/*
-    expire_in: 1 week
-  allow_failure: true
-  
-syntax_test_backend:
-  image: golang:1.12-alpine
-  stage: tests
-  except:
-    - master
+    - docker build --pull -t $CONTAINER_TEST_IMAGE .
+    - docker push $CONTAINER_TEST_IMAGE
+  only:
+    - develop
+
+release-image:
+  stage: release
   script:
-    - golint -set_exit_status ./...
-  allow_failure: true
-  
-unit_test_backend:
-  image: golang:1.12-alpine
-  stage: tests
-  except:
-    - master
+    - docker pull $CONTAINER_TEST_IMAGE
+    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
+    - docker push $CONTAINER_RELEASE_IMAGE
+  only:
+    - develop
+
+deploy:
+  stage: deploy
   script:
-    - export CGO_ENABLED=0
-    - export GO_EXTRA_BUILD_ARGS="-a -installsuffix cgo"
-    - "go test -timeout 60s -covermode=count -coverprofile count.out ./..."
-    - "go tool cover -html=count.out -o coverage.html"
-  artifacts:
-    paths:
-      - coverage.html
-    expire_in: 1 week
-  allow_failure: true
-  
-security_test_backend:
-  image: golang:1.12-alpine
-  stage: tests
-  except:
-    - master
-  script:
-    - gosec ./...
-  allow_failure: true
+    - ./appserver local_database
+  only:
+    - develop
