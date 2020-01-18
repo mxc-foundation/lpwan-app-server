@@ -21,8 +21,8 @@ const styles = {
 
 
 class CreateUser extends Component {
-  onSubmit = (user) => {
-    UserStore.create(user, user.password, [], resp => {
+  onSubmit = (newUserObject) => {
+    UserStore.create(newUserObject, resp => {
       this.props.history.push("/users");
     });
   }

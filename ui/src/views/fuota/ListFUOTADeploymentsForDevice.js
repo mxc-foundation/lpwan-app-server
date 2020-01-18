@@ -13,6 +13,7 @@ import TableBody from '@material-ui/core/TableBody';
 import moment from "moment";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import DeviceAdmin from "../../components/DeviceAdmin";
@@ -55,6 +56,7 @@ class ListFUOTADeploymentsForDevice extends Component {
       data: [],
       loading: true,
       detailDialog: false,
+      totalSize: 0
     };
   }
 
@@ -83,7 +85,7 @@ class ListFUOTADeploymentsForDevice extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -139,15 +141,16 @@ class ListFUOTADeploymentsForDevice extends Component {
       limit: limit,
       offset: offset,
     }, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -230,6 +233,7 @@ class ListFUOTADeploymentsForDevice extends Component {
               keyField="id"
               onTableChange={this.handleTableChange}
               rowsPerPage={10}
+              totalSize={this.state.totalSize}
               searchEnabled={false}
             />
           </div>

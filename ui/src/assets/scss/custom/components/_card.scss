@@ -131,6 +131,67 @@
         }
     }
 }
+@media only screen and (min-width: 1000px) {
+    .card-body {
+        padding: 20px;
+    }
+    .isMobile {
+        display: none;
+    }
+    .isDesk {
+        display: block;
+    }
+    .navbar-custom-subbar {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 800px) {
+    .card-body {
+        padding: 12px;
+    }
+    .small {
+        display: flex;
+        justify-content: center;
+    }
+    .isMobile {
+        display: block;
+    }
+    .isDesk {
+        display: none;
+    }
+    .navbar-custom-subbar {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+@media only screen and (max-width: 320px) {
+    
+    .card-body {
+        padding: 0px;
+    }
+
+    .small {
+        display: flex;
+        justify-content: center;
+        transform: scale(0.88, 0.88);
+        -ms-transform: scale(0.88, 0.88); /* IE 9 */
+        -webkit-transform: scale(0.88, 0.88); /* Safari and Chrome */
+        -o-transform: scale(0.88, 0.88); /* Opera */
+        -moz-transform: scale(0.88, 0.88); /* Firefox */
+    }
+    .isMobile {
+        display: block;
+    }
+    .isDesk {
+        display: none;
+    }
+    .navbar-custom-subbar {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
 
 // Draggable cards
 .card-draggable-placeholder {

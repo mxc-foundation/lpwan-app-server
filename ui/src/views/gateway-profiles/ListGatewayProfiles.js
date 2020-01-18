@@ -4,6 +4,7 @@ import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
@@ -49,7 +50,8 @@ class ListGatewayProfiles extends Component {
     this.handleTableChange = this.handleTableChange.bind(this);
     this.getPage = this.getPage.bind(this);
     this.state = {
-      data: []
+      data: [],
+      totalSize: 0
     }
   }
 
@@ -57,7 +59,7 @@ class ListGatewayProfiles extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage;
     this.getPage(sizePerPage, offset);
   }
 
@@ -65,13 +67,18 @@ class ListGatewayProfiles extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     GatewayProfileStore.list(0, limit, offset, (res) => {
-      this.setState({ data: res.result });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -91,17 +98,15 @@ class ListGatewayProfiles extends Component {
         ]}
       >
         <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
-            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000046`)}</BreadcrumbItem>
-          </Breadcrumb>
+          <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+          <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000046`)}</BreadcrumbItem>
+        </Breadcrumb>
       </TitleBar>
 
       <Row>
         <Col>
-          <Card>
-            <CardBody>
-              <AdvancedTable data={this.state.data} columns={getColumns()} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
-            </CardBody>
+          <Card className="card-box shadow-sm" >
+            <AdvancedTable data={this.state.data} columns={getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
           </Card>
         </Col>
       </Row>

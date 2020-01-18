@@ -10,13 +10,14 @@ import OrganizationStore from '../../stores/OrganizationStore';
 import ServerInfoStore from '../../stores/ServerInfoStore';
 import SessionStore from '../../stores/SessionStore';
 import UserStore from '../../stores/UserStore';
-import { SUPERNODE_WALLET, SUPERNODE_SETTING, DEFAULT, WALLET, SETTING } from '../../util/Data';
+import { SUPERNODE_WALLET, SUPERNODE_SETTING, DEFAULT, WALLET, SETTING, ORGANIZATIONS } from '../../util/Data';
 
 import SideNavContent from './SideNavContent';
 import SideNavSettingContent from './SideNavSettingContent';
 import SideNavSupernodeSettingContent from './SideNavSupernodeSettingContent';
 import SideNavSupernodeWalletContent from './SideNavSupernodeWalletContent';
 import SideNavWalletContent from './SideNavWalletContent';
+import SideNavOrganizationsContent from './SideNavOrganizationsContent';
 
 const ProfileMenus = [{
     label: 'My Account',
@@ -42,7 +43,7 @@ const ProfileMenus = [{
 
 function loadServerVersion() {
     return new Promise((resolve, reject) => {
-        ServerInfoStore.getVersion(data => {
+        ServerInfoStore.getAppserverVersion(data => {
             resolve(data);
         });
     });
@@ -59,7 +60,7 @@ class Sidebar extends Component {
             organization: null,
             organizationID: '',
             cacheCounter: 0,
-            version: '1.0.0'
+            version: ''
         };
 
         this.handleOtherClick = this.handleOtherClick.bind(this);
@@ -67,13 +68,13 @@ class Sidebar extends Component {
     }
     loadData = async () => {
         try {
-          const organizationID = SessionStore.getOrganizationID();
-          /* var data = await loadServerVersion();
-          const serverInfo = JSON.parse(data); */
+          const organizationIDs = SessionStore.getOrganizations();
+           var data = await loadServerVersion();
+          const serverInfo = JSON.parse(data);
           
           this.setState({
-            organizationID,
-            //version: serverInfo.version
+            organizationID: organizationIDs[0].organizationID,
+            version: serverInfo.version
           })
     
           this.setState({loading: true})
@@ -285,28 +286,27 @@ class Sidebar extends Component {
         const { currentSidebarId } = this.props;
 
         const isCondensed = this.props.isCondensed || false;
-        const orgId = SessionStore.getOrganizationID();
-        if(orgId === undefined && orgId === ''){
-          orgId = this.state.organizationID;
-        }
         const user = SessionStore.getUser();
 
         let sidebarComponent;
         switch (currentSidebarId) {
             case SUPERNODE_WALLET:
-                sidebarComponent = <SideNavSupernodeWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSupernodeWalletContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case SUPERNODE_SETTING:
-                sidebarComponent = <SideNavSupernodeSettingContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSupernodeSettingContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                break;
+            case ORGANIZATIONS:
+                sidebarComponent = <SideNavOrganizationsContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case WALLET:
-                sidebarComponent = <SideNavWalletContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavWalletContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             case SETTING:
-                sidebarComponent = <SideNavSettingContent orgId={orgId} user={user} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavSettingContent orgId={this.state.organizationID} user={user} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
             default:
-                sidebarComponent = <SideNavContent orgId={orgId} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
+                sidebarComponent = <SideNavContent orgId={this.state.organizationID} version={version} onChange={this.onChange} switchSidebar={this.switchSidebar} />;
                 break;
         }
 

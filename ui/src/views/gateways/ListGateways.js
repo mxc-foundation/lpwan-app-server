@@ -11,6 +11,7 @@ import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
@@ -127,7 +128,8 @@ class ListGatewaysTable extends Component {
     this.getGateWayStats = this.getGateWayStats.bind(this);
     this.state = {
       data: [],
-      stats: {}
+      stats: {},
+      totalSize: 0
     }
   }
 
@@ -135,7 +137,7 @@ class ListGatewaysTable extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -149,9 +151,14 @@ class ListGatewaysTable extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
     GatewayStore.list("", this.props.organizationID, limit, offset, (res) => {
-      this.setState({ data: res.result, loading: false });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -169,7 +176,7 @@ class ListGatewaysTable extends Component {
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -185,7 +192,7 @@ class ListGatewaysTable extends Component {
       <div className="position-relative">
         {this.state.loading && <Loader />}
         <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID, this.state.stats)}
-          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
       </div>
     );
   }
@@ -350,8 +357,7 @@ class ListGateways extends Component {
 
       <Row>
         <Col>
-          <Card>
-            <CardBody>
+          <Card className="card-box shadow-sm">
               {this.state.viewMode === 'map' &&
                 <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
 
@@ -359,8 +365,6 @@ class ListGateways extends Component {
                 <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
                 <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
               </Switch>
-
-            </CardBody>
           </Card>
         </Col>
       </Row>

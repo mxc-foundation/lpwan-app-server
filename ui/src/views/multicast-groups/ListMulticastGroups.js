@@ -19,6 +19,7 @@ import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import theme from "../../theme";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import {MAX_DATA_LIMIT} from "../../util/pagination";
 
 const localStyles = {
   idColumn: {
@@ -40,6 +41,7 @@ class ListMulticastGroups extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
+      limit = MAX_DATA_LIMIT;
     MulticastGroupStore.list("", this.props.match.params.organizationID, "", "", limit, offset, callbackFunc);
   }
 

@@ -7,6 +7,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import { Button, Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import Loader from "../../components/Loader";
@@ -66,14 +67,15 @@ class ListUsers extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
   /**
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -87,23 +89,26 @@ class ListUsers extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
 
     UserStore.list("", limit, offset, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    // Note: If you do not provide a limit, then nothing is returned
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
     const { classes } = this.props;
-
+    
     return (
       <React.Fragment>
         <TitleBar
@@ -139,6 +144,7 @@ class ListUsers extends Component {
                 onTableChange={this.handleTableChange}
                 searchEnabled={false}
                 rowsPerPage={10}
+                totalSize={this.state.totalSize}
               />
             </Card>
           </Col>

@@ -64,7 +64,7 @@ class ChangeUserPassword extends Component {
 
   onSubmit(password) {
     UserStore.updatePassword(this.props.match.params.userID, password.password, resp => {
-      this.props.history.push("/");
+      this.props.history.push(`/users/${this.props.match.params.userID}`);
     });
   }
 

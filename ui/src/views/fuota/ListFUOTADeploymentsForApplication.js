@@ -6,6 +6,7 @@ import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -96,7 +97,8 @@ class ListFUOTADeploymentsForApplication extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -104,7 +106,7 @@ class ListFUOTADeploymentsForApplication extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -125,15 +127,16 @@ class ListFUOTADeploymentsForApplication extends Component {
       limit: limit,
       offset: offset,
     }, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -166,6 +169,7 @@ class ListFUOTADeploymentsForApplication extends Component {
             keyField="id"
             onTableChange={this.handleTableChange}
             rowsPerPage={10}
+            totalSize={this.state.totalSize}
             searchEnabled={false}
           />
         </div>

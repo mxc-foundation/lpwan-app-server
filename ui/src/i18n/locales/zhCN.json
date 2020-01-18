@@ -432,7 +432,7 @@
   "tr000459": "Successfully uploaded file {{filename}}",
   "tr000460": "Maximum file upload size of {{maxFileSizeMegabytes}} MB exceeded by file {{filename}}",
   "tr000461": "Gateway map",
-  "tr000462": "Back to Login",
+  "tr000462": "回到登入页面",
   "tr000463": "Back",
   "menu": {
     "withdraw": {

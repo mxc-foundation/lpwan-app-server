@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { Router, Route, Switch, Redirect } from 'react-router-dom';
-import classNames from "classnames";
+
 
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { MuiThemeProvider, withStyles } from "@material-ui/core/styles";
-import { Container } from 'reactstrap';
+import Modal from "./components/Modal";
 
 import history from "./history";
 import themeChinese from "./themeChinese";
@@ -112,6 +112,7 @@ import HomeComponent from './views/Home';
 
 //Temp banner
 import TopBanner from "./components/TopBanner";
+import { initJWTTimer } from "./util/JWTUti";
 
 const drawerWidth = 270;
 
@@ -163,16 +164,175 @@ class NotLoggedinRoute extends Component {
   route = (props) => {
     const { Comp, user, ...otherProps } = this.props;
     console.log('NotLoggedinRoute', Comp.name, user);
+
     return !user ?
       <Comp {...otherProps} /> :
       <Redirect to='/' />;
-  };
+  }
   render() {
     return (
       <Route {...this.props}
         render={this.route}
       />
     )
+  }
+}
+/*
+class HomeRoute extends Component {
+  route = () => {
+    const { Comp, user, ...otherProps } = this.props;
+    const orgs = SessionStore.getOrganizations();
+
+    if (SessionStore.getToken() && orgs.length > 0) {
+      return <Redirect to={`/organizations/${orgs[0].organizationID}`}></Redirect>;
+    } else {
+      console.log('User has no organisations. Redirecting to login');
+      return <Redirect to={"/logout"}></Redirect>;
+    }
+  }
+
+  render() {
+    return (
+      <Route {...this.props}
+        render={this.route}
+      />
+    )
+  }
+}*/
+
+class LoggedInRoutes extends Component {
+  render() {
+    const user = SessionStore.getUser();
+    const language = SessionStore.getLanguage();
+
+    if (!user) {
+      return <Redirect to={"/login"}></Redirect>;
+    }
+
+    return (<>
+      <Switch>
+        <Route exact path="/" component={HomeComponent} />
+        <Route exact path="/logout" component={Logout} />
+
+        <Route exact path="/users" component={ListUsers} />
+        <Route exact path="/users/create" component={CreateUser} />
+        <Route exact path="/users/:userID(\d+)" component={UserLayout} />
+        <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
+        
+        <Route exact path="/network-servers" component={ListNetworkServers} />
+        <Route exact path="/network-servers/create" component={CreateNetworkServer} />
+        <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
+
+        <Route exact path="/gateway-profiles" component={ListGatewayProfiles} />
+        <Route exact path="/gateway-profiles/create" component={CreateGatewayProfile} />
+        <Route path="/gateway-profiles/:gatewayProfileID([\w-]{36})" component={GatewayProfileLayout} />
+
+        <Route exact path="/organizations/:organizationID(\d+)/service-profiles" component={ListServiceProfiles} />
+        <Route exact path="/organizations/:organizationID(\d+)/service-profiles/create" component={CreateServiceProfile} />
+        <Route path="/organizations/:organizationID(\d+)/service-profiles/:serviceProfileID([\w-]{36})" component={ServiceProfileLayout} />
+
+        <Route exact path="/organizations/:organizationID(\d+)/device-profiles" component={ListDeviceProfiles} />
+        <Route exact path="/organizations/:organizationID(\d+)/device-profiles/create" component={CreateDeviceProfile} />
+        <Route path="/organizations/:organizationID(\d+)/device-profiles/:deviceProfileID([\w-]{36})" component={DeviceProfileLayout} />
+
+        <Route exact path="/organizations/:organizationID(\d+)/gateways/create" component={CreateGateway} />
+        <Route path="/organizations/:organizationID(\d+)/gateways/:gatewayID([\w]{16})" component={GatewayLayout} />
+        <Route path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
+
+        <Route exact path="/organizations/:organizationID(\d+)/devices/create" component={CreateDevice} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/edit" component={DeviceLayout} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/keys" component={DeviceLayout} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/activation" component={DeviceLayout} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/data" component={DeviceLayout} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/frames" component={DeviceLayout} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments" component={DeviceLayout} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})" component={DeviceLayout} />
+        <Route exact path="/organizations/:organizationID(\d+)/devices" component={DeviceLayoutM2M} />
+
+        <Route exact path="/organizations/:organizationID(\d+)/applications" component={ListApplications} />
+        <Route exact path="/organizations/:organizationID(\d+)/applications/create" component={CreateApplication} />
+        <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/create" component={CreateDevice} />
+        <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
+        <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/fuota-deployments/:fuotaDeploymentID([\w-]{36})" component={FUOTADeploymentLayout} />
+        <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})" component={DeviceLayout} />
+        <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)" component={ApplicationLayout} />
+
+        <Route exact path="/organizations/:organizationID(\d+)/multicast-groups" component={ListMulticastGroups} />
+        <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/create" component={CreateMulticastGroup} />
+        <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID/devices/create" component={AddDeviceToMulticastGroup} />
+        <Route path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID([\w-]{36})" component={MulticastGroupLayout} />
+
+        <Route exact path="/organizations" component={ListOrganizations} />
+        <Route exact path="/organizations/create" component={CreateOrganization} />
+        <Route exact path="/organizations/:organizationID(\d+)/users" component={ListOrganizationUsers} />
+        <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
+        <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
+        <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
+
+        <Route path="/modify-account/:organizationID" component={ModifyEthAccount} />
+        <Route path="/withdraw/:organizationID"
+          render={props =>
+            <Withdraw
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+        <Route path="/topup/:organizationID"
+          render={props =>
+            <Topup
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+        <Route path="/history/:organizationID"
+          render={props =>
+            <HistoryLayout
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+        <Route exact path="/stake/:organizationID" component={StakeLayout} />
+        <Route exact path="/stake/:organizationID/set-stake" component={SetStake} />
+        <Route path="/control-panel/modify-account"
+          render={props =>
+            <SuperNodeEth
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+        <Route path="/control-panel/withdraw"
+          render={props =>
+            <SuperAdminWithdraw
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+        <Route path="/control-panel/history"
+          render={props =>
+            <SupernodeHistory
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+        <Route path="/control-panel/system-settings"
+          render={props =>
+            <SystemSettings
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+
+        <Route exact path="/search" component={Search} />
+      </Switch>
+    </>);
   }
 }
 
@@ -185,6 +345,8 @@ class App extends Component {
       organizationId: null,
       drawerOpen: false,
       language: null,
+      nsDialog: null,
+      width: null,
       theme: theme
     };
 
@@ -205,13 +367,22 @@ class App extends Component {
     this.setState({ width: window.innerWidth });
   };
 
-  componentDidMount() {
+  onSessionInvalid = (err) => {
+    // TODO: trigger modal
+    //SessionStore.logout(()=>{});
+    console.log('err.message', err.message);
+  }
+
+  componentDidMount = () => {
+    initJWTTimer(this.onSessionInvalid);
+
     SessionStore.on("change", () => {
       this.setState({
         user: SessionStore.getUser(),
         organizationId: SessionStore.getOrganizationID(),
         drawerOpen: SessionStore.getUser() != null,
-        language: SessionStore.getLanguage()
+        language: SessionStore.getLanguage(),
+        sessionInitialized: true
       });
     });
 
@@ -292,19 +463,22 @@ class App extends Component {
   }
 
   logout = () => {
-    SessionStore.logout(() => {
+    localStorage.clear();
+    /* SessionStore.logout(() => {
       this.props.history.push("/login");
-    });
+    }); */
   }
 
   render() {
+
+
     let topNav = null;
     let sideNav = null;
     let topbanner = null;
 
     const { currentSidebarId, isCondensed, language, sessionInitialized, user, width } = this.state;
 
-    const isMobile = width <= 800;
+    let isMobile = width <= 800;
 
     let Layout = NonAuthLayout;
 
@@ -321,7 +495,7 @@ class App extends Component {
           user={this.state.user}
         /> 
         ); */
-      topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
+      topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} isMobile={isMobile} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
       sideNav = <Sidebar isCondensed={isCondensed} currentSidebarId={currentSidebarId} switchToSidebarId={this.switchToSidebarId} {...this.props} />;
 
       // if user is logged in - set auth layout
@@ -335,34 +509,24 @@ class App extends Component {
     return (
       <Router history={history}>
         <React.Fragment>
+          {this.state.nsDialog && <Modal
+            title={i18n.t(`${packageNS}:menu.topup.notice`)}
+            left={"DISMISS"}
+            right={"ADD ETH ACCOUNT"}
+            context={"Session was expired. Please, login again."}
+            callback={this.logout} />}
           <MuiThemeProvider theme={this.state.theme}>
             <CssBaseline />
             {/* <div className={this.props.classes.root}> */}
 
             <Layout topBar={topNav} topBanner={topbanner} sideNav={sideNav}>
+
+              { /* TODO: move all routing to its own file */}
               <Switch>
-                <NotLoggedinRoute exact path="/login" 
+                <NotLoggedinRoute exact path="/login"
                   Comp={Login} user={user}
                   language={language}
                   onChangeLanguage={this.onChangeLanguage} />
-                  {/* <Route exact path="/" component={HomeComponent} />
-                  <Route exact path="/login"
-                  render={props =>
-                    <Login {...props}
-                      language={language}
-                      onChangeLanguage={this.onChangeLanguage}
-                    />
-                  }
-                /> */}
-
-
-                <Route exact path="/" component={HomeComponent} />
-                <Route exact path="/logout" component={Logout} />
-
-                <Route exact path="/users" component={ListUsers} />
-                <Route exact path="/users/create" component={CreateUser} />
-                <Route exact path="/users/:userID(\d+)" component={UserLayout} />
-                <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
                 <Route exact path="/registration" component={Registration} />
                 <Route exact path="/password-recovery" component={PasswordRecovery} />
                 <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
@@ -374,120 +538,10 @@ class App extends Component {
                     />
                   }
                 />
-                <Route exact path="/network-servers" component={ListNetworkServers} />
-                <Route exact path="/network-servers/create" component={CreateNetworkServer} />
-                <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
+                <LoggedInRoutes switchToSidebarId={this.switchToSidebarId}/>
 
-                <Route exact path="/gateway-profiles" component={ListGatewayProfiles} />
-                <Route exact path="/gateway-profiles/create" component={CreateGatewayProfile} />
-                <Route path="/gateway-profiles/:gatewayProfileID([\w-]{36})" component={GatewayProfileLayout} />
-
-                <Route exact path="/organizations/:organizationID(\d+)/service-profiles" component={ListServiceProfiles} />
-                <Route exact path="/organizations/:organizationID(\d+)/service-profiles/create" component={CreateServiceProfile} />
-                <Route path="/organizations/:organizationID(\d+)/service-profiles/:serviceProfileID([\w-]{36})" component={ServiceProfileLayout} />
-
-                <Route exact path="/organizations/:organizationID(\d+)/device-profiles" component={ListDeviceProfiles} />
-                <Route exact path="/organizations/:organizationID(\d+)/device-profiles/create" component={CreateDeviceProfile} />
-                <Route path="/organizations/:organizationID(\d+)/device-profiles/:deviceProfileID([\w-]{36})" component={DeviceProfileLayout} />
-
-                <Route exact path="/organizations/:organizationID(\d+)/gateways/create" component={CreateGateway} />
-                <Route path="/organizations/:organizationID(\d+)/gateways/:gatewayID([\w]{16})" component={GatewayLayout} />
-                <Route path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
-
-                <Route exact path="/organizations/:organizationID(\d+)/devices/create" component={CreateDevice} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/edit" component={DeviceLayout} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/keys" component={DeviceLayout} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/activation" component={DeviceLayout} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/data" component={DeviceLayout} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/frames" component={DeviceLayout} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments" component={DeviceLayout} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices/:devEUI([\w]{16})" component={DeviceLayout} />
-                <Route exact path="/organizations/:organizationID(\d+)/devices" component={DeviceLayoutM2M} />
-
-                <Route exact path="/organizations/:organizationID(\d+)/applications" component={ListApplications} />
-                <Route exact path="/organizations/:organizationID(\d+)/applications/create" component={CreateApplication} />
-                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/create" component={CreateDevice} />
-                <Route exact path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})/fuota-deployments/create" component={CreateFUOTADeploymentForDevice} />
-                <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/fuota-deployments/:fuotaDeploymentID([\w-]{36})" component={FUOTADeploymentLayout} />
-                <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)/devices/:devEUI([\w]{16})" component={DeviceLayout} />
-                <Route path="/organizations/:organizationID(\d+)/applications/:applicationID(\d+)" component={ApplicationLayout} />
-
-                <Route exact path="/organizations/:organizationID(\d+)/multicast-groups" component={ListMulticastGroups} />
-                <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/create" component={CreateMulticastGroup} />
-                <Route exact path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID/devices/create" component={AddDeviceToMulticastGroup} />
-                <Route path="/organizations/:organizationID(\d+)/multicast-groups/:multicastGroupID([\w-]{36})" component={MulticastGroupLayout} />
-
-                <Route exact path="/organizations" component={ListOrganizations} />
-                <Route exact path="/organizations/create" component={CreateOrganization} />
-                <Route exact path="/organizations/:organizationID(\d+)/users" component={ListOrganizationUsers} />
-                <Route exact path="/organizations/:organizationID(\d+)/users/create" component={CreateOrganizationUser} />
-                <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)" component={OrganizationUserLayout} />
-                <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout} />
-
-                <Route path="/modify-account/:organizationID" component={ModifyEthAccount} />
-                <Route path="/withdraw/:organizationID"
-                  render={props =>
-                    <Withdraw
-                      {...props}
-                      switchToSidebarId={this.switchToSidebarId}
-                    />
-                  }
-                />
-                <Route path="/topup/:organizationID"
-                  render={props =>
-                    <Topup
-                      {...props}
-                      switchToSidebarId={this.switchToSidebarId}
-                    />
-                  }
-                />
-                <Route path="/history/:organizationID"
-                  render={props =>
-                    <HistoryLayout
-                      {...props}
-                      switchToSidebarId={this.switchToSidebarId}
-                    />
-                  }
-                />
-                <Route exact path="/stake/:organizationID" component={StakeLayout} />
-                <Route exact path="/stake/:organizationID/set-stake" component={SetStake} />
-                <Route path="/control-panel/modify-account"
-                  render={props =>
-                    <SuperNodeEth
-                      {...props}
-                      switchToSidebarId={this.switchToSidebarId}
-                    />
-                  }
-                />
-                <Route path="/control-panel/withdraw"
-                  render={props =>
-                    <SuperAdminWithdraw
-                      {...props}
-                      switchToSidebarId={this.switchToSidebarId}
-                    />
-                  }
-                />
-                <Route path="/control-panel/history"
-                  render={props =>
-                    <SupernodeHistory
-                      {...props}
-                      switchToSidebarId={this.switchToSidebarId}
-                    />
-                  }
-                />
-                <Route path="/control-panel/system-settings"
-                  render={props =>
-                    <SystemSettings
-                      {...props}
-                      switchToSidebarId={this.switchToSidebarId}
-                    />
-                  }
-                />
-
-                <Route exact path="/search" component={Search} />
               </Switch>
-            <Footer />
+              <Footer />
             </Layout>
 
             <Notifications />

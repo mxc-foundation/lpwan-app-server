@@ -9,6 +9,7 @@ import Refresh from "mdi-material-ui/Refresh";
 import Delete from "mdi-material-ui/Delete";
 
 import i18n, { packageNS } from '../../../../i18n';
+import { MAX_DATA_LIMIT } from '../../../../util/pagination';
 import AdvancedTable from "../../../../components/AdvancedTable";
 import Loader from "../../../../components/Loader";
 import DeviceQueueStore from "../../../../stores/DeviceQueueStore";
@@ -61,11 +62,12 @@ class QueueCard extends Component {
 
     this.state = {
       data: [],
+      totalSize: 0
     };
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
 
     DeviceQueueStore.on("enqueue", this.getQueue);
   }
@@ -78,7 +80,7 @@ class QueueCard extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -105,11 +107,12 @@ class QueueCard extends Component {
   getQueue = () => {
     this.setState({ loading: true });
 
-    DeviceQueueStore.list(this.props.match.params.devEUI, resp => {
-      this.setState({
-        data: resp.deviceQueueItems,
-        loading: false
-      });
+    DeviceQueueStore.list(this.props.match.params.devEUI, res => {
+      const object = this.state;
+      //object.totalSize = res.totalCount;
+      object.data = res.deviceQueueItems;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -161,6 +164,7 @@ class QueueCard extends Component {
               keyField="devEUI"
               onTableChange={this.handleTableChange}
               rowsPerPage={10}
+              //totalSize={this.state.totalSize}
               searchEnabled={false}
             />
           </CardContent>

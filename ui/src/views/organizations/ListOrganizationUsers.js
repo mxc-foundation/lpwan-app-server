@@ -7,6 +7,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import { Breadcrumb, BreadcrumbItem, Button, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 
 import OrganizationStore from "../../stores/OrganizationStore";
@@ -57,7 +58,8 @@ class ListOrganizationUsers extends Component {
     super(props);
 
     this.state = {
-      data: []
+      data: [],
+      totalSize: 0
     }
   }
 
@@ -69,7 +71,7 @@ class ListOrganizationUsers extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -83,14 +85,19 @@ class ListOrganizationUsers extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
     OrganizationStore.listUsers(this.props.match.params.organizationID, limit, offset, (res) => {
-      this.setState({ data: res.result, loading: false });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -114,7 +121,7 @@ class ListOrganizationUsers extends Component {
                 className={classes.breadcrumbItemLink}
                 to={`/organizations`}
               >
-                  Organizations
+                Organizations
               </Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -130,12 +137,9 @@ class ListOrganizationUsers extends Component {
         </TitleBar>
         <Row>
           <Col>
-            <Card>
-              <CardBody>
-                <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
-                  keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
-
-              </CardBody>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
+                keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
             </Card>
           </Col>
         </Row>

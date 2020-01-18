@@ -82,6 +82,13 @@ class RegistrationForm extends Component {
   }
 }
 
+function GetBranding() {
+  return new Promise((resolve, reject) => {
+    SessionStore.getBranding(resp => {
+      return resolve(resp);
+    });
+  });
+}
 
 class Registration extends Component {
   constructor() {
@@ -93,7 +100,22 @@ class Registration extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
+  componentDidMount() {
+    this.loadData();
+  }
+  
+  loadData = async () => {
+    try {
+      let result = await GetBranding();
 
+      this.setState({
+        logoPath: result.logoPath
+      });
+    } catch (error) {
+      console.error(error);
+      this.setState({ error });
+    }
+  }
 
   onSubmit(user) {
     if (!user.isVerified) {
@@ -126,7 +148,7 @@ class Registration extends Component {
             <Col md={8} lg={6} xl={5}>
               <div className="text-center mb-3">
                 <Link to="/">
-                  <span><img src="/logo/mxc_logo-social.png" alt="" height="72" /></span>
+                  <span><img src={this.state.logoPath} alt="" height="54" /></span>
                 </Link>
               </div>
 

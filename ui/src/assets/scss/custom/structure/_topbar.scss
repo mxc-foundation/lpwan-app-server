@@ -10,7 +10,7 @@
         display: block;
     }
     span.logo-sm {
-        display: none;
+        display: none !important;
     }
     .logo-lg-text-dark {
         color: $dark;
@@ -26,12 +26,30 @@
     }
 }
 
+@media only screen and (max-width: 320px){
+    .logo {
+        span.logo-sm {
+            display: block !important;
+        }
+    }
+}
+
+@media only screen and (max-width: 800px){
+    .logo {
+        span.logo-sm {
+            display: block !important;
+        }
+    }
+}
+
 .logo-box {
     height: $topbar-height;
     width: $leftbar-width;
     float: left;
     background-color: $logo-box-background;
 }
+
+
 
 .navbar-custom {
     background-color: $bg-topbar-light;
@@ -41,7 +59,9 @@
     right: 0;
     height: $topbar-height;
     z-index: 100;
-
+    display: flex;
+    flex-direction: column;
+    
     .topnav-menu {
         > li {
             float: left;

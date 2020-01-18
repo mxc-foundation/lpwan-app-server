@@ -4,6 +4,7 @@ import { Card, CardBody, Row, Col } from 'reactstrap';
 import Grid from "@material-ui/core/Grid";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
@@ -61,7 +62,8 @@ class ListApplications extends Component {
 
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -69,7 +71,7 @@ class ListApplications extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -83,19 +85,21 @@ class ListApplications extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     this.setState({ loading: true });
 
     ApplicationStore.list("", currentOrgID, limit, offset, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -123,7 +127,7 @@ class ListApplications extends Component {
           </TitleBar>
           <Row>
             <Col>
-              <Card className="shadow-sm">
+              <Card className="card-box shadow-sm">
                 <CardBody className="position-relative">
                   {this.state.loading && <Loader />}
                   <AdvancedTable
@@ -132,6 +136,7 @@ class ListApplications extends Component {
                     keyField="id"
                     onTableChange={this.handleTableChange}
                     rowsPerPage={10}
+                    totalSize={this.state.totalSize}
                     searchEnabled={false}
                   />
                 </CardBody>

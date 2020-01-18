@@ -5,6 +5,7 @@ import moment from "moment";
 import { Bar } from "react-chartjs-2";
 
 import i18n, { packageNS } from "../../i18n";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import DeviceStore from "../../stores/DeviceStore";
@@ -175,7 +176,8 @@ class ListDevicesTable extends Component {
 
     this.state = {
       data: [],
-      stats: {}
+      stats: {},
+      totalSize: 0
     }
   }
 
@@ -183,7 +185,7 @@ class ListDevicesTable extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -197,6 +199,7 @@ class ListDevicesTable extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     const currentApplicationID = this.props.applicationID;
 
     this.setState({ loading: true });
@@ -212,7 +215,12 @@ class ListDevicesTable extends Component {
       // we need to filter so we only list devices that are part of the current Application
       const getOnlyDevicesFromCurrentApplication = (devices) =>
         devices.filter(device => device.applicationID === currentApplicationID)
-      this.setState({ data: getOnlyDevicesFromCurrentApplication(res.result), loading: false });
+        
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = getOnlyDevicesFromCurrentApplication(res.result);
+      object.loading = false;
+      this.setState({object});
     });
   }
 
@@ -233,7 +241,7 @@ class ListDevicesTable extends Component {
   // }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -259,6 +267,7 @@ class ListDevicesTable extends Component {
           keyField="devEUI"
           onTableChange={this.handleTableChange}
           rowsPerPage={10}
+          totalSize={this.state.totalSize}
           searchEnabled={false}
         />
       </div>

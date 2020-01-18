@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$0" = "bash" ];then
+  echo $0
+  make ui-requirements
+fi
+
 make clean || { echo "Make clean failed, please deal with error"; exit $ERRCODE; }
 
 make ui/build || { make ui/build_dep; make ui/build; } || { echo "Make ui/build failed, please deal with error"; exit $ERRCODE; }

@@ -7,6 +7,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 
 import i18n, { packageNS } from '../../i18n';
+import Admin from '../../components/Admin';
 import { ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
 import defaultProfilePic from '../../assets/images/users/profile-icon.png';
@@ -53,11 +54,13 @@ class UserForm extends Component {
       })
     }
 
+    // Update
     if (this.props.update) {
       fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("id");
     }
 
+    // Create
     if (!this.props.update) {
       fieldsSchema.object.fields.password = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("password");
@@ -91,20 +94,45 @@ class UserForm extends Component {
                 email: object.email || "",
                 note: object.note || "",
                 password: object.password || "",
-                isAdmin: object.isAdmin || false
+                isAdmin: object.isAdmin || false,
+                isActive: object.isActive || false
               }
             }
           }
           validateOnBlur
           validateOnChange
-          validateOnMount
           validationSchema={this.formikFormSchema}
           // Formik Nested Schema Example https://codesandbox.io/s/y7q2v45xqx
           onSubmit={
             (values, { setSubmitting }) => {
               console.log('Submitted values: ', values);
 
-              this.props.onSubmit(values.object);
+              let newValues;
+              // Create
+              if (!this.props.update) {
+                newValues = {
+                  // Organization Users
+                  organizations: [],
+                  // FIXME - currently we aren't creating an "Organization User" at the same time.
+                  // Do this separately by going to http://lora.test.cloud.mxc.org/#/organizations/5/users/create
+                  //
+                  // organizations: [
+                  //   {
+                  //     organizationID: "20",
+                  //     isAdmin: true,
+                  //     isDeviceAdmin: true,
+                  //     isGatewayAdmin: true
+                  //   }
+                  // ],
+                  password: values.object.password,
+                  user: values.object,
+                }
+              // Update
+              } else {
+                newValues = values.object;
+              }
+              console.log('Prepared values: ', newValues);
+              this.props.onSubmit(newValues);
               setSubmitting(false);
             }
           }
@@ -296,6 +324,7 @@ class UserForm extends Component {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           label={i18n.t(`${packageNS}:tr000004`)}
+                          helpText="Password must be at least 6 characters long"
                           component={ReactstrapInput}
                           className={
                             errors.object && errors.object.password
@@ -317,21 +346,39 @@ class UserForm extends Component {
                       </>
                     }
 
-                    <FormGroup check>
-                      <FormControlLabel
-                        label={i18n.t(`${packageNS}:tr000133`)}
-                        control={
-                          <Checkbox
-                            id="isAdmin"
-                            name="object.isAdmin"
-                            onChange={handleChange}
-                            color="primary"
-                            value={!!values.object.isAdmin}
-                            checked={!!values.object.isAdmin}
-                          />
-                        }
-                      />
-                    </FormGroup>
+                    <Admin>
+                      <FormGroup check>
+                        <FormControlLabel
+                          label={i18n.t(`${packageNS}:tr000133`)}
+                          control={
+                            <Checkbox
+                              id="isAdmin"
+                              name="object.isAdmin"
+                              onChange={handleChange}
+                              color="primary"
+                              value={!!values.object.isAdmin}
+                              checked={!!values.object.isAdmin}
+                            />
+                          }
+                        />
+                      </FormGroup>
+
+                      <FormGroup check>
+                        <FormControlLabel
+                          label={i18n.t(`${packageNS}:tr000132`)}
+                          control={
+                            <Checkbox
+                              id="isActive"
+                              name="object.isActive"
+                              onChange={handleChange}
+                              color="primary"
+                              value={!!values.object.isActive}
+                              checked={!!values.object.isActive}
+                            />
+                          }
+                        />
+                      </FormGroup>
+                    </Admin>
 
                     <div style={{ margin: "20px 0 10px 20px" }}>
                       {isValidating

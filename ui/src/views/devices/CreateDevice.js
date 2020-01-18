@@ -38,18 +38,19 @@ class CreateDevice extends Component {
 
   componentDidMount() {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    if (this.props.match.params.applicationID === undefined) {
+    const currentApplicationID = this.props.match.params.applicationID;
+    if (currentApplicationID === undefined) {
       this.setState({
         appDialog: true
       });
     } else {
-      ApplicationStore.get(this.props.match.params.applicationID, resp => {
+      ApplicationStore.get(currentApplicationID, resp => {
         this.setState({
           application: resp,
         });
       });
 
-      DeviceProfileStore.list(0, this.props.match.params.applicationID, 0, 0, resp => {
+      DeviceProfileStore.list(0, currentApplicationID, 0, 0, resp => {
         if (resp.totalCount === "0") {
           this.setState({
             dpDialog: true,
@@ -81,25 +82,23 @@ class CreateDevice extends Component {
 
   onSubmit = (device) => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
-    const isApplication = currentApplicationID && currentApplicationID !== "0"; 
-    let dev = device;
-    dev.applicationID = this.props.match.params.applicationID;
+    const deviceApplicationID = device.applicationID;
+    const isDeviceApplication = deviceApplicationID !== undefined; 
 
-    DeviceStore.create(dev, resp => {
-      if (dev.applicationID === undefined) {
+    DeviceStore.create(device, resp => {
+      if (!isDeviceApplication) {
         this.props.history.push(`/organizations/${this.props.match.params.organizationID}/devices`);
       }
 
-      DeviceProfileStore.get(dev.deviceProfileID, resp => {
+      DeviceProfileStore.get(device.deviceProfileID, resp => {
         if (resp.deviceProfile.supportsJoin) {
-          isApplication
-          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${dev.devEUI}/keys`)
-          : this.props.history.push(`/organizations/${currentOrgID}/devices/${dev.devEUI}/keys`);
+          isDeviceApplication
+          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/keys`)
+          : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/keys`);
         } else {
-          isApplication
-          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}/devices/${dev.devEUI}/activation`)
-          : this.props.history.push(`/organizations/${currentOrgID}/devices/${dev.devEUI}/activation`);
+          isDeviceApplication
+          ? this.props.history.push(`/organizations/${currentOrgID}/applications/${deviceApplicationID}/devices/${device.devEUI}/activation`)
+          : this.props.history.push(`/organizations/${currentOrgID}/devices/${device.devEUI}/activation`);
         }
       });
 
@@ -112,10 +111,10 @@ class CreateDevice extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
     const currentOrgName = organization && (organization.name || organization.displayName);
+    const currentAppName = application && (application.application.name);
 
     const closeAppBtn = <button className="close" onClick={this.toggleAppDialog}>&times;</button>;
     const closeDpBtn = <button className="close" onClick={this.toggleDpDialog}>&times;</button>;
-
 
     return(
       <React.Fragment>
@@ -199,7 +198,7 @@ class CreateDevice extends Component {
                 }>{i18n.t(`${packageNS}:tr000076`)}</Link></BreadcrumbItem>
                 <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                   `/organizations/${currentOrgID}/applications/${currentApplicationID}`
-                  }>{application.application.name}</Link></BreadcrumbItem>
+                  }>{currentAppName || currentApplicationID || '???'}</Link></BreadcrumbItem>
                 <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                   `/organizations/${currentOrgID}/applications/${currentApplicationID}`
                 }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>

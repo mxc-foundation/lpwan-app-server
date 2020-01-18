@@ -12,6 +12,7 @@ import TitleBarButton from "../../components/TitleBarButton";
 import DataTable from "../../components/DataTable";
 import Admin from "../../components/Admin";
 import { ETHER } from "../../util/CoinType"
+import {MAX_DATA_LIMIT} from "../../util/pagination";
 
 class EthAccount extends Component {
   constructor(props) {
@@ -21,6 +22,7 @@ class EthAccount extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
+    limit = MAX_DATA_LIMIT;
     HistoryStore.getChangeMoneyAccountHistory(ETHER, this.props.match.params.organizationID, limit, offset, (data) => {
       callbackFunc({
         totalCount: parseInt(data.count),

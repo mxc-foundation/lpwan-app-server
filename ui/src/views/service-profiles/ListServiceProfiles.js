@@ -5,6 +5,7 @@ import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import AdvancedTable from "../../components/AdvancedTable";
 
@@ -33,7 +34,8 @@ class ListServiceProfiles extends Component {
         text: i18n.t(`${packageNS}:tr000042`),
         sort: false,
         formatter: this.serviceProfileColumn,
-      }]
+      }],
+      totalSize: 0
     }
   }
 
@@ -41,7 +43,7 @@ class ListServiceProfiles extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, sortField, sortOrder }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage;
     this.getPage(this.props.match.params.organizationID, sizePerPage, offset);
   }
 
@@ -50,7 +52,11 @@ class ListServiceProfiles extends Component {
    */
   getPage = (organizationID, limit, offset) => {
     ServiceProfileStore.list(organizationID, limit, offset, (res) => {
-      this.setState({ data: res.result });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
@@ -59,7 +65,7 @@ class ListServiceProfiles extends Component {
   }
 
   componentDidMount() {
-    this.getPage(this.props.match.params.organizationID, 10);
+    this.getPage(this.props.match.params.organizationID, MAX_DATA_LIMIT);
   }
 
   render() {
@@ -75,7 +81,7 @@ class ListServiceProfiles extends Component {
                 className={classes.breadcrumbItemLink}
                 to={`/organizations`}
               >
-                  Organizations
+                Organizations
               </Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -92,10 +98,8 @@ class ListServiceProfiles extends Component {
 
         <Row>
           <Col>
-            <Card>
-              <CardBody>
-                <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" onTableChange={this.handleTableChange}></AdvancedTable>
-              </CardBody>
+            <Card className="card-box shadow-sm">
+              <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
             </Card>
           </Col>
         </Row>

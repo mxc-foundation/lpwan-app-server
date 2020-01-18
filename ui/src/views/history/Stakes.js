@@ -5,6 +5,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import StakeStore from "../../stores/StakeStore";
 
 const StartColumn = (cell, row, index, extraData) => {
@@ -61,7 +62,8 @@ class Stakes extends Component {
     this.getPage = this.getPage.bind(this);
     this.state = {
       data: [],
-      stats: {}
+      stats: {},
+      totalSize: 0
     }
   }
 
@@ -69,7 +71,7 @@ class Stakes extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -83,14 +85,19 @@ class Stakes extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
-    StakeStore.getStakingHistory(this.props.organizationID, offset, limit, data => {
-      this.setState({ data: data.stakingHist, loading: false });
+    StakeStore.getStakingHistory(this.props.organizationID, offset, limit, res => {
+      const object = this.state;
+      object.totalSize = res.count;
+      object.data = res.stakingHist;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -98,7 +105,7 @@ class Stakes extends Component {
       <div className="position-relative">
         {this.state.loading && <Loader />}
         <AdvancedTable data={this.state.data} columns={getColumns()}
-          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
       </div>
     );
   }

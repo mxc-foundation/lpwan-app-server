@@ -5,6 +5,7 @@ import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody,
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -50,7 +51,8 @@ class ListNetworkServers extends Component {
     this.getPage = this.getPage.bind(this);
     this.state = {
       data: [],
-      loading: true
+      loading: true,
+      totalSize: 0
     }
   }
 
@@ -58,7 +60,7 @@ class ListNetworkServers extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = (page - 1) * sizePerPage ;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -72,18 +74,20 @@ class ListNetworkServers extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     const defaultOrgId = 0;
     this.setState({ loading: true });
     NetworkServerStore.list(defaultOrgId, limit, offset, (res) => {
-      this.setState({
-        data: res.result,
-        loading: false
-      });
+      const object = this.state;
+      object.totalSize = res.totalCount;
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
     });
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -110,8 +114,8 @@ class ListNetworkServers extends Component {
         </TitleBar>
         <Row>
           <Col>
-            <Card className="shadow-sm">
-              <CardBody className="position-relative">
+            <Card className="card-box shadow-sm">
+              {/* <CardBody className="position-relative"> */}
                 {this.state.loading && <Loader />}
                 <AdvancedTable
                   data={this.state.data}
@@ -119,9 +123,10 @@ class ListNetworkServers extends Component {
                   keyField="id"
                   onTableChange={this.handleTableChange}
                   rowsPerPage={10}
+                  totalSize={this.state.totalSize}
                   searchEnabled={false}
                 />
-              </CardBody>
+              {/* </CardBody> */}
             </Card>
           </Col>
         </Row>

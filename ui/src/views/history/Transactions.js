@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
 import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TopupStore from "../../stores/TopupStore";
 
 import ExtLink from '../../components/ExtLink';
@@ -56,7 +57,8 @@ class Transactions extends Component {
     this.getPage = this.getPage.bind(this);
     this.state = {
       data: [],
-      stats: {}
+      stats: {},
+      totalSize: 0
     }
   }
 
@@ -64,7 +66,7 @@ class Transactions extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage + 1;
+    const offset = page - 1 ;
 
     /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -78,15 +80,19 @@ class Transactions extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
-    TopupStore.getTransactionsHistory(this.props.organizationID, offset, limit, data => {
-      console.log(data);
-      this.setState({ data: data.transactionHistory, loading: false });
+    TopupStore.getTransactionsHistory(this.props.organizationID, offset, limit, res => {
+      const object = this.state;
+      object.totalSize = res.count;
+      object.data = res.transactionHistory;
+      object.loading = false;
+      this.setState({object});
     }); 
   }
 
   componentDidMount() {
-    this.getPage(10);
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
@@ -94,7 +100,7 @@ class Transactions extends Component {
       <div className="position-relative">
         {this.state.loading && <Loader />}
         <AdvancedTable data={this.state.data} columns={getColumns()}
-          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} rowsPerPage={10}></AdvancedTable>
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
       </div>
     );
   }

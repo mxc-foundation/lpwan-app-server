@@ -7,7 +7,6 @@ import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
 
-
 class MoneyStore extends EventEmitter {
   constructor() {
     super();
@@ -35,7 +34,7 @@ class MoneyStore extends EventEmitter {
         "orgId": req.orgId,
         "moneyAbbr": req.moneyAbbr,
         body: {
-          currentAccount: req.currentAccount,
+          currentAccount: req.newAccount,
           orgId: req.orgId,
           moneyAbbr: req.moneyAbbr
         },
