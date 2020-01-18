@@ -92,6 +92,7 @@ qa-release-image:
 
 buildserver-deploy:
   stage: deploy
+  image: alpine:latest
   script:
     - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
     - ./appserver local
