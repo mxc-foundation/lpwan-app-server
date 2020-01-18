@@ -92,11 +92,12 @@ qa-release-image:
 
 buildserver-deploy:
   stage: deploy
-  image: alpine:latest
   before_script: 
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
     - ./appserver local
-  only:
+  only: #only run on buildserver repo
+    - buildserver
+  tags: #use gitlab runner with buildserver tag
     - buildserver
