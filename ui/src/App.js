@@ -177,7 +177,7 @@ class NotLoggedinRoute extends Component {
     )
   }
 }
-
+/*
 class HomeRoute extends Component {
   route = () => {
     const { Comp, user, ...otherProps } = this.props;
@@ -198,7 +198,7 @@ class HomeRoute extends Component {
       />
     )
   }
-}
+}*/
 
 class LoggedInRoutes extends Component {
   render() {
@@ -211,24 +211,14 @@ class LoggedInRoutes extends Component {
 
     return (<>
       <Switch>
-        <HomeRoute exact path="/" component={HomeComponent} />
+        <Route exact path="/" component={HomeComponent} />
         <Route exact path="/logout" component={Logout} />
 
         <Route exact path="/users" component={ListUsers} />
         <Route exact path="/users/create" component={CreateUser} />
         <Route exact path="/users/:userID(\d+)" component={UserLayout} />
         <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
-        <Route exact path="/registration" component={Registration} />
-        <Route exact path="/password-recovery" component={PasswordRecovery} />
-        <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
-        <Route exact path="/registration-confirm/:securityToken"
-          render={props =>
-            <RegistrationConfirm {...props}
-              language={language}
-              onChangeLanguage={this.onChangeLanguage}
-            />
-          }
-        />
+        
         <Route exact path="/network-servers" component={ListNetworkServers} />
         <Route exact path="/network-servers/create" component={CreateNetworkServer} />
         <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
@@ -285,7 +275,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <Withdraw
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -293,7 +283,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <Topup
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -301,7 +291,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <HistoryLayout
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -311,7 +301,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SuperNodeEth
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -319,7 +309,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SuperAdminWithdraw
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -327,7 +317,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SupernodeHistory
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -335,7 +325,7 @@ class LoggedInRoutes extends Component {
           render={props =>
             <SystemSettings
               {...props}
-              switchToSidebarId={this.switchToSidebarId}
+              switchToSidebarId={this.props.switchToSidebarId}
             />
           }
         />
@@ -356,6 +346,7 @@ class App extends Component {
       drawerOpen: false,
       language: null,
       nsDialog: null,
+      width: null,
       theme: theme
     };
 
@@ -487,7 +478,7 @@ class App extends Component {
 
     const { currentSidebarId, isCondensed, language, sessionInitialized, user, width } = this.state;
 
-    const isMobile = width <= 800;
+    let isMobile = width <= 800;
 
     let Layout = NonAuthLayout;
 
@@ -504,7 +495,7 @@ class App extends Component {
           user={this.state.user}
         /> 
         ); */
-      topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
+      topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} isMobile={isMobile} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
       sideNav = <Sidebar isCondensed={isCondensed} currentSidebarId={currentSidebarId} switchToSidebarId={this.switchToSidebarId} {...this.props} />;
 
       // if user is logged in - set auth layout
@@ -536,17 +527,18 @@ class App extends Component {
                   Comp={Login} user={user}
                   language={language}
                   onChangeLanguage={this.onChangeLanguage} />
-                {/* <Route exact path="/" component={HomeComponent} />
-                  <Route exact path="/login"
+                <Route exact path="/registration" component={Registration} />
+                <Route exact path="/password-recovery" component={PasswordRecovery} />
+                <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
+                <Route exact path="/registration-confirm/:securityToken"
                   render={props =>
-                    <Login {...props}
+                    <RegistrationConfirm {...props}
                       language={language}
                       onChangeLanguage={this.onChangeLanguage}
                     />
                   }
-                /> */}
-
-                <LoggedInRoutes />
+                />
+                <LoggedInRoutes switchToSidebarId={this.switchToSidebarId}/>
 
               </Switch>
               <Footer />

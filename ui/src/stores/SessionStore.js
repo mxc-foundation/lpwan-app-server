@@ -6,6 +6,7 @@ import dispatcher from "../dispatcher";
 import i18n, { packageNS } from '../i18n';
 import MockSessionStoreApi from '../api/mockSessionStoreApi';
 import isDev from '../util/isDev';
+import history from '../history';
 
 class SessionStore extends EventEmitter {
   constructor() {
@@ -74,6 +75,14 @@ class SessionStore extends EventEmitter {
   setOrganizationID(id) {
     localStorage.setItem("organizationID", id);
     this.emit("organization.change");
+  }
+
+  setLogoPath(path) {
+    localStorage.setItem("logopath", path);
+  }
+
+  getLogoPath() {
+    return localStorage.getItem("logopath");
   }
 
   setUser(user) {
@@ -189,6 +198,14 @@ class SessionStore extends EventEmitter {
             this.setOrganizations(this.organizations);
           }
 
+          if(this.organizations.length > 0){
+            this.setOrganizationID(this.organizations[0].organizationID);  
+          }
+
+          this.getBranding((resp)=>{
+            this.setLogoPath(resp.logoPath);
+          });
+
           if(resp.obj.settings !== undefined) {
             this.settings = resp.obj.settings;
           }
@@ -271,9 +288,13 @@ class SessionStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.fetchProfile(callbackFunc);
+        localStorage.clear();
+        this.user = null;
+        this.organizations = [];
+        this.settings = {};
+        history.push("/login");
       })
-      .catch(errorHandler);
+      
     });
   }
 

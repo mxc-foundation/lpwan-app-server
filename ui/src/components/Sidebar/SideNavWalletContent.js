@@ -10,10 +10,10 @@ const SideNavWalletContent = (props) => {
         <div id="sidebar-menu">
             <ul className="metismenu" id="side-menu">
                 <li>
-                    <Link to={`/organizations`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
+                    <Link to={`/stake/${props.orgId}/set-stake`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
                         <span className="mdi mdi-arrow-left-bold"></span>
                         <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                        <span>{i18n.t(`${packageNS}:tr000450`)}</span>
+                        <span>{i18n.t(`${packageNS}:tr000463`)}</span>
                     </Link>
                 </li>
 

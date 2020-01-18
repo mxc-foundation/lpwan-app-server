@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import Divider from '@material-ui/core/Divider';
 
 import i18n, { packageNS } from '../../i18n';
-import mxcLogo from '../../assets/images/mxc_logo.png';
-import { SUPERNODE_WALLET, SUPERNODE_SETTING, WALLET, SETTING } from '../../util/Data';
+import mxcLogo from '../../assets/images/mxc_logo-social_2.png';
+import { SUPERNODE_WALLET, SUPERNODE_SETTING, WALLET, SETTING, ORGANIZATIONS } from '../../util/Data';
 import Admin from '../Admin';
 import NonAdmin from '../NonAdmin';
 import DropdownMenu2 from '../DropdownMenu';
@@ -46,9 +46,10 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/organizations`} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(ORGANIZATIONS)}>
                             <i className="mdi mdi-domain"></i>
                             <span> {i18n.t(`${packageNS}:tr000049`)} </span>
+                            <span className="menu-arrow"></span>
                         </Link>
                     </li>
 
@@ -59,12 +60,12 @@ const SideNavContent = (props) => {
                         </Link>
                     </li>
 
-                    <li>
+                    {/*<li>
                         <Link to={`/organizations/${props.orgId}/edit`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-domain"></i>
                             <span> {i18n.t(`${packageNS}:tr000418`)} </span>
                         </Link>
-                    </li>
+                    </li>*/}
 
                     <li>
                         <Link to="/control-panel/modify-account/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_SETTING)}>
@@ -98,7 +99,7 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/stake/${props.orgId}`} className="waves-effect side-nav-link-ref">
+                        <Link to={`/stake/${props.orgId}/set-stake`} className="waves-effect side-nav-link-ref">
                             {/* <i className="mdi mdi-cloud-print-outline"></i> */}
                             <i className="mdi mdi-vote"></i>
                             <span> {i18n.t(`${packageNS}:menu.staking.staking`)} </span>
@@ -108,7 +109,7 @@ const SideNavContent = (props) => {
                     <li>
                         <Link to={`/organizations/${props.orgId}/gateways`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-remote"></i>
-                            <span> {i18n.t(`${packageNS}:menu.gateways.gateway`)} </span>
+                            <span> {i18n.t(`${packageNS}:menu.gateways.gateways`)} </span>
                         </Link>
                     </li>
 
@@ -126,15 +127,15 @@ const SideNavContent = (props) => {
                         </Link>
                     </li>
 
-                    <li>
+                    {/* <li>
                         <Link to={`/organizations/${props.orgId}/multicast-groups`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-podcast"></i>
                             <span> {i18n.t(`${packageNS}:tr000083`)} </span>
                         </Link>
-                    </li>
+                    </li> */}
 
                     <li>
-                        <Link to={`/users/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
+                        <Link to={`/organizations/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SETTING)}>
                             <i className="mdi mdi-settings"></i>
                             <span> {i18n.t(`${packageNS}:tr000451`)} </span>
                             <span className="menu-arrow"></span>

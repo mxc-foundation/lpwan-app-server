@@ -85,6 +85,7 @@ class Stakes extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
     StakeStore.getStakingHistory(this.props.organizationID, offset, limit, res => {
       const object = this.state;

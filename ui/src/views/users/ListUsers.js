@@ -89,6 +89,7 @@ class ListUsers extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
 
     UserStore.list("", limit, offset, (res) => {

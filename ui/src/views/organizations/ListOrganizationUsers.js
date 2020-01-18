@@ -85,6 +85,7 @@ class ListOrganizationUsers extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
     OrganizationStore.listUsers(this.props.match.params.organizationID, limit, offset, (res) => {
       const object = this.state;

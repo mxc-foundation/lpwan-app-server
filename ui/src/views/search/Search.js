@@ -12,6 +12,7 @@ import TitleBarTitle from "../../components/TitleBarTitle";
 import DataTable from "../../components/DataTable";
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import {MAX_DATA_LIMIT} from "../../util/pagination";
 
 
 const styles = {
@@ -96,6 +97,7 @@ class Search extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
+      limit = MAX_DATA_LIMIT;
     const query = new URLSearchParams(this.props.location.search);
     const search = (query.get("search") === null) ? "" : query.get("search");
 

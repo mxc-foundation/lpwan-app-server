@@ -32,8 +32,6 @@ class InfluxDBIntegrationForm extends FormComponent {
     if (this.state.object === undefined) {
       return(<div></div>);
     }
-    console.log('this.props.object', this.props.object)
-    console.log('this.state.object', this.state.object)
 
     return(
       <FormControl fullWidth margin="normal">

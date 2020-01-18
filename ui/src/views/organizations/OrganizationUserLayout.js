@@ -85,11 +85,13 @@ class OrganizationUserLayout extends Component {
           callback={this.deleteOrganizationUser} />}
         <TitleBar
           buttons={[
+          /* 
             <Button color="secondary"
               key={1}
               onClick={this.gotoUser}
               className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
             </Button>,
+          */
             <Button color="danger"
               key={1}
               onClick={this.openModal}

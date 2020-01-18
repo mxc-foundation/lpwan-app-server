@@ -199,6 +199,7 @@ class ListDevicesTable extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     const currentApplicationID = this.props.applicationID;
 
     this.setState({ loading: true });

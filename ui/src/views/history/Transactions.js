@@ -66,7 +66,7 @@ class Transactions extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage ;
+    const offset = page - 1 ;
 
     /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -80,6 +80,7 @@ class Transactions extends Component {
    * Fetches data from server
    */
   getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
     TopupStore.getTransactionsHistory(this.props.organizationID, offset, limit, res => {
       const object = this.state;
