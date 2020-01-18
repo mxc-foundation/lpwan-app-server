@@ -2,7 +2,7 @@ stages:
   - test
   - build
   - release
-#  - deploy
+  - deploy
 
 default:
   before_script:
