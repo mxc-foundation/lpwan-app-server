@@ -78,11 +78,14 @@ qa-build:
 
 qa-release-image:
   stage: release
+<<<<<<< HEAD
+=======
   image: docker:19.03.1
   services:
     - docker:19.03.1-dind
   before_script: 
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+>>>>>>> develop
   script:
     - docker pull $CONTAINER_TEST_IMAGE
     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
