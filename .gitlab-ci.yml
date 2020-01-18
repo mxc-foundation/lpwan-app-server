@@ -78,14 +78,11 @@ qa-build:
 
 qa-release-image:
   stage: release
-<<<<<<< HEAD
-=======
   image: docker:19.03.1
   services:
     - docker:19.03.1-dind
   before_script: 
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
->>>>>>> develop
   script:
     - docker pull $CONTAINER_TEST_IMAGE
     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
@@ -93,9 +90,10 @@ qa-release-image:
   only:
     - buildserver
 
-#deploy:
-#  stage: deploy
-#  script:
-#    - docker-compose ./appserver local_database
-#  only:
-#    - develop
+buildserver-deploy:
+  stage: deploy
+  script:
+    - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
+    - ./appserver local
+  only:
+    - buildserver
