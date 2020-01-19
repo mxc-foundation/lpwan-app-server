@@ -1,89 +1,61 @@
-.PHONY: build clean test package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
-PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
+ROJECT_NAME := "lpwan-app-server"
+PKG := "."
+PKG_LIST := $(shell go list ${PKG}/... | grep -v /vendor/)
+GO_FILES := $(shell find . -name '*.go' | grep -v /vendor/ | grep -v _test.go)
 VERSION := $(shell git describe --tags |sed -e "s/^v//")
 
-build: internal/statics internal/migrations
-	mkdir -p build cache
-	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
+.PHONY: all dep build ui/test ui/build_dep ui/built clean test coverage coverhtml lint
 
-clean:
-	@echo "Cleaning up workspace"
-	@rm -rf build dist internal/migrations/migrations_gen.go internal/static/static_gen.go ui/build static/static
-	@rm -f static/index.html static/icon.png static/manifest.json static/asset-manifest.json static/service-worker.js
-	@rm -rf static/logo
-	@rm -rf static/img
-	@rm -f static/swagger/*.json
-	@rm -rf docs/public
-	@rm -rf dist
+all: ui/build build
 
-test: internal/statics internal/migrations
-	@echo "Running tests"
-	@rm -f coverage.out
-	@for pkg in $(PKGS) ; do \
-		golint $$pkg ; \
-	done
-	@go vet $(PKGS)
-	@go test -p 1 -v $(PKGS) -cover -coverprofile coverage.out
+lint: ## Lint the files
+	@go get -u golang.org/x/lint/golint
+	@golint -set_exit_status ${PKG_LIST}
 
-dist: ui/build internal/statics internal/migrations
-	@goreleaser
-	mkdir -p dist/upload/tar
-	mkdir -p dist/upload/deb
-	mv dist/*.tar.gz dist/upload/tar
-	mv dist/*.deb dist/upload/deb
+test: ## Run unittests
+	@go test -timeout 60s -short ${PKG_LIST}
 
-snapshot: ui/build internal/statics internal/migrations
-	@goreleaser --snapshot
+race: dep ## Run data race detector
+	@go test -timeout 60s -race -short ${PKG_LIST}
 
-ui/build:
+msan: dep ## Run memory sanitizer
+	@apk add --no-cache clang
+	@export CC=clang
+	@go test -timeout 60s -msan -short ${PKG_LIST}
+
+coverage: ## Generate global code coverage report
+	@go test -timeout 60s -covermode=count -coverprofile /tmp/coverage.out ${PKG_LIST}
+
+coverhtml: ## Generate global code coverage report in HTML
+	@go tool cover -html=/tmp/coverage.out -o /tmp/coverage.html
+
+dep: ## Get the backend dependencies
+	@go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
+	@go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
+	@go get -u github.com/golang/protobuf/protoc-gen-go
+	@go get -u github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
+	@go get -u github.com/jteeuwen/go-bindata/go-bindata
+
+ui/test: ## Run frontend syntax check
+	@cd ui && npm install && npm run test
+
+ui/build_dep: ## Get the frontend dependencies
+	@echo "Building node-sass"
+	@cd ui/node_modules/node-sass/ && npm install && npm run build
+
+ui/build: ui/build_dep ## Build the frontend
 	@echo "Building ui"
 	@cd ui && npm run build
 	@mv ui/build/* static
 
-ui/build_dep:
-	@echo "Building node-sass"
-	@cd ui/node_modules/node-sass/ && npm install && npm run build
+build: dep ## Build the backend binary file
+	@export CGO_ENABLED=0
+	@export GO_EXTRA_BUILD_ARGS="-a -installsuffix cgo"
+	#@go build -i -v $(PKG)
+	@go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
 
-api:
-	@echo "Generating API code from .proto files"
-	@go mod vendor
-	@go generate api/api.go
-	@go generate api/m2m_ui/api.go
-	@rm -rf vendor/
+clean: ## Remove previous build
+	@rm -f $(PROJECT_NAME)
 
-internal/statics internal/migrations: static/swagger/api.swagger.json
-	@echo "Generating static files"
-	@go generate internal/migrations/migrations.go
-	@go generate internal/static/static.go
-
-
-static/swagger/api.swagger.json:
-	@echo "Generating combined Swagger JSON"
-	@cp api/m2m_ui/swagger/*.json api/swagger
-	@GOOS="" GOARCH="" go run api/swagger/main.go api/swagger > static/swagger/api.swagger.json
-	@cp api/swagger/*.json static/swagger
-
-
-# shortcuts for development
-
-dev-requirements:
-	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-	go install github.com/golang/protobuf/protoc-gen-go
-	go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
-	go install github.com/jteeuwen/go-bindata/go-bindata
-
-ui-requirements:
-	@echo "Installing UI requirements"
-	@cd ui && npm install
-
-serve: build
-	@echo "Starting LPWAN App Server"
-	./build/lora-app-server
-
-update-vendor:
-	@echo "Updating vendored packages"
-	@govendor update +external
-
-run-compose-test:
-	docker-compose run --rm appserver make test
+help: ## Display this help screen
+	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

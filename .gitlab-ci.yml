@@ -1,113 +1,53 @@
+image: golang:1.12-alpine
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - /apt-cache
+    - /go/src/github.com
+    - /go/src/golang.org
+    - /go/src/google.golang.org
+    - /go/src/gopkg.in
+
 stages:
   - test
   - build
-  - release
-  - deploy
 
-default:
-  before_script:
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get -u golang.org/x/lint/golint
-    - go get github.com/securego/gosec/cmd/gosec
-    - go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-    - go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-    - go get github.com/golang/protobuf/protoc-gen-go
-    - go get github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
-    - go get github.com/jteeuwen/go-bindata/go-bindata
+before_script:
+  - apk add --no-cache ca-certificates make git bash protobuf alpine-sdk nodejs nodejs-npm python
 
-syntax_test_frontend:
-  image: golang:1.12-alpine
+lint_backend:
   stage: test
   script:
-    - cd ui
-    - npm install
-    - npm run test
-  artifacts:
-    paths:
-      - /root/.npm/_logs/*
-    expire_in: 1 week
+    - make lint
   allow_failure: true
-  
-syntax_test_backend:
-  image: golang:1.12-alpine
-  stage: test
-  script:
-    - golint -set_exit_status ./...
-  allow_failure: true
-  
-unit_test_backend:
-  image: golang:1.12-alpine
-  stage: test
-  script:
-    - export CGO_ENABLED=0
-    - export GO_EXTRA_BUILD_ARGS="-a -installsuffix cgo"
-    - "go test -timeout 60s -covermode=count -coverprofile count.out ./..."
-    - "go tool cover -html=count.out -o coverage.html"
-  artifacts:
-    paths:
-      - coverage.html
-    expire_in: 1 week
-  allow_failure: true
-  
-security_test_backend:
-  image: golang:1.12-alpine
-  stage: test
-  script:
-    - gosec ./...
-  allow_failure: true
-  
-variables:
-  # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: "/certs"
-  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
-qa-build:
+syntax_frontend:
+  stage: test
+  script:
+    - make ui/test
+  allow_failure: true
+
+unit_tests:
+  stage: test
+  script:
+    - make test
+  allow_failure: true
+
+code_coverage:
+  stage: test
+  script:
+    - make coverage
+  allow_failure: true
+
+code_coverage_report:
+  stage: test
+  script:
+    - make coverhtml
+  allow_failure: true
+
+build:
   stage: build
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
-  only:
-    - buildserver
-
-qa-release-image:
-  stage: release
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
-  only:
-    - buildserver
-
-buildserver-deploy:
-  stage: deploy
-  image: docker:stable
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - apk add --no-cache git make bash openssh-client python py3-pip gcc python3-dev libffi-dev musl-dev openssl-dev
-    - pip3 install docker-compose
-    - docker-compose version
-    - docker version
-    - rm -rf lpwan-app-server
-    - git clone https://deployer:$DEPLOY_TOKEN@gitlab.com/MXCFoundation/cloud/lpwan-app-server.git
-    - cd lpwan-app-server && git fetch && git checkout buildserver && git pull
-    - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
-    - sed -i "s/DOCKER_USER/$DOCKER_USER/" config && sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
-    - sed -i "s/dockerenv/iamdocker/g" appserver
-    - ./appserver local
-  only: #only run on buildserver repo
-    - buildserver
-  #tags: #use gitlab runner with buildserver tag
-  #  - buildserver
+    - make
