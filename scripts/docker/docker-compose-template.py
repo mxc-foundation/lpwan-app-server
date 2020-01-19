@@ -81,7 +81,7 @@ services:
       - ./configuration/loraserver:/etc/loraserver
 
   appserver:
-    image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:buildserver
+    image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:latest
     volumes:
       - ./configuration/lora-app-server:/etc/lora-app-server
     environment:
@@ -126,7 +126,7 @@ services:
       - 1883:1883
 
   mxprotocol-server:
-    image: registry.gitlab.com/mxcfoundation/cloud/mxprotocol-server:buildserver
+    image: mxcdocker/mxprotocol-server:0.3.0-14-ga8be3482
     volumes:
       - ./configuration/mxprotocol-server:/etc/mxprotocol-server
     environment:
