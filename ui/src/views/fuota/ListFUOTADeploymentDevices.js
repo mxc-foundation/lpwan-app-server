@@ -127,7 +127,7 @@ class FUOTADeploymentDevices extends Component {
       offset: offset,
     }, (res) => {
       const object = this.state;
-      object.totalSize = res.totalCount;
+      object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({ object });

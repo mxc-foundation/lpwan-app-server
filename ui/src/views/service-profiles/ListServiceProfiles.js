@@ -53,7 +53,7 @@ class ListServiceProfiles extends Component {
   getPage = (organizationID, limit, offset) => {
     ServiceProfileStore.list(organizationID, limit, offset, (res) => {
       const object = this.state;
-      object.totalSize = res.totalCount;
+      object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({ object });
