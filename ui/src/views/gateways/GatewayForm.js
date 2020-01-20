@@ -139,9 +139,9 @@ class GatewayForm extends Component {
 
     let fieldsSchema = {
       name: Yup.string().trim().matches(/^[a-zA-Z0-9\-]+$/, i18n.t(`${packageNS}:tr000429`)).required(i18n.t(`${packageNS}:tr000431`)),
-      description: Yup.string()
+      description: Yup.string().trim()
         .required(i18n.t(`${packageNS}:tr000431`)),
-      gatewayProfileID: Yup.string(),
+      gatewayProfileID: Yup.string().trim(),
       discoveryEnabled: Yup.bool(),
       location: Yup.object().shape({
         altitude: Yup.number().required(i18n.t(`${packageNS}:tr000431`))
@@ -149,8 +149,8 @@ class GatewayForm extends Component {
     }
 
     if (!this.props.update) {
-      fieldsSchema['id'] = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
-      fieldsSchema['networkServerID'] = Yup.string();
+      fieldsSchema['id'] = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema['networkServerID'] = Yup.string().trim();
     }
     const formSchema = Yup.object().shape(fieldsSchema);
 
@@ -161,7 +161,10 @@ class GatewayForm extends Component {
             enableReinitialize
             initialValues={this.state.object}
             validationSchema={formSchema}
-            onSubmit={this.props.onSubmit}>
+            onSubmit={(values) => {
+              const castValues = formSchema.cast(values);
+              this.props.onSubmit({ ...castValues })
+            }}>
             {({
               handleSubmit,
               setFieldValue,

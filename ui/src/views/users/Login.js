@@ -17,6 +17,10 @@ import i18n, { packageNS } from '../../i18n';
 
 const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 
+const loginSchema = Yup.object().shape({
+  username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+  password: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+})
 
 class LoginForm extends Component {
   constructor(props) {
@@ -65,14 +69,10 @@ class LoginForm extends Component {
     return (<React.Fragment>
       <Formik
         initialValues={this.state.object}
-        validationSchema={
-          Yup.object().shape({
-            username: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
-            password: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
-          })
-        }
+        validationSchema={loginSchema}
         onSubmit={(values) => {
-          this.props.onSubmit({ isVerified: this.state.isVerified, ...values })
+          const castValues = loginSchema.cast(values);
+          this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
         }}>
         {({
           handleSubmit,

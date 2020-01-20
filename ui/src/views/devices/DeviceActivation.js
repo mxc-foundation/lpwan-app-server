@@ -81,39 +81,39 @@ class DeviceActivation extends Component {
       object: Yup.object().shape({
         deviceActivation: Yup.object().shape({
           // https://regexr.com/4rg3a
-          devEUI: Yup.string()
+          devEUI: Yup.string().trim()
             // .trim().matches(/([A-Fa-f0-9]){16}/, "Must be length 16")
             .required(i18n.t(`${packageNS}:tr000431`)),
-          devAddr: Yup.string()
+          devAddr: Yup.string().trim()
             // FIXME - changes to DevAddr component required to get these to work
             // since the length of the value when debugging `values.object.deviceActivation.devAddr`
             // changes from 8 to 11 if you change the value in the UI from 8 to 7.
             // .trim().matches(/([A-Fa-f0-9]){8}/, "Must be length 8")
             .required(i18n.t(`${packageNS}:tr000431`)),
-          appSKey: Yup.string()
+          appSKey: Yup.string().trim()
             // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
             .required(i18n.t(`${packageNS}:tr000431`)),
-          nwkSEncKey: Yup.string()
+          nwkSEncKey: Yup.string().trim()
             // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
             .required(i18n.t(`${packageNS}:tr000431`)),
-          fCntUp: Yup.number()
+          fCntUp: Yup.number().trim()
             .required(i18n.t(`${packageNS}:tr000431`)),
-          nFCntDown: Yup.number()
+          nFCntDown: Yup.number().trim()
             .required(i18n.t(`${packageNS}:tr000431`)),
         })
       })
     }
 
     if (this.props.deviceProfile.macVersion.startsWith("1.1")) {
-      fieldsSchema.object.fields.deviceActivation.fields.sNwkSIntKey = Yup.string()
+      fieldsSchema.object.fields.deviceActivation.fields.sNwkSIntKey = Yup.string().trim()
         // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
         .required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object.fields.deviceActivation._nodes.push("sNwkSIntKey");
-      fieldsSchema.object.fields.deviceActivation.fields.fNwkSIntKey = Yup.string()
+      fieldsSchema.object.fields.deviceActivation.fields.fNwkSIntKey = Yup.string().trim()
         // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
         .required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object.fields.deviceActivation._nodes.push("fNwkSIntKey");
-      fieldsSchema.object.fields.deviceActivation.fields.aFCntDown = Yup.number()
+      fieldsSchema.object.fields.deviceActivation.fields.aFCntDown = Yup.number().trim()
         .required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object.fields.deviceActivation._nodes.push("aFCntDown");
     }
@@ -166,7 +166,8 @@ class DeviceActivation extends Component {
           validateOnChange
           validationSchema={this.formikFormSchema}
           onSubmit={
-            (values, { setSubmitting }) => {
+            (castValues, { setSubmitting }) => {
+              const values = this.formikFormSchema().cast(castValues);
               console.log('Submitted values: ', values);
 
               this.onSubmit(values.object.deviceActivation);

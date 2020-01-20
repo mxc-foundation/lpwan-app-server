@@ -8,6 +8,12 @@ import * as Yup from 'yup';
 import i18n, { packageNS } from '../../i18n';
 
 
+const fieldsSchema = {
+  activeAccount: Yup.string().trim(),
+  newAccount: Yup.string().trim(),
+  username: Yup.string().trim(),
+  password: Yup.string().trim(),
+}
 
 class ModifyEthAccountForm extends Component {
 
@@ -33,14 +39,6 @@ class ModifyEthAccountForm extends Component {
     })
   }
 
-
-  // onChange = (event) => {
-  //   const { id, value } = event.target;
-
-  //   this.setState({
-  //     object: { [id]: value }
-  //   });
-  // }
   reset = () => {
     this.setState({
       object: {
@@ -51,27 +49,9 @@ class ModifyEthAccountForm extends Component {
     })
   }
 
-  /* submit = () => {
-    this.props.onSubmit({
-      action: 'modifyAccount',
-      currentAccount: this.state.object.newaccount,
-      createAccount: this.state.object.newaccount,
-      username: this.state.object.username,
-      password: this.state.object.password
-    })
-
-    this.reset();
-  } */
-
   render() {
     if (this.props.activeAccount == '0') {
       return 'loading...';
-    }
-    let fieldsSchema = {
-      activeAccount: Yup.string(),
-      newAccount: Yup.string(),
-      username: Yup.string(),
-      password: Yup.string(),
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
@@ -82,7 +62,10 @@ class ModifyEthAccountForm extends Component {
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.props.onSubmit}>
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.props.onSubmit({ ...castValues })
+          }}>
           {({
             handleSubmit,
             handleChange,

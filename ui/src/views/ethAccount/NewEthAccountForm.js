@@ -48,9 +48,9 @@ class NewEthAccountForm extends Component {
 
   render() {
     let fieldsSchema = {
-      newAccount: Yup.string(),
-      username: Yup.string(),
-      password: Yup.string(),
+      newAccount: Yup.string().trim(),
+      username: Yup.string().trim(),
+      password: Yup.string().trim(),
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
@@ -61,7 +61,10 @@ class NewEthAccountForm extends Component {
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.props.onSubmit}>
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.props.onSubmit({ ...castValues })
+          }}>
           {({
             handleSubmit,
             handleChange,

@@ -71,16 +71,16 @@ class DeviceKeys extends Component {
       object: Yup.object().shape({
         deviceKeys: Yup.object().shape({
           // https://regexr.com/4rg3a
-          nwkKey: Yup.string()
+          nwkKey: Yup.string().trim()
             .required(i18n.t(`${packageNS}:tr000431`)),
-          devEUI: Yup.string()
+          devEUI: Yup.string().trim()
             .required("DevEUI is required"),
         })
       })
     }
 
     if (this.props.deviceProfile.macVersion.startsWith("1.1")) {
-      fieldsSchema['object.deviceKeys.genAppKey'] = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema['object.deviceKeys.genAppKey'] = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
     }
 
     return Yup.object().shape(fieldsSchema);
@@ -114,7 +114,8 @@ class DeviceKeys extends Component {
           validateOnChange
           validationSchema={this.formikFormSchema}
           onSubmit={
-            (values, { setSubmitting }) => {
+            (castValues, { setSubmitting }) => {
+              const values = this.formikFormSchema().cast(castValues);
               console.log('Submitted values: ', values);
 
               this.onSubmit(values.object.deviceKeys);

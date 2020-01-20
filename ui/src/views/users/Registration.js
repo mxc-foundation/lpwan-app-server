@@ -12,6 +12,9 @@ import Loader from "../../components/Loader";
 import SessionStore from "../../stores/SessionStore";
 import i18n, { packageNS } from '../../i18n';
 
+const regSchema = Yup.object().shape({
+  username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+})
 
 class RegistrationForm extends Component {
   constructor(props) {
@@ -41,13 +44,10 @@ class RegistrationForm extends Component {
       <React.Fragment>
         <Formik
           initialValues={this.state.object}
-          validationSchema={
-            Yup.object().shape({
-              username: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
-            })
-          }
+          validationSchema={regSchema}
           onSubmit={(values) => {
-            this.props.onSubmit({ isVerified: this.state.isVerified, ...values })
+            const castValues = regSchema.cast(values);
+            this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
           }}>
           {({
             handleSubmit,

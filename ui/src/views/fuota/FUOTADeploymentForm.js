@@ -84,21 +84,21 @@ class FUOTADeploymentForm extends Component {
     let fieldsSchema = {
       object: Yup.object().shape({
         // https://regexr.com/4rg3a
-        name: Yup.string()
+        name: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        redundancy: Yup.number()
+        redundancy: Yup.number().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
         unicastTimeout: Yup.string()
           .trim().matches(/^[0-9]*$/, "Requires a number")
           .max(19, 'Requires number less than 19 digits')
           .required(i18n.t(`${packageNS}:tr000431`)),
-        dr: Yup.number()
+        dr: Yup.number().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        frequency: Yup.number()
+        frequency: Yup.number().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        groupType: Yup.string()
+        groupType: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        multicastTimeout: Yup.number()
+        multicastTimeout: Yup.number().trim()
           .required(i18n.t(`${packageNS}:tr000431`))
       })
     }
@@ -131,7 +131,8 @@ class FUOTADeploymentForm extends Component {
           validationSchema={this.formikFormSchema}
           // Formik Nested Schema Example https://codesandbox.io/s/y7q2v45xqx
           onSubmit={
-            (values, { setSubmitting }) => {
+            (castValues, { setSubmitting }) => {
+              const values = this.formikFormSchema().cast(castValues);
               console.log('Submitted values: ', values);
               this.props.onSubmit(values.object);
               setSubmitting(false);
