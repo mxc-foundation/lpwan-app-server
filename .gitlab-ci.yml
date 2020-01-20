@@ -57,9 +57,9 @@ default:
   allow_failure: true
   
 variables:
-  # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
+#  disable when using docker socket locally
 #  DOCKER_HOST: tcp://docker:2376
-#  DOCKER_TLS_CERTDIR: "/certs" #disable when using docker socket locally
+#  DOCKER_TLS_CERTDIR: "/certs" 
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
@@ -101,8 +101,7 @@ buildserver-deploy:
     - cd lpwan-app-server && git checkout $CI_COMMIT_BRANCH && git pull
     - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
     - sed -i "s/DOCKER_USER/$DOCKER_USER/" config && sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
-    - sed -i "s/dockerenv/iamdocker/g" appserver
-    - docker container prune -f
+#    - sed -i "s/dockerenv/iamdocker/g" appserver
     - ./appserver local
   only: #only run on buildserver repo
     - christian/ci/MD-17
