@@ -63,7 +63,7 @@ variables:
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
-qa-build:
+.qa-build:
   stage: build
   image: docker:19.03.1
   services:
@@ -76,7 +76,7 @@ qa-build:
   only:
     - christian/ci/MD-17
 
-qa-release-image:
+.qa-release-image:
   stage: release
   image: docker:19.03.1
   services:
