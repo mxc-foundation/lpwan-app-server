@@ -98,7 +98,7 @@ buildserver-deploy:
   script:
     - rm -rf lpwan-app-server
     - git clone https://deployer:$DEPLOY_TOKEN@gitlab.com/MXCFoundation/cloud/lpwan-app-server.git
-    - cd lpwan-app-server && git fetch && git checkout $CI_COMMIT_REF_SLUG && git pull
+    - cd lpwan-app-server && git fetch && git checkout CI_COMMIT_BRANCH && git pull
     - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
     - sed -i "s/DOCKER_USER/$DOCKER_USER/" config && sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
     - sed -i "s/dockerenv/iamdocker/g" appserver
