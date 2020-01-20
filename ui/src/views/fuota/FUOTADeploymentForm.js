@@ -86,19 +86,19 @@ class FUOTADeploymentForm extends Component {
         // https://regexr.com/4rg3a
         name: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        redundancy: Yup.number().trim()
+        redundancy: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`)),
         unicastTimeout: Yup.string()
           .trim().matches(/^[0-9]*$/, "Requires a number")
           .max(19, 'Requires number less than 19 digits')
           .required(i18n.t(`${packageNS}:tr000431`)),
-        dr: Yup.number().trim()
+        dr: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        frequency: Yup.number().trim()
+        frequency: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`)),
         groupType: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        multicastTimeout: Yup.number().trim()
+        multicastTimeout: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`))
       })
     }

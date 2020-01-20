@@ -133,7 +133,7 @@ class DeviceProfileForm extends Component {
         //   .required(i18n.t(`${packageNS}:tr000431`)),
         name: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        maxEIRP: Yup.number().trim()
+        maxEIRP: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`))
       })
     }
@@ -149,31 +149,31 @@ class DeviceProfileForm extends Component {
     }
 
     if (!this.state.object.supportsJoin) {
-      fieldsSchema.object.fields.rxDelay1 = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`)); 
+      fieldsSchema.object.fields.rxDelay1 = Yup.number().required(i18n.t(`${packageNS}:tr000431`)); 
       fieldsSchema.object._nodes.push("rxDelay1");
-      fieldsSchema.object.fields.rxDROffset1 = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.rxDROffset1 = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("rxDROffset1");
-      fieldsSchema.object.fields.rxDataRate2 = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.rxDataRate2 = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("rxDataRate2");
-      fieldsSchema.object.fields.rxFreq2 = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.rxFreq2 = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("rxFreq2");
       fieldsSchema.object.fields.factoryPresetFreqs = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("factoryPresetFreqs");
-      fieldsSchema.object.fields.classBTimeout = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.classBTimeout = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("classBTimeout");
     }
 
     if (this.state.object.supportsClassB) {
       fieldsSchema.object.fields.pingSlotPeriod = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("pingSlotPeriod");
-      fieldsSchema.object.fields.pingSlotDR = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.pingSlotDR = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("pingSlotDR");
-      fieldsSchema.object.fields.pingSlotFreq = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.pingSlotFreq = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("pingSlotFreq");
     }
 
     if (this.state.object.supportsClassC) {
-      fieldsSchema.object.fields.classCTimeout = Yup.number().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.classCTimeout = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("classCTimeout");
     }
 

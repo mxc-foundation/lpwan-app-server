@@ -96,9 +96,9 @@ class DeviceActivation extends Component {
           nwkSEncKey: Yup.string().trim()
             // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
             .required(i18n.t(`${packageNS}:tr000431`)),
-          fCntUp: Yup.number().trim()
+          fCntUp: Yup.number()
             .required(i18n.t(`${packageNS}:tr000431`)),
-          nFCntDown: Yup.number().trim()
+          nFCntDown: Yup.number()
             .required(i18n.t(`${packageNS}:tr000431`)),
         })
       })
@@ -113,7 +113,7 @@ class DeviceActivation extends Component {
         // .trim().matches(/([A-Fa-f0-9]){32}/, "Must be length 32")
         .required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object.fields.deviceActivation._nodes.push("fNwkSIntKey");
-      fieldsSchema.object.fields.deviceActivation.fields.aFCntDown = Yup.number().trim()
+      fieldsSchema.object.fields.deviceActivation.fields.aFCntDown = Yup.number()
         .required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object.fields.deviceActivation._nodes.push("aFCntDown");
     }
