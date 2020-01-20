@@ -102,7 +102,7 @@ buildserver-deploy:
     - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
     - sed -i "s/DOCKER_USER/$DOCKER_USER/" config && sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
     - sed -i "s/dockerenv/iamdocker/g" appserver
-    - ./appserver local
+    - ./appserver local_database
   only: #only run on buildserver repo
     - christian/ci/MD-17
   tags: #use gitlab runner with buildserver tag
