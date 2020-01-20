@@ -15,7 +15,7 @@ default:
     - go get github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
     - go get github.com/jteeuwen/go-bindata/go-bindata
 
-syntax_test_frontend:
+.syntax_test_frontend:
   image: golang:1.12-alpine
   stage: test
   script:
@@ -28,14 +28,14 @@ syntax_test_frontend:
     expire_in: 1 week
   allow_failure: true
   
-syntax_test_backend:
+.syntax_test_backend:
   image: golang:1.12-alpine
   stage: test
   script:
     - golint -set_exit_status ./...
   allow_failure: true
   
-unit_test_backend:
+.unit_test_backend:
   image: golang:1.12-alpine
   stage: test
   script:
@@ -49,7 +49,7 @@ unit_test_backend:
     expire_in: 1 week
   allow_failure: true
   
-security_test_backend:
+.security_test_backend:
   image: golang:1.12-alpine
   stage: test
   script:
@@ -74,7 +74,7 @@ qa-build:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
   only:
-    - buildserver
+    - christian/ci/MD-17
 
 qa-release-image:
   stage: release
@@ -88,7 +88,7 @@ qa-release-image:
     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
     - docker push $CONTAINER_RELEASE_IMAGE
   only:
-    - buildserver
+    - christian/ci/MD-17
 
 buildserver-deploy:
   stage: deploy
@@ -108,6 +108,6 @@ buildserver-deploy:
     - sed -i "s/dockerenv/iamdocker/g" appserver
     - ./appserver local
   only: #only run on buildserver repo
-    - buildserver
+    - christian/ci/MD-17
   tags: #use gitlab runner with buildserver tag
     - buildserver
