@@ -117,7 +117,7 @@ class ListDeviceProfiles extends Component {
             <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
           </TitleBar>
           <Grid item xs={12}>
-            <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+            <Card className="card-box shadow-sm">
               {this.state.loading && <Loader />}
               <AdvancedTable
                 data={this.state.data}
