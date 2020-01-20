@@ -12,7 +12,7 @@ const fieldsSchema = {
   activeAccount: Yup.string().trim(),
   newAccount: Yup.string().trim(),
   username: Yup.string().trim(),
-  password: Yup.string(),
+  password: Yup.string(), 
 }
 
 class ModifyEthAccountForm extends Component {

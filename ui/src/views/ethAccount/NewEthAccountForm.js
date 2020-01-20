@@ -50,7 +50,7 @@ class NewEthAccountForm extends Component {
     let fieldsSchema = {
       newAccount: Yup.string().trim(),
       username: Yup.string().trim(),
-      password: Yup.string(),
+      password: Yup.string(), 
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
