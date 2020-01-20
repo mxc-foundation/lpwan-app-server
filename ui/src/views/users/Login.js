@@ -19,7 +19,7 @@ const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 
 const loginSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
-  password: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+  password: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
 })
 
 class LoginForm extends Component {
