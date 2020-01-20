@@ -142,7 +142,7 @@ class SettingsForm extends Component {
 
                 <Field
                   type="text"
-                  label={i18n.t(`${packageNS}:menu.settings.withdraw_fee`)}
+                  label={i18n.t(`${packageNS}:menu.withdraw.transaction_fee`)}
                   name="percentageShare"
                   id="percentageShare"
                   value={this.state.object.percentageShare || ""}
