@@ -109,5 +109,5 @@ buildserver-deploy:
     - ./appserver local
   only: #only run on buildserver repo
     - buildserver
-  #tags: #use gitlab runner with buildserver tag
-  #  - buildserver
+  tags: #use gitlab runner with buildserver tag
+    - buildserver
