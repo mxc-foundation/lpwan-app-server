@@ -30,9 +30,6 @@ class CreateGateway extends Component {
       spDialog: false,
       loading: false
     };
-
-    this.onSubmit = this.onSubmit.bind(this);
-    this.redirectToCreateServiceProfile = this.redirectToCreateServiceProfile.bind(this);
   }
 
   componentDidMount() {
@@ -51,10 +48,7 @@ class CreateGateway extends Component {
     });
   }
 
-  onSubmit(gateway) {
-    let gw = gateway;
-    gw.organizationID = this.props.match.params.organizationID;
-
+  onSubmit = (gateway) => {
     GatewayStore.create(gateway, resp => {
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
     });
@@ -111,7 +105,6 @@ class CreateGateway extends Component {
                     match={this.props.match}
                     submitLabel={i18n.t(`${packageNS}:tr000277`)}
                     onSubmit={this.onSubmit}
-                    object={{ name: '', description: '', id: '', location: { altitude: 0 } }}
                   />
                 </div>
               </CardBody>
