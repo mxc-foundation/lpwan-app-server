@@ -1,14 +1,28 @@
 import React from "react";
 import {
-  Button, Col, FormFeedback, FormGroup, FormText, Input, Label, 
-  TabContent, TabPane, Nav, NavItem, NavLink, Row,
+  Button, Col, Collapse, FormFeedback, FormGroup, FormText, Input, Label, 
+  TabContent, TabPane, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Row,
 } from 'reactstrap';
 // Example: https://final-form.org/docs/react-final-form/examples/record-level-validation
 import { Form, Field } from "react-final-form";
 import classnames from 'classnames';
 
+import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import FormComponent from "../../classes/FormComponent";
+
+const localStyles = {};
+
+const styles = {
+  ...localStyles
+};
+
+const tabNames = [
+  i18n.t(`${packageNS}:tr000167`),
+  i18n.t(`${packageNS}:tr000095`),
+  i18n.t(`${packageNS}:tr000104`),
+  i18n.t(`${packageNS}:tr000428`)
+];
 
 const submitButton = (submitting, submitLabel) => {
   return (
@@ -30,8 +44,27 @@ class NetworkServerForm extends FormComponent {
     super();
 
     this.state = {
-      activeTab: '1'
+      activeTab: '0',
+      collapsed: true,
+      height: 0,
+      width: 0
     };
+
+    this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
+  }
+
+  componentWillMount() {
+    // this.updateWindowDimensions();
+    window.addEventListener('resize', this.updateWindowDimensions);
+  }
+  
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateWindowDimensions);
+  }
+  
+  // https://stackoverflow.com/a/42141641/3208553
+  updateWindowDimensions() {
+    this.setState({ width: window.innerWidth, height: window.innerHeight });
   }
 
   toggle = tab => {
@@ -43,13 +76,101 @@ class NetworkServerForm extends FormComponent {
     }
   }
 
+  toggleNavbar = () => {
+    const { collapsed } = this.state;
+    this.setState({
+      collapsed: !collapsed
+    });
+  }
+
   render() {
-    const { activeTab } = this.state;
-    const { onSubmit, submitLabel } = this.props;
+    const { activeTab, collapsed, height, width } = this.state;
+    const { classes, onSubmit, submitLabel } = this.props;
 
     if (this.state.object === undefined) {
       return(null);
     }
+
+    const navbarItems = (format) => {
+      const showVerticalTabs = format === "vertical";
+      const showHorizontalTabs = format === "tabs";
+
+      return (
+        <Nav
+          vertical={showVerticalTabs}
+          tabs={showHorizontalTabs}
+        >
+          <NavItem>
+            <NavLink
+              className={classnames({ active: activeTab === '0' })}
+              onClick={() => {
+                this.toggle('0');
+                if (showVerticalTabs) {
+                  this.toggleNavbar();
+                }
+              }}
+            >
+              {tabNames[0]}
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={classnames({ active: activeTab === '1' })}
+              onClick={() => {
+                this.toggle('1');
+                if (showVerticalTabs) {
+                  this.toggleNavbar();
+                }
+              }}
+            >
+              {tabNames[1]}
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={classnames({ active: activeTab === '2' })}
+              onClick={() => {
+                this.toggle('2');
+                if (showVerticalTabs) {
+                  this.toggleNavbar();
+                }
+              }}
+            >
+              {tabNames[2]}
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink
+              className={classnames({ active: activeTab === '3' })}
+              onClick={() => {
+                this.toggle('3');
+                if (showVerticalTabs) {
+                  this.toggleNavbar();
+                }
+              }}
+            >
+              {tabNames[3]}
+            </NavLink>
+          </NavItem>
+        </Nav>
+      );
+    };
+
+    const navbarTabMenu = (format) => {
+      return (
+        <Navbar color="faded" light>
+          <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
+          <Collapse isOpen={!collapsed} navbar>
+            {navbarItems(format)}
+          </Collapse>
+          <NavbarBrand href="#" className="mr-auto">{tabNames[Number(activeTab)]}</NavbarBrand>
+        </Navbar>
+      );
+    };
+
+    // Show the hamburger menu with vertical list of tab items on smaller screen widths that
+    // otherwise cause the horizontal tabs to wrap across multiple rows
+    const showHamburger = width < 1050;
 
     return(
       <Form
@@ -71,13 +192,12 @@ class NetworkServerForm extends FormComponent {
           routingProfileTLSKey: this.state.object.routingProfileTLSKey
         }}
         validate={values => {
-          console.log('validateForm values/activeTab: ', values);
           if (!values) {
             return {};
           }
           const errors = {};
         
-          if (activeTab == '1') {
+          if (activeTab == '0') {
             if (!values.name) {
               errors.name = "Required";
             }
@@ -85,7 +205,7 @@ class NetworkServerForm extends FormComponent {
               errors.server = "Required";
             }
           }
-          if (activeTab == '2') {
+          if (activeTab == '1') {
             if (values.gatewayDiscoveryEnabled && !values.gatewayDiscoveryInterval) {
               errors.gatewayDiscoveryInterval = "Required";
             }
@@ -101,42 +221,9 @@ class NetworkServerForm extends FormComponent {
         }}
         render={({ handleSubmit, form, submitting, pristine, values }) => (
           <form onSubmit={handleSubmit}>
-            <Nav tabs>
-              <NavItem>
-                <NavLink
-                  className={classnames({ active: activeTab === '1' })}
-                  onClick={() => { this.toggle('1'); }}
-                >
-                  {i18n.t(`${packageNS}:tr000167`)}
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  className={classnames({ active: activeTab === '2' })}
-                  onClick={() => { this.toggle('2'); }}
-                >
-                  {i18n.t(`${packageNS}:tr000095`)}
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  className={classnames({ active: activeTab === '3' })}
-                  onClick={() => { this.toggle('3'); }}
-                >
-                  {i18n.t(`${packageNS}:tr000104`)}
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink
-                  className={classnames({ active: activeTab === '4' })}
-                  onClick={() => { this.toggle('4'); }}
-                >
-                  {i18n.t(`${packageNS}:tr000428`)}
-                </NavLink>
-              </NavItem>
-            </Nav>
+            { showHamburger ? navbarTabMenu("vertical") : navbarItems("tabs") }
             <TabContent activeTab={activeTab}>
-              <TabPane tabId="1">
+              <TabPane tabId="0">
                 <Row>
                   <Col sm="12">
                     <FormGroup row>
@@ -215,11 +302,9 @@ class NetworkServerForm extends FormComponent {
                   </Col>
                 </Row>
               </TabPane>
-              <TabPane tabId="2">
+              <TabPane tabId="1">
                 <Row>
                   <Col sm="12">
-                    <h5>{i18n.t(`${packageNS}:tr000095`)}</h5>
-                    <br />
                     <FormGroup check>      
                       <Field name="gatewayDiscoveryEnabled" type="checkbox">
                         {({ input, meta }) => (
@@ -340,7 +425,7 @@ class NetworkServerForm extends FormComponent {
                   </Col>
                 </Row>
               </TabPane>
-              <TabPane tabId="3">
+              <TabPane tabId="2">
                 <Row>
                   <Col sm="12">
                     <h5>{i18n.t(`${packageNS}:tr000105`)}</h5>
@@ -408,7 +493,7 @@ class NetworkServerForm extends FormComponent {
                   </Col>
                 </Row>
               </TabPane>
-              <TabPane tabId="4">
+              <TabPane tabId="3">
                 <Row>
                   <Col sm="12">
                     <h5>{i18n.t(`${packageNS}:tr000427`)}</h5>
@@ -484,4 +569,4 @@ class NetworkServerForm extends FormComponent {
   }
 }
 
-export default NetworkServerForm;
+export default withStyles(styles)(NetworkServerForm);
