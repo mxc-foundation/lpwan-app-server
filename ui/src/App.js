@@ -68,6 +68,8 @@ import DeviceProfileLayout from "./views/device-profiles/DeviceProfileLayout";
 import ListGateways from "./views/gateways/ListGateways";
 import GatewayLayout from "./views/gateways/GatewayLayout";
 import CreateGateway from "./views/gateways/CreateGateway";
+import BrandSelect from "./views/gateways/BrandSelect";
+import EnterSerialNum from "./views/gateways/EnterSerialNum";
 
 // applications
 import ListApplications from "./views/applications/ListApplications";
@@ -236,6 +238,8 @@ class LoggedInRoutes extends Component {
         <Route path="/organizations/:organizationID(\d+)/device-profiles/:deviceProfileID([\w-]{36})" component={DeviceProfileLayout} />
 
         <Route exact path="/organizations/:organizationID(\d+)/gateways/create" component={CreateGateway} />
+        <Route exact path="/organizations/:organizationID(\d+)/gateways/brand" component={BrandSelect} />
+        <Route exact path="/organizations/:organizationID(\d+)/gateways/input-serial" component={EnterSerialNum} />
         <Route path="/organizations/:organizationID(\d+)/gateways/:gatewayID([\w]{16})" component={GatewayLayout} />
         <Route path="/organizations/:organizationID(\d+)/gateways" component={ListGateways} />
 
