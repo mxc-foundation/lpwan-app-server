@@ -2,7 +2,6 @@ stages:
   - test
   - build
   - release
-  - deploy
 
 default:
   before_script:
@@ -21,33 +20,20 @@ syntax_test_frontend:
   script:
     - cd ui
     - npm install
+    - npm audit fix
     - npm run test
-  artifacts:
-    paths:
-      - /root/.npm/_logs/*
-    expire_in: 1 week
   allow_failure: true
-  
+  except:
+    - buildserver
+
 syntax_test_backend:
   image: golang:1.12-alpine
   stage: test
   script:
     - golint -set_exit_status ./...
   allow_failure: true
-  
-unit_test_backend:
-  image: golang:1.12-alpine
-  stage: test
-  script:
-    - export CGO_ENABLED=0
-    - export GO_EXTRA_BUILD_ARGS="-a -installsuffix cgo"
-    - "go test -timeout 60s -covermode=count -coverprofile count.out ./..."
-    - "go tool cover -html=count.out -o coverage.html"
-  artifacts:
-    paths:
-      - coverage.html
-    expire_in: 1 week
-  allow_failure: true
+  except:
+    - buildserver
   
 security_test_backend:
   image: golang:1.12-alpine
@@ -55,15 +41,14 @@ security_test_backend:
   script:
     - gosec ./...
   allow_failure: true
+  except:
+    - buildserver
   
 variables:
-  # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
-  DOCKER_HOST: tcp://docker:2376
-  DOCKER_TLS_CERTDIR: "/certs"
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
-qa-build:
+build_branch_image:
   stage: build
   image: docker:19.03.1
   services:
@@ -74,9 +59,9 @@ qa-build:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
   only:
-    - buildserver
+    - merge_requests
 
-qa-release-image:
+build_latest_image:
   stage: release
   image: docker:19.03.1
   services:
@@ -89,25 +74,5 @@ qa-release-image:
     - docker push $CONTAINER_RELEASE_IMAGE
   only:
     - buildserver
-
-buildserver-deploy:
-  stage: deploy
-  image: docker:stable
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - apk add --no-cache git make bash openssh-client python py3-pip gcc python3-dev libffi-dev musl-dev openssl-dev
-    - pip3 install docker-compose
-    - docker-compose version
-    - docker version
-    - rm -rf lpwan-app-server
-    - git clone https://deployer:$DEPLOY_TOKEN@gitlab.com/MXCFoundation/cloud/lpwan-app-server.git
-    - cd lpwan-app-server && git fetch && git checkout buildserver && git pull
-    - sed -i "s/SUPERNODE_MODE=development/SUPERNODE_MODE=testing/" config
-    - sed -i "s/DOCKER_USER/$DOCKER_USER/" config && sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
-    - sed -i "s/dockerenv/iamdocker/g" appserver
-    - ./appserver local
-  only: #only run on buildserver repo
+  tags:
     - buildserver
-  #tags: #use gitlab runner with buildserver tag
-  #  - buildserver
