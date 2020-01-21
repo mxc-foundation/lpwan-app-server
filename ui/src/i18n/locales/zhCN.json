@@ -621,7 +621,9 @@
       "learn_more": "更多信息",
       "amount": "量",
       "confirm": "确认",
-      "control_panel": "控制面板"
+      "control_panel": "控制面板",
+      "back": "回去",
+      "submit": "完成了"
     },
     "system_settings": {
       "system_settings": "系统设定"

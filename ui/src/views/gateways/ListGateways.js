@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { withRouter, Route, Switch, Link } from "react-router-dom";
 
+import BrandSelectModal from "./BrandSelectModal";
 import moment from "moment";
 import { Bar } from "react-chartjs-2";
 import { Map, Marker, Popup } from 'react-leaflet';
@@ -298,7 +299,9 @@ class ListGateways extends Component {
     this.switchToList = this.switchToList.bind(this);
     this.locationToTab = this.locationToTab.bind(this);
     this.state = {
-      viewMode: 'list'
+      viewMode: 'list',
+      nsDialog: false, 
+      setModal: false
     };
   }
 
@@ -312,25 +315,50 @@ class ListGateways extends Component {
     }
   }
 
+  showModal = () => {
+    const object = this.state;
+    object.nsDialog = true;
+    this.setState({ object });
+  }
+  
+  toggle = () => {
+    const object = this.state;
+    object.nsDialog = !object.nsDialog;
+    this.setState({ object });
+  }
+
+  handleCloseModal = () => {
+    const object = this.state;
+    object.nsDialog = null;
+    this.setState({
+      object
+    })
+  }
   /**
    * Switch to list
    */
   switchToList() {
     this.setState({ viewMode: 'list' });
   }
-
+  
   render() {
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (<React.Fragment>
+      
       <TitleBar
         buttons={<GatewayAdmin organizationID={this.props.match.params.organizationID}>
+          
+          {/* <BrandSelectModal
+          buttonLabel={i18n.t(`${packageNS}:tr000277`)}
+          callback={this.handleLink} /> */}
           <TitleBarButton
             key={1}
             label={i18n.t(`${packageNS}:tr000277`)}
             icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-            to={`/organizations/${this.props.match.params.organizationID}/gateways/create`}
+            onClick={this.toggle}
+            to={`/organizations/${this.props.match.params.organizationID}/gateways/brand`}
           />
         </GatewayAdmin>}
       >
