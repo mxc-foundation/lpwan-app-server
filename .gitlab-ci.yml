@@ -21,6 +21,14 @@ syntax_test_frontend:
     - cd ui
     - npm install
     - npm run test
+    - npm audit fix
+  allow_failure: true
+
+syntax_test_backend:
+  image: golang:1.12-alpine
+  stage: test
+  script:
+    - golint -set_exit_status ./...
   allow_failure: true
   
 security_test_backend:
