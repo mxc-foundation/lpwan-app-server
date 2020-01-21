@@ -42,12 +42,6 @@ const CHART_DATA_CONFIG = {
   ],
 };
 
-/*
-FIXME - this link is shown at http://localhost:3000/#/organizations/2/applications/3,
-so shouldn't it have url /organizations/2/applications/3/devices 
-FIXME - make the link dynamic depending on whether or not the device is associated with
-an application or not.
-*/
 const DeviceNameColumn = (cell, row, index, extraData) => {
   const currentOrgID = extraData['currentOrgID'];
   const currentApplicationID = extraData['currentApplicationID'];
