@@ -74,5 +74,5 @@ build_latest_image:
     - docker push $CONTAINER_RELEASE_IMAGE
   only:
     - buildserver
-  tag:
+  tags:
     - buildserver
