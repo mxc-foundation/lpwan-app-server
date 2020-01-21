@@ -52,6 +52,8 @@ build_branch_image:
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
+  only:
+    - merge_requests
 
 build_latest_image:
   stage: release
