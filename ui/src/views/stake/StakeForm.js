@@ -361,7 +361,10 @@ class StakeForm extends Component {
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.confirm}>
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.confirm({ ...castValues })
+          }}>
           {({
             handleSubmit,
             handleChange,

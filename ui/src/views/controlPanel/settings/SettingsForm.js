@@ -87,10 +87,10 @@ class SettingsForm extends Component {
     }
 
     let fieldsSchema = {
-      withdrawFee: Yup.string(),
-      downlinkPrice: Yup.string(),
-      percentageShare: Yup.string(),
-      lbWarning: Yup.string(),
+      withdrawFee: Yup.string().trim(),
+      downlinkPrice: Yup.string().trim(),
+      percentageShare: Yup.string().trim(),
+      lbWarning: Yup.string().trim(),
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
@@ -101,7 +101,10 @@ class SettingsForm extends Component {
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.props.onSubmit}>
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.props.onSubmit({ ...castValues })
+          }}>
           {({
             handleSubmit,
             handleChange,

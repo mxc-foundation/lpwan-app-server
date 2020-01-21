@@ -91,15 +91,15 @@ function Decode(fPort, bytes) {
     let fieldsSchema = {
       name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
         .required(i18n.t(`${packageNS}:tr000431`)),
-      description: Yup.string()
+      description: Yup.string().trim()
         .required(i18n.t(`${packageNS}:tr000431`)),
-      serviceProfileID: Yup.string()
+      serviceProfileID: Yup.string().trim()
         .required(i18n.t(`${packageNS}:tr000431`)),
     }
-
+    
     if (!this.props.update) {
-      fieldsSchema['name'] = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
-      fieldsSchema['serviceProfileID'] = Yup.string();
+      fieldsSchema['name'] = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema['serviceProfileID'] = Yup.string().trim();
     }
     const formSchema = Yup.object().shape(fieldsSchema);
 
@@ -108,8 +108,10 @@ function Decode(fPort, bytes) {
         <Formik
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.props.onSubmit}
-        >
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.props.onSubmit({ ...castValues })
+          }}>
           {
             ({
               handleSubmit,
