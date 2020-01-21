@@ -23,6 +23,8 @@ syntax_test_frontend:
     - npm run test
     - npm audit fix
   allow_failure: true
+  except:
+    - buildserver
 
 syntax_test_backend:
   image: golang:1.12-alpine
@@ -30,6 +32,8 @@ syntax_test_backend:
   script:
     - golint -set_exit_status ./...
   allow_failure: true
+  except:
+    - buildserver
   
 security_test_backend:
   image: golang:1.12-alpine
@@ -37,6 +41,8 @@ security_test_backend:
   script:
     - gosec ./...
   allow_failure: true
+  except:
+    - buildserver
   
 variables:
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
