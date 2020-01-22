@@ -61,6 +61,7 @@ build_branch_image:
     - docker push $CONTAINER_TEST_IMAGE
   only:
     - merge_requests
+    - buildserver
 
 build_latest_image:
   stage: release
