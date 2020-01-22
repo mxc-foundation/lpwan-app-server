@@ -49,14 +49,14 @@ class UserForm extends Component {
         // FIXME - get validation for email format to work
         // email: Yup.string().trim().matches(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, i18n.t(`${packageNS}:tr000455`))
         //   .required(i18n.t(`${packageNS}:tr000431`))
-        email: Yup.string()
+        email: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`))
       })
     }
 
     // Update
     if (this.props.update) {
-      fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.id = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("id");
     }
 
@@ -104,7 +104,8 @@ class UserForm extends Component {
           validationSchema={this.formikFormSchema}
           // Formik Nested Schema Example https://codesandbox.io/s/y7q2v45xqx
           onSubmit={
-            (values, { setSubmitting }) => {
+            (castValues, { setSubmitting }) => {
+              const values = this.formikFormSchema().cast(castValues);
               console.log('Submitted values: ', values);
 
               let newValues;

@@ -555,7 +555,10 @@
       "status": "Status",
       "downlink_price": "Downlink Price",
       "mode": "Mode",
-      "filter": "Filter"
+      "filter": "Filter",
+      "choose_a_manufacturer" : "Choose a Manufacturer",
+      "other": "Other",
+      "enter_your_gateway_serial_number": "Enter Your Gateway Serial Number"
     },
     "staking": {
       "staking": "Staking",
@@ -655,7 +658,10 @@
       "learn_more": "LEARN MORE",
       "amount": "Amount",
       "confirm": "CONFIRM",
-      "control_panel": "Control Panel"
+      "control_panel": "Control Panel",
+      "back": "Back",
+      "submit": "Submit",
+      "cancel": "Cancel"
     },
     "system_settings": {
       "system_settings": "System Fees"

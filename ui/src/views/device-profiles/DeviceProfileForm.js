@@ -131,7 +131,7 @@ class DeviceProfileForm extends Component {
         // https://regexr.com/4rg3a
         // name: Yup.string().trim().matches(/^[0-9A-Za-z-]*$/g, i18n.t(`${packageNS}:tr000429`))
         //   .required(i18n.t(`${packageNS}:tr000431`)),
-        name: Yup.string()
+        name: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
         maxEIRP: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`))
@@ -139,12 +139,12 @@ class DeviceProfileForm extends Component {
     }
 
     if (this.props.update) {
-      fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.id = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("id");
     }
 
     if (!this.props.update) {
-      fieldsSchema.object.fields.networkServerID = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.networkServerID = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("networkServerID");
     }
 
@@ -157,14 +157,14 @@ class DeviceProfileForm extends Component {
       fieldsSchema.object._nodes.push("rxDataRate2");
       fieldsSchema.object.fields.rxFreq2 = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("rxFreq2");
-      fieldsSchema.object.fields.factoryPresetFreqs = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.factoryPresetFreqs = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("factoryPresetFreqs");
       fieldsSchema.object.fields.classBTimeout = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("classBTimeout");
     }
 
     if (this.state.object.supportsClassB) {
-      fieldsSchema.object.fields.pingSlotPeriod = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.pingSlotPeriod = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("pingSlotPeriod");
       fieldsSchema.object.fields.pingSlotDR = Yup.number().required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("pingSlotDR");
@@ -273,7 +273,8 @@ function Decode(fPort, bytes) {
           validationSchema={this.formikFormSchema}
           // Formik Nested Schema Example https://codesandbox.io/s/y7q2v45xqx
           onSubmit={
-            (values, { setSubmitting }) => {
+            (castValues, { setSubmitting }) => {
+              const values = this.formikFormSchema().cast(castValues);
               console.log('Submitted values: ', values);
 
               let newValues = clone(values);
