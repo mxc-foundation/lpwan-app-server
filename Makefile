@@ -36,7 +36,9 @@ snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
 
 ui/build:
-	@echo "Building ui"
+	@echo "Running npm audit fix"
+	@cd ui && npm audit fix
+	@echo "BUilding ui"
 	@cd ui && npm run build
 	@mv ui/build/* static
 
