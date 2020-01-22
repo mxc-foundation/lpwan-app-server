@@ -110,8 +110,7 @@ class ApplicationFUOTADeploymentTabs extends Component {
                   <span>&nbsp;&nbsp;Information</span>
                 </NavLink>
               </NavItem>
-              {/* FIXME - temporarily allow any user to access for debugging purposes */}
-              {/* {admin && */}
+              {admin &&
                 <NavItem>
                   <NavLink
                     active={activeMainTabAppIndex === 1}
@@ -123,7 +122,7 @@ class ApplicationFUOTADeploymentTabs extends Component {
                     <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000278`)}</span>
                   </NavLink>
                 </NavItem>
-              {/* } */}
+              }
             </Nav>
             <TabContent className={this.props.classes.tabContent} activeTab={activeMainTabAppIndex}>
               <TabPane tabId={0}>
