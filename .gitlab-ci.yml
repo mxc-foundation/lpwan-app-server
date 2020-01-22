@@ -59,24 +59,9 @@ build_branch_image:
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
-  rules:
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "buildserver"'
-      when: always
-
-.build_latest_image: #disalbing for now as latest tag is not used yet
-  stage: release
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
   only:
     - buildserver
-
+    
 trigger_build:
   stage: deploy
   image: alpine:latest
