@@ -59,11 +59,11 @@ build_branch_image:
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
-  only:
-    - merge_requests
-    - buildserver
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "buildserver"'
+      when: always
 
-build_latest_image:
+.build_latest_image: #disalbing for now as latest tag is not used yet
   stage: release
   image: docker:19.03.1
   services:
