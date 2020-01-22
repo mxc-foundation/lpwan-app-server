@@ -2,6 +2,7 @@ stages:
   - test
   - build
   - release
+  - deploy
 
 default:
   before_script:
@@ -75,4 +76,11 @@ build_latest_image:
   only:
     - buildserver
   tags:
+    - buildserver
+
+trigger_build:
+  stage: deploy
+  script:
+    - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=REF_NAME https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+  only:
     - buildserver
