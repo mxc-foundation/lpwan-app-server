@@ -37,7 +37,7 @@ snapshot: ui/build internal/statics internal/migrations
 
 ui/build:
 	@echo "Building ui"
-	@cd ui && npm run build
+	@cd ui && npm audit fix && npm run build
 	@mv ui/build/* static
 
 ui/build_dep:
