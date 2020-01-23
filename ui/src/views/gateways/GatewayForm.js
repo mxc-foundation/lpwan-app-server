@@ -85,7 +85,7 @@ class GatewayForm extends Component {
   //   return asObject;
   // }
 
-  setKVArrayVariables = () => {
+  setKVArrayBoards = () => {
     if (this.props.object && !Array.isArray(this.props.object.boards)) {
       return;
     }
