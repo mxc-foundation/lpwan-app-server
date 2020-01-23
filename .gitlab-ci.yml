@@ -59,9 +59,6 @@ build_branch_image:
 
 trigger_build:
   stage: deploy
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache curl
   script:
     - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=buildserver https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
