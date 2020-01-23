@@ -26,6 +26,8 @@ syntax_test_frontend:
   allow_failure: true
   only:
     - buildserver
+  tags:
+    - buildserver
 
 syntax_test_backend:
   image: golang:1.12-alpine
@@ -35,6 +37,8 @@ syntax_test_backend:
   allow_failure: true
   only:
     - buildserver
+  tags:
+    - buildserver
   
 security_test_backend:
   image: golang:1.12-alpine
@@ -43,6 +47,8 @@ security_test_backend:
     - gosec ./...
   allow_failure: true
   only:
+    - buildserver
+  tags:
     - buildserver
   
 variables:
@@ -61,6 +67,8 @@ build_branch_image:
     - docker push $CONTAINER_TEST_IMAGE
   only:
     - buildserver
+  tags:
+    - buildserver
 
 trigger_build:
   stage: deploy
@@ -70,4 +78,6 @@ trigger_build:
   script:
     - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=buildserver https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
+    - buildserver
+  tags:
     - buildserver
