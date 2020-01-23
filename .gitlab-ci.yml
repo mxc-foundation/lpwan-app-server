@@ -1,10 +1,8 @@
 stages:
-  - test
   - build
-  - release
   - deploy
 
-syntax_test_frontend:
+.syntax_test_frontend:
   image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
   stage: test
   script:
@@ -18,7 +16,7 @@ syntax_test_frontend:
   tags:
     - buildserver
 
-syntax_test_backend:
+.syntax_test_backend:
   image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
   stage: test
   script:
@@ -29,7 +27,7 @@ syntax_test_backend:
   tags:
     - buildserver
   
-security_test_backend:
+.security_test_backend:
   image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
   stage: test
   script:
