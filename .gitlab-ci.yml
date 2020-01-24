@@ -40,9 +40,10 @@ stages:
   
 variables:
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CONTAINER_DEVBRANCH_IMAGE: $CI_REGISTRY_IMAGE:dev
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
-build_branch_image:
+build_buildserver_branch_image:
   stage: build
   image: docker:19.03.1
   services:
@@ -54,6 +55,36 @@ build_branch_image:
     - docker push $CONTAINER_TEST_IMAGE
   only:
     - buildserver
+  tags:
+    - buildserver
+
+build_develop_branch_image:
+  stage: build
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script: 
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build --pull -t $CONTAINER_DEVBRANCH_IMAGE .
+    - docker push $CONTAINER_DEVBRANCH_IMAGE
+  only:
+    - develop
+  tags:
+    - buildserver
+
+build_master_branch_image:
+  stage: build
+  image: docker:19.03.1
+  services:
+    - docker:19.03.1-dind
+  before_script: 
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build --pull -t $CONTAINER_RELEASE_IMAGE .
+    - docker push $CONTAINER_RELEASE_IMAGE
+  only:
+    - master
   tags:
     - buildserver
 
