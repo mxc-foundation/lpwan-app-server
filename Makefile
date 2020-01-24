@@ -39,7 +39,6 @@ ui/build_dep:
 	@echo "Building node-sass"
 	@cd ui/node_modules/node-sass/ && npm install && npm run build
 
-
 ui/build:
 	@echo "BUilding ui"
 	@cd ui && npm run build
