@@ -8,7 +8,7 @@ ENV GO_EXTRA_BUILD_ARGS="-a -installsuffix cgo"
 COPY . $PROJECT_PATH
 WORKDIR $PROJECT_PATH
 
-RUN make clean ui/build_dep ui/build build
+RUN make clean ui/build build
 
 FROM alpine:latest AS production
 

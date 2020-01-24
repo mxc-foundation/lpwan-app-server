@@ -1,22 +1,9 @@
 stages:
-  - test
   - build
-  - release
   - deploy
 
-default:
-  before_script:
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get -u golang.org/x/lint/golint
-    - go get github.com/securego/gosec/cmd/gosec
-    - go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-    - go get github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-    - go get github.com/golang/protobuf/protoc-gen-go
-    - go get github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
-    - go get github.com/jteeuwen/go-bindata/go-bindata
-
-syntax_test_frontend:
-  image: golang:1.12-alpine
+.syntax_test_frontend:
+  image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
   stage: test
   script:
     - cd ui
@@ -24,25 +11,31 @@ syntax_test_frontend:
     - npm audit fix
     - npm run test
   allow_failure: true
-  except:
+  only:
+    - buildserver
+  tags:
     - buildserver
 
-syntax_test_backend:
-  image: golang:1.12-alpine
+.syntax_test_backend:
+  image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
   stage: test
   script:
     - golint -set_exit_status ./...
   allow_failure: true
-  except:
+  only:
+    - buildserver
+  tags:
     - buildserver
   
-security_test_backend:
-  image: golang:1.12-alpine
+.security_test_backend:
+  image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
   stage: test
   script:
     - gosec ./...
   allow_failure: true
-  except:
+  only:
+    - buildserver
+  tags:
     - buildserver
   
 variables:
@@ -60,20 +53,6 @@ build_branch_image:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
   only:
-    - merge_requests
-
-build_latest_image:
-  stage: release
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
-  only:
     - buildserver
   tags:
     - buildserver
@@ -81,6 +60,8 @@ build_latest_image:
 trigger_build:
   stage: deploy
   script:
-    - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=REF_NAME https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+    - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=buildserver https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
+    - buildserver
+  tags:
     - buildserver
