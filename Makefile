@@ -38,6 +38,8 @@ snapshot: ui/build internal/statics internal/migrations
 ui/build_dep:
 	@echo "Building node-sass"
 	@cd ui/node_modules/node-sass/ && npm install && npm run build
+	@echo "Running npm audit fix"
+	@cd ui && npm audit fix
 
 ui/build:
 	@echo "BUilding ui"
@@ -76,8 +78,6 @@ dev-requirements:
 ui-requirements:
 	@echo "Installing UI requirements"
 	@cd ui && npm install
-	@echo "Running npm audit fix"
-	@cd ui && npm audit fix
 
 serve: build
 	@echo "Starting LPWAN App Server"
