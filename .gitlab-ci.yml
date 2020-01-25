@@ -72,19 +72,10 @@ build_master_branch_image:
   tags:
     - buildserver
 
-deploy_supernode:
-  type: deploy
-  image: mxcdocker/dockercompose
+trigger_qa_deploy:
+  stage: deploy
   script:
-    - sed -i "s/DOCKER_USER/$DOCKER_USER/" config
-    - sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
-    - sed -i "s/DBUSER/$DBUSER/" configuration/*/*.toml
-    - sed -i "s/DBPASS/$DBPASS/" configuration/*/*.toml
-    - sed -i "s/DBNAME/$DBNAME/" configuration/*/*.toml
-      #- ./docker-backup generate
-      #  - ./docker-rm-all
-      #- ./docker-backup recover
-    - ./mxp-supernode
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
     - christian/ci/MD-17
   tags:
