@@ -1,4 +1,5 @@
 stages:
+  - test
   - build
   - deploy
 
@@ -9,6 +10,7 @@ variables:
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   CONTAINER_DEVBRANCH_IMAGE: $CI_REGISTRY_IMAGE:dev
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+
 
 build_buildserver_branch_image:
   stage: build
@@ -40,20 +42,20 @@ build_master_branch_image:
   tags:
     - buildserver
 
-trigger_buildserver_deploy:
-  stage: deploy
+deploy_supernode:
+  type: deploy
+  image: mxcdocker/dockercompose
   script:
-    - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=buildserver https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+    - sed -i "s/DOCKER_USER/$DOCKER_USER/" config
+    - sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
+    - sed -i "s/DBUSER/$DBUSER/" configuration/*/*.toml
+    - sed -i "s/DBPASS/$DBPASS/" configuration/*/*.toml
+    - sed -i "s/DBNAME/$DBNAME/" configuration/*/*.toml
+      #- ./docker-backup generate
+      #  - ./docker-rm-all
+      #- ./docker-backup recover
+    - ./mxp-supernode
   only:
-    - buildserver
+    - christian
   tags:
-    - buildserver
-
-trigger_test_server_deploy:
-  stage: deploy
-  script:
-    - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=test.cloud.mxc.org https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
-  only:
-    - develop
-  tags:
-    - buildserver
+    - debi
