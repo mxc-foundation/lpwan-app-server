@@ -13,9 +13,6 @@ syntax_test_backend:
     - buildserver
     - master
     - develop
-
-before_script: 
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     
 variables:
   CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -24,6 +21,8 @@ variables:
 
 build_buildserver_branch_image:
   stage: build
+  before_script: 
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
@@ -34,6 +33,8 @@ build_buildserver_branch_image:
 
 build_develop_branch_image:
   stage: build
+  before_script: 
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build --pull -t $CONTAINER_DEVBRANCH_IMAGE .
     - docker push $CONTAINER_DEVBRANCH_IMAGE
@@ -44,6 +45,8 @@ build_develop_branch_image:
 
 build_master_branch_image:
   stage: build
+  before_script: 
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - docker build --pull -t $CONTAINER_RELEASE_IMAGE .
     - docker push $CONTAINER_RELEASE_IMAGE
