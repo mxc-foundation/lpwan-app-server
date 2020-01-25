@@ -86,6 +86,6 @@ deploy_supernode:
       #- ./docker-backup recover
     - ./mxp-supernode
   only:
-    - christian
+    - christian/ci/MD-17
   tags:
     - debi
