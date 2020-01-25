@@ -6,6 +6,8 @@ stages:
 syntax_test_backend:
   image: golang:1.12-alpine
   stage: test
+  before_script: 
+    - go get -u golang.org/x/lint/golint
   script:
     - golint -set_exit_status ./...
   allow_failure: true
