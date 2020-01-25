@@ -79,6 +79,6 @@ trigger_qa_deploy:
   script:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
-    - christian/ci/MD-17
+    - buildserver
   tags:
-    - debi
+    - buildserver
