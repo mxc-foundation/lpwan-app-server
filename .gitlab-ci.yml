@@ -11,6 +11,16 @@ variables:
   CONTAINER_DEVBRANCH_IMAGE: $CI_REGISTRY_IMAGE:dev
   CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
 
+syntax_test_backend:
+  image: golang:1.12-alpine
+  stage: test
+  script:
+    - golint -set_exit_status ./...
+  allow_failure: true
+  except:
+    - buildserver
+    - master
+    - develop
 
 build_buildserver_branch_image:
   stage: build
