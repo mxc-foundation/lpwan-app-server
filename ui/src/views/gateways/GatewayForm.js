@@ -261,7 +261,7 @@ class GatewayForm extends Component {
 
   formikFormSchema = () => {
     let fieldsSchema = {
-      object: Yup.object().shape({
+      // object: Yup.object().shape({
         name: Yup.string() //.trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
           .required(i18n.t(`${packageNS}:tr000431`)),
         description: Yup.string()
@@ -272,21 +272,26 @@ class GatewayForm extends Component {
         discoveryEnabled: Yup.bool(),
         location: Yup.object().shape({
           altitude: Yup.number()
-            .required(i18n.t(`${packageNS}:tr000431`)),
-          accuracy: Yup.number()
-            .required(i18n.t(`${packageNS}:tr000431`)),
-          source: Yup.string()
             .required(i18n.t(`${packageNS}:tr000431`))
+          /* accuracy: Yup.number()
+            .required(i18n.t(`${packageNS}:tr000431`)), 
+          source: Yup.string()
+            .required(i18n.t(`${packageNS}:tr000431`))*/
         })
-      })
+      // })
     }
 
     if (this.props.update) {
-      fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
-      fieldsSchema.object._nodes.push("id");
+      fieldsSchema = {
+        ...fieldsSchema,
+        id: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
+        networkServerID: Yup.string()
+      }
+      // fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      // fieldsSchema.object._nodes.push("id");
 
-      fieldsSchema.object.fields.networkServerID = Yup.string();
-      fieldsSchema.object._nodes.push("networkServerID");
+      // fieldsSchema.object.fields.networkServerID = Yup.string();
+      // fieldsSchema.object._nodes.push("networkServerID");
     }
 
     return Yup.object().shape(fieldsSchema);
@@ -311,7 +316,8 @@ class GatewayForm extends Component {
     } else {
       position = [0, 0];
     }
-
+// console.log(object.discoveryEnabled);
+const discoveryEnabled = object.discoveryEnabled;
     return (
       <React.Fragment>
         <Row>
@@ -320,24 +326,16 @@ class GatewayForm extends Component {
               enableReinitialize
               initialValues={
                 {
-                  object: {
                     id: object.id || undefined,
                     name: object.name || '',
                     description: object.description || '',
-                    location: {
-                      altitude: 0.0,
-                      latitude: 0.0,
-                      longitude: 0.0,
-                      source: "UNKNOWN",
-                      accuracy: 0
-                    },
-                    discoveryEnabled: object.discoveryEnabled || false,
+                    discoveryEnabled: object.discoveryEnabled,
+                    location: object.location,
                     gatewayProfileID: object.gatewayProfileID || '',
                     networkServerID: object.networkServerID || '',
                     boards: (
                       (object.boards !== undefined && object.boards.length > 0 && object.boards) || []
                     ),
-                  }
                 }
               }
               validateOnBlur
@@ -362,13 +360,13 @@ class GatewayForm extends Component {
                     // newValues.object.boards = [{ fpgaID: "9999999999999999", fineTimestampKey: "99999999999999999999999999999999"}];
                   // }
 
-                  newValues.object.organizationID = currentOrgID;
+                  newValues.organizationID = currentOrgID;
                   // delete newValues.object.location.source;
                   // delete newValues.object.location.accuracy;
                   
                   console.log('Prepared values: ', newValues);
 
-                  this.props.onSubmit(newValues.object);
+                  this.props.onSubmit(newValues);
                   setSubmitting(false);
                 }
               }
@@ -390,6 +388,7 @@ class GatewayForm extends Component {
                     validateForm,
                     values
                   } = props;
+                  // errors && console.error('validation errors', errors);
                   return (
                     <Form onSubmit={handleSubmit} noValidate>
                       {isLoading && <Loader light />}
@@ -398,57 +397,57 @@ class GatewayForm extends Component {
                         <>
                           <Field
                             id="networkServerID"
-                            name="object.networkServerID"
+                            name="networkServerID"
                             type="text"
-                            value={values.object.networkServerID}
+                            value={values.networkServerID}
                             onChange={this.onNetworkSelect}
                             onBlur={handleBlur}
                             label={i18n.t(`${packageNS}:tr000047`)}
                             helpText={i18n.t(`${packageNS}:tr000223`)}
-                            // value={values.object.networkServerID}
+                            // value={values.networkServerID}
                             // getOption={this.getNetworkServerOption}
                             getOptions={this.getNetworkServerOptions}
                             // Hack: we want to trigger Gateway Profild ID list to populate
                             // whenever the Network Server ID changes
-                            setFieldValue={() => setFieldValue("object.gatewayProfileID", "0", false)}
+                            setFieldValue={() => setFieldValue("gatewayProfileID", "0", false)}
                             inputProps={{
                               clearable: true,
                               cache: false,
                             }}
                             component={AsyncAutoComplete}
                             className={
-                              errors.object && errors.object.networkServerID
+                              errors && errors.networkServerID
                                 ? 'is-invalid form-control'
                                 : ''
                             }
                           />
                           {
-                            errors.object && errors.object.networkServerID
+                            errors && errors.networkServerID
                               ? (
                                 <div
                                   className="invalid-feedback"
                                   style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                                 >
-                                  {errors.object.networkServerID}
+                                  {errors.networkServerID}
                                 </div>
                               ) : null
                           }
                         </>
                       }
 
-                      {values.object.networkServerID &&
+                      {values.networkServerID &&
                         <>
                           <Field
                             id="gatewayProfileID"
-                            name="object.gatewayProfileID"
+                            name="gatewayProfileID"
                             type="text"
-                            value={values.object.gatewayProfileID}
+                            value={values.gatewayProfileID}
                             // onChange={handleChange}
                             onChange={this.onGatewayProfileSelect}
                             onBlur={handleBlur}
                             label={i18n.t(`${packageNS}:tr000224`)}
                             helpText={i18n.t(`${packageNS}:tr000227`)}
-                            // value={values.object.gatewayProfileID}
+                            // value={values.gatewayProfileID}
                             getOption={this.getGatewayProfileOption}
                             getOptions={this.getGatewayProfileOptions}
                             setFieldValue={setFieldValue}
@@ -458,19 +457,19 @@ class GatewayForm extends Component {
                             }}
                             component={AsyncAutoComplete}
                             className={
-                              errors.object && errors.object.gatewayProfileID
+                              errors && errors.gatewayProfileID
                                 ? 'is-invalid form-control'
                                 : ''
                             }
                           />
                           {
-                            errors.object && errors.object.gatewayProfileID
+                            errors && errors.gatewayProfileID
                               ? (
                                 <div
                                   className="invalid-feedback"
                                   style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                                 >
-                                  {errors.object.gatewayProfileID}
+                                  {errors.gatewayProfileID}
                                 </div>
                               ) : null
                           }
@@ -479,55 +478,55 @@ class GatewayForm extends Component {
 
                       <Field
                         id="name"
-                        name="object.name"
+                        name="name"
                         type="text"
-                        value={values.object.name}
+                        value={values.name}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         label={i18n.t(`${packageNS}:tr000218`)}
                         helpText={i18n.t(`${packageNS}:tr000062`)}
                         component={ReactstrapInput}
                         className={
-                          errors.object && errors.object.name
+                          errors && errors.name
                             ? 'is-invalid form-control'
                             : ''
                         }
                       />
                       {
-                        errors.object && errors.object.name
+                        errors && errors.name
                           ? (
                             <div
                               className="invalid-feedback"
                               style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                             >
-                              {errors.object.name}
+                              {errors.name}
                             </div>
                           ) : null
                       }
 
                       <Field
                         id="description"
-                        name="object.description"
+                        name="description"
                         type="textarea"
-                        value={values.object.description}
+                        value={values.description}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         label={i18n.t(`${packageNS}:tr000219`)}
                         component={ReactstrapInput}
                         className={
-                          errors.object && errors.object.description
+                          errors && errors.description
                             ? 'is-invalid form-control'
                             : ''
                         }
                       />
                       {
-                        errors.object && errors.object.description
+                        errors && errors.description
                           ? (
                             <div
                               className="invalid-feedback"
                               style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                             >
-                              {errors.object.description}
+                              {errors.description}
                             </div>
                           ) : null
                       }
@@ -536,7 +535,7 @@ class GatewayForm extends Component {
                         <>
                           <EUI64Field
                             id="id"
-                            name="object.id"
+                            name="id"
                             label={i18n.t(`${packageNS}:tr000074`)}
                             // value={values.object.id}
                             // onBlur={handleBlur}
@@ -563,8 +562,8 @@ class GatewayForm extends Component {
                       }
 
                       <Field
-                        id="object.discoveryEnabled"
-                        name="object.discoveryEnabled"
+                        id="discoveryEnabled"
+                        name="discoveryEnabled"
                         type="checkbox"
                         // value={!!values.object.discoveryEnabled}
                         onChange={handleChange}
@@ -573,19 +572,19 @@ class GatewayForm extends Component {
                         helpText={i18n.t(`${packageNS}:tr000229`)}
                         component={ReactstrapCheckbox}
                         className={
-                          errors.object && errors.object.discoveryEnabled
+                          errors && errors.discoveryEnabled
                             ? 'is-invalid form-control'
                             : ''
                         }
                       />
                       {
-                        errors.object && errors.object.discoveryEnabled
+                        errors && errors.discoveryEnabled
                           ? (
                             <div
                               className="invalid-feedback"
                               style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                             >
-                              {errors.object.discoveryEnabled}
+                              {errors.discoveryEnabled}
                             </div>
                           ) : null
                       }
@@ -593,33 +592,33 @@ class GatewayForm extends Component {
 
                       <Field
                         id="location-altitude"
-                        name="object.location.altitude"
+                        name="location.altitude"
                         type="number"
-                        value={values.object.location.altitude}
+                        value={values.location.altitude}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         label={i18n.t(`${packageNS}:tr000230`)}
                         helpText={i18n.t(`${packageNS}:tr000231`)}
                         component={ReactstrapInput}
                         className={
-                          errors.object && errors.object.location && errors.object.location.altitude
+                          errors && errors.location && errors.location.altitude
                             ? 'is-invalid form-control'
                             : ''
                         }
                       />
                       {
-                        errors.object && errors.object.location && errors.object.location.altitude
+                        errors && errors.location && errors.location.altitude
                           ? (
                             <div
                               className="invalid-feedback"
                               style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                             >
-                              {errors.object.location.altitude}
+                              {object.location.altitude}
                             </div>
                           ) : null
                       }
 
-                      <Field
+                      {/* <Field
                         id="location-accuracy"
                         name="object.location.accuracy"
                         type="number"
@@ -645,9 +644,9 @@ class GatewayForm extends Component {
                               {errors.object.location.accuracy}
                             </div>
                           ) : null
-                      }
+                      } */}
 
-                      <Field
+                      {/* <Field
                         id="locationSource"
                         name="object.location.source"
                         type="text"
@@ -682,7 +681,7 @@ class GatewayForm extends Component {
                               {errors.object.location.source}
                             </div>
                           ) : null
-                      }
+                      } */}
                       <br />
 
                       <FormGroup>
@@ -717,14 +716,14 @@ class GatewayForm extends Component {
 
                       <FieldArray
                         id="boards"
-                        name="object.boards"
-                        value={values.object.boards}
+                        name="boards"
+                        value={values.boards}
                         render={arrayHelpers => (
                           <div>
                             {
-                              values.object && values.object.boards &&
-                              values.object.boards.length > 0 &&
-                              values.object.boards.map((board, index) => (
+                              values && values.boards &&
+                              values.boards.length > 0 &&
+                              values.boards.map((board, index) => (
                                 board && Object.keys(board).length == 2 ? (
                                   <React.Fragment key={index}>
                                     <Row>
@@ -746,14 +745,14 @@ class GatewayForm extends Component {
 
                                             <EUI64Field
                                               id={`boards-${index}-fpgaID`}
-                                              name={`object.boards[${index}].fpgaID`}
+                                              name={`boards[${index}].fpgaID`}
                                               label={i18n.t(`${packageNS}:tr000236`)}
                                               value={board.fpgaID}
                                               helpText={i18n.t(`${packageNS}:tr000237`)}
                                             />
 
                                             <AESKeyField
-                                              name={`object.boards[${index}].fineTimestampKey`}
+                                              name={`boards[${index}].fineTimestampKey`}
                                               id={`boards-${index}-fineTimestampKey`}
                                               label={i18n.t(`${packageNS}:tr000238`)}
                                               value={board.fineTimestampKey}
@@ -797,30 +796,29 @@ class GatewayForm extends Component {
                         {/* {initialErrors.length && JSON.stringify(initialErrors)} */}
 
                         {/* Show error count when page loads, before user submits the form */}
-                        {errors.object && Object.keys(errors.object).length
+                        {errors && Object.keys(errors).length
                           ? (<div style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
-                            Detected {Object.keys(errors.object).length} errors. Please fix the validation errors shown in each tab before resubmitting.
+                            Detected {Object.keys(errors).length} errors. Please fix the validation errors shown in each tab before resubmitting.
                           </div>)
                           : null
                         }
 
                         {/* Show error count when user submits the form */}
-                        {this.state.validationErrors && this.state.validationErrors.length
+                        {/* {this.state.validationErrors && this.state.validationErrors.length
                           ? (<div style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
-                            Detected {Object.keys(this.state.validationErrors.object).length} errors. Please fix the validation errors shown in each tab before resubmitting.
+                            Detected {Object.keys(this.state.validationErrors).length} errors. Please fix the validation errors shown in each tab before resubmitting.
                           </div>)
                           : null
-                        }
+                        } */}
                       </div>
                       <Button
                         type="submit"
                         color="primary"
-                        disabled={(errors.object && Object.keys(errors.object).length > 0) || isLoading || isSubmitting}
+                        className="btn-block"
+                        disabled={(errors && Object.keys(errors).length > 0) || isLoading || isSubmitting}
                         onClick={
                           () => { 
-                            validateForm().then((formValidationErrors) => {
-                              console.log('Validated form with errors: ', formValidationErrors)
-                              this.setValidationErrors(formValidationErrors);
+                            validateForm().then(() => {
                             })
                           }
                         }
