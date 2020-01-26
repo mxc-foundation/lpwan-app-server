@@ -35,6 +35,10 @@ dist: ui/build internal/statics internal/migrations
 snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
 
+ui/test:
+	@echo "Running react tests"
+	@cd ui && npm test
+
 ui/build_dep:
 	@echo "Building node-sass"
 	@cd ui/node_modules/node-sass/ && npm install
