@@ -1,6 +1,6 @@
 .PHONY: build clean test package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
-VERSION := $(shell git describe --tags |sed -e "s/^v//")
+VERSION := $(shell git describe --tags --always |sed -e "s/^v//")
 
 build: internal/statics internal/migrations
 	mkdir -p build cache
@@ -37,9 +37,9 @@ snapshot: ui/build internal/statics internal/migrations
 
 ui/build_dep:
 	@echo "Building node-sass"
-	@cd ui/node_modules/node-sass/ && npm install && npm run build
+	@cd ui/node_modules/node-sass/ && npm install
 	@echo "Running npm audit fix"
-	@cd ui && npm audit fix
+	@cd ui && npm audit
 
 ui/build:
 	@echo "BUilding ui"
