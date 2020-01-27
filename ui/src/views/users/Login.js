@@ -97,12 +97,12 @@ class LoginForm extends Component {
                 onBlur={handleBlur}
               />
 
-              <FormGroup className="mt-2 small">
+              {/* <FormGroup className="mt-2 small">
                 <ReCAPTCHA
                   sitekey={process.env.REACT_APP_PUBLIC_KEY}
                   onChange={this.onReCapChange}
                 />
-              </FormGroup>
+              </FormGroup> */}
 
               <div className="mt-1">
                 <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000011`)}</Button>
@@ -185,11 +185,11 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    if (login.hasOwnProperty('isVerified')) {
-      if (!login.isVerified) {
-        alert(VERIFY_ERROR_MESSAGE);
-        return false;
-      }
+    // if (login.hasOwnProperty('isVerified')) {
+    //   if (!login.isVerified) {
+    //     alert(VERIFY_ERROR_MESSAGE);
+    //     return false;
+    //   }
 
       SessionStore.login(login, () => {
         this.setState({ loading: false });
@@ -203,10 +203,10 @@ class Login extends Component {
           this.props.history.push("/");
         }
       });
-    } else {
-      alert(VERIFY_ERROR_MESSAGE);
-      return false;
-    }
+    // } else {
+    //   alert(VERIFY_ERROR_MESSAGE);
+    //   return false;
+    // }
   }
 
   onClick = () => {

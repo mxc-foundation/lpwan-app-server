@@ -63,7 +63,7 @@ class RegistrationForm extends Component {
                   onBlur={handleBlur}
                 />
 
-{/*                <FormGroup className="mt-2">
+                {/*                <FormGroup className="mt-2">
                   <ReCAPTCHA
                     sitekey={process.env.REACT_APP_PUBLIC_KEY}
                     onChange={this.onReCapChange}
@@ -103,7 +103,7 @@ class Registration extends Component {
   componentDidMount() {
     this.loadData();
   }
-  
+
   loadData = async () => {
     try {
       let result = await GetBranding();
@@ -118,10 +118,10 @@ class Registration extends Component {
   }
 
   onSubmit(user) {
-    if (!user.isVerified) {
-      alert(i18n.t(`${packageNS}:tr000021`));
-      return false;
-    }
+    // if (!user.isVerified) {
+    //   alert(i18n.t(`${packageNS}:tr000021`));
+    //   return false;
+    // }
 
     if (SessionStore.getLanguage() && SessionStore.getLanguage().id) {
       user.language = SessionStore.getLanguage().id.toLowerCase();
@@ -130,9 +130,9 @@ class Registration extends Component {
     }
 
     if (isEmail(user.username)) {
-      this.setState({loading: true});
+      this.setState({ loading: true });
       SessionStore.register(user, () => {
-        this.setState({loading: false});
+        this.setState({ loading: false });
         this.props.history.push("/");
       });
     } else {
