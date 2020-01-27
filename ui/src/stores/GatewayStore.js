@@ -111,6 +111,12 @@ class GatewayStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockGatewayStoreApi.get(id)))();
+      return;
+    }
+
     this.swagger.then(client => {
       client.apis.GatewayService.Get({
         id: id,

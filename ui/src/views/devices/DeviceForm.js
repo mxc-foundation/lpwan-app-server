@@ -291,17 +291,17 @@ class DeviceForm extends Component {
     let fieldsSchema = {
       object: Yup.object().shape({
         // https://regexr.com/4rg3a
-        name: Yup.string()//.trim().matches(/^[0-9A-Za-z-]*$/g, i18n.t(`${packageNS}:tr000429`))
+        name: Yup.string().trim()//.trim().matches(/^[0-9A-Za-z-]*$/g, i18n.t(`${packageNS}:tr000429`))
           .required(i18n.t(`${packageNS}:tr000431`)),
-        description: Yup.string()
+        description: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`)),
-        deviceProfileID: Yup.string()
+        deviceProfileID: Yup.string().trim()
           .required(i18n.t(`${packageNS}:tr000431`))
       })
     }
 
     if (!this.props.update) {
-      fieldsSchema.object.fields.devEUI = Yup.string()
+      fieldsSchema.object.fields.devEUI = Yup.string().trim()
         .required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("devEUI");
     }
@@ -345,7 +345,8 @@ class DeviceForm extends Component {
           validationSchema={this.formikFormSchema}
           // Formik Nested Schema Example https://codesandbox.io/s/y7q2v45xqx
           onSubmit={
-            (values, { setSubmitting }) => {
+            (castValues, { setSubmitting }) => {
+              const values = this.formikFormSchema().cast(castValues);
               console.log('Submitted values: ', values);
 
               // Deep copy is required otherwise we can change the original values of

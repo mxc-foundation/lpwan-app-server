@@ -9,8 +9,8 @@ const override = css`
     position: fixed;
     top: 50%;
     left: 50%;
-    margin-top: -50px;
-    margin-left: -20px;
+    z-index: 2147483647 !important;
+    transform: translate(-50%, -50%);
 `;
 
 const Spinner = (props) => (

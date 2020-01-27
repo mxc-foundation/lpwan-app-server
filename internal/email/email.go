@@ -29,9 +29,9 @@ var (
 )
 
 const (
-	English = pb.Language_en
-	Korean = pb.Language_ko
-	SimplifiedChinese = pb.Language_zhcn
+	English            = pb.Language_en
+	Korean             = pb.Language_ko
+	SimplifiedChinese  = pb.Language_zhcn
 	TraditionalChinese = pb.Language_zhtw
 )
 
@@ -87,7 +87,7 @@ var (
 )
 
 // SendInvite ...
-func SendInvite(user string, token string, language int32) error {
+func SendInvite(user, token string, language int32) error {
 	var err error
 
 	if disable == true {

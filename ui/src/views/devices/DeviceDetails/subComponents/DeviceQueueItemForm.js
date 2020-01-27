@@ -84,7 +84,7 @@ class DeviceQueueItemForm extends FormComponent {
     }
 
     if (activeTab === "1") {
-      fieldsSchema['data'] = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema['data'] = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
@@ -95,7 +95,10 @@ class DeviceQueueItemForm extends FormComponent {
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.props.onSubmit}>
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.props.onSubmit({ ...castValues })
+          }}>
           {({
             handleSubmit,
             setFieldValue,

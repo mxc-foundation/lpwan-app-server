@@ -5,7 +5,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
-
+import MockGatewayProfileStoreApi from '../api/mockGatewayProfileStoreApi';
+import isDev from '../util/isDev';
 
 class GatewayProfileStore extends EventEmitter {
   constructor() {
@@ -30,6 +31,12 @@ class GatewayProfileStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    if (isDev) {
+      (async () => callbackFunc(await MockGatewayProfileStoreApi.get(id)))();
+      return;
+    }
+
     this.swagger.then(client => {
       client.apis.GatewayProfileService.Get({
         id: id,
@@ -45,9 +52,9 @@ class GatewayProfileStore extends EventEmitter {
   update(gatewayProfile, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayProfileService.Update({
-        "gatewayProfile.id": gatewayProfile.id,
+        "gatewayProfile.id": gatewayProfile.apiGatewayProfile.id,
         body: {
-          gatewayProfile: gatewayProfile,
+          gatewayProfile: gatewayProfile.apiGatewayProfile,
         },
       })
       .then(checkStatus)

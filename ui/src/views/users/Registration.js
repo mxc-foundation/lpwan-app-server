@@ -12,6 +12,9 @@ import Loader from "../../components/Loader";
 import SessionStore from "../../stores/SessionStore";
 import i18n, { packageNS } from '../../i18n';
 
+const regSchema = Yup.object().shape({
+  username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+})
 
 class RegistrationForm extends Component {
   constructor(props) {
@@ -19,7 +22,7 @@ class RegistrationForm extends Component {
 
     this.state = {
       object: this.props.object || { username: "" },
-      isVerified: true
+      isVerified: false
     }
   }
 
@@ -41,13 +44,10 @@ class RegistrationForm extends Component {
       <React.Fragment>
         <Formik
           initialValues={this.state.object}
-          validationSchema={
-            Yup.object().shape({
-              username: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
-            })
-          }
+          validationSchema={regSchema}
           onSubmit={(values) => {
-            this.props.onSubmit({ isVerified: this.state.isVerified, ...values })
+            const castValues = regSchema.cast(values);
+            this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
           }}>
           {({
             handleSubmit,
@@ -118,7 +118,6 @@ class Registration extends Component {
   }
 
   onSubmit(user) {
-    user.isVerified = true;
     if (!user.isVerified) {
       alert(i18n.t(`${packageNS}:tr000021`));
       return false;

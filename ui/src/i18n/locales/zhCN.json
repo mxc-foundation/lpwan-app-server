@@ -525,7 +525,11 @@
       "status": "状态",
       "downlink_price": "下行链路费用",
       "mode": "模式",
-      "filter": "过滤"
+      "filter": "过滤",
+      "choose_a_manufacturer" : "选择制造商。",
+      "other": "其他。",
+      "enter_your_gateway_serial_number": "输入您的网关序列号。",
+      "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候..."
     },
     "staking": {
       "staking": "质押",
@@ -621,7 +625,9 @@
       "learn_more": "更多信息",
       "amount": "量",
       "confirm": "确认",
-      "control_panel": "控制面板"
+      "control_panel": "控制面板",
+      "back": "回去",
+      "submit": "完成了"
     },
     "system_settings": {
       "system_settings": "系统设定"

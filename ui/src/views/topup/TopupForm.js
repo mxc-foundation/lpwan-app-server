@@ -115,8 +115,8 @@ class TopupForm extends Component {
   render() {
     let fieldsSchema = {
       accounts: Yup.object().shape({
-        superNodeAccount: Yup.string(),
-        account: Yup.string()
+        superNodeAccount: Yup.string().trim(),
+        account: Yup.string().trim()
       })
     }
 
@@ -156,7 +156,10 @@ class TopupForm extends Component {
             enableReinitialize
             initialValues={this.state.object}
             validationSchema={formSchema}
-            onSubmit={this.props.onSubmit}>
+            onSubmit={(values) => {
+              const castValues = formSchema.cast(values);
+              this.props.onSubmit({ ...castValues })
+            }}>
             {({
               handleSubmit,
               setFieldValue,

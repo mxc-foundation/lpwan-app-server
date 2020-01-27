@@ -159,12 +159,11 @@ class DeviceDetailsDevicesTabs extends Component {
                   <span>&nbsp;&nbsp;{i18n.t(`${packageNS}:tr000298`)}</span>
                 </NavLink>
               </NavItem>
-              {/* FIXME - temporarily allow any user to access for debugging purposes */}
-              {/* {admin && */}
+              {/* Only available to admins and where the devices has an associated device profile that supports OTAA */}
+              {admin && deviceProfile && deviceProfile.deviceProfile.supportsJoin &&
               <NavItem>
                 <NavLink
                   active={activeMainTabDeviceIndex === 2}
-                  disabled={deviceProfile && !deviceProfile.deviceProfile.supportsJoin}
                   onClick={() => { this.toggleMainTabDeviceIndex(2); }}
                   tag={Link}
                   to={
@@ -177,7 +176,7 @@ class DeviceDetailsDevicesTabs extends Component {
                   <span>&nbsp;&nbsp;Keys (OTAA)</span>
                 </NavLink>
               </NavItem>
-              {/* } */}
+              }
               <NavItem>
                 <NavLink
                   active={activeMainTabDeviceIndex === 3}
