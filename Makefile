@@ -35,14 +35,14 @@ dist: ui/build internal/statics internal/migrations
 snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
 
-ui/build:
-	@echo "Building ui"
-	@cd ui && npm run build
-	@mv ui/build/* static
-
 ui/build_dep:
 	@echo "Building node-sass"
 	@cd ui/node_modules/node-sass/ && npm install && npm run build
+
+ui/build:
+	@echo "BUilding ui"
+	@cd ui && npm run build
+	@mv ui/build/* static
 
 api:
 	@echo "Generating API code from .proto files"
@@ -76,6 +76,8 @@ dev-requirements:
 ui-requirements:
 	@echo "Installing UI requirements"
 	@cd ui && npm install
+	@echo "Running npm audit fix"
+	@cd ui && npm audit fix
 
 serve: build
 	@echo "Starting LPWAN App Server"

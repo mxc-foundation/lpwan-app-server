@@ -9,7 +9,7 @@ import Tooltips from "./Tooltips";
 import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import Spinner from "../../components/ScaleLoader";
-import logo from '../../assets/images/MATCHX-SUPERNODE2.png';
+import logo from '../../assets/images/matchx.png';
 import { Divider } from "@material-ui/core";
 
 const styles = {
