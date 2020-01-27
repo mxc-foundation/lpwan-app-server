@@ -8,7 +8,7 @@ import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import Loader from "../../components/Loader";
 import CommonModal from '../../components/Modal';
-import logo from '../../assets/images/MATCHX-SUPERNODE2.png';
+import logo from '../../assets/images/matchx.png';
 import { Divider } from "@material-ui/core";
 
 const styles = {
