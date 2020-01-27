@@ -28,17 +28,20 @@ class CreateGateway extends Component {
 
     this.state = {
       spDialog: false,
-      loading: false
+      loading: true
     };
   }
 
   componentDidMount() {
     ServiceProfileStore.list(this.props.match.params.organizationID, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          spDialog: true,
-        });
+      const state = {
+        loading: false
       }
+      if (resp.totalCount === "0") {
+        state.spDialog = true;
+      }
+
+      this.setState(state);
     });
   }
 
