@@ -19,7 +19,7 @@ const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 
 const loginSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
-  password: Yup.string().required(i18n.t(`${packageNS}:tr000431`)), 
+  password: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
 })
 
 class LoginForm extends Component {
@@ -102,7 +102,7 @@ class LoginForm extends Component {
                   sitekey={process.env.REACT_APP_PUBLIC_KEY}
                   onChange={this.onReCapChange}
                 />
-              </FormGroup>*/}
+              </FormGroup>
 
               <div className="mt-1">
                 <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000011`)}</Button>
@@ -148,7 +148,7 @@ class Login extends Component {
   componentDidMount() {
     this.loadData();
   }
-  
+
   loadData = async () => {
     try {
       let result = await GetBranding();
@@ -168,7 +168,7 @@ class Login extends Component {
     if (this.props.logoPath === oldProps.logoPath) {
       return;
     }
-    
+
     this.loadData();
   }
 
