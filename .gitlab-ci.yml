@@ -1,98 +1,140 @@
-stages:
-  - build
+stages: 
+  - test 
+  - build 
+  - release-private 
+  - release-public 
   - deploy
 
-.syntax_test_frontend:
-  image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
+.react_test_frontend:
+  image: golang:1.12-alpine
   stage: test
+  environment:
+    name: development
+  before_script:
+    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
   script:
     - cd ui
     - npm install
-    - npm audit fix
-    - npm run test
+    - npm test
   allow_failure: true
-  only:
+  except:
+    - master
+    - develop
     - buildserver
   tags:
-    - buildserver
+    - gcp
 
 .syntax_test_backend:
-  image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
+  image: golang:1.12-alpine
   stage: test
+  environment:
+    name: development
+  before_script: 
+    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - go get -u golang.org/x/lint/golint
   script:
     - golint -set_exit_status ./...
   allow_failure: true
-  only:
+  except:
+    - master
+    - develop
     - buildserver
   tags:
-    - buildserver
-  
+    - gcp
+
 .security_test_backend:
-  image: registry.gitlab.com/mxcfoundation/cloud/lpwan-app-server:baseimage
+  image: golang:1.12-alpine
   stage: test
+  environment:
+    name: development
+  before_script: 
+    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - go get github.com/securego/gosec/cmd/gosec
   script:
     - gosec ./...
   allow_failure: true
-  only:
-    - buildserver
-  tags:
-    - buildserver
-  
-variables:
-  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  CONTAINER_DEVBRANCH_IMAGE: $CI_REGISTRY_IMAGE:dev
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
-
-build_buildserver_branch_image:
-  stage: build
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
-  only:
-    - buildserver
-  tags:
-    - buildserver
-
-build_develop_branch_image:
-  stage: build
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  script:
-    - docker build --pull -t $CONTAINER_DEVBRANCH_IMAGE .
-    - docker push $CONTAINER_DEVBRANCH_IMAGE
-  only:
+  except:
+    - master
     - develop
-  tags:
     - buildserver
+  tags:
+    - gcp
+    
+variables:
+  SERVICE_NAME: $APP_NAME
+  CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  DOCKER_USER: $DOCKER_USER
+  DOCKER_PASS: $DOCKER_PASS
+  DOCKER_REPO: $DOCKER_REPO
+  DOCKER_URL: $DOCKER_URL
 
-build_master_branch_image:
+before_script:
+  - apk add git
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - export VERSION=$(git describe --tags|sed -e "s/^v//")
+ 
+build_image:
   stage: build
-  image: docker:19.03.1
-  services:
-    - docker:19.03.1-dind
-  before_script: 
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build --pull -t $CONTAINER_RELEASE_IMAGE .
-    - docker push $CONTAINER_RELEASE_IMAGE
+    - docker build --pull -t $CONTAINER_IMAGE .
+    - docker push $CONTAINER_IMAGE
+  tags:
+    - gcp
+
+.release_image_gitlab:
+  stage: release-private
+  script:
+    - docker pull $CONTAINER_IMAGE
+    - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+    - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+  only:
+    - master # should really be this one only
+    - develop # but we keep this enabled too
+    - buildserver # and this to build image for buildserver deploy for QA
+  tags:
+    - gcp
+
+.release_image_dockerhub:
+  stage: release-public
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
+    - docker tag $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION $DOCKER_REPO:$SERVICE_NAME.$VERSION
+    - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
+  only:
+    - master
+    - develop
+    - buildserver
+  tags:
+    - gcp
+
+.deploy_to_staging: #this needs migrating here from lpwan-server-docker project!!!
+  stage: deploy
+  script:
+    - sed -i "s/DOCKER_USER/$DOCKER_USER/" config
+    - sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
+    - ./mxp-supernode
+    - ls -l
+    - docker-compose up -d appserver
+  environment:
+    name: staging
+    url: http://35.246.213.251:8080
   only:
     - master
   tags:
-    - buildserver
+    - gcp
 
-trigger_build:
+.trigger_qa_deploy: #until above is working use a simple multiproject trigger
   stage: deploy
+  environment:
+    name: staging
+    url: http://192.168.0.226:8080
+  before_script: 
+    - apk add --no-cache curl
   script:
-    - "curl -X POST -F token=$BUILDSERVERTRIGGER -F ref=buildserver https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
     - buildserver
   tags:
     - buildserver
+
