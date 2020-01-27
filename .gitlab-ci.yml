@@ -79,7 +79,7 @@ build_image:
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
   tags:
-    - gcp
+    - gcp-shell
 
 .release_image_gitlab:
   stage: release-private
