@@ -75,6 +75,9 @@ before_script:
  
 build_image:
   stage: build
+  before_script:
+  - git version
+  - docker version
   script:
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
