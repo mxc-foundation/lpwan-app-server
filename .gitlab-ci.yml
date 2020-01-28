@@ -103,7 +103,7 @@ release_image_dockerhub:
     - docker tag $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION $DOCKER_REPO:$SERVICE_NAME.$VERSION
     - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
   only:
-    - master disalbed for testing
+    - master
     - develop
     - buildserver
   tags:
@@ -132,7 +132,7 @@ trigger_qa_deploy: #until above is working use a simple multiproject trigger
     name: staging
     url: http://192.168.0.226:8080
   before_script: 
-    - apk install curl
+    - apk add --no-cache curl
   script:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
