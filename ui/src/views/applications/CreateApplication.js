@@ -116,6 +116,7 @@ class CreateApplication extends Component {
               <ApplicationForm
                 match={this.props.match}
                 onSubmit={this.onSubmit}
+                create={true}
                 submitLabel={i18n.t(`${packageNS}:tr000277`)}
               />
               <br />

@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
 import { Formik, Form, Field, FieldArray } from 'formik';
 import * as Yup from 'yup';
+import Admin from '../../components/Admin';
 
 import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
@@ -190,8 +191,9 @@ class ServiceProfileForm extends Component {
                                         component={ReactstrapInput}
                                         required
                                     />
-
-                                    <Button type="submit" color="primary">{this.props.submitLabel}</Button>
+                                    <Admin>
+                                        <Button type="submit" color="primary">{this.props.submitLabel}</Button>
+                                    </Admin>
                                 </Form>
                             )}
                     </Formik>
