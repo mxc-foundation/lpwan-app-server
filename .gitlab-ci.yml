@@ -6,13 +6,15 @@ stages:
   - deploy
 
 react_test_frontend:
-  image: golang:1.12-alpine
   stage: test
-  environment:
-    name: development
-  before_script:
-    - sudo -S apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
   script:
+    - sudo apt-get install software-properties-common
+    - sudo add-apt-repository ppa:longsleep/golang-backports
+    - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    - sudo -S apt-get install ca-certificates make git bash nodejs python golang-1.12 gcc g++ -y
+    - sudo rm -f /usr/bin/go
+    - sudo ln -s /usr/lib/go-1.12/bin/go /usr/bin/go || true
+    - sudo ln -s /home/gitlab-runner/go/bin/go-bindata /usr/bin/go-bindata || true
     - cd ui
     - npm install
     - npm test
@@ -25,14 +27,16 @@ react_test_frontend:
     - buildserver-native
 
 syntax_test_backend:
-  image: golang:1.12-alpine
   stage: test
-  environment:
-    name: development
-  before_script: 
-    - sudo -S apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get -u golang.org/x/lint/golint
   script:
+    - sudo apt-get install software-properties-common
+    - sudo add-apt-repository ppa:longsleep/golang-backports
+    - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    - sudo -S apt-get install ca-certificates make git bash nodejs python golang-1.12 gcc g++ -y
+    - sudo rm -f /usr/bin/go
+    - sudo ln -s /usr/lib/go-1.12/bin/go /usr/bin/go || true
+    - sudo ln -s /home/gitlab-runner/go/bin/go-bindata /usr/bin/go-bindata || true
+    - go get -u golang.org/x/lint/golint
     - golint -set_exit_status ./...
   allow_failure: true
   except:
@@ -43,14 +47,16 @@ syntax_test_backend:
     - buildserver-native
 
 security_test_backend:
-  image: golang:1.12-alpine
   stage: test
-  environment:
-    name: development
-  before_script: 
-    - sudo -S apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get github.com/securego/gosec/cmd/gosec
   script:
+    - sudo apt-get install software-properties-common
+    - sudo add-apt-repository ppa:longsleep/golang-backports
+    - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    - sudo -S apt-get install ca-certificates make git bash nodejs python golang-1.12 gcc g++ -y
+    - sudo rm -f /usr/bin/go
+    - sudo ln -s /usr/lib/go-1.12/bin/go /usr/bin/go || true
+    - sudo ln -s /home/gitlab-runner/go/bin/go-bindata /usr/bin/go-bindata || true
+    - go get github.com/securego/gosec/cmd/gosec
     - gosec ./...
   allow_failure: true
   except:
