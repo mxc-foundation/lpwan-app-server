@@ -23,7 +23,7 @@ react_test_frontend:
     - develop
     - buildserver
   tags:
-    - gcp
+    - buildserver
 
 syntax_test_backend:
   image: golang:1.12-alpine
@@ -41,7 +41,7 @@ syntax_test_backend:
     - develop
     - buildserver
   tags:
-    - gcp
+    - buildserver
 
 security_test_backend:
   image: golang:1.12-alpine
@@ -59,7 +59,7 @@ security_test_backend:
     - develop
     - buildserver
   tags:
-    - gcp
+    - buildserver
     
 variables:
   SERVICE_NAME: $APP_NAME
@@ -138,4 +138,4 @@ trigger_qa_deploy: #until above is working use a simple multiproject trigger
   only:
     - buildserver
   tags:
-    - gcp
+    - buildserver
