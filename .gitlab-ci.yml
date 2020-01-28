@@ -5,11 +5,7 @@ stages:
   - release-public 
   - deploy
 
-<<<<<<< HEAD
-.react_test_frontend:
-=======
 react_test_frontend:
->>>>>>> develop
   image: golang:1.12-alpine
   stage: test
   environment:
@@ -26,13 +22,9 @@ react_test_frontend:
     - develop
     - buildserver
   tags:
-    - gcp
+    - buildserver-native
 
-<<<<<<< HEAD
-.syntax_test_backend:
-=======
 syntax_test_backend:
->>>>>>> develop
   image: golang:1.12-alpine
   stage: test
   environment:
@@ -48,13 +40,9 @@ syntax_test_backend:
     - develop
     - buildserver
   tags:
-    - gcp
+    - buildserver-native
 
-<<<<<<< HEAD
-.security_test_backend:
-=======
 security_test_backend:
->>>>>>> develop
   image: golang:1.12-alpine
   stage: test
   environment:
@@ -70,7 +58,7 @@ security_test_backend:
     - develop
     - buildserver
   tags:
-    - gcp
+    - buildserver-native
     
 variables:
   SERVICE_NAME: $APP_NAME
@@ -87,20 +75,13 @@ before_script:
  
 build_image:
   stage: build
-  before_script:
-  - git version
-  - docker version
   script:
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
   tags:
-    - gcp-os
+    - buildserver-native
 
-<<<<<<< HEAD
-.release_image_gitlab:
-=======
 release_image_gitlab:
->>>>>>> develop
   stage: release-private
   script:
     - docker pull $CONTAINER_IMAGE
@@ -111,13 +92,9 @@ release_image_gitlab:
     - develop # but we keep this enabled too
     - buildserver # and this to build image for buildserver deploy for QA
   tags:
-    - gcp
+    - buildserver-native
 
-<<<<<<< HEAD
-.release_image_dockerhub:
-=======
 release_image_dockerhub:
->>>>>>> develop
   stage: release-public
   script:
     - docker pull $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
@@ -129,7 +106,7 @@ release_image_dockerhub:
     - develop
     - buildserver
   tags:
-    - gcp
+    - buildserver-native
 
 .deploy_to_staging: #this needs migrating here from lpwan-server-docker project!!!
   stage: deploy
@@ -145,14 +122,11 @@ release_image_dockerhub:
   only:
     - master
   tags:
-    - gcp
+    - buildserver
 
-<<<<<<< HEAD
-.trigger_qa_deploy: #until above is working use a simple multiproject trigger
-=======
 trigger_qa_deploy: #until above is working use a simple multiproject trigger
->>>>>>> develop
   stage: deploy
+  image: alpine
   environment:
     name: staging
     url: http://192.168.0.226:8080
@@ -164,7 +138,3 @@ trigger_qa_deploy: #until above is working use a simple multiproject trigger
     - buildserver
   tags:
     - buildserver
-<<<<<<< HEAD
-
-=======
->>>>>>> develop
