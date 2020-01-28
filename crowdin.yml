@@ -1,0 +1,8 @@
+files:
+  - source: /ui/src/i18n/locales
+    ignore:
+      - index.js
+      - ko.json
+      - zhCN.json
+      - zhTW.json
+    translation: '%two_letters_code%.json'
