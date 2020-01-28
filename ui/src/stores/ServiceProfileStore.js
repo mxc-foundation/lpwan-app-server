@@ -75,7 +75,7 @@ class ServiceProfileStore extends EventEmitter {
   }
 
   list(organizationID, limit, offset, callbackFunc) {
-    this.swagger.then(client => {
+    return this.swagger.then(client => {
       client.apis.ServiceProfileService.List({
         organizationID: organizationID,
         limit: limit,
@@ -83,7 +83,7 @@ class ServiceProfileStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        callbackFunc(resp.obj);
+        callbackFunc && callbackFunc(resp.obj);
       })
       .catch(errorHandler);
     });

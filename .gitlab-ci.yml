@@ -5,7 +5,11 @@ stages:
   - release-public 
   - deploy
 
+<<<<<<< HEAD
 .react_test_frontend:
+=======
+react_test_frontend:
+>>>>>>> develop
   image: golang:1.12-alpine
   stage: test
   environment:
@@ -24,7 +28,11 @@ stages:
   tags:
     - gcp
 
+<<<<<<< HEAD
 .syntax_test_backend:
+=======
+syntax_test_backend:
+>>>>>>> develop
   image: golang:1.12-alpine
   stage: test
   environment:
@@ -42,7 +50,11 @@ stages:
   tags:
     - gcp
 
+<<<<<<< HEAD
 .security_test_backend:
+=======
+security_test_backend:
+>>>>>>> develop
   image: golang:1.12-alpine
   stage: test
   environment:
@@ -81,7 +93,11 @@ build_image:
   tags:
     - gcp
 
+<<<<<<< HEAD
 .release_image_gitlab:
+=======
+release_image_gitlab:
+>>>>>>> develop
   stage: release-private
   script:
     - docker pull $CONTAINER_IMAGE
@@ -94,7 +110,11 @@ build_image:
   tags:
     - gcp
 
+<<<<<<< HEAD
 .release_image_dockerhub:
+=======
+release_image_dockerhub:
+>>>>>>> develop
   stage: release-public
   script:
     - docker pull $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
@@ -124,7 +144,11 @@ build_image:
   tags:
     - gcp
 
+<<<<<<< HEAD
 .trigger_qa_deploy: #until above is working use a simple multiproject trigger
+=======
+trigger_qa_deploy: #until above is working use a simple multiproject trigger
+>>>>>>> develop
   stage: deploy
   environment:
     name: staging
@@ -137,4 +161,7 @@ build_image:
     - buildserver
   tags:
     - buildserver
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
