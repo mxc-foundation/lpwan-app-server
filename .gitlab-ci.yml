@@ -11,7 +11,7 @@ react_test_frontend:
   environment:
     name: development
   before_script:
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
   script:
     - cd ui
     - npm install
@@ -30,7 +30,7 @@ syntax_test_backend:
   environment:
     name: development
   before_script: 
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
     - go get -u golang.org/x/lint/golint
   script:
     - golint -set_exit_status ./...
@@ -48,7 +48,7 @@ security_test_backend:
   environment:
     name: development
   before_script: 
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
     - go get github.com/securego/gosec/cmd/gosec
   script:
     - gosec ./...
@@ -69,7 +69,7 @@ variables:
   DOCKER_URL: $DOCKER_URL
 
 before_script:
-  - apt add git
+  - apk add git
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   - export VERSION=$(git describe --tags|sed -e "s/^v//")
  
@@ -79,7 +79,7 @@ build_image:
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
   tags:
-    - buildserver-native
+    - buildserver
 
 release_image_gitlab:
   stage: release-private
@@ -92,7 +92,7 @@ release_image_gitlab:
     - develop # but we keep this enabled too
     - buildserver # and this to build image for buildserver deploy for QA
   tags:
-    - buildserver-native
+    - buildserver
 
 release_image_dockerhub:
   stage: release-public
@@ -106,7 +106,7 @@ release_image_dockerhub:
     - develop
     - buildserver
   tags:
-    - buildserver-native
+    - buildserver
 
 .deploy_to_staging: #this needs migrating here from lpwan-server-docker project!!!
   stage: deploy
@@ -131,7 +131,7 @@ trigger_qa_deploy: #until above is working use a simple multiproject trigger
     name: staging
     url: http://192.168.0.226:8080
   before_script: 
-    - apk add --no-cache curl
+    - apk install curl
   script:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
