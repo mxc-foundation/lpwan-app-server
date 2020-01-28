@@ -11,7 +11,7 @@ react_test_frontend:
   environment:
     name: development
   before_script:
-    - apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - sudo apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
   script:
     - cd ui
     - npm install
@@ -30,7 +30,7 @@ syntax_test_backend:
   environment:
     name: development
   before_script: 
-    - apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - sudo apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
     - go get -u golang.org/x/lint/golint
   script:
     - golint -set_exit_status ./...
@@ -48,7 +48,7 @@ security_test_backend:
   environment:
     name: development
   before_script: 
-    - apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - sudo apt install ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
     - go get github.com/securego/gosec/cmd/gosec
   script:
     - gosec ./...
