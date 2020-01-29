@@ -29,7 +29,7 @@ class GatewayForm extends Component {
 
     this.state = {
       mapZoom: 15,
-      object: this.props.object || {},
+      object: this.props.object || {location:{altitude:0}},
       loading: true,
     };
 
