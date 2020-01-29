@@ -135,7 +135,7 @@ trigger_qa_deploy: #until above is working use a simple multiproject trigger
   image: alpine
   environment:
     name: staging
-    url: http://192.168.0.226:8080
+    url: $STAGINGURL
   before_script: 
     - apk add --no-cache curl
   script:
