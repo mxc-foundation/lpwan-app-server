@@ -519,6 +519,9 @@
       "name": "名稱",
       "filter": "過濾"
     },
+    "application":{
+      "del_application": "您確定要刪除此應用程序嗎？ 這還將刪除此應用程序的所有設備部分"
+    },
     "gateways": {
       "gateway": "閘道器",
       "gateways": "閘道器",
