@@ -5,6 +5,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 const CommonModal = (props) => {
     const {
         className,
+        closeModal,
         showCloseButton = true,
         showConfirmButton = true,
         show = true,
@@ -12,7 +13,11 @@ const CommonModal = (props) => {
 
     const [modal, setModal] = useState(show);
 
-    const toggle = () => setModal(!modal);
+    const toggle = () => {
+        setModal(!modal);
+        closeModal();
+    }
+    
     const proc = () => {
         setModal(!modal);
         props.callback();
