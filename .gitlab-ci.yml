@@ -22,6 +22,7 @@ react_test_frontend:
     - master
     - develop
     - buildserver
+    - l10n_crowdin2
   tags:
     - buildserver
 
@@ -40,6 +41,7 @@ syntax_test_backend:
     - master
     - develop
     - buildserver
+    - l10n_crowdin2
   tags:
     - buildserver
 
@@ -58,6 +60,7 @@ security_test_backend:
     - master
     - develop
     - buildserver
+    - l10n_crowdin2
   tags:
     - buildserver
     
@@ -75,6 +78,8 @@ build_image: # this needs changing to native build to speed up 2-3 times
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
+  except:
+    - l10n_crowdin2
   tags:
     - buildserver-native
 
