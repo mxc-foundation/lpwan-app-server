@@ -22,7 +22,7 @@ import UpdateIntegration from "./UpdateIntegration";
 import ListFUOTADeploymentsForApplication from "../fuota/ListFUOTADeploymentsForApplication";
 import OrganizationDevices from "../devices/OrganizationDevices";
 import ApplicationDevices from "./ApplicationDevices";
-
+import Modal from "../common/Modal";
 import theme from "../../theme";
 
 
@@ -41,6 +41,7 @@ class ApplicationLayout extends Component {
     this.state = {
       tab: 0,
       admin: false,
+      openModal: false
     };
   }
 
@@ -79,14 +80,16 @@ class ApplicationLayout extends Component {
     });
   }
 
-  deleteApplication = () => {
+  openModal = () => {
+    this.setState({openModal:true});
+  }
+
+  deleteApplication = (applicationId) => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    if (window.confirm("Are you sure you want to delete this application? This will also delete all devices part of this application.")) {
-      ApplicationStore.delete(currentOrgID, resp => {
-        this.props.history.push(`/organizations/${currentOrgID}/applications`);
-      });
-    }
+    ApplicationStore.delete(applicationId, resp => {
+      this.props.history.push(`/organizations/${currentOrgID}/applications`);
+    });
   }
 
   getMainTabAppIndexFromLocation() {
@@ -116,10 +119,6 @@ class ApplicationLayout extends Component {
 
     return(
       <Grid container spacing={4}>
-        {/* <OrganizationDevices
-          mainTabIndex={1}
-          organizationID={currentOrgID}
-        > */}
           <ApplicationDevices
             {...this.props}
             admin={admin}

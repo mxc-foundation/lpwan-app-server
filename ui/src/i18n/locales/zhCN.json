@@ -548,6 +548,9 @@
       "name": "名称",
       "filter": "过滤"
     },
+    "application":{
+      "del_application": "您确定要删除此应用程序吗？ 这还将删除此应用程序的所有设备部分。"
+    },
     "gateways": {
       "gateway": "网关",
       "gateways": "网关",
