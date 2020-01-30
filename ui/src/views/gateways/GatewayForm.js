@@ -29,7 +29,7 @@ class GatewayForm extends Component {
 
     this.state = {
       mapZoom: 15,
-      object: this.props.object || {},
+      object: this.props.object || {location:{altitude:0}},
       loading: true,
     };
 
@@ -329,8 +329,8 @@ const discoveryEnabled = object.discoveryEnabled;
                     id: object.id || undefined,
                     name: object.name || '',
                     description: object.description || '',
-                    discoveryEnabled: object.discoveryEnabled,
-                    location: object.location,
+                    discoveryEnabled: object.discoveryEnabled || false,
+                    location: {altitude:object.location.altitude || 0},
                     gatewayProfileID: object.gatewayProfileID || '',
                     networkServerID: object.networkServerID || '',
                     boards: (
