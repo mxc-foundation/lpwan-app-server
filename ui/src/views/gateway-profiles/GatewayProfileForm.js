@@ -70,7 +70,6 @@ class ExtraChannel extends Component {
         } else if (this.props.channel.spreadingFactors !== undefined) {
             spreadingFactorsStr = this.props.channel.spreadingFactors.join(", ");
         }
-
         return (
             <FormControl
                 label={
@@ -242,10 +241,12 @@ class GatewayProfileForm extends FormComponent {
         }
 
         let extraChannels = [];
-
-        if (this.state.object.extraChannels !== undefined) {
-            extraChannels = this.state.object.extraChannels.map((ec, i) => <ExtraChannel key={i} channel={ec} i={i} onDelete={() => this.deleteExtraChannel(i)} onChange={ec => this.updateExtraChannel(i, ec)} />);
-        }
+        
+        //if(this.state.object !== undefined){
+            if (this.state.object.extraChannels !== undefined) {
+                extraChannels = this.state.object.extraChannels.map((ec, i) => <ExtraChannel key={i} channel={ec} i={i} onDelete={() => this.deleteExtraChannel(i)} onChange={ec => this.updateExtraChannel(i, ec)} />);
+            }
+        //}
 
         return (
             <React.Fragment>
