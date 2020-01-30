@@ -89,8 +89,8 @@ function Decode(fPort, bytes) {
     }
 
     let fieldsSchema = {
-      name: Yup.string().trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
-        .required(i18n.t(`${packageNS}:tr000431`)),
+      name: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
+      //.matches(/^[a-zA-Z0-9]+$/, i18n.t(`${packageNS}:tr000429`)).required(i18n.t(`${packageNS}:tr000431`)),
       description: Yup.string().trim()
         .required(i18n.t(`${packageNS}:tr000431`)),
       serviceProfileID: Yup.string().trim()
