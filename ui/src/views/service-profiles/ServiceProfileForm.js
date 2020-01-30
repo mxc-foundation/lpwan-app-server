@@ -53,9 +53,9 @@ class ServiceProfileForm extends Component {
             id: Yup.string(),
             addGWMetaData: Yup.bool(),
             nwkGeoLoc: Yup.bool(),
-            devStatusReqFreq: Yup.number().moreThan(0),
-            drMin: Yup.number().moreThan(0),
-            drMax: Yup.number().moreThan(0)
+            devStatusReqFreq: Yup.number().moreThan(-1),
+            drMin: Yup.number().moreThan(-1),
+            drMax: Yup.number().moreThan(-1)
         }
 
         const formSchema = Yup.object().shape(fieldsSchema);
