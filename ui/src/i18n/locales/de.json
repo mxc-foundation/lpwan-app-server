@@ -2,25 +2,25 @@
   "tr000001": "Live Demo",
   "tr000002": "Access",
   "tr000003": "E-Mail",
-  "tr000004": "Password",
-  "tr000005": "You can access with this account right now as a demo user.",
-  "tr000006": "REGISTER",
-  "tr000007": "LOGIN",
+  "tr000004": "Passwort",
+  "tr000005": "Sie können mit diesem Konto jetzt als Demo-Benutzer zugreifen.",
+  "tr000006": "REGISTRIEREN",
+  "tr000007": "ANMELDEN",
   "tr000008": "MXProtocol",
-  "tr000009": "Forgot your password?",
-  "tr000010": "You can access right now as a demo user",
-  "tr000011": "Login",
-  "tr000012": "Password Recovery",
-  "tr000013": "Type your e-mail address below and we'll send you password reset instructions",
-  "tr000014": "Cancelled",
+  "tr000009": "Passwort vergessen?",
+  "tr000010": "Sie können sofort als Demo-Benutzer zugreifen",
+  "tr000011": "Anmelden",
+  "tr000012": "Passwort-Wiederherstellung",
+  "tr000013": "Geben Sie Ihre registrierte e-Mail ein, so dass wir Ihnen Anweisungen schicken können um das Password zurückzusetzen",
+  "tr000014": "Abgebrochen",
   "tr000015": "Please type your new password below.",
-  "tr000016": "Passwords must be at least 6 characters long.",
-  "tr000017": "Password and confirmation don't match.",
-  "tr000018": "Confirmation email has been sent.",
-  "tr000019": "Registration",
-  "tr000020": "Register",
+  "tr000016": "Passwörter müssen mindestens 6 Zeichen enthalten.",
+  "tr000017": "Passwort und Bestätigung stimmen nicht überein.",
+  "tr000018": "Bestätigungs-Anfrage wurde gesendet.",
+  "tr000019": "Registrierung",
+  "tr000020": "Registrieren",
   "tr000021": "Are you a human, please verify yourself",
-  "tr000022": "Confirm",
+  "tr000022": "Bestätigen",
   "tr000023": "Password repeat",
   "tr000024": "Please, enter a valid email address to use.",
   "tr000025": "Passwords doesn't match",
@@ -453,14 +453,14 @@
     "reset": "RESET"
   },
   "lpwan": {
-    "org_users" : {
+    "org_users": {
       "goto_user": "GOTO USER",
       "delete_user": "Are you sure you want to delete this user?"
     },
-    "organizations" : {
+    "organizations": {
       "delete_organization": "Are you sure you want to delete this organization?"
     },
-    "service_profiles" : {
+    "service_profiles": {
       "delete_service_profile": "Are you sure you want to delete this service profile?"
     }
   },
@@ -496,7 +496,6 @@
       "notice001": "Please, Change the ETH account for your Supernode before topping up.",
       "notice002": "Please, Register your ETH account before topping up MXC.",
       "notice003": "Would you like to go to the ETH account menu to update your account?"
-
     },
     "history": {
       "history": "History",
@@ -549,9 +548,6 @@
       "name": "Name",
       "filter": "Filter"
     },
-    "application":{
-      "del_application": "Are you sure you want to delete this application? This will also delete all devices part of this application."
-    },
     "gateways": {
       "gateway": "Gateway",
       "gateways": "Gateways",
@@ -559,7 +555,7 @@
       "downlink_price": "Downlink Price",
       "mode": "Mode",
       "filter": "Filter",
-      "choose_a_manufacturer" : "Choose a Manufacturer",
+      "choose_a_manufacturer": "Choose a Manufacturer",
       "other": "Other",
       "enter_your_gateway_serial_number": "Enter Your Gateway Serial Number",
       "were_searching_with_your_gateway_please_wait": "We're Searching with your Gateway, please wait..."
