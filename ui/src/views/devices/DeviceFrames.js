@@ -62,9 +62,9 @@ class DeviceFrames extends Component {
 
   componentDidMount() {
     const conn = DeviceStore.getFrameLogsConnection(this.props.match.params.devEUI, this.onFrame);
-    if (isDev) {
+    /* if (isDev) {
       this.onFrame(mockDeviceFrame);
-    }
+    } */
     this.setState({
       wsConn: conn,
     });
@@ -74,9 +74,9 @@ class DeviceFrames extends Component {
   }
 
   componentWillUnmount() {
-    if (isDev) {
+    /* if (isDev) {
       return;
-    }
+    } */
     this.state.wsConn.close();
 
     DeviceStore.removeListener("ws.status.change", this.setConnected);
