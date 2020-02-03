@@ -448,6 +448,29 @@
   "tr000553": "Integrations",
   "tr000554": "Device Details",
   "tr000555": "FUOTA",
+  "tr000556": "Detected {{num}} errors. Please fix the validation errors shown in each tab before resubmitting.",
+  "tr000557": "Select an application for the device to load only device profiles associated with the application",
+  "tr000558": "Add an Application?",
+  "tr000559": "You can create an application for your device to belong to.",
+  "tr000560": "Would you like to create an application?",
+  "tr000561": "Gateway Location Accuracy",
+  "tr000562": "Gateway Location Source",
+  "tr000563": "UNKNOWN: Unknown; GPS: GPS; CONFIG: Manually configured; GEO_RESOLVER: Geo resolver;",
+  "tr000564": "CHECK",
+  "tr000565": "Username must only contain letters, and digits",
+  "tr000566": "Password must be at least 6 characters long",
+  "tr000567": "I'm not a robot",
+  "tr000568": "Wallet",
+  "tr000569": "Unexpected end of JSON input",
+  "tr000570": "Create Profile",
+  "
+
+	
+	
+	
+
+	
+	
   "common": {
     "delete": "DELETE",
     "reset": "RESET"
