@@ -322,7 +322,7 @@ class StakeForm extends Component {
     let trashold = (isUnstake) ? amount : balance;
 
     let fieldsSchema = {
-      amount: Yup.number().moreThan(0).max(trashold).required(),
+      amount: Yup.number().moreThan(0).max(trashold).required(i18n.t(`${packageNS}:tr000431`)),
       revRate: Yup.number(),
     }
 
@@ -361,7 +361,10 @@ class StakeForm extends Component {
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.confirm}>
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.confirm({ ...castValues })
+          }}>
           {({
             handleSubmit,
             handleChange,

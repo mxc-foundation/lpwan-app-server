@@ -120,7 +120,7 @@
   "tr000119": "LoRa",
   "tr000120": "FSK",
   "tr000121": "带宽（kHz）",
-  "tr000122": "kHz",
+  "tr000122": "千赫",
   "tr000123": "传播因子（SF）",
   "tr000124": "在定义多个传播因子时，该通道将在网关上配置为多SF频道。",
   "tr000125": "组织/创建",
@@ -159,6 +159,8 @@
   "tr000158": "向应用程序服务器报告设备链路余量",
   "tr000159": "允许的最小数据传输速率",
   "tr000160": "允许的最小数据传输速率。用于ADR。",
+  "tr000161": "最大的允许数据速率",
+  "tr000162": "最大的允许数据数率。给ADR做使用。",
   "tr000164": "添加服务资料？",
   "tr000165": "所选组织还没有服务资料",
   "tr000166": "关闭窗口",
@@ -168,7 +170,7 @@
   "tr000170": "选择网络服务器",
   "tr000171": "将在其上配置此设备资料文件的网络服务器。 创建设备资料文件后，该值无法更改。",
   "tr000172": "LoRaWAN MAC版本",
-  "tr000173": null,
+  "tr000173": "选择LoRaWAN MAC版本",
   "tr000174": "设备支持的LoRaWAN MAC版本。",
   "tr000175": "LoRaWAN区域参数修订",
   "tr000176": "选择LoRaWAN区域参数修订",
@@ -207,7 +209,7 @@
   "tr000209": "有效负载编解码器",
   "tr000210": "选择有效负载编解码器",
   "tr000211": "无",
-  "tr000212": "Cayenne LPP",
+  "tr000212": "卡宴 LPP",
   "tr000213": "自定义JavaScript编解码器功能",
   "tr000214": "通过定义有效负载编解码器，LPWAN App Server可以为您编码和解码二进制设备有效负载。",
   "tr000215": "该函数必须具有签名函数 'function Decode(fPort, bytes)'，并且必须返回一个对象。 LPWAN 应用服务器会将此对象转换为JSON。",
@@ -353,7 +355,7 @@
   "tr000361": "选择多播超时",
   "tr000362": "单播超时（秒）",
   "tr000363": "将此设置为设备发送上行链路消息的最小间隔。",
-  "tr000364": "给定的数��表示将发送的额外冗余帧，以便设备可以从丢包中恢复。",
+  "tr000364": "给定的数值表示将发送的额外冗余帧，以便设备可以从丢包中恢复。",
   "tr000365": "冗余框架",
   "tr000366": "该文件将碎片化并发送到设备。请注意，此文件的格式取决于供应商。",
   "tr000367": "选择固件文件",
@@ -413,27 +415,55 @@
   "tr000421": "下行链路费用",
   "tr000422": "模式",
   "tr000423": "网关资讯",
+  "title": "M2M钱包",
+  "tr000424": "取消",
+  "tr000425": "确认",
   "tr000426": "确定您要删除此网关档案吗?",
   "tr000427": "将LPWAN App Server的配置文件证书路由到LPWAN Server连接",
-  "tr000428": "Routing Profile TLS Certificates",
-  "tr000429": "The provided value is invalid, please enter a valid value",
-  "tr000430": "Close",
-  "tr000431": "This field is required",
-  "tr000432": "Altitude",
-  "tr000450": "Back to Control Panel",
-  "tr000451": "Settings",
-  "tr000452": "Profile Settings",
-  "tr000453": "Edit Profile Picture",
-  "tr000454": "Profile Picture",
-  "tr000455": "Invalid Email Address",
-  "tr000456": "Edit your profile picture. Drag and drop an image file here, or click to select and upload an image file.",
-  "tr000457": "Aborted uploading profile pic {{error}",
-  "tr000458": "Error uploading profile pic {{error}}",
-  "tr000459": "Successfully uploaded file {{filename}}",
-  "tr000460": "Maximum file upload size of {{maxFileSizeMegabytes}} MB exceeded by file {{filename}}",
-  "tr000461": "Gateway map",
+  "tr000428": "路由配置资料TLS证书",
+  "tr000429": "提供的值无效，请输入有效值",
+  "tr000430": "关闭",
+  "tr000431": "此栏位必填",
+  "tr000432": "高度",
+  "tr000450": "回到控制台",
+  "tr000451": "设置",
+  "tr000452": "个人资料设置",
+  "tr000453": "编辑个人资料照片",
+  "tr000454": "个人资料照片",
+  "tr000455": "无效的电子邮件地址",
+  "tr000456": "编辑您的个人资料照片。在此处拖放照片，或单击以选择并上传照片。",
+  "tr000457": "上传个人资料照片已中止{error}",
+  "tr000458": "上传个人资料照片错误{{error}}",
+  "tr000459": "已成功上传档案{{filename}}",
+  "tr000460": "文件{{filename}} 超出了{{maxFileSizeMegabytes}} MB的最大文件上传大小",
+  "tr000461": "网关地图",
   "tr000462": "回到登入页面",
-  "tr000463": "Back",
+  "tr000463": "返回",
+  "tr000500": "外部电源",
+  "tr000501": "设备资料",
+  "tr000502": "组织装置",
+  "tr000503": "添加设备",
+  "tr000551": "有效负载解码器脚本",
+  "tr000552": "有效负载编码器脚本",
+  "tr000553": "落地应用",
+  "tr000554": "设备详细信息",
+  "tr000555": "FUOTA",
+  "common": {
+    "delete": "删除",
+    "reset": "重置"
+  },
+  "lpwan": {
+    "org_users": {
+      "goto_user": "转到用户",
+      "delete_user": "您确定要删除该用户吗？"
+    },
+    "organizations": {
+      "delete_organization": "你确定要删除该组织吗？"
+    },
+    "service_profiles": {
+      "delete_service_profile": "您确定要删除该服务资料吗？"
+    }
+  },
   "menu": {
     "withdraw": {
       "withdraw": "提款",
@@ -466,7 +496,6 @@
       "notice001": "警告: 在用户充值 MXC 之前，请先更改您的超级节点 ETH 账户",
       "notice002": "警告: 在充值 MXC 之前，请先注册一个 ETH 账户",
       "notice003": "您想要前往 ETH 账户页面更新您的 ETH 账户吗?"
-
     },
     "history": {
       "history": "历史记录",
@@ -519,16 +548,24 @@
       "name": "名称",
       "filter": "过滤"
     },
+    "application":{
+      "del_application": "您确定要删除此应用程序吗？ 这还将删除此应用程序的所有设备部分。"
+    },
     "gateways": {
       "gateway": "网关",
       "gateways": "网关",
       "status": "状态",
       "downlink_price": "下行链路费用",
       "mode": "模式",
-      "filter": "过滤"
+      "filter": "过滤",
+      "choose_a_manufacturer": "选择制造商。",
+      "other": "其他。",
+      "enter_your_gateway_serial_number": "输入您的网关序列号。",
+      "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候..."
     },
     "staking": {
       "staking": "质押",
+      "staking_is_being_processed": "质押正在处理...",
       "revenue_rate": "收益率",
       "your_stake": "你的质押是 ",
       "confirm_stake": "确认质押",
@@ -536,6 +573,7 @@
       "unstake": "解除质押",
       "set_stake": "设定质押 数额",
       "history": "历史",
+      "can_not_stake_0_amount": "请检查您的数量。",
       "withdraw_stake": "提款",
       "set_stake_success": "恭喜您！您的质押已确认。",
       "unstake_set_success": "解除质押成功。MXC已添加到您的M2M钱包中.",
@@ -546,7 +584,9 @@
       "private": "私人",
       "network": "网路",
       "stake_success": "质押成功。",
+      "unstake_success": "取消质押成功",
       "cancel": "取消",
+      "confirm": "确认",
       "reset": "重置",
       "monthly": "每个月",
       "stake_amount": "质押数量",
@@ -621,7 +661,10 @@
       "learn_more": "更多信息",
       "amount": "量",
       "confirm": "确认",
-      "control_panel": "控制面板"
+      "control_panel": "控制面板",
+      "back": "回去",
+      "submit": "完成了",
+      "cancel": "取消"
     },
     "system_settings": {
       "system_settings": "系统设定"

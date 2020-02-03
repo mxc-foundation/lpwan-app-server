@@ -70,7 +70,7 @@ class ListGatewayProfiles extends Component {
     limit = MAX_DATA_LIMIT;
     GatewayProfileStore.list(0, limit, offset, (res) => {
       const object = this.state;
-      object.totalSize = res.totalCount;
+      object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({ object });

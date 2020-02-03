@@ -42,7 +42,7 @@ class CreateNetworkServer extends Component {
           </Breadcrumb>
         </TitleBar>
 
-        <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+        <Card className="card-box shadow-sm">
           <NetworkServerForm
             onSubmit={this.onSubmit}
             submitLabel={i18n.t(`${packageNS}:tr000041`)}

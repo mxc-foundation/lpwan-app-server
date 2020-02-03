@@ -29,7 +29,7 @@ const SideNavOrganizationsContent = (props) => {
                         <span> {i18n.t(`${packageNS}:tr000049`)} </span>
                     </Link>
                 </li> */}
-                
+
                 <li>
                     <Link to={`/topup/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
                         <i className="mdi mdi-wallet"></i>
@@ -56,7 +56,7 @@ const SideNavOrganizationsContent = (props) => {
                 <li>
                     <Link to={`/organizations/${props.orgId}/gateways`} className="waves-effect side-nav-link-ref">
                         <i className="mdi mdi-remote"></i>
-                        <span> {i18n.t(`${packageNS}:menu.gateways.gateway`)} </span>
+                        <span> {i18n.t(`${packageNS}:menu.gateways.gateways`)} </span>
                     </Link>
                 </li>
 

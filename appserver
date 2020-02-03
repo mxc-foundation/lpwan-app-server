@@ -1,39 +1,140 @@
 #!/bin/bash
 
 PARENT_PATH=$(dirname $0)
+CONFIG=$PARENT_PATH/config
+TAG=$(git describe --tags)
+
+
+if [ -f "$CONFIG" ]; then
+  supernode_mode=$(cat $CONFIG | awk -F '=' '/SUPERNODE_MODE/{print $NF}')
+
+  if [ "$supernode_mode" != "development" ] && [ "$supernode_mode" != "testing" ]; then
+    echo "Invalid SUPERNODE_MODE=$supernode_mode in $CONFIG file: SUPERNODE_MODE=[development|testing]"
+    exit
+  fi
+
+else
+  echo "Config file does not exist. Nothing is done. "
+  exit
+fi
 
 if [ "$1" = "-h" ]; then
-  echo "Usage : appserver [local_database|remote_database <remote_data_server>|create_image|build]"
+  echo "Usage : appserver [local|remote|create_image|build]"
   echo ""
   echo "Commands : "
-  echo "   local_database                        Start docker container with local database and mqtt service"
-  echo "   remote_database <remote_data_server>  Start docker container with remote database and mqtt service"
-  echo "   create_image                          Create docker image for LPWAN-app-server"
-  echo "   build                                 Command for building the code, only run in docker container"
+  echo "   local                        Start docker container with local database and mqtt service"
+  echo "   remote                       Start docker container with remote database and mqtt service;"
+  echo "   create_image                 Create compiled docker image for LPWAN-app-server"
+  echo "   build                        Command for building the code, only run in docker container"
   echo ""
   exit
 fi
 
-if [ "$1" = "remote_database" ] && [ $# -eq 2 ]; then
-  "$PARENT_PATH"/scripts/docker/generate-docker-compose remote $2
+build_image()
+{
+  echo "build image with version $TAG"
+
+  rm -f out.txt error.txt
+  # build image
+  docker-compose -f docker-compose-create-image.yml build $SERVICENAME 2>>error.txt 1>>out.txt|tee
+  # it error.txt contains error, exit
+  ERROR=$(cat error.txt| awk '/^Building /{next}{print "error occurs"; exit}')
+  if [ "$ERROR"x = "error occurs"x ]; then
+    echo "Failed to build image, error occurs..."
+    exit
+  fi
+
+  IMAGE_ID=$(cat out.txt |awk '/ *Successfully built */{print $NF}')
+  if [ "$IMAGE_ID"x = x ]; then
+    echo "Failed to build image, unable to get image_id..."
+    exit
+  else
+    echo "Successfully built image $IMAGE_ID"
+  fi
+
+  echo "re-login docker.io"
+  # push image to docker hub
+  docker logout
+  docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD docker.io
+
+  echo "docker push image"
+  docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+  docker push $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+  docker image rm $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+
+  echo "Build image successfully, rm error.txt"
+  # delete error message only when everything is done successfully
+  rm error.txt
+}
+
+if [ "$*" = "remote" ] || [ "$*" = "local" ]; then
+  if [ -f "/.dockerenv" ]; then
+     echo "Command '$0 $*' only runs outside of a docker container, nothing is executed. "
+     exit
+  fi
+
+  python "$PARENT_PATH"/scripts/docker/docker-compose-template.py \
+    "env_file"=$CONFIG \
+    "supernode_data_service"="$*" \
+    "supernode_mode"=$supernode_mode |tee tmp
+
+  [ "$(cat tmp)" = "invalid argument" ] && exit
+
+  if [ -f "$PARENT_PATH"/docker-compose.yml ]; then
+    mv "$PARENT_PATH"/docker-compose.yml "$PARENT_PATH"/docker-compose.yml.bak
+  fi
+
+  mv tmp "$PARENT_PATH"/docker-compose.yml
 
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
-  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
 
-elif [ "$*" = "local_database" ]; then
-  "$PARENT_PATH"/scripts/docker/generate-docker-compose local
-  docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
-  docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
+  if [ "$supernode_mode" = "development" ]; then
+    docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
+  fi
 
 elif [ "$*" = "create_image" ]; then
-  "$PARENT_PATH"/scripts/docker/generate-docker-compose image
-  mv "$PARENT_PATH"/docker-compose.yml "$PARENT_PATH"/docker-compose-create-image.yml
-  read -p "Insert docker hub username: " DOCKER_HUB_USERNAME
-  read -p "Insert docker hub password: " DOCKER_HUB_PASSWORD
-  read -p "Insert docker hub repository: " DOCKER_HUB_REPOSITORY
-  "$PARENT_PATH"/scripts/image/generateAndPushDockerImage $DOCKER_HUB_USERNAME $DOCKER_HUB_PASSWORD $DOCKER_HUB_REPOSITORY
+  if [ -f "/.dockerenv" ]; then
+     echo "Command '$0 $*' only runs outside of a docker container, nothing is executed. "
+     exit
+  fi
+
+  python "$PARENT_PATH"/scripts/docker/docker-compose-template.py \
+    "env_file"=$CONFIG \
+    "supernode_data_service"='image' \
+    "supernode_mode"='image' |tee tmp
+
+  [ "$(cat tmp)" = "invalid argument" ] && exit
+
+  if [ -f "$PARENT_PATH"/docker-compose-create-image.yml ]; then
+    mv "$PARENT_PATH"/docker-compose-create-image.yml "$PARENT_PATH"/docker-compose-create-image.ymlbak
+  fi
+
+  mv tmp "$PARENT_PATH"/docker-compose-create-image.yml
+
+  if [ -z "$DOCKER_HUB_USERNAME" ]; then
+    read -p "Insert docker hub username: " USERNAME
+    export DOCKER_HUB_USERNAME=$USERNAME
+  fi
+
+  if [ -z "$DOCKER_HUB_PASSWORD" ]; then
+    read -p "Insert docker hub password: " PASSWORD
+    export DOCKER_HUB_PASSWORD=$PASSWORD
+  fi
+
+  if [ -z "$DOCKER_HUB_REPOSITORY" ]; then
+    read -p "Insert docker hub repository: " REPOSITORY
+    export DOCKER_HUB_REPOSITORY=$REPOSITORY
+  fi
+
+  build_image
+  echo "Before exit, rm out.txt"
+  rm out.txt
 
 elif [ "$*" = "build" ]; then
+  if ! [ -f "/.dockerenv" ]; then
+     echo "Command '$0 $*' only runs inside of a docker container to rebuild service, nothing is executed. "
+     exit
+  fi
   "$PARENT_PATH"/scripts/compile/develop-compile
 
 else

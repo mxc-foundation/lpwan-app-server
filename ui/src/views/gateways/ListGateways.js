@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { withRouter, Route, Switch, Link } from "react-router-dom";
 
+import BrandSelectModal from "./BrandSelectModal";
 import moment from "moment";
 import { Bar } from "react-chartjs-2";
 import { Map, Marker, Popup } from 'react-leaflet';
@@ -32,53 +33,18 @@ const styles = {
 const GatewayActivityColumn = (cell, row, index, extraData) => {
   const stats = extraData['stats'];
   
-  const options = {
-    elements: {
-      rectangle: {
-        backgroundColor: 'rgb(0, 255, 217)',
-      }
-    },
-    scales: {
-      xAxes: [{ display: false }],
-      yAxes: [{ display: false }],
-    },
-    tooltips: {
-      enabled: false,
-    },
-    legend: {
-      display: false,
-    },
-    responsive: false,
-    animation: {
-      duration: 0,
-    },
-  };
-
   let rowStats = stats && stats[row.id] ? stats[row.id]: null;
   
-  let chartData = {
-    labels: [],
-    datasets: [
-      {
-        data: [],
-        fillColor: "rgba(33, 150, 243, 1)",
-      },
-    ],
-  };
-
+  let dataTotal = 0;
+  
   if (rowStats) {
     for (const row of rowStats) {
-      chartData.labels.push(row.timestamp);
-      chartData.datasets[0].data.push(row.rxPacketsReceivedOK + row.txPacketsEmitted);
+      dataTotal += parseFloat(row.rxPacketsReceivedOK + row.txPacketsEmitted);
     }
   }
+
   return (
-    rowStats ? <Bar
-      width={380}
-      height={23}
-      data={chartData}
-      options={options}
-    /> : <React.Fragment></React.Fragment>
+    rowStats ? parseFloat(dataTotal) : <React.Fragment>0</React.Fragment>
   );
 }
 
@@ -87,6 +53,9 @@ const GatewayColumn = (cell, row, index, extraData) => {
   return <Link to={`/organizations/${organizationId}/gateways/${row.id}`}>{row.name}</Link>;
 }
 
+const LastSeenAtColumn = (cell, row, index, extraData) => {
+  return (row.lastSeenAt)?row.lastSeenAt:'--:--';
+}
 const getColumns = (organizationId, stats) => (
   [{
     dataField: 'name',
@@ -105,8 +74,9 @@ const getColumns = (organizationId, stats) => (
     formatExtraData: { stats },
     sort: false,
   }, {
-    dataField: 'status',
-    text: i18n.t(`${packageNS}:tr000282`),
+    dataField: 'lastSeenAt',
+    text: i18n.t(`${packageNS}:tr000283`),
+    formatter: LastSeenAtColumn,
     sort: false,
   }, {
     dataField: 'downlink_price',
@@ -155,7 +125,7 @@ class ListGatewaysTable extends Component {
     this.setState({ loading: true });
     GatewayStore.list("", this.props.organizationID, limit, offset, (res) => {
       const object = this.state;
-      object.totalSize = res.totalCount;
+      object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({object});
@@ -298,7 +268,9 @@ class ListGateways extends Component {
     this.switchToList = this.switchToList.bind(this);
     this.locationToTab = this.locationToTab.bind(this);
     this.state = {
-      viewMode: 'list'
+      viewMode: 'list',
+      nsDialog: false, 
+      setModal: false
     };
   }
 
@@ -312,25 +284,51 @@ class ListGateways extends Component {
     }
   }
 
+  showModal = () => {
+    const object = this.state;
+    object.nsDialog = true;
+    this.setState({ object });
+  }
+  
+  toggle = () => {
+    const object = this.state;
+    object.nsDialog = !object.nsDialog;
+    this.setState({ object });
+  }
+
+  handleCloseModal = () => {
+    const object = this.state;
+    object.nsDialog = null;
+    this.setState({
+      object
+    })
+  }
   /**
    * Switch to list
    */
   switchToList() {
     this.setState({ viewMode: 'list' });
   }
-
+  
   render() {
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (<React.Fragment>
+      
       <TitleBar
         buttons={<GatewayAdmin organizationID={this.props.match.params.organizationID}>
+          
+          {/* <BrandSelectModal
+          buttonLabel={i18n.t(`${packageNS}:tr000277`)}
+          callback={this.handleLink} /> */}
           <TitleBarButton
             key={1}
             label={i18n.t(`${packageNS}:tr000277`)}
             icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-            to={`/organizations/${this.props.match.params.organizationID}/gateways/create`}
+            onClick={this.toggle}
+            //to={`/organizations/${this.props.match.params.organizationID}/gateways/brand`}
+            to={`/organizations/${currentOrgID}/gateways/create`}
           />
         </GatewayAdmin>}
       >

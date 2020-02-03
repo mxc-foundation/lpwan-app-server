@@ -5,7 +5,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
-
+import MockGatewayProfileStoreApi from '../api/mockGatewayProfileStoreApi';
+import isDev from '../util/isDev';
 
 class GatewayProfileStore extends EventEmitter {
   constructor() {

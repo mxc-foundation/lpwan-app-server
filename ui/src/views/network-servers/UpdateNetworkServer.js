@@ -23,7 +23,7 @@ class UpdateNetworkServer extends Component {
   render() {
     return(
       <React.Fragment>
-        <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+        <Card className="card-box shadow-sm">
           <NetworkServerForm
             object={this.props.networkServer}
             onSubmit={this.onSubmit}

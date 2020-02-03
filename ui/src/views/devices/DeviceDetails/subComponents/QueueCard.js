@@ -109,7 +109,7 @@ class QueueCard extends Component {
 
     DeviceQueueStore.list(this.props.match.params.devEUI, res => {
       const object = this.state;
-      //object.totalSize = res.totalCount;
+      //object.totalSize = Number(res.totalCount);
       object.data = res.deviceQueueItems;
       object.loading = false;
       this.setState({object});

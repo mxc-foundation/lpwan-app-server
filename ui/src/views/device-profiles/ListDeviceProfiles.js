@@ -79,7 +79,7 @@ class ListDeviceProfiles extends Component {
     // FIXME - should we be associating the Device Profile optionally with an Application ID?
     DeviceProfileStore.list(currentOrgID, 0, limit, offset, (res) => {
       const object = this.state;
-      object.totalSize = res.totalCount;
+      object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({object});
@@ -117,7 +117,7 @@ class ListDeviceProfiles extends Component {
             <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
           </TitleBar>
           <Grid item xs={12}>
-            <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+            <Card className="card-box shadow-sm">
               {this.state.loading && <Loader />}
               <AdvancedTable
                 data={this.state.data}

@@ -54,7 +54,7 @@ class CreateGatewayProfile extends Component {
     });
   }
 
-  closeDialog() {
+  closeDialog = () => {
     this.setState({
       nsDialog: false,
     });
@@ -75,6 +75,7 @@ class CreateGatewayProfile extends Component {
           title={""}
           left={"DISMISS"}
           right={"ADD"}
+          closeModal={this.closeDialog}
           context={i18n.t(`${packageNS}:tr000377`)}
           callback={this.deleteGatewayProfile} />}
 

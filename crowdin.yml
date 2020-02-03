@@ -1,0 +1,9 @@
+commit_message: "[ci skip]"
+files:
+  - source: /ui/src/i18n/locales
+    ignore:
+      - index.js
+      - ko.json
+      - zhCN.json
+      - zhTW.json
+    translation: /ui/src/i18n/locales/%two_letters_code%.json

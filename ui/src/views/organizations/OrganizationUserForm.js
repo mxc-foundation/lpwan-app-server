@@ -50,7 +50,7 @@ class OrganizationUserForm extends Component {
     }
 
     let fieldsSchema = {
-      username: Yup.string().required("Required"),
+      username: Yup.string().trim().required("Required"),
       isAdmin: Yup.bool(),
       isDeviceAdmin: Yup.bool(),
       isGatewayAdmin: Yup.bool(),
@@ -64,7 +64,10 @@ class OrganizationUserForm extends Component {
           enableReinitialize
           initialValues={this.state.object}
           validationSchema={formSchema}
-          onSubmit={this.props.onSubmit}>
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            this.props.onSubmit({ ...castValues })
+          }}>
           {({
             handleSubmit,
             handleChange,
