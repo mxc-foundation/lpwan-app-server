@@ -463,27 +463,19 @@
   "tr000568": "Wallet",
   "tr000569": "Unexpected end of JSON input",
   "tr000570": "Create Profile",
-  "
-
-	
-	
-	
-
-	
-	
   "common": {
     "delete": "DELETE",
     "reset": "RESET"
   },
   "lpwan": {
-    "org_users" : {
+    "org_users": {
       "goto_user": "GOTO USER",
       "delete_user": "Are you sure you want to delete this user?"
     },
-    "organizations" : {
+    "organizations": {
       "delete_organization": "Are you sure you want to delete this organization?"
     },
-    "service_profiles" : {
+    "service_profiles": {
       "delete_service_profile": "Are you sure you want to delete this service profile?"
     }
   },
@@ -519,7 +511,6 @@
       "notice001": "Please, Change the ETH account for your Supernode before topping up.",
       "notice002": "Please, Register your ETH account before topping up MXC.",
       "notice003": "Would you like to go to the ETH account menu to update your account?"
-
     },
     "history": {
       "history": "History",
@@ -572,7 +563,7 @@
       "name": "Name",
       "filter": "Filter"
     },
-    "application":{
+    "application": {
       "del_application": "Are you sure you want to delete this application? This will also delete all devices part of this application."
     },
     "gateways": {
@@ -582,7 +573,7 @@
       "downlink_price": "Downlink Price",
       "mode": "Mode",
       "filter": "Filter",
-      "choose_a_manufacturer" : "Choose a Manufacturer",
+      "choose_a_manufacturer": "Choose a Manufacturer",
       "other": "Other",
       "enter_your_gateway_serial_number": "Enter Your Gateway Serial Number",
       "were_searching_with_your_gateway_please_wait": "We're Searching with your Gateway, please wait..."
