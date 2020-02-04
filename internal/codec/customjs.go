@@ -112,8 +112,14 @@ func (c CustomJS) EncodeToBytes() (b []byte, err error) {
 	vm := otto.New()
 	vm.Interrupt = make(chan func(), 1)
 	vm.SetStackDepthLimit(32)
-	vm.Set("obj", c.Data)
-	vm.Set("fPort", c.fPort)
+	err = vm.Set("obj", c.Data)
+	if err != nil {
+		return nil, errors.New("unknown vm.Set error")
+	}
+	err = vm.Set("fPort", c.fPort)
+	if err != nil {
+		return nil, errors.New("unknown fPort error")
+	}
 
 	go func() {
 		time.Sleep(maxExecutionTime)
