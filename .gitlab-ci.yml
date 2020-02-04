@@ -22,9 +22,9 @@ react_test_frontend:
     - master
     - develop
     - buildserver
-    - l10n_crowdin2
+    - /crowdin/
   tags:
-    - buildserver
+    - kubernetes
 
 syntax_test_backend:
   image: golang:1.12-alpine
@@ -41,9 +41,9 @@ syntax_test_backend:
     - master
     - develop
     - buildserver
-    - l10n_crowdin2
+    - /crowdin/
   tags:
-    - buildserver
+    - kubernetes
 
 security_test_backend:
   image: golang:1.12-alpine
@@ -60,9 +60,9 @@ security_test_backend:
     - master
     - develop
     - buildserver
-    - l10n_crowdin2
+    - /crowdin/
   tags:
-    - buildserver
+    - kubernetes
     
 variables:
   SERVICE_NAME: $APP_NAME
@@ -79,7 +79,7 @@ build_image: # this needs changing to native build to speed up 2-3 times
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
   except:
-    - l10n_crowdin2
+    - /crowdin/
   tags:
     - buildserver-native
 
@@ -108,8 +108,8 @@ release_image_dockerhub:
     - docker tag $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION $DOCKER_REPO:$SERVICE_NAME.$VERSION
     - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
   only:
+    - tags
     - master
-    - develop
   tags:
     - buildserver-native
 
