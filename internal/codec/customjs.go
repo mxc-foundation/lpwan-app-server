@@ -20,6 +20,7 @@ var (
 	maxExecutionTime = 10 * time.Millisecond
 )
 
+// Setup configures the maxExecutionTime
 func Setup(conf config.Config) error {
 	maxExecutionTime = conf.ApplicationServer.Codec.JS.MaxExecutionTime
 	return nil
