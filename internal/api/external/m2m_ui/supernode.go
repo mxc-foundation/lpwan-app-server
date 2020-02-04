@@ -28,7 +28,7 @@ func NewSupernodeServerAPI(validator auth.Validator) *SupernodeServerAPI {
 func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *api.AddSuperNodeMoneyAccountRequest) (*api.AddSuperNodeMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/AddSuperNodeMoneyAccount")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -60,7 +60,7 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context, req *api.GetSuperNodeActiveMoneyAccountRequest) (*api.GetSuperNodeActiveMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetSuperNodeActiveMoneyAccount")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}

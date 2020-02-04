@@ -28,7 +28,7 @@ func NewMoneyServerAPI(validator auth.Validator) *ExtAccountServerAPI {
 func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.ModifyMoneyAccountRequest) (*api.ModifyMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyMoneyAccount")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.ModifyMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -60,7 +60,7 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, req *api.GetMoneyAccountChangeHistoryRequest) (*api.GetMoneyAccountChangeHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetChangeMoneyAccountHistory")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -94,7 +94,7 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *api.GetActiveMoneyAccountRequest) (*api.GetActiveMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetActiveMoneyAccount")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}

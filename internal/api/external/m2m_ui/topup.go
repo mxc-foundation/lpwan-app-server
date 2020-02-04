@@ -28,7 +28,7 @@ func NewTopUpServerAPI(validator auth.Validator) *TopUpServerAPI {
 func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.GetTransactionsHistoryRequest) (*api.GetTransactionsHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTransactionsHistory")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -61,7 +61,7 @@ func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.Ge
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpHistory")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -94,7 +94,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTopUpDestinationRequest) (*api.GetTopUpDestinationResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpDestination")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}

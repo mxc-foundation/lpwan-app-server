@@ -28,7 +28,7 @@ func NewGatewayServerAPI(validator auth.Validator) *GatewayServerAPI {
 func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayList")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -61,7 +61,7 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGatewayProfileRequest) (*api.GetGatewayProfileResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayProfile")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -94,7 +94,7 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayHistory")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -127,7 +127,7 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayModeRequest) (*api.SetGatewayModeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/SetGatewayMode")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}

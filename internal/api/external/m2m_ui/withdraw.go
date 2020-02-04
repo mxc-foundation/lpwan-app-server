@@ -28,7 +28,7 @@ func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyWithdrawFee")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -60,7 +60,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWithdrawFeeRequest) (*api.GetWithdrawFeeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawFee")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -91,7 +91,7 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.GetWithdrawHistoryRequest) (*api.GetWithdrawHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawHistory")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -125,7 +125,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawReqRequest) (*api.WithdrawReqResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/WithdrawReq")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
