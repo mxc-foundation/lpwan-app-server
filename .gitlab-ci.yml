@@ -35,7 +35,7 @@ syntax_test_backend:
     - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
     - go get -u golang.org/x/lint/golint
   script:
-    - golint -set_exit_status $(go list ./... | grep -v "vendor/")
+    - golint -set_exit_status $(go list ./... | grep -v "migrations" | grep -v "static" | grep -v "integration") | grep -v "underscore in package name"
   allow_failure: true
   except:
     - master
