@@ -80,6 +80,12 @@ service GatewayService {
             get: "/api/gateways/{gateway_id}/frames"
         };
 	}
+
+	rpc GetGwConfig(GetGwConfigRequest) returns (GetGwConfigResponse) {
+		option (google.api.http) = {
+            get: "/api/gateways/config/{gateway_id}"
+        };
+	}
 }
 
 message Gateway {
@@ -325,4 +331,12 @@ message StreamGatewayFrameLogsResponse {
         // Contains a downlink frame.
         DownlinkFrameLog downlink_frame = 2;
     }
+}
+
+message GetGwConfigRequest {
+	string gateway_id = 1;
+}
+
+message GetGwConfigResponse {
+	string conf = 1;
 }

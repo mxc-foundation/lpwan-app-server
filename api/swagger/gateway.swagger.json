@@ -4,10 +4,6 @@
     "title": "gateway.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -102,6 +98,30 @@
             }
           }
         },
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateways/config/{gatewayId}": {
+      "get": {
+        "operationId": "GetGwConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetGwConfigResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "tags": [
           "GatewayService"
         ]
@@ -610,6 +630,14 @@
           "items": {
             "$ref": "#/definitions/apiGatewayStats"
           }
+        }
+      }
+    },
+    "apiGetGwConfigResponse": {
+      "type": "object",
+      "properties": {
+        "conf": {
+          "type": "string"
         }
       }
     },
