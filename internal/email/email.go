@@ -25,6 +25,7 @@ var (
 	disable    bool
 )
 
+//Languages
 const (
 	English            = pb.Language_en
 	Korean             = pb.Language_ko
@@ -113,12 +114,12 @@ func SendInvite(user, token string, language int32) error {
 
 	var msg bytes.Buffer
 	if err := mailTemplates[language].Execute(&msg, struct {
-		From, To, Host, MsgId, Boundary, Link, Logo string
+		From, To, Host, MsgID, Boundary, Link, Logo string
 	}{
 		From:     senderID,
 		To:       user,
 		Host:     host,
-		MsgId:    messageID + "@" + host,
+		MsgID:    messageID + "@" + host,
 		Boundary: "----=_Part_" + messageID,
 		Link:     link,
 		Logo:     logo,
