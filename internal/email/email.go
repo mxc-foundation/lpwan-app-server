@@ -30,6 +30,7 @@ const (
 	Korean             = pb.Language_ko
 	SimplifiedChinese  = pb.Language_zhcn
 	TraditionalChinese = pb.Language_zhtw
+	Japanese           = pb.Language_ja
 )
 
 // Setup configures the package.
