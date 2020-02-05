@@ -2,9 +2,10 @@ package storage
 
 import (
 	"context"
-	"github.com/golang/protobuf/ptypes"
 	"strings"
 	"time"
+
+	"github.com/golang/protobuf/ptypes"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -165,7 +166,7 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	dvClient :=  m2m_api.NewM2MServerServiceClient(m2mClient)
+	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
 		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
 			OrgId: app.OrganizationID,
@@ -305,7 +306,7 @@ func GetDeviceCount(ctx context.Context, db sqlx.Queryer, filters DeviceFilters)
 	return count, nil
 }
 
-// GetDevices returns a slice of devices.
+// GetAllDeviceEuis returns a slice of devices.
 func GetAllDeviceEuis(ctx context.Context, db sqlx.Queryer) ([]string, error) {
 	var devEuiList []string
 	var list []lorawan.EUI64
@@ -496,7 +497,7 @@ func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error 
 	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	dvClient :=  m2m_api.NewM2MServerServiceClient(m2mClient)
+	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
 		_, err = dvClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
 			DevEui: devEUI.String(),
