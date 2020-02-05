@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"database/sql"
 	"regexp"
 	"time"
@@ -106,6 +107,19 @@ func GetBoard(db sqlx.Queryer, mac lorawan.EUI64) (Board, error) {
 func GetBoardMacBySerialNumber(db sqlx.Queryer, sn string) (Board, error) {
 	var bd Board
 	err := sqlx.Get(db, &bd, "select * from board where sn = $1", sn)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return bd, ErrDoesNotExist
+		}
+		return bd, errors.Wrap(err, "Get board by mac error")
+	}
+
+	return bd, nil
+}
+
+func GetOpenVPNByMac(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (Board, error) {
+	var bd Board
+	err := sqlx.Get(db, &bd, "select vpn_addr from board where sn = $1", mac)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return bd, ErrDoesNotExist
