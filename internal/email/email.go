@@ -81,6 +81,10 @@ var (
 			templatePath: "templates/registration-confirm-zhtw",
 			url:          "/#/registration-confirm/",
 		},
+		Japanese: {
+			templatePath: "templates/registration-confirm-ja",
+			url:          "/#/registration-confirm/",
+		},
 	}
 )
 
