@@ -161,6 +161,38 @@
         ]
       }
     },
+    "/api/gateways/{gatewayId}": {
+      "put": {
+        "operationId": "UpdateGwConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateGwConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/{gatewayId}/frames": {
       "get": {
         "summary": "StreamFrameLogs streams the uplink and downlink frame-logs for the given gateway ID.\nNotes:\n  * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.\n  * This endpoint does not work from a web-browser.",
@@ -750,6 +782,17 @@
         "gateway": {
           "$ref": "#/definitions/apiGateway",
           "description": "Gateway object to update."
+        }
+      }
+    },
+    "apiUpdateGwConfigRequest": {
+      "type": "object",
+      "properties": {
+        "gatewayId": {
+          "type": "string"
+        },
+        "conf": {
+          "type": "string"
         }
       }
     },

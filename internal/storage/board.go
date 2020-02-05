@@ -117,17 +117,17 @@ func GetBoardMacBySerialNumber(db sqlx.Queryer, sn string) (Board, error) {
 	return bd, nil
 }
 
-func GetOpenVPNByMac(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (Board, error) {
-	var bd Board
-	err := sqlx.Get(db, &bd, "select vpn_addr from board where sn = $1", mac)
+func GetOpenVPNByMac(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (string, error) {
+	var openVPNaddr string
+	err := sqlx.Get(db, &openVPNaddr, "select vpn_addr from board where sn = $1", mac)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return bd, ErrDoesNotExist
+			return openVPNaddr, ErrDoesNotExist
 		}
-		return bd, errors.Wrap(err, "Get board by mac error")
+		return openVPNaddr, errors.Wrap(err, "Get board by mac error")
 	}
 
-	return bd, nil
+	return openVPNaddr, nil
 }
 
 // UpdateBoard updates the given board.

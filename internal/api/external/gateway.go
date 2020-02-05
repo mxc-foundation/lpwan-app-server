@@ -694,9 +694,9 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	gw, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
+	openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
 
-	message, err := mxConfDGet(ctx,"10.8.1.39", "GGLC", 250)
+	message, err := mxConfDGet(ctx, openVPNaddr, "GGLC", 250)
 	if err != nil {
 		log.WithError(err).Error("cannot connect to gw")
 	}
@@ -736,6 +736,28 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 	}, nil
 }
 
+// Update gateway configuration file
+func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*empty.Empty, error)  {
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
+
+	if err := mxConfUpdate(openVPNaddr, req.Conf); err != nil {
+		log.WithError(err).Error("Update conf to gw failed")
+	}
+
+	return &empty.Empty{}, nil
+}
+
+// connect to gateway though openVPN and get config file
 func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, error) {
 	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
 	if err != nil {
@@ -759,4 +781,40 @@ func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, 
 		return "", err
 	}
 	return message, nil
+}
+
+// connect to gateway though openVPN and update config file
+func mxConfUpdate(ip string, conf string) error {
+	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
+	if err != nil {
+		return err
+	}
+	defer rpConn.Close()
+
+	if _, _, err = rpConn.ReadResponse(220); err != nil {
+		return err
+	}
+	if _, err = rpConn.Cmd("WGLC"); err != nil {
+		return err
+	}
+	if _, _, err = rpConn.ReadResponse(354); err != nil {
+		return err
+	}
+
+	w := rpConn.DotWriter()
+	if _, err = w.Write([]byte(conf)); err != nil {
+		return err
+	}
+	if err = w.Close(); err != nil {
+		return err
+	}
+	if _, _, err = rpConn.ReadResponse(250); err != nil {
+		return err
+	}
+
+	if _, err = rpConn.Cmd("QUIT"); err != nil {
+		return err
+	}
+
+	return nil
 }

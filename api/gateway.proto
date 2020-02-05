@@ -86,6 +86,13 @@ service GatewayService {
             get: "/api/gateways/config/{gateway_id}"
         };
 	}
+
+	rpc UpdateGwConfig(UpdateGwConfigRequest) returns (google.protobuf.Empty) {
+		option (google.api.http) = {
+			put: "/api/gateways/{gateway_id}"
+			body: "*"
+		};
+	}
 }
 
 message Gateway {
@@ -339,4 +346,9 @@ message GetGwConfigRequest {
 
 message GetGwConfigResponse {
 	string conf = 1;
+}
+
+message UpdateGwConfigRequest {
+	string gateway_id = 1;
+	string conf = 2;
 }
