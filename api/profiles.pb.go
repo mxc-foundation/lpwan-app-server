@@ -3,22 +3,14 @@
 
 package api
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type RatePolicy int32
 
@@ -33,7 +25,6 @@ var RatePolicy_name = map[int32]string{
 	0: "DROP",
 	1: "MARK",
 }
-
 var RatePolicy_value = map[string]int32{
 	"DROP": 0,
 	"MARK": 1,
@@ -42,88 +33,62 @@ var RatePolicy_value = map[string]int32{
 func (x RatePolicy) String() string {
 	return proto.EnumName(RatePolicy_name, int32(x))
 }
-
-func (RatePolicy) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_9610db3cccb08234, []int{0}
-}
+func (RatePolicy) EnumDescriptor() ([]byte, []int) { return fileDescriptor7, []int{0} }
 
 type ServiceProfile struct {
 	// Service-profile ID (UUID string).
 	// This will be automatically set on create.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	// Service-profile name.
-	Name string `protobuf:"bytes,21,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,21,opt,name=name" json:"name,omitempty"`
 	// Organization ID to which the service-profile is assigned.
-	OrganizationId int64 `protobuf:"varint,22,opt,name=organization_id,json=organizationID,proto3" json:"organization_id,omitempty"`
+	OrganizationId int64 `protobuf:"varint,22,opt,name=organization_id,json=organizationID" json:"organization_id,omitempty"`
 	// Network-server ID on which the service-profile is provisioned.
-	NetworkServerId int64 `protobuf:"varint,23,opt,name=network_server_id,json=networkServerID,proto3" json:"network_server_id,omitempty"`
+	NetworkServerId int64 `protobuf:"varint,23,opt,name=network_server_id,json=networkServerID" json:"network_server_id,omitempty"`
 	// Token bucket filling rate, including ACKs (packet/h).
-	UlRate uint32 `protobuf:"varint,2,opt,name=ul_rate,json=ulRate,proto3" json:"ul_rate,omitempty"`
+	UlRate uint32 `protobuf:"varint,2,opt,name=ul_rate,json=ulRate" json:"ul_rate,omitempty"`
 	// Token bucket burst size.
-	UlBucketSize uint32 `protobuf:"varint,3,opt,name=ul_bucket_size,json=ulBucketSize,proto3" json:"ul_bucket_size,omitempty"`
+	UlBucketSize uint32 `protobuf:"varint,3,opt,name=ul_bucket_size,json=ulBucketSize" json:"ul_bucket_size,omitempty"`
 	// Drop or mark when exceeding ULRate.
-	UlRatePolicy RatePolicy `protobuf:"varint,4,opt,name=ul_rate_policy,json=ulRatePolicy,proto3,enum=api.RatePolicy" json:"ul_rate_policy,omitempty"`
+	UlRatePolicy RatePolicy `protobuf:"varint,4,opt,name=ul_rate_policy,json=ulRatePolicy,enum=api.RatePolicy" json:"ul_rate_policy,omitempty"`
 	// Token bucket filling rate, including ACKs (packet/h).
-	DlRate uint32 `protobuf:"varint,5,opt,name=dl_rate,json=dlRate,proto3" json:"dl_rate,omitempty"`
+	DlRate uint32 `protobuf:"varint,5,opt,name=dl_rate,json=dlRate" json:"dl_rate,omitempty"`
 	// Token bucket burst size.
-	DlBucketSize uint32 `protobuf:"varint,6,opt,name=dl_bucket_size,json=dlBucketSize,proto3" json:"dl_bucket_size,omitempty"`
+	DlBucketSize uint32 `protobuf:"varint,6,opt,name=dl_bucket_size,json=dlBucketSize" json:"dl_bucket_size,omitempty"`
 	// Drop or mark when exceeding DLRate.
-	DlRatePolicy RatePolicy `protobuf:"varint,7,opt,name=dl_rate_policy,json=dlRatePolicy,proto3,enum=api.RatePolicy" json:"dl_rate_policy,omitempty"`
+	DlRatePolicy RatePolicy `protobuf:"varint,7,opt,name=dl_rate_policy,json=dlRatePolicy,enum=api.RatePolicy" json:"dl_rate_policy,omitempty"`
 	// GW metadata (RSSI, SNR, GW geoloc., etc.) are added to the packet sent to AS.
-	AddGwMetadata bool `protobuf:"varint,8,opt,name=add_gw_metadata,json=addGWMetaData,proto3" json:"add_gw_metadata,omitempty"`
+	AddGwMetadata bool `protobuf:"varint,8,opt,name=add_gw_metadata,json=addGWMetaData" json:"add_gw_metadata,omitempty"`
 	// Frequency to initiate an End-Device status request (request/day).
-	DevStatusReqFreq uint32 `protobuf:"varint,9,opt,name=dev_status_req_freq,json=devStatusReqFreq,proto3" json:"dev_status_req_freq,omitempty"`
+	DevStatusReqFreq uint32 `protobuf:"varint,9,opt,name=dev_status_req_freq,json=devStatusReqFreq" json:"dev_status_req_freq,omitempty"`
 	// Report End-Device battery level to AS.
-	ReportDevStatusBattery bool `protobuf:"varint,10,opt,name=report_dev_status_battery,json=reportDevStatusBattery,proto3" json:"report_dev_status_battery,omitempty"`
+	ReportDevStatusBattery bool `protobuf:"varint,10,opt,name=report_dev_status_battery,json=reportDevStatusBattery" json:"report_dev_status_battery,omitempty"`
 	// Report End-Device margin to AS.
-	ReportDevStatusMargin bool `protobuf:"varint,11,opt,name=report_dev_status_margin,json=reportDevStatusMargin,proto3" json:"report_dev_status_margin,omitempty"`
+	ReportDevStatusMargin bool `protobuf:"varint,11,opt,name=report_dev_status_margin,json=reportDevStatusMargin" json:"report_dev_status_margin,omitempty"`
 	// Minimum allowed data rate. Used for ADR.
-	DrMin uint32 `protobuf:"varint,12,opt,name=dr_min,json=drMin,proto3" json:"dr_min,omitempty"`
+	DrMin uint32 `protobuf:"varint,12,opt,name=dr_min,json=drMin" json:"dr_min,omitempty"`
 	// Maximum allowed data rate. Used for ADR.
-	DrMax uint32 `protobuf:"varint,13,opt,name=dr_max,json=drMax,proto3" json:"dr_max,omitempty"`
+	DrMax uint32 `protobuf:"varint,13,opt,name=dr_max,json=drMax" json:"dr_max,omitempty"`
 	// Channel mask. sNS does not have to obey (i.e., informative).
 	ChannelMask []byte `protobuf:"bytes,14,opt,name=channel_mask,json=channelMask,proto3" json:"channel_mask,omitempty"`
 	// Passive Roaming allowed.
-	PrAllowed bool `protobuf:"varint,15,opt,name=pr_allowed,json=prAllowed,proto3" json:"pr_allowed,omitempty"`
+	PrAllowed bool `protobuf:"varint,15,opt,name=pr_allowed,json=prAllowed" json:"pr_allowed,omitempty"`
 	// Handover Roaming allowed.
-	HrAllowed bool `protobuf:"varint,16,opt,name=hr_allowed,json=hrAllowed,proto3" json:"hr_allowed,omitempty"`
+	HrAllowed bool `protobuf:"varint,16,opt,name=hr_allowed,json=hrAllowed" json:"hr_allowed,omitempty"`
 	// Roaming Activation allowed.
-	RaAllowed bool `protobuf:"varint,17,opt,name=ra_allowed,json=raAllowed,proto3" json:"ra_allowed,omitempty"`
+	RaAllowed bool `protobuf:"varint,17,opt,name=ra_allowed,json=raAllowed" json:"ra_allowed,omitempty"`
 	// Enable network geolocation service.
-	NwkGeoLoc bool `protobuf:"varint,18,opt,name=nwk_geo_loc,json=nwkGeoLoc,proto3" json:"nwk_geo_loc,omitempty"`
+	NwkGeoLoc bool `protobuf:"varint,18,opt,name=nwk_geo_loc,json=nwkGeoLoc" json:"nwk_geo_loc,omitempty"`
 	// Target Packet Error Rate.
-	TargetPer uint32 `protobuf:"varint,19,opt,name=target_per,json=targetPER,proto3" json:"target_per,omitempty"`
+	TargetPer uint32 `protobuf:"varint,19,opt,name=target_per,json=targetPER" json:"target_per,omitempty"`
 	// Minimum number of receiving GWs (informative).
-	MinGwDiversity       uint32   `protobuf:"varint,20,opt,name=min_gw_diversity,json=minGWDiversity,proto3" json:"min_gw_diversity,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	MinGwDiversity uint32 `protobuf:"varint,20,opt,name=min_gw_diversity,json=minGWDiversity" json:"min_gw_diversity,omitempty"`
 }
 
-func (m *ServiceProfile) Reset()         { *m = ServiceProfile{} }
-func (m *ServiceProfile) String() string { return proto.CompactTextString(m) }
-func (*ServiceProfile) ProtoMessage()    {}
-func (*ServiceProfile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9610db3cccb08234, []int{0}
-}
-
-func (m *ServiceProfile) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ServiceProfile.Unmarshal(m, b)
-}
-func (m *ServiceProfile) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ServiceProfile.Marshal(b, m, deterministic)
-}
-func (m *ServiceProfile) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ServiceProfile.Merge(m, src)
-}
-func (m *ServiceProfile) XXX_Size() int {
-	return xxx_messageInfo_ServiceProfile.Size(m)
-}
-func (m *ServiceProfile) XXX_DiscardUnknown() {
-	xxx_messageInfo_ServiceProfile.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ServiceProfile proto.InternalMessageInfo
+func (m *ServiceProfile) Reset()                    { *m = ServiceProfile{} }
+func (m *ServiceProfile) String() string            { return proto.CompactTextString(m) }
+func (*ServiceProfile) ProtoMessage()               {}
+func (*ServiceProfile) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{0} }
 
 func (m *ServiceProfile) GetId() string {
 	if m != nil {
@@ -288,99 +253,76 @@ func (m *ServiceProfile) GetMinGwDiversity() uint32 {
 
 type DeviceProfile struct {
 	// Device-profile ID (UUID string).
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	// Device-profile name.
-	Name string `protobuf:"bytes,21,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,21,opt,name=name" json:"name,omitempty"`
 	// Organization ID to which the service-profile is assigned.
-	OrganizationId int64 `protobuf:"varint,22,opt,name=organization_id,json=organizationID,proto3" json:"organization_id,omitempty"`
+	OrganizationId int64 `protobuf:"varint,22,opt,name=organization_id,json=organizationID" json:"organization_id,omitempty"`
 	// Network-server ID on which the service-profile is provisioned.
-	NetworkServerId int64 `protobuf:"varint,23,opt,name=network_server_id,json=networkServerID,proto3" json:"network_server_id,omitempty"`
+	NetworkServerId int64 `protobuf:"varint,23,opt,name=network_server_id,json=networkServerID" json:"network_server_id,omitempty"`
 	// End-Device supports Class B.
-	SupportsClassB bool `protobuf:"varint,2,opt,name=supports_class_b,json=supportsClassB,proto3" json:"supports_class_b,omitempty"`
+	SupportsClassB bool `protobuf:"varint,2,opt,name=supports_class_b,json=supportsClassB" json:"supports_class_b,omitempty"`
 	// Maximum delay for the End-Device to answer a MAC request or a confirmed DL frame (mandatory if class B mode supported).
-	ClassBTimeout uint32 `protobuf:"varint,3,opt,name=class_b_timeout,json=classBTimeout,proto3" json:"class_b_timeout,omitempty"`
+	ClassBTimeout uint32 `protobuf:"varint,3,opt,name=class_b_timeout,json=classBTimeout" json:"class_b_timeout,omitempty"`
 	// Mandatory if class B mode supported.
-	PingSlotPeriod uint32 `protobuf:"varint,4,opt,name=ping_slot_period,json=pingSlotPeriod,proto3" json:"ping_slot_period,omitempty"`
+	PingSlotPeriod uint32 `protobuf:"varint,4,opt,name=ping_slot_period,json=pingSlotPeriod" json:"ping_slot_period,omitempty"`
 	// Mandatory if class B mode supported.
-	PingSlotDr uint32 `protobuf:"varint,5,opt,name=ping_slot_dr,json=pingSlotDR,proto3" json:"ping_slot_dr,omitempty"`
+	PingSlotDr uint32 `protobuf:"varint,5,opt,name=ping_slot_dr,json=pingSlotDR" json:"ping_slot_dr,omitempty"`
 	// Mandatory if class B mode supported.
-	PingSlotFreq uint32 `protobuf:"varint,6,opt,name=ping_slot_freq,json=pingSlotFreq,proto3" json:"ping_slot_freq,omitempty"`
+	PingSlotFreq uint32 `protobuf:"varint,6,opt,name=ping_slot_freq,json=pingSlotFreq" json:"ping_slot_freq,omitempty"`
 	// End-Device supports Class C.
-	SupportsClassC bool `protobuf:"varint,7,opt,name=supports_class_c,json=supportsClassC,proto3" json:"supports_class_c,omitempty"`
+	SupportsClassC bool `protobuf:"varint,7,opt,name=supports_class_c,json=supportsClassC" json:"supports_class_c,omitempty"`
 	// Maximum delay for the End-Device to answer a MAC request or a confirmed DL frame (mandatory if class C mode supported).
-	ClassCTimeout uint32 `protobuf:"varint,8,opt,name=class_c_timeout,json=classCTimeout,proto3" json:"class_c_timeout,omitempty"`
+	ClassCTimeout uint32 `protobuf:"varint,8,opt,name=class_c_timeout,json=classCTimeout" json:"class_c_timeout,omitempty"`
 	// Version of the LoRaWAN supported by the End-Device.
-	MacVersion string `protobuf:"bytes,9,opt,name=mac_version,json=macVersion,proto3" json:"mac_version,omitempty"`
+	MacVersion string `protobuf:"bytes,9,opt,name=mac_version,json=macVersion" json:"mac_version,omitempty"`
 	// Revision of the Regional Parameters document supported by the End-Device.
-	RegParamsRevision string `protobuf:"bytes,10,opt,name=reg_params_revision,json=regParamsRevision,proto3" json:"reg_params_revision,omitempty"`
+	RegParamsRevision string `protobuf:"bytes,10,opt,name=reg_params_revision,json=regParamsRevision" json:"reg_params_revision,omitempty"`
 	// Class A RX1 delay (mandatory for ABP).
-	RxDelay_1 uint32 `protobuf:"varint,11,opt,name=rx_delay_1,json=rxDelay1,proto3" json:"rx_delay_1,omitempty"`
+	RxDelay_1 uint32 `protobuf:"varint,11,opt,name=rx_delay_1,json=rxDelay1" json:"rx_delay_1,omitempty"`
 	// RX1 data rate offset (mandatory for ABP).
-	RxDrOffset_1 uint32 `protobuf:"varint,12,opt,name=rx_dr_offset_1,json=rxDROffset1,proto3" json:"rx_dr_offset_1,omitempty"`
+	RxDrOffset_1 uint32 `protobuf:"varint,12,opt,name=rx_dr_offset_1,json=rxDROffset1" json:"rx_dr_offset_1,omitempty"`
 	// RX2 data rate (mandatory for ABP).
-	RxDatarate_2 uint32 `protobuf:"varint,13,opt,name=rx_datarate_2,json=rxDataRate2,proto3" json:"rx_datarate_2,omitempty"`
+	RxDatarate_2 uint32 `protobuf:"varint,13,opt,name=rx_datarate_2,json=rxDataRate2" json:"rx_datarate_2,omitempty"`
 	// RX2 channel frequency (mandatory for ABP).
-	RxFreq_2 uint32 `protobuf:"varint,14,opt,name=rx_freq_2,json=rxFreq2,proto3" json:"rx_freq_2,omitempty"`
+	RxFreq_2 uint32 `protobuf:"varint,14,opt,name=rx_freq_2,json=rxFreq2" json:"rx_freq_2,omitempty"`
 	// List of factory-preset frequencies (mandatory for ABP).
-	FactoryPresetFreqs []uint32 `protobuf:"varint,15,rep,packed,name=factory_preset_freqs,json=factoryPresetFreqs,proto3" json:"factory_preset_freqs,omitempty"`
+	FactoryPresetFreqs []uint32 `protobuf:"varint,15,rep,packed,name=factory_preset_freqs,json=factoryPresetFreqs" json:"factory_preset_freqs,omitempty"`
 	// Maximum EIRP supported by the End-Device.
-	MaxEirp uint32 `protobuf:"varint,16,opt,name=max_eirp,json=maxEIRP,proto3" json:"max_eirp,omitempty"`
+	MaxEirp uint32 `protobuf:"varint,16,opt,name=max_eirp,json=maxEIRP" json:"max_eirp,omitempty"`
 	// Maximum duty cycle supported by the End-Device.
-	MaxDutyCycle uint32 `protobuf:"varint,17,opt,name=max_duty_cycle,json=maxDutyCycle,proto3" json:"max_duty_cycle,omitempty"`
+	MaxDutyCycle uint32 `protobuf:"varint,17,opt,name=max_duty_cycle,json=maxDutyCycle" json:"max_duty_cycle,omitempty"`
 	// End-Device supports Join (OTAA) or not (ABP).
-	SupportsJoin bool `protobuf:"varint,18,opt,name=supports_join,json=supportsJoin,proto3" json:"supports_join,omitempty"`
+	SupportsJoin bool `protobuf:"varint,18,opt,name=supports_join,json=supportsJoin" json:"supports_join,omitempty"`
 	// RF region name.
-	RfRegion string `protobuf:"bytes,19,opt,name=rf_region,json=rfRegion,proto3" json:"rf_region,omitempty"`
+	RfRegion string `protobuf:"bytes,19,opt,name=rf_region,json=rfRegion" json:"rf_region,omitempty"`
 	// End-Device uses 32bit FCnt (mandatory for LoRaWAN 1.0 End-Device).
-	Supports_32BitFCnt bool `protobuf:"varint,20,opt,name=supports_32bit_f_cnt,json=supports32BitFCnt,proto3" json:"supports_32bit_f_cnt,omitempty"`
+	Supports_32BitFCnt bool `protobuf:"varint,20,opt,name=supports_32bit_f_cnt,json=supports32BitFCnt" json:"supports_32bit_f_cnt,omitempty"`
 	// Payload codec.
 	// Leave blank to disable the codec feature.
-	PayloadCodec string `protobuf:"bytes,24,opt,name=payload_codec,json=payloadCodec,proto3" json:"payload_codec,omitempty"`
+	PayloadCodec string `protobuf:"bytes,24,opt,name=payload_codec,json=payloadCodec" json:"payload_codec,omitempty"`
 	// Payload encoder script.
 	// Depending the codec, it is possible to provide a script which implements
 	// the encoder function.
-	PayloadEncoderScript string `protobuf:"bytes,25,opt,name=payload_encoder_script,json=payloadEncoderScript,proto3" json:"payload_encoder_script,omitempty"`
+	PayloadEncoderScript string `protobuf:"bytes,25,opt,name=payload_encoder_script,json=payloadEncoderScript" json:"payload_encoder_script,omitempty"`
 	// Payload decoder script.
 	// Depending the codec, it is possible to provide a script which implements
 	// the decoder function.
-	PayloadDecoderScript string `protobuf:"bytes,26,opt,name=payload_decoder_script,json=payloadDecoderScript,proto3" json:"payload_decoder_script,omitempty"`
+	PayloadDecoderScript string `protobuf:"bytes,26,opt,name=payload_decoder_script,json=payloadDecoderScript" json:"payload_decoder_script,omitempty"`
 	// Geolocation buffer TTL (in seconds).
 	// When > 0, uplink RX meta-data will be stored in a buffer so that
 	// the meta-data of multiple uplinks can be used for geolocation.
-	GeolocBufferTtl uint32 `protobuf:"varint,27,opt,name=geoloc_buffer_ttl,json=geolocBufferTTL,proto3" json:"geoloc_buffer_ttl,omitempty"`
+	GeolocBufferTtl uint32 `protobuf:"varint,27,opt,name=geoloc_buffer_ttl,json=geolocBufferTTL" json:"geoloc_buffer_ttl,omitempty"`
 	// Geolocation minimum buffer size.
 	// When > 0, geolocation will only be performed when the buffer has
 	// at least the given size.
-	GeolocMinBufferSize  uint32   `protobuf:"varint,28,opt,name=geoloc_min_buffer_size,json=geolocMinBufferSize,proto3" json:"geoloc_min_buffer_size,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	GeolocMinBufferSize uint32 `protobuf:"varint,28,opt,name=geoloc_min_buffer_size,json=geolocMinBufferSize" json:"geoloc_min_buffer_size,omitempty"`
 }
 
-func (m *DeviceProfile) Reset()         { *m = DeviceProfile{} }
-func (m *DeviceProfile) String() string { return proto.CompactTextString(m) }
-func (*DeviceProfile) ProtoMessage()    {}
-func (*DeviceProfile) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9610db3cccb08234, []int{1}
-}
-
-func (m *DeviceProfile) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DeviceProfile.Unmarshal(m, b)
-}
-func (m *DeviceProfile) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DeviceProfile.Marshal(b, m, deterministic)
-}
-func (m *DeviceProfile) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DeviceProfile.Merge(m, src)
-}
-func (m *DeviceProfile) XXX_Size() int {
-	return xxx_messageInfo_DeviceProfile.Size(m)
-}
-func (m *DeviceProfile) XXX_DiscardUnknown() {
-	xxx_messageInfo_DeviceProfile.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DeviceProfile proto.InternalMessageInfo
+func (m *DeviceProfile) Reset()                    { *m = DeviceProfile{} }
+func (m *DeviceProfile) String() string            { return proto.CompactTextString(m) }
+func (*DeviceProfile) ProtoMessage()               {}
+func (*DeviceProfile) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{1} }
 
 func (m *DeviceProfile) GetId() string {
 	if m != nil {
@@ -579,14 +521,14 @@ func (m *DeviceProfile) GetGeolocMinBufferSize() uint32 {
 }
 
 func init() {
-	proto.RegisterEnum("api.RatePolicy", RatePolicy_name, RatePolicy_value)
 	proto.RegisterType((*ServiceProfile)(nil), "api.ServiceProfile")
 	proto.RegisterType((*DeviceProfile)(nil), "api.DeviceProfile")
+	proto.RegisterEnum("api.RatePolicy", RatePolicy_name, RatePolicy_value)
 }
 
-func init() { proto.RegisterFile("profiles.proto", fileDescriptor_9610db3cccb08234) }
+func init() { proto.RegisterFile("profiles.proto", fileDescriptor7) }
 
-var fileDescriptor_9610db3cccb08234 = []byte{
+var fileDescriptor7 = []byte{
 	// 1021 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x55, 0xdb, 0x6e, 0xdb, 0x36,
 	0x18, 0x9e, 0x9b, 0x36, 0xb1, 0x19, 0xcb, 0x76, 0x98, 0x43, 0x95, 0xb6, 0xdb, 0xbc, 0x74, 0xd8,
