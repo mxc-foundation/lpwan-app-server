@@ -222,7 +222,6 @@ enum Language {
 	ko = 1;
 	zhcn = 2;
 	zhtw = 3;
-	ja = 4;
 }
 
 message RegisterUserRequest {

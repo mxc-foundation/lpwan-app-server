@@ -119,23 +119,14 @@ func SaveMetricsForInterval(ctx context.Context, p *redis.Pool, agg AggregationI
 
 	key := fmt.Sprintf(metricsKeyTempl, name, agg, ts.Unix())
 
-	err := c.Send("MULTI")
-	if err != nil {
-		errors.Wrap(err, "exec error")
-	}
+	c.Send("MULTI")
 	for k, v := range metrics.Metrics {
-		err = c.Send("HINCRBYFLOAT", key, k, v)
-		if err != nil {
-			errors.Wrap(err, "exec error")
-		}
+		c.Send("HINCRBYFLOAT", key, k, v)
 	}
-	err = c.Send("PEXPIRE", key, exp)
-	if err != nil {
-		errors.Wrap(err, "exec error")
-	}
+	c.Send("PEXPIRE", key, exp)
 
 	if _, err := c.Do("EXEC"); err != nil {
-		errors.Wrap(err, "exec error")
+		return errors.Wrap(err, "exec error")
 	}
 
 	log.WithFields(log.Fields{
@@ -209,9 +200,9 @@ func GetMetrics(ctx context.Context, p *redis.Pool, agg AggregationInterval, nam
 	}
 
 	for _, k := range keys {
-		_ = c.Send("HGETALL", k)
+		c.Send("HGETALL", k)
 	}
-	_ = c.Flush()
+	c.Flush()
 
 	var out []MetricsRecord
 

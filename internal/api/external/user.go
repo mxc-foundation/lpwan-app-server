@@ -2,12 +2,12 @@ package external
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -246,7 +246,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 	}
 
 	if user.Username == storage.DemoUser {
-		return nil, helpers.ErrToRPCError(fmt.Errorf("User %s can not change password", storage.DemoUser))
+		return nil, helpers.ErrToRPCError(errors.New(fmt.Sprintf("User %s can not change password.", storage.DemoUser)))
 	}
 
 	err = storage.UpdatePassword(ctx, storage.DB(), req.UserId, req.Password)
@@ -293,7 +293,7 @@ func (a *InternalUserAPI) GetVerigyingAliyunRecaptcha(ctx context.Context, req *
 		}, err
 	}
 
-	return &pb.AliyunRecaptchaResponse{Success: true}, nil
+	return &pb.AliyunRecaptchaResponse{Success: true,}, nil
 }
 
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
@@ -322,16 +322,15 @@ func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.Googl
 		return &pb.GoogleRecaptchaResponse{}, err
 	}
 
-	gresponse := &pb.GoogleRecaptchaResponse{}
-	err = json.Unmarshal(body, &gresponse)
+	g_response := &pb.GoogleRecaptchaResponse{}
+	err = json.Unmarshal(body, &g_response)
 	if err != nil {
 		fmt.Println("unmarshal response", err)
 	}
 
-	return gresponse, nil
+	return g_response, nil
 }
 
-// GetVerifyingGoogleRecaptcha defines the request and response to verify the google recaptcha
 func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *pb.GoogleRecaptchaRequest) (*pb.GoogleRecaptchaResponse, error) {
 	res, err := IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
 	if err != nil {
@@ -577,16 +576,16 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			return helpers.ErrToRPCError(err)
 		}
 
-		/*		// add admin user into this organization
-				adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
-				if err == nil {
-					err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
-					if err != nil {
-						log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
-					}
-				} else {
-					log.WithError(err).Error("Get user by username 'admin' failed")
-				}*/
+/*		// add admin user into this organization
+		adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
+		if err == nil {
+			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
+			if err != nil {
+				log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
+			}
+		} else {
+			log.WithError(err).Error("Get user by username 'admin' failed")
+		}*/
 
 		err = storage.CreateOrganizationUser(ctx, tx, org.ID, req.UserId, true, false, false)
 		if err != nil {

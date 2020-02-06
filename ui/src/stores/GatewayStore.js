@@ -24,10 +24,10 @@ class GatewayStore extends EventEmitter {
 
   getGatewayList(orgId, offset, limit, callbackFunc) {
     // Run the following in development environment and early exit from function
-    /* if (isDev) {
+    if (isDev) {
       (async () => callbackFunc(await MockGatewayStoreApi.getGatewayList(orgId)))();
       return;
-    } */
+    }
 
     this.swaggerM2M.then(client => {
       client.apis.GatewayService.GetGatewayList({

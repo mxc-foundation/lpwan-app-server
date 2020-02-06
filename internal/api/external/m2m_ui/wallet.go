@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -12,24 +11,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// WalletServerAPI is the structure that contains the validator
 type WalletServerAPI struct {
 	validator auth.Validator
 }
 
-// NewWalletServerAPI validates the new wallet server api
 func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
 	return &WalletServerAPI{
 		validator: validator,
 	}
 }
 
-// GetWalletBalance gets the wallet balance
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletBalance")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -54,12 +50,11 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 	}, nil
 }
 
-// GetVmxcTxHistory gets virtual MXC transaction history
 func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxcTxHistoryRequest) (*api.GetVmxcTxHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetVmxcTxHistory")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -87,12 +82,11 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 	}, nil
 }
 
-// GetWalletUsageHist gets the walllet usage history
 func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWalletUsageHistRequest) (*api.GetWalletUsageHistResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletUsageHist")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -120,12 +114,11 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 	}, nil
 }
 
-// GetDlPrice gets downlink price from m2m wallet
 func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPriceRequest) (*api.GetDownLinkPriceResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDlPrice")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 

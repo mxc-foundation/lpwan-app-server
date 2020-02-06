@@ -24,7 +24,6 @@ import (
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
-// GatewayLocationsRedisKey defines the gateway location based on redis key
 const GatewayLocationsRedisKey = "gateway_locations"
 
 // GatewayAPI exports the Gateway related functions.

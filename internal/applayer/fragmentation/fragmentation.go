@@ -35,7 +35,7 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
-// SyncRemoteFragmentationSessionsLoop syncs the fragmentation sessions with the devices.
+// SyncRemoteFragmentationSessions syncs the fragmentation sessions with the devices.
 func SyncRemoteFragmentationSessionsLoop() {
 	for {
 		ctxID, err := uuid.NewV4()
