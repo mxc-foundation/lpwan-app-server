@@ -5,7 +5,7 @@ import { initReactI18next } from "react-i18next";
 import { name } from "../../package.json";
 import Debug from "../util/debug";
 import SessionStore from "../stores/SessionStore";
-import { en, ko, zhCN, zhTW } from "./locales";
+import { en, ko, zhCN, zhTW, ja } from "./locales";
 
 const DEFAULT_LANGUAGE = {
   id: "en",
@@ -20,16 +20,19 @@ const SUPPORTED_LANGUAGES = [
   { id: "en", label: "English", value: "English", code: "gb" },
   { id: "ko", label: "한국어", value: "Korean", code: "kr" },
   { id: "zhCN", label: "简中", value: "Chinese (Simplified)", code: "cn" },
-  { id: "zhTW", label: "繁中", value: "Chinese (Traditional)", code: "cn" }
+  { id: "zhTW", label: "繁中", value: "Chinese (Traditional)", code: "cn" },
+  { id: "ja", label: "日本人", value: "Japanese", code: "jp" }
 ];
 let resourceEnglishNS = {};
 let resourceKoreanNS = {};
 let resourceChineseSimplifiedNS = {};
 let resourceChineseTraditionalNS = {};
+let resourceJapaneseNS = {};
 resourceEnglishNS[name] = en;
 resourceKoreanNS[name] = ko;
 resourceChineseSimplifiedNS[name] = zhCN;
 resourceChineseTraditionalNS[name] = zhTW;
+resourceJapaneseNS[name] = ja;
 const packageNS = Object.keys(resourceEnglishNS)[0].toString();
 const moduleNS = "i18n";
 const menuNS = `${packageNS}-${moduleNS}`;
@@ -41,7 +44,7 @@ i18n
   .init({
     debug: true,
     defaultNS: packageNS,
-    fallbackLng: ["en-US", "en", "ko", "zhTW", "zhCN"],
+    fallbackLng: ["en-US", "en", "ko", "zhTW", "zhCN", "ja"],
     interpolation: {
       escapeValue: false
     },
@@ -58,7 +61,8 @@ i18n
       en: resourceEnglishNS,
       ko: resourceKoreanNS,
       zhCN: resourceChineseSimplifiedNS,
-      zhTW: resourceChineseTraditionalNS
+      zhTW: resourceChineseTraditionalNS,
+      ja: resourceJapaneseNS
     },
     saveMissing: true
   })

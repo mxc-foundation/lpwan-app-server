@@ -9,6 +9,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
+// Setup defines API errors
 func Setup(conf config.Config) error {
 
 	if err := as.Setup(conf); err != nil {
