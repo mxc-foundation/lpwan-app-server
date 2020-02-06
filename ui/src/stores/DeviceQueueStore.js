@@ -31,10 +31,10 @@ class DeviceQueueStore extends EventEmitter {
 
   list(devEUI, callbackFunc) {
     // Run the following in development environment and early exit from function
-    /* if (isDev) {
+    if (isDev) {
       (async () => callbackFunc(await MockDeviceQueueStoreApi.getDeviceQueueList()))();
       return;
-    } */
+    }
 
     this.swagger.then(client => {
       client.apis.DeviceQueueService.List({

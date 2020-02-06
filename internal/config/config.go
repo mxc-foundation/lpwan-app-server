@@ -10,7 +10,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
 )
 
-// AppserverVersion defines the AppserverVersion
 var AppserverVersion string
 
 // Config defines the configuration structure.
@@ -127,6 +126,7 @@ type Config struct {
 			Registration string `mapstructure:"registration"`
 			LogoPath     string `mapstructure:"logo_path"`
 		} `mapstructure:"branding"`
+
 	} `mapstructure:"application_server"`
 
 	RegistrationServer struct {

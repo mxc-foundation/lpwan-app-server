@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -12,24 +11,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// GatewayServerAPI defines the Gateway Server API structure
 type GatewayServerAPI struct {
 	validator auth.Validator
 }
 
-// NewGatewayServerAPI defines the Gateway Server API validator
 func NewGatewayServerAPI(validator auth.Validator) *GatewayServerAPI {
 	return &GatewayServerAPI{
 		validator: validator,
 	}
 }
 
-// GetGatewayList defines the get Gateway list request and response
 func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayList")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -57,12 +53,11 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 	}, nil
 }
 
-// GetGatewayProfile defines the get Gateway Profile request and response
 func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGatewayProfileRequest) (*api.GetGatewayProfileResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayProfile")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -90,12 +85,11 @@ func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGa
 	}, nil
 }
 
-// GetGatewayHistory defines the get Gateway History request and response
 func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayHistory")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -123,12 +117,11 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 	}, nil
 }
 
-// SetGatewayMode defines the set Gateway mode request and response
 func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayModeRequest) (*api.SetGatewayModeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/SetGatewayMode")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 

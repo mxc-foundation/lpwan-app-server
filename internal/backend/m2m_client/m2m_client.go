@@ -32,7 +32,6 @@ type m2mServiceClient struct {
 	tlsKey     []byte
 }
 
-// Setup configures m2mServiceClients
 func Setup(conf config.Config) error {
 	p = &pool{
 		m2mServiceClients: make(map[string]m2mServiceClient),
@@ -40,12 +39,10 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
-// GetPool returns p value
 func GetPool() Pool {
 	return p
 }
 
-// SetPool sets p to pp
 func SetPool(pp Pool) {
 	p = pp
 }

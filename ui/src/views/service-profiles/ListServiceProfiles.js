@@ -7,9 +7,7 @@ import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
-import Admin from '../../components/Admin';
 import AdvancedTable from "../../components/AdvancedTable";
-import TitleBarButton from "../../components/TitleBarButton";
 
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
@@ -76,19 +74,6 @@ class ListServiceProfiles extends Component {
 
     return (
       <React.Fragment>
-        <Admin>
-        <TitleBar
-        buttons={
-          <TitleBarButton
-            key={1}
-            label={i18n.t(`${packageNS}:tr000277`)}
-            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-            onClick={this.toggle}
-            to={`/organizations/${currentOrgID}/service-profiles/create`}
-          />
-       }
-      ></TitleBar>
-      </Admin>
         <TitleBar>
           <Breadcrumb className={classes.breadcrumb}>
             <BreadcrumbItem>

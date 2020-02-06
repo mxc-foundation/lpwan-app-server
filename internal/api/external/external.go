@@ -4,12 +4,11 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/m2m_ui"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/m2m_ui"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gofrs/uuid"
@@ -53,7 +52,7 @@ var (
 // Setup configures the API package.
 func Setup(conf config.Config) error {
 	if conf.ApplicationServer.ExternalAPI.JWTSecret == "" {
-		return errors.New("jwt_secret must be set")
+		return errors.New("jwt_secret must be set!")
 	}
 
 	brandingHeader = conf.ApplicationServer.Branding.Header
@@ -316,6 +315,8 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	if err := m2m_pb.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
+
+
 
 	return mux, nil
 }

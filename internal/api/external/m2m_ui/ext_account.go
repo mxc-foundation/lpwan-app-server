@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -12,24 +11,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// ExtAccountServerAPI defines the ExtAccountServerAPI structure
 type ExtAccountServerAPI struct {
 	validator auth.Validator
 }
 
-// NewMoneyServerAPI defines the NewMoneyServerAPI validator
 func NewMoneyServerAPI(validator auth.Validator) *ExtAccountServerAPI {
 	return &ExtAccountServerAPI{
 		validator: validator,
 	}
 }
 
-// ModifyMoneyAccount defines the modify money account request and respone
 func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.ModifyMoneyAccountRequest) (*api.ModifyMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyMoneyAccount")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.ModifyMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -56,12 +52,11 @@ func (s *ExtAccountServerAPI) ModifyMoneyAccount(ctx context.Context, req *api.M
 	}, nil
 }
 
-// GetChangeMoneyAccountHistory defines the get change money account history request and response
 func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, req *api.GetMoneyAccountChangeHistoryRequest) (*api.GetMoneyAccountChangeHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetChangeMoneyAccountHistory")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetMoneyAccountChangeHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -90,12 +85,11 @@ func (s *ExtAccountServerAPI) GetChangeMoneyAccountHistory(ctx context.Context, 
 	}, nil
 }
 
-// GetActiveMoneyAccount defines the get active money account request and response
 func (s *ExtAccountServerAPI) GetActiveMoneyAccount(ctx context.Context, req *api.GetActiveMoneyAccountRequest) (*api.GetActiveMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetActiveMoneyAccount")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
+	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
+	if err != nil{
 		return &api.GetActiveMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 

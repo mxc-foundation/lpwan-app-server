@@ -2,15 +2,15 @@ package m2m_ui
 
 import (
 	"context"
+	"errors"
 	"fmt"
-
 	"github.com/golang/protobuf/ptypes/timestamp"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
-func getUserProfileByJwt(ctx context.Context, v auth.Validator, organizationID int64) (api.ProfileResponse, error) {
+func getUserProfileByJwt(v auth.Validator, ctx context.Context, organizationID int64) (api.ProfileResponse, error) {
 	username, err := v.GetUsername(ctx)
 	if nil != err {
 		return api.ProfileResponse{}, err
@@ -61,7 +61,7 @@ func getUserProfileByJwt(ctx context.Context, v auth.Validator, organizationID i
 	}
 
 	if orgDeleted {
-		return userProfile, fmt.Errorf("User does not have persmission to modify this organization: %d", organizationID)
+		return userProfile, errors.New(fmt.Sprintf("User does not have persmission to modify this organization: %d", organizationID))
 	}
 
 	return userProfile, nil

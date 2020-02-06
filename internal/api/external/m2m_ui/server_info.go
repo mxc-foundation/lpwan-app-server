@@ -2,7 +2,6 @@ package m2m_ui
 
 import (
 	"context"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
@@ -13,19 +12,16 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// M2MServerAPI defines the machine to machine server API structure
 type M2MServerAPI struct {
 	validator auth.Validator
 }
 
-// NewM2MServerAPI defines the machine to machine server API validator
 func NewM2MServerAPI(validator auth.Validator) *M2MServerAPI {
 	return &M2MServerAPI{
 		validator: validator,
 	}
 }
 
-// GetVersion defines the version of the machine to machine server API
 func (s *M2MServerAPI) GetVersion(ctx context.Context, req *empty.Empty) (*api.GetVersionResponse, error) {
 	log.WithField("", "").Info("grpc_api/GetVersion")
 
@@ -43,6 +39,6 @@ func (s *M2MServerAPI) GetVersion(ctx context.Context, req *empty.Empty) (*api.G
 	}
 
 	return &api.GetVersionResponse{
-		Version: resp.Version,
+		Version:              resp.Version,
 	}, nil
 }

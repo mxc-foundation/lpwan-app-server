@@ -29,7 +29,6 @@ var errToCode = map[error]codes.Code{
 	influxdb.ErrInvalidPrecision:               codes.InvalidArgument,
 }
 
-// ErrToRPCError defines the error
 func ErrToRPCError(err error) error {
 	cause := errors.Cause(err)
 
