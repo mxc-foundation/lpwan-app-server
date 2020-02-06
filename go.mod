@@ -54,5 +54,4 @@ require (
 	google.golang.org/genproto v0.0.0-20200205142000-a86caf926a67
 	google.golang.org/grpc v1.27.0
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
