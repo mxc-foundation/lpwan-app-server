@@ -3,26 +3,18 @@
 
 package api
 
-import (
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	duration "github.com/golang/protobuf/ptypes/duration"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	common "github.com/mxc-foundation/lpwan-server/api/common"
-	gw "github.com/mxc-foundation/lpwan-server/api/gw"
-	math "math"
-)
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
+import common "github.com/mxc-foundation/lpwan-server/api/common"
+import gw "github.com/mxc-foundation/lpwan-server/api/gw"
+import google_protobuf1 "github.com/golang/protobuf/ptypes/timestamp"
+import google_protobuf3 "github.com/golang/protobuf/ptypes/duration"
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type RXWindow int32
 
@@ -35,7 +27,6 @@ var RXWindow_name = map[int32]string{
 	0: "RX1",
 	1: "RX2",
 }
-
 var RXWindow_value = map[string]int32{
 	"RX1": 0,
 	"RX2": 1,
@@ -44,47 +35,21 @@ var RXWindow_value = map[string]int32{
 func (x RXWindow) String() string {
 	return proto.EnumName(RXWindow_name, int32(x))
 }
-
-func (RXWindow) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{0}
-}
+func (RXWindow) EnumDescriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
 
 type UplinkFrameLog struct {
 	// TX information of the uplink.
-	TxInfo *gw.UplinkTXInfo `protobuf:"bytes,1,opt,name=tx_info,json=txInfo,proto3" json:"tx_info,omitempty"`
+	TxInfo *gw.UplinkTXInfo `protobuf:"bytes,1,opt,name=tx_info,json=txInfo" json:"tx_info,omitempty"`
 	// RX information of the uplink.
-	RxInfo []*UplinkRXInfo `protobuf:"bytes,2,rep,name=rx_info,json=rxInfo,proto3" json:"rx_info,omitempty"`
+	RxInfo []*UplinkRXInfo `protobuf:"bytes,2,rep,name=rx_info,json=rxInfo" json:"rx_info,omitempty"`
 	// LoRaWAN PHYPayload.
-	PhyPayloadJson       string   `protobuf:"bytes,3,opt,name=phy_payload_json,json=phyPayloadJSON,proto3" json:"phy_payload_json,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	PhyPayloadJson string `protobuf:"bytes,3,opt,name=phy_payload_json,json=phyPayloadJSON" json:"phy_payload_json,omitempty"`
 }
 
-func (m *UplinkFrameLog) Reset()         { *m = UplinkFrameLog{} }
-func (m *UplinkFrameLog) String() string { return proto.CompactTextString(m) }
-func (*UplinkFrameLog) ProtoMessage()    {}
-func (*UplinkFrameLog) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{0}
-}
-
-func (m *UplinkFrameLog) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UplinkFrameLog.Unmarshal(m, b)
-}
-func (m *UplinkFrameLog) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UplinkFrameLog.Marshal(b, m, deterministic)
-}
-func (m *UplinkFrameLog) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UplinkFrameLog.Merge(m, src)
-}
-func (m *UplinkFrameLog) XXX_Size() int {
-	return xxx_messageInfo_UplinkFrameLog.Size(m)
-}
-func (m *UplinkFrameLog) XXX_DiscardUnknown() {
-	xxx_messageInfo_UplinkFrameLog.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_UplinkFrameLog proto.InternalMessageInfo
+func (m *UplinkFrameLog) Reset()                    { *m = UplinkFrameLog{} }
+func (m *UplinkFrameLog) String() string            { return proto.CompactTextString(m) }
+func (*UplinkFrameLog) ProtoMessage()               {}
+func (*UplinkFrameLog) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
 
 func (m *UplinkFrameLog) GetTxInfo() *gw.UplinkTXInfo {
 	if m != nil {
@@ -109,38 +74,15 @@ func (m *UplinkFrameLog) GetPhyPayloadJson() string {
 
 type DownlinkFrameLog struct {
 	// TX information of the downlink.
-	TxInfo *DownlinkTXInfo `protobuf:"bytes,1,opt,name=tx_info,json=txInfo,proto3" json:"tx_info,omitempty"`
+	TxInfo *DownlinkTXInfo `protobuf:"bytes,1,opt,name=tx_info,json=txInfo" json:"tx_info,omitempty"`
 	// LoRaWAN PHYPayload.
-	PhyPayloadJson       string   `protobuf:"bytes,2,opt,name=phy_payload_json,json=phyPayloadJSON,proto3" json:"phy_payload_json,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	PhyPayloadJson string `protobuf:"bytes,2,opt,name=phy_payload_json,json=phyPayloadJSON" json:"phy_payload_json,omitempty"`
 }
 
-func (m *DownlinkFrameLog) Reset()         { *m = DownlinkFrameLog{} }
-func (m *DownlinkFrameLog) String() string { return proto.CompactTextString(m) }
-func (*DownlinkFrameLog) ProtoMessage()    {}
-func (*DownlinkFrameLog) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{1}
-}
-
-func (m *DownlinkFrameLog) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DownlinkFrameLog.Unmarshal(m, b)
-}
-func (m *DownlinkFrameLog) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DownlinkFrameLog.Marshal(b, m, deterministic)
-}
-func (m *DownlinkFrameLog) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DownlinkFrameLog.Merge(m, src)
-}
-func (m *DownlinkFrameLog) XXX_Size() int {
-	return xxx_messageInfo_DownlinkFrameLog.Size(m)
-}
-func (m *DownlinkFrameLog) XXX_DiscardUnknown() {
-	xxx_messageInfo_DownlinkFrameLog.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DownlinkFrameLog proto.InternalMessageInfo
+func (m *DownlinkFrameLog) Reset()                    { *m = DownlinkFrameLog{} }
+func (m *DownlinkFrameLog) String() string            { return proto.CompactTextString(m) }
+func (*DownlinkFrameLog) ProtoMessage()               {}
+func (*DownlinkFrameLog) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{1} }
 
 func (m *DownlinkFrameLog) GetTxInfo() *DownlinkTXInfo {
 	if m != nil {
@@ -161,29 +103,29 @@ func (m *DownlinkFrameLog) GetPhyPayloadJson() string {
 // instead of base64.
 type UplinkRXInfo struct {
 	// Gateway ID.
-	GatewayId string `protobuf:"bytes,1,opt,name=gateway_id,json=gatewayID,proto3" json:"gateway_id,omitempty"`
+	GatewayId string `protobuf:"bytes,1,opt,name=gateway_id,json=gatewayID" json:"gateway_id,omitempty"`
 	// Uplink ID (UUID).
-	UplinkId string `protobuf:"bytes,16,opt,name=uplink_id,json=uplinkID,proto3" json:"uplink_id,omitempty"`
+	UplinkId string `protobuf:"bytes,16,opt,name=uplink_id,json=uplinkID" json:"uplink_id,omitempty"`
 	// RX time (only set when the gateway has a GPS module).
-	Time *timestamp.Timestamp `protobuf:"bytes,2,opt,name=time,proto3" json:"time,omitempty"`
+	Time *google_protobuf1.Timestamp `protobuf:"bytes,2,opt,name=time" json:"time,omitempty"`
 	// RX time since GPS epoch (only set when the gateway has a GPS module).
-	TimeSinceGpsEpoch *duration.Duration `protobuf:"bytes,3,opt,name=time_since_gps_epoch,json=timeSinceGpsEpoch,proto3" json:"time_since_gps_epoch,omitempty"`
+	TimeSinceGpsEpoch *google_protobuf3.Duration `protobuf:"bytes,3,opt,name=time_since_gps_epoch,json=timeSinceGpsEpoch" json:"time_since_gps_epoch,omitempty"`
 	// RSSI.
-	Rssi int32 `protobuf:"varint,5,opt,name=rssi,proto3" json:"rssi,omitempty"`
+	Rssi int32 `protobuf:"varint,5,opt,name=rssi" json:"rssi,omitempty"`
 	// LoRa SNR.
-	LoraSnr float64 `protobuf:"fixed64,6,opt,name=lora_snr,json=loraSnr,proto3" json:"lora_snr,omitempty"`
+	LoraSnr float64 `protobuf:"fixed64,6,opt,name=lora_snr,json=loraSnr" json:"lora_snr,omitempty"`
 	// Channel.
-	Channel uint32 `protobuf:"varint,7,opt,name=channel,proto3" json:"channel,omitempty"`
+	Channel uint32 `protobuf:"varint,7,opt,name=channel" json:"channel,omitempty"`
 	// RF Chain.
-	RfChain uint32 `protobuf:"varint,8,opt,name=rf_chain,json=rfChain,proto3" json:"rf_chain,omitempty"`
+	RfChain uint32 `protobuf:"varint,8,opt,name=rf_chain,json=rfChain" json:"rf_chain,omitempty"`
 	// Board.
-	Board uint32 `protobuf:"varint,9,opt,name=board,proto3" json:"board,omitempty"`
+	Board uint32 `protobuf:"varint,9,opt,name=board" json:"board,omitempty"`
 	// Antenna.
-	Antenna uint32 `protobuf:"varint,10,opt,name=antenna,proto3" json:"antenna,omitempty"`
+	Antenna uint32 `protobuf:"varint,10,opt,name=antenna" json:"antenna,omitempty"`
 	// Location.
-	Location *common.Location `protobuf:"bytes,11,opt,name=location,proto3" json:"location,omitempty"`
+	Location *common.Location `protobuf:"bytes,11,opt,name=location" json:"location,omitempty"`
 	// Fine-timestamp type.
-	FineTimestampType gw.FineTimestampType `protobuf:"varint,12,opt,name=fine_timestamp_type,json=fineTimestampType,proto3,enum=gw.FineTimestampType" json:"fine_timestamp_type,omitempty"`
+	FineTimestampType gw.FineTimestampType `protobuf:"varint,12,opt,name=fine_timestamp_type,json=fineTimestampType,enum=gw.FineTimestampType" json:"fine_timestamp_type,omitempty"`
 	// Fine-timestamp data.
 	//
 	// Types that are valid to be assigned to FineTimestamp:
@@ -191,36 +133,32 @@ type UplinkRXInfo struct {
 	//	*UplinkRXInfo_PlainFineTimestamp
 	FineTimestamp isUplinkRXInfo_FineTimestamp `protobuf_oneof:"fine_timestamp"`
 	// Gateway specific context.
-	Context              []byte   `protobuf:"bytes,15,opt,name=context,proto3" json:"context,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Context []byte `protobuf:"bytes,15,opt,name=context,proto3" json:"context,omitempty"`
 }
 
-func (m *UplinkRXInfo) Reset()         { *m = UplinkRXInfo{} }
-func (m *UplinkRXInfo) String() string { return proto.CompactTextString(m) }
-func (*UplinkRXInfo) ProtoMessage()    {}
-func (*UplinkRXInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{2}
+func (m *UplinkRXInfo) Reset()                    { *m = UplinkRXInfo{} }
+func (m *UplinkRXInfo) String() string            { return proto.CompactTextString(m) }
+func (*UplinkRXInfo) ProtoMessage()               {}
+func (*UplinkRXInfo) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{2} }
+
+type isUplinkRXInfo_FineTimestamp interface{ isUplinkRXInfo_FineTimestamp() }
+
+type UplinkRXInfo_EncryptedFineTimestamp struct {
+	EncryptedFineTimestamp *EncryptedFineTimestamp `protobuf:"bytes,13,opt,name=encrypted_fine_timestamp,json=encryptedFineTimestamp,oneof"`
+}
+type UplinkRXInfo_PlainFineTimestamp struct {
+	PlainFineTimestamp *gw.PlainFineTimestamp `protobuf:"bytes,14,opt,name=plain_fine_timestamp,json=plainFineTimestamp,oneof"`
 }
 
-func (m *UplinkRXInfo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UplinkRXInfo.Unmarshal(m, b)
-}
-func (m *UplinkRXInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UplinkRXInfo.Marshal(b, m, deterministic)
-}
-func (m *UplinkRXInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UplinkRXInfo.Merge(m, src)
-}
-func (m *UplinkRXInfo) XXX_Size() int {
-	return xxx_messageInfo_UplinkRXInfo.Size(m)
-}
-func (m *UplinkRXInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_UplinkRXInfo.DiscardUnknown(m)
-}
+func (*UplinkRXInfo_EncryptedFineTimestamp) isUplinkRXInfo_FineTimestamp() {}
+func (*UplinkRXInfo_PlainFineTimestamp) isUplinkRXInfo_FineTimestamp()     {}
 
-var xxx_messageInfo_UplinkRXInfo proto.InternalMessageInfo
+func (m *UplinkRXInfo) GetFineTimestamp() isUplinkRXInfo_FineTimestamp {
+	if m != nil {
+		return m.FineTimestamp
+	}
+	return nil
+}
 
 func (m *UplinkRXInfo) GetGatewayId() string {
 	if m != nil {
@@ -236,14 +174,14 @@ func (m *UplinkRXInfo) GetUplinkId() string {
 	return ""
 }
 
-func (m *UplinkRXInfo) GetTime() *timestamp.Timestamp {
+func (m *UplinkRXInfo) GetTime() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.Time
 	}
 	return nil
 }
 
-func (m *UplinkRXInfo) GetTimeSinceGpsEpoch() *duration.Duration {
+func (m *UplinkRXInfo) GetTimeSinceGpsEpoch() *google_protobuf3.Duration {
 	if m != nil {
 		return m.TimeSinceGpsEpoch
 	}
@@ -306,29 +244,6 @@ func (m *UplinkRXInfo) GetFineTimestampType() gw.FineTimestampType {
 	return gw.FineTimestampType_NONE
 }
 
-type isUplinkRXInfo_FineTimestamp interface {
-	isUplinkRXInfo_FineTimestamp()
-}
-
-type UplinkRXInfo_EncryptedFineTimestamp struct {
-	EncryptedFineTimestamp *EncryptedFineTimestamp `protobuf:"bytes,13,opt,name=encrypted_fine_timestamp,json=encryptedFineTimestamp,proto3,oneof"`
-}
-
-type UplinkRXInfo_PlainFineTimestamp struct {
-	PlainFineTimestamp *gw.PlainFineTimestamp `protobuf:"bytes,14,opt,name=plain_fine_timestamp,json=plainFineTimestamp,proto3,oneof"`
-}
-
-func (*UplinkRXInfo_EncryptedFineTimestamp) isUplinkRXInfo_FineTimestamp() {}
-
-func (*UplinkRXInfo_PlainFineTimestamp) isUplinkRXInfo_FineTimestamp() {}
-
-func (m *UplinkRXInfo) GetFineTimestamp() isUplinkRXInfo_FineTimestamp {
-	if m != nil {
-		return m.FineTimestamp
-	}
-	return nil
-}
-
 func (m *UplinkRXInfo) GetEncryptedFineTimestamp() *EncryptedFineTimestamp {
 	if x, ok := m.GetFineTimestamp().(*UplinkRXInfo_EncryptedFineTimestamp); ok {
 		return x.EncryptedFineTimestamp
@@ -350,12 +265,78 @@ func (m *UplinkRXInfo) GetContext() []byte {
 	return nil
 }
 
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*UplinkRXInfo) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*UplinkRXInfo) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _UplinkRXInfo_OneofMarshaler, _UplinkRXInfo_OneofUnmarshaler, _UplinkRXInfo_OneofSizer, []interface{}{
 		(*UplinkRXInfo_EncryptedFineTimestamp)(nil),
 		(*UplinkRXInfo_PlainFineTimestamp)(nil),
 	}
+}
+
+func _UplinkRXInfo_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*UplinkRXInfo)
+	// fine_timestamp
+	switch x := m.FineTimestamp.(type) {
+	case *UplinkRXInfo_EncryptedFineTimestamp:
+		b.EncodeVarint(13<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.EncryptedFineTimestamp); err != nil {
+			return err
+		}
+	case *UplinkRXInfo_PlainFineTimestamp:
+		b.EncodeVarint(14<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.PlainFineTimestamp); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("UplinkRXInfo.FineTimestamp has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _UplinkRXInfo_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*UplinkRXInfo)
+	switch tag {
+	case 13: // fine_timestamp.encrypted_fine_timestamp
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(EncryptedFineTimestamp)
+		err := b.DecodeMessage(msg)
+		m.FineTimestamp = &UplinkRXInfo_EncryptedFineTimestamp{msg}
+		return true, err
+	case 14: // fine_timestamp.plain_fine_timestamp
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(gw.PlainFineTimestamp)
+		err := b.DecodeMessage(msg)
+		m.FineTimestamp = &UplinkRXInfo_PlainFineTimestamp{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _UplinkRXInfo_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*UplinkRXInfo)
+	// fine_timestamp
+	switch x := m.FineTimestamp.(type) {
+	case *UplinkRXInfo_EncryptedFineTimestamp:
+		s := proto.Size(x.EncryptedFineTimestamp)
+		n += proto.SizeVarint(13<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *UplinkRXInfo_PlainFineTimestamp:
+		s := proto.Size(x.PlainFineTimestamp)
+		n += proto.SizeVarint(14<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
 }
 
 // this s a copy of gw.EncryptedFineTimestamp which the only change that
@@ -363,40 +344,17 @@ func (*UplinkRXInfo) XXX_OneofWrappers() []interface{} {
 // instead of base64.
 type EncryptedFineTimestamp struct {
 	// AES key index used for encrypting the fine timestamp.
-	AesKeyIndex uint32 `protobuf:"varint,1,opt,name=aes_key_index,json=aesKeyIndex,proto3" json:"aes_key_index,omitempty"`
+	AesKeyIndex uint32 `protobuf:"varint,1,opt,name=aes_key_index,json=aesKeyIndex" json:"aes_key_index,omitempty"`
 	// Encrypted 'main' fine-timestamp (ns precision part of the timestamp).
 	EncryptedNs []byte `protobuf:"bytes,2,opt,name=encrypted_ns,json=encryptedNS,proto3" json:"encrypted_ns,omitempty"`
 	// FPGA ID.
-	FpgaId               string   `protobuf:"bytes,3,opt,name=fpga_id,json=fpgaID,proto3" json:"fpga_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	FpgaId string `protobuf:"bytes,3,opt,name=fpga_id,json=fpgaID" json:"fpga_id,omitempty"`
 }
 
-func (m *EncryptedFineTimestamp) Reset()         { *m = EncryptedFineTimestamp{} }
-func (m *EncryptedFineTimestamp) String() string { return proto.CompactTextString(m) }
-func (*EncryptedFineTimestamp) ProtoMessage()    {}
-func (*EncryptedFineTimestamp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{3}
-}
-
-func (m *EncryptedFineTimestamp) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_EncryptedFineTimestamp.Unmarshal(m, b)
-}
-func (m *EncryptedFineTimestamp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_EncryptedFineTimestamp.Marshal(b, m, deterministic)
-}
-func (m *EncryptedFineTimestamp) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EncryptedFineTimestamp.Merge(m, src)
-}
-func (m *EncryptedFineTimestamp) XXX_Size() int {
-	return xxx_messageInfo_EncryptedFineTimestamp.Size(m)
-}
-func (m *EncryptedFineTimestamp) XXX_DiscardUnknown() {
-	xxx_messageInfo_EncryptedFineTimestamp.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EncryptedFineTimestamp proto.InternalMessageInfo
+func (m *EncryptedFineTimestamp) Reset()                    { *m = EncryptedFineTimestamp{} }
+func (m *EncryptedFineTimestamp) String() string            { return proto.CompactTextString(m) }
+func (*EncryptedFineTimestamp) ProtoMessage()               {}
+func (*EncryptedFineTimestamp) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{3} }
 
 func (m *EncryptedFineTimestamp) GetAesKeyIndex() uint32 {
 	if m != nil {
@@ -422,25 +380,25 @@ func (m *EncryptedFineTimestamp) GetFpgaId() string {
 // Same comment as above applies to this message.
 type DownlinkTXInfo struct {
 	// Gateway ID.
-	GatewayId string `protobuf:"bytes,1,opt,name=gateway_id,json=gatewayID,proto3" json:"gateway_id,omitempty"`
+	GatewayId string `protobuf:"bytes,1,opt,name=gateway_id,json=gatewayID" json:"gateway_id,omitempty"`
 	// Downlink ID (UUID).
-	DownlinkId string `protobuf:"bytes,17,opt,name=downlink_id,json=downlinkID,proto3" json:"downlink_id,omitempty"`
+	DownlinkId string `protobuf:"bytes,17,opt,name=downlink_id,json=downlinkID" json:"downlink_id,omitempty"`
 	// TX frequency (in Hz).
-	Frequency uint32 `protobuf:"varint,5,opt,name=frequency,proto3" json:"frequency,omitempty"`
+	Frequency uint32 `protobuf:"varint,5,opt,name=frequency" json:"frequency,omitempty"`
 	// TX power (in dBm).
-	Power int32 `protobuf:"varint,6,opt,name=power,proto3" json:"power,omitempty"`
+	Power int32 `protobuf:"varint,6,opt,name=power" json:"power,omitempty"`
 	// Modulation.
-	Modulation common.Modulation `protobuf:"varint,7,opt,name=modulation,proto3,enum=common.Modulation" json:"modulation,omitempty"`
+	Modulation common.Modulation `protobuf:"varint,7,opt,name=modulation,enum=common.Modulation" json:"modulation,omitempty"`
 	// Types that are valid to be assigned to ModulationInfo:
 	//	*DownlinkTXInfo_LoraModulationInfo
 	//	*DownlinkTXInfo_FskModulationInfo
 	ModulationInfo isDownlinkTXInfo_ModulationInfo `protobuf_oneof:"modulation_info"`
 	// The board identifier for emitting the frame.
-	Board uint32 `protobuf:"varint,10,opt,name=board,proto3" json:"board,omitempty"`
+	Board uint32 `protobuf:"varint,10,opt,name=board" json:"board,omitempty"`
 	// The antenna identifier for emitting the frame.
-	Antenna uint32 `protobuf:"varint,11,opt,name=antenna,proto3" json:"antenna,omitempty"`
+	Antenna uint32 `protobuf:"varint,11,opt,name=antenna" json:"antenna,omitempty"`
 	// Timing defines the downlink timing to use.
-	Timing gw.DownlinkTiming `protobuf:"varint,12,opt,name=timing,proto3,enum=gw.DownlinkTiming" json:"timing,omitempty"`
+	Timing gw.DownlinkTiming `protobuf:"varint,12,opt,name=timing,enum=gw.DownlinkTiming" json:"timing,omitempty"`
 	// Types that are valid to be assigned to TimingInfo:
 	//	*DownlinkTXInfo_ImmediatelyTimingInfo
 	//	*DownlinkTXInfo_DelayTimingInfo
@@ -448,36 +406,51 @@ type DownlinkTXInfo struct {
 	TimingInfo isDownlinkTXInfo_TimingInfo `protobuf_oneof:"timing_info"`
 	// Gateway specific context.
 	// In case of a Class-A downlink, this contains a copy of the uplink context.
-	Context              []byte   `protobuf:"bytes,16,opt,name=context,proto3" json:"context,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Context []byte `protobuf:"bytes,16,opt,name=context,proto3" json:"context,omitempty"`
 }
 
-func (m *DownlinkTXInfo) Reset()         { *m = DownlinkTXInfo{} }
-func (m *DownlinkTXInfo) String() string { return proto.CompactTextString(m) }
-func (*DownlinkTXInfo) ProtoMessage()    {}
-func (*DownlinkTXInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{4}
+func (m *DownlinkTXInfo) Reset()                    { *m = DownlinkTXInfo{} }
+func (m *DownlinkTXInfo) String() string            { return proto.CompactTextString(m) }
+func (*DownlinkTXInfo) ProtoMessage()               {}
+func (*DownlinkTXInfo) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{4} }
+
+type isDownlinkTXInfo_ModulationInfo interface{ isDownlinkTXInfo_ModulationInfo() }
+type isDownlinkTXInfo_TimingInfo interface{ isDownlinkTXInfo_TimingInfo() }
+
+type DownlinkTXInfo_LoraModulationInfo struct {
+	LoraModulationInfo *gw.LoRaModulationInfo `protobuf:"bytes,8,opt,name=lora_modulation_info,json=loraModulationInfo,oneof"`
+}
+type DownlinkTXInfo_FskModulationInfo struct {
+	FskModulationInfo *gw.FSKModulationInfo `protobuf:"bytes,9,opt,name=fsk_modulation_info,json=fskModulationInfo,oneof"`
+}
+type DownlinkTXInfo_ImmediatelyTimingInfo struct {
+	ImmediatelyTimingInfo *gw.ImmediatelyTimingInfo `protobuf:"bytes,13,opt,name=immediately_timing_info,json=immediatelyTimingInfo,oneof"`
+}
+type DownlinkTXInfo_DelayTimingInfo struct {
+	DelayTimingInfo *gw.DelayTimingInfo `protobuf:"bytes,14,opt,name=delay_timing_info,json=delayTimingInfo,oneof"`
+}
+type DownlinkTXInfo_GpsEpochTimingInfo struct {
+	GpsEpochTimingInfo *gw.GPSEpochTimingInfo `protobuf:"bytes,15,opt,name=gps_epoch_timing_info,json=gpsEpochTimingInfo,oneof"`
 }
 
-func (m *DownlinkTXInfo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DownlinkTXInfo.Unmarshal(m, b)
-}
-func (m *DownlinkTXInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DownlinkTXInfo.Marshal(b, m, deterministic)
-}
-func (m *DownlinkTXInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DownlinkTXInfo.Merge(m, src)
-}
-func (m *DownlinkTXInfo) XXX_Size() int {
-	return xxx_messageInfo_DownlinkTXInfo.Size(m)
-}
-func (m *DownlinkTXInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_DownlinkTXInfo.DiscardUnknown(m)
-}
+func (*DownlinkTXInfo_LoraModulationInfo) isDownlinkTXInfo_ModulationInfo() {}
+func (*DownlinkTXInfo_FskModulationInfo) isDownlinkTXInfo_ModulationInfo()  {}
+func (*DownlinkTXInfo_ImmediatelyTimingInfo) isDownlinkTXInfo_TimingInfo()  {}
+func (*DownlinkTXInfo_DelayTimingInfo) isDownlinkTXInfo_TimingInfo()        {}
+func (*DownlinkTXInfo_GpsEpochTimingInfo) isDownlinkTXInfo_TimingInfo()     {}
 
-var xxx_messageInfo_DownlinkTXInfo proto.InternalMessageInfo
+func (m *DownlinkTXInfo) GetModulationInfo() isDownlinkTXInfo_ModulationInfo {
+	if m != nil {
+		return m.ModulationInfo
+	}
+	return nil
+}
+func (m *DownlinkTXInfo) GetTimingInfo() isDownlinkTXInfo_TimingInfo {
+	if m != nil {
+		return m.TimingInfo
+	}
+	return nil
+}
 
 func (m *DownlinkTXInfo) GetGatewayId() string {
 	if m != nil {
@@ -512,29 +485,6 @@ func (m *DownlinkTXInfo) GetModulation() common.Modulation {
 		return m.Modulation
 	}
 	return common.Modulation_LORA
-}
-
-type isDownlinkTXInfo_ModulationInfo interface {
-	isDownlinkTXInfo_ModulationInfo()
-}
-
-type DownlinkTXInfo_LoraModulationInfo struct {
-	LoraModulationInfo *gw.LoRaModulationInfo `protobuf:"bytes,8,opt,name=lora_modulation_info,json=loraModulationInfo,proto3,oneof"`
-}
-
-type DownlinkTXInfo_FskModulationInfo struct {
-	FskModulationInfo *gw.FSKModulationInfo `protobuf:"bytes,9,opt,name=fsk_modulation_info,json=fskModulationInfo,proto3,oneof"`
-}
-
-func (*DownlinkTXInfo_LoraModulationInfo) isDownlinkTXInfo_ModulationInfo() {}
-
-func (*DownlinkTXInfo_FskModulationInfo) isDownlinkTXInfo_ModulationInfo() {}
-
-func (m *DownlinkTXInfo) GetModulationInfo() isDownlinkTXInfo_ModulationInfo {
-	if m != nil {
-		return m.ModulationInfo
-	}
-	return nil
 }
 
 func (m *DownlinkTXInfo) GetLoraModulationInfo() *gw.LoRaModulationInfo {
@@ -572,35 +522,6 @@ func (m *DownlinkTXInfo) GetTiming() gw.DownlinkTiming {
 	return gw.DownlinkTiming_IMMEDIATELY
 }
 
-type isDownlinkTXInfo_TimingInfo interface {
-	isDownlinkTXInfo_TimingInfo()
-}
-
-type DownlinkTXInfo_ImmediatelyTimingInfo struct {
-	ImmediatelyTimingInfo *gw.ImmediatelyTimingInfo `protobuf:"bytes,13,opt,name=immediately_timing_info,json=immediatelyTimingInfo,proto3,oneof"`
-}
-
-type DownlinkTXInfo_DelayTimingInfo struct {
-	DelayTimingInfo *gw.DelayTimingInfo `protobuf:"bytes,14,opt,name=delay_timing_info,json=delayTimingInfo,proto3,oneof"`
-}
-
-type DownlinkTXInfo_GpsEpochTimingInfo struct {
-	GpsEpochTimingInfo *gw.GPSEpochTimingInfo `protobuf:"bytes,15,opt,name=gps_epoch_timing_info,json=gpsEpochTimingInfo,proto3,oneof"`
-}
-
-func (*DownlinkTXInfo_ImmediatelyTimingInfo) isDownlinkTXInfo_TimingInfo() {}
-
-func (*DownlinkTXInfo_DelayTimingInfo) isDownlinkTXInfo_TimingInfo() {}
-
-func (*DownlinkTXInfo_GpsEpochTimingInfo) isDownlinkTXInfo_TimingInfo() {}
-
-func (m *DownlinkTXInfo) GetTimingInfo() isDownlinkTXInfo_TimingInfo {
-	if m != nil {
-		return m.TimingInfo
-	}
-	return nil
-}
-
 func (m *DownlinkTXInfo) GetImmediatelyTimingInfo() *gw.ImmediatelyTimingInfo {
 	if x, ok := m.GetTimingInfo().(*DownlinkTXInfo_ImmediatelyTimingInfo); ok {
 		return x.ImmediatelyTimingInfo
@@ -629,9 +550,9 @@ func (m *DownlinkTXInfo) GetContext() []byte {
 	return nil
 }
 
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*DownlinkTXInfo) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*DownlinkTXInfo) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _DownlinkTXInfo_OneofMarshaler, _DownlinkTXInfo_OneofUnmarshaler, _DownlinkTXInfo_OneofSizer, []interface{}{
 		(*DownlinkTXInfo_LoraModulationInfo)(nil),
 		(*DownlinkTXInfo_FskModulationInfo)(nil),
 		(*DownlinkTXInfo_ImmediatelyTimingInfo)(nil),
@@ -640,18 +561,150 @@ func (*DownlinkTXInfo) XXX_OneofWrappers() []interface{} {
 	}
 }
 
+func _DownlinkTXInfo_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*DownlinkTXInfo)
+	// modulation_info
+	switch x := m.ModulationInfo.(type) {
+	case *DownlinkTXInfo_LoraModulationInfo:
+		b.EncodeVarint(8<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.LoraModulationInfo); err != nil {
+			return err
+		}
+	case *DownlinkTXInfo_FskModulationInfo:
+		b.EncodeVarint(9<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.FskModulationInfo); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("DownlinkTXInfo.ModulationInfo has unexpected type %T", x)
+	}
+	// timing_info
+	switch x := m.TimingInfo.(type) {
+	case *DownlinkTXInfo_ImmediatelyTimingInfo:
+		b.EncodeVarint(13<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.ImmediatelyTimingInfo); err != nil {
+			return err
+		}
+	case *DownlinkTXInfo_DelayTimingInfo:
+		b.EncodeVarint(14<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.DelayTimingInfo); err != nil {
+			return err
+		}
+	case *DownlinkTXInfo_GpsEpochTimingInfo:
+		b.EncodeVarint(15<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.GpsEpochTimingInfo); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("DownlinkTXInfo.TimingInfo has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _DownlinkTXInfo_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*DownlinkTXInfo)
+	switch tag {
+	case 8: // modulation_info.lora_modulation_info
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(gw.LoRaModulationInfo)
+		err := b.DecodeMessage(msg)
+		m.ModulationInfo = &DownlinkTXInfo_LoraModulationInfo{msg}
+		return true, err
+	case 9: // modulation_info.fsk_modulation_info
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(gw.FSKModulationInfo)
+		err := b.DecodeMessage(msg)
+		m.ModulationInfo = &DownlinkTXInfo_FskModulationInfo{msg}
+		return true, err
+	case 13: // timing_info.immediately_timing_info
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(gw.ImmediatelyTimingInfo)
+		err := b.DecodeMessage(msg)
+		m.TimingInfo = &DownlinkTXInfo_ImmediatelyTimingInfo{msg}
+		return true, err
+	case 14: // timing_info.delay_timing_info
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(gw.DelayTimingInfo)
+		err := b.DecodeMessage(msg)
+		m.TimingInfo = &DownlinkTXInfo_DelayTimingInfo{msg}
+		return true, err
+	case 15: // timing_info.gps_epoch_timing_info
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(gw.GPSEpochTimingInfo)
+		err := b.DecodeMessage(msg)
+		m.TimingInfo = &DownlinkTXInfo_GpsEpochTimingInfo{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _DownlinkTXInfo_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*DownlinkTXInfo)
+	// modulation_info
+	switch x := m.ModulationInfo.(type) {
+	case *DownlinkTXInfo_LoraModulationInfo:
+		s := proto.Size(x.LoraModulationInfo)
+		n += proto.SizeVarint(8<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *DownlinkTXInfo_FskModulationInfo:
+		s := proto.Size(x.FskModulationInfo)
+		n += proto.SizeVarint(9<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	// timing_info
+	switch x := m.TimingInfo.(type) {
+	case *DownlinkTXInfo_ImmediatelyTimingInfo:
+		s := proto.Size(x.ImmediatelyTimingInfo)
+		n += proto.SizeVarint(13<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *DownlinkTXInfo_DelayTimingInfo:
+		s := proto.Size(x.DelayTimingInfo)
+		n += proto.SizeVarint(14<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *DownlinkTXInfo_GpsEpochTimingInfo:
+		s := proto.Size(x.GpsEpochTimingInfo)
+		n += proto.SizeVarint(15<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
 func init() {
-	proto.RegisterEnum("api.RXWindow", RXWindow_name, RXWindow_value)
 	proto.RegisterType((*UplinkFrameLog)(nil), "api.UplinkFrameLog")
 	proto.RegisterType((*DownlinkFrameLog)(nil), "api.DownlinkFrameLog")
 	proto.RegisterType((*UplinkRXInfo)(nil), "api.UplinkRXInfo")
 	proto.RegisterType((*EncryptedFineTimestamp)(nil), "api.EncryptedFineTimestamp")
 	proto.RegisterType((*DownlinkTXInfo)(nil), "api.DownlinkTXInfo")
+	proto.RegisterEnum("api.RXWindow", RXWindow_name, RXWindow_value)
 }
 
-func init() { proto.RegisterFile("common.proto", fileDescriptor_555bd8c177793206) }
+func init() { proto.RegisterFile("common.proto", fileDescriptor3) }
 
-var fileDescriptor_555bd8c177793206 = []byte{
+var fileDescriptor3 = []byte{
 	// 882 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0x6d, 0x72, 0xdb, 0x36,
 	0x10, 0x0d, 0xe3, 0xe8, 0x6b, 0xa9, 0x4f, 0x38, 0xb6, 0x69, 0x27, 0x9d, 0xaa, 0xfa, 0xa5, 0x7a,
