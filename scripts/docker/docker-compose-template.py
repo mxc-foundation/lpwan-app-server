@@ -3,7 +3,14 @@ import sys
 localDevelopTemplate = \
 '''
 version: "2"
-services:
+services:  
+  network-server:
+    image: mxcdocker/supernode:network-server.v0.0.1-19-g030527a
+    ports:
+      - 8000:8000
+    volumes:
+      - ./configuration/loraserver:/etc/loraserver
+  
   appserver:
     build:
       context: .
@@ -15,6 +22,7 @@ services:
       - postgresql
       - redis
       - mosquitto
+      - network-server
     ports:
       - 8080:8080
     environment:
