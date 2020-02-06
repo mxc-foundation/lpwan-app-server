@@ -2,6 +2,7 @@ package m2m_ui
 
 import (
 	"context"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -11,21 +12,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// WithdrawServerAPI validates the withdraw server api
 type WithdrawServerAPI struct {
 	validator auth.Validator
 }
 
+// NewWithdrawServerAPI defines the withdraw server api
 func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
 	return &WithdrawServerAPI{
 		validator: validator,
 	}
 }
 
+// ModifyWithdrawFee modifies the withdraw fee
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyWithdrawFee")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -52,11 +56,12 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 	}, nil
 }
 
+// GetWithdrawFee gets the withdraw fee
 func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWithdrawFeeRequest) (*api.GetWithdrawFeeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawFee")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -82,11 +87,12 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 	}, nil
 }
 
+// GetWithdrawHistory gets the withdraw history
 func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.GetWithdrawHistoryRequest) (*api.GetWithdrawHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawHistory")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -115,11 +121,12 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 	}, nil
 }
 
+// WithdrawReq defines request for withdraw
 func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawReqRequest) (*api.WithdrawReqResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/WithdrawReq")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 

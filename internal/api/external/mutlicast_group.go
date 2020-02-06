@@ -490,7 +490,7 @@ func (a *MulticastGroupAPI) ListQueue(ctx context.Context, req *pb.ListMulticast
 	}
 
 	var resp pb.ListMulticastGroupQueueItemsResponse
-	for i, _ := range queueItems {
+	for i := range queueItems {
 		resp.MulticastQueueItems = append(resp.MulticastQueueItems, &queueItems[i])
 	}
 

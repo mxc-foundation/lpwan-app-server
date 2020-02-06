@@ -25,7 +25,7 @@ var (
 	disable    bool
 )
 
-//Languages
+// English sets the Language to en
 const (
 	English            = pb.Language_en
 	Korean             = pb.Language_ko

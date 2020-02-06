@@ -29,7 +29,7 @@ const SideNavOrganizationsContent = (props) => {
                         <span> {i18n.t(`${packageNS}:tr000049`)} </span>
                     </Link>
                 </li> */}
-                
+
                 <li>
                     <Link to={`/topup/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
                         <i className="mdi mdi-wallet"></i>
