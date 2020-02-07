@@ -38,3 +38,7 @@ ui/node_modules
 #docker-compose
 /*.yml
 *.sum
+
+#python
+__pycache__
+*.pyc
