@@ -29,10 +29,10 @@ class DeviceStore extends EventEmitter {
 
   getDeviceList(orgId, offset, limit, callbackFunc) {
     // Run the following in development environment and early exit from function
-    if (isDev) {
+    /* if (isDev) {
       (async () => callbackFunc(await MockDeviceStoreApi.getDeviceList()))();
       return;
-    }
+    } */
 
     this.swaggerM2M.then(client => {
       client.apis.DeviceService.GetDeviceList({
@@ -244,10 +244,10 @@ class DeviceStore extends EventEmitter {
 
   getActivation(devEUI, callbackFunc) {
     // Run the following in development environment and early exit from function
-    if (isDev) {
+    /* if (isDev) {
       (async () => callbackFunc(await MockDeviceStoreApi.getDeviceActivation()))();
       return;
-    }
+    } */
 
     this.swagger.then(client => {
       client.apis.DeviceService.GetActivation({

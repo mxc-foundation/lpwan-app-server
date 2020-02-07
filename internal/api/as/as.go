@@ -5,10 +5,11 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"google.golang.org/grpc/status"
 	"math"
 	"net"
 	"time"
+
+	"google.golang.org/grpc/status"
 
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/gofrs/uuid"
@@ -106,13 +107,16 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
+// AppServerAPI defines the AppServerAPI structure
 type AppServerAPI struct {
 }
 
+// NewAppServerAPI returns the AppServerAPI
 func NewAppServerAPI() *AppServerAPI {
 	return &AppServerAPI{}
 }
 
+// GetDeviceDevEuiList defines the response of the Device DevEui list
 func (a *AppServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty) (*api.GetDeviceDevEuiListResponse, error) {
 	devEuiList, err := storage.GetAllDeviceEuis(ctx, storage.DB())
 	if err != nil {
@@ -122,11 +126,13 @@ func (a *AppServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty
 	return &api.GetDeviceDevEuiListResponse{DevEui: devEuiList}, nil
 }
 
+// GetGatewayMacList defines the response of the Gateway MAC list
 func (a *AppServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
 
 	return &api.GetGatewayMacListResponse{}, nil
 }
 
+// GetDeviceByDevEui defines the request and response of the Device DevEui
 func (a *AppServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDeviceByDevEuiRequest) (*api.GetDeviceByDevEuiResponse, error) {
 	var devEui lorawan.EUI64
 	resp := api.GetDeviceByDevEuiResponse{DevProfile: &api.AppServerDeviceProfile{}}
@@ -156,6 +162,7 @@ func (a *AppServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDevice
 	return &resp, nil
 }
 
+// GetGatewayByMac defines the request and response to the the gateway by MAC
 func (a *AppServerAPI) GetGatewayByMac(ctx context.Context, req *api.GetGatewayByMacRequest) (*api.GetGatewayByMacResponse, error) {
 	var mac lorawan.EUI64
 	resp := api.GetGatewayByMacResponse{GwProfile: &api.AppServerGatewayProfile{}}

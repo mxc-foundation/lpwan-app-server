@@ -2,6 +2,7 @@ package m2m_ui
 
 import (
 	"context"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -11,16 +12,19 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// StakingServerAPI defines the Staking Server API structure
 type StakingServerAPI struct {
 	validator auth.Validator
 }
 
+// NewStakingServerAPI defines the Stagking Server API validator
 func NewStakingServerAPI(validator auth.Validator) *StakingServerAPI {
 	return &StakingServerAPI{
 		validator: validator,
 	}
 }
 
+// GetStakingPercentage defines the request and response to get staking percentage
 func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetStakingPercentage")
 
@@ -44,11 +48,12 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 	}, nil
 }
 
+// Stake defines the request and response for staking
 func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/Stake")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -74,11 +79,12 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 	}, nil
 }
 
+// Unstake defines the request and response to unstake
 func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.UnstakeResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/Unstake")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -103,11 +109,12 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 	}, nil
 }
 
+// GetActiveStakes defines the request and response to get active stakes
 func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRequest) (*api.GetActiveStakesResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetActiveStakes")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -132,11 +139,12 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 	}, nil
 }
 
+// GetStakingHistory defines the request and response to get staking history
 func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.StakingHistoryRequest) (*api.StakingHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetStakingHistory")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 

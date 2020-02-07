@@ -4,10 +4,6 @@
     "title": "internal.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -395,7 +391,8 @@
         "en",
         "ko",
         "zhcn",
-        "zhtw"
+        "zhtw",
+        "ja"
       ],
       "default": "en"
     },
