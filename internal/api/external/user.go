@@ -2,9 +2,7 @@ package external
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -23,6 +21,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
 )
@@ -246,7 +245,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 	}
 
 	if user.Username == storage.DemoUser {
-		return nil, helpers.ErrToRPCError(errors.New(fmt.Sprintf("User %s can not change password.", storage.DemoUser)))
+		return nil, helpers.ErrToRPCError(fmt.Errorf("User %s can not change password", storage.DemoUser))
 	}
 
 	err = storage.UpdatePassword(ctx, storage.DB(), req.UserId, req.Password)
@@ -274,28 +273,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	return &pb.LoginResponse{Jwt: jwt}, nil
 }
 
-func (a *InternalUserAPI) GetVerigyingAliyunRecaptcha(ctx context.Context, req *pb.AliyunRecaptchaRequest) (*pb.AliyunRecaptchaResponse, error) {
-	query := make(map[string]string)
-	query["Action"] = "AuthenticateSig"
-	code, err := auth.SendRequest("GET", "/", query, req.Token, req.SessionId, req.Sig, req.RemoteIp)
-	if err != nil {
-		log.WithError(err).Error("Send AliRecaptcha error")
-		return &pb.AliyunRecaptchaResponse{
-			Success:    false,
-			ErrorCodes: string(code),
-		}, err
-	}
-
-	if code != 100 {
-		return &pb.AliyunRecaptchaResponse{
-			Success:    false,
-			ErrorCodes: string(code),
-		}, err
-	}
-
-	return &pb.AliyunRecaptchaResponse{Success: true,}, nil
-}
-
+// IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
 	secret := config.C.Recaptcha.Secret
 	postURL := config.C.Recaptcha.HostServer
@@ -322,15 +300,16 @@ func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.Googl
 		return &pb.GoogleRecaptchaResponse{}, err
 	}
 
-	g_response := &pb.GoogleRecaptchaResponse{}
-	err = json.Unmarshal(body, &g_response)
+	gresponse := &pb.GoogleRecaptchaResponse{}
+	err = json.Unmarshal(body, &gresponse)
 	if err != nil {
 		fmt.Println("unmarshal response", err)
 	}
 
-	return g_response, nil
+	return gresponse, nil
 }
 
+// GetVerifyingGoogleRecaptcha defines the request and response to verify the google recaptcha
 func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *pb.GoogleRecaptchaRequest) (*pb.GoogleRecaptchaResponse, error) {
 	res, err := IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
 	if err != nil {
@@ -576,16 +555,16 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			return helpers.ErrToRPCError(err)
 		}
 
-/*		// add admin user into this organization
-		adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
-		if err == nil {
-			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
-			if err != nil {
-				log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
-			}
-		} else {
-			log.WithError(err).Error("Get user by username 'admin' failed")
-		}*/
+		/*		// add admin user into this organization
+				adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
+				if err == nil {
+					err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
+					if err != nil {
+						log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
+					}
+				} else {
+					log.WithError(err).Error("Get user by username 'admin' failed")
+				}*/
 
 		err = storage.CreateOrganizationUser(ctx, tx, org.ID, req.UserId, true, false, false)
 		if err != nil {

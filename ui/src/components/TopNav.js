@@ -235,7 +235,7 @@ class TopNav extends Component {
     }else {
       brandingLogo = <div></div>
     }
-
+    console.log("#######", brandingLogo);
 
     const { balance } = this.state;
     

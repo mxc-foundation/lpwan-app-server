@@ -3,29 +3,22 @@
 
 package api
 
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
+import _ "google.golang.org/genproto/googleapis/api/annotations"
+import google_protobuf1 "github.com/golang/protobuf/ptypes/timestamp"
+import google_protobuf3 "github.com/golang/protobuf/ptypes/duration"
+
 import (
-	context "context"
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	duration "github.com/golang/protobuf/ptypes/duration"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	_ "google.golang.org/genproto/googleapis/api/annotations"
+	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type FUOTADeploymentDeviceState int32
 
@@ -43,7 +36,6 @@ var FUOTADeploymentDeviceState_name = map[int32]string{
 	1: "SUCCESS",
 	2: "ERROR",
 }
-
 var FUOTADeploymentDeviceState_value = map[string]int32{
 	"PENDING": 0,
 	"SUCCESS": 1,
@@ -53,72 +45,46 @@ var FUOTADeploymentDeviceState_value = map[string]int32{
 func (x FUOTADeploymentDeviceState) String() string {
 	return proto.EnumName(FUOTADeploymentDeviceState_name, int32(x))
 }
-
-func (FUOTADeploymentDeviceState) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{0}
-}
+func (FUOTADeploymentDeviceState) EnumDescriptor() ([]byte, []int) { return fileDescriptor13, []int{0} }
 
 type FUOTADeployment struct {
 	// ID of the deployment (string formatted UUID).
 	// This value will be automatically assigned on create.
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	// Name of the deployment.
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
 	// Multicast type.
 	// Currently only Class-C is supported!
-	GroupType MulticastGroupType `protobuf:"varint,3,opt,name=group_type,json=groupType,proto3,enum=api.MulticastGroupType" json:"group_type,omitempty"`
+	GroupType MulticastGroupType `protobuf:"varint,3,opt,name=group_type,json=groupType,enum=api.MulticastGroupType" json:"group_type,omitempty"`
 	// Data-rate.
-	Dr uint32 `protobuf:"varint,4,opt,name=dr,proto3" json:"dr,omitempty"`
+	Dr uint32 `protobuf:"varint,4,opt,name=dr" json:"dr,omitempty"`
 	// Frequency (Hz).
-	Frequency uint32 `protobuf:"varint,5,opt,name=frequency,proto3" json:"frequency,omitempty"`
+	Frequency uint32 `protobuf:"varint,5,opt,name=frequency" json:"frequency,omitempty"`
 	// Payload.
 	Payload []byte `protobuf:"bytes,6,opt,name=payload,proto3" json:"payload,omitempty"`
 	// Redundancy (number of packages).
-	Redundancy uint32 `protobuf:"varint,7,opt,name=redundancy,proto3" json:"redundancy,omitempty"`
+	Redundancy uint32 `protobuf:"varint,7,opt,name=redundancy" json:"redundancy,omitempty"`
 	// Multicast time-out.
 	// Please refer to the Remote Multicast Setup specification as this field
 	// has a different meaning for Class-B and Class-C groups.
-	MulticastTimeout uint32 `protobuf:"varint,8,opt,name=multicast_timeout,json=multicastTimeout,proto3" json:"multicast_timeout,omitempty"`
+	MulticastTimeout uint32 `protobuf:"varint,8,opt,name=multicast_timeout,json=multicastTimeout" json:"multicast_timeout,omitempty"`
 	// Unicast time-out.
 	// Set this to the value in which you at least expect an uplink frame from the
 	// device. The FUOTA deployment engine will wait at least for the given time
 	// before proceeding with the next steps.
-	UnicastTimeout *duration.Duration `protobuf:"bytes,9,opt,name=unicast_timeout,json=unicastTimeout,proto3" json:"unicast_timeout,omitempty"`
+	UnicastTimeout *google_protobuf3.Duration `protobuf:"bytes,9,opt,name=unicast_timeout,json=unicastTimeout" json:"unicast_timeout,omitempty"`
 	// Deployment state.
 	// This value will be automatically set on create.
-	State string `protobuf:"bytes,10,opt,name=state,proto3" json:"state,omitempty"`
+	State string `protobuf:"bytes,10,opt,name=state" json:"state,omitempty"`
 	// Next step after.
 	// This value will be automatically set on create.
-	NextStepAfter        *timestamp.Timestamp `protobuf:"bytes,11,opt,name=next_step_after,json=nextStepAfter,proto3" json:"next_step_after,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	NextStepAfter *google_protobuf1.Timestamp `protobuf:"bytes,11,opt,name=next_step_after,json=nextStepAfter" json:"next_step_after,omitempty"`
 }
 
-func (m *FUOTADeployment) Reset()         { *m = FUOTADeployment{} }
-func (m *FUOTADeployment) String() string { return proto.CompactTextString(m) }
-func (*FUOTADeployment) ProtoMessage()    {}
-func (*FUOTADeployment) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{0}
-}
-
-func (m *FUOTADeployment) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FUOTADeployment.Unmarshal(m, b)
-}
-func (m *FUOTADeployment) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FUOTADeployment.Marshal(b, m, deterministic)
-}
-func (m *FUOTADeployment) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FUOTADeployment.Merge(m, src)
-}
-func (m *FUOTADeployment) XXX_Size() int {
-	return xxx_messageInfo_FUOTADeployment.Size(m)
-}
-func (m *FUOTADeployment) XXX_DiscardUnknown() {
-	xxx_messageInfo_FUOTADeployment.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FUOTADeployment proto.InternalMessageInfo
+func (m *FUOTADeployment) Reset()                    { *m = FUOTADeployment{} }
+func (m *FUOTADeployment) String() string            { return proto.CompactTextString(m) }
+func (*FUOTADeployment) ProtoMessage()               {}
+func (*FUOTADeployment) Descriptor() ([]byte, []int) { return fileDescriptor13, []int{0} }
 
 func (m *FUOTADeployment) GetId() string {
 	if m != nil {
@@ -176,7 +142,7 @@ func (m *FUOTADeployment) GetMulticastTimeout() uint32 {
 	return 0
 }
 
-func (m *FUOTADeployment) GetUnicastTimeout() *duration.Duration {
+func (m *FUOTADeployment) GetUnicastTimeout() *google_protobuf3.Duration {
 	if m != nil {
 		return m.UnicastTimeout
 	}
@@ -190,7 +156,7 @@ func (m *FUOTADeployment) GetState() string {
 	return ""
 }
 
-func (m *FUOTADeployment) GetNextStepAfter() *timestamp.Timestamp {
+func (m *FUOTADeployment) GetNextStepAfter() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.NextStepAfter
 	}
@@ -199,46 +165,23 @@ func (m *FUOTADeployment) GetNextStepAfter() *timestamp.Timestamp {
 
 type FUOTADeploymentListItem struct {
 	// ID of the deployment (string formatted UUID).
-	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 	// Created at timestamp.
-	CreatedAt *timestamp.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedAt *google_protobuf1.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
 	// Last update timestamp.
-	UpdatedAt *timestamp.Timestamp `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	UpdatedAt *google_protobuf1.Timestamp `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt" json:"updated_at,omitempty"`
 	// Name of the deployment.
-	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Name string `protobuf:"bytes,4,opt,name=name" json:"name,omitempty"`
 	// Deployment state.
-	State string `protobuf:"bytes,5,opt,name=state,proto3" json:"state,omitempty"`
+	State string `protobuf:"bytes,5,opt,name=state" json:"state,omitempty"`
 	// Next step after.
-	NextStepAfter        *timestamp.Timestamp `protobuf:"bytes,6,opt,name=next_step_after,json=nextStepAfter,proto3" json:"next_step_after,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	NextStepAfter *google_protobuf1.Timestamp `protobuf:"bytes,6,opt,name=next_step_after,json=nextStepAfter" json:"next_step_after,omitempty"`
 }
 
-func (m *FUOTADeploymentListItem) Reset()         { *m = FUOTADeploymentListItem{} }
-func (m *FUOTADeploymentListItem) String() string { return proto.CompactTextString(m) }
-func (*FUOTADeploymentListItem) ProtoMessage()    {}
-func (*FUOTADeploymentListItem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{1}
-}
-
-func (m *FUOTADeploymentListItem) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FUOTADeploymentListItem.Unmarshal(m, b)
-}
-func (m *FUOTADeploymentListItem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FUOTADeploymentListItem.Marshal(b, m, deterministic)
-}
-func (m *FUOTADeploymentListItem) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FUOTADeploymentListItem.Merge(m, src)
-}
-func (m *FUOTADeploymentListItem) XXX_Size() int {
-	return xxx_messageInfo_FUOTADeploymentListItem.Size(m)
-}
-func (m *FUOTADeploymentListItem) XXX_DiscardUnknown() {
-	xxx_messageInfo_FUOTADeploymentListItem.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FUOTADeploymentListItem proto.InternalMessageInfo
+func (m *FUOTADeploymentListItem) Reset()                    { *m = FUOTADeploymentListItem{} }
+func (m *FUOTADeploymentListItem) String() string            { return proto.CompactTextString(m) }
+func (*FUOTADeploymentListItem) ProtoMessage()               {}
+func (*FUOTADeploymentListItem) Descriptor() ([]byte, []int) { return fileDescriptor13, []int{1} }
 
 func (m *FUOTADeploymentListItem) GetId() string {
 	if m != nil {
@@ -247,14 +190,14 @@ func (m *FUOTADeploymentListItem) GetId() string {
 	return ""
 }
 
-func (m *FUOTADeploymentListItem) GetCreatedAt() *timestamp.Timestamp {
+func (m *FUOTADeploymentListItem) GetCreatedAt() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.CreatedAt
 	}
 	return nil
 }
 
-func (m *FUOTADeploymentListItem) GetUpdatedAt() *timestamp.Timestamp {
+func (m *FUOTADeploymentListItem) GetUpdatedAt() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.UpdatedAt
 	}
@@ -275,7 +218,7 @@ func (m *FUOTADeploymentListItem) GetState() string {
 	return ""
 }
 
-func (m *FUOTADeploymentListItem) GetNextStepAfter() *timestamp.Timestamp {
+func (m *FUOTADeploymentListItem) GetNextStepAfter() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.NextStepAfter
 	}
@@ -284,38 +227,17 @@ func (m *FUOTADeploymentListItem) GetNextStepAfter() *timestamp.Timestamp {
 
 type CreateFUOTADeploymentForDeviceRequest struct {
 	// Device EUI (HEX encoded).
-	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
+	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
 	// FUOTA deployment.
-	FuotaDeployment      *FUOTADeployment `protobuf:"bytes,2,opt,name=fuota_deployment,json=fuotaDeployment,proto3" json:"fuota_deployment,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
-	XXX_unrecognized     []byte           `json:"-"`
-	XXX_sizecache        int32            `json:"-"`
+	FuotaDeployment *FUOTADeployment `protobuf:"bytes,2,opt,name=fuota_deployment,json=fuotaDeployment" json:"fuota_deployment,omitempty"`
 }
 
 func (m *CreateFUOTADeploymentForDeviceRequest) Reset()         { *m = CreateFUOTADeploymentForDeviceRequest{} }
 func (m *CreateFUOTADeploymentForDeviceRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateFUOTADeploymentForDeviceRequest) ProtoMessage()    {}
 func (*CreateFUOTADeploymentForDeviceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{2}
+	return fileDescriptor13, []int{2}
 }
-
-func (m *CreateFUOTADeploymentForDeviceRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CreateFUOTADeploymentForDeviceRequest.Unmarshal(m, b)
-}
-func (m *CreateFUOTADeploymentForDeviceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CreateFUOTADeploymentForDeviceRequest.Marshal(b, m, deterministic)
-}
-func (m *CreateFUOTADeploymentForDeviceRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateFUOTADeploymentForDeviceRequest.Merge(m, src)
-}
-func (m *CreateFUOTADeploymentForDeviceRequest) XXX_Size() int {
-	return xxx_messageInfo_CreateFUOTADeploymentForDeviceRequest.Size(m)
-}
-func (m *CreateFUOTADeploymentForDeviceRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateFUOTADeploymentForDeviceRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CreateFUOTADeploymentForDeviceRequest proto.InternalMessageInfo
 
 func (m *CreateFUOTADeploymentForDeviceRequest) GetDevEui() string {
 	if m != nil {
@@ -333,10 +255,7 @@ func (m *CreateFUOTADeploymentForDeviceRequest) GetFuotaDeployment() *FUOTADeplo
 
 type CreateFUOTADeploymentForDeviceResponse struct {
 	// ID of the created deployment (string formatted UUID).
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 }
 
 func (m *CreateFUOTADeploymentForDeviceResponse) Reset() {
@@ -345,26 +264,8 @@ func (m *CreateFUOTADeploymentForDeviceResponse) Reset() {
 func (m *CreateFUOTADeploymentForDeviceResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateFUOTADeploymentForDeviceResponse) ProtoMessage()    {}
 func (*CreateFUOTADeploymentForDeviceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{3}
+	return fileDescriptor13, []int{3}
 }
-
-func (m *CreateFUOTADeploymentForDeviceResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CreateFUOTADeploymentForDeviceResponse.Unmarshal(m, b)
-}
-func (m *CreateFUOTADeploymentForDeviceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CreateFUOTADeploymentForDeviceResponse.Marshal(b, m, deterministic)
-}
-func (m *CreateFUOTADeploymentForDeviceResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CreateFUOTADeploymentForDeviceResponse.Merge(m, src)
-}
-func (m *CreateFUOTADeploymentForDeviceResponse) XXX_Size() int {
-	return xxx_messageInfo_CreateFUOTADeploymentForDeviceResponse.Size(m)
-}
-func (m *CreateFUOTADeploymentForDeviceResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_CreateFUOTADeploymentForDeviceResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CreateFUOTADeploymentForDeviceResponse proto.InternalMessageInfo
 
 func (m *CreateFUOTADeploymentForDeviceResponse) GetId() string {
 	if m != nil {
@@ -376,36 +277,13 @@ func (m *CreateFUOTADeploymentForDeviceResponse) GetId() string {
 type GetFUOTADeploymentRequest struct {
 	// ID of the deployment (string formatted UUID).
 	// This value will be automatically assigned on create.
-	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
 }
 
-func (m *GetFUOTADeploymentRequest) Reset()         { *m = GetFUOTADeploymentRequest{} }
-func (m *GetFUOTADeploymentRequest) String() string { return proto.CompactTextString(m) }
-func (*GetFUOTADeploymentRequest) ProtoMessage()    {}
-func (*GetFUOTADeploymentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{4}
-}
-
-func (m *GetFUOTADeploymentRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetFUOTADeploymentRequest.Unmarshal(m, b)
-}
-func (m *GetFUOTADeploymentRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetFUOTADeploymentRequest.Marshal(b, m, deterministic)
-}
-func (m *GetFUOTADeploymentRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetFUOTADeploymentRequest.Merge(m, src)
-}
-func (m *GetFUOTADeploymentRequest) XXX_Size() int {
-	return xxx_messageInfo_GetFUOTADeploymentRequest.Size(m)
-}
-func (m *GetFUOTADeploymentRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetFUOTADeploymentRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetFUOTADeploymentRequest proto.InternalMessageInfo
+func (m *GetFUOTADeploymentRequest) Reset()                    { *m = GetFUOTADeploymentRequest{} }
+func (m *GetFUOTADeploymentRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetFUOTADeploymentRequest) ProtoMessage()               {}
+func (*GetFUOTADeploymentRequest) Descriptor() ([]byte, []int) { return fileDescriptor13, []int{4} }
 
 func (m *GetFUOTADeploymentRequest) GetId() string {
 	if m != nil {
@@ -415,40 +293,17 @@ func (m *GetFUOTADeploymentRequest) GetId() string {
 }
 
 type GetFUOTADeploymentResponse struct {
-	FuotaDeployment *FUOTADeployment `protobuf:"bytes,1,opt,name=fuota_deployment,json=fuotaDeployment,proto3" json:"fuota_deployment,omitempty"`
+	FuotaDeployment *FUOTADeployment `protobuf:"bytes,1,opt,name=fuota_deployment,json=fuotaDeployment" json:"fuota_deployment,omitempty"`
 	// Created at timestamp.
-	CreatedAt *timestamp.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedAt *google_protobuf1.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
 	// Last update timestamp.
-	UpdatedAt            *timestamp.Timestamp `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	UpdatedAt *google_protobuf1.Timestamp `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt" json:"updated_at,omitempty"`
 }
 
-func (m *GetFUOTADeploymentResponse) Reset()         { *m = GetFUOTADeploymentResponse{} }
-func (m *GetFUOTADeploymentResponse) String() string { return proto.CompactTextString(m) }
-func (*GetFUOTADeploymentResponse) ProtoMessage()    {}
-func (*GetFUOTADeploymentResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{5}
-}
-
-func (m *GetFUOTADeploymentResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetFUOTADeploymentResponse.Unmarshal(m, b)
-}
-func (m *GetFUOTADeploymentResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetFUOTADeploymentResponse.Marshal(b, m, deterministic)
-}
-func (m *GetFUOTADeploymentResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetFUOTADeploymentResponse.Merge(m, src)
-}
-func (m *GetFUOTADeploymentResponse) XXX_Size() int {
-	return xxx_messageInfo_GetFUOTADeploymentResponse.Size(m)
-}
-func (m *GetFUOTADeploymentResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetFUOTADeploymentResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetFUOTADeploymentResponse proto.InternalMessageInfo
+func (m *GetFUOTADeploymentResponse) Reset()                    { *m = GetFUOTADeploymentResponse{} }
+func (m *GetFUOTADeploymentResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetFUOTADeploymentResponse) ProtoMessage()               {}
+func (*GetFUOTADeploymentResponse) Descriptor() ([]byte, []int) { return fileDescriptor13, []int{5} }
 
 func (m *GetFUOTADeploymentResponse) GetFuotaDeployment() *FUOTADeployment {
 	if m != nil {
@@ -457,14 +312,14 @@ func (m *GetFUOTADeploymentResponse) GetFuotaDeployment() *FUOTADeployment {
 	return nil
 }
 
-func (m *GetFUOTADeploymentResponse) GetCreatedAt() *timestamp.Timestamp {
+func (m *GetFUOTADeploymentResponse) GetCreatedAt() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.CreatedAt
 	}
 	return nil
 }
 
-func (m *GetFUOTADeploymentResponse) GetUpdatedAt() *timestamp.Timestamp {
+func (m *GetFUOTADeploymentResponse) GetUpdatedAt() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.UpdatedAt
 	}
@@ -473,42 +328,19 @@ func (m *GetFUOTADeploymentResponse) GetUpdatedAt() *timestamp.Timestamp {
 
 type ListFUOTADeploymentRequest struct {
 	// Max number of deployments to return in the result-set.
-	Limit int64 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Limit int64 `protobuf:"varint,1,opt,name=limit" json:"limit,omitempty"`
 	// Offset in the result-set (for pagination).
-	Offset int64 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	Offset int64 `protobuf:"varint,2,opt,name=offset" json:"offset,omitempty"`
 	// Application ID to filter on (optional).
-	ApplicationId int64 `protobuf:"varint,3,opt,name=application_id,json=applicationID,proto3" json:"application_id,omitempty"`
+	ApplicationId int64 `protobuf:"varint,3,opt,name=application_id,json=applicationID" json:"application_id,omitempty"`
 	// Device EUI (HEX encoded) (optional).
-	DevEui               string   `protobuf:"bytes,4,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	DevEui string `protobuf:"bytes,4,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
 }
 
-func (m *ListFUOTADeploymentRequest) Reset()         { *m = ListFUOTADeploymentRequest{} }
-func (m *ListFUOTADeploymentRequest) String() string { return proto.CompactTextString(m) }
-func (*ListFUOTADeploymentRequest) ProtoMessage()    {}
-func (*ListFUOTADeploymentRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{6}
-}
-
-func (m *ListFUOTADeploymentRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ListFUOTADeploymentRequest.Unmarshal(m, b)
-}
-func (m *ListFUOTADeploymentRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ListFUOTADeploymentRequest.Marshal(b, m, deterministic)
-}
-func (m *ListFUOTADeploymentRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListFUOTADeploymentRequest.Merge(m, src)
-}
-func (m *ListFUOTADeploymentRequest) XXX_Size() int {
-	return xxx_messageInfo_ListFUOTADeploymentRequest.Size(m)
-}
-func (m *ListFUOTADeploymentRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListFUOTADeploymentRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListFUOTADeploymentRequest proto.InternalMessageInfo
+func (m *ListFUOTADeploymentRequest) Reset()                    { *m = ListFUOTADeploymentRequest{} }
+func (m *ListFUOTADeploymentRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListFUOTADeploymentRequest) ProtoMessage()               {}
+func (*ListFUOTADeploymentRequest) Descriptor() ([]byte, []int) { return fileDescriptor13, []int{6} }
 
 func (m *ListFUOTADeploymentRequest) GetLimit() int64 {
 	if m != nil {
@@ -540,38 +372,15 @@ func (m *ListFUOTADeploymentRequest) GetDevEui() string {
 
 type ListFUOTADeploymentResponse struct {
 	// Total number of deployments available within the result-set.
-	TotalCount int64 `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	TotalCount int64 `protobuf:"varint,1,opt,name=total_count,json=totalCount" json:"total_count,omitempty"`
 	// Deployments within this result-set.
-	Result               []*FUOTADeploymentListItem `protobuf:"bytes,2,rep,name=result,proto3" json:"result,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
-	XXX_unrecognized     []byte                     `json:"-"`
-	XXX_sizecache        int32                      `json:"-"`
+	Result []*FUOTADeploymentListItem `protobuf:"bytes,2,rep,name=result" json:"result,omitempty"`
 }
 
-func (m *ListFUOTADeploymentResponse) Reset()         { *m = ListFUOTADeploymentResponse{} }
-func (m *ListFUOTADeploymentResponse) String() string { return proto.CompactTextString(m) }
-func (*ListFUOTADeploymentResponse) ProtoMessage()    {}
-func (*ListFUOTADeploymentResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{7}
-}
-
-func (m *ListFUOTADeploymentResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ListFUOTADeploymentResponse.Unmarshal(m, b)
-}
-func (m *ListFUOTADeploymentResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ListFUOTADeploymentResponse.Marshal(b, m, deterministic)
-}
-func (m *ListFUOTADeploymentResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListFUOTADeploymentResponse.Merge(m, src)
-}
-func (m *ListFUOTADeploymentResponse) XXX_Size() int {
-	return xxx_messageInfo_ListFUOTADeploymentResponse.Size(m)
-}
-func (m *ListFUOTADeploymentResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListFUOTADeploymentResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListFUOTADeploymentResponse proto.InternalMessageInfo
+func (m *ListFUOTADeploymentResponse) Reset()                    { *m = ListFUOTADeploymentResponse{} }
+func (m *ListFUOTADeploymentResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListFUOTADeploymentResponse) ProtoMessage()               {}
+func (*ListFUOTADeploymentResponse) Descriptor() ([]byte, []int) { return fileDescriptor13, []int{7} }
 
 func (m *ListFUOTADeploymentResponse) GetTotalCount() int64 {
 	if m != nil {
@@ -590,40 +399,19 @@ func (m *ListFUOTADeploymentResponse) GetResult() []*FUOTADeploymentListItem {
 type ListFUOTADeploymentDevicesRequest struct {
 	// ID of the deployment (string formatted UUID).
 	// This value will be automatically assigned on create.
-	FuotaDeploymentId string `protobuf:"bytes,1,opt,name=fuota_deployment_id,json=fuotaDeploymentID,proto3" json:"fuota_deployment_id,omitempty"`
+	FuotaDeploymentId string `protobuf:"bytes,1,opt,name=fuota_deployment_id,json=fuotaDeploymentID" json:"fuota_deployment_id,omitempty"`
 	// Max number of items to return.
-	Limit int64 `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Limit int64 `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
 	// Offset in the result-set (for pagination).
-	Offset               int64    `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Offset int64 `protobuf:"varint,3,opt,name=offset" json:"offset,omitempty"`
 }
 
 func (m *ListFUOTADeploymentDevicesRequest) Reset()         { *m = ListFUOTADeploymentDevicesRequest{} }
 func (m *ListFUOTADeploymentDevicesRequest) String() string { return proto.CompactTextString(m) }
 func (*ListFUOTADeploymentDevicesRequest) ProtoMessage()    {}
 func (*ListFUOTADeploymentDevicesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{8}
+	return fileDescriptor13, []int{8}
 }
-
-func (m *ListFUOTADeploymentDevicesRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ListFUOTADeploymentDevicesRequest.Unmarshal(m, b)
-}
-func (m *ListFUOTADeploymentDevicesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ListFUOTADeploymentDevicesRequest.Marshal(b, m, deterministic)
-}
-func (m *ListFUOTADeploymentDevicesRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListFUOTADeploymentDevicesRequest.Merge(m, src)
-}
-func (m *ListFUOTADeploymentDevicesRequest) XXX_Size() int {
-	return xxx_messageInfo_ListFUOTADeploymentDevicesRequest.Size(m)
-}
-func (m *ListFUOTADeploymentDevicesRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListFUOTADeploymentDevicesRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListFUOTADeploymentDevicesRequest proto.InternalMessageInfo
 
 func (m *ListFUOTADeploymentDevicesRequest) GetFuotaDeploymentId() string {
 	if m != nil {
@@ -649,38 +437,17 @@ func (m *ListFUOTADeploymentDevicesRequest) GetOffset() int64 {
 type GetFUOTADeploymentDeviceRequest struct {
 	// ID of the deployment (string formatted UUID).
 	// This value will be automatically assigned on create.
-	FuotaDeploymentId string `protobuf:"bytes,1,opt,name=fuota_deployment_id,json=fuotaDeploymentID,proto3" json:"fuota_deployment_id,omitempty"`
+	FuotaDeploymentId string `protobuf:"bytes,1,opt,name=fuota_deployment_id,json=fuotaDeploymentID" json:"fuota_deployment_id,omitempty"`
 	// Device EUI (HEX encoded).
-	DevEui               string   `protobuf:"bytes,2,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	DevEui string `protobuf:"bytes,2,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
 }
 
 func (m *GetFUOTADeploymentDeviceRequest) Reset()         { *m = GetFUOTADeploymentDeviceRequest{} }
 func (m *GetFUOTADeploymentDeviceRequest) String() string { return proto.CompactTextString(m) }
 func (*GetFUOTADeploymentDeviceRequest) ProtoMessage()    {}
 func (*GetFUOTADeploymentDeviceRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{9}
+	return fileDescriptor13, []int{9}
 }
-
-func (m *GetFUOTADeploymentDeviceRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetFUOTADeploymentDeviceRequest.Unmarshal(m, b)
-}
-func (m *GetFUOTADeploymentDeviceRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetFUOTADeploymentDeviceRequest.Marshal(b, m, deterministic)
-}
-func (m *GetFUOTADeploymentDeviceRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetFUOTADeploymentDeviceRequest.Merge(m, src)
-}
-func (m *GetFUOTADeploymentDeviceRequest) XXX_Size() int {
-	return xxx_messageInfo_GetFUOTADeploymentDeviceRequest.Size(m)
-}
-func (m *GetFUOTADeploymentDeviceRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetFUOTADeploymentDeviceRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetFUOTADeploymentDeviceRequest proto.InternalMessageInfo
 
 func (m *GetFUOTADeploymentDeviceRequest) GetFuotaDeploymentId() string {
 	if m != nil {
@@ -697,36 +464,15 @@ func (m *GetFUOTADeploymentDeviceRequest) GetDevEui() string {
 }
 
 type GetFUOTADeploymentDeviceResponse struct {
-	DeploymentDevice     *FUOTADeploymentDeviceListItem `protobuf:"bytes,1,opt,name=deployment_device,json=deploymentDevice,proto3" json:"deployment_device,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                       `json:"-"`
-	XXX_unrecognized     []byte                         `json:"-"`
-	XXX_sizecache        int32                          `json:"-"`
+	DeploymentDevice *FUOTADeploymentDeviceListItem `protobuf:"bytes,1,opt,name=deployment_device,json=deploymentDevice" json:"deployment_device,omitempty"`
 }
 
 func (m *GetFUOTADeploymentDeviceResponse) Reset()         { *m = GetFUOTADeploymentDeviceResponse{} }
 func (m *GetFUOTADeploymentDeviceResponse) String() string { return proto.CompactTextString(m) }
 func (*GetFUOTADeploymentDeviceResponse) ProtoMessage()    {}
 func (*GetFUOTADeploymentDeviceResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{10}
+	return fileDescriptor13, []int{10}
 }
-
-func (m *GetFUOTADeploymentDeviceResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetFUOTADeploymentDeviceResponse.Unmarshal(m, b)
-}
-func (m *GetFUOTADeploymentDeviceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetFUOTADeploymentDeviceResponse.Marshal(b, m, deterministic)
-}
-func (m *GetFUOTADeploymentDeviceResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetFUOTADeploymentDeviceResponse.Merge(m, src)
-}
-func (m *GetFUOTADeploymentDeviceResponse) XXX_Size() int {
-	return xxx_messageInfo_GetFUOTADeploymentDeviceResponse.Size(m)
-}
-func (m *GetFUOTADeploymentDeviceResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetFUOTADeploymentDeviceResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetFUOTADeploymentDeviceResponse proto.InternalMessageInfo
 
 func (m *GetFUOTADeploymentDeviceResponse) GetDeploymentDevice() *FUOTADeploymentDeviceListItem {
 	if m != nil {
@@ -737,37 +483,16 @@ func (m *GetFUOTADeploymentDeviceResponse) GetDeploymentDevice() *FUOTADeploymen
 
 type ListFUOTADeploymentDevicesResponse struct {
 	// Total number of devices for the FUOTA deployment.
-	TotalCount           int64                            `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
-	Result               []*FUOTADeploymentDeviceListItem `protobuf:"bytes,2,rep,name=result,proto3" json:"result,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                         `json:"-"`
-	XXX_unrecognized     []byte                           `json:"-"`
-	XXX_sizecache        int32                            `json:"-"`
+	TotalCount int64                            `protobuf:"varint,1,opt,name=total_count,json=totalCount" json:"total_count,omitempty"`
+	Result     []*FUOTADeploymentDeviceListItem `protobuf:"bytes,2,rep,name=result" json:"result,omitempty"`
 }
 
 func (m *ListFUOTADeploymentDevicesResponse) Reset()         { *m = ListFUOTADeploymentDevicesResponse{} }
 func (m *ListFUOTADeploymentDevicesResponse) String() string { return proto.CompactTextString(m) }
 func (*ListFUOTADeploymentDevicesResponse) ProtoMessage()    {}
 func (*ListFUOTADeploymentDevicesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{11}
+	return fileDescriptor13, []int{11}
 }
-
-func (m *ListFUOTADeploymentDevicesResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ListFUOTADeploymentDevicesResponse.Unmarshal(m, b)
-}
-func (m *ListFUOTADeploymentDevicesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ListFUOTADeploymentDevicesResponse.Marshal(b, m, deterministic)
-}
-func (m *ListFUOTADeploymentDevicesResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListFUOTADeploymentDevicesResponse.Merge(m, src)
-}
-func (m *ListFUOTADeploymentDevicesResponse) XXX_Size() int {
-	return xxx_messageInfo_ListFUOTADeploymentDevicesResponse.Size(m)
-}
-func (m *ListFUOTADeploymentDevicesResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListFUOTADeploymentDevicesResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListFUOTADeploymentDevicesResponse proto.InternalMessageInfo
 
 func (m *ListFUOTADeploymentDevicesResponse) GetTotalCount() int64 {
 	if m != nil {
@@ -785,46 +510,23 @@ func (m *ListFUOTADeploymentDevicesResponse) GetResult() []*FUOTADeploymentDevic
 
 type FUOTADeploymentDeviceListItem struct {
 	// Device EUI (HEX encoded).
-	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
+	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
 	// Device name.
-	DeviceName string `protobuf:"bytes,2,opt,name=device_name,json=deviceName,proto3" json:"device_name,omitempty"`
+	DeviceName string `protobuf:"bytes,2,opt,name=device_name,json=deviceName" json:"device_name,omitempty"`
 	// Device state.
-	State FUOTADeploymentDeviceState `protobuf:"varint,3,opt,name=state,proto3,enum=api.FUOTADeploymentDeviceState" json:"state,omitempty"`
+	State FUOTADeploymentDeviceState `protobuf:"varint,3,opt,name=state,enum=api.FUOTADeploymentDeviceState" json:"state,omitempty"`
 	// Error message (in case of error state).
-	ErrorMessage string `protobuf:"bytes,4,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	ErrorMessage string `protobuf:"bytes,4,opt,name=error_message,json=errorMessage" json:"error_message,omitempty"`
 	// Created at timestamp.
-	CreatedAt *timestamp.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	CreatedAt *google_protobuf1.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
 	// Updated at timestamp.
-	UpdatedAt            *timestamp.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	UpdatedAt *google_protobuf1.Timestamp `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt" json:"updated_at,omitempty"`
 }
 
-func (m *FUOTADeploymentDeviceListItem) Reset()         { *m = FUOTADeploymentDeviceListItem{} }
-func (m *FUOTADeploymentDeviceListItem) String() string { return proto.CompactTextString(m) }
-func (*FUOTADeploymentDeviceListItem) ProtoMessage()    {}
-func (*FUOTADeploymentDeviceListItem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_4f4a0a6fe690dc29, []int{12}
-}
-
-func (m *FUOTADeploymentDeviceListItem) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FUOTADeploymentDeviceListItem.Unmarshal(m, b)
-}
-func (m *FUOTADeploymentDeviceListItem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FUOTADeploymentDeviceListItem.Marshal(b, m, deterministic)
-}
-func (m *FUOTADeploymentDeviceListItem) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FUOTADeploymentDeviceListItem.Merge(m, src)
-}
-func (m *FUOTADeploymentDeviceListItem) XXX_Size() int {
-	return xxx_messageInfo_FUOTADeploymentDeviceListItem.Size(m)
-}
-func (m *FUOTADeploymentDeviceListItem) XXX_DiscardUnknown() {
-	xxx_messageInfo_FUOTADeploymentDeviceListItem.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FUOTADeploymentDeviceListItem proto.InternalMessageInfo
+func (m *FUOTADeploymentDeviceListItem) Reset()                    { *m = FUOTADeploymentDeviceListItem{} }
+func (m *FUOTADeploymentDeviceListItem) String() string            { return proto.CompactTextString(m) }
+func (*FUOTADeploymentDeviceListItem) ProtoMessage()               {}
+func (*FUOTADeploymentDeviceListItem) Descriptor() ([]byte, []int) { return fileDescriptor13, []int{12} }
 
 func (m *FUOTADeploymentDeviceListItem) GetDevEui() string {
 	if m != nil {
@@ -854,14 +556,14 @@ func (m *FUOTADeploymentDeviceListItem) GetErrorMessage() string {
 	return ""
 }
 
-func (m *FUOTADeploymentDeviceListItem) GetCreatedAt() *timestamp.Timestamp {
+func (m *FUOTADeploymentDeviceListItem) GetCreatedAt() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.CreatedAt
 	}
 	return nil
 }
 
-func (m *FUOTADeploymentDeviceListItem) GetUpdatedAt() *timestamp.Timestamp {
+func (m *FUOTADeploymentDeviceListItem) GetUpdatedAt() *google_protobuf1.Timestamp {
 	if m != nil {
 		return m.UpdatedAt
 	}
@@ -869,7 +571,6 @@ func (m *FUOTADeploymentDeviceListItem) GetUpdatedAt() *timestamp.Timestamp {
 }
 
 func init() {
-	proto.RegisterEnum("api.FUOTADeploymentDeviceState", FUOTADeploymentDeviceState_name, FUOTADeploymentDeviceState_value)
 	proto.RegisterType((*FUOTADeployment)(nil), "api.FUOTADeployment")
 	proto.RegisterType((*FUOTADeploymentListItem)(nil), "api.FUOTADeploymentListItem")
 	proto.RegisterType((*CreateFUOTADeploymentForDeviceRequest)(nil), "api.CreateFUOTADeploymentForDeviceRequest")
@@ -883,77 +584,7 @@ func init() {
 	proto.RegisterType((*GetFUOTADeploymentDeviceResponse)(nil), "api.GetFUOTADeploymentDeviceResponse")
 	proto.RegisterType((*ListFUOTADeploymentDevicesResponse)(nil), "api.ListFUOTADeploymentDevicesResponse")
 	proto.RegisterType((*FUOTADeploymentDeviceListItem)(nil), "api.FUOTADeploymentDeviceListItem")
-}
-
-func init() { proto.RegisterFile("fuotaDeployment.proto", fileDescriptor_4f4a0a6fe690dc29) }
-
-var fileDescriptor_4f4a0a6fe690dc29 = []byte{
-	// 1027 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x56, 0x4f, 0x6f, 0xe3, 0x44,
-	0x14, 0xc7, 0x76, 0x93, 0x92, 0x97, 0x6d, 0x9b, 0xce, 0x76, 0x5b, 0xd7, 0xdb, 0x6d, 0x82, 0x97,
-	0x2e, 0x51, 0xab, 0x4d, 0xa4, 0xee, 0xb2, 0x82, 0x15, 0x02, 0x42, 0xd3, 0x46, 0x91, 0xd8, 0x16,
-	0x39, 0xed, 0xd9, 0x9a, 0x8d, 0x27, 0x91, 0x21, 0xb1, 0x8d, 0x3d, 0xae, 0x88, 0x56, 0x3d, 0xc0,
-	0x11, 0x89, 0x13, 0x1f, 0x00, 0x4e, 0x1c, 0xe0, 0xe3, 0xec, 0x57, 0xe0, 0xc0, 0xc7, 0x40, 0x33,
-	0x1e, 0xa7, 0x8e, 0x63, 0x37, 0xed, 0x5e, 0xf6, 0xe6, 0x79, 0xf3, 0xfe, 0xfc, 0xe6, 0xf7, 0x7e,
-	0xf3, 0xc6, 0xf0, 0x60, 0x10, 0xba, 0x14, 0xb7, 0x89, 0x37, 0x72, 0x27, 0x63, 0xe2, 0xd0, 0x86,
-	0xe7, 0xbb, 0xd4, 0x45, 0x0a, 0xf6, 0x6c, 0x6d, 0x67, 0xe8, 0xba, 0xc3, 0x11, 0x69, 0x62, 0xcf,
-	0x6e, 0x62, 0xc7, 0x71, 0x29, 0xa6, 0xb6, 0xeb, 0x04, 0x91, 0x8b, 0xb6, 0x4d, 0xed, 0x31, 0x09,
-	0x28, 0x1e, 0x7b, 0xcd, 0xe9, 0x97, 0xd8, 0xda, 0xb2, 0x42, 0x9f, 0xfb, 0x36, 0xe3, 0x0f, 0xb1,
-	0xb1, 0x31, 0x0e, 0x47, 0xd4, 0xee, 0xe3, 0x80, 0x76, 0x7c, 0x37, 0x14, 0xee, 0xfa, 0x9f, 0x0a,
-	0xac, 0x9d, 0x5c, 0x9c, 0x9d, 0xb7, 0xae, 0x61, 0xa0, 0x55, 0x90, 0x6d, 0x4b, 0x95, 0x6a, 0x52,
-	0xbd, 0x64, 0xc8, 0xb6, 0x85, 0x10, 0x2c, 0x39, 0x78, 0x4c, 0x54, 0x99, 0x5b, 0xf8, 0x37, 0x7a,
-	0x01, 0x30, 0x64, 0x69, 0x4c, 0x3a, 0xf1, 0x88, 0xaa, 0xd4, 0xa4, 0xfa, 0xea, 0xe1, 0x56, 0x03,
-	0x7b, 0x76, 0xe3, 0xd5, 0x4c, 0x99, 0xf3, 0x89, 0x47, 0x8c, 0xd2, 0x30, 0xfe, 0x64, 0xb9, 0x2d,
-	0x5f, 0x5d, 0xaa, 0x49, 0xf5, 0x15, 0x43, 0xb6, 0x7c, 0xb4, 0x03, 0xa5, 0x81, 0x4f, 0x7e, 0x0c,
-	0x89, 0xd3, 0x9f, 0xa8, 0x05, 0x6e, 0xbe, 0x36, 0x20, 0x15, 0x96, 0x3d, 0x3c, 0x19, 0xb9, 0xd8,
-	0x52, 0x8b, 0x35, 0xa9, 0x7e, 0xcf, 0x88, 0x97, 0x68, 0x17, 0xc0, 0x27, 0x56, 0xe8, 0x58, 0x98,
-	0x05, 0x2e, 0xf3, 0xc0, 0x84, 0x05, 0x1d, 0xc0, 0xfa, 0xf4, 0xbc, 0x26, 0xe3, 0xc8, 0x0d, 0xa9,
-	0xfa, 0x21, 0x77, 0xab, 0x4c, 0x37, 0xce, 0x23, 0x3b, 0xfa, 0x06, 0xd6, 0x42, 0x67, 0xd6, 0xb5,
-	0x54, 0x93, 0xea, 0xe5, 0xc3, 0xed, 0x46, 0xd4, 0x86, 0x88, 0xac, 0xd7, 0xe1, 0xa0, 0xd1, 0x16,
-	0xa4, 0x1a, 0xab, 0x22, 0x22, 0xce, 0xb1, 0x01, 0x85, 0x80, 0x62, 0x4a, 0x54, 0xe0, 0x2c, 0x45,
-	0x0b, 0x96, 0xd9, 0x21, 0x3f, 0x51, 0x33, 0xa0, 0xc4, 0x33, 0xf1, 0x80, 0x12, 0x5f, 0x2d, 0xf3,
-	0xcc, 0xda, 0x5c, 0xe6, 0xf3, 0xb8, 0x91, 0xc6, 0x0a, 0x0b, 0xe9, 0x51, 0xe2, 0xb5, 0x58, 0x80,
-	0xfe, 0x9b, 0x0c, 0x5b, 0xa9, 0x16, 0x7d, 0x6b, 0x07, 0xb4, 0x4b, 0xc9, 0x78, 0xae, 0x55, 0x9f,
-	0x03, 0xf4, 0x7d, 0x82, 0x29, 0xb1, 0x4c, 0x4c, 0x79, 0xc3, 0x6e, 0x2e, 0x55, 0x12, 0xde, 0x2d,
-	0xca, 0x42, 0x43, 0xcf, 0x8a, 0x43, 0x95, 0xc5, 0xa1, 0xc2, 0xbb, 0x45, 0xa7, 0x02, 0x59, 0x4a,
-	0x08, 0x64, 0xca, 0x47, 0x61, 0x01, 0x1f, 0xc5, 0xbb, 0xf2, 0xf1, 0xb3, 0x04, 0x7b, 0x47, 0x1c,
-	0x76, 0x8a, 0x95, 0x13, 0xd7, 0x6f, 0x93, 0x4b, 0xbb, 0x4f, 0x0c, 0xa6, 0x9f, 0x80, 0xa2, 0x2d,
-	0x58, 0xb6, 0xc8, 0xa5, 0x49, 0x42, 0x5b, 0x50, 0x54, 0xb4, 0xc8, 0xe5, 0xf1, 0x45, 0x17, 0x7d,
-	0x05, 0x15, 0x7e, 0xf7, 0x4c, 0x6b, 0x1a, 0x2c, 0xc8, 0xda, 0xe0, 0x1a, 0x4e, 0x25, 0x36, 0xd6,
-	0x52, 0x37, 0x55, 0xff, 0x0c, 0x9e, 0x2c, 0x82, 0x10, 0x78, 0xae, 0x13, 0x90, 0x74, 0x87, 0xf4,
-	0x03, 0xd8, 0xee, 0x10, 0x9a, 0x2e, 0x20, 0x00, 0xa7, 0x9d, 0xdf, 0x4a, 0xa0, 0x65, 0x79, 0x8b,
-	0xdc, 0x59, 0xc7, 0x90, 0xee, 0x70, 0x8c, 0xf7, 0x23, 0x17, 0xfd, 0x57, 0x09, 0x34, 0xa6, 0xe0,
-	0x1c, 0x12, 0x36, 0xa0, 0x30, 0xb2, 0xc7, 0x76, 0x74, 0x14, 0xc5, 0x88, 0x16, 0x68, 0x13, 0x8a,
-	0xee, 0x60, 0x10, 0x90, 0x08, 0xa6, 0x62, 0x88, 0x15, 0xda, 0x83, 0x55, 0xec, 0x79, 0x23, 0xbb,
-	0xcf, 0xaf, 0xa5, 0x69, 0x5b, 0x1c, 0x8b, 0x62, 0xac, 0x24, 0xac, 0xdd, 0x76, 0x52, 0x0a, 0x4b,
-	0x49, 0x29, 0xe8, 0x14, 0x1e, 0x66, 0x62, 0x11, 0x14, 0x57, 0xa1, 0x4c, 0x5d, 0x8a, 0x47, 0x66,
-	0xdf, 0x0d, 0x9d, 0x18, 0x12, 0x70, 0xd3, 0x11, 0xb3, 0xa0, 0xe7, 0x50, 0xf4, 0x49, 0x10, 0x8e,
-	0x18, 0x2e, 0xa5, 0x5e, 0x3e, 0xdc, 0xc9, 0x62, 0x3e, 0xbe, 0xaf, 0x86, 0xf0, 0x65, 0x1a, 0xfe,
-	0x28, 0xa3, 0x6c, 0xa4, 0x9d, 0x20, 0x66, 0xa2, 0x01, 0xf7, 0xd3, 0xfd, 0x35, 0xa7, 0xfa, 0x58,
-	0x4f, 0x35, 0xb3, 0xdb, 0xbe, 0x66, 0x4e, 0xce, 0x66, 0x4e, 0x49, 0x32, 0xa7, 0x7f, 0x0f, 0xd5,
-	0x79, 0x6d, 0xcd, 0x5e, 0xa0, 0xbb, 0x02, 0x48, 0xb0, 0x2c, 0xcf, 0xb0, 0x1c, 0x40, 0x2d, 0xbf,
-	0x96, 0xa0, 0xfa, 0x0c, 0xd6, 0x13, 0x65, 0x2c, 0xbe, 0x29, 0xe4, 0xac, 0x67, 0x91, 0x1a, 0x85,
-	0x4f, 0xa9, 0xad, 0x58, 0xa9, 0x1d, 0x46, 0xb2, 0x7e, 0x13, 0xc9, 0xb7, 0x6d, 0xf1, 0xcb, 0x54,
-	0x8b, 0x6f, 0x83, 0x26, 0x6e, 0xf4, 0x3f, 0x32, 0x3c, 0xba, 0xd1, 0x33, 0x7f, 0x48, 0x55, 0xa1,
-	0x1c, 0x91, 0x60, 0x26, 0x5e, 0x5f, 0x88, 0x4c, 0xa7, 0x6c, 0xc4, 0x7e, 0x1a, 0x8f, 0xd8, 0xe8,
-	0xf9, 0xad, 0xe6, 0xc3, 0xea, 0x31, 0xb7, 0x78, 0x06, 0x3f, 0x86, 0x15, 0xe2, 0xfb, 0xae, 0x6f,
-	0x8e, 0x49, 0x10, 0xe0, 0x61, 0x3c, 0xb6, 0xef, 0x71, 0xe3, 0xab, 0xc8, 0x96, 0x9a, 0x0c, 0x85,
-	0x77, 0x9f, 0x0c, 0xc5, 0x3b, 0x4c, 0x86, 0xfd, 0x16, 0x68, 0xf9, 0xf8, 0x51, 0x19, 0x96, 0xbf,
-	0x3b, 0x3e, 0x6d, 0x77, 0x4f, 0x3b, 0x95, 0x0f, 0xd8, 0xa2, 0x77, 0x71, 0x74, 0x74, 0xdc, 0xeb,
-	0x55, 0x24, 0x54, 0x82, 0xc2, 0xb1, 0x61, 0x9c, 0x19, 0x15, 0xf9, 0xf0, 0xbf, 0x02, 0x6c, 0xa6,
-	0x72, 0xf4, 0x88, 0xcf, 0x92, 0xa0, 0x3f, 0x24, 0x58, 0x13, 0x53, 0x3b, 0x1e, 0xd3, 0x68, 0x9f,
-	0x93, 0x76, 0xab, 0xe7, 0x44, 0x3b, 0xb8, 0x95, 0x6f, 0xa4, 0x2a, 0xfd, 0xd9, 0x2f, 0x6f, 0xff,
-	0xfd, 0x5d, 0x7e, 0xaa, 0xd7, 0xf9, 0x2f, 0x5c, 0xd4, 0xb5, 0xa0, 0xf9, 0x46, 0xb4, 0xfa, 0xaa,
-	0xc9, 0x2f, 0xcf, 0xd3, 0x6b, 0xcd, 0x06, 0x2f, 0xa5, 0x7d, 0xf4, 0x03, 0x28, 0x1d, 0x42, 0xd1,
-	0x2e, 0x2f, 0x94, 0xfb, 0x4c, 0x68, 0xd5, 0xdc, 0x7d, 0x51, 0xfc, 0x31, 0x2f, 0xfe, 0x08, 0x3d,
-	0xe4, 0xc5, 0xe7, 0x4a, 0x35, 0xdf, 0xd8, 0xd6, 0x15, 0xb2, 0x61, 0x89, 0x89, 0x10, 0x45, 0xd9,
-	0xf2, 0x07, 0xb2, 0x56, 0xcb, 0x77, 0x10, 0xf5, 0x76, 0x79, 0x3d, 0x15, 0x6d, 0x66, 0xd7, 0x43,
-	0x7f, 0x4b, 0x70, 0xbf, 0x43, 0x68, 0xba, 0xad, 0xe8, 0xe3, 0x9c, 0x83, 0xcc, 0xf2, 0xbe, 0xb7,
-	0xc0, 0x4b, 0x80, 0x38, 0xe1, 0x20, 0xbe, 0x46, 0x5f, 0xe6, 0x1d, 0x3a, 0x63, 0x94, 0x5d, 0xcd,
-	0x77, 0x06, 0xfd, 0x25, 0xc1, 0x03, 0x76, 0xd8, 0xb9, 0x89, 0x81, 0x9e, 0xe4, 0x11, 0x31, 0x3b,
-	0xb7, 0xb5, 0x4f, 0x16, 0xfa, 0x09, 0xc8, 0x5f, 0x70, 0xc8, 0x2f, 0xd0, 0xf3, 0x77, 0x81, 0xfc,
-	0xba, 0xc8, 0x2f, 0xd3, 0xb3, 0xff, 0x03, 0x00, 0x00, 0xff, 0xff, 0x8a, 0x6d, 0xb8, 0x3d, 0x48,
-	0x0c, 0x00, 0x00,
+	proto.RegisterEnum("api.FUOTADeploymentDeviceState", FUOTADeploymentDeviceState_name, FUOTADeploymentDeviceState_value)
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -964,9 +595,8 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// FUOTADeploymentServiceClient is the client API for FUOTADeploymentService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+// Client API for FUOTADeploymentService service
+
 type FUOTADeploymentServiceClient interface {
 	// CreateForDevice creates a deployment for the given DevEUI.
 	CreateForDevice(ctx context.Context, in *CreateFUOTADeploymentForDeviceRequest, opts ...grpc.CallOption) (*CreateFUOTADeploymentForDeviceResponse, error)
@@ -990,7 +620,7 @@ func NewFUOTADeploymentServiceClient(cc *grpc.ClientConn) FUOTADeploymentService
 
 func (c *fUOTADeploymentServiceClient) CreateForDevice(ctx context.Context, in *CreateFUOTADeploymentForDeviceRequest, opts ...grpc.CallOption) (*CreateFUOTADeploymentForDeviceResponse, error) {
 	out := new(CreateFUOTADeploymentForDeviceResponse)
-	err := c.cc.Invoke(ctx, "/api.FUOTADeploymentService/CreateForDevice", in, out, opts...)
+	err := grpc.Invoke(ctx, "/api.FUOTADeploymentService/CreateForDevice", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -999,7 +629,7 @@ func (c *fUOTADeploymentServiceClient) CreateForDevice(ctx context.Context, in *
 
 func (c *fUOTADeploymentServiceClient) Get(ctx context.Context, in *GetFUOTADeploymentRequest, opts ...grpc.CallOption) (*GetFUOTADeploymentResponse, error) {
 	out := new(GetFUOTADeploymentResponse)
-	err := c.cc.Invoke(ctx, "/api.FUOTADeploymentService/Get", in, out, opts...)
+	err := grpc.Invoke(ctx, "/api.FUOTADeploymentService/Get", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1008,7 +638,7 @@ func (c *fUOTADeploymentServiceClient) Get(ctx context.Context, in *GetFUOTADepl
 
 func (c *fUOTADeploymentServiceClient) List(ctx context.Context, in *ListFUOTADeploymentRequest, opts ...grpc.CallOption) (*ListFUOTADeploymentResponse, error) {
 	out := new(ListFUOTADeploymentResponse)
-	err := c.cc.Invoke(ctx, "/api.FUOTADeploymentService/List", in, out, opts...)
+	err := grpc.Invoke(ctx, "/api.FUOTADeploymentService/List", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1017,7 +647,7 @@ func (c *fUOTADeploymentServiceClient) List(ctx context.Context, in *ListFUOTADe
 
 func (c *fUOTADeploymentServiceClient) GetDeploymentDevice(ctx context.Context, in *GetFUOTADeploymentDeviceRequest, opts ...grpc.CallOption) (*GetFUOTADeploymentDeviceResponse, error) {
 	out := new(GetFUOTADeploymentDeviceResponse)
-	err := c.cc.Invoke(ctx, "/api.FUOTADeploymentService/GetDeploymentDevice", in, out, opts...)
+	err := grpc.Invoke(ctx, "/api.FUOTADeploymentService/GetDeploymentDevice", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1026,14 +656,15 @@ func (c *fUOTADeploymentServiceClient) GetDeploymentDevice(ctx context.Context, 
 
 func (c *fUOTADeploymentServiceClient) ListDeploymentDevices(ctx context.Context, in *ListFUOTADeploymentDevicesRequest, opts ...grpc.CallOption) (*ListFUOTADeploymentDevicesResponse, error) {
 	out := new(ListFUOTADeploymentDevicesResponse)
-	err := c.cc.Invoke(ctx, "/api.FUOTADeploymentService/ListDeploymentDevices", in, out, opts...)
+	err := grpc.Invoke(ctx, "/api.FUOTADeploymentService/ListDeploymentDevices", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// FUOTADeploymentServiceServer is the server API for FUOTADeploymentService service.
+// Server API for FUOTADeploymentService service
+
 type FUOTADeploymentServiceServer interface {
 	// CreateForDevice creates a deployment for the given DevEUI.
 	CreateForDevice(context.Context, *CreateFUOTADeploymentForDeviceRequest) (*CreateFUOTADeploymentForDeviceResponse, error)
@@ -1045,26 +676,6 @@ type FUOTADeploymentServiceServer interface {
 	GetDeploymentDevice(context.Context, *GetFUOTADeploymentDeviceRequest) (*GetFUOTADeploymentDeviceResponse, error)
 	// ListDeploymentDevices lists the devices (and status) for the given fuota deployment ID.
 	ListDeploymentDevices(context.Context, *ListFUOTADeploymentDevicesRequest) (*ListFUOTADeploymentDevicesResponse, error)
-}
-
-// UnimplementedFUOTADeploymentServiceServer can be embedded to have forward compatible implementations.
-type UnimplementedFUOTADeploymentServiceServer struct {
-}
-
-func (*UnimplementedFUOTADeploymentServiceServer) CreateForDevice(ctx context.Context, req *CreateFUOTADeploymentForDeviceRequest) (*CreateFUOTADeploymentForDeviceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateForDevice not implemented")
-}
-func (*UnimplementedFUOTADeploymentServiceServer) Get(ctx context.Context, req *GetFUOTADeploymentRequest) (*GetFUOTADeploymentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
-}
-func (*UnimplementedFUOTADeploymentServiceServer) List(ctx context.Context, req *ListFUOTADeploymentRequest) (*ListFUOTADeploymentResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
-}
-func (*UnimplementedFUOTADeploymentServiceServer) GetDeploymentDevice(ctx context.Context, req *GetFUOTADeploymentDeviceRequest) (*GetFUOTADeploymentDeviceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDeploymentDevice not implemented")
-}
-func (*UnimplementedFUOTADeploymentServiceServer) ListDeploymentDevices(ctx context.Context, req *ListFUOTADeploymentDevicesRequest) (*ListFUOTADeploymentDevicesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListDeploymentDevices not implemented")
 }
 
 func RegisterFUOTADeploymentServiceServer(s *grpc.Server, srv FUOTADeploymentServiceServer) {
@@ -1188,4 +799,75 @@ var _FUOTADeploymentService_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "fuotaDeployment.proto",
+}
+
+func init() { proto.RegisterFile("fuotaDeployment.proto", fileDescriptor13) }
+
+var fileDescriptor13 = []byte{
+	// 1027 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x56, 0x4f, 0x6f, 0xe3, 0x44,
+	0x14, 0xc7, 0x76, 0x93, 0x92, 0x97, 0x6d, 0x9b, 0xce, 0x76, 0x5b, 0xd7, 0xdb, 0x6d, 0x82, 0x97,
+	0x2e, 0x51, 0xab, 0x4d, 0xa4, 0xee, 0xb2, 0x82, 0x15, 0x02, 0x42, 0xd3, 0x46, 0x91, 0xd8, 0x16,
+	0x39, 0xed, 0xd9, 0x9a, 0x8d, 0x27, 0x91, 0x21, 0xb1, 0x8d, 0x3d, 0xae, 0x88, 0x56, 0x3d, 0xc0,
+	0x11, 0x89, 0x13, 0x1f, 0x00, 0x4e, 0x1c, 0xe0, 0xe3, 0xec, 0x57, 0xe0, 0xc0, 0xc7, 0x40, 0x33,
+	0x1e, 0xa7, 0x8e, 0x63, 0x37, 0xed, 0x5e, 0xf6, 0xe6, 0x79, 0xf3, 0xfe, 0xfc, 0xe6, 0xf7, 0x7e,
+	0xf3, 0xc6, 0xf0, 0x60, 0x10, 0xba, 0x14, 0xb7, 0x89, 0x37, 0x72, 0x27, 0x63, 0xe2, 0xd0, 0x86,
+	0xe7, 0xbb, 0xd4, 0x45, 0x0a, 0xf6, 0x6c, 0x6d, 0x67, 0xe8, 0xba, 0xc3, 0x11, 0x69, 0x62, 0xcf,
+	0x6e, 0x62, 0xc7, 0x71, 0x29, 0xa6, 0xb6, 0xeb, 0x04, 0x91, 0x8b, 0xb6, 0x4d, 0xed, 0x31, 0x09,
+	0x28, 0x1e, 0x7b, 0xcd, 0xe9, 0x97, 0xd8, 0xda, 0xb2, 0x42, 0x9f, 0xfb, 0x36, 0xe3, 0x0f, 0xb1,
+	0xb1, 0x31, 0x0e, 0x47, 0xd4, 0xee, 0xe3, 0x80, 0x76, 0x7c, 0x37, 0x14, 0xee, 0xfa, 0x9f, 0x0a,
+	0xac, 0x9d, 0x5c, 0x9c, 0x9d, 0xb7, 0xae, 0x61, 0xa0, 0x55, 0x90, 0x6d, 0x4b, 0x95, 0x6a, 0x52,
+	0xbd, 0x64, 0xc8, 0xb6, 0x85, 0x10, 0x2c, 0x39, 0x78, 0x4c, 0x54, 0x99, 0x5b, 0xf8, 0x37, 0x7a,
+	0x01, 0x30, 0x64, 0x69, 0x4c, 0x3a, 0xf1, 0x88, 0xaa, 0xd4, 0xa4, 0xfa, 0xea, 0xe1, 0x56, 0x03,
+	0x7b, 0x76, 0xe3, 0xd5, 0x4c, 0x99, 0xf3, 0x89, 0x47, 0x8c, 0xd2, 0x30, 0xfe, 0x64, 0xb9, 0x2d,
+	0x5f, 0x5d, 0xaa, 0x49, 0xf5, 0x15, 0x43, 0xb6, 0x7c, 0xb4, 0x03, 0xa5, 0x81, 0x4f, 0x7e, 0x0c,
+	0x89, 0xd3, 0x9f, 0xa8, 0x05, 0x6e, 0xbe, 0x36, 0x20, 0x15, 0x96, 0x3d, 0x3c, 0x19, 0xb9, 0xd8,
+	0x52, 0x8b, 0x35, 0xa9, 0x7e, 0xcf, 0x88, 0x97, 0x68, 0x17, 0xc0, 0x27, 0x56, 0xe8, 0x58, 0x98,
+	0x05, 0x2e, 0xf3, 0xc0, 0x84, 0x05, 0x1d, 0xc0, 0xfa, 0xf4, 0xbc, 0x26, 0xe3, 0xc8, 0x0d, 0xa9,
+	0xfa, 0x21, 0x77, 0xab, 0x4c, 0x37, 0xce, 0x23, 0x3b, 0xfa, 0x06, 0xd6, 0x42, 0x67, 0xd6, 0xb5,
+	0x54, 0x93, 0xea, 0xe5, 0xc3, 0xed, 0x46, 0xd4, 0x86, 0x88, 0xac, 0xd7, 0xe1, 0xa0, 0xd1, 0x16,
+	0xa4, 0x1a, 0xab, 0x22, 0x22, 0xce, 0xb1, 0x01, 0x85, 0x80, 0x62, 0x4a, 0x54, 0xe0, 0x2c, 0x45,
+	0x0b, 0x96, 0xd9, 0x21, 0x3f, 0x51, 0x33, 0xa0, 0xc4, 0x33, 0xf1, 0x80, 0x12, 0x5f, 0x2d, 0xf3,
+	0xcc, 0xda, 0x5c, 0xe6, 0xf3, 0xb8, 0x91, 0xc6, 0x0a, 0x0b, 0xe9, 0x51, 0xe2, 0xb5, 0x58, 0x80,
+	0xfe, 0x9b, 0x0c, 0x5b, 0xa9, 0x16, 0x7d, 0x6b, 0x07, 0xb4, 0x4b, 0xc9, 0x78, 0xae, 0x55, 0x9f,
+	0x03, 0xf4, 0x7d, 0x82, 0x29, 0xb1, 0x4c, 0x4c, 0x79, 0xc3, 0x6e, 0x2e, 0x55, 0x12, 0xde, 0x2d,
+	0xca, 0x42, 0x43, 0xcf, 0x8a, 0x43, 0x95, 0xc5, 0xa1, 0xc2, 0xbb, 0x45, 0xa7, 0x02, 0x59, 0x4a,
+	0x08, 0x64, 0xca, 0x47, 0x61, 0x01, 0x1f, 0xc5, 0xbb, 0xf2, 0xf1, 0xb3, 0x04, 0x7b, 0x47, 0x1c,
+	0x76, 0x8a, 0x95, 0x13, 0xd7, 0x6f, 0x93, 0x4b, 0xbb, 0x4f, 0x0c, 0xa6, 0x9f, 0x80, 0xa2, 0x2d,
+	0x58, 0xb6, 0xc8, 0xa5, 0x49, 0x42, 0x5b, 0x50, 0x54, 0xb4, 0xc8, 0xe5, 0xf1, 0x45, 0x17, 0x7d,
+	0x05, 0x15, 0x7e, 0xf7, 0x4c, 0x6b, 0x1a, 0x2c, 0xc8, 0xda, 0xe0, 0x1a, 0x4e, 0x25, 0x36, 0xd6,
+	0x52, 0x37, 0x55, 0xff, 0x0c, 0x9e, 0x2c, 0x82, 0x10, 0x78, 0xae, 0x13, 0x90, 0x74, 0x87, 0xf4,
+	0x03, 0xd8, 0xee, 0x10, 0x9a, 0x2e, 0x20, 0x00, 0xa7, 0x9d, 0xdf, 0x4a, 0xa0, 0x65, 0x79, 0x8b,
+	0xdc, 0x59, 0xc7, 0x90, 0xee, 0x70, 0x8c, 0xf7, 0x23, 0x17, 0xfd, 0x57, 0x09, 0x34, 0xa6, 0xe0,
+	0x1c, 0x12, 0x36, 0xa0, 0x30, 0xb2, 0xc7, 0x76, 0x74, 0x14, 0xc5, 0x88, 0x16, 0x68, 0x13, 0x8a,
+	0xee, 0x60, 0x10, 0x90, 0x08, 0xa6, 0x62, 0x88, 0x15, 0xda, 0x83, 0x55, 0xec, 0x79, 0x23, 0xbb,
+	0xcf, 0xaf, 0xa5, 0x69, 0x5b, 0x1c, 0x8b, 0x62, 0xac, 0x24, 0xac, 0xdd, 0x76, 0x52, 0x0a, 0x4b,
+	0x49, 0x29, 0xe8, 0x14, 0x1e, 0x66, 0x62, 0x11, 0x14, 0x57, 0xa1, 0x4c, 0x5d, 0x8a, 0x47, 0x66,
+	0xdf, 0x0d, 0x9d, 0x18, 0x12, 0x70, 0xd3, 0x11, 0xb3, 0xa0, 0xe7, 0x50, 0xf4, 0x49, 0x10, 0x8e,
+	0x18, 0x2e, 0xa5, 0x5e, 0x3e, 0xdc, 0xc9, 0x62, 0x3e, 0xbe, 0xaf, 0x86, 0xf0, 0x65, 0x1a, 0xfe,
+	0x28, 0xa3, 0x6c, 0xa4, 0x9d, 0x20, 0x66, 0xa2, 0x01, 0xf7, 0xd3, 0xfd, 0x35, 0xa7, 0xfa, 0x58,
+	0x4f, 0x35, 0xb3, 0xdb, 0xbe, 0x66, 0x4e, 0xce, 0x66, 0x4e, 0x49, 0x32, 0xa7, 0x7f, 0x0f, 0xd5,
+	0x79, 0x6d, 0xcd, 0x5e, 0xa0, 0xbb, 0x02, 0x48, 0xb0, 0x2c, 0xcf, 0xb0, 0x1c, 0x40, 0x2d, 0xbf,
+	0x96, 0xa0, 0xfa, 0x0c, 0xd6, 0x13, 0x65, 0x2c, 0xbe, 0x29, 0xe4, 0xac, 0x67, 0x91, 0x1a, 0x85,
+	0x4f, 0xa9, 0xad, 0x58, 0xa9, 0x1d, 0x46, 0xb2, 0x7e, 0x13, 0xc9, 0xb7, 0x6d, 0xf1, 0xcb, 0x54,
+	0x8b, 0x6f, 0x83, 0x26, 0x6e, 0xf4, 0x3f, 0x32, 0x3c, 0xba, 0xd1, 0x33, 0x7f, 0x48, 0x55, 0xa1,
+	0x1c, 0x91, 0x60, 0x26, 0x5e, 0x5f, 0x88, 0x4c, 0xa7, 0x6c, 0xc4, 0x7e, 0x1a, 0x8f, 0xd8, 0xe8,
+	0xf9, 0xad, 0xe6, 0xc3, 0xea, 0x31, 0xb7, 0x78, 0x06, 0x3f, 0x86, 0x15, 0xe2, 0xfb, 0xae, 0x6f,
+	0x8e, 0x49, 0x10, 0xe0, 0x61, 0x3c, 0xb6, 0xef, 0x71, 0xe3, 0xab, 0xc8, 0x96, 0x9a, 0x0c, 0x85,
+	0x77, 0x9f, 0x0c, 0xc5, 0x3b, 0x4c, 0x86, 0xfd, 0x16, 0x68, 0xf9, 0xf8, 0x51, 0x19, 0x96, 0xbf,
+	0x3b, 0x3e, 0x6d, 0x77, 0x4f, 0x3b, 0x95, 0x0f, 0xd8, 0xa2, 0x77, 0x71, 0x74, 0x74, 0xdc, 0xeb,
+	0x55, 0x24, 0x54, 0x82, 0xc2, 0xb1, 0x61, 0x9c, 0x19, 0x15, 0xf9, 0xf0, 0xbf, 0x02, 0x6c, 0xa6,
+	0x72, 0xf4, 0x88, 0xcf, 0x92, 0xa0, 0x3f, 0x24, 0x58, 0x13, 0x53, 0x3b, 0x1e, 0xd3, 0x68, 0x9f,
+	0x93, 0x76, 0xab, 0xe7, 0x44, 0x3b, 0xb8, 0x95, 0x6f, 0xa4, 0x2a, 0xfd, 0xd9, 0x2f, 0x6f, 0xff,
+	0xfd, 0x5d, 0x7e, 0xaa, 0xd7, 0xf9, 0x2f, 0x5c, 0xd4, 0xb5, 0xa0, 0xf9, 0x46, 0xb4, 0xfa, 0xaa,
+	0xc9, 0x2f, 0xcf, 0xd3, 0x6b, 0xcd, 0x06, 0x2f, 0xa5, 0x7d, 0xf4, 0x03, 0x28, 0x1d, 0x42, 0xd1,
+	0x2e, 0x2f, 0x94, 0xfb, 0x4c, 0x68, 0xd5, 0xdc, 0x7d, 0x51, 0xfc, 0x31, 0x2f, 0xfe, 0x08, 0x3d,
+	0xe4, 0xc5, 0xe7, 0x4a, 0x35, 0xdf, 0xd8, 0xd6, 0x15, 0xb2, 0x61, 0x89, 0x89, 0x10, 0x45, 0xd9,
+	0xf2, 0x07, 0xb2, 0x56, 0xcb, 0x77, 0x10, 0xf5, 0x76, 0x79, 0x3d, 0x15, 0x6d, 0x66, 0xd7, 0x43,
+	0x7f, 0x4b, 0x70, 0xbf, 0x43, 0x68, 0xba, 0xad, 0xe8, 0xe3, 0x9c, 0x83, 0xcc, 0xf2, 0xbe, 0xb7,
+	0xc0, 0x4b, 0x80, 0x38, 0xe1, 0x20, 0xbe, 0x46, 0x5f, 0xe6, 0x1d, 0x3a, 0x63, 0x94, 0x5d, 0xcd,
+	0x77, 0x06, 0xfd, 0x25, 0xc1, 0x03, 0x76, 0xd8, 0xb9, 0x89, 0x81, 0x9e, 0xe4, 0x11, 0x31, 0x3b,
+	0xb7, 0xb5, 0x4f, 0x16, 0xfa, 0x09, 0xc8, 0x5f, 0x70, 0xc8, 0x2f, 0xd0, 0xf3, 0x77, 0x81, 0xfc,
+	0xba, 0xc8, 0x2f, 0xd3, 0xb3, 0xff, 0x03, 0x00, 0x00, 0xff, 0xff, 0x8a, 0x6d, 0xb8, 0x3d, 0x48,
+	0x0c, 0x00, 0x00,
 }

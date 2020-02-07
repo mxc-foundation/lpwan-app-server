@@ -2,6 +2,7 @@ package m2m_ui
 
 import (
 	"context"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -11,21 +12,24 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// SupernodeServerAPI defines the supernode server api structure
 type SupernodeServerAPI struct {
 	validator auth.Validator
 }
 
+// NewSupernodeServerAPI validates the new supernode server api
 func NewSupernodeServerAPI(validator auth.Validator) *SupernodeServerAPI {
 	return &SupernodeServerAPI{
 		validator: validator,
 	}
 }
 
+// AddSuperNodeMoneyAccount defines the money account addition request and response for the supernode
 func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *api.AddSuperNodeMoneyAccountRequest) (*api.AddSuperNodeMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/AddSuperNodeMoneyAccount")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.AddSuperNodeMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
@@ -52,11 +56,12 @@ func (s *SupernodeServerAPI) AddSuperNodeMoneyAccount(ctx context.Context, req *
 	}, nil
 }
 
+// GetSuperNodeActiveMoneyAccount defines the active money account request and response for the supernode
 func (s *SupernodeServerAPI) GetSuperNodeActiveMoneyAccount(ctx context.Context, req *api.GetSuperNodeActiveMoneyAccountRequest) (*api.GetSuperNodeActiveMoneyAccountResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetSuperNodeActiveMoneyAccount")
 
-	prof, err := getUserProfileByJwt(s.validator, ctx, req.OrgId)
-	if err != nil{
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	if err != nil {
 		return &api.GetSuperNodeActiveMoneyAccountResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 

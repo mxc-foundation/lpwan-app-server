@@ -16,6 +16,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
 )
 
+// HashIterations configures the Hash iteration
 var (
 	jwtsecret           []byte
 	HashIterations      = 100000

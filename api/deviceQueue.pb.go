@@ -3,16 +3,15 @@
 
 package api
 
+import proto "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
+import _ "google.golang.org/genproto/googleapis/api/annotations"
+import google_protobuf2 "github.com/golang/protobuf/ptypes/empty"
+
 import (
-	context "context"
-	fmt "fmt"
-	proto "github.com/golang/protobuf/proto"
-	empty "github.com/golang/protobuf/ptypes/empty"
-	_ "google.golang.org/genproto/googleapis/api/annotations"
+	context "golang.org/x/net/context"
 	grpc "google.golang.org/grpc"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -20,59 +19,30 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
-
 type DeviceQueueItem struct {
 	// Device EUI (HEX encoded).
-	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
+	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
 	// Set this to true when an acknowledgement from the device is required.
 	// Please note that this must not be used to guarantee a delivery.
-	Confirmed bool `protobuf:"varint,2,opt,name=confirmed,proto3" json:"confirmed,omitempty"`
+	Confirmed bool `protobuf:"varint,2,opt,name=confirmed" json:"confirmed,omitempty"`
 	// Downlink frame-counter.
 	// This will be automatically set on enquue.
-	FCnt uint32 `protobuf:"varint,6,opt,name=f_cnt,json=fCnt,proto3" json:"f_cnt,omitempty"`
+	FCnt uint32 `protobuf:"varint,6,opt,name=f_cnt,json=fCnt" json:"f_cnt,omitempty"`
 	// FPort used (must be > 0)
-	FPort uint32 `protobuf:"varint,3,opt,name=f_port,json=fPort,proto3" json:"f_port,omitempty"`
+	FPort uint32 `protobuf:"varint,3,opt,name=f_port,json=fPort" json:"f_port,omitempty"`
 	// Base64 encoded data.
 	// Or use the json_object field when an application codec has been configured.
 	Data []byte `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
 	// JSON object (string).
 	// Only use this when an application codec has been configured that can convert
 	// this object into binary form.
-	JsonObject           string   `protobuf:"bytes,5,opt,name=json_object,json=jsonObject,proto3" json:"json_object,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	JsonObject string `protobuf:"bytes,5,opt,name=json_object,json=jsonObject" json:"json_object,omitempty"`
 }
 
-func (m *DeviceQueueItem) Reset()         { *m = DeviceQueueItem{} }
-func (m *DeviceQueueItem) String() string { return proto.CompactTextString(m) }
-func (*DeviceQueueItem) ProtoMessage()    {}
-func (*DeviceQueueItem) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ae6ff84951d6e0cf, []int{0}
-}
-
-func (m *DeviceQueueItem) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DeviceQueueItem.Unmarshal(m, b)
-}
-func (m *DeviceQueueItem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DeviceQueueItem.Marshal(b, m, deterministic)
-}
-func (m *DeviceQueueItem) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DeviceQueueItem.Merge(m, src)
-}
-func (m *DeviceQueueItem) XXX_Size() int {
-	return xxx_messageInfo_DeviceQueueItem.Size(m)
-}
-func (m *DeviceQueueItem) XXX_DiscardUnknown() {
-	xxx_messageInfo_DeviceQueueItem.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DeviceQueueItem proto.InternalMessageInfo
+func (m *DeviceQueueItem) Reset()                    { *m = DeviceQueueItem{} }
+func (m *DeviceQueueItem) String() string            { return proto.CompactTextString(m) }
+func (*DeviceQueueItem) ProtoMessage()               {}
+func (*DeviceQueueItem) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
 
 func (m *DeviceQueueItem) GetDevEui() string {
 	if m != nil {
@@ -118,36 +88,13 @@ func (m *DeviceQueueItem) GetJsonObject() string {
 
 type EnqueueDeviceQueueItemRequest struct {
 	// Queue-item object to enqueue.
-	DeviceQueueItem      *DeviceQueueItem `protobuf:"bytes,1,opt,name=device_queue_item,json=deviceQueueItem,proto3" json:"device_queue_item,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
-	XXX_unrecognized     []byte           `json:"-"`
-	XXX_sizecache        int32            `json:"-"`
+	DeviceQueueItem *DeviceQueueItem `protobuf:"bytes,1,opt,name=device_queue_item,json=deviceQueueItem" json:"device_queue_item,omitempty"`
 }
 
-func (m *EnqueueDeviceQueueItemRequest) Reset()         { *m = EnqueueDeviceQueueItemRequest{} }
-func (m *EnqueueDeviceQueueItemRequest) String() string { return proto.CompactTextString(m) }
-func (*EnqueueDeviceQueueItemRequest) ProtoMessage()    {}
-func (*EnqueueDeviceQueueItemRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ae6ff84951d6e0cf, []int{1}
-}
-
-func (m *EnqueueDeviceQueueItemRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_EnqueueDeviceQueueItemRequest.Unmarshal(m, b)
-}
-func (m *EnqueueDeviceQueueItemRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_EnqueueDeviceQueueItemRequest.Marshal(b, m, deterministic)
-}
-func (m *EnqueueDeviceQueueItemRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EnqueueDeviceQueueItemRequest.Merge(m, src)
-}
-func (m *EnqueueDeviceQueueItemRequest) XXX_Size() int {
-	return xxx_messageInfo_EnqueueDeviceQueueItemRequest.Size(m)
-}
-func (m *EnqueueDeviceQueueItemRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_EnqueueDeviceQueueItemRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EnqueueDeviceQueueItemRequest proto.InternalMessageInfo
+func (m *EnqueueDeviceQueueItemRequest) Reset()                    { *m = EnqueueDeviceQueueItemRequest{} }
+func (m *EnqueueDeviceQueueItemRequest) String() string            { return proto.CompactTextString(m) }
+func (*EnqueueDeviceQueueItemRequest) ProtoMessage()               {}
+func (*EnqueueDeviceQueueItemRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
 
 func (m *EnqueueDeviceQueueItemRequest) GetDeviceQueueItem() *DeviceQueueItem {
 	if m != nil {
@@ -158,36 +105,13 @@ func (m *EnqueueDeviceQueueItemRequest) GetDeviceQueueItem() *DeviceQueueItem {
 
 type EnqueueDeviceQueueItemResponse struct {
 	// Frame-counter for the enqueued payload.
-	FCnt                 uint32   `protobuf:"varint,1,opt,name=f_cnt,json=fCnt,proto3" json:"f_cnt,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	FCnt uint32 `protobuf:"varint,1,opt,name=f_cnt,json=fCnt" json:"f_cnt,omitempty"`
 }
 
-func (m *EnqueueDeviceQueueItemResponse) Reset()         { *m = EnqueueDeviceQueueItemResponse{} }
-func (m *EnqueueDeviceQueueItemResponse) String() string { return proto.CompactTextString(m) }
-func (*EnqueueDeviceQueueItemResponse) ProtoMessage()    {}
-func (*EnqueueDeviceQueueItemResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ae6ff84951d6e0cf, []int{2}
-}
-
-func (m *EnqueueDeviceQueueItemResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_EnqueueDeviceQueueItemResponse.Unmarshal(m, b)
-}
-func (m *EnqueueDeviceQueueItemResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_EnqueueDeviceQueueItemResponse.Marshal(b, m, deterministic)
-}
-func (m *EnqueueDeviceQueueItemResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EnqueueDeviceQueueItemResponse.Merge(m, src)
-}
-func (m *EnqueueDeviceQueueItemResponse) XXX_Size() int {
-	return xxx_messageInfo_EnqueueDeviceQueueItemResponse.Size(m)
-}
-func (m *EnqueueDeviceQueueItemResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_EnqueueDeviceQueueItemResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EnqueueDeviceQueueItemResponse proto.InternalMessageInfo
+func (m *EnqueueDeviceQueueItemResponse) Reset()                    { *m = EnqueueDeviceQueueItemResponse{} }
+func (m *EnqueueDeviceQueueItemResponse) String() string            { return proto.CompactTextString(m) }
+func (*EnqueueDeviceQueueItemResponse) ProtoMessage()               {}
+func (*EnqueueDeviceQueueItemResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{2} }
 
 func (m *EnqueueDeviceQueueItemResponse) GetFCnt() uint32 {
 	if m != nil {
@@ -198,36 +122,13 @@ func (m *EnqueueDeviceQueueItemResponse) GetFCnt() uint32 {
 
 type FlushDeviceQueueRequest struct {
 	// Device EUI (HEX encoded).
-	DevEui               string   `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
 }
 
-func (m *FlushDeviceQueueRequest) Reset()         { *m = FlushDeviceQueueRequest{} }
-func (m *FlushDeviceQueueRequest) String() string { return proto.CompactTextString(m) }
-func (*FlushDeviceQueueRequest) ProtoMessage()    {}
-func (*FlushDeviceQueueRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ae6ff84951d6e0cf, []int{3}
-}
-
-func (m *FlushDeviceQueueRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_FlushDeviceQueueRequest.Unmarshal(m, b)
-}
-func (m *FlushDeviceQueueRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_FlushDeviceQueueRequest.Marshal(b, m, deterministic)
-}
-func (m *FlushDeviceQueueRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FlushDeviceQueueRequest.Merge(m, src)
-}
-func (m *FlushDeviceQueueRequest) XXX_Size() int {
-	return xxx_messageInfo_FlushDeviceQueueRequest.Size(m)
-}
-func (m *FlushDeviceQueueRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_FlushDeviceQueueRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FlushDeviceQueueRequest proto.InternalMessageInfo
+func (m *FlushDeviceQueueRequest) Reset()                    { *m = FlushDeviceQueueRequest{} }
+func (m *FlushDeviceQueueRequest) String() string            { return proto.CompactTextString(m) }
+func (*FlushDeviceQueueRequest) ProtoMessage()               {}
+func (*FlushDeviceQueueRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{3} }
 
 func (m *FlushDeviceQueueRequest) GetDevEui() string {
 	if m != nil {
@@ -238,36 +139,13 @@ func (m *FlushDeviceQueueRequest) GetDevEui() string {
 
 type ListDeviceQueueItemsRequest struct {
 	// Device EUI (HEX encoded).
-	DevEui               string   `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	DevEui string `protobuf:"bytes,1,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
 }
 
-func (m *ListDeviceQueueItemsRequest) Reset()         { *m = ListDeviceQueueItemsRequest{} }
-func (m *ListDeviceQueueItemsRequest) String() string { return proto.CompactTextString(m) }
-func (*ListDeviceQueueItemsRequest) ProtoMessage()    {}
-func (*ListDeviceQueueItemsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ae6ff84951d6e0cf, []int{4}
-}
-
-func (m *ListDeviceQueueItemsRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ListDeviceQueueItemsRequest.Unmarshal(m, b)
-}
-func (m *ListDeviceQueueItemsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ListDeviceQueueItemsRequest.Marshal(b, m, deterministic)
-}
-func (m *ListDeviceQueueItemsRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListDeviceQueueItemsRequest.Merge(m, src)
-}
-func (m *ListDeviceQueueItemsRequest) XXX_Size() int {
-	return xxx_messageInfo_ListDeviceQueueItemsRequest.Size(m)
-}
-func (m *ListDeviceQueueItemsRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListDeviceQueueItemsRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListDeviceQueueItemsRequest proto.InternalMessageInfo
+func (m *ListDeviceQueueItemsRequest) Reset()                    { *m = ListDeviceQueueItemsRequest{} }
+func (m *ListDeviceQueueItemsRequest) String() string            { return proto.CompactTextString(m) }
+func (*ListDeviceQueueItemsRequest) ProtoMessage()               {}
+func (*ListDeviceQueueItemsRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
 
 func (m *ListDeviceQueueItemsRequest) GetDevEui() string {
 	if m != nil {
@@ -277,36 +155,13 @@ func (m *ListDeviceQueueItemsRequest) GetDevEui() string {
 }
 
 type ListDeviceQueueItemsResponse struct {
-	DeviceQueueItems     []*DeviceQueueItem `protobuf:"bytes,1,rep,name=device_queue_items,json=deviceQueueItems,proto3" json:"device_queue_items,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+	DeviceQueueItems []*DeviceQueueItem `protobuf:"bytes,1,rep,name=device_queue_items,json=deviceQueueItems" json:"device_queue_items,omitempty"`
 }
 
-func (m *ListDeviceQueueItemsResponse) Reset()         { *m = ListDeviceQueueItemsResponse{} }
-func (m *ListDeviceQueueItemsResponse) String() string { return proto.CompactTextString(m) }
-func (*ListDeviceQueueItemsResponse) ProtoMessage()    {}
-func (*ListDeviceQueueItemsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_ae6ff84951d6e0cf, []int{5}
-}
-
-func (m *ListDeviceQueueItemsResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ListDeviceQueueItemsResponse.Unmarshal(m, b)
-}
-func (m *ListDeviceQueueItemsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ListDeviceQueueItemsResponse.Marshal(b, m, deterministic)
-}
-func (m *ListDeviceQueueItemsResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ListDeviceQueueItemsResponse.Merge(m, src)
-}
-func (m *ListDeviceQueueItemsResponse) XXX_Size() int {
-	return xxx_messageInfo_ListDeviceQueueItemsResponse.Size(m)
-}
-func (m *ListDeviceQueueItemsResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ListDeviceQueueItemsResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ListDeviceQueueItemsResponse proto.InternalMessageInfo
+func (m *ListDeviceQueueItemsResponse) Reset()                    { *m = ListDeviceQueueItemsResponse{} }
+func (m *ListDeviceQueueItemsResponse) String() string            { return proto.CompactTextString(m) }
+func (*ListDeviceQueueItemsResponse) ProtoMessage()               {}
+func (*ListDeviceQueueItemsResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
 
 func (m *ListDeviceQueueItemsResponse) GetDeviceQueueItems() []*DeviceQueueItem {
 	if m != nil {
@@ -324,41 +179,6 @@ func init() {
 	proto.RegisterType((*ListDeviceQueueItemsResponse)(nil), "api.ListDeviceQueueItemsResponse")
 }
 
-func init() { proto.RegisterFile("deviceQueue.proto", fileDescriptor_ae6ff84951d6e0cf) }
-
-var fileDescriptor_ae6ff84951d6e0cf = []byte{
-	// 462 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0xcf, 0x8a, 0xd4, 0x40,
-	0x10, 0xc6, 0xe9, 0xf9, 0xb7, 0x6e, 0xad, 0xb2, 0x6e, 0xf9, 0x67, 0xc3, 0x18, 0xd7, 0xd8, 0x7a,
-	0x18, 0xf6, 0x90, 0xc0, 0x2c, 0x0a, 0x7a, 0x12, 0x75, 0x84, 0x05, 0x41, 0x8d, 0x78, 0x0e, 0x99,
-	0xa4, 0xb2, 0xf6, 0xb2, 0xd3, 0x9d, 0x49, 0x77, 0x06, 0x44, 0xbc, 0x78, 0xf7, 0xe4, 0x53, 0xf8,
-	0x3c, 0xbe, 0x82, 0x8f, 0xe1, 0x41, 0xd2, 0xc9, 0x32, 0xe3, 0x8c, 0x13, 0x2f, 0x21, 0x7c, 0x54,
-	0xf5, 0xef, 0xab, 0xaf, 0xba, 0xe1, 0x20, 0xa5, 0x85, 0x48, 0xe8, 0x5d, 0x49, 0x25, 0xf9, 0x79,
-	0xa1, 0x8c, 0xc2, 0x6e, 0x9c, 0x8b, 0xa1, 0x7b, 0xa6, 0xd4, 0xd9, 0x05, 0x05, 0x71, 0x2e, 0x82,
-	0x58, 0x4a, 0x65, 0x62, 0x23, 0x94, 0xd4, 0x75, 0xc9, 0xf0, 0x80, 0x66, 0xb9, 0xf9, 0x14, 0xd8,
-	0x6f, 0x2d, 0xf1, 0x1f, 0x0c, 0xf6, 0x5f, 0x2e, 0xcf, 0x3a, 0x35, 0x34, 0xc3, 0x43, 0xd8, 0x49,
-	0x69, 0x11, 0x51, 0x29, 0x1c, 0xe6, 0xb1, 0xd1, 0x6e, 0x38, 0x48, 0x69, 0x31, 0xf9, 0x70, 0x8a,
-	0x2e, 0xec, 0x26, 0x4a, 0x66, 0xa2, 0x98, 0x51, 0xea, 0x74, 0x3c, 0x36, 0xba, 0x12, 0x2e, 0x05,
-	0xbc, 0x01, 0xfd, 0x2c, 0x4a, 0xa4, 0x71, 0x06, 0x1e, 0x1b, 0x5d, 0x0b, 0x7b, 0xd9, 0x0b, 0x69,
-	0xf0, 0x16, 0x0c, 0xb2, 0x28, 0x57, 0x85, 0x71, 0xba, 0x56, 0xed, 0x67, 0x6f, 0x55, 0x61, 0x10,
-	0xa1, 0x97, 0xc6, 0x26, 0x76, 0x7a, 0x1e, 0x1b, 0x5d, 0x0d, 0xed, 0x3f, 0xde, 0x83, 0xbd, 0x73,
-	0xad, 0x64, 0xa4, 0xa6, 0xe7, 0x94, 0x18, 0xa7, 0x6f, 0xd1, 0x50, 0x49, 0x6f, 0xac, 0xc2, 0x63,
-	0xb8, 0x3b, 0x91, 0xf3, 0xca, 0xe6, 0x9a, 0xe3, 0x90, 0xe6, 0x25, 0x69, 0x83, 0xcf, 0x2e, 0x73,
-	0x89, 0x6c, 0x55, 0x24, 0x0c, 0xcd, 0xec, 0x08, 0x7b, 0xe3, 0x9b, 0x7e, 0x9c, 0x0b, 0x7f, 0xbd,
-	0x6f, 0x3f, 0xfd, 0x5b, 0xe0, 0x8f, 0xe0, 0x68, 0x1b, 0x42, 0xe7, 0x4a, 0x6a, 0x5a, 0x4e, 0xc9,
-	0x96, 0x53, 0xf2, 0x31, 0x1c, 0xbe, 0xba, 0x28, 0xf5, 0xc7, 0x95, 0xa6, 0x4b, 0x4f, 0xdb, 0xc2,
-	0xe4, 0x8f, 0xe1, 0xce, 0x6b, 0xa1, 0xcd, 0x1a, 0x47, 0xff, 0xb7, 0x6f, 0x0a, 0xee, 0xbf, 0xfb,
-	0x1a, 0x83, 0xcf, 0x01, 0x37, 0x42, 0xd0, 0x0e, 0xf3, 0xba, 0x5b, 0x53, 0xb8, 0xbe, 0x96, 0x82,
-	0x1e, 0xff, 0xee, 0x00, 0xae, 0x54, 0xbd, 0xa7, 0xa2, 0xfa, 0xc7, 0x6f, 0x0c, 0x76, 0x9a, 0x78,
-	0x90, 0xdb, 0xa3, 0x5a, 0xf7, 0x31, 0x7c, 0xd0, 0x5a, 0x53, 0xfb, 0xe5, 0x4f, 0xbe, 0xfe, 0xfc,
-	0xf5, 0xbd, 0x73, 0xc2, 0x7d, 0x7b, 0x69, 0x6b, 0x2b, 0x3a, 0xf8, 0xbc, 0x31, 0x83, 0xdf, 0xc4,
-	0xf1, 0x25, 0xb0, 0xda, 0x53, 0x76, 0x8c, 0x09, 0xf4, 0x6d, 0xec, 0xe8, 0x5a, 0xd0, 0x96, 0x15,
-	0x0c, 0x6f, 0xfb, 0xf5, 0xab, 0xa8, 0xaf, 0xfc, 0xb4, 0xcc, 0xfc, 0x49, 0xf5, 0x02, 0xf8, 0x43,
-	0x4b, 0x3e, 0x3a, 0x76, 0x37, 0xc8, 0x2b, 0x1c, 0x9c, 0x43, 0xaf, 0xca, 0x1b, 0x3d, 0xcb, 0x68,
-	0x59, 0xd9, 0xf0, 0x7e, 0x4b, 0x45, 0x33, 0x6c, 0x83, 0xc4, 0x56, 0xe4, 0x74, 0x60, 0x8d, 0x9e,
-	0xfc, 0x09, 0x00, 0x00, 0xff, 0xff, 0xea, 0x2e, 0x4a, 0x55, 0xe6, 0x03, 0x00, 0x00,
-}
-
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -367,14 +187,13 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// DeviceQueueServiceClient is the client API for DeviceQueueService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+// Client API for DeviceQueueService service
+
 type DeviceQueueServiceClient interface {
 	// Enqueue adds the given item to the device-queue.
 	Enqueue(ctx context.Context, in *EnqueueDeviceQueueItemRequest, opts ...grpc.CallOption) (*EnqueueDeviceQueueItemResponse, error)
 	// Flush flushes the downlink device-queue.
-	Flush(ctx context.Context, in *FlushDeviceQueueRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Flush(ctx context.Context, in *FlushDeviceQueueRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error)
 	// List lists the items in the device-queue.
 	List(ctx context.Context, in *ListDeviceQueueItemsRequest, opts ...grpc.CallOption) (*ListDeviceQueueItemsResponse, error)
 }
@@ -389,16 +208,16 @@ func NewDeviceQueueServiceClient(cc *grpc.ClientConn) DeviceQueueServiceClient {
 
 func (c *deviceQueueServiceClient) Enqueue(ctx context.Context, in *EnqueueDeviceQueueItemRequest, opts ...grpc.CallOption) (*EnqueueDeviceQueueItemResponse, error) {
 	out := new(EnqueueDeviceQueueItemResponse)
-	err := c.cc.Invoke(ctx, "/api.DeviceQueueService/Enqueue", in, out, opts...)
+	err := grpc.Invoke(ctx, "/api.DeviceQueueService/Enqueue", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *deviceQueueServiceClient) Flush(ctx context.Context, in *FlushDeviceQueueRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
-	err := c.cc.Invoke(ctx, "/api.DeviceQueueService/Flush", in, out, opts...)
+func (c *deviceQueueServiceClient) Flush(ctx context.Context, in *FlushDeviceQueueRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error) {
+	out := new(google_protobuf2.Empty)
+	err := grpc.Invoke(ctx, "/api.DeviceQueueService/Flush", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -407,35 +226,22 @@ func (c *deviceQueueServiceClient) Flush(ctx context.Context, in *FlushDeviceQue
 
 func (c *deviceQueueServiceClient) List(ctx context.Context, in *ListDeviceQueueItemsRequest, opts ...grpc.CallOption) (*ListDeviceQueueItemsResponse, error) {
 	out := new(ListDeviceQueueItemsResponse)
-	err := c.cc.Invoke(ctx, "/api.DeviceQueueService/List", in, out, opts...)
+	err := grpc.Invoke(ctx, "/api.DeviceQueueService/List", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// DeviceQueueServiceServer is the server API for DeviceQueueService service.
+// Server API for DeviceQueueService service
+
 type DeviceQueueServiceServer interface {
 	// Enqueue adds the given item to the device-queue.
 	Enqueue(context.Context, *EnqueueDeviceQueueItemRequest) (*EnqueueDeviceQueueItemResponse, error)
 	// Flush flushes the downlink device-queue.
-	Flush(context.Context, *FlushDeviceQueueRequest) (*empty.Empty, error)
+	Flush(context.Context, *FlushDeviceQueueRequest) (*google_protobuf2.Empty, error)
 	// List lists the items in the device-queue.
 	List(context.Context, *ListDeviceQueueItemsRequest) (*ListDeviceQueueItemsResponse, error)
-}
-
-// UnimplementedDeviceQueueServiceServer can be embedded to have forward compatible implementations.
-type UnimplementedDeviceQueueServiceServer struct {
-}
-
-func (*UnimplementedDeviceQueueServiceServer) Enqueue(ctx context.Context, req *EnqueueDeviceQueueItemRequest) (*EnqueueDeviceQueueItemResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Enqueue not implemented")
-}
-func (*UnimplementedDeviceQueueServiceServer) Flush(ctx context.Context, req *FlushDeviceQueueRequest) (*empty.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Flush not implemented")
-}
-func (*UnimplementedDeviceQueueServiceServer) List(ctx context.Context, req *ListDeviceQueueItemsRequest) (*ListDeviceQueueItemsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
 }
 
 func RegisterDeviceQueueServiceServer(s *grpc.Server, srv DeviceQueueServiceServer) {
@@ -515,4 +321,39 @@ var _DeviceQueueService_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "deviceQueue.proto",
+}
+
+func init() { proto.RegisterFile("deviceQueue.proto", fileDescriptor2) }
+
+var fileDescriptor2 = []byte{
+	// 462 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x93, 0xcf, 0x8a, 0xd4, 0x40,
+	0x10, 0xc6, 0xe9, 0xf9, 0xb7, 0x6e, 0xad, 0xb2, 0x6e, 0xf9, 0x67, 0xc3, 0x18, 0xd7, 0xd8, 0x7a,
+	0x18, 0xf6, 0x90, 0xc0, 0x2c, 0x0a, 0x7a, 0x12, 0x75, 0x84, 0x05, 0x41, 0x8d, 0x78, 0x0e, 0x99,
+	0xa4, 0xb2, 0xf6, 0xb2, 0xd3, 0x9d, 0x49, 0x77, 0x06, 0x44, 0xbc, 0x78, 0xf7, 0xe4, 0x53, 0xf8,
+	0x3c, 0xbe, 0x82, 0x8f, 0xe1, 0x41, 0xd2, 0xc9, 0x32, 0xe3, 0x8c, 0x13, 0x2f, 0x21, 0x7c, 0x54,
+	0xf5, 0xef, 0xab, 0xaf, 0xba, 0xe1, 0x20, 0xa5, 0x85, 0x48, 0xe8, 0x5d, 0x49, 0x25, 0xf9, 0x79,
+	0xa1, 0x8c, 0xc2, 0x6e, 0x9c, 0x8b, 0xa1, 0x7b, 0xa6, 0xd4, 0xd9, 0x05, 0x05, 0x71, 0x2e, 0x82,
+	0x58, 0x4a, 0x65, 0x62, 0x23, 0x94, 0xd4, 0x75, 0xc9, 0xf0, 0x80, 0x66, 0xb9, 0xf9, 0x14, 0xd8,
+	0x6f, 0x2d, 0xf1, 0x1f, 0x0c, 0xf6, 0x5f, 0x2e, 0xcf, 0x3a, 0x35, 0x34, 0xc3, 0x43, 0xd8, 0x49,
+	0x69, 0x11, 0x51, 0x29, 0x1c, 0xe6, 0xb1, 0xd1, 0x6e, 0x38, 0x48, 0x69, 0x31, 0xf9, 0x70, 0x8a,
+	0x2e, 0xec, 0x26, 0x4a, 0x66, 0xa2, 0x98, 0x51, 0xea, 0x74, 0x3c, 0x36, 0xba, 0x12, 0x2e, 0x05,
+	0xbc, 0x01, 0xfd, 0x2c, 0x4a, 0xa4, 0x71, 0x06, 0x1e, 0x1b, 0x5d, 0x0b, 0x7b, 0xd9, 0x0b, 0x69,
+	0xf0, 0x16, 0x0c, 0xb2, 0x28, 0x57, 0x85, 0x71, 0xba, 0x56, 0xed, 0x67, 0x6f, 0x55, 0x61, 0x10,
+	0xa1, 0x97, 0xc6, 0x26, 0x76, 0x7a, 0x1e, 0x1b, 0x5d, 0x0d, 0xed, 0x3f, 0xde, 0x83, 0xbd, 0x73,
+	0xad, 0x64, 0xa4, 0xa6, 0xe7, 0x94, 0x18, 0xa7, 0x6f, 0xd1, 0x50, 0x49, 0x6f, 0xac, 0xc2, 0x63,
+	0xb8, 0x3b, 0x91, 0xf3, 0xca, 0xe6, 0x9a, 0xe3, 0x90, 0xe6, 0x25, 0x69, 0x83, 0xcf, 0x2e, 0x73,
+	0x89, 0x6c, 0x55, 0x24, 0x0c, 0xcd, 0xec, 0x08, 0x7b, 0xe3, 0x9b, 0x7e, 0x9c, 0x0b, 0x7f, 0xbd,
+	0x6f, 0x3f, 0xfd, 0x5b, 0xe0, 0x8f, 0xe0, 0x68, 0x1b, 0x42, 0xe7, 0x4a, 0x6a, 0x5a, 0x4e, 0xc9,
+	0x96, 0x53, 0xf2, 0x31, 0x1c, 0xbe, 0xba, 0x28, 0xf5, 0xc7, 0x95, 0xa6, 0x4b, 0x4f, 0xdb, 0xc2,
+	0xe4, 0x8f, 0xe1, 0xce, 0x6b, 0xa1, 0xcd, 0x1a, 0x47, 0xff, 0xb7, 0x6f, 0x0a, 0xee, 0xbf, 0xfb,
+	0x1a, 0x83, 0xcf, 0x01, 0x37, 0x42, 0xd0, 0x0e, 0xf3, 0xba, 0x5b, 0x53, 0xb8, 0xbe, 0x96, 0x82,
+	0x1e, 0xff, 0xee, 0x00, 0xae, 0x54, 0xbd, 0xa7, 0xa2, 0xfa, 0xc7, 0x6f, 0x0c, 0x76, 0x9a, 0x78,
+	0x90, 0xdb, 0xa3, 0x5a, 0xf7, 0x31, 0x7c, 0xd0, 0x5a, 0x53, 0xfb, 0xe5, 0x4f, 0xbe, 0xfe, 0xfc,
+	0xf5, 0xbd, 0x73, 0xc2, 0x7d, 0x7b, 0x69, 0x6b, 0x2b, 0x3a, 0xf8, 0xbc, 0x31, 0x83, 0xdf, 0xc4,
+	0xf1, 0x25, 0xb0, 0xda, 0x53, 0x76, 0x8c, 0x09, 0xf4, 0x6d, 0xec, 0xe8, 0x5a, 0xd0, 0x96, 0x15,
+	0x0c, 0x6f, 0xfb, 0xf5, 0xab, 0xa8, 0xaf, 0xfc, 0xb4, 0xcc, 0xfc, 0x49, 0xf5, 0x02, 0xf8, 0x43,
+	0x4b, 0x3e, 0x3a, 0x76, 0x37, 0xc8, 0x2b, 0x1c, 0x9c, 0x43, 0xaf, 0xca, 0x1b, 0x3d, 0xcb, 0x68,
+	0x59, 0xd9, 0xf0, 0x7e, 0x4b, 0x45, 0x33, 0x6c, 0x83, 0xc4, 0x56, 0xe4, 0x74, 0x60, 0x8d, 0x9e,
+	0xfc, 0x09, 0x00, 0x00, 0xff, 0xff, 0xea, 0x2e, 0x4a, 0x55, 0xe6, 0x03, 0x00, 0x00,
 }

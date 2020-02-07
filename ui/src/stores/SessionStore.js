@@ -309,17 +309,6 @@ class SessionStore extends EventEmitter {
     });
   }
 
-  getVerifyingRecaptcha(req, callBackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.GetVerigyingAliyunRecaptcha({body: req})
-        .then(checkStatus)
-        .then(resp => {
-          callBackFunc(resp.obj);
-        })
-        .catch(errorHandler);
-    });
-  }
-
   notifyActivation() {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
