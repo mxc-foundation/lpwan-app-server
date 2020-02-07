@@ -9,7 +9,6 @@ It translates gRPC into RESTful JSON APIs.
 package api
 
 import (
-	"context"
 	"io"
 	"net/http"
 
@@ -17,6 +16,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/utilities"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
@@ -35,32 +35,11 @@ func request_GatewayService_Create_0(ctx context.Context, marshaler runtime.Mars
 	var protoReq CreateGatewayRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := client.Create(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_GatewayService_Create_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq CreateGatewayRequest
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.Create(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -92,42 +71,11 @@ func request_GatewayService_Get_0(ctx context.Context, marshaler runtime.Marshal
 
 }
 
-func local_request_GatewayService_Get_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetGatewayRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
-	}
-
-	protoReq.Id, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
-	}
-
-	msg, err := server.Get(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 func request_GatewayService_Update_0(ctx context.Context, marshaler runtime.Marshaler, client GatewayServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UpdateGatewayRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -150,41 +98,6 @@ func request_GatewayService_Update_0(ctx context.Context, marshaler runtime.Mars
 	}
 
 	msg, err := client.Update(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_GatewayService_Update_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UpdateGatewayRequest
-	var metadata runtime.ServerMetadata
-
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["gateway.id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "gateway.id")
-	}
-
-	err = runtime.PopulateFieldFromPath(&protoReq, "gateway.id", val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "gateway.id", err)
-	}
-
-	msg, err := server.Update(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -216,33 +129,6 @@ func request_GatewayService_Delete_0(ctx context.Context, marshaler runtime.Mars
 
 }
 
-func local_request_GatewayService_Delete_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq DeleteGatewayRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
-	}
-
-	protoReq.Id, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
-	}
-
-	msg, err := server.Delete(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 var (
 	filter_GatewayService_List_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
@@ -251,27 +137,11 @@ func request_GatewayService_List_0(ctx context.Context, marshaler runtime.Marsha
 	var protoReq ListGatewayRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayService_List_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.List(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_GatewayService_List_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListGatewayRequest
-	var metadata runtime.ServerMetadata
-
 	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayService_List_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.List(ctx, &protoReq)
+	msg, err := client.List(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
@@ -281,15 +151,6 @@ func request_GatewayService_ListLocations_0(ctx context.Context, marshaler runti
 	var metadata runtime.ServerMetadata
 
 	msg, err := client.ListLocations(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_GatewayService_ListLocations_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListGatewayLocationsRequest
-	var metadata runtime.ServerMetadata
-
-	msg, err := server.ListLocations(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -320,45 +181,11 @@ func request_GatewayService_GetStats_0(ctx context.Context, marshaler runtime.Ma
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "gateway_id", err)
 	}
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayService_GetStats_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.GetStats(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_GatewayService_GetStats_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetGatewayStatsRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["gateway_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "gateway_id")
-	}
-
-	protoReq.GatewayId, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "gateway_id", err)
-	}
-
 	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayService_GetStats_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.GetStats(ctx, &protoReq)
+	msg, err := client.GetStats(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
@@ -386,33 +213,6 @@ func request_GatewayService_GetLastPing_0(ctx context.Context, marshaler runtime
 	}
 
 	msg, err := client.GetLastPing(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_GatewayService_GetLastPing_0(ctx context.Context, marshaler runtime.Marshaler, server GatewayServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetLastPingRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["gateway_id"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "gateway_id")
-	}
-
-	protoReq.GatewayId, err = runtime.String(val)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "gateway_id", err)
-	}
-
-	msg, err := server.GetLastPing(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -801,14 +601,14 @@ func RegisterGatewayServiceHandlerFromEndpoint(ctx context.Context, mux *runtime
 	defer func() {
 		if err != nil {
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Printf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 			return
 		}
 		go func() {
 			<-ctx.Done()
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Printf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 		}()
 	}()
@@ -822,16 +622,25 @@ func RegisterGatewayServiceHandler(ctx context.Context, mux *runtime.ServeMux, c
 	return RegisterGatewayServiceHandlerClient(ctx, mux, NewGatewayServiceClient(conn))
 }
 
-// RegisterGatewayServiceHandlerClient registers the http handlers for service GatewayService
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "GatewayServiceClient".
+// RegisterGatewayServiceHandler registers the http handlers for service GatewayService to "mux".
+// The handlers forward requests to the grpc endpoint over the given implementation of "GatewayServiceClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "GatewayServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
 // "GatewayServiceClient" to call the correct interceptors.
 func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client GatewayServiceClient) error {
 
 	mux.Handle("POST", pattern_GatewayService_Create_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -850,8 +659,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("GET", pattern_GatewayService_Get_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -870,8 +688,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("PUT", pattern_GatewayService_Update_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -890,8 +717,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("DELETE", pattern_GatewayService_Delete_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -910,8 +746,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("GET", pattern_GatewayService_List_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -930,8 +775,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("GET", pattern_GatewayService_ListLocations_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -950,8 +804,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("GET", pattern_GatewayService_GetStats_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -970,8 +833,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("GET", pattern_GatewayService_GetLastPing_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -990,8 +862,17 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 	})
 
 	mux.Handle("GET", pattern_GatewayService_StreamFrameLogs_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
+		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if cn, ok := w.(http.CloseNotifier); ok {
+			go func(done <-chan struct{}, closed <-chan bool) {
+				select {
+				case <-done:
+				case <-closed:
+					cancel()
+				}
+			}(ctx.Done(), cn.CloseNotify())
+		}
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		rctx, err := runtime.AnnotateContext(ctx, mux, req)
 		if err != nil {
@@ -1053,21 +934,21 @@ func RegisterGatewayServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 }
 
 var (
-	pattern_GatewayService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "gateways"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_Create_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "gateways"}, ""))
 
-	pattern_GatewayService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "gateways", "id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_Get_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "gateways", "id"}, ""))
 
-	pattern_GatewayService_Update_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "gateways", "gateway.id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_Update_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "gateways", "gateway.id"}, ""))
 
-	pattern_GatewayService_Delete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "gateways", "id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_Delete_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "gateways", "id"}, ""))
 
-	pattern_GatewayService_List_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "gateways"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_List_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "gateways"}, ""))
 
-	pattern_GatewayService_ListLocations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "gateways-loc"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_ListLocations_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "gateways-loc"}, ""))
 
-	pattern_GatewayService_GetStats_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "gateways", "gateway_id", "stats"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_GetStats_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "gateways", "gateway_id", "stats"}, ""))
 
-	pattern_GatewayService_GetLastPing_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"api", "gateways", "gateway_id", "pings", "last"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_GetLastPing_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 2, 4}, []string{"api", "gateways", "gateway_id", "pings", "last"}, ""))
 
 	pattern_GatewayService_StreamFrameLogs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "gateways", "gateway_id", "frames"}, "", runtime.AssumeColonVerbOpt(true)))
 

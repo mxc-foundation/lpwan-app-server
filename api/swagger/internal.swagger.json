@@ -391,7 +391,8 @@
         "en",
         "ko",
         "zhcn",
-        "zhtw"
+        "zhtw",
+        "ja"
       ],
       "default": "en"
     },

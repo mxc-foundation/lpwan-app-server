@@ -33,10 +33,10 @@ class DeviceProfileStore extends EventEmitter {
 
   get(id, callbackFunc) {
     // Run the following in development environment and early exit from function
-    if (isDev) {
+    /* if (isDev) {
       (async () => callbackFunc(await MockDeviceProfileStoreApi.get()))();
       return;
-    }
+    } */
 
     this.swagger.then(client => {
       client.apis.DeviceProfileService.Get({

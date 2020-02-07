@@ -2,6 +2,7 @@ package m2m_ui
 
 import (
 	"context"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -11,16 +12,19 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// SettingsServerAPI defines the settings of the Server API structure
 type SettingsServerAPI struct {
 	validator auth.Validator
 }
 
+// NewSettingsServerAPI defines the SettingsServerAPI validator
 func NewSettingsServerAPI(validator auth.Validator) *SettingsServerAPI {
 	return &SettingsServerAPI{
 		validator: validator,
 	}
 }
 
+// GetSettings defines the settings of the Server API request and response
 func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSettingsRequest) (*api.GetSettingsResponse, error) {
 	log.WithField("", "").Info("grpc_api/GetSettings")
 
@@ -44,6 +48,7 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 	}, nil
 }
 
+// ModifySettings defines the modification of the Server API settings
 func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifySettingsRequest) (*api.ModifySettingsResponse, error) {
 	log.WithField("", "").Info("grpc_api/ModifySettings")
 

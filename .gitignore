@@ -34,7 +34,7 @@ build
 
 # node modules
 node_modules
-
+ui/node_modules
 #docker-compose
 /*.yml
 *.sum
