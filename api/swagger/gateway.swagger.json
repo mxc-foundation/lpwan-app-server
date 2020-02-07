@@ -103,6 +103,30 @@
         ]
       }
     },
+    "/api/gateways/config/{gatewayId}": {
+      "get": {
+        "operationId": "GetGwConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetGwConfigResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/{gateway.id}": {
       "put": {
         "summary": "Update updates the gateway matching the given mac address.",
@@ -129,6 +153,38 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/apiUpdateGatewayRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateways/{gatewayId}": {
+      "put": {
+        "operationId": "UpdateGwConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateGwConfigRequest"
             }
           }
         ],
@@ -609,6 +665,14 @@
         }
       }
     },
+    "apiGetGwConfigResponse": {
+      "type": "object",
+      "properties": {
+        "conf": {
+          "type": "string"
+        }
+      }
+    },
     "apiGetLastPingResponse": {
       "type": "object",
       "properties": {
@@ -718,6 +782,17 @@
         "gateway": {
           "$ref": "#/definitions/apiGateway",
           "description": "Gateway object to update."
+        }
+      }
+    },
+    "apiUpdateGwConfigRequest": {
+      "type": "object",
+      "properties": {
+        "gatewayId": {
+          "type": "string"
+        },
+        "conf": {
+          "type": "string"
         }
       }
     },

@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.44.3
 	github.com/Azure/azure-service-bus-go v0.9.1
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
+	github.com/apex/log v1.1.0
 	github.com/aws/aws-sdk-go v1.19.19
 	github.com/brocaar/lorawan v0.0.0-20190925120821-154a30dbdce2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
