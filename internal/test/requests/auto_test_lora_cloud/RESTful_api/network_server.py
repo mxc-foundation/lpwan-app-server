@@ -8,7 +8,8 @@ def get_network_server(user):
         print("api/network-servers?limit=999&offset=0&organizationID=0 response code {}".format(response.status_code))
         exit()
 
-    result = eval(response.text)
+    tmpRes = response.text.replace('null', '123')
+    result = eval(tmpRes)
     if eval(result['totalCount']) == 0:
         return "null"
     else:
@@ -62,14 +63,11 @@ def getNetworkServerID():
     networkServerList = get_network_server(user)
     if "null" == networkServerList:
         networkServerID = create_network_server(user)
-        networkServer = getNetworkServerByID(networkServerID)
+        return networkServerID
     else:
         networkServer = networkServerList[0]
+        return eval(networkServer['id'])
 
-    networkServerID = networkServer['id']
-    print(networkServerID)
-
-    return networkServerID
 
 
 if __name__ == "__main__":
@@ -84,8 +82,7 @@ if __name__ == "__main__":
     networkServerList = get_network_server(user)
     if "null" == networkServerList:
         networkServerID = create_network_server(user)
-        networkServer = getNetworkServerByID(networkServerID)
+        print(networkServerID)
     else:
         networkServer = networkServerList[0]
-
-    print(networkServer['id'])
+        print(networkServer['id'])

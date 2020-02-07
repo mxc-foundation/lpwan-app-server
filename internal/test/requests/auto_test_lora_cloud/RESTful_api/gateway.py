@@ -1,40 +1,73 @@
+import os
+import binascii
+
 from RESTful_api.send_request import get_request, post_request
-from model.gateways import Gateway
-false = False
-true = True
+from script.global_admin_user import all_users, user_login
+from RESTful_api.network_server import getNetworkServerID
+from RESTful_api.gateway_profile import getGatewayProfileID
 
 
-# get gateway list from a particular organization
-def gateway_list(jwt, oid, limit, offset):
-    '''
-    updated
-    :param jwt:
-    :param oid:
-    :param limit:
-    :param offset:
-    :return: a list of gateway objects
-    '''
-    limit = 100
-    offset = 0
-    response = get_request(api_url='api/gateways?limit={}&offset={}&organizationID={}'.format(limit, offset, oid),
-                           jwt=jwt, data='')
-    if 200 != response.status_code:
-        print("Gateway list request error: {} \n {}".format(response.status_code, response.text))
+def getGateway(user):
+    response = get_request(api_url='api/gateways?limit=999&offset=0&organizationID=1', jwt=user.get_user_jwt(), data='')
+    if response.status_code != 200:
+        print("api/gateways?limit=999&offset=0&organizationID=1 response code {}".format(response.status_code))
+        exit()
+
+    tmpRes = response.text.replace('null', '123')
+    result = eval(tmpRes)
+    if eval(result['totalCount']) == 0:
         return "null"
+    else:
+        gatewayList = result['result']
 
-    try:
-        result = eval(response.text)
-        glist = result["result"]
-    except TypeError:
-        return "null"
-    except KeyError:
-        return "null"
+    return gatewayList
 
-    gateway_obj_list = []
-    for item in glist:
-        gateway = Gateway()
-        gateway.init_gateway(item)
-        gateway_obj_list.append(gateway)
-    return gateway_obj_list
+
+def createGateway(networkServerID, gatewayProfileID):
+    user = all_users.get_user_list()[0]
+    mac = binascii.hexlify(os.urandom(8)).decode()
+    gateway = '''
+    {{
+      "gateway": {{
+        "boards": [],
+        "description": "auto generated",
+        "discoveryEnabled": false,
+        "gatewayProfileID": "{}",
+        "id": "{}",
+        "location": {{
+          "accuracy": 0,
+          "altitude": 0,
+          "latitude": 0,
+          "longitude": 0,
+          "source": "UNKNOWN"
+        }},
+        "name": "gateway_{}",
+        "networkServerID": "{}",
+        "organizationID": "1"
+      }}
+    }}
+    '''.format(gatewayProfileID, mac, mac, networkServerID)
+
+    response = post_request(api_url='api/gateways', jwt=user.get_user_jwt(), data=gateway)
+    if response.status_code != 200:
+        print("api/gateways response code {}".format(response.status_code))
+        exit()
+
+    print("gateway with mac {} created..".format(mac))
+
+if __name__ == "__main__":
+    # user login
+    user_info = '{"password": "admin", "username": "admin"}'
+
+    if not user_login(user_info):
+        print("User {} login failed!".format(user_info))
+        exit(1)
+
+    user = all_users.get_user_list()[0]
+    networkServerID = getNetworkServerID()
+    gatewayProfileID = getGatewayProfileID(networkServerID)
+
+    gatewayList = getGateway(user)
+    createGateway(user, networkServerID, gatewayProfileID)
 
 

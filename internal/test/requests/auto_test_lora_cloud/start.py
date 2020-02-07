@@ -1,11 +1,15 @@
 # basic
 import sys
-# init
-from RESTful_api.send_request import init_config
-from RESTful_api.
-# script
-from script.global_admin_user import user_login, all_users
 
+from RESTful_api.send_request import init_config
+from RESTful_api.network_server import getNetworkServerID
+from script.global_admin_user import user_login
+from RESTful_api.gateway_profile import getGatewayProfileID
+from RESTful_api.gateway import createGateway
+from RESTful_api.service_profile import getServiceProfileID
+from RESTful_api.application import getApplicationID
+from RESTful_api.device_profile import getDeviceProfileID
+from RESTful_api.device import createDevice
 
 if __name__ == "__main__":
     if 1 == len(sys.argv):
@@ -23,10 +27,27 @@ if __name__ == "__main__":
         exit(1)
 
     # get network server id
-    networkServerID = networkServer.getNetworkServerID()
+    networkServerID = getNetworkServerID()
 
     # get gateway profile id
-    gatewayProfileID =
+    gatewayProfileID = getGatewayProfileID(networkServerID)
+
+    # create gateways
+    for i in range(10):
+        createGateway(networkServerID, gatewayProfileID)
+
+    # get service profile
+    serviceProfileID = getServiceProfileID(networkServerID)
+
+    # get application id
+    applicationID = getApplicationID(serviceProfileID)
+
+    # get device profile id
+    deviceProfileID = getDeviceProfileID(applicationID, networkServerID)
+
+    # create devices
+    for i in range(10):
+        createDevice(applicationID, deviceProfileID)
 
     print("end")
 

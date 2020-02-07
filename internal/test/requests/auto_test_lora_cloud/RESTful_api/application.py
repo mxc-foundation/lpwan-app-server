@@ -1,63 +1,77 @@
 from RESTful_api.send_request import get_request, post_request
-from model.applications import Application
-false = False
-true = True
+from script.global_admin_user import all_users, user_login
+from RESTful_api.service_profile import getServiceProfileID
+from RESTful_api.network_server import getNetworkServerID
 
 
-# get the available application list from a particular organization
-def application_list(jwt, oid, limit, offset):
-    '''
-    updated
-    :param jwt:
-    :param oid:
-    :param limit:
-    :param offset:
-    :return: list of application object
-    '''
-    response = get_request('api/applications?limit={}&offset={}&organizationID={}'.format(limit, offset, oid),
-                           jwt=jwt, data='')
-    if 200 != response.status_code:
-        print("Application list request error: {} \n {}".format(response.status_code, response.text))
+def getApplications(user):
+    response = get_request(api_url='api/applications?limit=999&offset=0&organizationID=1', jwt=user.get_user_jwt(), data='')
+    if response.status_code != 200:
+        print("api/applications?limit=999&offset=0&organizationID=1 response code {}".format(response.status_code))
+        exit()
+
+    tmpRes = response.text.replace('null', '123')
+    result = eval(tmpRes)
+    if eval(result['totalCount']) == 0:
         return "null"
+    else:
+        applicationList = result['result']
 
-    app_obj_list = []
-    try:
-        result = eval(response.text)
-        applist = result["result"]
-    except TypeError:
-        return "null"
-    except KeyError:
-        return "null"
-
-    for item in applist:
-        app = Application()
-        app.init_application(item)
-        app_obj_list.append(app)
-
-    return app_obj_list
+    return applicationList
 
 
-# get a requested application
-def application_data(jwt, app_id):
-    '''
+def createApplication(user, serviceProfileID):
+    application = '''
+    {{
+      "application": {{
+        "description": "auto generated",
+        "id": "0",
+        "name": "application",
+        "organizationID": "1",
+        "payloadCodec": "",
+        "payloadDecoderScript": "",
+        "payloadEncoderScript": "",
+        "serviceProfileID": "{}"
+      }}
+    }}
+    '''.format(serviceProfileID)
 
-    :param jwt: jwt of a particular user
-    :param app_id: application id
-    :return: application object
-    '''
-    response = get_request('api/applications/{}'.format(app_id), jwt=jwt, data='')
-    if 200 != response.status_code:
-        print("Application data request error: {} \n {}".format(response.status_code, response.text))
-        return "null"
+    response = post_request(api_url='api/applications', jwt=user.get_user_jwt(), data=application)
+    if response.status_code != 200:
+        print("api/applications response code {}".format(response.status_code))
+        exit()
 
-    try:
-        profile = eval(response.text)
-    except TypeError:
-        return "null"
+    result = eval(response.text)
+    return eval(result['id'])
 
-    app = Application()
-    app.init_application(profile)
-    print("Application {}({}) created successfully! \n".format(app.get_application_name(),
-                                                               app.get_application_id()))
-    return app
 
+def getApplicationID(serviceProfileID):
+    user = all_users.get_user_list()[0]
+    applicationList = getApplications(user)
+    if "null" == applicationList:
+        applicationID = createApplication(user, serviceProfileID)
+        return applicationID
+    else:
+        application = applicationList[0]
+        return eval(application['id'])
+
+
+if __name__ == "__main__":
+    # user login
+    user_info = '{"password": "admin", "username": "admin"}'
+
+    if not user_login(user_info):
+        print("User {} login failed!".format(user_info))
+        exit(1)
+
+    user = all_users.get_user_list()[0]
+    networkServerID = getNetworkServerID()
+    serviceProfileID = getServiceProfileID(networkServerID)
+
+    applicationList = getApplications(user)
+    if "null" == applicationList:
+        applicationID = createApplication(user, serviceProfileID)
+        print(applicationID)
+    else:
+        application = applicationList[0]
+        print(eval(application['id']))

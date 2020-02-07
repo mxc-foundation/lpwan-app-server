@@ -1,6 +1,6 @@
 import requests
 
-config = {"server": ""}
+config = {"server": "http://localhost:8080/"}
 
 
 def init_config(srv_url):
