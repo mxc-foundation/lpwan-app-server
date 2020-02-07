@@ -3,6 +3,7 @@
 PARENT_PATH=$(dirname $0)
 CONFIG=$PARENT_PATH/config
 TAG=$(git describe --tags)
+SERVICENAME=appserver
 
 
 if [ -f "$CONFIG" ]; then
