@@ -1,7 +1,7 @@
 From: MXC <{{ .From }}>
 To: {{ .To }}
 Subject: MXProtocol 회원가입 인증 메일입니다.   
-Message-Id: <{{ .MsgId }}>
+Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
 	boundary="{{ .Boundary }}"
