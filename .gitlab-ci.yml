@@ -103,9 +103,9 @@ release_image_dockerhub:
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - export VERSION=$(git describe --tags|sed -e "s/^v//")
-    - docker pull $CI_REGISTRY_IMAGE:$VERSION
+    - docker pull $CONTAINER_IMAGE
     - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
-    - docker tag $CI_REGISTRY_IMAGE:$VERSION $DOCKER_REPO:$SERVICE_NAME.$VERSION
+    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
     - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
   only:
     - tags
