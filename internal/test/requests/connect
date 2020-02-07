@@ -1,3 +1,5 @@
 #!/bin/sh
 
-python ./auto_test_lora_cloud/start.py 'http://localhost:8080/' '{"password": "admin", "username": "admin"}'
+PARENT_PATH=$(dirname $0)
+
+python $PARENT_PATH/auto_test_lora_cloud/start.py 'http://localhost:8080/' '{"password": "admin", "username": "admin"}'
