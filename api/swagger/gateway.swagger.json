@@ -287,6 +287,64 @@
           "GatewayService"
         ]
       }
+    },
+    "/api/gateways/getconfig/{id}": {
+      "get": {
+        "summary": "GetConfig returns the gateway for the requested mac address.",
+        "operationId": "GetConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiGetGatewayConfigResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Gateway ID (HEX encoded).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      },
+      "put": {
+        "summary": "Update the gateway config matching the given mac address.",
+        "operationId": "UpdateConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gateway.id",
+            "description": "Gateway ID (HEX encoded).",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateGatewayConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -606,6 +664,56 @@
           "items": {
             "$ref": "#/definitions/apiGatewayStats"
           }
+        }
+      }
+    },
+    "apiGatewayConfig": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the (aggregated) measurement."
+        },
+        "rxPacketsReceived": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets received by the gateway."
+        },
+        "rxPacketsReceivedOK": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets received by the gateway that passed the CRC check."
+        },
+        "txPacketsReceived": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets received by the gateway for transmission."
+        },
+        "txPacketsEmitted": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Packets transmitted by the gateway."
+        }
+      }
+    },
+    "apiGetGatewayConfigResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGatewayConfig"
+          }
+        }
+      }
+    },
+    "apiUpdateGatewayConfigRequest": {
+      "type": "object",
+      "properties": {
+        "gateway": {
+          "$ref": "#/definitions/apiGatewayConfig",
+          "description": "Gateway object to update."
         }
       }
     },
