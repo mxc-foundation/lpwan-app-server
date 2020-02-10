@@ -696,6 +696,9 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 	}
 
 	openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
+	if err != nil {
+		log.WithError(err).Error("cannot get openVPN address from DB")
+	}
 
 	message, err := mxConfDGet(ctx, openVPNaddr, "GGLC", 250)
 	if err != nil {

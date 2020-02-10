@@ -103,7 +103,7 @@
         ]
       }
     },
-    "/api/gateways/config/{gatewayId}": {
+    "/api/gateways/getconfig/{gatewayId}": {
       "get": {
         "operationId": "GetGwConfig",
         "responses": {
@@ -120,6 +120,38 @@
             "in": "path",
             "required": true,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateways/updateconfig/{gatewayId}": {
+      "put": {
+        "operationId": "UpdateGwConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateGwConfigRequest"
+            }
           }
         ],
         "tags": [
@@ -153,38 +185,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/apiUpdateGatewayRequest"
-            }
-          }
-        ],
-        "tags": [
-          "GatewayService"
-        ]
-      }
-    },
-    "/api/gateways/{gatewayId}": {
-      "put": {
-        "operationId": "UpdateGwConfig",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "properties": {}
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "gatewayId",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/apiUpdateGwConfigRequest"
             }
           }
         ],

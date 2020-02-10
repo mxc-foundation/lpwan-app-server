@@ -83,13 +83,13 @@ service GatewayService {
 
 	rpc GetGwConfig(GetGwConfigRequest) returns (GetGwConfigResponse) {
 		option (google.api.http) = {
-            get: "/api/gateways/config/{gateway_id}"
+            get: "/api/gateways/getconfig/{gateway_id}"
         };
 	}
 
 	rpc UpdateGwConfig(UpdateGwConfigRequest) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
-			put: "/api/gateways/{gateway_id}"
+			put: "/api/gateways/updateconfig/{gateway_id}"
 			body: "*"
 		};
 	}

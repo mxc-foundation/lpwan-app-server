@@ -1071,9 +1071,9 @@ var (
 
 	pattern_GatewayService_StreamFrameLogs_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "gateways", "gateway_id", "frames"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GatewayService_GetGwConfig_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "gateways", "config", "gateway_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_GetGwConfig_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "gateways", "getconfig", "gateway_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GatewayService_UpdateGwConfig_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "gateways", "gateway_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GatewayService_UpdateGwConfig_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "gateways", "updateconfig", "gateway_id"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
