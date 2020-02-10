@@ -134,7 +134,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/apiUpdateGwConfigResponse"
             }
           }
         },
@@ -792,6 +792,14 @@
           "type": "string"
         },
         "conf": {
+          "type": "string"
+        }
+      }
+    },
+    "apiUpdateGwConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
           "type": "string"
         }
       }

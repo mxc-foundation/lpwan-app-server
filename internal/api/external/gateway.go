@@ -684,7 +684,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 }
 
 // Get the gateway config file
-func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest) (*pb.GetGwConfigResponse, error)  {
+func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest) (*pb.GetGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -732,7 +732,7 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 		"/* GPS reference coordinates */"}
 
 	for _, v := range comments {
-		message = strings.Replace(message, v,"", -1)
+		message = strings.Replace(message, v, "", -1)
 	}
 
 	return &pb.GetGwConfigResponse{
@@ -741,7 +741,7 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 }
 
 // Update gateway configuration file
-func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*empty.Empty, error)  {
+func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*pb.UpdateGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -753,12 +753,18 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 	}
 
 	openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
+	if err != nil {
+		return &pb.UpdateGwConfigResponse{Status: "Update config failed."},
+			grpc.Errorf(codes.Unauthenticated, "cannot get gateway address from db: %s", err)
+	}
 
 	if err := mxConfUpdate(openVPNaddr, req.Conf); err != nil {
 		log.WithError(err).Error("Update conf to gw failed")
+		return &pb.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
+			grpc.Errorf(codes.Unauthenticated, "cannot update gateway config: %s", err)
 	}
 
-	return &empty.Empty{}, nil
+	return &pb.UpdateGwConfigResponse{Status: "successful"}, nil
 }
 
 // connect to gateway though openVPN and get config file
