@@ -767,6 +767,47 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 	return &pb.UpdateGwConfigResponse{Status: "successful"}, nil
 }
 
+// Will first try to get the gateway from provision server
+func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	if req.Sn == "" {
+		return nil, grpc.Errorf(codes.InvalidArgument, "gateway sn number must not be nil")
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewaysAccess(auth.Create, req.OrganizationId))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	//TODO: send the req to provision server
+	switch "" {
+	case "a":
+		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
+	case "b":
+		return &pb.RegisterResponse{Status: "please delete the gateway from previous supernode"}, nil
+	case "c":
+		err = storage.Transaction(func(tx sqlx.Ext) error {
+			//TODO: get mac from profision server
+			/*bd, err := storage.GetBoard(tx, "mac")
+			if err != nil {
+				return helpers.ErrToRPCError(err)
+			}
+
+			bd.SN = &req.Sn
+
+			err = storage.UpdateVPNAddr(ctx, tx, &bd)
+			if err != nil {
+				return helpers.ErrToRPCError(err)
+			}*/
+
+			return nil
+		})
+
+		return &pb.RegisterResponse{Status: "successful"}, nil
+	}
+
+	return &pb.RegisterResponse{}, nil
+}
+
 // connect to gateway though openVPN and get config file
 func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, error) {
 	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))

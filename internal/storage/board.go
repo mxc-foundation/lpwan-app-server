@@ -240,3 +240,33 @@ func UnregisterBoardAtomic(db sqlx.Execer, bd *Board) error {
 
 	return nil
 }
+
+func UpdateVPNAddr(ctx context.Context, db sqlx.Execer, bd *Board) error {
+	now := time.Now()
+
+	res, err := db.Exec(`
+		update board
+			set updated_at = $2,
+			vpn_addr = $3
+		where
+			sn = $1`,
+		bd.SN,
+		now,
+		bd.VpnAddr,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+	err = handlePSQLEffect(res)
+	if err != nil {
+		return err
+	}
+
+	bd.UpdatedAt = now
+	log.WithFields(log.Fields{
+		"mac": bd.MAC,
+		"sn":  bd.SN,
+	}).Info("VPN address updated")
+
+	return nil
+}

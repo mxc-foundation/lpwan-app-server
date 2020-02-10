@@ -81,6 +81,13 @@ service GatewayService {
         };
 	}
 
+	rpc Register(RegisterRequest) returns (RegisterResponse) {
+		option (google.api.http) = {
+            post: "/api/gateways/register"
+			body: "*"
+        };
+	}
+
 	rpc GetGwConfig(GetGwConfigRequest) returns (GetGwConfigResponse) {
 		option (google.api.http) = {
             get: "/api/gateways/getconfig/{gateway_id}"
@@ -354,5 +361,14 @@ message UpdateGwConfigRequest {
 }
 
 message UpdateGwConfigResponse {
+	string status = 1;
+}
+
+message RegisterRequest {
+	int64 organization_id = 1;
+	string sn = 2;
+}
+
+message RegisterResponse {
 	string status = 1;
 }
