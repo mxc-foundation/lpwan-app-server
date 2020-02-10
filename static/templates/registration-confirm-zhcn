@@ -1,7 +1,7 @@
 From: MXC <{{ .From }}>
 To: {{ .To }}
 Subject: 请确认您的电子邮箱以访问MXC极域超级节点服务
-Message-Id: <{{ .MsgId }}>
+Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
 	boundary="{{ .Boundary }}"
