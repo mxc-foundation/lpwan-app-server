@@ -4,7 +4,7 @@ const get = {
   "gatewayProfile": {
     "apiGatewayProfile": {
       "id": "0b2767d2-6315-4a14-a014-082b83954508",
-      "name": "My Gateway Profile",
+      "name": "My SMB Gateway",
       "networkServerID": "1",
       "channels": [10, 20],
       "extraChannels": [

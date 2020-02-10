@@ -20,7 +20,7 @@ const footerHtml = `<!-- Footer -->
 <footer class="page-footer font-small blue pt-4">
   <!-- Copyright -->
   <div class="footer-copyright text-center py-3">© ${moment().format('YYYY')} Powered by 
-    <a href="https://www.matchx.io/"> MXC</a>
+    <a href="https://www.mxc.org/" target="_blank"> MXC</a>
   </div>
   <!-- Copyright -->
 </footer>
