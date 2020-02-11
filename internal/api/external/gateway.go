@@ -779,6 +779,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	}
 
 	//TODO: send the req to provision server
+	//resp :=
 	switch "" {
 	case "a":
 		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
@@ -786,22 +787,35 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		return &pb.RegisterResponse{Status: "please delete the gateway from previous supernode"}, nil
 	case "c":
 		err = storage.Transaction(func(tx sqlx.Ext) error {
-			//TODO: get mac from profision server
-			/*bd, err := storage.GetBoard(tx, "mac")
+			//TODO: get mac from provision server (resp.mac)
+			var mac lorawan.EUI64
+			/*if err := mac.UnmarshalText([]byte(resp.mac)); err != nil {
+				return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+			}*/
+
+			bd, err := storage.GetBoard(tx, mac)
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}
 
 			bd.SN = &req.Sn
+			//TODO: get vpnaddress from provision server (resp.vpnaddr)
+			bd.VpnAddr = "resp.vpnaddr"
 
 			err = storage.UpdateVPNAddr(ctx, tx, &bd)
+			if err != nil {
+				return helpers.ErrToRPCError(err)
+			}
+			/*err = storage.UpdateBoard(tx, &bd)
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}*/
 
 			return nil
 		})
-
+		if err != nil {
+			return nil, err
+		}
 		return &pb.RegisterResponse{Status: "successful"}, nil
 	}
 
