@@ -114,15 +114,8 @@ export default class WithPromises extends Component {
             <AsyncSelect
                 cacheOptions
                 defaultOptions
-                styles={customStyles}
-                theme={(theme) => ({
-                    ...theme,
-                    borderRadius: 4,
-                    colors: {
-                        primary25: '#00FFD950',
-                        primary: '#00FFD950',
-                    },
-                })}
+                // styles={customStyles}
+                className="mx-2"
                 defaultValue={dValue}
                 onClick={this.onClick}
                 //defaultValue={this.state.value}

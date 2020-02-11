@@ -3,22 +3,29 @@
 
 package api
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import _ "google.golang.org/genproto/googleapis/api/annotations"
-import google_protobuf1 "github.com/golang/protobuf/ptypes/timestamp"
-import google_protobuf2 "github.com/golang/protobuf/ptypes/empty"
-
 import (
-	context "golang.org/x/net/context"
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	empty "github.com/golang/protobuf/ptypes/empty"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type MulticastGroupType int32
 
@@ -33,6 +40,7 @@ var MulticastGroupType_name = map[int32]string{
 	0: "CLASS_C",
 	1: "CLASS_B",
 }
+
 var MulticastGroupType_value = map[string]int32{
 	"CLASS_C": 0,
 	"CLASS_B": 1,
@@ -41,40 +49,66 @@ var MulticastGroupType_value = map[string]int32{
 func (x MulticastGroupType) String() string {
 	return proto.EnumName(MulticastGroupType_name, int32(x))
 }
-func (MulticastGroupType) EnumDescriptor() ([]byte, []int) { return fileDescriptor12, []int{0} }
+
+func (MulticastGroupType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{0}
+}
 
 type MulticastGroup struct {
 	// ID (string formatted UUID).
 	// This will be generated automatically on create.
-	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Multicast-group name.
-	Name string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Multicast address (HEX encoded DevAddr).
-	McAddr string `protobuf:"bytes,3,opt,name=mc_addr,json=mcAddr" json:"mc_addr,omitempty"`
+	McAddr string `protobuf:"bytes,3,opt,name=mc_addr,json=mcAddr,proto3" json:"mc_addr,omitempty"`
 	// Multicast network session key (HEX encoded AES128 key).
-	McNwkSKey string `protobuf:"bytes,4,opt,name=mc_nwk_s_key,json=mcNwkSKey" json:"mc_nwk_s_key,omitempty"`
+	McNwkSKey string `protobuf:"bytes,4,opt,name=mc_nwk_s_key,json=mcNwkSKey,proto3" json:"mc_nwk_s_key,omitempty"`
 	// Multicast application session key (HEX encoded AES128 key).
-	McAppSKey string `protobuf:"bytes,5,opt,name=mc_app_s_key,json=mcAppSKey" json:"mc_app_s_key,omitempty"`
+	McAppSKey string `protobuf:"bytes,5,opt,name=mc_app_s_key,json=mcAppSKey,proto3" json:"mc_app_s_key,omitempty"`
 	// Frame-counter.
-	FCnt uint32 `protobuf:"varint,6,opt,name=f_cnt,json=fCnt" json:"f_cnt,omitempty"`
+	FCnt uint32 `protobuf:"varint,6,opt,name=f_cnt,json=fCnt,proto3" json:"f_cnt,omitempty"`
 	// Multicast type.
-	GroupType MulticastGroupType `protobuf:"varint,7,opt,name=group_type,json=groupType,enum=api.MulticastGroupType" json:"group_type,omitempty"`
+	GroupType MulticastGroupType `protobuf:"varint,7,opt,name=group_type,json=groupType,proto3,enum=api.MulticastGroupType" json:"group_type,omitempty"`
 	// Data-rate.
-	Dr uint32 `protobuf:"varint,8,opt,name=dr" json:"dr,omitempty"`
+	Dr uint32 `protobuf:"varint,8,opt,name=dr,proto3" json:"dr,omitempty"`
 	// Frequency (Hz).
-	Frequency uint32 `protobuf:"varint,9,opt,name=frequency" json:"frequency,omitempty"`
+	Frequency uint32 `protobuf:"varint,9,opt,name=frequency,proto3" json:"frequency,omitempty"`
 	// Ping-slot period.
 	// Mandatory for Class-B multicast groups.
-	PingSlotPeriod uint32 `protobuf:"varint,10,opt,name=ping_slot_period,json=pingSlotPeriod" json:"ping_slot_period,omitempty"`
+	PingSlotPeriod uint32 `protobuf:"varint,10,opt,name=ping_slot_period,json=pingSlotPeriod,proto3" json:"ping_slot_period,omitempty"`
 	// Service-profile ID.
 	// After creation, this can not be updated.
-	ServiceProfileId string `protobuf:"bytes,11,opt,name=service_profile_id,json=serviceProfileID" json:"service_profile_id,omitempty"`
+	ServiceProfileId     string   `protobuf:"bytes,11,opt,name=service_profile_id,json=serviceProfileID,proto3" json:"service_profile_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *MulticastGroup) Reset()                    { *m = MulticastGroup{} }
-func (m *MulticastGroup) String() string            { return proto.CompactTextString(m) }
-func (*MulticastGroup) ProtoMessage()               {}
-func (*MulticastGroup) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{0} }
+func (m *MulticastGroup) Reset()         { *m = MulticastGroup{} }
+func (m *MulticastGroup) String() string { return proto.CompactTextString(m) }
+func (*MulticastGroup) ProtoMessage()    {}
+func (*MulticastGroup) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{0}
+}
+
+func (m *MulticastGroup) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MulticastGroup.Unmarshal(m, b)
+}
+func (m *MulticastGroup) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MulticastGroup.Marshal(b, m, deterministic)
+}
+func (m *MulticastGroup) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MulticastGroup.Merge(m, src)
+}
+func (m *MulticastGroup) XXX_Size() int {
+	return xxx_messageInfo_MulticastGroup.Size(m)
+}
+func (m *MulticastGroup) XXX_DiscardUnknown() {
+	xxx_messageInfo_MulticastGroup.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MulticastGroup proto.InternalMessageInfo
 
 func (m *MulticastGroup) GetId() string {
 	if m != nil {
@@ -155,19 +189,42 @@ func (m *MulticastGroup) GetServiceProfileId() string {
 
 type MulticastGroupListItem struct {
 	// ID (string formatted UUID).
-	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Multicast-group name.
-	Name string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// Service-profile ID (string formatted UUID).
-	ServiceProfileId string `protobuf:"bytes,3,opt,name=service_profile_id,json=serviceProfileID" json:"service_profile_id,omitempty"`
+	ServiceProfileId string `protobuf:"bytes,3,opt,name=service_profile_id,json=serviceProfileID,proto3" json:"service_profile_id,omitempty"`
 	// Service-profile name.
-	ServiceProfileName string `protobuf:"bytes,4,opt,name=service_profile_name,json=serviceProfileName" json:"service_profile_name,omitempty"`
+	ServiceProfileName   string   `protobuf:"bytes,4,opt,name=service_profile_name,json=serviceProfileName,proto3" json:"service_profile_name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *MulticastGroupListItem) Reset()                    { *m = MulticastGroupListItem{} }
-func (m *MulticastGroupListItem) String() string            { return proto.CompactTextString(m) }
-func (*MulticastGroupListItem) ProtoMessage()               {}
-func (*MulticastGroupListItem) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{1} }
+func (m *MulticastGroupListItem) Reset()         { *m = MulticastGroupListItem{} }
+func (m *MulticastGroupListItem) String() string { return proto.CompactTextString(m) }
+func (*MulticastGroupListItem) ProtoMessage()    {}
+func (*MulticastGroupListItem) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{1}
+}
+
+func (m *MulticastGroupListItem) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MulticastGroupListItem.Unmarshal(m, b)
+}
+func (m *MulticastGroupListItem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MulticastGroupListItem.Marshal(b, m, deterministic)
+}
+func (m *MulticastGroupListItem) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MulticastGroupListItem.Merge(m, src)
+}
+func (m *MulticastGroupListItem) XXX_Size() int {
+	return xxx_messageInfo_MulticastGroupListItem.Size(m)
+}
+func (m *MulticastGroupListItem) XXX_DiscardUnknown() {
+	xxx_messageInfo_MulticastGroupListItem.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MulticastGroupListItem proto.InternalMessageInfo
 
 func (m *MulticastGroupListItem) GetId() string {
 	if m != nil {
@@ -199,13 +256,36 @@ func (m *MulticastGroupListItem) GetServiceProfileName() string {
 
 type CreateMulticastGroupRequest struct {
 	// Multicast-group object to create.
-	MulticastGroup *MulticastGroup `protobuf:"bytes,1,opt,name=multicast_group,json=multicastGroup" json:"multicast_group,omitempty"`
+	MulticastGroup       *MulticastGroup `protobuf:"bytes,1,opt,name=multicast_group,json=multicastGroup,proto3" json:"multicast_group,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
 }
 
-func (m *CreateMulticastGroupRequest) Reset()                    { *m = CreateMulticastGroupRequest{} }
-func (m *CreateMulticastGroupRequest) String() string            { return proto.CompactTextString(m) }
-func (*CreateMulticastGroupRequest) ProtoMessage()               {}
-func (*CreateMulticastGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{2} }
+func (m *CreateMulticastGroupRequest) Reset()         { *m = CreateMulticastGroupRequest{} }
+func (m *CreateMulticastGroupRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateMulticastGroupRequest) ProtoMessage()    {}
+func (*CreateMulticastGroupRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{2}
+}
+
+func (m *CreateMulticastGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateMulticastGroupRequest.Unmarshal(m, b)
+}
+func (m *CreateMulticastGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateMulticastGroupRequest.Marshal(b, m, deterministic)
+}
+func (m *CreateMulticastGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateMulticastGroupRequest.Merge(m, src)
+}
+func (m *CreateMulticastGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateMulticastGroupRequest.Size(m)
+}
+func (m *CreateMulticastGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateMulticastGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateMulticastGroupRequest proto.InternalMessageInfo
 
 func (m *CreateMulticastGroupRequest) GetMulticastGroup() *MulticastGroup {
 	if m != nil {
@@ -216,13 +296,36 @@ func (m *CreateMulticastGroupRequest) GetMulticastGroup() *MulticastGroup {
 
 type CreateMulticastGroupResponse struct {
 	// ID of created group (string formatted UUID).
-	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *CreateMulticastGroupResponse) Reset()                    { *m = CreateMulticastGroupResponse{} }
-func (m *CreateMulticastGroupResponse) String() string            { return proto.CompactTextString(m) }
-func (*CreateMulticastGroupResponse) ProtoMessage()               {}
-func (*CreateMulticastGroupResponse) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{3} }
+func (m *CreateMulticastGroupResponse) Reset()         { *m = CreateMulticastGroupResponse{} }
+func (m *CreateMulticastGroupResponse) String() string { return proto.CompactTextString(m) }
+func (*CreateMulticastGroupResponse) ProtoMessage()    {}
+func (*CreateMulticastGroupResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{3}
+}
+
+func (m *CreateMulticastGroupResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateMulticastGroupResponse.Unmarshal(m, b)
+}
+func (m *CreateMulticastGroupResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateMulticastGroupResponse.Marshal(b, m, deterministic)
+}
+func (m *CreateMulticastGroupResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateMulticastGroupResponse.Merge(m, src)
+}
+func (m *CreateMulticastGroupResponse) XXX_Size() int {
+	return xxx_messageInfo_CreateMulticastGroupResponse.Size(m)
+}
+func (m *CreateMulticastGroupResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateMulticastGroupResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateMulticastGroupResponse proto.InternalMessageInfo
 
 func (m *CreateMulticastGroupResponse) GetId() string {
 	if m != nil {
@@ -233,13 +336,36 @@ func (m *CreateMulticastGroupResponse) GetId() string {
 
 type GetMulticastGroupRequest struct {
 	// ID (string formatted UUID).
-	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *GetMulticastGroupRequest) Reset()                    { *m = GetMulticastGroupRequest{} }
-func (m *GetMulticastGroupRequest) String() string            { return proto.CompactTextString(m) }
-func (*GetMulticastGroupRequest) ProtoMessage()               {}
-func (*GetMulticastGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{4} }
+func (m *GetMulticastGroupRequest) Reset()         { *m = GetMulticastGroupRequest{} }
+func (m *GetMulticastGroupRequest) String() string { return proto.CompactTextString(m) }
+func (*GetMulticastGroupRequest) ProtoMessage()    {}
+func (*GetMulticastGroupRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{4}
+}
+
+func (m *GetMulticastGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetMulticastGroupRequest.Unmarshal(m, b)
+}
+func (m *GetMulticastGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetMulticastGroupRequest.Marshal(b, m, deterministic)
+}
+func (m *GetMulticastGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetMulticastGroupRequest.Merge(m, src)
+}
+func (m *GetMulticastGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_GetMulticastGroupRequest.Size(m)
+}
+func (m *GetMulticastGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetMulticastGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetMulticastGroupRequest proto.InternalMessageInfo
 
 func (m *GetMulticastGroupRequest) GetId() string {
 	if m != nil {
@@ -250,17 +376,40 @@ func (m *GetMulticastGroupRequest) GetId() string {
 
 type GetMulticastGroupResponse struct {
 	// Multicast-group object.
-	MulticastGroup *MulticastGroup `protobuf:"bytes,1,opt,name=multicast_group,json=multicastGroup" json:"multicast_group,omitempty"`
+	MulticastGroup *MulticastGroup `protobuf:"bytes,1,opt,name=multicast_group,json=multicastGroup,proto3" json:"multicast_group,omitempty"`
 	// Created at timestamp.
-	CreatedAt *google_protobuf1.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
+	CreatedAt *timestamp.Timestamp `protobuf:"bytes,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// Last update timestamp.
-	UpdatedAt *google_protobuf1.Timestamp `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt" json:"updated_at,omitempty"`
+	UpdatedAt            *timestamp.Timestamp `protobuf:"bytes,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
-func (m *GetMulticastGroupResponse) Reset()                    { *m = GetMulticastGroupResponse{} }
-func (m *GetMulticastGroupResponse) String() string            { return proto.CompactTextString(m) }
-func (*GetMulticastGroupResponse) ProtoMessage()               {}
-func (*GetMulticastGroupResponse) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{5} }
+func (m *GetMulticastGroupResponse) Reset()         { *m = GetMulticastGroupResponse{} }
+func (m *GetMulticastGroupResponse) String() string { return proto.CompactTextString(m) }
+func (*GetMulticastGroupResponse) ProtoMessage()    {}
+func (*GetMulticastGroupResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{5}
+}
+
+func (m *GetMulticastGroupResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetMulticastGroupResponse.Unmarshal(m, b)
+}
+func (m *GetMulticastGroupResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetMulticastGroupResponse.Marshal(b, m, deterministic)
+}
+func (m *GetMulticastGroupResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetMulticastGroupResponse.Merge(m, src)
+}
+func (m *GetMulticastGroupResponse) XXX_Size() int {
+	return xxx_messageInfo_GetMulticastGroupResponse.Size(m)
+}
+func (m *GetMulticastGroupResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetMulticastGroupResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetMulticastGroupResponse proto.InternalMessageInfo
 
 func (m *GetMulticastGroupResponse) GetMulticastGroup() *MulticastGroup {
 	if m != nil {
@@ -269,14 +418,14 @@ func (m *GetMulticastGroupResponse) GetMulticastGroup() *MulticastGroup {
 	return nil
 }
 
-func (m *GetMulticastGroupResponse) GetCreatedAt() *google_protobuf1.Timestamp {
+func (m *GetMulticastGroupResponse) GetCreatedAt() *timestamp.Timestamp {
 	if m != nil {
 		return m.CreatedAt
 	}
 	return nil
 }
 
-func (m *GetMulticastGroupResponse) GetUpdatedAt() *google_protobuf1.Timestamp {
+func (m *GetMulticastGroupResponse) GetUpdatedAt() *timestamp.Timestamp {
 	if m != nil {
 		return m.UpdatedAt
 	}
@@ -285,13 +434,36 @@ func (m *GetMulticastGroupResponse) GetUpdatedAt() *google_protobuf1.Timestamp {
 
 type UpdateMulticastGroupRequest struct {
 	// Multicast-group object to update.
-	MulticastGroup *MulticastGroup `protobuf:"bytes,1,opt,name=multicast_group,json=multicastGroup" json:"multicast_group,omitempty"`
+	MulticastGroup       *MulticastGroup `protobuf:"bytes,1,opt,name=multicast_group,json=multicastGroup,proto3" json:"multicast_group,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
 }
 
-func (m *UpdateMulticastGroupRequest) Reset()                    { *m = UpdateMulticastGroupRequest{} }
-func (m *UpdateMulticastGroupRequest) String() string            { return proto.CompactTextString(m) }
-func (*UpdateMulticastGroupRequest) ProtoMessage()               {}
-func (*UpdateMulticastGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{6} }
+func (m *UpdateMulticastGroupRequest) Reset()         { *m = UpdateMulticastGroupRequest{} }
+func (m *UpdateMulticastGroupRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateMulticastGroupRequest) ProtoMessage()    {}
+func (*UpdateMulticastGroupRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{6}
+}
+
+func (m *UpdateMulticastGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateMulticastGroupRequest.Unmarshal(m, b)
+}
+func (m *UpdateMulticastGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateMulticastGroupRequest.Marshal(b, m, deterministic)
+}
+func (m *UpdateMulticastGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateMulticastGroupRequest.Merge(m, src)
+}
+func (m *UpdateMulticastGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_UpdateMulticastGroupRequest.Size(m)
+}
+func (m *UpdateMulticastGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateMulticastGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateMulticastGroupRequest proto.InternalMessageInfo
 
 func (m *UpdateMulticastGroupRequest) GetMulticastGroup() *MulticastGroup {
 	if m != nil {
@@ -302,13 +474,36 @@ func (m *UpdateMulticastGroupRequest) GetMulticastGroup() *MulticastGroup {
 
 type DeleteMulticastGroupRequest struct {
 	// ID (string formatted UUID).
-	Id string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
+	Id                   string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *DeleteMulticastGroupRequest) Reset()                    { *m = DeleteMulticastGroupRequest{} }
-func (m *DeleteMulticastGroupRequest) String() string            { return proto.CompactTextString(m) }
-func (*DeleteMulticastGroupRequest) ProtoMessage()               {}
-func (*DeleteMulticastGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{7} }
+func (m *DeleteMulticastGroupRequest) Reset()         { *m = DeleteMulticastGroupRequest{} }
+func (m *DeleteMulticastGroupRequest) String() string { return proto.CompactTextString(m) }
+func (*DeleteMulticastGroupRequest) ProtoMessage()    {}
+func (*DeleteMulticastGroupRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{7}
+}
+
+func (m *DeleteMulticastGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeleteMulticastGroupRequest.Unmarshal(m, b)
+}
+func (m *DeleteMulticastGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeleteMulticastGroupRequest.Marshal(b, m, deterministic)
+}
+func (m *DeleteMulticastGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeleteMulticastGroupRequest.Merge(m, src)
+}
+func (m *DeleteMulticastGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_DeleteMulticastGroupRequest.Size(m)
+}
+func (m *DeleteMulticastGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeleteMulticastGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeleteMulticastGroupRequest proto.InternalMessageInfo
 
 func (m *DeleteMulticastGroupRequest) GetId() string {
 	if m != nil {
@@ -319,19 +514,40 @@ func (m *DeleteMulticastGroupRequest) GetId() string {
 
 type AddDeviceToMulticastGroupRequest struct {
 	// Multicast-group ID (string formatted UUID).
-	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID" json:"multicast_group_id,omitempty"`
+	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID,proto3" json:"multicast_group_id,omitempty"`
 	// Device EUI (HEX encoded string).
 	// Note that the device must be under the same service-profile as the
 	// multicast-group.
-	DevEui string `protobuf:"bytes,2,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
+	DevEui               string   `protobuf:"bytes,2,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *AddDeviceToMulticastGroupRequest) Reset()         { *m = AddDeviceToMulticastGroupRequest{} }
 func (m *AddDeviceToMulticastGroupRequest) String() string { return proto.CompactTextString(m) }
 func (*AddDeviceToMulticastGroupRequest) ProtoMessage()    {}
 func (*AddDeviceToMulticastGroupRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor12, []int{8}
+	return fileDescriptor_cdc9b44b08fa59a4, []int{8}
 }
+
+func (m *AddDeviceToMulticastGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddDeviceToMulticastGroupRequest.Unmarshal(m, b)
+}
+func (m *AddDeviceToMulticastGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddDeviceToMulticastGroupRequest.Marshal(b, m, deterministic)
+}
+func (m *AddDeviceToMulticastGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddDeviceToMulticastGroupRequest.Merge(m, src)
+}
+func (m *AddDeviceToMulticastGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_AddDeviceToMulticastGroupRequest.Size(m)
+}
+func (m *AddDeviceToMulticastGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddDeviceToMulticastGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddDeviceToMulticastGroupRequest proto.InternalMessageInfo
 
 func (m *AddDeviceToMulticastGroupRequest) GetMulticastGroupId() string {
 	if m != nil {
@@ -349,17 +565,38 @@ func (m *AddDeviceToMulticastGroupRequest) GetDevEui() string {
 
 type RemoveDeviceFromMulticastGroupRequest struct {
 	// Multicast-group ID (string formatted UUID).
-	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID" json:"multicast_group_id,omitempty"`
+	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID,proto3" json:"multicast_group_id,omitempty"`
 	// Device EUI (HEX encoded string).
-	DevEui string `protobuf:"bytes,2,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
+	DevEui               string   `protobuf:"bytes,2,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *RemoveDeviceFromMulticastGroupRequest) Reset()         { *m = RemoveDeviceFromMulticastGroupRequest{} }
 func (m *RemoveDeviceFromMulticastGroupRequest) String() string { return proto.CompactTextString(m) }
 func (*RemoveDeviceFromMulticastGroupRequest) ProtoMessage()    {}
 func (*RemoveDeviceFromMulticastGroupRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor12, []int{9}
+	return fileDescriptor_cdc9b44b08fa59a4, []int{9}
 }
+
+func (m *RemoveDeviceFromMulticastGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RemoveDeviceFromMulticastGroupRequest.Unmarshal(m, b)
+}
+func (m *RemoveDeviceFromMulticastGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RemoveDeviceFromMulticastGroupRequest.Marshal(b, m, deterministic)
+}
+func (m *RemoveDeviceFromMulticastGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RemoveDeviceFromMulticastGroupRequest.Merge(m, src)
+}
+func (m *RemoveDeviceFromMulticastGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_RemoveDeviceFromMulticastGroupRequest.Size(m)
+}
+func (m *RemoveDeviceFromMulticastGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RemoveDeviceFromMulticastGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RemoveDeviceFromMulticastGroupRequest proto.InternalMessageInfo
 
 func (m *RemoveDeviceFromMulticastGroupRequest) GetMulticastGroupId() string {
 	if m != nil {
@@ -377,23 +614,46 @@ func (m *RemoveDeviceFromMulticastGroupRequest) GetDevEui() string {
 
 type ListMulticastGroupRequest struct {
 	// Max number of items to return.
-	Limit int64 `protobuf:"varint,1,opt,name=limit" json:"limit,omitempty"`
+	Limit int64 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
 	// Offset in the result-set (for pagination).
-	Offset int64 `protobuf:"varint,2,opt,name=offset" json:"offset,omitempty"`
+	Offset int64 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
 	// Organization id to filter on.
-	OrganizationId int64 `protobuf:"varint,3,opt,name=organization_id,json=organizationID" json:"organization_id,omitempty"`
+	OrganizationId int64 `protobuf:"varint,3,opt,name=organization_id,json=organizationID,proto3" json:"organization_id,omitempty"`
 	// Device EUI (HEX encoded string) to filter on.
-	DevEui string `protobuf:"bytes,4,opt,name=dev_eui,json=devEUI" json:"dev_eui,omitempty"`
+	DevEui string `protobuf:"bytes,4,opt,name=dev_eui,json=devEUI,proto3" json:"dev_eui,omitempty"`
 	// Service-profile ID to filter on.
-	ServiceProfileId string `protobuf:"bytes,5,opt,name=service_profile_id,json=serviceProfileID" json:"service_profile_id,omitempty"`
+	ServiceProfileId string `protobuf:"bytes,5,opt,name=service_profile_id,json=serviceProfileID,proto3" json:"service_profile_id,omitempty"`
 	// Search can be used to search on the multicast-group name.
-	Search string `protobuf:"bytes,6,opt,name=search" json:"search,omitempty"`
+	Search               string   `protobuf:"bytes,6,opt,name=search,proto3" json:"search,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ListMulticastGroupRequest) Reset()                    { *m = ListMulticastGroupRequest{} }
-func (m *ListMulticastGroupRequest) String() string            { return proto.CompactTextString(m) }
-func (*ListMulticastGroupRequest) ProtoMessage()               {}
-func (*ListMulticastGroupRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{10} }
+func (m *ListMulticastGroupRequest) Reset()         { *m = ListMulticastGroupRequest{} }
+func (m *ListMulticastGroupRequest) String() string { return proto.CompactTextString(m) }
+func (*ListMulticastGroupRequest) ProtoMessage()    {}
+func (*ListMulticastGroupRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{10}
+}
+
+func (m *ListMulticastGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListMulticastGroupRequest.Unmarshal(m, b)
+}
+func (m *ListMulticastGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListMulticastGroupRequest.Marshal(b, m, deterministic)
+}
+func (m *ListMulticastGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListMulticastGroupRequest.Merge(m, src)
+}
+func (m *ListMulticastGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_ListMulticastGroupRequest.Size(m)
+}
+func (m *ListMulticastGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListMulticastGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListMulticastGroupRequest proto.InternalMessageInfo
 
 func (m *ListMulticastGroupRequest) GetLimit() int64 {
 	if m != nil {
@@ -439,14 +699,37 @@ func (m *ListMulticastGroupRequest) GetSearch() string {
 
 type ListMulticastGroupResponse struct {
 	// Total number of multicast-groups.
-	TotalCount int64                     `protobuf:"varint,1,opt,name=total_count,json=totalCount" json:"total_count,omitempty"`
-	Result     []*MulticastGroupListItem `protobuf:"bytes,2,rep,name=result" json:"result,omitempty"`
+	TotalCount           int64                     `protobuf:"varint,1,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	Result               []*MulticastGroupListItem `protobuf:"bytes,2,rep,name=result,proto3" json:"result,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
+	XXX_unrecognized     []byte                    `json:"-"`
+	XXX_sizecache        int32                     `json:"-"`
 }
 
-func (m *ListMulticastGroupResponse) Reset()                    { *m = ListMulticastGroupResponse{} }
-func (m *ListMulticastGroupResponse) String() string            { return proto.CompactTextString(m) }
-func (*ListMulticastGroupResponse) ProtoMessage()               {}
-func (*ListMulticastGroupResponse) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{11} }
+func (m *ListMulticastGroupResponse) Reset()         { *m = ListMulticastGroupResponse{} }
+func (m *ListMulticastGroupResponse) String() string { return proto.CompactTextString(m) }
+func (*ListMulticastGroupResponse) ProtoMessage()    {}
+func (*ListMulticastGroupResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{11}
+}
+
+func (m *ListMulticastGroupResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListMulticastGroupResponse.Unmarshal(m, b)
+}
+func (m *ListMulticastGroupResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListMulticastGroupResponse.Marshal(b, m, deterministic)
+}
+func (m *ListMulticastGroupResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListMulticastGroupResponse.Merge(m, src)
+}
+func (m *ListMulticastGroupResponse) XXX_Size() int {
+	return xxx_messageInfo_ListMulticastGroupResponse.Size(m)
+}
+func (m *ListMulticastGroupResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListMulticastGroupResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListMulticastGroupResponse proto.InternalMessageInfo
 
 func (m *ListMulticastGroupResponse) GetTotalCount() int64 {
 	if m != nil {
@@ -464,20 +747,43 @@ func (m *ListMulticastGroupResponse) GetResult() []*MulticastGroupListItem {
 
 type MulticastQueueItem struct {
 	// Multicast-group ID (string formatted UUID).
-	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID" json:"multicast_group_id,omitempty"`
+	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID,proto3" json:"multicast_group_id,omitempty"`
 	// Downlink frame-counter.
 	// This will be automatically set on enqueue.
-	FCnt uint32 `protobuf:"varint,2,opt,name=f_cnt,json=fCnt" json:"f_cnt,omitempty"`
+	FCnt uint32 `protobuf:"varint,2,opt,name=f_cnt,json=fCnt,proto3" json:"f_cnt,omitempty"`
 	// FPort used (must be > 0).
-	FPort uint32 `protobuf:"varint,3,opt,name=f_port,json=fPort" json:"f_port,omitempty"`
+	FPort uint32 `protobuf:"varint,3,opt,name=f_port,json=fPort,proto3" json:"f_port,omitempty"`
 	// Base64 encoded data.
-	Data []byte `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
+	Data                 []byte   `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *MulticastQueueItem) Reset()                    { *m = MulticastQueueItem{} }
-func (m *MulticastQueueItem) String() string            { return proto.CompactTextString(m) }
-func (*MulticastQueueItem) ProtoMessage()               {}
-func (*MulticastQueueItem) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{12} }
+func (m *MulticastQueueItem) Reset()         { *m = MulticastQueueItem{} }
+func (m *MulticastQueueItem) String() string { return proto.CompactTextString(m) }
+func (*MulticastQueueItem) ProtoMessage()    {}
+func (*MulticastQueueItem) Descriptor() ([]byte, []int) {
+	return fileDescriptor_cdc9b44b08fa59a4, []int{12}
+}
+
+func (m *MulticastQueueItem) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MulticastQueueItem.Unmarshal(m, b)
+}
+func (m *MulticastQueueItem) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MulticastQueueItem.Marshal(b, m, deterministic)
+}
+func (m *MulticastQueueItem) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MulticastQueueItem.Merge(m, src)
+}
+func (m *MulticastQueueItem) XXX_Size() int {
+	return xxx_messageInfo_MulticastQueueItem.Size(m)
+}
+func (m *MulticastQueueItem) XXX_DiscardUnknown() {
+	xxx_messageInfo_MulticastQueueItem.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MulticastQueueItem proto.InternalMessageInfo
 
 func (m *MulticastQueueItem) GetMulticastGroupId() string {
 	if m != nil {
@@ -509,15 +815,36 @@ func (m *MulticastQueueItem) GetData() []byte {
 
 type EnqueueMulticastQueueItemRequest struct {
 	// Multicast queue-item object to enqueue.
-	MulticastQueueItem *MulticastQueueItem `protobuf:"bytes,1,opt,name=multicast_queue_item,json=multicastQueueItem" json:"multicast_queue_item,omitempty"`
+	MulticastQueueItem   *MulticastQueueItem `protobuf:"bytes,1,opt,name=multicast_queue_item,json=multicastQueueItem,proto3" json:"multicast_queue_item,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
 }
 
 func (m *EnqueueMulticastQueueItemRequest) Reset()         { *m = EnqueueMulticastQueueItemRequest{} }
 func (m *EnqueueMulticastQueueItemRequest) String() string { return proto.CompactTextString(m) }
 func (*EnqueueMulticastQueueItemRequest) ProtoMessage()    {}
 func (*EnqueueMulticastQueueItemRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor12, []int{13}
+	return fileDescriptor_cdc9b44b08fa59a4, []int{13}
 }
+
+func (m *EnqueueMulticastQueueItemRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EnqueueMulticastQueueItemRequest.Unmarshal(m, b)
+}
+func (m *EnqueueMulticastQueueItemRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EnqueueMulticastQueueItemRequest.Marshal(b, m, deterministic)
+}
+func (m *EnqueueMulticastQueueItemRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EnqueueMulticastQueueItemRequest.Merge(m, src)
+}
+func (m *EnqueueMulticastQueueItemRequest) XXX_Size() int {
+	return xxx_messageInfo_EnqueueMulticastQueueItemRequest.Size(m)
+}
+func (m *EnqueueMulticastQueueItemRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_EnqueueMulticastQueueItemRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EnqueueMulticastQueueItemRequest proto.InternalMessageInfo
 
 func (m *EnqueueMulticastQueueItemRequest) GetMulticastQueueItem() *MulticastQueueItem {
 	if m != nil {
@@ -528,15 +855,36 @@ func (m *EnqueueMulticastQueueItemRequest) GetMulticastQueueItem() *MulticastQue
 
 type EnqueueMulticastQueueItemResponse struct {
 	// Frame-counter for the enqueued payload.
-	FCnt uint32 `protobuf:"varint,1,opt,name=f_cnt,json=fCnt" json:"f_cnt,omitempty"`
+	FCnt                 uint32   `protobuf:"varint,1,opt,name=f_cnt,json=fCnt,proto3" json:"f_cnt,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *EnqueueMulticastQueueItemResponse) Reset()         { *m = EnqueueMulticastQueueItemResponse{} }
 func (m *EnqueueMulticastQueueItemResponse) String() string { return proto.CompactTextString(m) }
 func (*EnqueueMulticastQueueItemResponse) ProtoMessage()    {}
 func (*EnqueueMulticastQueueItemResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor12, []int{14}
+	return fileDescriptor_cdc9b44b08fa59a4, []int{14}
 }
+
+func (m *EnqueueMulticastQueueItemResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EnqueueMulticastQueueItemResponse.Unmarshal(m, b)
+}
+func (m *EnqueueMulticastQueueItemResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EnqueueMulticastQueueItemResponse.Marshal(b, m, deterministic)
+}
+func (m *EnqueueMulticastQueueItemResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EnqueueMulticastQueueItemResponse.Merge(m, src)
+}
+func (m *EnqueueMulticastQueueItemResponse) XXX_Size() int {
+	return xxx_messageInfo_EnqueueMulticastQueueItemResponse.Size(m)
+}
+func (m *EnqueueMulticastQueueItemResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_EnqueueMulticastQueueItemResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EnqueueMulticastQueueItemResponse proto.InternalMessageInfo
 
 func (m *EnqueueMulticastQueueItemResponse) GetFCnt() uint32 {
 	if m != nil {
@@ -547,15 +895,36 @@ func (m *EnqueueMulticastQueueItemResponse) GetFCnt() uint32 {
 
 type FlushMulticastGroupQueueItemsRequest struct {
 	// Multicast-group ID (string formatted UUID).
-	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID" json:"multicast_group_id,omitempty"`
+	MulticastGroupId     string   `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID,proto3" json:"multicast_group_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *FlushMulticastGroupQueueItemsRequest) Reset()         { *m = FlushMulticastGroupQueueItemsRequest{} }
 func (m *FlushMulticastGroupQueueItemsRequest) String() string { return proto.CompactTextString(m) }
 func (*FlushMulticastGroupQueueItemsRequest) ProtoMessage()    {}
 func (*FlushMulticastGroupQueueItemsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor12, []int{15}
+	return fileDescriptor_cdc9b44b08fa59a4, []int{15}
 }
+
+func (m *FlushMulticastGroupQueueItemsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_FlushMulticastGroupQueueItemsRequest.Unmarshal(m, b)
+}
+func (m *FlushMulticastGroupQueueItemsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_FlushMulticastGroupQueueItemsRequest.Marshal(b, m, deterministic)
+}
+func (m *FlushMulticastGroupQueueItemsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_FlushMulticastGroupQueueItemsRequest.Merge(m, src)
+}
+func (m *FlushMulticastGroupQueueItemsRequest) XXX_Size() int {
+	return xxx_messageInfo_FlushMulticastGroupQueueItemsRequest.Size(m)
+}
+func (m *FlushMulticastGroupQueueItemsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_FlushMulticastGroupQueueItemsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_FlushMulticastGroupQueueItemsRequest proto.InternalMessageInfo
 
 func (m *FlushMulticastGroupQueueItemsRequest) GetMulticastGroupId() string {
 	if m != nil {
@@ -566,15 +935,36 @@ func (m *FlushMulticastGroupQueueItemsRequest) GetMulticastGroupId() string {
 
 type ListMulticastGroupQueueItemsRequest struct {
 	// Multicast-group ID (string formatted UUID).
-	MulticastGroupId string `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID" json:"multicast_group_id,omitempty"`
+	MulticastGroupId     string   `protobuf:"bytes,1,opt,name=multicast_group_id,json=multicastGroupID,proto3" json:"multicast_group_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *ListMulticastGroupQueueItemsRequest) Reset()         { *m = ListMulticastGroupQueueItemsRequest{} }
 func (m *ListMulticastGroupQueueItemsRequest) String() string { return proto.CompactTextString(m) }
 func (*ListMulticastGroupQueueItemsRequest) ProtoMessage()    {}
 func (*ListMulticastGroupQueueItemsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor12, []int{16}
+	return fileDescriptor_cdc9b44b08fa59a4, []int{16}
 }
+
+func (m *ListMulticastGroupQueueItemsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListMulticastGroupQueueItemsRequest.Unmarshal(m, b)
+}
+func (m *ListMulticastGroupQueueItemsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListMulticastGroupQueueItemsRequest.Marshal(b, m, deterministic)
+}
+func (m *ListMulticastGroupQueueItemsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListMulticastGroupQueueItemsRequest.Merge(m, src)
+}
+func (m *ListMulticastGroupQueueItemsRequest) XXX_Size() int {
+	return xxx_messageInfo_ListMulticastGroupQueueItemsRequest.Size(m)
+}
+func (m *ListMulticastGroupQueueItemsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListMulticastGroupQueueItemsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListMulticastGroupQueueItemsRequest proto.InternalMessageInfo
 
 func (m *ListMulticastGroupQueueItemsRequest) GetMulticastGroupId() string {
 	if m != nil {
@@ -584,15 +974,36 @@ func (m *ListMulticastGroupQueueItemsRequest) GetMulticastGroupId() string {
 }
 
 type ListMulticastGroupQueueItemsResponse struct {
-	MulticastQueueItems []*MulticastQueueItem `protobuf:"bytes,1,rep,name=multicast_queue_items,json=multicastQueueItems" json:"multicast_queue_items,omitempty"`
+	MulticastQueueItems  []*MulticastQueueItem `protobuf:"bytes,1,rep,name=multicast_queue_items,json=multicastQueueItems,proto3" json:"multicast_queue_items,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
 }
 
 func (m *ListMulticastGroupQueueItemsResponse) Reset()         { *m = ListMulticastGroupQueueItemsResponse{} }
 func (m *ListMulticastGroupQueueItemsResponse) String() string { return proto.CompactTextString(m) }
 func (*ListMulticastGroupQueueItemsResponse) ProtoMessage()    {}
 func (*ListMulticastGroupQueueItemsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor12, []int{17}
+	return fileDescriptor_cdc9b44b08fa59a4, []int{17}
 }
+
+func (m *ListMulticastGroupQueueItemsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListMulticastGroupQueueItemsResponse.Unmarshal(m, b)
+}
+func (m *ListMulticastGroupQueueItemsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListMulticastGroupQueueItemsResponse.Marshal(b, m, deterministic)
+}
+func (m *ListMulticastGroupQueueItemsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListMulticastGroupQueueItemsResponse.Merge(m, src)
+}
+func (m *ListMulticastGroupQueueItemsResponse) XXX_Size() int {
+	return xxx_messageInfo_ListMulticastGroupQueueItemsResponse.Size(m)
+}
+func (m *ListMulticastGroupQueueItemsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListMulticastGroupQueueItemsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListMulticastGroupQueueItemsResponse proto.InternalMessageInfo
 
 func (m *ListMulticastGroupQueueItemsResponse) GetMulticastQueueItems() []*MulticastQueueItem {
 	if m != nil {
@@ -602,6 +1013,7 @@ func (m *ListMulticastGroupQueueItemsResponse) GetMulticastQueueItems() []*Multi
 }
 
 func init() {
+	proto.RegisterEnum("api.MulticastGroupType", MulticastGroupType_name, MulticastGroupType_value)
 	proto.RegisterType((*MulticastGroup)(nil), "api.MulticastGroup")
 	proto.RegisterType((*MulticastGroupListItem)(nil), "api.MulticastGroupListItem")
 	proto.RegisterType((*CreateMulticastGroupRequest)(nil), "api.CreateMulticastGroupRequest")
@@ -620,7 +1032,86 @@ func init() {
 	proto.RegisterType((*FlushMulticastGroupQueueItemsRequest)(nil), "api.FlushMulticastGroupQueueItemsRequest")
 	proto.RegisterType((*ListMulticastGroupQueueItemsRequest)(nil), "api.ListMulticastGroupQueueItemsRequest")
 	proto.RegisterType((*ListMulticastGroupQueueItemsResponse)(nil), "api.ListMulticastGroupQueueItemsResponse")
-	proto.RegisterEnum("api.MulticastGroupType", MulticastGroupType_name, MulticastGroupType_value)
+}
+
+func init() { proto.RegisterFile("multicastGroup.proto", fileDescriptor_cdc9b44b08fa59a4) }
+
+var fileDescriptor_cdc9b44b08fa59a4 = []byte{
+	// 1170 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xcd, 0x6e, 0xdb, 0xc6,
+	0x13, 0xff, 0x53, 0xb2, 0xe5, 0xbf, 0x46, 0x8e, 0xe2, 0xae, 0xbf, 0x68, 0xda, 0xa9, 0x15, 0x36,
+	0x69, 0x15, 0x21, 0x91, 0x02, 0x05, 0x6d, 0xd3, 0x22, 0x2d, 0xa0, 0xda, 0x8e, 0xe1, 0x26, 0x0d,
+	0x5c, 0xca, 0x39, 0xf5, 0x40, 0x30, 0xe2, 0x4a, 0x5e, 0x58, 0xe4, 0x32, 0xe4, 0xd2, 0x81, 0x1a,
+	0xf8, 0x92, 0x5b, 0xce, 0xbd, 0x14, 0x45, 0x9f, 0xa0, 0x8f, 0xd0, 0x97, 0x28, 0x8a, 0xbe, 0x41,
+	0xd1, 0x07, 0x29, 0x38, 0x5c, 0x51, 0x1f, 0x26, 0x65, 0xbb, 0x41, 0x2e, 0x02, 0x77, 0x76, 0x76,
+	0xe6, 0x37, 0xbf, 0xf9, 0x12, 0xac, 0x38, 0x61, 0x5f, 0xb0, 0x8e, 0x15, 0x88, 0x7d, 0x9f, 0x87,
+	0x5e, 0xdd, 0xf3, 0xb9, 0xe0, 0x24, 0x6f, 0x79, 0x4c, 0xdb, 0xea, 0x71, 0xde, 0xeb, 0xd3, 0x86,
+	0xe5, 0xb1, 0x86, 0xe5, 0xba, 0x5c, 0x58, 0x82, 0x71, 0x37, 0x88, 0x55, 0xb4, 0x0d, 0xc1, 0x1c,
+	0x1a, 0x08, 0xcb, 0xf1, 0x1a, 0xc9, 0x97, 0xbc, 0xfa, 0x80, 0x3a, 0x9e, 0x18, 0x34, 0xf0, 0x37,
+	0x16, 0xe9, 0x7f, 0xe7, 0xa0, 0xfc, 0xdd, 0x84, 0x27, 0x52, 0x86, 0x1c, 0xb3, 0x55, 0xa5, 0xa2,
+	0x54, 0x8b, 0x46, 0x8e, 0xd9, 0x84, 0xc0, 0x9c, 0x6b, 0x39, 0x54, 0xcd, 0xa1, 0x04, 0xbf, 0xc9,
+	0x3a, 0x2c, 0x38, 0x1d, 0xd3, 0xb2, 0x6d, 0x5f, 0xcd, 0xa3, 0xb8, 0xe0, 0x74, 0x5a, 0xb6, 0xed,
+	0x93, 0x6d, 0x58, 0x74, 0x3a, 0xa6, 0xfb, 0xea, 0xc4, 0x0c, 0xcc, 0x13, 0x3a, 0x50, 0xe7, 0xf0,
+	0xb6, 0xe8, 0x74, 0x9e, 0xbd, 0x3a, 0x69, 0x3f, 0xa1, 0x03, 0xa9, 0x60, 0x79, 0x9e, 0x54, 0x98,
+	0x1f, 0x2a, 0xb4, 0x3c, 0x0f, 0x15, 0x96, 0x61, 0xbe, 0x6b, 0x76, 0x5c, 0xa1, 0x16, 0x2a, 0x4a,
+	0xf5, 0x9a, 0x31, 0xd7, 0xdd, 0x71, 0x05, 0xf9, 0x0c, 0xa0, 0x17, 0x81, 0x33, 0xc5, 0xc0, 0xa3,
+	0xea, 0x42, 0x45, 0xa9, 0x96, 0x9b, 0xeb, 0x75, 0xcb, 0x63, 0xf5, 0x49, 0xf0, 0x47, 0x03, 0x8f,
+	0x1a, 0xc5, 0xde, 0xf0, 0x33, 0x8a, 0xc5, 0xf6, 0xd5, 0xff, 0xa3, 0xa5, 0x9c, 0xed, 0x93, 0x2d,
+	0x28, 0x76, 0x7d, 0xfa, 0x32, 0xa4, 0x6e, 0x67, 0xa0, 0x16, 0x51, 0x3c, 0x12, 0x90, 0x2a, 0x2c,
+	0x79, 0xcc, 0xed, 0x99, 0x41, 0x9f, 0x0b, 0xd3, 0xa3, 0x3e, 0xe3, 0xb6, 0x0a, 0xa8, 0x54, 0x8e,
+	0xe4, 0xed, 0x3e, 0x17, 0x87, 0x28, 0x25, 0x77, 0x81, 0x04, 0xd4, 0x3f, 0x65, 0x1d, 0x6a, 0x7a,
+	0x3e, 0xef, 0xb2, 0x3e, 0x35, 0x99, 0xad, 0x96, 0x30, 0x96, 0x25, 0x79, 0x73, 0x18, 0x5f, 0x1c,
+	0xec, 0xea, 0xbf, 0x2a, 0xb0, 0x36, 0x89, 0xf3, 0x29, 0x0b, 0xc4, 0x81, 0xa0, 0xce, 0xa5, 0xc8,
+	0x4e, 0x77, 0x96, 0x4f, 0x77, 0x46, 0xee, 0xc3, 0xca, 0xb4, 0x36, 0x5a, 0x8c, 0x33, 0x41, 0x26,
+	0xf5, 0x9f, 0x59, 0x0e, 0xd5, 0x7f, 0x80, 0xcd, 0x1d, 0x9f, 0x5a, 0x82, 0x4e, 0x62, 0x34, 0x22,
+	0x5a, 0x02, 0x41, 0x1e, 0xc1, 0xf5, 0xa4, 0x16, 0x4d, 0xa4, 0x16, 0xf1, 0x96, 0x9a, 0xcb, 0x29,
+	0x09, 0x30, 0xca, 0x93, 0x75, 0xab, 0xd7, 0x61, 0x2b, 0xdd, 0x78, 0xe0, 0x71, 0x37, 0xa0, 0xd3,
+	0x04, 0xe8, 0x35, 0x50, 0xf7, 0xa9, 0x48, 0x47, 0x32, 0xad, 0xfb, 0x87, 0x02, 0x1b, 0x29, 0xca,
+	0xd2, 0xf2, 0x3b, 0xe1, 0x26, 0x5f, 0x00, 0x74, 0x10, 0xb7, 0x6d, 0x5a, 0x02, 0xd3, 0x51, 0x6a,
+	0x6a, 0xf5, 0xb8, 0xf3, 0xe2, 0xde, 0x79, 0x11, 0x76, 0xeb, 0x47, 0xc3, 0x0e, 0x33, 0x8a, 0x52,
+	0xbb, 0x25, 0xa2, 0xa7, 0xa1, 0x67, 0x0f, 0x9f, 0xe6, 0x2f, 0x7e, 0x2a, 0xb5, 0x5b, 0x22, 0x4a,
+	0xc5, 0x73, 0x3c, 0xbc, 0x8f, 0x54, 0xdc, 0x83, 0xcd, 0x5d, 0xda, 0xa7, 0x59, 0xc6, 0xa7, 0xd9,
+	0x65, 0x50, 0x69, 0xd9, 0xf6, 0x2e, 0x8d, 0xca, 0xe5, 0x88, 0xa7, 0xbf, 0xb9, 0x0b, 0x64, 0x0a,
+	0x90, 0x99, 0xd8, 0x58, 0x9a, 0x74, 0x7f, 0xb0, 0x1b, 0x4d, 0x0d, 0x9b, 0x9e, 0x9a, 0x34, 0x64,
+	0xb2, 0xbe, 0x0b, 0x36, 0x3d, 0xdd, 0x7b, 0x7e, 0xa0, 0xbb, 0x70, 0xdb, 0xa0, 0x0e, 0x3f, 0xa5,
+	0xb1, 0xb7, 0xc7, 0x3e, 0x77, 0xde, 0xab, 0xbf, 0x3f, 0x15, 0xd8, 0x88, 0x5a, 0x30, 0xdd, 0xc9,
+	0x0a, 0xcc, 0xf7, 0x99, 0xc3, 0x04, 0xda, 0xcd, 0x1b, 0xf1, 0x81, 0xac, 0x41, 0x81, 0x77, 0xbb,
+	0x01, 0x8d, 0x8b, 0x21, 0x6f, 0xc8, 0x13, 0xf9, 0x04, 0xae, 0x73, 0xbf, 0x67, 0xb9, 0xec, 0x47,
+	0x1c, 0xc3, 0xc3, 0xd6, 0xcc, 0x1b, 0xe5, 0x71, 0xf1, 0x24, 0x9a, 0xb9, 0x71, 0x34, 0x19, 0xfd,
+	0x3d, 0x9f, 0xd1, 0xdf, 0x6b, 0x50, 0x08, 0xa8, 0xe5, 0x77, 0x8e, 0x71, 0x40, 0x16, 0x0d, 0x79,
+	0xd2, 0x7d, 0xd0, 0xd2, 0x42, 0x92, 0xcd, 0xb0, 0x0d, 0x25, 0xc1, 0x85, 0xd5, 0x37, 0x3b, 0x3c,
+	0x74, 0x87, 0x91, 0x01, 0x8a, 0x76, 0x22, 0x09, 0x79, 0x00, 0x05, 0x9f, 0x06, 0x61, 0x3f, 0x0a,
+	0x2f, 0x5f, 0x2d, 0x35, 0x37, 0x53, 0x2a, 0x6a, 0x38, 0xb5, 0x0c, 0xa9, 0xaa, 0xbf, 0x51, 0x80,
+	0x24, 0x2a, 0xdf, 0x87, 0x34, 0xa4, 0x38, 0xd4, 0xae, 0x96, 0xa5, 0x64, 0xe0, 0xe7, 0xc6, 0x06,
+	0xfe, 0x2a, 0x14, 0xba, 0xa6, 0xc7, 0xfd, 0xb8, 0x7f, 0xae, 0x19, 0xf3, 0xdd, 0x43, 0xee, 0x8b,
+	0x68, 0x3c, 0xda, 0x96, 0xb0, 0x90, 0xc0, 0x45, 0x03, 0xbf, 0x75, 0x07, 0x2a, 0x7b, 0xee, 0xcb,
+	0xc8, 0xf9, 0x79, 0x28, 0xc3, 0x94, 0x1e, 0x8c, 0xed, 0x53, 0x13, 0x75, 0x4d, 0x26, 0xa8, 0x23,
+	0xbb, 0x67, 0x6a, 0x93, 0x8c, 0x5e, 0x8f, 0xc2, 0x48, 0x64, 0xfa, 0x43, 0xb8, 0x39, 0xc3, 0x9d,
+	0xa4, 0x3b, 0x89, 0x49, 0x19, 0xc5, 0xa4, 0x1f, 0xc1, 0xad, 0xc7, 0xfd, 0x30, 0x38, 0x9e, 0x24,
+	0x35, 0x79, 0x1c, 0xfc, 0xa7, 0x22, 0xd7, 0xdb, 0xf0, 0xd1, 0xf9, 0xbc, 0xbf, 0xab, 0xd1, 0x00,
+	0x6e, 0xcd, 0x36, 0x2a, 0xe3, 0x7c, 0x02, 0xab, 0x69, 0xbc, 0x06, 0xaa, 0x82, 0x45, 0x94, 0x49,
+	0xec, 0xf2, 0x79, 0x62, 0x83, 0x5a, 0x7d, 0xac, 0x98, 0x92, 0x6d, 0x4e, 0x4a, 0xb0, 0xb0, 0xf3,
+	0xb4, 0xd5, 0x6e, 0x9b, 0x3b, 0x4b, 0xff, 0x1b, 0x1d, 0xbe, 0x59, 0x52, 0x9a, 0xbf, 0x03, 0xac,
+	0x4e, 0x3e, 0x68, 0xc7, 0xcd, 0x42, 0x38, 0x14, 0xe2, 0xa5, 0x43, 0x2a, 0x88, 0x60, 0xc6, 0x7a,
+	0xd3, 0x6e, 0xce, 0xd0, 0x88, 0xa3, 0xd4, 0x2b, 0x6f, 0xfe, 0xfa, 0xe7, 0xa7, 0x9c, 0xa6, 0xaf,
+	0xe2, 0x5f, 0xae, 0x04, 0xfa, 0x3d, 0xa4, 0x31, 0xf8, 0x52, 0xa9, 0x91, 0x63, 0xc8, 0xef, 0x53,
+	0x41, 0x6e, 0xa0, 0xad, 0xac, 0xfd, 0xa5, 0x7d, 0x98, 0x75, 0x2d, 0xfd, 0xe8, 0xe8, 0x67, 0x8b,
+	0x68, 0xa9, 0x7e, 0x1a, 0xaf, 0x99, 0x7d, 0x46, 0x06, 0x50, 0x88, 0x37, 0x84, 0x0c, 0x6d, 0xc6,
+	0xba, 0xd0, 0xd6, 0xce, 0x2d, 0x9d, 0xbd, 0xe8, 0xaf, 0x9f, 0xfe, 0x29, 0xfa, 0x69, 0x68, 0xb5,
+	0x0c, 0x3f, 0x53, 0x85, 0x52, 0x67, 0xf6, 0x59, 0x14, 0x64, 0x17, 0x0a, 0xf1, 0xfe, 0x90, 0xae,
+	0x67, 0x2c, 0x93, 0x4c, 0xd7, 0x32, 0xc4, 0xda, 0xac, 0x10, 0xbb, 0x30, 0x17, 0x15, 0x1f, 0x89,
+	0xe9, 0xca, 0x9c, 0xd3, 0xda, 0x76, 0xe6, 0xbd, 0xe4, 0xf3, 0x06, 0x3a, 0x5b, 0x27, 0xe9, 0x79,
+	0x23, 0x6f, 0x15, 0x28, 0x26, 0x1b, 0x8e, 0xdc, 0x46, 0x6b, 0x17, 0x6d, 0xbc, 0xcc, 0xc0, 0xbe,
+	0x42, 0x5f, 0x9f, 0xeb, 0xcd, 0xcb, 0x71, 0x6a, 0x32, 0xfb, 0xac, 0x61, 0xa3, 0x27, 0x2c, 0xa0,
+	0x9f, 0x15, 0x58, 0x1c, 0x5f, 0x81, 0xa4, 0x86, 0x70, 0x2e, 0xb5, 0x15, 0x33, 0x31, 0xed, 0x22,
+	0xa6, 0xaf, 0x6b, 0x8f, 0xae, 0x8e, 0xa9, 0xf1, 0x5a, 0xee, 0xaa, 0x33, 0xf2, 0x9b, 0x02, 0x0b,
+	0x72, 0xe2, 0x49, 0x92, 0x2e, 0x1a, 0xb7, 0xda, 0xc7, 0x17, 0xa9, 0xc9, 0x04, 0x1d, 0x22, 0xc0,
+	0x6f, 0xf5, 0xbd, 0x0b, 0x01, 0x8e, 0x66, 0x4b, 0x3d, 0x0d, 0x35, 0x5e, 0x47, 0x3c, 0xbe, 0x55,
+	0x00, 0x70, 0xc8, 0xa2, 0x33, 0x72, 0x07, 0x81, 0x5c, 0x66, 0xea, 0x66, 0x92, 0xf8, 0x10, 0x31,
+	0x36, 0x6b, 0xf7, 0xaf, 0x40, 0x62, 0x4c, 0xd6, 0x2f, 0x0a, 0x14, 0xa3, 0xea, 0x8c, 0xa1, 0x54,
+	0x33, 0xaa, 0xf5, 0x3c, 0x92, 0x3b, 0x97, 0xd0, 0x94, 0x04, 0x4a, 0x70, 0xe4, 0xca, 0xe0, 0x5e,
+	0x14, 0x30, 0xcc, 0x07, 0xff, 0x06, 0x00, 0x00, 0xff, 0xff, 0x3c, 0x57, 0xe6, 0xfb, 0x68, 0x0e,
+	0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -631,27 +1122,28 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for MulticastGroupService service
-
+// MulticastGroupServiceClient is the client API for MulticastGroupService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MulticastGroupServiceClient interface {
 	// Create creates the given multicast-group.
 	Create(ctx context.Context, in *CreateMulticastGroupRequest, opts ...grpc.CallOption) (*CreateMulticastGroupResponse, error)
 	// Get returns a multicast-group given an ID.
 	Get(ctx context.Context, in *GetMulticastGroupRequest, opts ...grpc.CallOption) (*GetMulticastGroupResponse, error)
 	// Update updates the given multicast-group.
-	Update(ctx context.Context, in *UpdateMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error)
+	Update(ctx context.Context, in *UpdateMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// Delete deletes a multicast-group given an ID.
-	Delete(ctx context.Context, in *DeleteMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error)
+	Delete(ctx context.Context, in *DeleteMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// List lists the available multicast-groups.
 	List(ctx context.Context, in *ListMulticastGroupRequest, opts ...grpc.CallOption) (*ListMulticastGroupResponse, error)
 	// AddDevice adds the given device to the multicast-group.
-	AddDevice(ctx context.Context, in *AddDeviceToMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error)
+	AddDevice(ctx context.Context, in *AddDeviceToMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// RemoveDevice removes the given device from the multicast-group.
-	RemoveDevice(ctx context.Context, in *RemoveDeviceFromMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error)
+	RemoveDevice(ctx context.Context, in *RemoveDeviceFromMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// Enqueue adds the given item to the multicast-queue.
 	Enqueue(ctx context.Context, in *EnqueueMulticastQueueItemRequest, opts ...grpc.CallOption) (*EnqueueMulticastQueueItemResponse, error)
 	// FlushQueue flushes the multicast-group queue.
-	FlushQueue(ctx context.Context, in *FlushMulticastGroupQueueItemsRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error)
+	FlushQueue(ctx context.Context, in *FlushMulticastGroupQueueItemsRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// ListQueue lists the items in the multicast-group queue.
 	ListQueue(ctx context.Context, in *ListMulticastGroupQueueItemsRequest, opts ...grpc.CallOption) (*ListMulticastGroupQueueItemsResponse, error)
 }
@@ -666,7 +1158,7 @@ func NewMulticastGroupServiceClient(cc *grpc.ClientConn) MulticastGroupServiceCl
 
 func (c *multicastGroupServiceClient) Create(ctx context.Context, in *CreateMulticastGroupRequest, opts ...grpc.CallOption) (*CreateMulticastGroupResponse, error) {
 	out := new(CreateMulticastGroupResponse)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/Create", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -675,25 +1167,25 @@ func (c *multicastGroupServiceClient) Create(ctx context.Context, in *CreateMult
 
 func (c *multicastGroupServiceClient) Get(ctx context.Context, in *GetMulticastGroupRequest, opts ...grpc.CallOption) (*GetMulticastGroupResponse, error) {
 	out := new(GetMulticastGroupResponse)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/Get", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/Get", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *multicastGroupServiceClient) Update(ctx context.Context, in *UpdateMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error) {
-	out := new(google_protobuf2.Empty)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/Update", in, out, c.cc, opts...)
+func (c *multicastGroupServiceClient) Update(ctx context.Context, in *UpdateMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *multicastGroupServiceClient) Delete(ctx context.Context, in *DeleteMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error) {
-	out := new(google_protobuf2.Empty)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/Delete", in, out, c.cc, opts...)
+func (c *multicastGroupServiceClient) Delete(ctx context.Context, in *DeleteMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -702,25 +1194,25 @@ func (c *multicastGroupServiceClient) Delete(ctx context.Context, in *DeleteMult
 
 func (c *multicastGroupServiceClient) List(ctx context.Context, in *ListMulticastGroupRequest, opts ...grpc.CallOption) (*ListMulticastGroupResponse, error) {
 	out := new(ListMulticastGroupResponse)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/List", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/List", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *multicastGroupServiceClient) AddDevice(ctx context.Context, in *AddDeviceToMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error) {
-	out := new(google_protobuf2.Empty)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/AddDevice", in, out, c.cc, opts...)
+func (c *multicastGroupServiceClient) AddDevice(ctx context.Context, in *AddDeviceToMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/AddDevice", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *multicastGroupServiceClient) RemoveDevice(ctx context.Context, in *RemoveDeviceFromMulticastGroupRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error) {
-	out := new(google_protobuf2.Empty)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/RemoveDevice", in, out, c.cc, opts...)
+func (c *multicastGroupServiceClient) RemoveDevice(ctx context.Context, in *RemoveDeviceFromMulticastGroupRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/RemoveDevice", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -729,16 +1221,16 @@ func (c *multicastGroupServiceClient) RemoveDevice(ctx context.Context, in *Remo
 
 func (c *multicastGroupServiceClient) Enqueue(ctx context.Context, in *EnqueueMulticastQueueItemRequest, opts ...grpc.CallOption) (*EnqueueMulticastQueueItemResponse, error) {
 	out := new(EnqueueMulticastQueueItemResponse)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/Enqueue", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/Enqueue", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *multicastGroupServiceClient) FlushQueue(ctx context.Context, in *FlushMulticastGroupQueueItemsRequest, opts ...grpc.CallOption) (*google_protobuf2.Empty, error) {
-	out := new(google_protobuf2.Empty)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/FlushQueue", in, out, c.cc, opts...)
+func (c *multicastGroupServiceClient) FlushQueue(ctx context.Context, in *FlushMulticastGroupQueueItemsRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/FlushQueue", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -747,36 +1239,70 @@ func (c *multicastGroupServiceClient) FlushQueue(ctx context.Context, in *FlushM
 
 func (c *multicastGroupServiceClient) ListQueue(ctx context.Context, in *ListMulticastGroupQueueItemsRequest, opts ...grpc.CallOption) (*ListMulticastGroupQueueItemsResponse, error) {
 	out := new(ListMulticastGroupQueueItemsResponse)
-	err := grpc.Invoke(ctx, "/api.MulticastGroupService/ListQueue", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/api.MulticastGroupService/ListQueue", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for MulticastGroupService service
-
+// MulticastGroupServiceServer is the server API for MulticastGroupService service.
 type MulticastGroupServiceServer interface {
 	// Create creates the given multicast-group.
 	Create(context.Context, *CreateMulticastGroupRequest) (*CreateMulticastGroupResponse, error)
 	// Get returns a multicast-group given an ID.
 	Get(context.Context, *GetMulticastGroupRequest) (*GetMulticastGroupResponse, error)
 	// Update updates the given multicast-group.
-	Update(context.Context, *UpdateMulticastGroupRequest) (*google_protobuf2.Empty, error)
+	Update(context.Context, *UpdateMulticastGroupRequest) (*empty.Empty, error)
 	// Delete deletes a multicast-group given an ID.
-	Delete(context.Context, *DeleteMulticastGroupRequest) (*google_protobuf2.Empty, error)
+	Delete(context.Context, *DeleteMulticastGroupRequest) (*empty.Empty, error)
 	// List lists the available multicast-groups.
 	List(context.Context, *ListMulticastGroupRequest) (*ListMulticastGroupResponse, error)
 	// AddDevice adds the given device to the multicast-group.
-	AddDevice(context.Context, *AddDeviceToMulticastGroupRequest) (*google_protobuf2.Empty, error)
+	AddDevice(context.Context, *AddDeviceToMulticastGroupRequest) (*empty.Empty, error)
 	// RemoveDevice removes the given device from the multicast-group.
-	RemoveDevice(context.Context, *RemoveDeviceFromMulticastGroupRequest) (*google_protobuf2.Empty, error)
+	RemoveDevice(context.Context, *RemoveDeviceFromMulticastGroupRequest) (*empty.Empty, error)
 	// Enqueue adds the given item to the multicast-queue.
 	Enqueue(context.Context, *EnqueueMulticastQueueItemRequest) (*EnqueueMulticastQueueItemResponse, error)
 	// FlushQueue flushes the multicast-group queue.
-	FlushQueue(context.Context, *FlushMulticastGroupQueueItemsRequest) (*google_protobuf2.Empty, error)
+	FlushQueue(context.Context, *FlushMulticastGroupQueueItemsRequest) (*empty.Empty, error)
 	// ListQueue lists the items in the multicast-group queue.
 	ListQueue(context.Context, *ListMulticastGroupQueueItemsRequest) (*ListMulticastGroupQueueItemsResponse, error)
+}
+
+// UnimplementedMulticastGroupServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedMulticastGroupServiceServer struct {
+}
+
+func (*UnimplementedMulticastGroupServiceServer) Create(ctx context.Context, req *CreateMulticastGroupRequest) (*CreateMulticastGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Get(ctx context.Context, req *GetMulticastGroupRequest) (*GetMulticastGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Update(ctx context.Context, req *UpdateMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Delete(ctx context.Context, req *DeleteMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) List(ctx context.Context, req *ListMulticastGroupRequest) (*ListMulticastGroupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method List not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) AddDevice(ctx context.Context, req *AddDeviceToMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddDevice not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) RemoveDevice(ctx context.Context, req *RemoveDeviceFromMulticastGroupRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveDevice not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) Enqueue(ctx context.Context, req *EnqueueMulticastQueueItemRequest) (*EnqueueMulticastQueueItemResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Enqueue not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) FlushQueue(ctx context.Context, req *FlushMulticastGroupQueueItemsRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FlushQueue not implemented")
+}
+func (*UnimplementedMulticastGroupServiceServer) ListQueue(ctx context.Context, req *ListMulticastGroupQueueItemsRequest) (*ListMulticastGroupQueueItemsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListQueue not implemented")
 }
 
 func RegisterMulticastGroupServiceServer(s *grpc.Server, srv MulticastGroupServiceServer) {
@@ -1010,84 +1536,4 @@ var _MulticastGroupService_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "multicastGroup.proto",
-}
-
-func init() { proto.RegisterFile("multicastGroup.proto", fileDescriptor12) }
-
-var fileDescriptor12 = []byte{
-	// 1170 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xcd, 0x6e, 0xdb, 0xc6,
-	0x13, 0xff, 0x53, 0xb2, 0xe5, 0xbf, 0x46, 0x8e, 0xe2, 0xae, 0xbf, 0x68, 0xda, 0xa9, 0x15, 0x36,
-	0x69, 0x15, 0x21, 0x91, 0x02, 0x05, 0x6d, 0xd3, 0x22, 0x2d, 0xa0, 0xda, 0x8e, 0xe1, 0x26, 0x0d,
-	0x5c, 0xca, 0x39, 0xf5, 0x40, 0x30, 0xe2, 0x4a, 0x5e, 0x58, 0xe4, 0x32, 0xe4, 0xd2, 0x81, 0x1a,
-	0xf8, 0x92, 0x5b, 0xce, 0xbd, 0x14, 0x45, 0x9f, 0xa0, 0x8f, 0xd0, 0x97, 0x28, 0x8a, 0xbe, 0x41,
-	0xd1, 0x07, 0x29, 0x38, 0x5c, 0x51, 0x1f, 0x26, 0x65, 0xbb, 0x41, 0x2e, 0x02, 0x77, 0x76, 0x76,
-	0xe6, 0x37, 0xbf, 0xf9, 0x12, 0xac, 0x38, 0x61, 0x5f, 0xb0, 0x8e, 0x15, 0x88, 0x7d, 0x9f, 0x87,
-	0x5e, 0xdd, 0xf3, 0xb9, 0xe0, 0x24, 0x6f, 0x79, 0x4c, 0xdb, 0xea, 0x71, 0xde, 0xeb, 0xd3, 0x86,
-	0xe5, 0xb1, 0x86, 0xe5, 0xba, 0x5c, 0x58, 0x82, 0x71, 0x37, 0x88, 0x55, 0xb4, 0x0d, 0xc1, 0x1c,
-	0x1a, 0x08, 0xcb, 0xf1, 0x1a, 0xc9, 0x97, 0xbc, 0xfa, 0x80, 0x3a, 0x9e, 0x18, 0x34, 0xf0, 0x37,
-	0x16, 0xe9, 0x7f, 0xe7, 0xa0, 0xfc, 0xdd, 0x84, 0x27, 0x52, 0x86, 0x1c, 0xb3, 0x55, 0xa5, 0xa2,
-	0x54, 0x8b, 0x46, 0x8e, 0xd9, 0x84, 0xc0, 0x9c, 0x6b, 0x39, 0x54, 0xcd, 0xa1, 0x04, 0xbf, 0xc9,
-	0x3a, 0x2c, 0x38, 0x1d, 0xd3, 0xb2, 0x6d, 0x5f, 0xcd, 0xa3, 0xb8, 0xe0, 0x74, 0x5a, 0xb6, 0xed,
-	0x93, 0x6d, 0x58, 0x74, 0x3a, 0xa6, 0xfb, 0xea, 0xc4, 0x0c, 0xcc, 0x13, 0x3a, 0x50, 0xe7, 0xf0,
-	0xb6, 0xe8, 0x74, 0x9e, 0xbd, 0x3a, 0x69, 0x3f, 0xa1, 0x03, 0xa9, 0x60, 0x79, 0x9e, 0x54, 0x98,
-	0x1f, 0x2a, 0xb4, 0x3c, 0x0f, 0x15, 0x96, 0x61, 0xbe, 0x6b, 0x76, 0x5c, 0xa1, 0x16, 0x2a, 0x4a,
-	0xf5, 0x9a, 0x31, 0xd7, 0xdd, 0x71, 0x05, 0xf9, 0x0c, 0xa0, 0x17, 0x81, 0x33, 0xc5, 0xc0, 0xa3,
-	0xea, 0x42, 0x45, 0xa9, 0x96, 0x9b, 0xeb, 0x75, 0xcb, 0x63, 0xf5, 0x49, 0xf0, 0x47, 0x03, 0x8f,
-	0x1a, 0xc5, 0xde, 0xf0, 0x33, 0x8a, 0xc5, 0xf6, 0xd5, 0xff, 0xa3, 0xa5, 0x9c, 0xed, 0x93, 0x2d,
-	0x28, 0x76, 0x7d, 0xfa, 0x32, 0xa4, 0x6e, 0x67, 0xa0, 0x16, 0x51, 0x3c, 0x12, 0x90, 0x2a, 0x2c,
-	0x79, 0xcc, 0xed, 0x99, 0x41, 0x9f, 0x0b, 0xd3, 0xa3, 0x3e, 0xe3, 0xb6, 0x0a, 0xa8, 0x54, 0x8e,
-	0xe4, 0xed, 0x3e, 0x17, 0x87, 0x28, 0x25, 0x77, 0x81, 0x04, 0xd4, 0x3f, 0x65, 0x1d, 0x6a, 0x7a,
-	0x3e, 0xef, 0xb2, 0x3e, 0x35, 0x99, 0xad, 0x96, 0x30, 0x96, 0x25, 0x79, 0x73, 0x18, 0x5f, 0x1c,
-	0xec, 0xea, 0xbf, 0x2a, 0xb0, 0x36, 0x89, 0xf3, 0x29, 0x0b, 0xc4, 0x81, 0xa0, 0xce, 0xa5, 0xc8,
-	0x4e, 0x77, 0x96, 0x4f, 0x77, 0x46, 0xee, 0xc3, 0xca, 0xb4, 0x36, 0x5a, 0x8c, 0x33, 0x41, 0x26,
-	0xf5, 0x9f, 0x59, 0x0e, 0xd5, 0x7f, 0x80, 0xcd, 0x1d, 0x9f, 0x5a, 0x82, 0x4e, 0x62, 0x34, 0x22,
-	0x5a, 0x02, 0x41, 0x1e, 0xc1, 0xf5, 0xa4, 0x16, 0x4d, 0xa4, 0x16, 0xf1, 0x96, 0x9a, 0xcb, 0x29,
-	0x09, 0x30, 0xca, 0x93, 0x75, 0xab, 0xd7, 0x61, 0x2b, 0xdd, 0x78, 0xe0, 0x71, 0x37, 0xa0, 0xd3,
-	0x04, 0xe8, 0x35, 0x50, 0xf7, 0xa9, 0x48, 0x47, 0x32, 0xad, 0xfb, 0x87, 0x02, 0x1b, 0x29, 0xca,
-	0xd2, 0xf2, 0x3b, 0xe1, 0x26, 0x5f, 0x00, 0x74, 0x10, 0xb7, 0x6d, 0x5a, 0x02, 0xd3, 0x51, 0x6a,
-	0x6a, 0xf5, 0xb8, 0xf3, 0xe2, 0xde, 0x79, 0x11, 0x76, 0xeb, 0x47, 0xc3, 0x0e, 0x33, 0x8a, 0x52,
-	0xbb, 0x25, 0xa2, 0xa7, 0xa1, 0x67, 0x0f, 0x9f, 0xe6, 0x2f, 0x7e, 0x2a, 0xb5, 0x5b, 0x22, 0x4a,
-	0xc5, 0x73, 0x3c, 0xbc, 0x8f, 0x54, 0xdc, 0x83, 0xcd, 0x5d, 0xda, 0xa7, 0x59, 0xc6, 0xa7, 0xd9,
-	0x65, 0x50, 0x69, 0xd9, 0xf6, 0x2e, 0x8d, 0xca, 0xe5, 0x88, 0xa7, 0xbf, 0xb9, 0x0b, 0x64, 0x0a,
-	0x90, 0x99, 0xd8, 0x58, 0x9a, 0x74, 0x7f, 0xb0, 0x1b, 0x4d, 0x0d, 0x9b, 0x9e, 0x9a, 0x34, 0x64,
-	0xb2, 0xbe, 0x0b, 0x36, 0x3d, 0xdd, 0x7b, 0x7e, 0xa0, 0xbb, 0x70, 0xdb, 0xa0, 0x0e, 0x3f, 0xa5,
-	0xb1, 0xb7, 0xc7, 0x3e, 0x77, 0xde, 0xab, 0xbf, 0x3f, 0x15, 0xd8, 0x88, 0x5a, 0x30, 0xdd, 0xc9,
-	0x0a, 0xcc, 0xf7, 0x99, 0xc3, 0x04, 0xda, 0xcd, 0x1b, 0xf1, 0x81, 0xac, 0x41, 0x81, 0x77, 0xbb,
-	0x01, 0x8d, 0x8b, 0x21, 0x6f, 0xc8, 0x13, 0xf9, 0x04, 0xae, 0x73, 0xbf, 0x67, 0xb9, 0xec, 0x47,
-	0x1c, 0xc3, 0xc3, 0xd6, 0xcc, 0x1b, 0xe5, 0x71, 0xf1, 0x24, 0x9a, 0xb9, 0x71, 0x34, 0x19, 0xfd,
-	0x3d, 0x9f, 0xd1, 0xdf, 0x6b, 0x50, 0x08, 0xa8, 0xe5, 0x77, 0x8e, 0x71, 0x40, 0x16, 0x0d, 0x79,
-	0xd2, 0x7d, 0xd0, 0xd2, 0x42, 0x92, 0xcd, 0xb0, 0x0d, 0x25, 0xc1, 0x85, 0xd5, 0x37, 0x3b, 0x3c,
-	0x74, 0x87, 0x91, 0x01, 0x8a, 0x76, 0x22, 0x09, 0x79, 0x00, 0x05, 0x9f, 0x06, 0x61, 0x3f, 0x0a,
-	0x2f, 0x5f, 0x2d, 0x35, 0x37, 0x53, 0x2a, 0x6a, 0x38, 0xb5, 0x0c, 0xa9, 0xaa, 0xbf, 0x51, 0x80,
-	0x24, 0x2a, 0xdf, 0x87, 0x34, 0xa4, 0x38, 0xd4, 0xae, 0x96, 0xa5, 0x64, 0xe0, 0xe7, 0xc6, 0x06,
-	0xfe, 0x2a, 0x14, 0xba, 0xa6, 0xc7, 0xfd, 0xb8, 0x7f, 0xae, 0x19, 0xf3, 0xdd, 0x43, 0xee, 0x8b,
-	0x68, 0x3c, 0xda, 0x96, 0xb0, 0x90, 0xc0, 0x45, 0x03, 0xbf, 0x75, 0x07, 0x2a, 0x7b, 0xee, 0xcb,
-	0xc8, 0xf9, 0x79, 0x28, 0xc3, 0x94, 0x1e, 0x8c, 0xed, 0x53, 0x13, 0x75, 0x4d, 0x26, 0xa8, 0x23,
-	0xbb, 0x67, 0x6a, 0x93, 0x8c, 0x5e, 0x8f, 0xc2, 0x48, 0x64, 0xfa, 0x43, 0xb8, 0x39, 0xc3, 0x9d,
-	0xa4, 0x3b, 0x89, 0x49, 0x19, 0xc5, 0xa4, 0x1f, 0xc1, 0xad, 0xc7, 0xfd, 0x30, 0x38, 0x9e, 0x24,
-	0x35, 0x79, 0x1c, 0xfc, 0xa7, 0x22, 0xd7, 0xdb, 0xf0, 0xd1, 0xf9, 0xbc, 0xbf, 0xab, 0xd1, 0x00,
-	0x6e, 0xcd, 0x36, 0x2a, 0xe3, 0x7c, 0x02, 0xab, 0x69, 0xbc, 0x06, 0xaa, 0x82, 0x45, 0x94, 0x49,
-	0xec, 0xf2, 0x79, 0x62, 0x83, 0x5a, 0x7d, 0xac, 0x98, 0x92, 0x6d, 0x4e, 0x4a, 0xb0, 0xb0, 0xf3,
-	0xb4, 0xd5, 0x6e, 0x9b, 0x3b, 0x4b, 0xff, 0x1b, 0x1d, 0xbe, 0x59, 0x52, 0x9a, 0xbf, 0x03, 0xac,
-	0x4e, 0x3e, 0x68, 0xc7, 0xcd, 0x42, 0x38, 0x14, 0xe2, 0xa5, 0x43, 0x2a, 0x88, 0x60, 0xc6, 0x7a,
-	0xd3, 0x6e, 0xce, 0xd0, 0x88, 0xa3, 0xd4, 0x2b, 0x6f, 0xfe, 0xfa, 0xe7, 0xa7, 0x9c, 0xa6, 0xaf,
-	0xe2, 0x5f, 0xae, 0x04, 0xfa, 0x3d, 0xa4, 0x31, 0xf8, 0x52, 0xa9, 0x91, 0x63, 0xc8, 0xef, 0x53,
-	0x41, 0x6e, 0xa0, 0xad, 0xac, 0xfd, 0xa5, 0x7d, 0x98, 0x75, 0x2d, 0xfd, 0xe8, 0xe8, 0x67, 0x8b,
-	0x68, 0xa9, 0x7e, 0x1a, 0xaf, 0x99, 0x7d, 0x46, 0x06, 0x50, 0x88, 0x37, 0x84, 0x0c, 0x6d, 0xc6,
-	0xba, 0xd0, 0xd6, 0xce, 0x2d, 0x9d, 0xbd, 0xe8, 0xaf, 0x9f, 0xfe, 0x29, 0xfa, 0x69, 0x68, 0xb5,
-	0x0c, 0x3f, 0x53, 0x85, 0x52, 0x67, 0xf6, 0x59, 0x14, 0x64, 0x17, 0x0a, 0xf1, 0xfe, 0x90, 0xae,
-	0x67, 0x2c, 0x93, 0x4c, 0xd7, 0x32, 0xc4, 0xda, 0xac, 0x10, 0xbb, 0x30, 0x17, 0x15, 0x1f, 0x89,
-	0xe9, 0xca, 0x9c, 0xd3, 0xda, 0x76, 0xe6, 0xbd, 0xe4, 0xf3, 0x06, 0x3a, 0x5b, 0x27, 0xe9, 0x79,
-	0x23, 0x6f, 0x15, 0x28, 0x26, 0x1b, 0x8e, 0xdc, 0x46, 0x6b, 0x17, 0x6d, 0xbc, 0xcc, 0xc0, 0xbe,
-	0x42, 0x5f, 0x9f, 0xeb, 0xcd, 0xcb, 0x71, 0x6a, 0x32, 0xfb, 0xac, 0x61, 0xa3, 0x27, 0x2c, 0xa0,
-	0x9f, 0x15, 0x58, 0x1c, 0x5f, 0x81, 0xa4, 0x86, 0x70, 0x2e, 0xb5, 0x15, 0x33, 0x31, 0xed, 0x22,
-	0xa6, 0xaf, 0x6b, 0x8f, 0xae, 0x8e, 0xa9, 0xf1, 0x5a, 0xee, 0xaa, 0x33, 0xf2, 0x9b, 0x02, 0x0b,
-	0x72, 0xe2, 0x49, 0x92, 0x2e, 0x1a, 0xb7, 0xda, 0xc7, 0x17, 0xa9, 0xc9, 0x04, 0x1d, 0x22, 0xc0,
-	0x6f, 0xf5, 0xbd, 0x0b, 0x01, 0x8e, 0x66, 0x4b, 0x3d, 0x0d, 0x35, 0x5e, 0x47, 0x3c, 0xbe, 0x55,
-	0x00, 0x70, 0xc8, 0xa2, 0x33, 0x72, 0x07, 0x81, 0x5c, 0x66, 0xea, 0x66, 0x92, 0xf8, 0x10, 0x31,
-	0x36, 0x6b, 0xf7, 0xaf, 0x40, 0x62, 0x4c, 0xd6, 0x2f, 0x0a, 0x14, 0xa3, 0xea, 0x8c, 0xa1, 0x54,
-	0x33, 0xaa, 0xf5, 0x3c, 0x92, 0x3b, 0x97, 0xd0, 0x94, 0x04, 0x4a, 0x70, 0xe4, 0xca, 0xe0, 0x5e,
-	0x14, 0x30, 0xcc, 0x07, 0xff, 0x06, 0x00, 0x00, 0xff, 0xff, 0x3c, 0x57, 0xe6, 0xfb, 0x68, 0x0e,
-	0x00, 0x00,
 }

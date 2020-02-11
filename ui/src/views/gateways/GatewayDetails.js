@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Row, Col, Button, CustomInput, Input, Table, Card, CardTitle, CardBody } from 'reactstrap';
+import { Row, Col, Button, CustomInput, Modal, ModalBody, ModalFooter, Table, Card, CardTitle, CardBody } from 'reactstrap';
 import moment from "moment";
 import { Map, Marker } from 'react-leaflet';
 import { Line } from "react-chartjs-2";
@@ -14,7 +14,8 @@ class GatewayDetails extends Component {
   constructor() {
     super();
     this.state = {
-      config: {}
+      config: {},
+      modal: false
     };
     this.loadStats = this.loadStats.bind(this);
   }
@@ -22,6 +23,16 @@ class GatewayDetails extends Component {
   componentDidMount() {
     this.loadStats();
     this.loadConfig();
+  }
+
+  toggle = () => {
+    const { modal } = this.state;
+    this.setState({modal: !this.state.modal});
+  }
+
+  resetGateway = () => {
+    this.setState({modal: !this.state.modal});
+    // submit all data for reset
   }
 
   loadConfig() {
@@ -116,7 +127,7 @@ class GatewayDetails extends Component {
     if (this.props.gateway === undefined || this.state.statsDown === undefined || this.state.statsUp === undefined) {
       return (<div></div>);
     }
-    const { config } = this.state;
+    const { config, modal } = this.state;
     const style = {
       height: 322,
       zIndex: 1
@@ -456,6 +467,7 @@ class GatewayDetails extends Component {
             <Button
               type="button"
               color="primary"
+              onClick={this.toggle}
               className="ml-2 d-inline mt-2 mt-sm-0" 
             >
               {i18n.t(`${packageNS}:tr000594`)}
@@ -464,6 +476,16 @@ class GatewayDetails extends Component {
           </Row>
         </Col>
       </Row>
+      <Modal isOpen={modal} toggle={this.toggle}>
+        <ModalBody className="text-center">
+          {i18n.t(`${packageNS}:tr000595`)} <br />
+          <small>{i18n.t(`${packageNS}:tr000596`)}</small>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="secondary" onClick={this.toggle}>Cancel</Button>
+          <Button color="primary" onClick={this.resetGateway}>Confirm</Button>
+        </ModalFooter>
+      </Modal>
     </React.Fragment>
     );
   }

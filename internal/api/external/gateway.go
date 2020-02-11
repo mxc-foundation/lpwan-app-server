@@ -2,6 +2,9 @@ package external
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/apex/log"
+	"net/textproto"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -678,4 +681,150 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 			return err
 		}
 	}
+}
+
+// Get the gateway config file
+func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest) (*pb.GetGwConfigResponse, error) {
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
+	if err != nil {
+		log.WithError(err).Error("cannot get openVPN address from DB")
+	}
+
+	message, err := mxConfDGet(ctx, openVPNaddr, "GGLC", 250)
+	if err != nil {
+		log.WithError(err).Error("cannot connect to gw")
+	}
+	/*MAC := ""
+	scanner := bufio.NewScanner(strings.NewReader(message))
+	for scanner.Scan() {
+		values := strings.Split(scanner.Text(), " ")
+		if len(values) == 2 {
+			switch values[0] {
+			case "MAC":
+				MAC = values[1]
+				break
+			}
+		}
+	}*/
+
+	comments := []string{"/* radio_1 provides clock to concentrator */", "/* dBm */", "/* 8 channels maximum */",
+		"/* dB */", "/* antenna gain, in dBi */", "/* [126..250] KHz */", "/* Lora MAC channel, 125kHz, all SF, 868.1 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 868.3 MHz */", "/* Lora MAC channel, 125kHz, all SF, 868.5 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 868.8 MHz */", "/* Lora MAC channel, 125kHz, all SF, 864.7 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 864.9 MHz */", "/* Lora MAC channel, 125kHz, all SF, 865.1 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 865.3 MHz */", "/* Lora MAC channel, 250kHz, SF7, 868.3 MHz */",
+		"/* FSK 50kbps channel, 868.8 MHz */", "/* TX gain table, index 0 */", "/* TX gain table, index 1 */", "/* TX gain table, index 2 */",
+		"/* TX gain table, index 3 */", "/* TX gain table, index 4 */", "/* TX gain table, index 5 */", "/* TX gain table, index 6 */",
+		"/* TX gain table, index 7 */", "/* TX gain table, index 8 */", "/* TX gain table, index 9 */", "/* TX gain table, index 10 */",
+		"/* TX gain table, index 11 */", "/* TX gain table, index 12 */", "/* TX gain table, index 13 */", "/* TX gain table, index 14 */",
+		"/* TX gain table, index 15 */", "/* change with default server address/ports, or overwrite in local_conf.json */",
+		"/* adjust the following parameters for your network */", "/* forward only valid packets */", "/* GPS configuration */",
+		"/* GPS reference coordinates */"}
+
+	for _, v := range comments {
+		message = strings.Replace(message, v, "", -1)
+	}
+
+	return &pb.GetGwConfigResponse{
+		Conf: message,
+	}, nil
+}
+
+// Update gateway configuration file
+func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*pb.UpdateGwConfigResponse, error) {
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
+	if err != nil {
+		return &pb.UpdateGwConfigResponse{Status: "Update config failed."},
+			grpc.Errorf(codes.Unauthenticated, "cannot get gateway address from db: %s", err)
+	}
+
+	if err := mxConfUpdate(openVPNaddr, req.Conf); err != nil {
+		log.WithError(err).Error("Update conf to gw failed")
+		return &pb.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
+			grpc.Errorf(codes.Unauthenticated, "cannot update gateway config: %s", err)
+	}
+
+	return &pb.UpdateGwConfigResponse{Status: "successful"}, nil
+}
+
+// connect to gateway though openVPN and get config file
+func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, error) {
+	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
+	if err != nil {
+		return "", err
+	}
+	defer rpConn.Close()
+	if _, _, err = rpConn.ReadResponse(220); err != nil {
+		return "", err
+	}
+	if _, err = rpConn.Cmd(cmd); err != nil {
+		return "", err
+	}
+	_, message, err := rpConn.ReadResponse(rCode)
+	if err != nil {
+		return "", err
+	}
+	if _, err = rpConn.Cmd("QUIT"); err != nil {
+		return "", err
+	}
+	if _, _, err = rpConn.ReadResponse(221); err != nil {
+		return "", err
+	}
+	return message, nil
+}
+
+// connect to gateway though openVPN and update config file
+func mxConfUpdate(ip string, conf string) error {
+	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
+	if err != nil {
+		return err
+	}
+	defer rpConn.Close()
+
+	if _, _, err = rpConn.ReadResponse(220); err != nil {
+		return err
+	}
+	if _, err = rpConn.Cmd("WGLC"); err != nil {
+		return err
+	}
+	if _, _, err = rpConn.ReadResponse(354); err != nil {
+		return err
+	}
+
+	w := rpConn.DotWriter()
+	if _, err = w.Write([]byte(conf)); err != nil {
+		return err
+	}
+	if err = w.Close(); err != nil {
+		return err
+	}
+	if _, _, err = rpConn.ReadResponse(250); err != nil {
+		return err
+	}
+
+	if _, err = rpConn.Cmd("QUIT"); err != nil {
+		return err
+	}
+
+	return nil
 }

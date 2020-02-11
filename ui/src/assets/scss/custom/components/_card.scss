@@ -91,7 +91,9 @@
     }
 }
 
-@media (min-width: 576px) { .modal-dialog { max-width: 500px; } }
+@media (min-width: 576px) { 
+    // .modal-dialog { max-width: 500px; } 
+}
 
 // Custom card box
 .card-box {
@@ -132,10 +134,10 @@
             margin-left: 12px;
         }
     }
-    .modal-dialog { 
-        max-width: 80vw; 
-        max-height: 80vw; 
-    }
+    // .modal-dialog { 
+    //     max-width: 80vw; 
+    //     max-height: 80vw; 
+    // }
 }
 @media only screen and (min-width: 1000px) {
     .card-body {
@@ -150,7 +152,7 @@
     .navbar-custom-subbar {
         display: none;
     }
-    .modal-dialog { max-width: 80vw; max-height: 80vw; }
+    //   .modal-dialog { max-width: 80vw; max-height: 80vw; }
 }
 
 @media only screen and (max-width: 800px) {
@@ -171,10 +173,10 @@
         display: flex;
         justify-content: flex-end;
     }
-    .modal-dialog { 
-        max-width: 80vw; 
-        max-height: 80vw; 
-    }
+    // .modal-dialog { 
+    //     max-width: 80vw; 
+    //     max-height: 80vw; 
+    // }
 }
 
 @media only screen and (max-width: 320px) {
@@ -203,10 +205,10 @@
         justify-content: flex-end;
     }
 
-    .modal-dialog { 
-        max-width: 80vw; 
-        min-height: 70vw; 
-    }
+    // .modal-dialog { 
+    //     max-width: 80vw; 
+    //     min-height: 70vw; 
+    // }
 }
 @media only screen and (min-width: 1000px) {
     .card-body {
