@@ -27,7 +27,7 @@ import ListNetworkServers from "./views/network-servers/ListNetworkServers";
 import CreateNetworkServer from "./views/network-servers/CreateNetworkServer";
 import NetworkServerLayout from "./views/network-servers/NetworkServerLayout";
 
-// gateway profiles
+// SMB Gateway
 import ListGatewayProfiles from "./views/gateway-profiles/ListGatewayProfiles";
 import CreateGatewayProfile from "./views/gateway-profiles/CreateGatewayProfile";
 import GatewayProfileLayout from "./views/gateway-profiles/GatewayProfileLayout";

@@ -1,7 +1,7 @@
 From: MXC <{{ .From }}>
 To: {{ .To }}
 Subject: 請確認此連結到您的MXC極域協議超級節點的電子郵件
-Message-Id: <{{ .MsgId }}>
+Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
 	boundary="{{ .Boundary }}"
