@@ -83,6 +83,8 @@ const SideNavContent = (props) => {
                         <DropdownMenu2 default={props.default} onChange={props.onChange} />
                     </li>
 
+                    <li className="menu-title">{i18n.t(`${packageNS}:menu.lpwan_management`)}</li>
+
                     <li>
                         <Link to={`/topup/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
                             <i className="mdi mdi-wallet"></i>
