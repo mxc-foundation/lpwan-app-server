@@ -22,7 +22,7 @@ const SideNavOrganizationsContent = (props) => {
                     {/* <DropdownMenu default={ this.state.default } onChange={this.onChange} /> [edit] */}
                     <DropdownMenu2 default={props.default} onChange={props.onChange} />
                 </li>
-
+                <li className="menu-title">{i18n.t(`${packageNS}:menu.lpwan_management`)}</li>
                 {/* <li>
                     <Link to={`/organizations`} className="waves-effect side-nav-link-ref" >
                         <i className="mdi mdi-domain"></i>

@@ -124,6 +124,20 @@ class GatewayStore extends EventEmitter {
     });
   }
 
+  getConfig(id, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    this.swagger.then(client => {
+      client.apis.GatewayService.GetConfig({
+        id: id,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
   update(gateway, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.Update({
@@ -140,6 +154,24 @@ class GatewayStore extends EventEmitter {
       .catch(errorHandler);
     });
   }
+
+  updateConfig(gateway, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.UpdateConfig({
+        "gateway.id": gateway.id,
+        body: {
+          gateway: gateway,
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notify("updated");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
 
   delete(id, callbackFunc) {
     this.swagger.then(client => {
