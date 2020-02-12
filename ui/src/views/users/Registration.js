@@ -22,7 +22,8 @@ class RegistrationForm extends Component {
 
     this.state = {
       object: this.props.object || { username: "" },
-      isVerified: false
+      isVerified: false,
+      bypassCaptcha: this.props.bypassCaptcha
     }
   }
 
@@ -64,14 +65,14 @@ class RegistrationForm extends Component {
                 />
 
                 <FormGroup className="mt-2">
-                  <ReCAPTCHA
+                  {!this.state.bypassCaptcha && <ReCAPTCHA
                     sitekey={process.env.REACT_APP_PUBLIC_KEY}
                     onChange={this.onReCapChange}
-                  />
+                  />}
                 </FormGroup>
 
                 <div className="mt-1">
-                  <Button type="submit" color="primary" className="btn-block" disabled={!this.state.isVerified}>{i18n.t(`${packageNS}:tr000020`)}</Button>
+                  <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000011`)}</Button>
                   <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
                 </div>
               </Form>
@@ -93,8 +94,15 @@ function GetBranding() {
 class Registration extends Component {
   constructor() {
     super();
+
+    let bypassCaptcha = false;
+    if (window.location.origin.includes("http://localhost")) {
+      bypassCaptcha = true;
+    }
+
     this.state = {
-      isVerified: false
+      isVerified: false,
+      bypassCaptcha: bypassCaptcha
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -103,7 +111,7 @@ class Registration extends Component {
   componentDidMount() {
     this.loadData();
   }
-  
+
   loadData = async () => {
     try {
       let result = await GetBranding();
@@ -118,6 +126,10 @@ class Registration extends Component {
   }
 
   onSubmit(user) {
+    if (this.state.bypassCaptcha) {
+      user.isVerified = true;
+    }
+
     if (!user.isVerified) {
       alert(i18n.t(`${packageNS}:tr000021`));
       return false;
@@ -130,9 +142,9 @@ class Registration extends Component {
     }
 
     if (isEmail(user.username)) {
-      this.setState({loading: true});
+      this.setState({ loading: true });
       SessionStore.register(user, () => {
-        this.setState({loading: false});
+        this.setState({ loading: false });
         this.props.history.push("/");
       });
     } else {
@@ -162,6 +174,7 @@ class Registration extends Component {
                     {this.state.loading && <Loader />}
                     <RegistrationForm
                       onSubmit={this.onSubmit}
+                      bypassCaptcha={this.state.bypassCaptcha}
                     />
                   </div>
                 </CardBody>
