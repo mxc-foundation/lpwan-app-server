@@ -60,6 +60,13 @@ const SideNavContent = (props) => {
                         </Link>
                     </li>
 
+                    <li>
+                        <Link to={`/organizations/${props.orgId}/service-profiles`}>
+                            <i className="mdi mdi-folder-account"></i>
+                            <span> {i18n.t(`${packageNS}:tr000078`)} </span>
+                        </Link>
+                    </li>
+
                     {/*<li>
                         <Link to={`/organizations/${props.orgId}/edit`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-domain"></i>
@@ -109,6 +116,13 @@ const SideNavContent = (props) => {
                     </li>
 
                     <li>
+                        <Link to={`/gateway-profiles`} className="waves-effect side-nav-link-ref">
+                            <i className="mdi mdi-remote"></i>
+                            <span> {i18n.t(`${packageNS}:tr000046`)} </span>
+                        </Link>
+                    </li>
+
+                    <li>
                         <Link to={`/organizations/${props.orgId}/gateways`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-remote"></i>
                             <span> {i18n.t(`${packageNS}:menu.gateways.gateways`)} </span>
@@ -119,13 +133,6 @@ const SideNavContent = (props) => {
                         <Link to={`/organizations/${props.orgId}/device-profiles`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-memory"></i>
                             <span> {i18n.t(`${packageNS}:tr000278`)} </span>
-                        </Link>
-                    </li>
-
-                    <li>
-                        <Link to={`/organizations/${props.orgId}/service-profiles`}>
-                            <i className="mdi mdi-folder-account"></i>
-                            <span> {i18n.t(`${packageNS}:tr000078`)} </span>
                         </Link>
                     </li>
 
