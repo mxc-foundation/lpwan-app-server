@@ -772,15 +772,20 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	if req.Sn == "" {
 		return nil, grpc.Errorf(codes.InvalidArgument, "gateway sn number must not be nil")
 	}
-
 	err := a.validator.Validate(ctx, auth.ValidateGatewaysAccess(auth.Create, req.OrganizationId))
 	if err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	// also validate that the network-server is accessible for the given organization
+	/*err = a.validator.Validate(ctx, auth.ValidateOrganizationNetworkServerAccess(auth.Read, req.Gateway.OrganizationId, req.Gateway.NetworkServerId))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}*/
+
 	//TODO: send the req to provision server
 	//resp :=
-	switch "" {
+	switch "c" {
 	case "a":
 		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
 	case "b":
@@ -793,24 +798,125 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 				return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 			}*/
 
-			bd, err := storage.GetBoard(tx, mac)
+			//check if gw already in db. If yes, update board table. No, create gw and insert board table.
+			gw, err := storage.GetGateway(ctx, tx, mac, false)
 			if err != nil {
-				return helpers.ErrToRPCError(err)
+				if err != storage.ErrDoesNotExist {
+					return helpers.ErrToRPCError(err)
+				}
 			}
 
-			bd.SN = &req.Sn
-			//TODO: get vpnaddress from provision server (resp.vpnaddr)
-			bd.VpnAddr = "resp.vpnaddr"
+			if gw.Name == "" {
+				var defLocation common.Location
 
-			err = storage.UpdateVPNAddr(ctx, tx, &bd)
-			if err != nil {
-				return helpers.ErrToRPCError(err)
+				createReq := ns.CreateGatewayRequest{
+					Gateway: &ns.Gateway{
+						Id:               mac[:],
+						Location:         &defLocation,
+						RoutingProfileId: applicationServerID.Bytes(),
+					},
+				}
+
+				/*if req.Gateway.GatewayProfileId != "" {
+					gpID, err := uuid.FromString(req.Gateway.GatewayProfileId)
+					if err != nil {
+						return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+					}
+					createReq.Gateway.GatewayProfileId = gpID.Bytes()
+				}*/
+
+				/*for _, board := range req.Gateway.Boards {
+					var gwBoard ns.GatewayBoard
+
+					if board.FpgaId != "" {
+						var fpgaID lorawan.EUI64
+						if err := fpgaID.UnmarshalText([]byte(board.FpgaId)); err != nil {
+							return nil, grpc.Errorf(codes.InvalidArgument, "fpga_id: %s", err)
+						}
+						gwBoard.FpgaId = fpgaID[:]
+					}
+
+					if board.FineTimestampKey != "" {
+						var key lorawan.AES128Key
+						if err := key.UnmarshalText([]byte(board.FineTimestampKey)); err != nil {
+							return nil, grpc.Errorf(codes.InvalidArgument, "fine_timestamp_key: %s", err)
+						}
+						gwBoard.FineTimestampKey = key[:]
+					}
+
+					createReq.Gateway.Boards = append(createReq.Gateway.Boards, &gwBoard)
+				}*/
+
+				NetworkServers, err := storage.GetNetworkServers(ctx, tx, 1, 0)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+
+				defNetworkServerID := NetworkServers[0].ID
+
+				err = storage.Transaction(func(tx sqlx.Ext) error {
+					err = storage.CreateGateway(ctx, tx, &storage.Gateway{
+						MAC:             mac,
+						Name:            "Default_Gateway",
+						Description:     "MXC Gateway",
+						OrganizationID:  req.OrganizationId,
+						Ping:            false,
+						NetworkServerID: defNetworkServerID,
+						Latitude:        0,
+						Longitude:       0,
+						Altitude:        0,
+					})
+
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
+
+					n, err := storage.GetNetworkServer(ctx, tx, defNetworkServerID)
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
+
+					nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
+					_, err = nsClient.CreateGateway(ctx, &createReq)
+					if err != nil && grpc.Code(err) != codes.AlreadyExists {
+						return err
+					}
+
+					//ToDo: store data to the board table
+
+
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+
+				redisConn := storage.RedisPool().Get()
+				defer redisConn.Close()
+				redisConn.Do("DEL", GatewayLocationsRedisKey)
+
+			} else {
+				bd, err := storage.GetBoard(tx, mac)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+
+				bd.SN = &req.Sn
+				//TODO: get vpnaddress from provision server (resp.vpnaddr)
+				bd.VpnAddr = "resp.vpnaddr"
+
+				err = storage.UpdateVPNAddr(ctx, tx, &bd)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+				/*err = storage.UpdateBoard(tx, &bd)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}*/
 			}
-			/*err = storage.UpdateBoard(tx, &bd)
-			if err != nil {
-				return helpers.ErrToRPCError(err)
-			}*/
-
 			return nil
 		})
 		if err != nil {
