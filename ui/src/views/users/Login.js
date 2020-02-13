@@ -247,7 +247,7 @@ class Login extends Component {
               <img src={this.state.logoPath} className="mx-auto d-block img-fluid logo" alt={i18n.t(`${packageNS}:tr000051`)} height="54" />
 
               <div className="mt-2">
-                <Card className="shadow-sm position-relative">
+                <Card className="shadow-sm">
                   <CardBody>
                     <div className="position-relative">
                       {this.state.loading && <Loader />}
