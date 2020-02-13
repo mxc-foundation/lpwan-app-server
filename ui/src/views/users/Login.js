@@ -263,7 +263,7 @@ class Login extends Component {
                           <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000461`)}</Button>
                       </Col>
                       <Col className="text-right">
-                        <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+                        <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} extraSelectOpts={{menuPlacement: 'top'}} />
                       </Col>
                     </Row>
 
