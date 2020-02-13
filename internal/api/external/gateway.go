@@ -499,6 +499,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 // Delete deletes the gateway matching the given ID.
 func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (*empty.Empty, error) {
 	var mac lorawan.EUI64
+
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
@@ -508,8 +509,30 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	//ToDo: send the req to provision first
+	switch "resp" {
+	case "respA":
+
+	case "respB":
+
+	}
 	err = storage.Transaction(func(tx sqlx.Ext) error {
 		err = storage.DeleteGateway(ctx, tx, mac)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+
+		//check if the gateway is in board table or not. Yes, delete it. No, skip it.
+		bd, err := storage.GetBoard(tx, mac)
+		if err != nil {
+			if err == storage.ErrDoesNotExist {
+				return nil
+			} else {
+				return helpers.ErrToRPCError(err)
+			}
+		}
+
+		err = storage.DeleteBoardByMac(ctx, tx, &bd)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -785,7 +808,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 
 	//TODO: send the req to provision server
 	//resp :=
-	switch "c" {
+	switch "" {
 	case "a":
 		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
 	case "b":
@@ -866,7 +889,6 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 						Longitude:       0,
 						Altitude:        0,
 					})
-
 					if err != nil {
 						return helpers.ErrToRPCError(err)
 					}
@@ -885,8 +907,31 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 						return err
 					}
 
-					//ToDo: store data to the board table
+					// store data to the board table
+					var bd storage.Board
 
+					/*bd.MAC = resp.mac
+					bd.SN = resp.sn
+					bd.Model = resp.model
+					bd.VpnAddr = resp.vpnaddr
+					bd.OsVersion = resp.osversion
+					bd.FPGAVersion = resp.fpgaversion*/
+
+					//TODO: delete the test code below
+					//sn := "MXDDDDDDD"
+					//vs := "0.0.0"
+					//fpgv := "00"
+					//bd.MAC = mac
+					//bd.SN =  &req.Sn
+					//bd.Model = "box-mx0000"
+					//bd.VpnAddr = "0.0.0.0"
+					//bd.OsVersion = &vs
+					//bd.FPGAVersion = &fpgv
+
+					err = storage.CreateBoard(tx, &bd)
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
 
 					return nil
 				})
