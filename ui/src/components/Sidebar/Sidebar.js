@@ -199,6 +199,12 @@ class Sidebar extends Component {
             this.initMenu();
         }
 
+        // on route change - switch to default
+        if (this.props.location !== prevProps.location && ([SUPERNODE_WALLET, WALLET, SUPERNODE_SETTING, SETTING].indexOf(prevProps.currentSidebarId) !== -1)) {
+          this.switchSidebar(DEFAULT);
+        }
+
+
         if (this.props === prevProps) {
             return;
         }
