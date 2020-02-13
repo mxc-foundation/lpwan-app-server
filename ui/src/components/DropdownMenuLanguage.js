@@ -9,9 +9,9 @@ import DropdownMenuLanguageStyle from "./DropdownMenuLanguageStyle";
 import DropdownMenuLanguageMobileStyle from "./DropdownMenuLanguageMobileStyle";
 
 const styles = {
-  // languageWrapper: {
-  //   display: "inline-flex"
-  // },
+  languageWrapper: {
+    display: "inline-flex"
+  },
   languageIcon: {
     display: "inline-block"
   },
