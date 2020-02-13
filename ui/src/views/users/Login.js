@@ -247,7 +247,7 @@ class Login extends Component {
               <img src={this.state.logoPath} className="mx-auto d-block img-fluid logo" alt={i18n.t(`${packageNS}:tr000051`)} height="54" />
 
               <div className="mt-2">
-                <Card className="shadow-sm">
+                <Card className="shadow-sm position-relative">
                   <CardBody>
                     <div className="position-relative">
                       {this.state.loading && <Loader />}
@@ -263,7 +263,7 @@ class Login extends Component {
                           <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000461`)}</Button>
                       </Col>
                       <Col className="text-right">
-                        <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+                        <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} extraSelectOpts={{menuPlacement: 'top'}} />
                       </Col>
                     </Row>
 

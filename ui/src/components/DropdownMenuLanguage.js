@@ -9,9 +9,9 @@ import DropdownMenuLanguageStyle from "./DropdownMenuLanguageStyle";
 import DropdownMenuLanguageMobileStyle from "./DropdownMenuLanguageMobileStyle";
 
 const styles = {
-  languageWrapper: {
-    display: "inline-flex"
-  },
+  // languageWrapper: {
+  //   display: "inline-flex"
+  // },
   languageIcon: {
     display: "inline-block"
   },
@@ -123,6 +123,7 @@ class WithPromises extends Component {
           options={SUPPORTED_LANGUAGES}
           value={selectedOption}
           components={customSelectComponents}
+          {...(this.props.extraSelectOpts || {})}
         />
       </div>
     );
