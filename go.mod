@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.44.3
 	github.com/Azure/azure-service-bus-go v0.9.1
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
+	github.com/apex/log v1.1.0
 	github.com/aws/aws-sdk-go v1.19.19
 	github.com/brocaar/lorawan v0.0.0-20190925120821-154a30dbdce2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -33,7 +34,6 @@ require (
 	github.com/prometheus/client_golang v1.1.0
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/rubenv/sql-migrate v0.0.0-20181213081019-5a8808c14925
-	github.com/securego/gosec v0.0.0-20200203094520-d13bb6d2420c // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
 	github.com/spf13/afero v1.2.2 // indirect
@@ -53,5 +53,7 @@ require (
 	google.golang.org/api v0.9.0
 	google.golang.org/genproto v0.0.0-20200205142000-a86caf926a67
 	google.golang.org/grpc v1.27.0
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

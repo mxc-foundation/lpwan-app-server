@@ -37,7 +37,8 @@ class LoginForm extends Component {
 
     this.state = {
       object: object,
-      isVerified: false
+      isVerified: false,
+      bypassCaptcha: this.props.bypassCaptcha
     }
   }
 
@@ -98,14 +99,14 @@ class LoginForm extends Component {
               />
 
               <FormGroup className="mt-2 small">
-                <ReCAPTCHA
+                { !this.state.bypassCaptcha && <ReCAPTCHA
                   sitekey={process.env.REACT_APP_PUBLIC_KEY}
                   onChange={this.onReCapChange}
-                />
+                />}
               </FormGroup>
 
               <div className="mt-1">
-                <Button type="submit" color="primary" className="btn-block" disabled={!this.state.isVerified}>{i18n.t(`${packageNS}:tr000011`)}</Button>
+                <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000011`)}</Button>
                 <Link to={`/registration`} className="btn btn-outline-primary btn-block mt-2">{i18n.t(`${packageNS}:tr000020`)}</Link>
                 {/* <Link to={`/password-recovery`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000009`)}</Link> */}
               </div>
@@ -129,6 +130,11 @@ class Login extends Component {
   constructor() {
     super();
 
+    let bypassCaptcha = false;
+    if (window.location.origin.includes("http://localhost")) {
+      bypassCaptcha = true;
+    }
+
     this.state = {
       registration: null,
       open: true,
@@ -136,7 +142,8 @@ class Login extends Component {
       isVerified: false,
       logoPath: "/logo/MATCHX-SUPERNODE2.png",
       loading: false,
-      showLoginContainer: true
+      showLoginContainer: true,
+      bypassCaptcha: bypassCaptcha
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -185,6 +192,10 @@ class Login extends Component {
   }
 
   onSubmit(login) {
+    if (this.state.bypassCaptcha) {
+      login.isVerified = true;
+    }
+
     if (login.hasOwnProperty('isVerified')) {
       if (!login.isVerified) {
         alert(VERIFY_ERROR_MESSAGE);
@@ -242,6 +253,7 @@ class Login extends Component {
                       {this.state.loading && <Loader />}
                       <LoginForm
                         onSubmit={this.onSubmit}
+                        bypassCaptcha={this.state.bypassCaptcha}
                       />
                     </div>
 
