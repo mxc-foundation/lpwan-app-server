@@ -257,9 +257,9 @@ class Login extends Component {
                       />
                     </div>
 
-                    <Row>
+                    <Row className="align-items-center">
                       <Col>
-                        <Button type="button" color="link" className="p-0 btn-block text-muted align-middle" onClick={this.hideLoginContainer}>
+                        <Button type="button" color="link" className="btn-block text-muted align-middle mt-0" onClick={this.hideLoginContainer}>
                           <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000461`)}</Button>
                       </Col>
                       <Col className="text-right">
