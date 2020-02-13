@@ -1,137 +1,76 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
-import { isEmail } from 'validator';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
-import Divider from '@material-ui/core/Divider';
-import TitleBarTitle from "../../components/TitleBarTitle";
-import { withStyles } from "@material-ui/core/styles";
-import ReCAPTCHA from "react-google-recaptcha";
 
-import { PASSWORD_RECOVERY_DESCRIPTION_001 } from "../../util/Messages";
-import Form from "../../components/Form";
-import FormComponent from "../../classes/FormComponent";
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+import { ReactstrapInput } from '../../components/FormInputs';
+import { Row, Col, Container, Card, CardBody, Button } from 'reactstrap';
+
 import SessionStore from "../../stores/SessionStore";
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
-import theme from "../../theme";
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
+import { PASSWORD_RECOVERY_DESCRIPTION_001 } from "../../util/Messages";
 
-const styles = {
-  textField: {
-    width: "100%",
-    display: 'flex',
-    justifyContent: 'center'
+// validation
+const emailSchema = Yup.object().shape({
+  email: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+})
 
-  },
-  TitleBar:{
-    padding: 0
-  },
-  formWidth: {
-    width: 352,
-  },
-  link: {
-    "& a": {
-      color: theme.palette.primary.main,
-      textDecoration: "none",
-    },
-  },
-  flexCol: {
-    display: 'flex',
-    flexDirection: 'column', 
-  },
-  logoSection: {
-    display: 'flex'
-  },
-  root: {
-    flexGrow: 1,
-    position: 'absolute',
-    top: 0,
-    height: 84, 
-    left: 0,
-    right: 0,
-    zIndex: 1
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
-    flexGrow: 1,
-    height: 200,
-    paddingTop: 25 
-  },
-  appBar: {
-    backgroundColor: theme.palette.secondary.main,
-  },
-  logo:{
-    height: 50 
-  },
-  divider: {
-    padding: 0,
-    color: '#FFFFFF',
-    width: '100%',
-  },
-};
+// branding
+function GetBranding() {
+  return new Promise((resolve, reject) => {
+    SessionStore.getBranding(resp => {
+      return resolve(resp);
+    });
+  });
+}
 
+class PasswordRecoverForm extends Component {
+  constructor(props) {
+    super(props);
 
-class PasswordRecoveryForm extends FormComponent {
-
-  onReCapChange = (value) => {
-    const req = {
-      secret : process.env.REACT_APP_PUBLIC_KEY,
-      response: value,
-      remoteip: window.location.origin
+    this.state = {
+      object: this.props.object || { email: "" },
+      isVerified: false
     }
-
-    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
-      this.state.object.isVerified = resp.success;
-    }); 
   }
-  
+
   render() {
-    if (this.state.object === undefined) {
-      return null;
-    }
 
-    const extraButtons = [
-        <Button 
-          variant="outlined"
-          color="inherit"
-          component={Link} 
-          to={`/login`} 
-          type="button" 
-          disabled={false}>{i18n.t(`${packageNS}:tr000014`)}</Button>
-      ]
+    return (
+      <React.Fragment>
+        <Formik
+          initialValues={this.state.object}
+          validationSchema={emailSchema}
+          onSubmit={(values) => {
+            const castValues = emailSchema.cast(values);
+            this.props.onSubmit({ ...castValues });
+          }}>
+          {({
+            handleSubmit,
+            handleBlur
+          }) => (
+            <Form onSubmit={handleSubmit} noValidate>
+                <Field
+                  type="email"
+                  label={i18n.t(`${packageNS}:tr000003`)}
+                  name="email"
+                  id="email"
+                  component={ReactstrapInput}
+                  onBlur={handleBlur}
+                  onChange={this.onChange}
+                />
 
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        extraButtons={extraButtons}
-        onSubmit={this.onSubmit}
-      >
-        <TextField
-          id="username"
-          label={i18n.t(`${packageNS}:tr000003`)}
-          margin="normal"
-          type="email"
-          value={this.state.object.username || ""}
-          onChange={this.onChange}
-          fullWidth
-          required
-        />
-        {/* <ReCAPTCHA
-                sitekey={process.env.REACT_APP_PUBLIC_KEY}
-                onChange={this.onReCapChange}
-                className={this.props.style.textField}
-              /> */}
-      </Form>
+                <Button type="submit" color="primary" className="btn-block">{i18n.t(`${packageNS}:tr000325`)}</Button>
+                <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
+                
+              </Form>
+            )}
+        </Formik>
+      </React.Fragment>
     );
   }
 }
-
 
 class PasswordRecovery extends Component {
   constructor() {
@@ -143,6 +82,23 @@ class PasswordRecovery extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
+  componentDidMount() {
+    this.loadData();
+  }
+
+  loadData = async () => {
+    try {
+      let result = await GetBranding();
+
+      this.setState({
+        logoPath: result.logoPath
+      });
+    } catch (error) {
+      console.error(error);
+      this.setState({ error });
+    }
+  }
+
   onSubmit(email) {
     console.log('password recovery: ', email);
   }
@@ -150,43 +106,40 @@ class PasswordRecovery extends Component {
   render() {
     return(
       <>
-        <div className={this.props.classes.root}>
-          <AppBar position="static" className={this.props.classes.appBar}>
-            <Toolbar>
-              <div className={this.props.logoSection}>
-                <img src="/logo/logo_mx.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:tr000051`)} />
+        <div className="account-pages mt-5 mb-5">
+        <Container>
+          <Row className="justify-content-center">
+            <Col md={8} lg={6} xl={5}>
+              <div className="text-center mb-3">
+                <Link to="/">
+                  <span><img src={this.state.logoPath} alt="" height="54" /></span>
+                </Link>
               </div>
-              <IconButton edge="start" className={this.props.classes.menuButton} color="inherit" aria-label="menu">
-                {/* <MenuIcon /> */}
-              </IconButton>
-              <Typography variant="h6"></Typography>
-            </Toolbar>
-          </AppBar>
-        </div>
-        <Grid container justify="center">
-          <Grid item xs={12}>
-          </Grid>
-          <Grid item xs={12} lg={3} className={this.props.classes.flexCol}>
-            <div className={this.props.classes.TitleBar}>
-              <TitleBarTitle title={i18n.t(`${packageNS}:tr000012`)} />
-            </div>
-            <Divider light={true}/>
-            <Typography variant="body1" className={this.props.classes.title}>
-                {PASSWORD_RECOVERY_DESCRIPTION_001}
-            </Typography>
-            <PasswordRecoveryForm
-                submitLabel={i18n.t(`${packageNS}:tr000325`)}
-                onSubmit={this.onSubmit}
-                style={this.props.classes}
-                className={this.props.classes.formWidth}
-            />
-          </Grid>
-          <Grid item xs={2}>
-          </Grid>
-        </Grid>
+
+              <Card>
+                <CardBody className="p-4">
+                  <div className="text-center mb-4">
+                    <h4 className="text-uppercase mt-0">{i18n.t(`${packageNS}:tr000012`)}</h4>
+                  </div>
+
+                  <p>{PASSWORD_RECOVERY_DESCRIPTION_001}</p>
+
+                  <div className="position-relative">
+                    {this.state.loading && <Loader />}
+                    <PasswordRecoverForm
+                      onSubmit={this.onSubmit}
+                      bypassCaptcha={this.state.bypassCaptcha}
+                    />
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
       </>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(PasswordRecovery));
+export default withRouter(PasswordRecovery);
