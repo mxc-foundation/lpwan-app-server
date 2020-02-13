@@ -37,7 +37,8 @@ class LoginForm extends Component {
 
     this.state = {
       object: object,
-      isVerified: false
+      isVerified: false,
+      bypassCaptcha: this.props.bypassCaptcha
     }
   }
 
@@ -129,6 +130,11 @@ class Login extends Component {
   constructor() {
     super();
 
+    let bypassCaptcha = false;
+    if (window.location.origin.includes("http://localhost")) {
+      bypassCaptcha = true;
+    }
+
     this.state = {
       registration: null,
       open: true,
@@ -136,7 +142,8 @@ class Login extends Component {
       isVerified: false,
       logoPath: "/logo/MATCHX-SUPERNODE2.png",
       loading: false,
-      showLoginContainer: true
+      showLoginContainer: true,
+      bypassCaptcha: bypassCaptcha
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -242,6 +249,7 @@ class Login extends Component {
                       {this.state.loading && <Loader />}
                       <LoginForm
                         onSubmit={this.onSubmit}
+                        bypassCaptcha={this.state.bypassCaptcha}
                       />
                     </div>
 

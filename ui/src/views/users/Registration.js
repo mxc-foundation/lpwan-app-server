@@ -22,7 +22,8 @@ class RegistrationForm extends Component {
 
     this.state = {
       object: this.props.object || { username: "" },
-      isVerified: false
+      isVerified: false,
+      bypassCaptcha: this.props.bypassCaptcha
     }
   }
 
@@ -93,8 +94,15 @@ function GetBranding() {
 class Registration extends Component {
   constructor() {
     super();
+
+    let bypassCaptcha = false;
+    if (window.location.origin.includes("http://localhost")) {
+      bypassCaptcha = true;
+    }
+
     this.state = {
-      isVerified: false
+      isVerified: false,
+      bypassCaptcha: bypassCaptcha
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -162,6 +170,7 @@ class Registration extends Component {
                     {this.state.loading && <Loader />}
                     <RegistrationForm
                       onSubmit={this.onSubmit}
+                      bypassCaptcha={this.state.bypassCaptcha}
                     />
                   </div>
                 </CardBody>

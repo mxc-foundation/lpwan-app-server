@@ -131,8 +131,9 @@ func initConfig() {
 	config.AppserverVersion = version
 
 	// replace servers with local env parameter
+	dataServiceMode := os.Getenv("SUPERNODE_DATA_SERVICE")
 	remoteServer := os.Getenv("REMOTE_SERVER_NAME")
-	if remoteServer != "" {
+	if (dataServiceMode == "remote") && (remoteServer != "") {
 		config.C.PostgreSQL.DSN = strings.Replace(config.C.PostgreSQL.DSN,
 			"@postgresql:5432/", fmt.Sprintf("@%s:5432/", remoteServer), -1)
 		config.C.ApplicationServer.Integration.MQTT.Server = strings.Replace(config.C.ApplicationServer.Integration.MQTT.Server,

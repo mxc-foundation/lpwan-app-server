@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"database/sql"
 	"regexp"
 	"time"
@@ -114,6 +115,19 @@ func GetBoardMacBySerialNumber(db sqlx.Queryer, sn string) (Board, error) {
 	}
 
 	return bd, nil
+}
+
+func GetOpenVPNByMac(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (string, error) {
+	var openVPNaddr string
+	err := sqlx.Get(db, &openVPNaddr, "select vpn_addr from board where mac = $1", mac)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return openVPNaddr, ErrDoesNotExist
+		}
+		return openVPNaddr, errors.Wrap(err, "Get board by mac error")
+	}
+
+	return openVPNaddr, nil
 }
 
 // UpdateBoard updates the given board.

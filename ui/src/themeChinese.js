@@ -267,7 +267,7 @@ const themeChinese = createMuiTheme({
         },
         MuiSvgIcon: {
             root: {
-                fill: '#F9FAFC80',
+                // fill: '#F9FAFC80',
             },
         },
         MuiDialog: {
