@@ -44,13 +44,6 @@ class GatewayDetails extends Component {
     this.setState({
       config: {
         manufacturer: "manufacturer",
-        id: "507f298d3b1a444b",
-        discoveryEnabled: false,
-        name: "Test",
-        altitude: "Altitude",
-        description: "People can change, this is like a note",
-        GPSCoordinates: "coordinates",
-        lastSeen: "10 seconds ago",
         WiFiSSID: "123",
         WiFiSSIDStatus: true,
         WiFiModel: "Model",
@@ -155,7 +148,7 @@ class GatewayDetails extends Component {
     }
 
     let lastseen = "";
-    if (this.props.lastSeenAt !== undefined) {
+    if (this.props.lastSeenAt) {
       lastseen = moment(this.props.lastSeenAt).fromNow();
     }
 
@@ -165,15 +158,13 @@ class GatewayDetails extends Component {
           <Card className="border shadow-none">
             <CardBody>
               <CardTitle tag="h4">{i18n.t(`${packageNS}:tr000423`)}</CardTitle>
-              {config && 
-               <>
               <Row>
                 <Col lg={6}>
-                  <h6 className="text-primary font-16">
+                <h6 className="text-primary font-16">
                     {i18n.t(`${packageNS}:tr000571`)}
                   </h6>
                   <p>
-                    {config.manufacturer}
+                    {config && <> {config.manufacturer} </> }
                   </p>
                 </Col>
                 <Col lg={6}>
@@ -183,12 +174,12 @@ class GatewayDetails extends Component {
                   <Row>
                     <Col lg={6}>
                       <p>
-                      {config.id}
+                      {this.props.gateway.id}
                       </p>
                     </Col>
                     <Col lg={6}>
                       <p>
-                      <CustomInput type="switch" id="discoveryEnabled" label={i18n.t(`${packageNS}:tr000228`)} disabled checked={config.discoveryEnabled}/>
+                      <CustomInput type="switch" id="discoveryEnabled" label={i18n.t(`${packageNS}:tr000228`)} disabled checked={this.props.gateway.discoveryEnabled}/>
                       </p>
                     </Col>
                   </Row>
@@ -201,7 +192,7 @@ class GatewayDetails extends Component {
                     {i18n.t(`${packageNS}:tr000218`)}
                   </h6>
                   <p>
-                    {config.name}
+                    {this.props.gateway.name}
                   </p>
                 </Col>
                 <Col lg={6}>
@@ -209,7 +200,7 @@ class GatewayDetails extends Component {
                   {i18n.t(`${packageNS}:tr000573`)}
                   </h6>
                   <p>
-                    {config.altitude}
+                  {this.props.gateway.location.altitude} meters
                   </p>
                 </Col>
               </Row>
@@ -220,7 +211,7 @@ class GatewayDetails extends Component {
                     {i18n.t(`${packageNS}:tr000219`)}
                   </h6>
                   <p>
-                    {config.description}
+                    {this.props.gateway.description}
                   </p>
                 </Col>
                 <Col lg={6}>
@@ -228,7 +219,7 @@ class GatewayDetails extends Component {
                   {i18n.t(`${packageNS}:tr000241`)}
                   </h6>
                   <p>
-                    {config.GPSCoordinates}
+                {this.props.gateway.location.latitude}, {this.props.gateway.location.longitude}
                   </p>
                 </Col>
               </Row>
@@ -239,8 +230,8 @@ class GatewayDetails extends Component {
                     {i18n.t(`${packageNS}:tr000242`)}
                   </h6>
                   <p>
-                    {config.lastSeen}
-                  </p>
+                {lastseen}
+              </p>
                 </Col>
                 <Col lg={6}>
                   <h6 className="text-primary font-16">
@@ -305,12 +296,10 @@ class GatewayDetails extends Component {
                 </Col>
                 <Col>
                   <h6 className="text-primary font-16">
-                    {i18n.t(`${packageNS}:tr000242`)} ( {config.lastSeen} )
+                    {i18n.t(`${packageNS}:tr000242`)} ( {lastseen} )
                   </h6>
                 </Col>
               </Row>
-            </>
-            }
             </CardBody>
           </Card>
         </Col>
