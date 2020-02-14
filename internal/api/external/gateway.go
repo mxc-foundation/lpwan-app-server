@@ -2,8 +2,12 @@ package external
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/apex/log"
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"net/textproto"
 	"strings"
 
@@ -499,7 +503,6 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 // Delete deletes the gateway matching the given ID.
 func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (*empty.Empty, error) {
 	var mac lorawan.EUI64
-
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
@@ -509,34 +512,72 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	//ToDo: send the req to provision first
-	switch "resp" {
-	case "respA":
-
-	case "respB":
-
-	}
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err = storage.DeleteGateway(ctx, tx, mac)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		//check if the gateway is in board table or not. Yes, delete it. No, skip it.
+		//check if the gateway is in the board table. If not, the gateway is not belong to the MatchX, delete it.
 		bd, err := storage.GetBoard(tx, mac)
 		if err != nil {
 			if err == storage.ErrDoesNotExist {
+
+				err = storage.DeleteGateway(ctx, tx, mac)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
 				return nil
 			} else {
 				return helpers.ErrToRPCError(err)
 			}
 		}
 
-		err = storage.DeleteBoardByMac(ctx, tx, &bd)
+		// if gateway is in the board table, send the request to provision server
+		provReq := api.DeleteGwRequest{
+			Mac: mac.String(),
+		}
+
+		provConf := config.C.ProvisionServer
+
+		provClient, err := provisionserver.GetPool().Get(provConf.ProvisionServer, []byte(provConf.CACert),
+			[]byte(provConf.TLSCert), []byte(provConf.TLSKey))
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
+		resp, err := provClient.DeleteGw(ctx, &provReq)
+		if err != nil && grpc.Code(err) != codes.AlreadyExists {
+			return err
+		}
+
+		// if the response is true, check the gateway connection
+		if resp.Status {
+
+			// if cannot connect to the gateway (gateway offline), delete the data
+			// ToDo: need to set the timeout
+			_, err := mxConfDGet(ctx, bd.VpnAddr, "STAT", 250)
+			if err != nil {
+				err = storage.DeleteBoardByMac(ctx, tx, &bd)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+
+				err = storage.DeleteGateway(ctx, tx, mac)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+				return nil
+			}
+
+			// or to ping the gateway
+			/*out, _ := exec.Command("ping", "192.168.0.124", "-c 5", "-w 1").Output()
+			if strings.Contains(string(out), "Destination Host Unreachable") {
+				fmt.Println("TANGO DOWN")
+			} else {
+				fmt.Println("IT'S ALIVEEE")
+			}*/
+
+			// if gateway is still online, user should first disconnect the gateway and delete again
+			err = errors.New("The gateway is still online")
+
+			return err
+		}
 		return nil
 	})
 	if err != nil {
@@ -806,20 +847,37 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}*/
 
-	//TODO: send the req to provision server
-	//resp :=
-	switch "" {
+	// send the req to provision server
+	provReq := api.GetGwVpnAddrRequest{
+		Sn: req.Sn,
+	}
+
+	provConf := config.C.ProvisionServer
+
+	provClient, err := provisionserver.GetPool().Get(provConf.ProvisionServer, []byte(provConf.CACert),
+		[]byte(provConf.TLSCert), []byte(provConf.TLSKey))
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	resp, err := provClient.GetGwVpnAddr(ctx, &provReq)
+	if err != nil && grpc.Code(err) != codes.AlreadyExists {
+		return nil, err
+	}
+
+	//ToDo: change to the correct status later
+	switch resp.Status {
 	case "a":
 		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
 	case "b":
 		return &pb.RegisterResponse{Status: "please delete the gateway from previous supernode"}, nil
 	case "c":
 		err = storage.Transaction(func(tx sqlx.Ext) error {
-			//TODO: get mac from provision server (resp.mac)
+			// get mac from provision server (resp.mac)
 			var mac lorawan.EUI64
-			/*if err := mac.UnmarshalText([]byte(resp.mac)); err != nil {
-				return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
-			}*/
+			if err := mac.UnmarshalText([]byte(resp.Mac)); err != nil {
+				return grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+			}
 
 			//check if gw already in db. If yes, update board table. No, create gw and insert board table.
 			gw, err := storage.GetGateway(ctx, tx, mac, false)
@@ -881,7 +939,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 					err = storage.CreateGateway(ctx, tx, &storage.Gateway{
 						MAC:             mac,
 						Name:            "Default_Gateway",
-						Description:     "MXC Gateway",
+						Description:     "MXC_Gateway",
 						OrganizationID:  req.OrganizationId,
 						Ping:            false,
 						NetworkServerID: defNetworkServerID,
@@ -909,40 +967,28 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 
 					// store data to the board table
 					var bd storage.Board
-
-					/*bd.MAC = resp.mac
-					bd.SN = resp.sn
-					bd.Model = resp.model
-					bd.VpnAddr = resp.vpnaddr
-					bd.OsVersion = resp.osversion
-					bd.FPGAVersion = resp.fpgaversion*/
-
-					//TODO: delete the test code below
-					//sn := "MXDDDDDDD"
-					//vs := "0.0.0"
-					//fpgv := "00"
-					//bd.MAC = mac
-					//bd.SN =  &req.Sn
-					//bd.Model = "box-mx0000"
-					//bd.VpnAddr = "0.0.0.0"
-					//bd.OsVersion = &vs
-					//bd.FPGAVersion = &fpgv
+					
+					bd.MAC = mac
+					bd.SN = &resp.Sn
+					bd.Model = resp.Model
+					bd.VpnAddr = resp.VpnAddr
+					bd.OsVersion = &resp.OsVersion
+					bd.FPGAVersion = &resp.FpgaVersion
 
 					err = storage.CreateBoard(tx, &bd)
 					if err != nil {
 						return helpers.ErrToRPCError(err)
 					}
-
 					return nil
 				})
 				if err != nil {
 					return err
 				}
-
+				
 				redisConn := storage.RedisPool().Get()
 				defer redisConn.Close()
 				redisConn.Do("DEL", GatewayLocationsRedisKey)
-
+				
 			} else {
 				bd, err := storage.GetBoard(tx, mac)
 				if err != nil {
@@ -950,8 +996,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 				}
 
 				bd.SN = &req.Sn
-				//TODO: get vpnaddress from provision server (resp.vpnaddr)
-				bd.VpnAddr = "resp.vpnaddr"
+				bd.VpnAddr = resp.VpnAddr
 
 				err = storage.UpdateVPNAddr(ctx, tx, &bd)
 				if err != nil {
