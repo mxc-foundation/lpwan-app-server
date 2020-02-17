@@ -507,6 +507,10 @@
   "tr000612": "启用",
   "tr000613": "扫描时间",
   "tr000614": "保存设置",
+  "tr000615": "选择设备的应用程序以仅加载与该应用程序有相关的设备资料",
+  "tr000616": "Select a device profile to associate with the device",
+  "tr000617": "Required",
+  "tr000618": "© 2020 Powered by MXC",
   "common": {
     "delete": "删除",
     "reset": "重置"
