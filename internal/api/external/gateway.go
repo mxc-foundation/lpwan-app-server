@@ -548,7 +548,6 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 
 		// if the response is true, check the gateway connection
 		if resp.Status {
-
 			// if cannot connect to the gateway (gateway offline), delete the data
 			// ToDo: need to set the timeout
 			_, err := mxConfDGet(ctx, bd.VpnAddr, "STAT", 250)
@@ -768,18 +767,6 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 	if err != nil {
 		log.WithError(err).Error("cannot connect to gw")
 	}
-	/*MAC := ""
-	scanner := bufio.NewScanner(strings.NewReader(message))
-	for scanner.Scan() {
-		values := strings.Split(scanner.Text(), " ")
-		if len(values) == 2 {
-			switch values[0] {
-			case "MAC":
-				MAC = values[1]
-				break
-			}
-		}
-	}*/
 
 	comments := []string{"/* radio_1 provides clock to concentrator */", "/* dBm */", "/* 8 channels maximum */",
 		"/* dB */", "/* antenna gain, in dBi */", "/* [126..250] KHz */", "/* Lora MAC channel, 125kHz, all SF, 868.1 MHz */",
@@ -898,35 +885,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 					},
 				}
 
-				/*if req.Gateway.GatewayProfileId != "" {
-					gpID, err := uuid.FromString(req.Gateway.GatewayProfileId)
-					if err != nil {
-						return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
-					}
-					createReq.Gateway.GatewayProfileId = gpID.Bytes()
-				}*/
-
-				/*for _, board := range req.Gateway.Boards {
-					var gwBoard ns.GatewayBoard
-
-					if board.FpgaId != "" {
-						var fpgaID lorawan.EUI64
-						if err := fpgaID.UnmarshalText([]byte(board.FpgaId)); err != nil {
-							return nil, grpc.Errorf(codes.InvalidArgument, "fpga_id: %s", err)
-						}
-						gwBoard.FpgaId = fpgaID[:]
-					}
-
-					if board.FineTimestampKey != "" {
-						var key lorawan.AES128Key
-						if err := key.UnmarshalText([]byte(board.FineTimestampKey)); err != nil {
-							return nil, grpc.Errorf(codes.InvalidArgument, "fine_timestamp_key: %s", err)
-						}
-						gwBoard.FineTimestampKey = key[:]
-					}
-
-					createReq.Gateway.Boards = append(createReq.Gateway.Boards, &gwBoard)
-				}*/
+				// gateway profileID and gateway boards has been deleted in this func
 
 				NetworkServers, err := storage.GetNetworkServers(ctx, tx, 1, 0)
 				if err != nil {
@@ -1002,10 +961,6 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 				if err != nil {
 					return helpers.ErrToRPCError(err)
 				}
-				/*err = storage.UpdateBoard(tx, &bd)
-				if err != nil {
-					return helpers.ErrToRPCError(err)
-				}*/
 			}
 			return nil
 		})
