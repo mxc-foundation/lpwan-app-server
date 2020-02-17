@@ -507,6 +507,10 @@
   "tr000612": "Activate",
   "tr000613": "Scan Time",
   "tr000614": "Save Config",
+  "tr000615": "Select an application for the device to load only device profiles associated with the application",
+  "tr000616": "Select a device profile to associate with the device",
+  "tr000617": "Required",
+  "tr000618": "© 2020 Powered by MXC",
   "common": {
     "delete": "DELETE",
     "reset": "RESET"
