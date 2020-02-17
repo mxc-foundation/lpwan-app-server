@@ -69,7 +69,10 @@ func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (api.Provisi
 	// if the connection exists in the map, but when the certificates changed
 	// try to cloe the connection and re-connect
 	if ok && (!bytes.Equal(c.caCert, caCert) || !bytes.Equal(c.tlsCert, tlsCert) || !bytes.Equal(c.tlsKey, tlsKey)) {
-		c.clientConn.Close()
+		if err := c.clientConn.Close(); err != nil {
+			log.WithError(err).Error("Cannot close the provision client connection")
+		}
+
 		delete(p.clients, hostname)
 		connect = true
 	}

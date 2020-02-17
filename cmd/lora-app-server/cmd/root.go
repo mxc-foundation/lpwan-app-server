@@ -34,7 +34,9 @@ func init() {
 	rootCmd.PersistentFlags().Int("log-level", 4, "debug=5, info=4, error=2, fatal=1, panic=0")
 
 	// bind flag to config vars
-	viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
+	if err := viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
+		log.WithError(err).Error("BindPFlag error")
+	}
 
 	// defaults
 	viper.SetDefault("general.password_hash_iterations", 100000)
@@ -163,7 +165,9 @@ func viperBindEnvs(iface interface{}, parts ...string) {
 			viperBindEnvs(v.Interface(), append(parts, tv)...)
 		default:
 			key := strings.Join(append(parts, tv), ".")
-			viper.BindEnv(key)
+			if err := viper.BindEnv(key); err != nil {
+				log.WithError(err).Error("BindEnv error")
+			}
 		}
 	}
 }
