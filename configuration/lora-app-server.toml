@@ -93,6 +93,12 @@ ca_cert=""
 tls_cert=""
 tls_key=""
 
+[provision_server]
+provision_server="localhost:11908"
+ca_cert=""                                                                                            
+tls_cert=""                                                                                           
+tls_key=""
+
 # Application-server settings.
 [application_server]
 # Application-server identifier.
