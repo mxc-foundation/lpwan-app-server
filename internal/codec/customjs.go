@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"github.com/apex/log"
 	"reflect"
 	"time"
 
@@ -71,8 +72,12 @@ func (c *CustomJS) DecodeBytes(data []byte) (err error) {
 	vm := otto.New()
 	vm.Interrupt = make(chan func(), 1)
 	vm.SetStackDepthLimit(32)
-	vm.Set("bytes", data)
-	vm.Set("fPort", c.fPort)
+	if err := vm.Set("bytes", data); err != nil {
+		log.WithError(err).Error("set bytes error")
+	}
+	if err := vm.Set("fPort", c.fPort); err != nil {
+		log.WithError(err).Error("set c.fPort error")
+	}
 
 	go func() {
 		time.Sleep(maxExecutionTime)

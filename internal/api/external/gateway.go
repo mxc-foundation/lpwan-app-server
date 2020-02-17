@@ -8,6 +8,7 @@ import (
 	api "github.com/mxc-foundation/lpwan-app-server/api/ps"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"google.golang.org/grpc/status"
 	"net/textproto"
 	"strings"
 
@@ -746,7 +747,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 	}
 }
 
-// Get the gateway config file
+// GetGwConfig gets the gateway config file
 func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest) (*pb.GetGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
@@ -791,7 +792,7 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 	}, nil
 }
 
-// Update gateway configuration file
+// UpdateGwConfig gateway configuration file
 func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*pb.UpdateGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
@@ -821,11 +822,11 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 // Register will first try to get the gateway from provision server
 func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	if req.Sn == "" {
-		return nil, grpc.Errorf(codes.InvalidArgument, "gateway sn number must not be nil")
+		return &pb.RegisterResponse{Status: "gateway sn number must not be nil"}, status.Errorf(codes.InvalidArgument, "")
 	}
 	err := a.validator.Validate(ctx, auth.ValidateGatewaysAccess(auth.Create, req.OrganizationId))
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return &pb.RegisterResponse{Status: "authentication failed"}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// also validate that the network-server is accessible for the given organization
@@ -844,12 +845,12 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	provClient, err := provisionserver.GetPool().Get(provConf.ProvisionServer, []byte(provConf.CACert),
 		[]byte(provConf.TLSCert), []byte(provConf.TLSKey))
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return &pb.RegisterResponse{Status: "cannot connect to provisioning server"}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	resp, err := provClient.GetGwVpnAddr(ctx, &provReq)
 	if err != nil && grpc.Code(err) != codes.AlreadyExists {
-		return nil, err
+		return &pb.RegisterResponse{Status: "cannot get the response from provisioning server"}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	//ToDo: change to the correct status later
@@ -863,7 +864,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 			// get mac from provision server (resp.mac)
 			var mac lorawan.EUI64
 			if err := mac.UnmarshalText([]byte(resp.Mac)); err != nil {
-				return grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+				return status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 			}
 
 			//check if gw already in db. If yes, update board table. No, create gw and insert board table.
@@ -926,7 +927,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 
 					// store data to the board table
 					var bd storage.Board
-					
+
 					bd.MAC = mac
 					bd.SN = &resp.Sn
 					bd.Model = resp.Model
@@ -943,11 +944,11 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 				if err != nil {
 					return err
 				}
-				
+
 				redisConn := storage.RedisPool().Get()
 				defer redisConn.Close()
 				redisConn.Do("DEL", GatewayLocationsRedisKey)
-				
+
 			} else {
 				bd, err := storage.GetBoard(tx, mac)
 				if err != nil {
@@ -965,15 +966,15 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 			return nil
 		})
 		if err != nil {
-			return nil, err
+			return &pb.RegisterResponse{Status:"storage transaction error"}, status.Errorf(codes.Unavailable, err.Error())
 		}
-		return &pb.RegisterResponse{Status: "successful"}, nil
+		return &pb.RegisterResponse{Status: resp.Status}, nil
 	}
 
-	return &pb.RegisterResponse{}, nil
+	return &pb.RegisterResponse{Status: resp.Status}, nil
 }
 
-// connect to gateway though openVPN and get config file
+// mxConfDGet connects to gateway though openVPN and get config file
 func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, error) {
 	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
 	if err != nil {
@@ -999,7 +1000,7 @@ func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, 
 	return message, nil
 }
 
-// connect to gateway though openVPN and update config file
+// mxConfUpdate connects to gateway though openVPN and update config file
 func mxConfUpdate(ip string, conf string) error {
 	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
 	if err != nil {
