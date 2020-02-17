@@ -818,7 +818,7 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 	return &pb.UpdateGwConfigResponse{Status: "successful"}, nil
 }
 
-// Will first try to get the gateway from provision server
+// Register will first try to get the gateway from provision server
 func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	if req.Sn == "" {
 		return nil, grpc.Errorf(codes.InvalidArgument, "gateway sn number must not be nil")
