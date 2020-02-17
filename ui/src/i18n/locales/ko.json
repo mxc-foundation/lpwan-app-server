@@ -507,6 +507,10 @@
   "tr000612": "Activate",
   "tr000613": "Scan Time",
   "tr000614": "Save Config",
+  "tr000615": "기기가 로드할 어플리케이션을 선택하십시오.",
+  "tr000616": "Select a device profile to associate with the device",
+  "tr000617": "Required",
+  "tr000618": "© 2020 Powered by MXC",
   "common": {
     "delete": "삭제",
     "reset": "재설정"
