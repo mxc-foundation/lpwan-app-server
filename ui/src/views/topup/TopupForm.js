@@ -170,8 +170,8 @@ class TopupForm extends Component {
                   <Field
                     type="text"
                     label={i18n.t(`${packageNS}:menu.topup.from_eth_account`)}
-                    name="accounts.superNodeAccount"
-                    id="accounts.superNodeAccount"
+                    name="accounts.account"
+                    id="accounts.account"
                     value={accounts.account || `${i18n.t(`${packageNS}:menu.topup.can_not_find_any_account`)}`}
                     //helpText={i18n.t(`${packageNS}:tr000062`)}
                     component={ReactstrapInput}
@@ -184,8 +184,8 @@ class TopupForm extends Component {
                   <Field
                     type="text"
                     label={i18n.t(`${packageNS}:menu.topup.to_eth_account`)}
-                    name="accounts.account"
-                    id="accounts.account"
+                    name="accounts.superNodeAccount"
+                    id="accounts.superNodeAccount"
                     value={accounts.superNodeAccount || `${i18n.t(`${packageNS}:menu.topup.can_not_find_any_account`)}`}
                     //helpText={i18n.t(`${packageNS}:tr000062`)}
                     component={ReactstrapInput}
