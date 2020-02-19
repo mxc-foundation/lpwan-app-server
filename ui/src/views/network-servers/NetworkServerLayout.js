@@ -60,7 +60,7 @@ class NetworkServerLayout extends Component {
             <TitleBarButton
               color="danger"
               key={1}
-              icon={<Delete />}
+              icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
               label={i18n.t(`${packageNS}:tr000061`)}
               onClick={this.deleteNetworkServer}
             />,
