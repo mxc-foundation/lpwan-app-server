@@ -10,6 +10,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"google.golang.org/grpc/status"
 	"net/textproto"
+	"os"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -530,7 +531,7 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 		}
 
 		// if gateway is in the board table, send the request to provision server
-		provReq := api.DeleteGwRequest{
+		provReq := api.UnregisterGwRequest{
 			Mac: mac.String(),
 		}
 
@@ -542,13 +543,14 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 			return helpers.ErrToRPCError(err)
 		}
 
-		resp, err := provClient.DeleteGw(ctx, &provReq)
+		resp, err := provClient.UnregisterGw(ctx, &provReq)
 		if err != nil && grpc.Code(err) != codes.AlreadyExists {
 			return err
 		}
 
 		// if the response is true, check the gateway connection
-		if resp.Status {
+		// 0 = RequestStatus_SUCCESSFUL
+		if resp.Status == 0 {
 			// if cannot connect to the gateway (gateway offline), delete the data
 			// ToDo: need to set the timeout
 			_, err := mxConfDGet(ctx, bd.VpnAddr, "STAT", 250)
@@ -835,9 +837,13 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}*/
 
+	snAddr := os.Getenv("REMOTE_SERVER_NAME")
+
 	// send the req to provision server
-	provReq := api.GetGwVpnAddrRequest{
-		Sn: req.Sn,
+	provReq := api.RegisterGWRequest{
+		Sn:            req.Sn,
+		SuperNodeAddr: snAddr,
+		OrgId:         req.OrganizationId,
 	}
 
 	provConf := config.C.ProvisionServer
@@ -848,18 +854,17 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		return &pb.RegisterResponse{Status: "cannot connect to provisioning server"}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	resp, err := provClient.GetGwVpnAddr(ctx, &provReq)
+	resp, err := provClient.RegisterGW(ctx, &provReq)
 	if err != nil && grpc.Code(err) != codes.AlreadyExists {
 		return &pb.RegisterResponse{Status: "cannot get the response from provisioning server"}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	//ToDo: change to the correct status later
 	switch resp.Status {
-	case "a":
+	case 2:
 		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
-	case "b":
+	case 1:
 		return &pb.RegisterResponse{Status: "please delete the gateway from previous supernode"}, nil
-	case "c":
+	case 0:
 		err = storage.Transaction(func(tx sqlx.Ext) error {
 			// get mac from provision server (resp.mac)
 			var mac lorawan.EUI64
@@ -933,7 +938,6 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 					bd.Model = resp.Model
 					bd.VpnAddr = resp.VpnAddr
 					bd.OsVersion = &resp.OsVersion
-					bd.FPGAVersion = &resp.FpgaVersion
 
 					err = storage.CreateBoard(tx, &bd)
 					if err != nil {
@@ -968,10 +972,10 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		if err != nil {
 			return &pb.RegisterResponse{Status: "storage transaction error"}, status.Errorf(codes.Unavailable, err.Error())
 		}
-		return &pb.RegisterResponse{Status: resp.Status}, nil
+		return &pb.RegisterResponse{Status: resp.Status.String()}, nil
 	}
 
-	return &pb.RegisterResponse{Status: resp.Status}, nil
+	return &pb.RegisterResponse{Status: resp.Status.String()}, nil
 }
 
 func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb.GetGwPwdResponse, error) {
@@ -985,10 +989,26 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	//ToDo: sned the req to provision server
+	// send the req to provision server
+	provReq := api.GetRootPWDRequest{
+		Sn:            req.Sn,
+	}
+
+	provConf := config.C.ProvisionServer
+
+	provClient, err := provisionserver.GetPool().Get(provConf.ProvisionServer, []byte(provConf.CACert),
+		[]byte(provConf.TLSCert), []byte(provConf.TLSKey))
+	if err != nil {
+		return &pb.GetGwPwdResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	resp, err := provClient.GetRootPWD(ctx, &provReq)
+	if err != nil && grpc.Code(err) != codes.AlreadyExists {
+		return &pb.GetGwPwdResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
 
 	return &pb.GetGwPwdResponse{
-		Password: "",
+		Password: resp.RootPWD,
 	}, nil
 }
 
