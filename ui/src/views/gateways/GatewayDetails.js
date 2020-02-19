@@ -8,6 +8,7 @@ import { Line } from "react-chartjs-2";
 import i18n, { packageNS } from '../../i18n';
 import MapTileLayer from "../../components/MapTileLayer";
 import GatewayStore from "../../stores/GatewayStore";
+import RootPassword from "./RootPassword";
 
 
 class GatewayDetails extends Component {
@@ -15,7 +16,8 @@ class GatewayDetails extends Component {
     super();
     this.state = {
       config: {},
-      modal: false
+      modal: false,
+      showRootPassword: false
     };
     this.loadStats = this.loadStats.bind(this);
   }
@@ -33,6 +35,13 @@ class GatewayDetails extends Component {
   resetGateway = () => {
     this.setState({modal: !this.state.modal});
     // submit all data for reset
+  }
+
+  /**
+   * Shows root password
+   */
+  showRootPassword = () => {
+    this.setState({showRootPassword: true});
   }
 
   loadConfig() {
@@ -439,6 +448,14 @@ class GatewayDetails extends Component {
               <CustomInput type="checkbox" id="agreeTerms" label={i18n.t(`${packageNS}:tr000591`)} />
             </Col>
             <Col className="col-auto">
+            <Button
+              type="button"
+              color="primary"
+              className="ml-2 d-inline" 
+              onClick={this.showRootPassword}
+            >
+              {i18n.t(`${packageNS}:tr000619`)}
+            </Button>
               <Button
               type="button"
               color="primary"
@@ -475,6 +492,8 @@ class GatewayDetails extends Component {
           <Button color="primary" onClick={this.resetGateway}>Confirm</Button>
         </ModalFooter>
       </Modal>
+
+      {this.state.showRootPassword? <RootPassword onClose={() => this.setState({showRootPassword: false})} />: null}
     </React.Fragment>
     );
   }
