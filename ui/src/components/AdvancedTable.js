@@ -35,6 +35,7 @@ class AdvancedTable extends Component {
                 {...props.baseProps}
                 remote
                 onTableChange={this.props.onTableChange}
+                wrapperClasses="table-responsive"
                 bordered={false}
                 pagination={paginationFactory({ sizePerPage: rowsPerPage, hideSizePerPage: true, totalSize })}
                 wrapperClasses="table-responsive"

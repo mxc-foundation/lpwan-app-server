@@ -507,6 +507,17 @@
   "tr000612": "Activate",
   "tr000613": "Scan Time",
   "tr000614": "Save Config",
+  "tr000615": "Select an application for the device to load only device profiles associated with the application",
+  "tr000616": "Select a device profile to associate with the device",
+  "tr000617": "Required",
+  "tr000618": "© 2020 Powered by MXC",
+  "tr000619": "Root Password",
+  "tr000620": "Warning: Displaying your root password will void your warranty",
+  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
+  "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
+  "tr000623": "Display Root Password",
+  "tr000624": "I want to keep my warranty",
+  "tr000625": "Below is your root password. If you change it, \rMatchX will not be able to recover it for you.",
   "common": {
     "delete": "削除",
     "reset": "リセット"
