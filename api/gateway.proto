@@ -100,6 +100,12 @@ service GatewayService {
 			body: "*"
 		};
 	}
+
+	rpc GetGwPwd(GetGwPwdRequest) returns (GetGwPwdResponse) {
+		option (google.api.http) = {
+            get: "/api/gateways/getpassword/{gateway_id}"
+        };
+	}
 }
 
 message Gateway {
@@ -371,4 +377,13 @@ message RegisterRequest {
 
 message RegisterResponse {
 	string status = 1;
+}
+
+message GetGwPwdRequest {
+	string gateway_id = 1;
+	string sn = 2;
+}
+
+message GetGwPwdResponse {
+	string password = 1;
 }

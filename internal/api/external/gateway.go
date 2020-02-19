@@ -966,12 +966,30 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 			return nil
 		})
 		if err != nil {
-			return &pb.RegisterResponse{Status:"storage transaction error"}, status.Errorf(codes.Unavailable, err.Error())
+			return &pb.RegisterResponse{Status: "storage transaction error"}, status.Errorf(codes.Unavailable, err.Error())
 		}
 		return &pb.RegisterResponse{Status: resp.Status}, nil
 	}
 
 	return &pb.RegisterResponse{Status: resp.Status}, nil
+}
+
+func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb.GetGwPwdResponse, error) {
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	//ToDo: sned the req to provision server
+
+	return &pb.GetGwPwdResponse{
+		Password: "",
+	}, nil
 }
 
 // mxConfDGet connects to gateway though openVPN and get config file
