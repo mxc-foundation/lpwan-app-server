@@ -176,10 +176,9 @@ class Topbar extends Component {
             </ul>
           </div>
           
-            <div className="navbar-custom-subbar">
-              <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>
-            </div>
-          
+          <div className="navbar-custom-subbar">
+              <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>              
+          </div>
         </div>
       </React.Fragment >
     );
