@@ -517,7 +517,7 @@
   "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
   "tr000623": "Display Root Password",
   "tr000624": "I want to keep my warranty",
-  "tr000625": "Below is your root password. If you change it, \rMatchX will not be able to recover it for you.",
+  "tr000625": "Below is your root password. If you change it, MatchX will not be able to recover it for you.",
   "common": {
     "delete": "削除",
     "reset": "リセット"
