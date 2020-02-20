@@ -15,7 +15,7 @@ class UserStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/user.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(newUserObject, callbackFunc) {
+  create(newUserObject, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.UserService.Create({
         body: newUserObject,
@@ -25,7 +25,10 @@ class UserStore extends EventEmitter {
         this.notify("created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch((error) => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
