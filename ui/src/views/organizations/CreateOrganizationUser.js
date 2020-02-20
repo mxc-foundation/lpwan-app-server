@@ -470,6 +470,7 @@ class CreateOrganizationUser extends Component {
     delete u.isGatewayAdmin;
 
     this.setState({loading: true});
+    // on success or error handling loading
     UserStore.create({user: u, password: user.password, organizations: orgs}, resp => {
       this.setState({loading: false});
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
