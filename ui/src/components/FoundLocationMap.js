@@ -4,15 +4,11 @@ import MapTileLayerCluster from "./MapTileLayerCluster";
 
 class FoundLocationMap extends React.Component {
     render() {
+        const crd = this.props.isGeolocationEnabled && this.props.coords ? this.props.coords: null;
+
         return !this.props.isGeolocationAvailable ? (
             <div>Your browser does not support Geolocation</div>
-        ) : !this.props.isGeolocationEnabled ? (
-            <div>Geolocation is not enabled</div>
-        ) : this.props.coords ? (
-            <MapTileLayerCluster crd={this.props.coords}/>
-        ) : (
-            <div>Getting the location data&hellip; </div>
-        );
+        ) : <MapTileLayerCluster crd={crd} />;
     }
 }
  
