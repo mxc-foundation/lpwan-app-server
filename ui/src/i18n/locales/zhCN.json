@@ -518,6 +518,7 @@
   "tr000623": "Display Root Password",
   "tr000624": "I want to keep my warranty",
   "tr000625": "Below is your root password. If you change it, MatchX will not be able to recover it for you.",
+  "tr000626": "Region",
   "common": {
     "delete": "删除",
     "reset": "重置"
