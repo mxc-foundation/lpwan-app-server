@@ -76,7 +76,8 @@ class NetworkServerLayout extends Component {
           </Breadcrumb>
         </TitleBar>
 
-        <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} />
+        <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} version={this.state.networkServer.version}
+          region={this.state.networkServer.region} />
       </React.Fragment>
     );
   }
