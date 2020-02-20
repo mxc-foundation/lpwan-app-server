@@ -2,9 +2,15 @@ package external
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/apex/log"
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"google.golang.org/grpc/status"
 	"net/textproto"
+	"os"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -509,11 +515,71 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err = storage.DeleteGateway(ctx, tx, mac)
+		//check if the gateway is in the board table. If not, the gateway is not belong to the MatchX, delete it.
+		bd, err := storage.GetBoard(tx, mac)
+		if err != nil {
+			if err == storage.ErrDoesNotExist {
+
+				err = storage.DeleteGateway(ctx, tx, mac)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+				return nil
+			} else {
+				return helpers.ErrToRPCError(err)
+			}
+		}
+
+		// if gateway is in the board table, send the request to provision server
+		provReq := api.UnregisterGwRequest{
+			Mac: mac.String(),
+		}
+
+		provConf := config.C.ProvisionServer
+
+		provClient, err := provisionserver.GetPool().Get(provConf.ProvisionServer, []byte(provConf.CACert),
+			[]byte(provConf.TLSCert), []byte(provConf.TLSKey))
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
+		resp, err := provClient.UnregisterGw(ctx, &provReq)
+		if err != nil && grpc.Code(err) != codes.AlreadyExists {
+			return err
+		}
+
+		// if the response is true, check the gateway connection
+		// 0 = RequestStatus_SUCCESSFUL
+		if resp.Status == 0 {
+			// if cannot connect to the gateway (gateway offline), delete the data
+			// ToDo: need to set the timeout
+			_, err := mxConfDGet(ctx, bd.VpnAddr, "STAT", 250)
+			if err != nil {
+				err = storage.DeleteBoardByMac(ctx, tx, &bd)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+
+				err = storage.DeleteGateway(ctx, tx, mac)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+				return nil
+			}
+
+			// or to ping the gateway
+			/*out, _ := exec.Command("ping", "192.168.0.124", "-c 5", "-w 1").Output()
+			if strings.Contains(string(out), "Destination Host Unreachable") {
+				fmt.Println("TANGO DOWN")
+			} else {
+				fmt.Println("IT'S ALIVEEE")
+			}*/
+
+			// if gateway is still online, user should first disconnect the gateway and delete again
+			err = errors.New("The gateway is still online")
+
+			return err
+		}
 		return nil
 	})
 	if err != nil {
@@ -683,7 +749,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 	}
 }
 
-// Get the gateway config file
+// GetGwConfig gets the gateway config file
 func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest) (*pb.GetGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
@@ -704,18 +770,6 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 	if err != nil {
 		log.WithError(err).Error("cannot connect to gw")
 	}
-	/*MAC := ""
-	scanner := bufio.NewScanner(strings.NewReader(message))
-	for scanner.Scan() {
-		values := strings.Split(scanner.Text(), " ")
-		if len(values) == 2 {
-			switch values[0] {
-			case "MAC":
-				MAC = values[1]
-				break
-			}
-		}
-	}*/
 
 	comments := []string{"/* radio_1 provides clock to concentrator */", "/* dBm */", "/* 8 channels maximum */",
 		"/* dB */", "/* antenna gain, in dBi */", "/* [126..250] KHz */", "/* Lora MAC channel, 125kHz, all SF, 868.1 MHz */",
@@ -740,7 +794,7 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 	}, nil
 }
 
-// Update gateway configuration file
+// UpdateGwConfig gateway configuration file
 func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*pb.UpdateGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
@@ -767,7 +821,198 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 	return &pb.UpdateGwConfigResponse{Status: "successful"}, nil
 }
 
-// connect to gateway though openVPN and get config file
+// Register will first try to get the gateway from provision server
+func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	if req.Sn == "" {
+		return &pb.RegisterResponse{Status: "gateway sn number must not be nil"}, status.Errorf(codes.InvalidArgument, "")
+	}
+	err := a.validator.Validate(ctx, auth.ValidateGatewaysAccess(auth.Create, req.OrganizationId))
+	if err != nil {
+		return &pb.RegisterResponse{Status: "authentication failed"}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	// also validate that the network-server is accessible for the given organization
+	/*err = a.validator.Validate(ctx, auth.ValidateOrganizationNetworkServerAccess(auth.Read, req.Gateway.OrganizationId, req.Gateway.NetworkServerId))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}*/
+
+	snAddr := os.Getenv("REMOTE_SERVER_NAME")
+
+	// send the req to provision server
+	provReq := api.RegisterGWRequest{
+		Sn:            req.Sn,
+		SuperNodeAddr: snAddr,
+		OrgId:         req.OrganizationId,
+	}
+
+	provConf := config.C.ProvisionServer
+
+	provClient, err := provisionserver.GetPool().Get(provConf.ProvisionServer, []byte(provConf.CACert),
+		[]byte(provConf.TLSCert), []byte(provConf.TLSKey))
+	if err != nil {
+		return &pb.RegisterResponse{Status: "cannot connect to provisioning server"}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	resp, err := provClient.RegisterGW(ctx, &provReq)
+	if err != nil && grpc.Code(err) != codes.AlreadyExists {
+		return &pb.RegisterResponse{Status: "cannot get the response from provisioning server"}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	switch resp.Status {
+	case 2:
+		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
+	case 1:
+		return &pb.RegisterResponse{Status: "please delete the gateway from previous supernode"}, nil
+	case 0:
+		err = storage.Transaction(func(tx sqlx.Ext) error {
+			// get mac from provision server (resp.mac)
+			var mac lorawan.EUI64
+			if err := mac.UnmarshalText([]byte(resp.Mac)); err != nil {
+				return status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+			}
+
+			//check if gw already in db. If yes, update board table. No, create gw and insert board table.
+			gw, err := storage.GetGateway(ctx, tx, mac, false)
+			if err != nil {
+				if err != storage.ErrDoesNotExist {
+					return helpers.ErrToRPCError(err)
+				}
+			}
+
+			if gw.Name == "" {
+				var defLocation common.Location
+
+				createReq := ns.CreateGatewayRequest{
+					Gateway: &ns.Gateway{
+						Id:               mac[:],
+						Location:         &defLocation,
+						RoutingProfileId: applicationServerID.Bytes(),
+					},
+				}
+
+				// gateway profileID and gateway boards has been deleted in this func
+
+				NetworkServers, err := storage.GetNetworkServers(ctx, tx, 1, 0)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+
+				defNetworkServerID := NetworkServers[0].ID
+
+				err = storage.Transaction(func(tx sqlx.Ext) error {
+					err = storage.CreateGateway(ctx, tx, &storage.Gateway{
+						MAC:             mac,
+						Name:            "Default_Gateway",
+						Description:     "MXC_Gateway",
+						OrganizationID:  req.OrganizationId,
+						Ping:            false,
+						NetworkServerID: defNetworkServerID,
+						Latitude:        0,
+						Longitude:       0,
+						Altitude:        0,
+					})
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
+
+					n, err := storage.GetNetworkServer(ctx, tx, defNetworkServerID)
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
+
+					nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
+					_, err = nsClient.CreateGateway(ctx, &createReq)
+					if err != nil && grpc.Code(err) != codes.AlreadyExists {
+						return err
+					}
+
+					// store data to the board table
+					var bd storage.Board
+
+					bd.MAC = mac
+					bd.SN = &resp.Sn
+					bd.Model = resp.Model
+					bd.VpnAddr = resp.VpnAddr
+					bd.OsVersion = &resp.OsVersion
+
+					err = storage.CreateBoard(tx, &bd)
+					if err != nil {
+						return helpers.ErrToRPCError(err)
+					}
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+
+				redisConn := storage.RedisPool().Get()
+				defer redisConn.Close()
+				redisConn.Do("DEL", GatewayLocationsRedisKey)
+
+			} else {
+				bd, err := storage.GetBoard(tx, mac)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+
+				bd.SN = &req.Sn
+				bd.VpnAddr = resp.VpnAddr
+
+				err = storage.UpdateVPNAddr(ctx, tx, &bd)
+				if err != nil {
+					return helpers.ErrToRPCError(err)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return &pb.RegisterResponse{Status: "storage transaction error"}, status.Errorf(codes.Unavailable, err.Error())
+		}
+		return &pb.RegisterResponse{Status: resp.Status.String()}, nil
+	}
+
+	return &pb.RegisterResponse{Status: resp.Status.String()}, nil
+}
+
+func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb.GetGwPwdResponse, error) {
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	// send the req to provision server
+	provReq := api.GetRootPWDRequest{
+		Sn:            req.Sn,
+	}
+
+	provConf := config.C.ProvisionServer
+
+	provClient, err := provisionserver.GetPool().Get(provConf.ProvisionServer, []byte(provConf.CACert),
+		[]byte(provConf.TLSCert), []byte(provConf.TLSKey))
+	if err != nil {
+		return &pb.GetGwPwdResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	resp, err := provClient.GetRootPWD(ctx, &provReq)
+	if err != nil && grpc.Code(err) != codes.AlreadyExists {
+		return &pb.GetGwPwdResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &pb.GetGwPwdResponse{
+		Password: resp.RootPWD,
+	}, nil
+}
+
+// mxConfDGet connects to gateway though openVPN and get config file
 func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, error) {
 	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
 	if err != nil {
@@ -793,7 +1038,7 @@ func mxConfDGet(ctx context.Context, ip string, cmd string, rCode int) (string, 
 	return message, nil
 }
 
-// connect to gateway though openVPN and update config file
+// mxConfUpdate connects to gateway though openVPN and update config file
 func mxConfUpdate(ip string, conf string) error {
 	rpConn, err := textproto.Dial("tcp", fmt.Sprintf("%s:75", ip))
 	if err != nil {

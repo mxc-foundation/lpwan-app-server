@@ -321,7 +321,7 @@ class DeviceForm extends Component {
     return(
       <React.Fragment>
         <Formik
-          enableReinitialize
+          enableReinitialize={this.props.update}
           initialValues={
             {
               object: {
