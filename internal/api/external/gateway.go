@@ -862,7 +862,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	switch resp.Status {
 	case 2:
 		return &pb.RegisterResponse{Status: "please turn on your gateway"}, nil
-	case 1:
+	case 3:
 		return &pb.RegisterResponse{Status: "please delete the gateway from previous supernode"}, nil
 	case 0:
 		err = storage.Transaction(func(tx sqlx.Ext) error {
