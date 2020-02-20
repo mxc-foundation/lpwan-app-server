@@ -26,6 +26,8 @@ class UpdateNetworkServer extends Component {
         <Card className="card-box shadow-sm">
           <NetworkServerForm
             object={this.props.networkServer}
+            version={this.props.version}
+            region={this.props.region}
             onSubmit={this.onSubmit}
             submitLabel={i18n.t(`${packageNS}:tr000066`)}
           />

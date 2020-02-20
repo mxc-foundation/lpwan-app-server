@@ -293,6 +293,22 @@ class NetworkServerForm extends FormComponent {
                         </FormText>
                       </Col>
                     </FormGroup>
+                    
+                    {this.props.version || this.props.region ? <React.Fragment>
+                      <FormGroup row>
+                        <Label for="version" sm={3}>{i18n.t(`${packageNS}:tr000615`)}</Label>
+                        <Col sm="9">
+                          {this.props.region}
+                        </Col>
+                      </FormGroup>
+                      <FormGroup row>
+                        <Label for="version" sm={3}>{i18n.t(`${packageNS}:tr000087`)}</Label>
+                        <Col sm="9">
+                          {this.props.version}
+                        </Col>
+                      </FormGroup>
+                    </React.Fragment> : null}
+                    
                     <FormGroup row>
                       <Col sm="12">
                         <br />
