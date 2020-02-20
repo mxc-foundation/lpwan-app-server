@@ -507,6 +507,7 @@
   "tr000612": "Activate",
   "tr000613": "Scan Time",
   "tr000614": "Save Config",
+  "tr000615": "Region",
   "common": {
     "delete": "刪除",
     "reset": "重設"
