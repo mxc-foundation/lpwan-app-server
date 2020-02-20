@@ -179,3 +179,10 @@
         }
     }
 }
+
+.is-invalid {
+    .react-select-validation__control {
+        border: $input-border-width solid $danger;
+    }
+}
+
