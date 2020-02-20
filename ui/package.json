@@ -55,6 +55,7 @@
     "source-map-explorer": "^2.0.1",
     "styled-components": "^4.4.0",
     "swagger-client": "^3.9.1",
+    "toastr2": "^3.0.0-alpha.8",
     "typeface-roboto": "0.0.75",
     "validator": "^11.1.0",
     "whatwg-fetch": "^3.0.0",

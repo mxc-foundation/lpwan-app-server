@@ -9,12 +9,12 @@ class TitleBar extends Component {
 
     return (
       <Row className="pt-3 pb-2">
-        <Col xs={noButtons ? 12 : 8} style={{ display: "flex" }}>
+        <Col md={noButtons ? 12 : 8} style={{ display: "flex" }}>
           {this.props.children}
         </Col>
         {noButtons ? null
           : (
-            <Col xs={4} className="text-right">
+            <Col md={4} className="text-md-right">
               {this.props.buttons}
             </Col>
           )

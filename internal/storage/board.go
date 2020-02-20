@@ -58,23 +58,17 @@ func CreateBoard(db sqlx.Execer, bd *Board) error {
 			updated_at,
 			model,
 			vpn_addr,
-			qa_err,
 			os_version,
-			fpga_version,
-			root_password,
-			server
-		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+			fpga_version
+		) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
 		bd.MAC[:],
 		bd.SN,
 		now,
 		now,
 		bd.Model,
 		bd.VpnAddr,
-		bd.QaErr,
 		bd.OsVersion,
 		bd.FPGAVersion,
-		bd.RootPassword,
-		bd.Server,
 	)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
@@ -237,6 +231,58 @@ func UnregisterBoardAtomic(db sqlx.Execer, bd *Board) error {
 		"mac": bd.MAC,
 		"sn":  bd.SN,
 	}).Info("Board unregistered")
+
+	return nil
+}
+
+func UpdateVPNAddr(ctx context.Context, db sqlx.Execer, bd *Board) error {
+	now := time.Now()
+
+	res, err := db.Exec(`
+		update board
+			set updated_at = $2,
+			vpn_addr = $3
+		where
+			sn = $1`,
+		bd.SN,
+		now,
+		bd.VpnAddr,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+	err = handlePSQLEffect(res)
+	if err != nil {
+		return err
+	}
+
+	bd.UpdatedAt = now
+	log.WithFields(log.Fields{
+		"mac": bd.MAC,
+		"sn":  bd.SN,
+	}).Info("VPN address updated")
+
+	return nil
+}
+
+func DeleteBoardByMac(ctx context.Context, db sqlx.Execer, bd *Board) error {
+	res, err := db.Exec(`
+		delete from board
+		where mac = $1`,
+		bd.MAC,
+	)
+	if err != nil {
+		return handlePSQLError(Delete, err, "delete error")
+	}
+	err = handlePSQLEffect(res)
+	if err != nil {
+		return err
+	}
+
+	log.WithFields(log.Fields{
+		"mac": bd.MAC,
+		"sn":  bd.SN,
+	}).Info("Board gateway deleted")
 
 	return nil
 }

@@ -54,7 +54,7 @@ class DeviceFormM2M extends Component {
 
     this.state = {
       data: [],
-      loading: true,
+      loading: false,
       totalSize: 0
     }
   }
@@ -190,6 +190,8 @@ class DeviceFormM2M extends Component {
         object.loading = false;
         this.setState({ object });
       }
+    }, (error) => {
+      this.setState({ loading: false });
     });
   }
 
@@ -215,8 +217,7 @@ class DeviceFormM2M extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
     const { loading: loadingState } = this.state;
-    const { loading: loadingProps } = this.props;
-    const isLoading = (loadingState || loadingProps);
+    const isLoading = loadingState;
 
     return (
       <React.Fragment>
