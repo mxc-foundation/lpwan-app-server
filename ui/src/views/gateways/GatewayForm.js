@@ -47,16 +47,6 @@ import GatewayFormLBT from "./GatewayFormLBT";
 import GatewayFormMacChannels from "./GatewayFormMacChannels";
 import GatewayFormClassB from "./GatewayFormClassB";
 
-import {
-  getLBTChannels,
-  getChannelsWithFrequency,
-  getAntennaGain,
-  getLBTConfigStatus
-} from "./utils";
-import GatewayFormLBT from "./GatewayFormLBT";
-import GatewayFormMacChannels from "./GatewayFormMacChannels";
-import GatewayFormClassB from "./GatewayFormClassB";
-
 const clone = require("rfdc")();
 
 class GatewayForm extends Component {
