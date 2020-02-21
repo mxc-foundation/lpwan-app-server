@@ -165,7 +165,10 @@ class SessionStore extends EventEmitter {
   }
 
   logout(callBackFunc) {
+    // preserving languages
+    const lang = this.getLanguage();
     localStorage.clear();
+    this.setLanguage(lang);
     this.user = null;
     this.organizations = [];
     this.settings = {};

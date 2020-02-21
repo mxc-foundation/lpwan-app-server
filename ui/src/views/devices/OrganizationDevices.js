@@ -114,7 +114,7 @@ class OrganizationDevices extends Component {
                 }>Organizations</Link></BreadcrumbItem>
                 <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
                   `/organizations/${currentOrgID}`
-                }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
+                }>{currentOrgID}</Link></BreadcrumbItem>
                 <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000278`)}</BreadcrumbItem>
               </Breadcrumb>
             </TitleBar>
