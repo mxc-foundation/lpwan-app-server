@@ -92,7 +92,7 @@ class OrganizationStore extends EventEmitter {
     });
   }
 
-  addUser(organizationID, user, callbackFunc) {
+  addUser(organizationID, user, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.AddUser({
         "organizationUser.organizationId": organizationID,
@@ -104,7 +104,10 @@ class OrganizationStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch((error) => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 

@@ -27,7 +27,7 @@ class DeviceStore extends EventEmitter {
     return this.wsFramesStatus;
   }
 
-  getDeviceList(orgId, offset, limit, callbackFunc) {
+  getDeviceList(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
     // Run the following in development environment and early exit from function
     /* if (isDev) {
       (async () => callbackFunc(await MockDeviceStoreApi.getDeviceList()))();
@@ -45,7 +45,11 @@ class DeviceStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.body);
       })
-      .catch(errorHandler);
+      .catch((error) => {
+        errorHandler(error);
+        if (errorCallbackFunc)
+          errorCallbackFunc(error);
+      });
     });
   }
 

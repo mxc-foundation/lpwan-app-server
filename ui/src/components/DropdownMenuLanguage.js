@@ -123,6 +123,7 @@ class WithPromises extends Component {
           options={SUPPORTED_LANGUAGES}
           value={selectedOption}
           components={customSelectComponents}
+          {...(this.props.extraSelectOpts || {})}
         />
       </div>
     );

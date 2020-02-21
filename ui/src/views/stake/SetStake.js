@@ -33,7 +33,8 @@ class SetStake extends FormComponent {
   state = {
     title: i18n.t(`${packageNS}:menu.messages.set_stake`)
   }
-  componentWillReceiveProps() {
+
+  componentDidMount() {
     this.loadStakeTextTranslation();
   }
 
