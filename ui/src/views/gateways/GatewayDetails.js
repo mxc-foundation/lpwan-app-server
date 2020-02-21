@@ -45,35 +45,31 @@ class GatewayDetails extends Component {
   }
 
   loadConfig() {
-    // GatewayStore.getConfig(this.props.match.params.gatewayID, resp => {
-    //   this.setState({
-    //     config: resp
-    //   });
-    // });
+    // TODO - call actual api to get this
     this.setState({
       config: {
-        manufacturer: "manufacturer",
-        WiFiSSID: "123",
-        WiFiSSIDStatus: true,
-        WiFiModel: "Model",
-        LANIPAddress: "255.255.255.0",
-        OSVersion: "MXOS 1.1",
-        firmwareVersion: "2.0",
-        processes: [
-          {process: "monit", status: "OK", uptime: "1m", cpuTotal: "0.6%", memoryTotal: "3.0% [7.2 MB]", read: "0.0/s", write: "0.6/s"},
-          {process: "sshd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "2.8% [6.8 MB]", read: "-", write: "-"},
-          {process: "postfix", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "1.8% [4.3 MB]", read: "0.0/s", write: "-"},
-          {process: "cron", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.3% [740 KB]", read: "0.0/s", write: "-"},
-          {process: "devd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.1% [268 KB]", read: "0.0/s", write: "-"},
-          {process: "ntpd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.4% [1.0 MB]", read: "0.0/s", write: "-"},
-        ],
-        networks: [
-          {net: "rm0", status: "OK", upload: "1.5 kB/s", download: "1.0kB/s"},
-          {net: "lo0", status: "OK", upload: "651 B/s", download: "651 B/s"},
-        ],
-        hosts: [
-          {host: "tildeslash2", status: "OK", upload: "", protocol: "[ping] [HTTP] at port 80"}
-        ],
+        // manufacturer: "manufacturer",
+        // WiFiSSID: "123",
+        // WiFiSSIDStatus: true,
+        // WiFiModel: "Model",
+        // LANIPAddress: "255.255.255.0",
+        // OSVersion: "MXOS 1.1",
+        // firmwareVersion: "2.0",
+        // processes: [
+        //   {process: "monit", status: "OK", uptime: "1m", cpuTotal: "0.6%", memoryTotal: "3.0% [7.2 MB]", read: "0.0/s", write: "0.6/s"},
+        //   {process: "sshd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "2.8% [6.8 MB]", read: "-", write: "-"},
+        //   {process: "postfix", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "1.8% [4.3 MB]", read: "0.0/s", write: "-"},
+        //   {process: "cron", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.3% [740 KB]", read: "0.0/s", write: "-"},
+        //   {process: "devd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.1% [268 KB]", read: "0.0/s", write: "-"},
+        //   {process: "ntpd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.4% [1.0 MB]", read: "0.0/s", write: "-"},
+        // ],
+        // networks: [
+        //   {net: "rm0", status: "OK", upload: "1.5 kB/s", download: "1.0kB/s"},
+        //   {net: "lo0", status: "OK", upload: "651 B/s", download: "651 B/s"},
+        // ],
+        // hosts: [
+        //   {host: "tildeslash2", status: "OK", upload: "", protocol: "[ping] [HTTP] at port 80"}
+        // ],
       }
     });
   }
@@ -241,17 +237,17 @@ class GatewayDetails extends Component {
               </p>
                 </Col>
                 <Col lg={6}>
-                  <h6 className="text-primary font-16">
+                  {/* <h6 className="text-primary font-16">
                   {i18n.t(`${packageNS}:tr000574`)}
                   </h6>
                   <div>
                     {config.WiFiSSID}
                     <CustomInput type="switch" id="WiFiSSIDStatus" label={""} disabled defaultChecked={config.WiFiSSIDStatus} className="ml-1 d-inline" />
-                  </div>
+                  </div> */}
                 </Col>
               </Row>
 
-              <Row>
+              {/* <Row>
                 <Col lg={6}>
                   <h6 className="text-primary font-16">
                     {i18n.t(`${packageNS}:tr000575`)}
@@ -268,9 +264,9 @@ class GatewayDetails extends Component {
                     {config.LANIPAddress}
                   </p>
                 </Col>
-              </Row>
+              </Row> */}
 
-              <Row>
+              {/* <Row>
                 <Col lg={4}>
                   <h6 className="text-primary font-16">
                     {i18n.t(`${packageNS}:tr000577`)}
@@ -306,13 +302,13 @@ class GatewayDetails extends Component {
                     {i18n.t(`${packageNS}:tr000242`)} ( {lastseen} )
                   </h6>
                 </Col>
-              </Row>
+              </Row> */}
             </CardBody>
           </Card>
         </Col>
       </Row>
 
-      <Row className="mt-2">
+      {/* <Row className="mt-2">
         <Col>
           <Card className="border shadow-none">
             <CardBody className="p-1">
@@ -393,7 +389,7 @@ class GatewayDetails extends Component {
             </CardBody>
           </Card>
         </Col>
-      </Row>
+      </Row> */}
 
       <Row className="mt-2">
         <Col>
