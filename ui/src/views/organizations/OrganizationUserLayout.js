@@ -1,25 +1,16 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Button, Row } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Button, Row, Col } from 'reactstrap';
 
 import Modal from '../../components/Modal';
-
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import SessionStore from "../../stores/SessionStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganizationUser from "./UpdateOrganizationUser";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class OrganizationUserLayout extends Component {
   constructor() {
@@ -99,40 +90,18 @@ class OrganizationUserLayout extends Component {
             </Button>
           ]}
         >
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
-                  Organizations
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}/users`}
-              >
-                {i18n.t(`${packageNS}:tr000068`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>{this.state.organizationUser.organizationUser.username}</BreadcrumbItem>
-          </Breadcrumb>
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000068`), active: false, to: `/organizations/${currentOrgID}/users` },
+            { label: this.state.organizationUser.organizationUser.username, active: true }]}></OrgBreadCumb>
         </TitleBar>
         <Row>
-          <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
+          <Col>
+            <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
+          </Col>
         </Row>
       </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(OrganizationUserLayout));
+export default withRouter(OrganizationUserLayout);
