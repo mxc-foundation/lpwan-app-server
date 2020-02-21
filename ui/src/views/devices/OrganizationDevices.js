@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col,
-  TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
+import { Container, Row, Col, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
 import theme from "../../theme";
@@ -84,10 +83,9 @@ class OrganizationDevices extends Component {
   }
 
   render() {
-    const { activeMainTabIndex, loading, organization } = this.state;
-    const { children, classes } = this.props;
+    const { activeMainTabIndex, loading } = this.state;
+    const { children } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    const currentOrgName = organization && (organization.name || organization.displayName);
 
     return(
       <Container fluid>
