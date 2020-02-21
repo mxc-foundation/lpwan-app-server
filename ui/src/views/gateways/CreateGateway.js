@@ -59,12 +59,6 @@ class CreateGateway extends Component {
         `/organizations/${this.props.match.params.organizationID}/gateways`
       );
     });
-
-    // TODO - create config using another api
-    console.log(config);
-
-    // TODO - save class B configuration
-    console.log(classBConfig);
   };
 
   redirectToCreateServiceProfile = () => {

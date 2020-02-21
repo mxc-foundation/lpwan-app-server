@@ -35,6 +35,7 @@ import AutocompleteSelect from "../../components/AutocompleteSelect";
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
+import GatewayStore from "../../stores/GatewayStore";
 
 import {
   getLBTChannels,
