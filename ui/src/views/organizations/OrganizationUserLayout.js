@@ -77,28 +77,30 @@ class OrganizationUserLayout extends Component {
       return (<div></div>);
     }
 
+    const titleButtons = [];
+
+    if (this.props.match.params.userID !== SessionStore.getUser().id && currentOrgID === SessionStore.getOrganizationID()) {
+      titleButtons.push(<Button color="danger"
+      key={1}
+      onClick={this.openModal}
+      className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
+    </Button>);
+    }
+    
+    // <Button color="secondary"
+    //   key={1}
+    //   onClick={this.gotoUser}
+    //   className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
+    // </Button> ,
+          
+
     return (
       <React.Fragment>
         {this.state.nsDialog && <Modal
           title={""}
           context={i18n.t(`${packageNS}:lpwan.org_users.delete_user`)}
           callback={this.deleteOrganizationUser} />}
-        <TitleBar
-          buttons={[
-          /* 
-            <Button color="secondary"
-              key={1}
-              onClick={this.gotoUser}
-              className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
-            </Button>,
-          */
-            <Button color="danger"
-              key={1}
-              onClick={this.openModal}
-              className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
-            </Button>
-          ]}
-        >
+        <TitleBar buttons={titleButtons}>
           <Breadcrumb className={classes.breadcrumb}>
             <BreadcrumbItem>
               <Link
