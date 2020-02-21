@@ -29,11 +29,11 @@ class GatewayDetails extends Component {
 
   toggle = () => {
     const { modal } = this.state;
-    this.setState({modal: !this.state.modal});
+    this.setState({ modal: !this.state.modal });
   }
 
   resetGateway = () => {
-    this.setState({modal: !this.state.modal});
+    this.setState({ modal: !this.state.modal });
     // submit all data for reset
   }
 
@@ -41,7 +41,7 @@ class GatewayDetails extends Component {
    * Shows root password
    */
   showRootPassword = () => {
-    this.setState({showRootPassword: true});
+    this.setState({ showRootPassword: true });
   }
 
   loadConfig() {
@@ -60,19 +60,19 @@ class GatewayDetails extends Component {
         OSVersion: "MXOS 1.1",
         firmwareVersion: "2.0",
         processes: [
-          {process: "monit", status: "OK", uptime: "1m", cpuTotal: "0.6%", memoryTotal: "3.0% [7.2 MB]", read: "0.0/s", write: "0.6/s"},
-          {process: "sshd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "2.8% [6.8 MB]", read: "-", write: "-"},
-          {process: "postfix", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "1.8% [4.3 MB]", read: "0.0/s", write: "-"},
-          {process: "cron", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.3% [740 KB]", read: "0.0/s", write: "-"},
-          {process: "devd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.1% [268 KB]", read: "0.0/s", write: "-"},
-          {process: "ntpd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.4% [1.0 MB]", read: "0.0/s", write: "-"},
+          { process: "monit", status: "OK", uptime: "1m", cpuTotal: "0.6%", memoryTotal: "3.0% [7.2 MB]", read: "0.0/s", write: "0.6/s" },
+          { process: "sshd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "2.8% [6.8 MB]", read: "-", write: "-" },
+          { process: "postfix", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "1.8% [4.3 MB]", read: "0.0/s", write: "-" },
+          { process: "cron", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.3% [740 KB]", read: "0.0/s", write: "-" },
+          { process: "devd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.1% [268 KB]", read: "0.0/s", write: "-" },
+          { process: "ntpd", status: "OK", uptime: "224d 2h 42m", cpuTotal: "0.0%", memoryTotal: "0.4% [1.0 MB]", read: "0.0/s", write: "-" },
         ],
         networks: [
-          {net: "rm0", status: "OK", upload: "1.5 kB/s", download: "1.0kB/s"},
-          {net: "lo0", status: "OK", upload: "651 B/s", download: "651 B/s"},
+          { net: "rm0", status: "OK", upload: "1.5 kB/s", download: "1.0kB/s" },
+          { net: "lo0", status: "OK", upload: "651 B/s", download: "651 B/s" },
         ],
         hosts: [
-          {host: "tildeslash2", status: "OK", upload: "", protocol: "[ping] [HTTP] at port 80"}
+          { host: "tildeslash2", status: "OK", upload: "", protocol: "[ping] [HTTP] at port 80" }
         ],
       }
     });
@@ -169,26 +169,26 @@ class GatewayDetails extends Component {
               <CardTitle tag="h4">{i18n.t(`${packageNS}:tr000423`)}</CardTitle>
               <Row>
                 <Col lg={6}>
-                <h6 className="text-primary font-16">
+                  <h6 className="text-primary font-16">
                     {i18n.t(`${packageNS}:tr000571`)}
                   </h6>
                   <p>
-                    {config && <> {config.manufacturer} </> }
+                    {config && <> {config.manufacturer} </>}
                   </p>
                 </Col>
                 <Col lg={6}>
                   <h6 className="text-primary font-16">
-                  {i18n.t(`${packageNS}:tr000572`)} / {i18n.t(`${packageNS}:tr000074`)}
+                    {i18n.t(`${packageNS}:tr000572`)} / {i18n.t(`${packageNS}:tr000074`)}
                   </h6>
                   <Row>
                     <Col lg={6}>
                       <p>
-                      {this.props.gateway.id}
+                        {this.props.gateway.id}
                       </p>
                     </Col>
                     <Col lg={6}>
                       <p>
-                      <CustomInput type="switch" id="discoveryEnabled" label={i18n.t(`${packageNS}:tr000228`)} disabled checked={this.props.gateway.discoveryEnabled}/>
+                        <CustomInput type="switch" id="discoveryEnabled" label={i18n.t(`${packageNS}:tr000228`)} disabled checked={this.props.gateway.discoveryEnabled} />
                       </p>
                     </Col>
                   </Row>
@@ -206,10 +206,10 @@ class GatewayDetails extends Component {
                 </Col>
                 <Col lg={6}>
                   <h6 className="text-primary font-16">
-                  {i18n.t(`${packageNS}:tr000573`)}
+                    {i18n.t(`${packageNS}:tr000573`)}
                   </h6>
                   <p>
-                  {this.props.gateway.location.altitude} meters
+                    {this.props.gateway.location.altitude} meters
                   </p>
                 </Col>
               </Row>
@@ -225,10 +225,10 @@ class GatewayDetails extends Component {
                 </Col>
                 <Col lg={6}>
                   <h6 className="text-primary font-16">
-                  {i18n.t(`${packageNS}:tr000241`)}
+                    {i18n.t(`${packageNS}:tr000241`)}
                   </h6>
                   <p>
-                {this.props.gateway.location.latitude}, {this.props.gateway.location.longitude}
+                    {this.props.gateway.location.latitude}, {this.props.gateway.location.longitude}
                   </p>
                 </Col>
               </Row>
@@ -239,12 +239,12 @@ class GatewayDetails extends Component {
                     {i18n.t(`${packageNS}:tr000242`)}
                   </h6>
                   <p>
-                {lastseen}
-              </p>
+                    {lastseen}
+                  </p>
                 </Col>
                 <Col lg={6}>
                   <h6 className="text-primary font-16">
-                  {i18n.t(`${packageNS}:tr000574`)}
+                    {i18n.t(`${packageNS}:tr000574`)}
                   </h6>
                   <p>
                     {config.WiFiSSID}
@@ -264,7 +264,7 @@ class GatewayDetails extends Component {
                 </Col>
                 <Col lg={6}>
                   <h6 className="text-primary font-16">
-                  {i18n.t(`${packageNS}:tr000576`)}
+                    {i18n.t(`${packageNS}:tr000576`)}
                   </h6>
                   <p>
                     {config.LANIPAddress}
@@ -282,7 +282,7 @@ class GatewayDetails extends Component {
                     <Button
                       type="button"
                       color="primary"
-                      className="ml-2 d-inline" 
+                      className="ml-2 d-inline"
                     >
                       {i18n.t(`${packageNS}:tr000579`)}
                     </Button>
@@ -297,7 +297,7 @@ class GatewayDetails extends Component {
                     <Button
                       type="button"
                       color="primary"
-                      className="ml-2 d-inline" 
+                      className="ml-2 d-inline"
                     >
                       {i18n.t(`${packageNS}:tr000579`)}
                     </Button>
@@ -331,19 +331,19 @@ class GatewayDetails extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                {config.processes.map((process, index) => {
-                  return <tr key={index}>
-                    <td>{process.process}</td>
-                    <td>{process.status}</td>
-                    <td>{process.uptime}</td>
-                    <td>{process.cpuTotal}</td>
-                    <td>{process.memoryTotal}</td>
-                    <td>{process.read}</td>
-                    <td>{process.write}</td>
-                  </tr>
-                })}
+                  {config.processes.map((process, index) => {
+                    return <tr key={index}>
+                      <td>{process.process}</td>
+                      <td>{process.status}</td>
+                      <td>{process.uptime}</td>
+                      <td>{process.cpuTotal}</td>
+                      <td>{process.memoryTotal}</td>
+                      <td>{process.read}</td>
+                      <td>{process.write}</td>
+                    </tr>
+                  })}
                 </tbody>
-                </Table>: null}
+              </Table> : null}
             </CardBody>
           </Card>
         </Col>
@@ -363,16 +363,16 @@ class GatewayDetails extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                {config.networks.map((network, index) => {
-                  return <tr key={index}>
-                    <td>{network.net}</td>
-                    <td>{network.status}</td>
-                    <td>{network.upload}</td>
-                    <td className="text-right">{network.download}</td>
-                  </tr>
-                })}
+                  {config.networks.map((network, index) => {
+                    return <tr key={index}>
+                      <td>{network.net}</td>
+                      <td>{network.status}</td>
+                      <td>{network.upload}</td>
+                      <td className="text-right">{network.download}</td>
+                    </tr>
+                  })}
                 </tbody>
-                </Table>: null}
+              </Table> : null}
 
               {config.hosts ? <Table striped size="sm">
                 <thead>
@@ -383,15 +383,15 @@ class GatewayDetails extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                {config.hosts.map((host, index) => {
-                  return <tr key={index}>
-                    <td>{host.host}</td>
-                    <td>{host.status}</td>
-                    <td className="text-right">{host.protocol}</td>
-                  </tr>
-                })}
+                  {config.hosts.map((host, index) => {
+                    return <tr key={index}>
+                      <td>{host.host}</td>
+                      <td>{host.status}</td>
+                      <td className="text-right">{host.protocol}</td>
+                    </tr>
+                  })}
                 </tbody>
-                </Table>: null}
+              </Table> : null}
             </CardBody>
           </Card>
         </Col>
@@ -448,36 +448,36 @@ class GatewayDetails extends Component {
               <CustomInput type="checkbox" id="agreeTerms" label={i18n.t(`${packageNS}:tr000591`)} />
             </Col>
             <Col className="col-auto">
-            <Button
-              type="button"
-              color="primary"
-              className="ml-2 d-inline" 
-              onClick={this.showRootPassword}
-            >
-              {i18n.t(`${packageNS}:tr000619`)}
-            </Button>
               <Button
-              type="button"
-              color="primary"
-              className="ml-2 d-inline" 
-            >
-              {i18n.t(`${packageNS}:tr000592`)}
-            </Button>
-            <Button
-              type="button"
-              color="primary"
-              className="ml-2 d-inline" 
-            >
-              {i18n.t(`${packageNS}:tr000593`)}
-            </Button>
-            <Button
-              type="button"
-              color="primary"
-              onClick={this.toggle}
-              className="ml-2 d-inline mt-2 mt-sm-0" 
-            >
-              {i18n.t(`${packageNS}:tr000594`)}
-            </Button>
+                type="button"
+                color="primary"
+                className="ml-2 d-inline"
+                onClick={this.showRootPassword}
+              >
+                {i18n.t(`${packageNS}:tr000619`)}
+              </Button>
+              <Button
+                type="button"
+                color="primary"
+                className="ml-2 d-inline"
+              >
+                {i18n.t(`${packageNS}:tr000592`)}
+              </Button>
+              <Button
+                type="button"
+                color="primary"
+                className="ml-2 d-inline"
+              >
+                {i18n.t(`${packageNS}:tr000593`)}
+              </Button>
+              <Button
+                type="button"
+                color="primary"
+                onClick={this.toggle}
+                className="ml-2 d-inline mt-2 mt-sm-0"
+              >
+                {i18n.t(`${packageNS}:tr000594`)}
+              </Button>
             </Col>
           </Row>
         </Col>
@@ -493,7 +493,7 @@ class GatewayDetails extends Component {
         </ModalFooter>
       </Modal>
 
-      {this.state.showRootPassword? <RootPassword onClose={() => this.setState({showRootPassword: false})} gatewayID={this.props.match.params.gatewayID} />: null}
+      {this.state.showRootPassword ? <RootPassword onClose={() => this.setState({ showRootPassword: false })} /> : null}
     </React.Fragment>
     );
   }
