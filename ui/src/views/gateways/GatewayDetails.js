@@ -493,7 +493,7 @@ class GatewayDetails extends Component {
         </ModalFooter>
       </Modal>
 
-      {this.state.showRootPassword? <RootPassword onClose={() => this.setState({showRootPassword: false})} />: null}
+      {this.state.showRootPassword? <RootPassword onClose={() => this.setState({showRootPassword: false})} gatewayID={this.props.match.params.gatewayID} />: null}
     </React.Fragment>
     );
   }

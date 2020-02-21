@@ -303,6 +303,23 @@ class GatewayStore extends EventEmitter {
       },
     });
   }
+
+  getRootConfig(id, callbackFunc, errorCallbackFunc) {
+    // Run the following in development environment and early exit from function
+    this.swagger.then(client => {
+      client.apis.GatewayService.GetGwPwd({
+        gatewayId: id,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
+    });
+  }
 }
 
 const gatewayStore = new GatewayStore();
