@@ -68,31 +68,57 @@ class OrganizationUserLayout extends Component {
       return (<div></div>);
     }
 
+    const titleButtons = [];
+
+    if (this.props.match.params.userID !== SessionStore.getUser().id && currentOrgID === SessionStore.getOrganizationID()) {
+      titleButtons.push(<Button color="danger"
+      key={1}
+      onClick={this.openModal}
+      className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
+    </Button>);
+    }
+    
+    // <Button color="secondary"
+    //   key={1}
+    //   onClick={this.gotoUser}
+    //   className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
+    // </Button> ,
+          
+
     return (
       <React.Fragment>
         {this.state.nsDialog && <Modal
           title={""}
           context={i18n.t(`${packageNS}:lpwan.org_users.delete_user`)}
           callback={this.deleteOrganizationUser} />}
-        <TitleBar
-          buttons={[
-          /* 
-            <Button color="secondary"
-              key={1}
-              onClick={this.gotoUser}
-              className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
-            </Button>,
-          */
-            <Button color="danger"
-              key={1}
-              onClick={this.openModal}
-              className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
-            </Button>
-          ]}
-        >
-          <OrgBreadCumb organizationID={currentOrgID} items={[
-            { label: i18n.t(`${packageNS}:tr000068`), active: false, to: `/organizations/${currentOrgID}/users` },
-            { label: this.state.organizationUser.organizationUser.username, active: true }]}></OrgBreadCumb>
+        <TitleBar buttons={titleButtons}>
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+              >
+                  Organizations
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}`}
+              >
+                {currentOrgID}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations/${currentOrgID}/users`}
+              >
+                {i18n.t(`${packageNS}:tr000068`)}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem active>{this.state.organizationUser.organizationUser.username}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
         <Row>
           <Col>
