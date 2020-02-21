@@ -187,9 +187,7 @@ class GatewayDetails extends Component {
                       </p>
                     </Col>
                     <Col lg={6}>
-                      <p>
                       <CustomInput type="switch" id="discoveryEnabled" label={i18n.t(`${packageNS}:tr000228`)} disabled checked={this.props.gateway.discoveryEnabled}/>
-                      </p>
                     </Col>
                   </Row>
                 </Col>
@@ -246,10 +244,10 @@ class GatewayDetails extends Component {
                   <h6 className="text-primary font-16">
                   {i18n.t(`${packageNS}:tr000574`)}
                   </h6>
-                  <p>
+                  <div>
                     {config.WiFiSSID}
                     <CustomInput type="switch" id="WiFiSSIDStatus" label={""} disabled defaultChecked={config.WiFiSSIDStatus} className="ml-1 d-inline" />
-                  </p>
+                  </div>
                 </Col>
               </Row>
 
