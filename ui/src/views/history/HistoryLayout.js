@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
 import classNames from "classnames";
-import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
+
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 import StakeStore from "../../stores/StakeStore";
 import EthAccount from "./EthAccount";
@@ -12,14 +13,6 @@ import Transactions from "./Transactions";
 import NetworkActivityHistory from "./NetworkActivityHistory";
 import Stakes from "./Stakes";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class HistoryLayout extends Component {
   constructor(props) {
@@ -79,34 +72,16 @@ class HistoryLayout extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-                onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-              >
-                Organizations
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-                onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
-            <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.history.history`)}</BreadcrumbItem>
-          </Breadcrumb>
+          <OrgBreadCumb orgListCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
+            orgNameCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
+            organizationID={currentOrgID} items={[
+              { label: i18n.t(`${packageNS}:tr000568`), active: false },
+              { label: i18n.t(`${packageNS}:menu.history.history`), active: true }]}></OrgBreadCumb>
         </TitleBar>
 
         <Row>
@@ -164,4 +139,4 @@ class HistoryLayout extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(HistoryLayout));
+export default withRouter(HistoryLayout);

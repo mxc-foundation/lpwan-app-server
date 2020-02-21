@@ -6,6 +6,7 @@ import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import TitleBarTitle from "../../components/TitleBarTitle";
 import Loader from "../../components/Loader";
 
@@ -111,6 +112,7 @@ class CreateDevice extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
     const currentOrgName = organization && (organization.name || organization.displayName);
+
     const currentAppName = application && (application.application.name);
 
     const closeAppBtn = <button className="close" onClick={this.toggleAppDialog}>&times;</button>;
@@ -205,18 +207,10 @@ class CreateDevice extends Component {
                 <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
               </Breadcrumb>
             ) : (
-              <Breadcrumb className={classes.breadcrumb}>
-                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                  `/organizations`
-                }>Organizations</Link></BreadcrumbItem>
-                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                  `/organizations/${currentOrgID}`
-                }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
-                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                  `/organizations/${currentOrgID}/devices`
-                }>{i18n.t(`${packageNS}:tr000278`)}</Link></BreadcrumbItem>
-                <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-              </Breadcrumb>
+
+              <OrgBreadCumb organizationID={currentOrgID} items={[
+                { label: i18n.t(`${packageNS}:tr000278`), active: false, to: `/organizations/${currentOrgID}/devices` },
+                { label: i18n.t(`${packageNS}:tr000277`), active: true }]}></OrgBreadCumb>
             )
           }
         </TitleBar>
