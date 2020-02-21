@@ -761,8 +761,7 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	//ToDo: change back after UI finish the test
-	/*openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
+	openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
 	if err != nil {
 		log.WithError(err).Error("cannot get openVPN address from DB")
 	}
@@ -770,29 +769,28 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 	message, err := mxConfDGet(ctx, openVPNaddr, "GGLC", 250)
 	if err != nil {
 		log.WithError(err).Error("cannot connect to gw")
-	}*/
+	}
 
-	//comments := []string{"/* radio_1 provides clock to concentrator */", "/* dBm */", "/* 8 channels maximum */",
-	//	"/* dB */", "/* antenna gain, in dBi */", "/* [126..250] KHz */", "/* Lora MAC channel, 125kHz, all SF, 868.1 MHz */",
-	//	"/* Lora MAC channel, 125kHz, all SF, 868.3 MHz */", "/* Lora MAC channel, 125kHz, all SF, 868.5 MHz */",
-	//	"/* Lora MAC channel, 125kHz, all SF, 868.8 MHz */", "/* Lora MAC channel, 125kHz, all SF, 864.7 MHz */",
-	//	"/* Lora MAC channel, 125kHz, all SF, 864.9 MHz */", "/* Lora MAC channel, 125kHz, all SF, 865.1 MHz */",
-	//	"/* Lora MAC channel, 125kHz, all SF, 865.3 MHz */", "/* Lora MAC channel, 250kHz, SF7, 868.3 MHz */",
-	//	"/* FSK 50kbps channel, 868.8 MHz */", "/* TX gain table, index 0 */", "/* TX gain table, index 1 */", "/* TX gain table, index 2 */",
-	//	"/* TX gain table, index 3 */", "/* TX gain table, index 4 */", "/* TX gain table, index 5 */", "/* TX gain table, index 6 */",
-	//	"/* TX gain table, index 7 */", "/* TX gain table, index 8 */", "/* TX gain table, index 9 */", "/* TX gain table, index 10 */",
-	//	"/* TX gain table, index 11 */", "/* TX gain table, index 12 */", "/* TX gain table, index 13 */", "/* TX gain table, index 14 */",
-	//	"/* TX gain table, index 15 */", "/* change with default server address/ports, or overwrite in local_conf.json */",
-	//	"/* adjust the following parameters for your network */", "/* forward only valid packets */", "/* GPS configuration */",
-	//	"/* GPS reference coordinates */"}
+	comments := []string{"/* radio_1 provides clock to concentrator */", "/* dBm */", "/* 8 channels maximum */",
+		"/* dB */", "/* antenna gain, in dBi */", "/* [126..250] KHz */", "/* Lora MAC channel, 125kHz, all SF, 868.1 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 868.3 MHz */", "/* Lora MAC channel, 125kHz, all SF, 868.5 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 868.8 MHz */", "/* Lora MAC channel, 125kHz, all SF, 864.7 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 864.9 MHz */", "/* Lora MAC channel, 125kHz, all SF, 865.1 MHz */",
+		"/* Lora MAC channel, 125kHz, all SF, 865.3 MHz */", "/* Lora MAC channel, 250kHz, SF7, 868.3 MHz */",
+		"/* FSK 50kbps channel, 868.8 MHz */", "/* TX gain table, index 0 */", "/* TX gain table, index 1 */", "/* TX gain table, index 2 */",
+		"/* TX gain table, index 3 */", "/* TX gain table, index 4 */", "/* TX gain table, index 5 */", "/* TX gain table, index 6 */",
+		"/* TX gain table, index 7 */", "/* TX gain table, index 8 */", "/* TX gain table, index 9 */", "/* TX gain table, index 10 */",
+		"/* TX gain table, index 11 */", "/* TX gain table, index 12 */", "/* TX gain table, index 13 */", "/* TX gain table, index 14 */",
+		"/* TX gain table, index 15 */", "/* change with default server address/ports, or overwrite in local_conf.json */",
+		"/* adjust the following parameters for your network */", "/* forward only valid packets */", "/* GPS configuration */",
+		"/* GPS reference coordinates */"}
 
-	/*for _, v := range comments {
+	for _, v := range comments {
 		message = strings.Replace(message, v, "", -1)
-	}*/
+	}
 
 	return &pb.GetGwConfigResponse{
-		//Conf: message,
-		Conf: GwConf,
+		Conf: message,
 	}, nil
 }
 
