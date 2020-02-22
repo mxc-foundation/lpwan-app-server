@@ -109,6 +109,8 @@ import SuperAdminWithdraw from "./views/controlPanel/withdraw/withdraw"
 import SupernodeHistory from "./views/controlPanel/history/History"
 import SystemSettings from "./views/controlPanel/settings/Settings"
 
+//dashboard
+import Dashboard from "./views/dashboards/";
 // home
 import HomeComponent from './views/Home';
 
@@ -215,6 +217,8 @@ class LoggedInRoutes extends Component {
       <Switch>
         <Route exact path="/" component={HomeComponent} />
         <Route exact path="/logout" component={Logout} />
+
+        <Route exact path="/dashboard" component={Dashboard} />
 
         <Route exact path="/users" component={ListUsers} />
         <Route exact path="/users/create" component={CreateUser} />
