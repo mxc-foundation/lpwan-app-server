@@ -1,24 +1,16 @@
 import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
-import { Breadcrumb, BreadcrumbItem, Form, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Row, Col, Card, CardBody } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 import ServiceProfileForm from "./ServiceProfileForm";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class CreateServiceProfile extends Component {
   constructor() {
@@ -56,39 +48,14 @@ class CreateServiceProfile extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
-                  Organizations
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}/service-profiles`}
-              >
-                {i18n.t(`${packageNS}:tr000078`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-          </Breadcrumb>
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+              { label: i18n.t(`${packageNS}:tr000078`), active: false, to: `/organizations/${currentOrgID}/service-profiles` },
+              { label: i18n.t(`${packageNS}:tr000277`), active: false }]}></OrgBreadCumb>
         </TitleBar>
         <Row>
           <Col>
@@ -109,4 +76,4 @@ class CreateServiceProfile extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(CreateServiceProfile));
+export default withRouter(CreateServiceProfile);

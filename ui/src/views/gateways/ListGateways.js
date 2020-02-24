@@ -8,35 +8,27 @@ import { Map, Marker, Popup } from 'react-leaflet';
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
 import "leaflet.awesome-markers";
-import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Row, Col, Card, CardBody } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import GatewayAdmin from "../../components/GatewayAdmin";
 import GatewayStore from "../../stores/GatewayStore";
 import MapTileLayer from "../../components/MapTileLayer";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 const GatewayActivityColumn = (cell, row, index, extraData) => {
   const stats = extraData['stats'];
-  
-  let rowStats = stats && stats[row.id] ? stats[row.id]: null;
-  
+
+  let rowStats = stats && stats[row.id] ? stats[row.id] : null;
+
   let dataTotal = 0;
-  
+
   if (rowStats) {
     for (const row of rowStats) {
       dataTotal += parseFloat(row.rxPacketsReceivedOK + row.txPacketsEmitted);
@@ -54,7 +46,7 @@ const GatewayColumn = (cell, row, index, extraData) => {
 }
 
 const LastSeenAtColumn = (cell, row, index, extraData) => {
-  return (row.lastSeenAt)?row.lastSeenAt:'--:--';
+  return (row.lastSeenAt) ? row.lastSeenAt : '--:--';
 }
 const getColumns = (organizationId, stats) => (
   [{
@@ -107,7 +99,7 @@ class ListGatewaysTable extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage ;
+    const offset = (page - 1) * sizePerPage;
 
     let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
@@ -128,7 +120,7 @@ class ListGatewaysTable extends Component {
       object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
-      this.setState({object});
+      this.setState({ object });
     });
   }
 
@@ -269,7 +261,7 @@ class ListGateways extends Component {
     this.locationToTab = this.locationToTab.bind(this);
     this.state = {
       viewMode: 'list',
-      nsDialog: false, 
+      nsDialog: false,
       setModal: false
     };
   }
@@ -289,7 +281,7 @@ class ListGateways extends Component {
     object.nsDialog = true;
     this.setState({ object });
   }
-  
+
   toggle = () => {
     const object = this.state;
     object.nsDialog = !object.nsDialog;
@@ -309,16 +301,16 @@ class ListGateways extends Component {
   switchToList() {
     this.setState({ viewMode: 'list' });
   }
-  
+
   render() {
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (<React.Fragment>
-      
+
       <TitleBar
         buttons={<GatewayAdmin organizationID={this.props.match.params.organizationID}>
-          
+
           {/* <BrandSelectModal
           buttonLabel={i18n.t(`${packageNS}:tr000277`)}
           callback={this.handleLink} /> */}
@@ -332,37 +324,20 @@ class ListGateways extends Component {
           />
         </GatewayAdmin>}
       >
-        <Breadcrumb className={classes.breadcrumb}>
-          <BreadcrumbItem>
-            <Link
-              className={classes.breadcrumbItemLink}
-              to={`/organizations`}
-            >
-                Organizations
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            <Link
-              className={classes.breadcrumbItemLink}
-              to={`/organizations/${currentOrgID}`}
-            >
-              {currentOrgID}
-            </Link>
-          </BreadcrumbItem>
-          <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000063`)}</BreadcrumbItem>
-        </Breadcrumb>
+        <OrgBreadCumb organizationID={currentOrgID} items={[
+          { label: i18n.t(`${packageNS}:tr000063`), active: true }]}></OrgBreadCumb>
       </TitleBar>
 
       <Row>
         <Col>
           <Card className="card-box shadow-sm">
-              {this.state.viewMode === 'map' &&
-                <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
+            {this.state.viewMode === 'map' &&
+              <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
 
-              <Switch>
-                <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
-                <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
-              </Switch>
+            <Switch>
+              <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
+              <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
+            </Switch>
           </Card>
         </Col>
       </Row>
@@ -371,4 +346,4 @@ class ListGateways extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(ListGateways));
+export default withRouter(ListGateways);

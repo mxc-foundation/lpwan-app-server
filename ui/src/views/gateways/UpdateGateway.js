@@ -19,12 +19,20 @@ class UpdateGateway extends Component {
     this.setState({ loading: true });
     GatewayStore.update(gateway, resp => {
       this.setState({ loading: false });
-      this.props.history.push(
-        `/organizations/${this.props.match.params.organizationID}/gateways`
-      );
+
+      GatewayStore.updateConfig(gateway, config, resp => {
+        this.setState({ loading: false });
+        this.props.history.push(
+          `/organizations/${this.props.match.params.organizationID}/gateways`
+        );
+      }, error => {
+        this.setState({ loading: false });
+      });
+    }, error => {
+      this.setState({ loading: false });
     });
 
-    // TODO - save config using setConfig api call
+    
     console.log(config);
 
     // TODO - save class B configuration

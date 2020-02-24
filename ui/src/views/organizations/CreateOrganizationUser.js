@@ -1,13 +1,14 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 import classNames from 'classnames';
-import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody, Button } from 'reactstrap';
+import { Nav, NavItem, Row, Col, Card, CardBody, Button } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 
 import TitleBar from "../../components/TitleBar";
 import Loader from "../../components/Loader";
 import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete, ReactstrapPasswordInput } from '../../components/FormInputs';
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import UserStore from "../../stores/UserStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import SessionStore from "../../stores/SessionStore";
@@ -485,24 +486,9 @@ class CreateOrganizationUser extends Component {
     return(
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb>
-            <BreadcrumbItem>
-              <Link to={`/organizations`}>
-                {i18n.t(`${packageNS}:tr000049`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link to={`/organizations/${currentOrgID}`}>
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link to={`/organizations/${currentOrgID}/users`}>
-                {i18n.t(`${packageNS}:tr000068`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-          </Breadcrumb>
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000068`), active: false, to: `/organizations/${currentOrgID}/users` },
+            { label: i18n.t(`${packageNS}:tr000277`), active: true }]}></OrgBreadCumb>
         </TitleBar>
 
         <Row>
