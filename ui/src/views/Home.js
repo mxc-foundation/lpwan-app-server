@@ -15,9 +15,12 @@ class HomeComponent extends Component {
         if (user) {
             const orgs = SessionStore.getOrganizations();
             if (SessionStore.getToken() && orgs.length > 0) {
-                if(user.isAdmin){
+                if (user.isAdmin) {
+                    //return <Redirect to={`/dashboard`}></Redirect>;
                     return <Redirect to={`/users`}></Redirect>;
-                }else{
+                } else {
+                    // TODO - for now redirecting to dashboard - we might need to put logic to decide
+                    //return <Redirect to={`/dashboard`}></Redirect>;
                     return <Redirect to={`/stake/${orgs[0].organizationID}/set-stake`}></Redirect>;
                 }
             } else {
