@@ -1,7 +1,7 @@
 import React from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody, CardHeader, CardFooter, CardText } from 'reactstrap';
+import { Row, Col, Card, CardBody, CardFooter } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
@@ -9,6 +9,7 @@ import FormComponent from "../../classes/FormComponent";
 import TitleBar from "../../components/TitleBar";
 
 import ExtLink from "../../components/ExtLink";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import Typography from '@material-ui/core/Typography';
 import StakeForm from "./StakeForm";
 import StakeStore from "../../stores/StakeStore";
@@ -81,28 +82,9 @@ class SetStake extends FormComponent {
     return (
       <>
         <TitleBar>
-          <Breadcrumb>
-            <Breadcrumb className={classes.breadcrumb}>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                >
-                    Organizations
-                </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations/${currentOrgID}`}
-                >
-                  {currentOrgID}
-                </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem className={classes.breadcrumbItem}>Set Stake</BreadcrumbItem>
-              <BreadcrumbItem active>{this.state.title}</BreadcrumbItem>
-            </Breadcrumb>
-          </Breadcrumb>
+        <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:menu.staking.set_stake`), active: false },
+            { label: this.state.title, active: true }]}></OrgBreadCumb>
         </TitleBar>
 
         <Row xs="1">

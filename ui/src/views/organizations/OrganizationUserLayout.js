@@ -1,25 +1,16 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Button, Row } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Breadcrumb, BreadcrumbItem, Button, Row, Col } from 'reactstrap';
 
 import Modal from '../../components/Modal';
-
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import SessionStore from "../../stores/SessionStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganizationUser from "./UpdateOrganizationUser";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class OrganizationUserLayout extends Component {
   constructor() {
@@ -77,35 +68,37 @@ class OrganizationUserLayout extends Component {
       return (<div></div>);
     }
 
+    const titleButtons = [];
+
+    if (this.props.match.params.userID !== SessionStore.getUser().id && currentOrgID === SessionStore.getOrganizationID()) {
+      titleButtons.push(<Button color="danger"
+        key={1}
+        onClick={this.openModal}
+        className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
+      </Button>);
+    }
+
+    // <Button color="secondary"
+    //   key={1}
+    //   onClick={this.gotoUser}
+    //   className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
+    // </Button> ,
+
+
     return (
       <React.Fragment>
         {this.state.nsDialog && <Modal
           title={""}
           context={i18n.t(`${packageNS}:lpwan.org_users.delete_user`)}
           callback={this.deleteOrganizationUser} />}
-        <TitleBar
-          buttons={[
-          /* 
-            <Button color="secondary"
-              key={1}
-              onClick={this.gotoUser}
-              className="btn-rp"><i className="mdi mdi-account-arrow-right-outline"></i>{' '}{i18n.t(`${packageNS}:lpwan.org_users.goto_user`)}
-            </Button>,
-          */
-            <Button color="danger"
-              key={1}
-              onClick={this.openModal}
-              className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
-            </Button>
-          ]}
-        >
+        <TitleBar buttons={titleButtons}>
           <Breadcrumb className={classes.breadcrumb}>
             <BreadcrumbItem>
               <Link
                 className={classes.breadcrumbItemLink}
                 to={`/organizations`}
               >
-                  Organizations
+                Organizations
               </Link>
             </BreadcrumbItem>
             <BreadcrumbItem>
@@ -128,11 +121,13 @@ class OrganizationUserLayout extends Component {
           </Breadcrumb>
         </TitleBar>
         <Row>
-          <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
+          <Col>
+            <UpdateOrganizationUser organizationUser={this.state.organizationUser.organizationUser} />
+          </Col>
         </Row>
       </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(OrganizationUserLayout));
+export default withRouter(OrganizationUserLayout);

@@ -1,26 +1,18 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Row, Col, Card } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import Admin from '../../components/Admin';
 import AdvancedTable from "../../components/AdvancedTable";
 import TitleBarButton from "../../components/TitleBarButton";
 
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class ListServiceProfiles extends Component {
   constructor(props) {
@@ -71,45 +63,26 @@ class ListServiceProfiles extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
       <React.Fragment>
         <Admin>
-        <TitleBar
-        buttons={
-          <TitleBarButton
-            key={1}
-            label={i18n.t(`${packageNS}:tr000277`)}
-            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-            onClick={this.toggle}
-            to={`/organizations/${currentOrgID}/service-profiles/create`}
-          />
-       }
-      ></TitleBar>
-      </Admin>
-        <TitleBar>
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
-                Organizations
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000069`)}</BreadcrumbItem>
-          </Breadcrumb>
-        </TitleBar>
+          <TitleBar
+            buttons={
+              <TitleBarButton
+                key={1}
+                label={i18n.t(`${packageNS}:tr000277`)}
+                icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+                onClick={this.toggle}
+                to={`/organizations/${currentOrgID}/service-profiles/create`}
+              />
+            }
+          >
+            <OrgBreadCumb organizationID={currentOrgID} items={[
+              { label: i18n.t(`${packageNS}:tr000069`), active: false }]}></OrgBreadCumb>
+          </TitleBar>
+        </Admin>
 
         <Row>
           <Col>
@@ -123,5 +96,5 @@ class ListServiceProfiles extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(ListServiceProfiles));
+export default withRouter(ListServiceProfiles);
 

@@ -508,17 +508,17 @@
   "tr000613": "扫描时间",
   "tr000614": "保存设置",
   "tr000615": "选择设备的应用程序以仅加载与该应用程序有相关的设备资料",
-  "tr000616": "Select a device profile to associate with the device",
-  "tr000617": "Required",
-  "tr000618": "© 2020 Powered by MXC",
-  "tr000619": "Root Password",
-  "tr000620": "Warning: Displaying your root password will void your warranty",
-  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
-  "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
-  "tr000623": "Display Root Password",
-  "tr000624": "I want to keep my warranty",
-  "tr000625": "Below is your root password. If you change it, MatchX will not be able to recover it for you.",
-  "tr000626": "Region",
+  "tr000616": "选择与设备关联的设备资料",
+  "tr000617": "必需",
+  "tr000618": "© 2020 由MXC极域支持",
+  "tr000619": "根密码",
+  "tr000620": "警告：显示您的根密码将使您的保修无效",
+  "tr000621": "通过使用根密码，您可以对设备进行授权访问。 这给您带来了很多控制权，但它也使您可以修改或删除MatchX固件。 如果您显示您的密码，将会使您的保修失效，并且将无法获得MatchX提供的免费支持。",
+  "tr000622": "我明白，如果点击\"显示根密码\"按钮，则我的保修将失效，并且将无法获得MatchX提供的免费支持。",
+  "tr000623": "显示根密码",
+  "tr000624": "我想要保持我的保修",
+  "tr000625": "下面是您的根密码。如果您更改，MatchX将无法为您恢复。",
+  "tr000626": "地区",
   "common": {
     "delete": "删除",
     "reset": "重置"
@@ -785,6 +785,64 @@
       "admin": "管理员",
       "is_active": "活跃",
       "is_global_admin": "是全球管理员"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "roleOrgAdmin": "Organization Admin",
+      "roleDeviceAdmin": "Device Admin",
+      "roleGatewayAdmin": "Gateway Admin",
+      "topupButton": "Topup MXC",
+      "totalUsers": "Total Users",
+      "totalOrgs": "Total Organizations",
+      "totalGateways": "Total Gateways",
+      "totalDevices": "Total Devices",
+      "totalApps": "Total Applications",
+      "tickets": {
+        "title": "Tickets",
+        "view_history": "View History",
+        "approved": "Approved",
+        "pending": "Pending",
+        "subtext": "Today's ticket"
+      },
+      "withdrawal": {
+        "title": "Withdrawal",
+        "subtext": "Revenue today"
+      },
+      "topup": {
+        "title": "Topup",
+        "subtext": "Revenue today"
+      },
+      "mxcAmountChart": {
+        "title": "Total amounts of MXC in Supernode",
+        "subtext": "Payment volume chart",
+        "statSubText": "Total"
+      },
+      "stakingAmountChart": {
+        "title": "Total Staking amounts in Supernode",
+        "subtext": "Payment volume chart",
+        "statSubText": "Total"
+      },
+      "earnedAmountChart": {
+        "title": "Amount earned Data utilities and Staking",
+        "statSubText": "Revenue Today"
+      },
+      "packetsReceivedChart": {
+        "title": "Data Packets receieved by Gateways",
+        "subTitle": "In 24 hours, last 30 days"
+      },
+      "packetsSentChart": {
+        "title": "Data Packets sent by Gateways",
+        "subTitle": "In 24 hours, last 30 days"
+      },
+      "dataMap": {
+        "title": "Data Map"
+      },
+      "packetsByChannel": {
+        "title": "Packets on Channel"
+      },
+      "packetsBySpreadFactor": {
+        "title": "Packets on SpreadFactor"
+      }
     }
   }
 }
