@@ -10,19 +10,19 @@ import "ext_account.proto";
 service TopUpService {
     rpc GetTopUpHistory(GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse){
         option(google.api.http) = {
-			get: "/api/top-up/{org_id}/history"
+			get: "/api/top-up/{user_id}/history"
 		};
     }
 
     rpc GetTopUpDestination(GetTopUpDestinationRequest) returns (GetTopUpDestinationResponse){
         option(google.api.http) = {
-			get: "/api/top-up/{org_id}/supernode-account/{money_abbr}"
+			get: "/api/top-up/{user_id}/supernode-account/{money_abbr}"
 		};
     }
 }
 
 message GetTopUpHistoryRequest {
-    int64 org_id = 1;
+    int64 user_id = 1;
     int64 offset = 2;
     int64 limit = 3;
 }
@@ -40,7 +40,7 @@ message GetTopUpHistoryResponse {
 }
 
 message GetTopUpDestinationRequest {
-    int64 org_id = 1;
+    int64 user_id = 1;
     Money money_abbr = 2;
 }
 

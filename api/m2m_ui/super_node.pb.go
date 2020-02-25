@@ -62,7 +62,7 @@ func (m *GetSuperNodeActiveMoneyAccountRequest) GetMoneyAbbr() Money {
 	if m != nil {
 		return m.MoneyAbbr
 	}
-	return Money_Ether
+	return Money_ETH
 }
 
 func (m *GetSuperNodeActiveMoneyAccountRequest) GetOrgId() int64 {
@@ -159,7 +159,7 @@ func (m *AddSuperNodeMoneyAccountRequest) GetMoneyAbbr() Money {
 	if m != nil {
 		return m.MoneyAbbr
 	}
-	return Money_Ether
+	return Money_ETH
 }
 
 func (m *AddSuperNodeMoneyAccountRequest) GetAccountAddr() string {

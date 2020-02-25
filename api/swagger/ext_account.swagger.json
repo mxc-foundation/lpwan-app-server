@@ -36,7 +36,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           }
         ],
@@ -70,7 +72,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           },
           {
@@ -118,7 +122,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           },
           {
@@ -196,9 +202,11 @@
     "m2m_uiMoney": {
       "type": "string",
       "enum": [
-        "Ether"
+        "ETH",
+        "MXC",
+        "TETH"
       ],
-      "default": "Ether"
+      "default": "ETH"
     },
     "m2m_uiMoneyAccountChangeHistory": {
       "type": "object",

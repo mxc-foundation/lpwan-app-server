@@ -43,15 +43,15 @@ func request_WithdrawService_GetWithdrawFee_0(ctx context.Context, marshaler run
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -84,15 +84,15 @@ func local_request_WithdrawService_GetWithdrawFee_0(ctx context.Context, marshal
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -133,15 +133,15 @@ func request_WithdrawService_WithdrawReq_0(ctx context.Context, marshaler runtim
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -182,15 +182,15 @@ func local_request_WithdrawService_WithdrawReq_0(ctx context.Context, marshaler 
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -231,15 +231,15 @@ func request_WithdrawService_ConfirmWithdraw_0(ctx context.Context, marshaler ru
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -280,15 +280,15 @@ func local_request_WithdrawService_ConfirmWithdraw_0(ctx context.Context, marsha
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -310,7 +310,7 @@ func local_request_WithdrawService_ConfirmWithdraw_0(ctx context.Context, marsha
 }
 
 var (
-	filter_WithdrawService_GetWithdrawHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "money_abbr": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
+	filter_WithdrawService_GetWithdrawHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"user_id": 0, "money_abbr": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
 )
 
 func request_WithdrawService_GetWithdrawHistory_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -325,15 +325,15 @@ func request_WithdrawService_GetWithdrawHistory_0(ctx context.Context, marshaler
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -373,15 +373,15 @@ func local_request_WithdrawService_GetWithdrawHistory_0(ctx context.Context, mar
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -426,15 +426,15 @@ func request_WithdrawService_ModifyWithdrawFee_0(ctx context.Context, marshaler 
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -475,15 +475,15 @@ func local_request_WithdrawService_ModifyWithdrawFee_0(ctx context.Context, mars
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -754,15 +754,15 @@ func RegisterWithdrawServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 }
 
 var (
-	pattern_WithdrawService_GetWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "get-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_GetWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "user_id", "get-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawService_WithdrawReq_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"api", "withdraw", "org_id", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_WithdrawReq_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 1, 1, 0, 4, 1, 5, 3}, []string{"api", "withdraw", "user_id", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawService_ConfirmWithdraw_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "confirm", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_ConfirmWithdraw_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "user_id", "confirm", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawService_GetWithdrawHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "history", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_GetWithdrawHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "user_id", "history", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawService_ModifyWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "org_id", "modify-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_ModifyWithdrawFee_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "withdraw", "user_id", "modify-withdraw-fee", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

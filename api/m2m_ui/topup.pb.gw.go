@@ -32,7 +32,7 @@ var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
 var (
-	filter_TopUpService_GetTopUpHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_TopUpService_GetTopUpHistory_0 = &utilities.DoubleArray{Encoding: map[string]int{"user_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_TopUpService_GetTopUpHistory_0(ctx context.Context, marshaler runtime.Marshaler, client TopUpServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -46,15 +46,15 @@ func request_TopUpService_GetTopUpHistory_0(ctx context.Context, marshaler runti
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -80,15 +80,15 @@ func local_request_TopUpService_GetTopUpHistory_0(ctx context.Context, marshaler
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_TopUpService_GetTopUpHistory_0); err != nil {
@@ -112,15 +112,15 @@ func request_TopUpService_GetTopUpDestination_0(ctx context.Context, marshaler r
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -153,15 +153,15 @@ func local_request_TopUpService_GetTopUpDestination_0(ctx context.Context, marsh
 		_   = err
 	)
 
-	val, ok = pathParams["org_id"]
+	val, ok = pathParams["user_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "org_id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "user_id")
 	}
 
-	protoReq.OrgId, err = runtime.Int64(val)
+	protoReq.UserId, err = runtime.Int64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "user_id", err)
 	}
 
 	val, ok = pathParams["money_abbr"]
@@ -312,9 +312,9 @@ func RegisterTopUpServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_TopUpService_GetTopUpHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "top-up", "org_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_TopUpService_GetTopUpHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"api", "top-up", "user_id", "history"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_TopUpService_GetTopUpDestination_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "top-up", "org_id", "supernode-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_TopUpService_GetTopUpDestination_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "top-up", "user_id", "supernode-account", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

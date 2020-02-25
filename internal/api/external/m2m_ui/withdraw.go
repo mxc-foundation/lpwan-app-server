@@ -26,9 +26,9 @@ func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
 
 // ModifyWithdrawFee modifies the withdraw fee
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyWithdrawFee")
+	log.WithField("orgId", req.UserId).Info("grpc_api/ModifyWithdrawFee")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
 	if err != nil {
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -44,7 +44,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 	resp, err := withdrawClient.ModifyWithdrawFee(ctx, &api.ModifyWithdrawFeeRequest{
 		MoneyAbbr:   req.MoneyAbbr,
 		WithdrawFee: req.WithdrawFee,
-		OrgId:       req.OrgId,
+		UserId:       req.UserId,
 	})
 	if err != nil {
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -58,9 +58,9 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 
 // GetWithdrawFee gets the withdraw fee
 func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWithdrawFeeRequest) (*api.GetWithdrawFeeResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawFee")
+	log.WithField("orgId", req.UserId).Info("grpc_api/GetWithdrawFee")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
 	if err != nil {
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -75,7 +75,7 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 
 	resp, err := withdrawClient.GetWithdrawFee(ctx, &api.GetWithdrawFeeRequest{
 		MoneyAbbr: req.MoneyAbbr,
-		OrgId:     req.OrgId,
+		UserId:     req.UserId,
 	})
 	if err != nil {
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -89,9 +89,9 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 
 // GetWithdrawHistory gets the withdraw history
 func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.GetWithdrawHistoryRequest) (*api.GetWithdrawHistoryResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWithdrawHistory")
+	log.WithField("orgId", req.UserId).Info("grpc_api/GetWithdrawHistory")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
 	if err != nil {
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -105,7 +105,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
 
 	resp, err := withdrawClient.GetWithdrawHistory(ctx, &api.GetWithdrawHistoryRequest{
-		OrgId:     req.OrgId,
+		UserId:     req.UserId,
 		Offset:    req.Offset,
 		Limit:     req.Limit,
 		MoneyAbbr: req.MoneyAbbr,
@@ -123,9 +123,9 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 
 // WithdrawReq defines request for withdraw
 func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawReqRequest) (*api.WithdrawReqResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/WithdrawReq")
+	log.WithField("orgId", req.UserId).Info("grpc_api/WithdrawReq")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
 	if err != nil {
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -139,7 +139,7 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
 
 	resp, err := withdrawClient.WithdrawReq(ctx, &api.WithdrawReqRequest{
-		OrgId:     req.OrgId,
+		UserId:     req.UserId,
 		MoneyAbbr: req.MoneyAbbr,
 		Amount:    req.Amount,
 	})
