@@ -152,3 +152,7 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 		UserProfile: &prof,
 	}, nil
 }
+
+func (s *WithdrawServerAPI) ConfirmWithdraw (ctx context.Context, req *api.ConfirmWithdrawRequest) (*api.ConfirmWithdrawResponse, error) {
+	return &api.ConfirmWithdrawResponse{}, nil
+}
