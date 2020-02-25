@@ -106,7 +106,7 @@ class ListApplications extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return(
-      <Grid container spacing={4}>
+      <>
         <OrganizationDevices
           mainTabIndex={1}
           organizationID={currentOrgID}
@@ -144,7 +144,7 @@ class ListApplications extends Component {
             </Col>
           </Row>
         </OrganizationDevices>
-      </Grid>
+      </>
     );
   }
 }

@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import { MAX_DATA_LIMIT } from '../../util/pagination';
@@ -12,21 +11,13 @@ import AdvancedTable from "../../components/AdvancedTable";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import SessionStore from '../../stores/SessionStore';
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 const GatewayColumn = (cell, row, index, extraData) => {
-  return SessionStore.isAdmin() ? <Link to={`/gateway-profiles/${row.id}`}>{row.name}</Link>: <span>{row.name}</span>;
+  return SessionStore.isAdmin() ? <Link to={`/gateway-profiles/${row.id}`}>{row.name}</Link> : <span>{row.name}</span>;
 }
 
 const NetworkColumn = (cell, row, index, extraData) => {
-  return SessionStore.isAdmin() ? <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link>: <span>{row.networkServerName}</span>;
+  return SessionStore.isAdmin() ? <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link> : <span>{row.networkServerName}</span>;
 }
 
 const getColumns = () => (
@@ -83,7 +74,6 @@ class ListGatewayProfiles extends Component {
   }
 
   render() {
-    const { classes } = this.props;
 
     const buttons = SessionStore.isAdmin() ? [<TitleBarButton
       aria-label={i18n.t(`${packageNS}:tr000277`)}
@@ -92,14 +82,14 @@ class ListGatewayProfiles extends Component {
       key={'b-1'}
       to={`/gateway-profiles/create`}
       className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
-    </TitleBarButton>,]: [];
+    </TitleBarButton>,] : [];
 
     return (<React.Fragment>
       <TitleBar
         buttons={buttons}
       >
-        <Breadcrumb className={classes.breadcrumb}>
-          <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+        <Breadcrumb>
+          <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
           <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000046`)}</BreadcrumbItem>
         </Breadcrumb>
       </TitleBar>
@@ -116,4 +106,4 @@ class ListGatewayProfiles extends Component {
   }
 }
 
-export default withStyles(styles)(ListGatewayProfiles);
+export default ListGatewayProfiles;
