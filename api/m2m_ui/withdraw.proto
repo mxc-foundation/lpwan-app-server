@@ -69,10 +69,11 @@ message WithdrawReqResponse {
 }
 
 message ConfirmWithdrawRequest {
-    bool confirm_status = 1;
-    Money money_abbr = 2;
-    double amount = 3;
-    string deny_comment = 4;
+    int64 org_id = 1;
+    bool confirm_status = 2;
+    Money money_abbr = 3;
+    double amount = 4;
+    string deny_comment = 5;
 }
 
 message ConfirmWithdrawResponse {

@@ -4,7 +4,6 @@ package m2m_ui;
 
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
 import "profile.proto";
 import "ext_account.proto";
 
