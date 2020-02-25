@@ -8,13 +8,14 @@ import "profile.proto";
 
 // WithdrawService is the service managing the withdraw access.
 service WithdrawService {
-    // Get data for current withdraw fee
+    // GetWithdrawFee data for current withdraw fee
     rpc GetWithdrawFee (GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse) {
         option (google.api.http) = {
 			get: "/api/withdraw/{org_id}/get-withdraw-fee/{money_abbr}"
 		};
     }
 
+    // WithdrawReq when the user clicks the withdraw
     rpc WithdrawReq (WithdrawReqRequest) returns (WithdrawReqResponse) {
         option (google.api.http) = {
 			post: "/api/withdraw/{org_id}/withdraw/{money_abbr}"
@@ -22,6 +23,7 @@ service WithdrawService {
 		};
     }
 
+    // ConfirmWithdraw is after supernode owner clicks the confirm or deny.
     rpc ConfirmWithdraw (ConfirmWithdrawRequest) returns (ConfirmWithdrawResponse) {
         option (google.api.http) = {
 			post: "/api/withdraw/{org_id}/confirm/{money_abbr}"
@@ -70,6 +72,7 @@ message ConfirmWithdrawRequest {
     bool confirm_status = 1;
     Money money_abbr = 2;
     double amount = 3;
+    string deny_comment = 4;
 }
 
 message ConfirmWithdrawResponse {
@@ -85,15 +88,11 @@ message GetWithdrawHistoryRequest {
 }
 
 message WithdrawHistory {
-    string from = 1;
-    string to = 2;
-    string money_type = 3;
-    double amount = 4;
-    double withdraw_fee = 5;
-    string tx_sent_time = 6;
-    string tx_status = 7;
-    string tx_approved_time = 8;
-	string tx_hash = 9;
+    double amount = 1;
+    string tx_sent_time = 2;
+    string tx_status = 3;
+	string tx_hash = 4;
+    string comment = 5;
 }
 
 message GetWithdrawHistoryResponse {
