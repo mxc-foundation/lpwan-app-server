@@ -24,39 +24,6 @@ func NewTopUpServerAPI(validator auth.Validator) *TopUpServerAPI {
 	}
 }
 
-// GetTransactionsHistory defines the transaction history request and response
-func (s *TopUpServerAPI) GetTransactionsHistory(ctx context.Context, req *api.GetTransactionsHistoryRequest) (*api.GetTransactionsHistoryResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTransactionsHistory")
-
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
-		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	topupClient := api.NewTopUpServiceClient(m2mClient)
-
-	resp, err := topupClient.GetTransactionsHistory(ctx, &api.GetTransactionsHistoryRequest{
-		OrgId:  req.OrgId,
-		Offset: req.Offset,
-		Limit:  req.Limit,
-	})
-	if err != nil {
-		return &api.GetTransactionsHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	return &api.GetTransactionsHistoryResponse{
-		Count:              resp.Count,
-		TransactionHistory: resp.TransactionHistory,
-		UserProfile:        &prof,
-	}, nil
-}
-
 // GetTopUpHistory defines the topup history request and response
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpHistory")
@@ -118,29 +85,5 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	return &api.GetTopUpDestinationResponse{
 		ActiveAccount: resp.ActiveAccount,
 		UserProfile:   &prof,
-	}, nil
-}
-
-// GetIncome gets the m2m income
-func (s *TopUpServerAPI) GetIncome(ctx context.Context, req *api.GetIncomeRequest) (*api.GetIncomeResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetIncome")
-
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		return &api.GetIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	topupClient := api.NewTopUpServiceClient(m2mClient)
-
-	resp, err := topupClient.GetIncome(ctx, &api.GetIncomeRequest{
-		OrgId: req.OrgId,
-	})
-	if err != nil {
-		return &api.GetIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	return &api.GetIncomeResponse{
-		Amount: resp.Amount,
 	}, nil
 }
