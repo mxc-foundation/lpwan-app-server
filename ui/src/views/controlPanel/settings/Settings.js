@@ -1,20 +1,11 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
-import { Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 import i18n, { packageNS } from '../../../i18n';
 import TitleBar from "../../../components/TitleBar";
 import SettingsForm from "./SettingsForm";
 
-import breadcrumbStyles from "../../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class Settings extends Component {
   constructor(props) {
@@ -28,37 +19,41 @@ class Settings extends Component {
   }
 
   render() {
-    const { classes } = this.props;
 
     return (
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb className={classes.breadcrumb}>
+          <Breadcrumb>
             <BreadcrumbItem>
               <Link
-                className={classes.breadcrumbItemLink}
                 to={`/organizations`}
                 onClick={() => {
                   // Change the sidebar content
                   this.props.switchToSidebarId('DEFAULT');
                 }}
               >
-                Control Panel
+                {i18n.t(`${packageNS}:menu.control_panel`)}
               </Link>
             </BreadcrumbItem>
-            <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:tr000451`)}</BreadcrumbItem>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:tr000451`)}</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.settings.system_settings`)}</BreadcrumbItem>
-          </Breadcrumb>    
+          </Breadcrumb>
         </TitleBar>
         <Row>
-          <SettingsForm
-            submitLabel={i18n.t(`${packageNS}:menu.withdraw.confirm`)}
-            onSubmit={this.onSubmit}
-          />
+          <Col>
+            <Card>
+              <CardBody>
+                <SettingsForm
+                  submitLabel={i18n.t(`${packageNS}:menu.withdraw.confirm`)}
+                  onSubmit={this.onSubmit}
+                />
+              </CardBody>
+            </Card>
+          </Col>
         </Row>
       </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(Settings));
+export default withRouter(Settings);

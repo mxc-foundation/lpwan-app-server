@@ -15,8 +15,7 @@ import DeviceForm from "./DeviceFormM2M";
 import Modal from "../../../components/m2m/ModalM2M";
 //import WithdrawBalanceInfo from "./WithdrawBalanceInfo";
 import { withRouter } from "react-router-dom";
-import { withStyles } from "@material-ui/core/styles";
-import styles from "./DeviceStylesM2M";
+
 import { DV_INACTIVE, DV_FREE_GATEWAYS_LIMITED, DV_WHOLE_NETWORK } from "../../../util/Data"
 import OrganizationDevices from "../OrganizationDevices";
 
@@ -114,7 +113,7 @@ class DeviceLayoutM2M extends Component {
   onSelectChange = (device) => {
     const { dvId, dvMode } = device;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    
+
     //console.log('device', device);
     DeviceStore.setDeviceMode(currentOrgID, dvId, dvMode, data => {
       this.props.history.push(`/device/${currentOrgID}`);
@@ -140,46 +139,41 @@ class DeviceLayoutM2M extends Component {
 
   render() {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    const { classes } = this.props;
     const { loading } = this.state;
 
     return (
-      <Grid container spacing={4}>
-        <OrganizationDevices
-          mainTabIndex={0}
-          organizationID={currentOrgID}
-          loading={this.state.loading}
+      <OrganizationDevices
+        mainTabIndex={0}
+        organizationID={currentOrgID}
+        loading={this.state.loading}
+      >
+        <TitleBar
+          buttons={
+            <div>{i18n.t(`${packageNS}:menu.devices.downlink_fee_mxc`)} {this.state.downlinkFee} MXC</div>
+          }
         >
-          <TitleBar
-            buttons={
-              <div className={this.props.classes.subTitle}>
-                {i18n.t(`${packageNS}:menu.devices.downlink_fee_mxc`)} {this.state.downlinkFee} MXC
-              </div>
-            }
-          >
-            <TitleBarTitle title={i18n.t(`${packageNS}:menu.devices.devices`)} />
-          </TitleBar>
-          <Row>
-            <Col>
-              <Card className="shadow-sm">
-                <CardBody className="position-relative">
-                  <DeviceForm
-                    submitLabel={i18n.t(`${packageNS}:menu.devices.devices`)}
-                    onSubmit={this.onSubmit}
-                    downlinkFee={this.state.downlinkFee}
-                    haveGateway={this.state.haveGateway}
-                    loading={loading}
-                    onSelectChange={this.onSelectChange}
-                    onSwitchChange={this.onSwitchChange}
-                  />
-                </CardBody>
-              </Card>
-            </Col>
-          </Row>
-        </OrganizationDevices>
-      </Grid>
+          <TitleBarTitle title={i18n.t(`${packageNS}:menu.devices.devices`)} />
+        </TitleBar>
+        <Row>
+          <Col>
+            <Card className="shadow-sm">
+              <CardBody className="position-relative">
+                <DeviceForm
+                  submitLabel={i18n.t(`${packageNS}:menu.devices.devices`)}
+                  onSubmit={this.onSubmit}
+                  downlinkFee={this.state.downlinkFee}
+                  haveGateway={this.state.haveGateway}
+                  loading={loading}
+                  onSelectChange={this.onSelectChange}
+                  onSwitchChange={this.onSwitchChange}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </OrganizationDevices>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(DeviceLayoutM2M));
+export default withRouter(DeviceLayoutM2M);

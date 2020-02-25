@@ -533,6 +533,12 @@
     },
     "service_profiles": {
       "delete_service_profile": "このサービスプロファイルを削除してよろしいですか？"
+    },
+    "network_servers": {
+      "delete_server": "Are you sure you want to delete this network-server?"
+    },
+    "gateways": {
+      "delete_gateway": "Are you sure you want to delete this gateway?"
     }
   },
   "menu": {

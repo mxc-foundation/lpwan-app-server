@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card } from 'reactstrap';
+import classNames from 'classnames';
 
 import i18n, { packageNS } from '../../i18n';
 import { MAX_DATA_LIMIT } from '../../util/pagination';
@@ -10,18 +9,8 @@ import TitleBar from "../../components/TitleBar";
 import AdvancedTable from "../../components/AdvancedTable";
 
 import OrganizationStore from "../../stores/OrganizationStore";
-import Check from "mdi-material-ui/Check";
-import Close from "mdi-material-ui/Close";
 import TitleBarButton from "../../components/TitleBarButton";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class ListOrganizations extends Component {
   constructor(props) {
@@ -45,11 +34,7 @@ class ListOrganizations extends Component {
   };
 
   canHaveGatewaysColumn = (cell, row, index, extraData) => {
-    if (row.canHaveGateways) {
-      return <Check />;
-    } else {
-      return <Close />;
-    }
+    return <i className={classNames("mdi", {"mdi-check": row.canHaveGateways, "mdi-close": !row.canHaveGateways}, "font-20")}></i>;
   };
 
   serviceProfileColumn = (cell, row, index, extraData) => {
@@ -116,7 +101,6 @@ class ListOrganizations extends Component {
   }
 
   render() {
-    const { classes } = this.props;
 
     return (
       <React.Fragment>
@@ -128,8 +112,8 @@ class ListOrganizations extends Component {
             to={`/organizations/create`}
           />}
         >
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000049`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -146,4 +130,4 @@ class ListOrganizations extends Component {
   }
 }
 
-export default withStyles(styles)(ListOrganizations);
+export default ListOrganizations;

@@ -14,12 +14,12 @@ const SideNavContent = (props) => {
 
         <div id="sidebar-menu">
             <ul className="metismenu" id="side-menu">
-                <li>
+                {/* <li>
                     <Link to="/dashboard" className="waves-effect side-nav-link-ref">
                         <i className="mdi mdi-view-dashboard"></i>
                         <span> {i18n.t(`${packageNS}:menu.dashboard.title`)} </span>
                     </Link>
-                </li>
+                </li> */}
                 <Admin>
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.control_panel`)}</li>
 
@@ -99,7 +99,7 @@ const SideNavContent = (props) => {
                             <span className="menu-arrow"></span>
                         </Link>
                     </li>
-                    
+
                     <li>
                         <Link to={`/organizations/${props.orgId}/users`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-account-details"></i>

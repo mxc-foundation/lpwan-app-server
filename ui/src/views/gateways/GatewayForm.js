@@ -1,29 +1,14 @@
 import React, { Component } from "react";
 
-import {
-  Row,
-  Col,
-  Button,
-  FormGroup,
-  Label,
-  FormText,
-  Card,
-  CardBody,
-  CardImg,
-  Input
-} from "reactstrap";
-import { Formik, Form, Field, FieldArray } from "formik";
-import * as Yup from "yup";
+import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
+import { Formik, Form, Field, FieldArray } from 'formik';
+import * as Yup from 'yup';
 
-import { Map, Marker } from "react-leaflet";
+import { Map, Marker } from 'react-leaflet';
 import FormHelperText from "@material-ui/core/FormHelperText";
 
-import {
-  ReactstrapInput,
-  ReactstrapCheckbox,
-  AsyncAutoComplete
-} from "../../components/FormInputs";
-import i18n, { packageNS } from "../../i18n";
+import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
+import i18n, { packageNS } from '../../i18n';
 
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
@@ -35,19 +20,8 @@ import AutocompleteSelect from "../../components/AutocompleteSelect";
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-import GatewayStore from "../../stores/GatewayStore";
 
-import {
-  getLBTChannels,
-  getChannelsWithFrequency,
-  getAntennaGain,
-  getLBTConfigStatus
-} from "./utils";
-import GatewayFormLBT from "./GatewayFormLBT";
-import GatewayFormMacChannels from "./GatewayFormMacChannels";
-import GatewayFormClassB from "./GatewayFormClassB";
-
-const clone = require("rfdc")();
+const clone = require('rfdc')();
 
 class GatewayForm extends Component {
   constructor(props) {
@@ -57,19 +31,9 @@ class GatewayForm extends Component {
       mapZoom: 15,
       object: this.props.object || { location: { altitude: 0 } },
       loading: true,
-      gatewayConfig: {},
-      classBConfig: {},
-      gatewayConfigAntenna: "",
-      statistics: "Frames received and frames sent",
-      specturalImage: "/img/world-map.png"
     };
 
     this.markerRef = React.createRef(null);
-    this.onLBTDataChanged = this.onLBTDataChanged.bind(this);
-    this.onLBTStatusChanged = this.onLBTStatusChanged.bind(this);
-    this.onLoraMacChannelsChanged = this.onLoraMacChannelsChanged.bind(this);
-    this.onClassBDataChanged = this.onClassBDataChanged.bind(this);
-    this.onAntennaValueChange = this.onAntennaValueChange.bind(this);
   }
 
   componentDidMount() {
@@ -81,9 +45,6 @@ class GatewayForm extends Component {
     } else {
       this.setKVArrayBoards();
     }
-
-    this.loadGatewayConfig();
-    this.loadClassBConfig();
   }
 
   componentDidUpdate(prevProps) {
@@ -334,169 +295,6 @@ class GatewayForm extends Component {
     }
 
     return Yup.object().shape(fieldsSchema);
-  };
-
-  loadGatewayConfig() {
-    // TODO - call actual api here for now working with dummy conf object
-    const conf = {
-      SX1301_conf: {
-        lorawan_public: true,
-        clksrc: 1,
-        lbt_cfg: {
-          enable: true,
-          rssi_target: -81,
-          chan_cfg: [
-            { freq_hz: 868100000, scan_time_us: 5000 },
-            { freq_hz: 868300000, scan_time_us: 5000 },
-            { freq_hz: 868500000, scan_time_us: 5000 },
-            { freq_hz: 868800000, scan_time_us: 5000 },
-            { freq_hz: 864700000, scan_time_us: 5000 },
-            { freq_hz: 864900000, scan_time_us: 5000 },
-            { freq_hz: 865100000, scan_time_us: 5000 },
-            { freq_hz: 869525000, scan_time_us: 5000 }
-          ],
-          sx127x_rssi_offset: -7
-        },
-        antenna_gain: 2.5,
-        radio_0: {
-          enable: true,
-          type: "SX1257",
-          freq: 864900000,
-          rssi_offset: -166,
-          tx_enable: true,
-          tx_notch_freq: 129000,
-          tx_freq_min: 863000000,
-          tx_freq_max: 870000000
-        },
-        radio_1: {
-          enable: true,
-          type: "SX1257",
-          freq: 868500000,
-          rssi_offset: -166,
-          tx_enable: false
-        },
-        chan_multiSF_0: { enable: true, radio: 1, if: -400000 },
-        chan_multiSF_1: { enable: true, radio: 1, if: -200000 },
-        chan_multiSF_2: { enable: true, radio: 1, if: 0 },
-        chan_multiSF_3: { enable: true, radio: 1, if: 300000 },
-        chan_multiSF_4: { enable: true, radio: 0, if: -200000 },
-        chan_multiSF_5: { enable: true, radio: 0, if: 0 },
-        chan_multiSF_6: { enable: true, radio: 0, if: 200000 },
-        chan_multiSF_7: { enable: true, radio: 0, if: 400000 },
-        chan_Lora_std: {
-          enable: true,
-          radio: 1,
-          if: -200000,
-          bandwidth: 250000,
-          spread_factor: 7
-        },
-        chan_FSK: {
-          enable: true,
-          radio: 1,
-          if: 300000,
-          bandwidth: 125000,
-          datarate: 50000
-        },
-        tx_lut_0: { pa_gain: 0, mix_gain: 8, rf_power: -6, dig_gain: 2 },
-        tx_lut_1: { pa_gain: 0, mix_gain: 11, rf_power: -3, dig_gain: 3 },
-        tx_lut_2: { pa_gain: 0, mix_gain: 11, rf_power: 0, dig_gain: 1 },
-        tx_lut_3: { pa_gain: 0, mix_gain: 14, rf_power: 3, dig_gain: 0 },
-        tx_lut_4: { pa_gain: 1, mix_gain: 11, rf_power: 6, dig_gain: 3 },
-        tx_lut_5: { pa_gain: 1, mix_gain: 11, rf_power: 10, dig_gain: 0 },
-        tx_lut_6: { pa_gain: 1, mix_gain: 13, rf_power: 11, dig_gain: 2 },
-        tx_lut_7: { pa_gain: 1, mix_gain: 13, rf_power: 12, dig_gain: 1 },
-        tx_lut_8: { pa_gain: 1, mix_gain: 14, rf_power: 13, dig_gain: 1 },
-        tx_lut_9: { pa_gain: 1, mix_gain: 14, rf_power: 14, dig_gain: 0 },
-        tx_lut_10: { pa_gain: 2, mix_gain: 9, rf_power: 16, dig_gain: 0 },
-        tx_lut_11: { pa_gain: 2, mix_gain: 12, rf_power: 20, dig_gain: 1 },
-        tx_lut_12: { pa_gain: 2, mix_gain: 13, rf_power: 23, dig_gain: 0 },
-        tx_lut_13: { pa_gain: 1, mix_gain: 10, rf_power: 25, dig_gain: 1 },
-        tx_lut_14: { pa_gain: 3, mix_gain: 12, rf_power: 26, dig_gain: 2 },
-        tx_lut_15: { pa_gain: 3, mix_gain: 14, rf_power: 27, dig_gain: 0 }
-      },
-      gateway_conf: {
-        server_address: "192.168.0.7",
-        serv_port_up: 1700,
-        serv_port_down: 1700,
-        keepalive_interval: 10,
-        stat_interval: 30,
-        push_timeout_ms: 100,
-        forward_crc_valid: true,
-        forward_crc_error: false,
-        forward_crc_disabled: false,
-        gps_tty_path: "/dev/ttyS1",
-        ref_latitude: 0,
-        ref_longitude: 0,
-        ref_altitude: 0
-      }
-    };
-
-    this.setState({
-      gatewayConfig: conf,
-      gatewayConfigAntenna: getAntennaGain(conf)
-    });
-  }
-
-  loadClassBConfig() {
-    const conf = [
-      {
-        beacon_period: "0 868.2 9",
-        beacon_freq: "125 0 14",
-        beacon_datarate: "",
-        beacon_bandwidth: "",
-        beacon_power: "",
-        beacon_info: ""
-      }
-    ];
-    this.setState({ classBConfig: conf });
-  }
-  /**
-   * On lbt data changed
-   * @param {*} changedData
-   */
-  onLBTDataChanged(changedData) {
-    let conf = { ...this.state.gatewayConfig };
-    let formattedData = [];
-    for (const record of changedData) {
-      let formattedRecord = { ...record };
-      delete formattedRecord["channel"];
-      formattedData.push(formattedRecord);
-    }
-    conf[Object.keys(conf)[0]]["lbt_cfg"]["chan_cfg"] = formattedData;
-    this.setState({ gatewayConfig: conf });
-  }
-
-  onLBTStatusChanged(status) {
-    let conf = { ...this.state.gatewayConfig };
-    conf[Object.keys(conf)[0]]["lbt_cfg"]["enable"] = status;
-    this.setState({ gatewayConfig: conf });
-  }
-
-  onClassBDataChanged(changedData) {
-    this.setState({ classBConfig: changedData });
-  }
-
-  /**
-   * On lora mac channel changed
-   * @param {*} changedData
-   */
-  onLoraMacChannelsChanged(changedData) {
-    let conf = { ...this.state.gatewayConfig };
-    for (const record of changedData) {
-      conf[Object.keys(conf)[0]][record.channel]["enable"] = record.enable;
-    }
-    this.setState({ gatewayConfig: conf });
-  }
-
-  /**
-   * On antenna value changed
-   * @param {*} e
-   */
-  onAntennaValueChange(e) {
-    const antennaVal = e.target.value;
-    let conf = { ...this.state.gatewayConfig };
-    conf[Object.keys(conf)[0]]["antenna_gain"] = antennaVal;
-    this.setState({ gatewayConfig: conf, gatewayConfigAntenna: antennaVal });
   }
 
   render() {
@@ -568,13 +366,10 @@ class GatewayForm extends Component {
 
                   console.log('Prepared values: ', newValues);
 
-                  this.props.onSubmit(
-                    newValues,
-                    this.state.gatewayConfig,
-                    this.state.classBConfig
-                  );
+                  this.props.onSubmit(newValues);
                   setSubmitting(false);
-                }}
+                }
+              }
             >
               {
                 props => {
@@ -639,158 +434,120 @@ class GatewayForm extends Component {
                           }
                         </>
                       }
-                      <Row>
-                        <Col lg={5}>
-                          {values.networkServerID &&
-                            <>
-                              <Field
-                                id="gatewayProfileID"
-                                name="gatewayProfileID"
-                                type="text"
-                                value={values.gatewayProfileID}
-                                // onChange={handleChange}
-                                onChange={this.onGatewayProfileSelect}
-                                onBlur={handleBlur}
-                                label={i18n.t(`${packageNS}:tr000224`)}
-                                helpText={i18n.t(`${packageNS}:tr000227`)}
-                                // value={values.gatewayProfileID}
-                                getOption={this.getGatewayProfileOption}
-                                getOptions={this.getGatewayProfileOptions}
-                                setFieldValue={setFieldValue}
-                                inputProps={{
-                                  clearable: true,
-                                  cache: false,
-                                }}
-                                component={AsyncAutoComplete}
-                                className={
-                                  errors && errors.gatewayProfileID
-                                    ? 'is-invalid form-control'
-                                    : ''
-                                }
-                              />
-                              {
-                                errors && errors.gatewayProfileID
-                                  ? (
-                                    <div
-                                      className="invalid-feedback"
-                                      style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                                    >
-                                      {errors.gatewayProfileID}
-                                    </div>
-                                  ) : null
-                              }
-                            </>
-                          }
 
+                      {values.networkServerID &&
+                        <>
                           <Field
-                            id="name"
-                            name="name"
+                            id="gatewayProfileID"
+                            name="gatewayProfileID"
                             type="text"
-                            value={values.name}
-                            onChange={handleChange}
+                            value={values.gatewayProfileID}
+                            // onChange={handleChange}
+                            onChange={this.onGatewayProfileSelect}
                             onBlur={handleBlur}
-                            label={i18n.t(`${packageNS}:tr000218`)}
-                            helpText={i18n.t(`${packageNS}:tr000062`)}
-                            component={ReactstrapInput}
+                            label={i18n.t(`${packageNS}:tr000224`)}
+                            helpText={i18n.t(`${packageNS}:tr000227`)}
+                            // value={values.gatewayProfileID}
+                            getOption={this.getGatewayProfileOption}
+                            getOptions={this.getGatewayProfileOptions}
+                            setFieldValue={setFieldValue}
+                            inputProps={{
+                              clearable: true,
+                              cache: false,
+                            }}
+                            component={AsyncAutoComplete}
                             className={
-                              errors && errors.name
+                              errors && errors.gatewayProfileID
                                 ? 'is-invalid form-control'
                                 : ''
                             }
                           />
                           {
-                            errors && errors.name
+                            errors && errors.gatewayProfileID
                               ? (
                                 <div
                                   className="invalid-feedback"
                                   style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                                 >
-                                  {errors.name}
+                                  {errors.gatewayProfileID}
                                 </div>
                               ) : null
                           }
+                        </>
+                      }
 
-                          <Field
-                            id="location-altitude"
-                            name="location.altitude"
-                            type="number"
-                            value={values.location.altitude}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={i18n.t(`${packageNS}:tr000230`)}
-                            helpText={i18n.t(`${packageNS}:tr000231`)}
-                            component={ReactstrapInput}
-                            className={
-                              errors &&
-                                errors.location &&
-                                errors.location.altitude
-                                ? "is-invalid form-control"
-                                : ""
-                            }
-                          />
-                          {errors &&
-                            errors.location &&
-                            errors.location.altitude ? (
-                              <div
-                                className="invalid-feedback"
-                                style={{
-                                  display: "block",
-                                  color: "#ff5b5b",
-                                  fontSize: "0.75rem",
-                                  marginTop: "-0.75rem"
-                                }}
-                              >
-                                {object.location.altitude}
-                              </div>
-                            ) : null}
-                        </Col>
-                        <Col lg={4}>
-                          <Field
-                            id="description"
-                            name="description"
-                            type="textarea"
-                            rows={10}
-                            value={values.description}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={i18n.t(`${packageNS}:tr000219`)}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.description
-                                ? "is-invalid form-control"
-                                : ""
-                            }
-                          />
-                          {errors && errors.description ? (
+                      <Field
+                        id="name"
+                        name="name"
+                        type="text"
+                        value={values.name}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        label={i18n.t(`${packageNS}:tr000218`)}
+                        helpText={i18n.t(`${packageNS}:tr000062`)}
+                        component={ReactstrapInput}
+                        className={
+                          errors && errors.name
+                            ? 'is-invalid form-control'
+                            : ''
+                        }
+                      />
+                      {
+                        errors && errors.name
+                          ? (
                             <div
                               className="invalid-feedback"
-                              style={{
-                                display: "block",
-                                color: "#ff5b5b",
-                                fontSize: "0.75rem",
-                                marginTop: "-0.75rem"
-                              }}
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {errors.name}
+                            </div>
+                          ) : null
+                      }
+
+                      <Field
+                        id="description"
+                        name="description"
+                        type="textarea"
+                        value={values.description}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        label={i18n.t(`${packageNS}:tr000219`)}
+                        component={ReactstrapInput}
+                        className={
+                          errors && errors.description
+                            ? 'is-invalid form-control'
+                            : ''
+                        }
+                      />
+                      {
+                        errors && errors.description
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                             >
                               {errors.description}
                             </div>
-                          ) : null}
-                          {!this.props.update && (
-                            <>
-                              <EUI64Field
-                                id="id"
-                                name="id"
-                                label={i18n.t(`${packageNS}:tr000074`)}
-                                // value={values.object.id}
-                                // onBlur={handleBlur}
-                                required
-                                random
-                              // className={
-                              //   errors.object && errors.object.id
-                              //     ? 'is-invalid form-control'
-                              //     : ''
-                              // }
-                              />
-                              {/* {
+                          ) : null
+                      }
+
+                      {!this.props.update &&
+                        <>
+                          <EUI64Field
+                            id="id"
+                            name="id"
+                            label={i18n.t(`${packageNS}:tr000074`)}
+                            // value={values.object.id}
+                            // onBlur={handleBlur}
+                            required
+                            random
+                          // className={
+                          //   errors.object && errors.object.id
+                          //     ? 'is-invalid form-control'
+                          //     : ''
+                          // }
+                          />
+                          {/* {
                             errors.object && errors.object.id
                               ? (
                                 <div
@@ -801,11 +558,10 @@ class GatewayForm extends Component {
                                 </div>
                               ) : null
                           } */}
-                            </>
-                          )}
+                        </>
+                      }
 
-                          {/* commented as per new ui */}
-                          {/* <Field
+                      <Field
                         id="discoveryEnabled"
                         name="discoveryEnabled"
                         type="checkbox"
@@ -831,153 +587,37 @@ class GatewayForm extends Component {
                               {errors.discoveryEnabled}
                             </div>
                           ) : null
-                      } */}
-                        </Col>
-                        <Col lg={3} className="text-right">
-                          <Button
-                            type="submit"
-                            color="primary"
-                            className="mr-2"
-                            disabled={
-                              (errors && Object.keys(errors).length > 0) ||
-                              isLoading ||
-                              isSubmitting
-                            }
-                            onClick={() => {
-                              validateForm().then(() => { });
-                            }}
-                          >
-                            {this.props.submitLabel ||
-                              (this.props.update
-                                ? i18n.t(`${packageNS}:tr000614`)
-                                : i18n.t(`${packageNS}:tr000277`))}
-                          </Button>
-                          <Button
-                            type="submit"
-                            color="secondary"
-                            className="d-inline"
-                          // onClick={
-                          //   () => {
-                          //       resetLaraConfig().then(() => {
-                          //     })
-                          //   }
-                          // }
-                          >
-                            {"Reset Lara Config"}
-                          </Button>
-                        </Col>
-                      </Row>
+                      }
+                      <br />
 
-                      <GatewayFormLBT
-                        records={getLBTChannels(this.state.gatewayConfig)}
-                        onDataChanged={this.onLBTDataChanged}
-                        status={getLBTConfigStatus(this.state.gatewayConfig)}
-                        onStatusChanged={this.onLBTStatusChanged}
+                      <Field
+                        id="location-altitude"
+                        name="location.altitude"
+                        type="number"
+                        value={values.location.altitude}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        label={i18n.t(`${packageNS}:tr000230`)}
+                        helpText={i18n.t(`${packageNS}:tr000231`)}
+                        component={ReactstrapInput}
+                        className={
+                          errors && errors.location && errors.location.altitude
+                            ? 'is-invalid form-control'
+                            : ''
+                        }
                       />
-                      <GatewayFormMacChannels
-                        records={getChannelsWithFrequency(
-                          this.state.gatewayConfig
-                        )}
-                        onDataChanged={this.onLoraMacChannelsChanged}
-                      />
-                      <Row>
-                        <Col lg={3} sm={6} xs={12}>
-                          <FormGroup>
-                            <Label>{i18n.t(`${packageNS}:tr000600`)}</Label>
-                            <Input
-                              id="Antenna Gain"
-                              name="antenna_gain"
-                              value={this.state.gatewayConfigAntenna}
-                              onChange={this.onAntennaValueChange}
-                              type="text"
-                              className={
-                                errors && errors.antenna_gain
-                                  ? "is-invalid form-control"
-                                  : ""
-                              }
-                            ></Input>
+                      {
+                        errors && errors.location && errors.location.altitude
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {object.location.altitude}
+                            </div>
+                          ) : null
+                      }
 
-                            {errors && errors.antenna_gain ? (
-                              <div
-                                className="invalid-feedback"
-                                style={{
-                                  display: "block",
-                                  color: "#ff5b5b",
-                                  fontSize: "0.75rem",
-                                  marginTop: "-0.75rem"
-                                }}
-                              >
-                                {errors.antenna_gain}
-                              </div>
-                            ) : null}
-                          </FormGroup>
-                        </Col>
-                      </Row>
-
-                      <GatewayFormClassB
-                        records={this.state.classBConfig}
-                        onDataChanged={this.onClassBDataChanged}
-                      />
-
-                      <Row>
-                        <Col lg={12}>
-                          <FormGroup>
-                            <Input
-                              id="statistics"
-                              name="statistics"
-                              value={this.state.statistics}
-                              onChange={handleChange}
-                              type="textarea"
-                              rows={3}
-                              readOnly={true}
-                              className={
-                                errors && errors.statistics
-                                  ? "is-invalid form-control"
-                                  : ""
-                              }
-                            ></Input>
-
-                            {errors && errors.statistics ? (
-                              <div
-                                className="invalid-feedback"
-                                style={{
-                                  display: "block",
-                                  color: "#ff5b5b",
-                                  fontSize: "0.75rem",
-                                  marginTop: "-0.75rem"
-                                }}
-                              >
-                                {errors.statistics}
-                              </div>
-                            ) : null}
-                          </FormGroup>
-                        </Col>
-                        <Col lg={4}>
-                          <FormGroup>
-                            <Label>{i18n.t(`${packageNS}:tr000602`)}</Label>
-                            <Card>
-                              <CardImg
-                                top
-                                width="100%"
-                                src={this.state.specturalImage}
-                                alt="Card image cap"
-                              />
-                            </Card>
-                          </FormGroup>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col lg={5}>
-                          <FormGroup>
-                            <Button type="button" className="mb-2 mr-2">
-                              {i18n.t(`${packageNS}:tr000602`)}
-                            </Button>
-                            <Button type="button" className="mb-2">
-                              {i18n.t(`${packageNS}:tr000603`)}
-                            </Button>
-                          </FormGroup>
-                        </Col>
-                      </Row>
                       {/* <Field
                         id="location-accuracy"
                         name="object.location.accuracy"
@@ -1171,9 +811,24 @@ class GatewayForm extends Component {
                           : null
                         } */}
                       </div>
+                      <Button
+                        type="submit"
+                        color="primary"
+                        className="btn-block"
+                        disabled={(errors && Object.keys(errors).length > 0) || isLoading || isSubmitting}
+                        onClick={
+                          () => {
+                            validateForm().then(() => {
+                            })
+                          }
+                        }
+                      >
+                        {this.props.submitLabel || (this.props.update ? "Update" : "Create")}
+                      </Button>
                     </Form>
                   );
-                }}
+                }
+              }
             </Formik>
           </Col>
         </Row>
