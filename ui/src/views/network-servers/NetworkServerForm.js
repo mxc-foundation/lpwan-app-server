@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Button, Col, Collapse, FormFeedback, FormGroup, FormText, Input, Label, 
+  Button, Col, Collapse, FormFeedback, FormGroup, FormText, Input, Label,
   TabContent, TabPane, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Row,
 } from 'reactstrap';
 // Example: https://final-form.org/docs/react-final-form/examples/record-level-validation
@@ -57,11 +57,11 @@ class NetworkServerForm extends FormComponent {
     // this.updateWindowDimensions();
     window.addEventListener('resize', this.updateWindowDimensions);
   }
-  
+
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
   }
-  
+
   // https://stackoverflow.com/a/42141641/3208553
   updateWindowDimensions() {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
@@ -88,7 +88,7 @@ class NetworkServerForm extends FormComponent {
     const { classes, onSubmit, submitLabel } = this.props;
 
     if (this.state.object === undefined) {
-      return(null);
+      return (null);
     }
 
     const navbarItems = (format) => {
@@ -172,7 +172,7 @@ class NetworkServerForm extends FormComponent {
     // otherwise cause the horizontal tabs to wrap across multiple rows
     const showHamburger = width < 1050;
 
-    return(
+    return (
       <Form
         onSubmit={onSubmit}
         initialValues={{
@@ -196,7 +196,7 @@ class NetworkServerForm extends FormComponent {
             return {};
           }
           const errors = {};
-        
+
           if (activeTab == '0') {
             if (!values.name) {
               errors.name = "Required";
@@ -216,12 +216,12 @@ class NetworkServerForm extends FormComponent {
               errors.gatewayDiscoveryDR = "Required";
             }
           }
-        
+
           return errors;
         }}
         render={({ handleSubmit, form, submitting, pristine, values }) => (
           <form onSubmit={handleSubmit}>
-            { showHamburger ? navbarTabMenu("vertical") : navbarItems("tabs") }
+            {showHamburger ? navbarTabMenu("vertical") : navbarItems("tabs")}
             <TabContent activeTab={activeTab}>
               <TabPane tabId="0">
                 <Row>
@@ -287,12 +287,28 @@ class NetworkServerForm extends FormComponent {
                               }
                             </div>
                           )}
-                        </Field>  
+                        </Field>
                         <FormText color="muted">
                           {i18n.t(`${packageNS}:tr000093`)}
                         </FormText>
                       </Col>
                     </FormGroup>
+
+                    {this.props.version || this.props.region ? <React.Fragment>
+                      <FormGroup row>
+                        <Label for="version" sm={3}>{i18n.t(`${packageNS}:tr000626`)}</Label>
+                        <Col sm="9">
+                          {this.props.region}
+                        </Col>
+                      </FormGroup>
+                      <FormGroup row>
+                        <Label for="version" sm={3}>{i18n.t(`${packageNS}:tr000087`)}</Label>
+                        <Col sm="9">
+                          {this.props.version}
+                        </Col>
+                      </FormGroup>
+                    </React.Fragment> : null}
+
                     <FormGroup row>
                       <Col sm="12">
                         <br />
@@ -305,7 +321,7 @@ class NetworkServerForm extends FormComponent {
               <TabPane tabId="1">
                 <Row>
                   <Col sm="12">
-                    <FormGroup check>      
+                    <FormGroup check>
                       <Field name="gatewayDiscoveryEnabled" type="checkbox">
                         {({ input, meta }) => (
                           <Label check for="gatewayDiscoveryEnabled">
@@ -345,7 +361,7 @@ class NetworkServerForm extends FormComponent {
                                     autoFocus
                                     id="gatewayDiscoveryInterval"
                                     invalid={meta.error && meta.touched}
-                                    min="0" 
+                                    min="0"
                                     name="gatewayDiscoveryInterval"
                                     type="number"
                                   />
@@ -354,7 +370,7 @@ class NetworkServerForm extends FormComponent {
                                   }
                                 </div>
                               )}
-                            </Field>  
+                            </Field>
                             <FormText color="muted">
                               {i18n.t(`${packageNS}:tr000099`)}
                             </FormText>

@@ -29,7 +29,7 @@ class GatewayForm extends Component {
 
     this.state = {
       mapZoom: 15,
-      object: this.props.object || {location:{altitude:0}},
+      object: this.props.object || { location: { altitude: 0 } },
       loading: true,
     };
 
@@ -41,7 +41,7 @@ class GatewayForm extends Component {
     if (!this.props.update) {
       this.setCurrentPosition();
       return;
-    // Update Gateway
+      // Update Gateway
     } else {
       this.setKVArrayBoards();
     }
@@ -119,7 +119,7 @@ class GatewayForm extends Component {
           // otherwise update the value (fineTimestampKey) of that key (fpgaID) if the key exists in state already.
           if (resIndex === -1) {
             return el;
-          // Otherwise retain existing state key value pair
+            // Otherwise retain existing state key value pair
           } else {
             resObj.fineTimestampKey = el.fineTimestampKey;
             return resObj;
@@ -262,22 +262,22 @@ class GatewayForm extends Component {
   formikFormSchema = () => {
     let fieldsSchema = {
       // object: Yup.object().shape({
-        name: Yup.string() //.trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
-          .required(i18n.t(`${packageNS}:tr000431`)),
-        description: Yup.string()
-          .required(i18n.t(`${packageNS}:tr000431`)),
-        // FIXME - for some reason, only 'name', and 'description' are
-        // showing as 'required' fields in the UI, but the others aren't
-        gatewayProfileID: Yup.string(),
-        discoveryEnabled: Yup.bool(),
-        location: Yup.object().shape({
-          altitude: Yup.number()
-            .required(i18n.t(`${packageNS}:tr000431`))
-          /* accuracy: Yup.number()
-            .required(i18n.t(`${packageNS}:tr000431`)), 
-          source: Yup.string()
-            .required(i18n.t(`${packageNS}:tr000431`))*/
-        })
+      name: Yup.string() //.trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
+        .required(i18n.t(`${packageNS}:tr000431`)),
+      description: Yup.string()
+        .required(i18n.t(`${packageNS}:tr000431`)),
+      // FIXME - for some reason, only 'name', and 'description' are
+      // showing as 'required' fields in the UI, but the others aren't
+      gatewayProfileID: Yup.string(),
+      discoveryEnabled: Yup.bool(),
+      location: Yup.object().shape({
+        altitude: Yup.number()
+          .required(i18n.t(`${packageNS}:tr000431`))
+        /* accuracy: Yup.number()
+          .required(i18n.t(`${packageNS}:tr000431`)), 
+        source: Yup.string()
+          .required(i18n.t(`${packageNS}:tr000431`))*/
+      })
       // })
     }
 
@@ -316,8 +316,8 @@ class GatewayForm extends Component {
     } else {
       position = [0, 0];
     }
-// console.log(object.discoveryEnabled);
-const discoveryEnabled = object.discoveryEnabled;
+    // console.log(object.discoveryEnabled);
+    const discoveryEnabled = object.discoveryEnabled;
     return (
       <React.Fragment>
         <Row>
@@ -326,16 +326,16 @@ const discoveryEnabled = object.discoveryEnabled;
               enableReinitialize
               initialValues={
                 {
-                    id: object.id || undefined,
-                    name: object.name || '',
-                    description: object.description || '',
-                    discoveryEnabled: object.discoveryEnabled || false,
-                    location: {altitude:object.location.altitude || 0},
-                    gatewayProfileID: object.gatewayProfileID || '',
-                    networkServerID: object.networkServerID || '',
-                    boards: (
-                      (object.boards !== undefined && object.boards.length > 0 && object.boards) || []
-                    ),
+                  id: object.id || undefined,
+                  name: object.name || '',
+                  description: object.description || '',
+                  discoveryEnabled: object.discoveryEnabled || false,
+                  location: { altitude: object.location.altitude || 0 },
+                  gatewayProfileID: object.gatewayProfileID || '',
+                  networkServerID: object.networkServerID || '',
+                  boards: (
+                    (object.boards !== undefined && object.boards.length > 0 && object.boards) || []
+                  ),
                 }
               }
               validateOnBlur
@@ -345,7 +345,7 @@ const discoveryEnabled = object.discoveryEnabled;
                 (values, { setSubmitting }) => {
                   const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
                   console.log('Submitted values: ', values);
-    
+
                   // Deep copy is required otherwise we can change the original values of
                   // 'boards' (and we will not be able to render the different format in the UI)
                   // Reference: https://medium.com/javascript-in-plain-english/how-to-deep-copy-objects-and-arrays-in-javascript-7c911359b089
@@ -356,14 +356,14 @@ const discoveryEnabled = object.discoveryEnabled;
                   // if (Array.isArray(values.object.boards)) {
                   //   boardsAsObject = this.convertArrayToObj(values, "boards");
                   //   newValues.object.boards = boardsAsObject;
-                    // e.g.
-                    // newValues.object.boards = [{ fpgaID: "9999999999999999", fineTimestampKey: "99999999999999999999999999999999"}];
+                  // e.g.
+                  // newValues.object.boards = [{ fpgaID: "9999999999999999", fineTimestampKey: "99999999999999999999999999999999"}];
                   // }
 
                   newValues.organizationID = currentOrgID;
                   // delete newValues.object.location.source;
                   // delete newValues.object.location.accuracy;
-                  
+
                   console.log('Prepared values: ', newValues);
 
                   this.props.onSubmit(newValues);
@@ -541,11 +541,11 @@ const discoveryEnabled = object.discoveryEnabled;
                             // onBlur={handleBlur}
                             required
                             random
-                            // className={
-                            //   errors.object && errors.object.id
-                            //     ? 'is-invalid form-control'
-                            //     : ''
-                            // }
+                          // className={
+                          //   errors.object && errors.object.id
+                          //     ? 'is-invalid form-control'
+                          //     : ''
+                          // }
                           />
                           {/* {
                             errors.object && errors.object.id
@@ -770,8 +770,8 @@ const discoveryEnabled = object.discoveryEnabled;
                             <Button
                               type="button"
                               variant="outlined"
-                              className="mb-2" 
-                              onClick={() => {arrayHelpers.push({ fpgaID: '', fineTimestampKey: '' });}}
+                              className="mb-2"
+                              onClick={() => { arrayHelpers.push({ fpgaID: '', fineTimestampKey: '' }); }}
                             >
                               {i18n.t(`${packageNS}:tr000234`)}
                             </Button>
@@ -782,13 +782,13 @@ const discoveryEnabled = object.discoveryEnabled;
                       <div style={{ margin: "20px 0 10px 20px" }}>
                         {isValidating
                           ? <div style={{ display: "block", color: "orange", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
-                              Validating. Please wait...
+                            Validating. Please wait...
                             </div>
                           : ''
                         }
                         {isSubmitting
                           ? <div style={{ display: "block", color: "orange", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
-                              Submitting. Please wait...
+                            Submitting. Please wait...
                             </div>
                           : ''
                         }
@@ -817,7 +817,7 @@ const discoveryEnabled = object.discoveryEnabled;
                         className="btn-block"
                         disabled={(errors && Object.keys(errors).length > 0) || isLoading || isSubmitting}
                         onClick={
-                          () => { 
+                          () => {
                             validateForm().then(() => {
                             })
                           }

@@ -10,6 +10,7 @@ import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
 
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
+import SessionStore from '../../stores/SessionStore';
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 
@@ -21,11 +22,11 @@ const styles = {
 };
 
 const GatewayColumn = (cell, row, index, extraData) => {
-  return <Link to={`/gateway-profiles/${row.id}`}>{row.name}</Link>;
+  return SessionStore.isAdmin() ? <Link to={`/gateway-profiles/${row.id}`}>{row.name}</Link>: <span>{row.name}</span>;
 }
 
 const NetworkColumn = (cell, row, index, extraData) => {
-  return <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link>;
+  return SessionStore.isAdmin() ? <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link>: <span>{row.networkServerName}</span>;
 }
 
 const getColumns = () => (
@@ -84,18 +85,18 @@ class ListGatewayProfiles extends Component {
   render() {
     const { classes } = this.props;
 
+    const buttons = SessionStore.isAdmin() ? [<TitleBarButton
+      aria-label={i18n.t(`${packageNS}:tr000277`)}
+      icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+      label={i18n.t(`${packageNS}:tr000277`)}
+      key={'b-1'}
+      to={`/gateway-profiles/create`}
+      className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
+    </TitleBarButton>,]: [];
+
     return (<React.Fragment>
       <TitleBar
-        buttons={[
-          <TitleBarButton
-            aria-label={i18n.t(`${packageNS}:tr000277`)}
-            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-            label={i18n.t(`${packageNS}:tr000277`)}
-            key={'b-1'}
-            to={`/gateway-profiles/create`}
-            className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
-          </TitleBarButton>,
-        ]}
+        buttons={buttons}
       >
         <Breadcrumb className={classes.breadcrumb}>
           <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>

@@ -1,26 +1,23 @@
 import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import {
+  Row,
+  Col,
+  Card,
+  CardBody
+} from "reactstrap";
 
-import i18n, { packageNS } from '../../i18n';
+import i18n, { packageNS } from "../../i18n";
 import TitleBar from "../../components/TitleBar";
 import Loader from "../../components/Loader";
-import CommonModal from '../../components/Modal';
+import CommonModal from "../../components/Modal";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class CreateGateway extends Component {
   constructor() {
@@ -33,68 +30,53 @@ class CreateGateway extends Component {
   }
 
   componentDidMount() {
-    ServiceProfileStore.list(this.props.match.params.organizationID, 0, 0, resp => {
-      const state = {
-        loading: false
-      }
-      if (resp.totalCount === "0") {
-        state.spDialog = true;
-      }
+    ServiceProfileStore.list(
+      this.props.match.params.organizationID,
+      0,
+      0,
+      resp => {
+        const state = {
+          loading: false
+        };
+        if (resp.totalCount === "0") {
+          state.spDialog = true;
+        }
 
-      this.setState(state);
-    });
+        this.setState(state);
+      }
+    );
   }
 
   closeDialog = () => {
     this.setState({
-      spDialog: false,
+      spDialog: false
     });
-  }
+  };
 
-  onSubmit = (gateway) => {
+  onSubmit = (gateway, config, classBConfig) => {
     GatewayStore.create(gateway, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
+      this.props.history.push(
+        `/organizations/${this.props.match.params.organizationID}/gateways`
+      );
     });
-  }
+  };
 
   redirectToCreateServiceProfile = () => {
-    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles/create`);
-  }
+    this.props.history.push(
+      `/organizations/${this.props.match.params.organizationID}/service-profiles/create`
+    );
+  };
 
   render() {
-    const { classes } = this.props;
-    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentOrgID =
+      this.props.organizationID || this.props.match.params.organizationID;
 
     return (
       <React.Fragment>
         <TitleBar>
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
-                  Organizations
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}/gateways`}
-              >
-                {i18n.t(`${packageNS}:tr000063`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
-          </Breadcrumb>
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000063`), active: false, to: `/organizations/${currentOrgID}/gateways` },
+            { label: i18n.t(`${packageNS}:tr000277`), active: true }]}></OrgBreadCumb>
         </TitleBar>
 
         <Row>
@@ -115,7 +97,9 @@ class CreateGateway extends Component {
           </Col>
         </Row>
 
-        <CommonModal showToggleButton={false} callback={this.redirectToCreateServiceProfile}
+        <CommonModal
+          showToggleButton={false}
+          callback={this.redirectToCreateServiceProfile}
           show={this.state.spDialog}
           context={
             <React.Fragment>
@@ -123,16 +107,17 @@ class CreateGateway extends Component {
                 {i18n.t(`${packageNS}:tr000165`)}
                 {i18n.t(`${packageNS}:tr000326`)}
               </p>
-              <p>
-                {i18n.t(`${packageNS}:tr000327`)}
-              </p>
+              <p>{i18n.t(`${packageNS}:tr000327`)}</p>
             </React.Fragment>
-          } title={i18n.t(`${packageNS}:tr000164`)}
-          showConfirmButton={true} left={i18n.t(`${packageNS}:tr000166`)} right={i18n.t(`${packageNS}:tr000277`)}>    
-        </CommonModal>
+          }
+          title={i18n.t(`${packageNS}:tr000164`)}
+          showConfirmButton={true}
+          left={i18n.t(`${packageNS}:tr000166`)}
+          right={i18n.t(`${packageNS}:tr000277`)}
+        ></CommonModal>
       </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(CreateGateway));
+export default withRouter(CreateGateway);

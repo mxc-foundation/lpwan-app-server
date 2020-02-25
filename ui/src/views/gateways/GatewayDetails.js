@@ -161,7 +161,7 @@ class GatewayDetails extends Component {
             <CardBody>
               <CardTitle tag="h4">{i18n.t(`${packageNS}:tr000243`)}</CardTitle>
 
-              <div style={{height: '300px'}}>
+              <div style={{ height: '300px' }}>
                 <Line height={75} options={statsOptions} data={this.state.statsDown} redraw />
               </div>
             </CardBody>

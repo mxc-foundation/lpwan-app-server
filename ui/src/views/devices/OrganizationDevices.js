@@ -1,16 +1,14 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
-  TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
+import { Container, Row, Col, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import classnames from 'classnames';
 
 import theme from "../../theme";
 import i18n, { packageNS } from "../../i18n";
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import DeviceAdmin from "../../components/DeviceAdmin";
 import Loader from "../../components/Loader";
 
@@ -85,10 +83,9 @@ class OrganizationDevices extends Component {
   }
 
   render() {
-    const { activeMainTabIndex, loading, organization } = this.state;
-    const { children, classes } = this.props;
+    const { activeMainTabIndex, loading } = this.state;
+    const { children } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    const currentOrgName = organization && (organization.name || organization.displayName);
 
     return(
       <Container fluid>
@@ -108,15 +105,9 @@ class OrganizationDevices extends Component {
                 />
               </DeviceAdmin>}
             >
-              <Breadcrumb className={classes.breadcrumb}>
-                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                  `/organizations`
-                }>Organizations</Link></BreadcrumbItem>
-                <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-                  `/organizations/${currentOrgID}`
-                }>{currentOrgName || currentOrgID}</Link></BreadcrumbItem>
-                <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000278`)}</BreadcrumbItem>
-              </Breadcrumb>
+
+              <OrgBreadCumb organizationID={currentOrgID} items={[
+                { label: i18n.t(`${packageNS}:tr000278`), active: false }]}></OrgBreadCumb>
             </TitleBar>
           </Col>
         </Row>

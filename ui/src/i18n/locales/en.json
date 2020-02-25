@@ -44,9 +44,9 @@
   "tr000043": "Server",
   "tr000044": "network-server",
   "tr000045": "of",
-  "tr000046": "SMB Gateways",
+  "tr000046": "SMB Gateway Profiles",
   "tr000047": "Network Server",
-  "tr000048": "Test SMB Gateway",
+  "tr000048": "Test SMB Gateway Profile",
   "tr000049": "Organizations",
   "tr000050": "Can have Gateways",
   "tr000051": "LPWAN Server",
@@ -68,7 +68,7 @@
   "tr000067": "Org. users",
   "tr000068": "Organization Users",
   "tr000069": "Service Profiles",
-  "tr000070": "SMB Devices",
+  "tr000070": "SMB Device Profiles",
   "tr000071": "Profile-1",
   "tr000072": "Gateway",
   "tr000073": "LIST",
@@ -220,7 +220,7 @@
   "tr000221": "LSB",
   "tr000222": "Toggle the byte order of the imput. Some devices use LSB.",
   "tr000223": "Select the network-server to which the gateway will connect. When no network-servers are available in the dropdown, make sure a service-profile exists for this organization.",
-  "tr000224": "SMB Gateway",
+  "tr000224": "SMB Gateway Profile",
   "tr000225": "Select gateway-profile",
   "tr000226": "No options",
   "tr000227": "An optional gateway-profile which can be assigned to a gateway. This configuration can be used to automatically re-configure the gateway when LoRa Gateway Bridge is configured so that it manages the packet-forwarder configuration.",
@@ -275,7 +275,7 @@
   "tr000278": "Devices",
   "tr000279": "Applications/Gw_Dev_Pri_Application/Devices/Dev_Pri",
   "tr000280": "Details",
-  "tr000281": "SMB Device",
+  "tr000281": "SMB Device Profile",
   "tr000282": "Status",
   "tr000283": "Last seen at",
   "tr000284": "Enqueue Downlink Payload",
@@ -285,7 +285,7 @@
   "tr000288": "Base64 Encoded",
   "tr000289": "Base64 Encoded String",
   "tr000290": "JSON Object",
-  "tr000291": "The device must be configured with a SMB Device supporting a Codec which is able to encode the given (JSON) payload.",
+  "tr000291": "The device must be configured with a SMB Device Profile supporting a Codec which is able to encode the given (JSON) payload.",
   "tr000292": "Enqueue Payload",
   "tr000293": "Downlink queue",
   "tr000294": "FCnt",
@@ -440,7 +440,7 @@
   "tr000462": "Back to Login",
   "tr000463": "Back",
   "tr000500": "External Power Source",
-  "tr000501": "SMB Device",
+  "tr000501": "SMB Device Profile",
   "tr000502": "Organization Devices",
   "tr000503": "Add Device",
   "tr000551": "Payload Decoder Script",
@@ -449,7 +449,7 @@
   "tr000554": "Device Details",
   "tr000555": "FUOTA",
   "tr000556": "Detected {{num}} errors. Please fix the validation errors shown in each tab before resubmitting.",
-  "tr000557": "Select an application for the device to load only SMB Devices associated with the application",
+  "tr000557": "Select an application for the device to load only SMB Device Profiles associated with the application",
   "tr000558": "Add an Application?",
   "tr000559": "You can create an application for your device to belong to.",
   "tr000560": "Would you like to create an application?",
@@ -463,6 +463,62 @@
   "tr000568": "Wallet",
   "tr000569": "Unexpected end of JSON input",
   "tr000570": "Create Profile",
+  "tr000571": "Gateway Manufacturer",
+  "tr000572": "Mac Address",
+  "tr000573": "Gateway Altitude",
+  "tr000574": "WiFi SSID",
+  "tr000575": "Board model",
+  "tr000576": "LAN IP address",
+  "tr000577": "OS Version",
+  "tr000578": "LBT FPGA firmware version",
+  "tr000579": "Upgrade",
+  "tr000580": "Process",
+  "tr000581": "Uptime",
+  "tr000582": "CPU Total",
+  "tr000583": "Memory Total",
+  "tr000584": "Read",
+  "tr000585": "Write",
+  "tr000586": "Net",
+  "tr000587": "Upload",
+  "tr000588": "Host",
+  "tr000589": "Protocol(s)",
+  "tr000590": "Open VPN status",
+  "tr000591": "I agree to terms..",
+  "tr000592": "SSH to GW",
+  "tr000593": "Link to GUI",
+  "tr000594": "Factory reset",
+  "tr000595": "Are you sure you want to reset this Gateway?",
+  "tr000596": "All the data will be deleted.",
+  "tr000597": "SMB Gateway Profile profile",
+  "tr000598": "Listen-Before-Talk / Polite Spectrum Access ",
+  "tr000599": "LoRa MAC Channels",
+  "tr000600": "Antenna Gain",
+  "tr000601": "Class-B Configuration",
+  "tr000602": "Spectrum Scan",
+  "tr000603": "Rescan Spectrum",
+  "tr000604": "Beacon Period",
+  "tr000605": "Beacon Frequency",
+  "tr000606": "Beacon Datarate",
+  "tr000607": "Beacon Bandwidth",
+  "tr000608": "Beacon Power",
+  "tr000609": "Beacon Info",
+  "tr000610": "Channel",
+  "tr000611": "Frequency (MHz)",
+  "tr000612": "Activate",
+  "tr000613": "Scan Time",
+  "tr000614": "Save Config",
+  "tr000615": "Select an application for the device to load only device profiles associated with the application",
+  "tr000616": "Select a device profile to associate with the device",
+  "tr000617": "Required",
+  "tr000618": "© 2020 Powered by MXC",
+  "tr000619": "Root Password",
+  "tr000620": "Warning: Displaying your root password will void your warranty",
+  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
+  "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
+  "tr000623": "Display Root Password",
+  "tr000624": "I want to keep my warranty",
+  "tr000625": "Below is your root password. If you change it, MatchX will not be able to recover it for you.",
+  "tr000626": "Region",
   "common": {
     "delete": "DELETE",
     "reset": "RESET"
@@ -627,7 +683,8 @@
     },
     "control_panel": "Control Panel",
     "organization_list": "Organization List",
-    "nb_iot_server": "NB-IoT Server",
+    "lpwan_management": "LPWAN Management",
+    "nb_iot_server": "5G NB-IoT Management",
     "lpwan_server": "LPWAN Server",
     "powered_by": "Powered by",
     "lora_server": "LPWAN Server",
@@ -728,6 +785,64 @@
       "admin": "Admin",
       "is_active": "Is active",
       "is_global_admin": "Is global admin"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "roleOrgAdmin": "Organization Admin",
+      "roleDeviceAdmin": "Device Admin",
+      "roleGatewayAdmin": "Gateway Admin",
+      "topupButton": "Topup MXC",
+      "totalUsers": "Total Users",
+      "totalOrgs": "Total Organizations",
+      "totalGateways": "Total Gateways",
+      "totalDevices": "Total Devices",
+      "totalApps": "Total Applications",
+      "tickets": {
+        "title": "Tickets",
+        "view_history": "View History",
+        "approved": "Approved",
+        "pending": "Pending",
+        "subtext": "Today's ticket"
+      },
+      "withdrawal": {
+        "title": "Withdrawal",
+        "subtext": "Revenue today"
+      },
+      "topup": {
+        "title": "Topup",
+        "subtext": "Revenue today"
+      },
+      "mxcAmountChart": {
+        "title": "Total amounts of MXC in Supernode",
+        "subtext": "Payment volume chart",
+        "statSubText": "Total"
+      },
+      "stakingAmountChart": {
+        "title": "Total Staking amounts in Supernode",
+        "subtext": "Payment volume chart",
+        "statSubText": "Total"
+      },
+      "earnedAmountChart": {
+        "title": "Amount earned Data utilities and Staking",
+        "statSubText": "Revenue Today"
+      },
+      "packetsReceivedChart": {
+        "title": "Data Packets receieved by Gateways",
+        "subTitle": "In 24 hours, last 30 days"
+      },
+      "packetsSentChart": {
+        "title": "Data Packets sent by Gateways",
+        "subTitle": "In 24 hours, last 30 days"
+      },
+      "dataMap": {
+        "title": "Data Map"
+      },
+      "packetsByChannel": {
+        "title": "Packets on Channel"
+      },
+      "packetsBySpreadFactor": {
+        "title": "Packets on SpreadFactor"
+      }
     }
   }
 }

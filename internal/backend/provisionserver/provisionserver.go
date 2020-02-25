@@ -21,11 +21,11 @@ var p Pool
 
 // Pool defines the provision-server client pool.
 type Pool interface {
-	Get(hostname string, caCert, tlsCert, tlsKey []byte) (api.ProvisionServiceClient, error)
+	Get(hostname string, caCert, tlsCert, tlsKey []byte) (api.ProvisionClient, error)
 }
 
 type client struct {
-	client     api.ProvisionServiceClient
+	client     api.ProvisionClient
 	clientConn *grpc.ClientConn
 	caCert     []byte
 	tlsCert    []byte
@@ -55,7 +55,7 @@ func SetPool(pool Pool) {
 }
 
 // Get returns a ProvisionServerClient for the given server (hostname:ip).
-func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (api.ProvisionServiceClient, error) {
+func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (api.ProvisionClient, error) {
 	p.Lock()
 	defer p.Unlock()
 
@@ -95,7 +95,7 @@ func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (api.Provisi
 	return c.client, nil
 }
 
-func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.ClientConn, api.ProvisionServiceClient, error) {
+func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.ClientConn, api.ProvisionClient, error) {
 	logrusEntry := log.NewEntry(log.StandardLogger())
 	logrusOpts := []grpc_logrus.Option{
 		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),
@@ -140,5 +140,5 @@ func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*g
 		return nil, nil, errors.Wrap(err, "dial provision-server api error")
 	}
 
-	return provClientConn, api.NewProvisionServiceClient(provClientConn), nil
+	return provClientConn, api.NewProvisionClient(provClientConn), nil
 }

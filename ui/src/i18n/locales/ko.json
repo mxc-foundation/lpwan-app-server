@@ -44,9 +44,9 @@
   "tr000043": "서버",
   "tr000044": "네트워크 서버",
   "tr000045": "총",
-  "tr000046": "게이트웨이 프로파일",
+  "tr000046": "SMB Gateway Profiles",
   "tr000047": "네트워크 서버",
-  "tr000048": "데스트 게이트웨이 프로파일",
+  "tr000048": "Test SMB Gateway Profile",
   "tr000049": "회사단체",
   "tr000050": "게이트웨이 보유 가능",
   "tr000051": "LPWAN 서버",
@@ -68,7 +68,7 @@
   "tr000067": "회사단체 유저",
   "tr000068": "회사단체 유저",
   "tr000069": "서비스 프로파일",
-  "tr000070": "기기 프로파일",
+  "tr000070": "SMB Device Profiles",
   "tr000071": "프로파일-1",
   "tr000072": "게이트웨이",
   "tr000073": "리스트",
@@ -220,7 +220,7 @@
   "tr000221": "LSB",
   "tr000222": "입력값의 바이트 오더를 토글합니다. 일부 장치는 LSB를 사용합니다.",
   "tr000223": "게이트웨이가 연결할 네트워크 서버를 선택하십시오. 드롭 다운에 사용 가능한 네트워크 서버가 없으면 이 회사단체에 대한 서비스 프로필이 있는지 확인하십시오.",
-  "tr000224": "게이트웨이 프로파일",
+  "tr000224": "SMB Gateway Profile",
   "tr000225": "게이트웨이 프로파일 선택",
   "tr000226": "옵션 없음",
   "tr000227": "게이트웨이에 할당 할 수있는 선택적 게이트웨이 프로필입니다. 이 구성은 LoRa 게이트웨이 Bridge가 패킷 전 달기 구성을 관리하도록 구성된 경우 게이트웨이를 자동으로 재구성하는 데 사용할 수 있습니다.",
@@ -275,7 +275,7 @@
   "tr000278": "기기장치",
   "tr000279": "Applications/Gw_Dev_Pri_Application/Devices/Dev_Pri",
   "tr000280": "추가 기재 사항",
-  "tr000281": "기기 프로파일",
+  "tr000281": "SMB Device Profile",
   "tr000282": "상태",
   "tr000283": "마지막 온라인",
   "tr000284": "다운 링크 페이로드 대기열",
@@ -285,7 +285,7 @@
   "tr000288": "BASE64 인코딩됨",
   "tr000289": "BASE64 인코딩 스트링",
   "tr000290": "JSON OBJECT",
-  "tr000291": "지정된 (JSON) 페이로드를 인코딩 할 수있는 Codec을 지원하는 장치 프로파일로 장치를 구성해야합니다.",
+  "tr000291": "The device must be configured with a SMB Device Profile supporting a Codec which is able to encode the given (JSON) payload.",
   "tr000292": "대기열 페이로드",
   "tr000293": "다운링크 큐",
   "tr000294": "FCnt",
@@ -440,7 +440,7 @@
   "tr000462": "로그인 화면으로 돌아가기",
   "tr000463": "돌아가기",
   "tr000500": "외부 전원 공급",
-  "tr000501": "기기 프로파일",
+  "tr000501": "SMB Device Profile",
   "tr000502": "기관 기기",
   "tr000503": "장치 추가",
   "tr000551": "페이로드 디코더 스크립트",
@@ -449,7 +449,7 @@
   "tr000554": "기기 세부정보",
   "tr000555": "FUOTA",
   "tr000556": "{{num}} 에러 감지. 재제출 전 각 탭에 표시된 발리데이션 에러를 수정하십시오.",
-  "tr000557": "기기가 로드할 어플리케이션을 선택하십시오.",
+  "tr000557": "Select an application for the device to load only SMB Device Profiles associated with the application",
   "tr000558": "애플리케이션을 추가 하시겠습니까?",
   "tr000559": "기기가 사용할 어플리키에션을 새로 만들 수 있습니다.",
   "tr000560": "애플리케이션을 새로 만드시겠습니까?",
@@ -463,6 +463,62 @@
   "tr000568": "지갑",
   "tr000569": "JSON 입력의 예상치 못한 종료",
   "tr000570": "프로필 생성",
+  "tr000571": "Gateway Manufacturer",
+  "tr000572": "Mac Address",
+  "tr000573": "Gateway Altitude",
+  "tr000574": "WiFi SSID",
+  "tr000575": "Board model",
+  "tr000576": "LAN IP address",
+  "tr000577": "OS Version",
+  "tr000578": "LBT FPGA firmware version",
+  "tr000579": "Upgrade",
+  "tr000580": "Process",
+  "tr000581": "Uptime",
+  "tr000582": "CPU Total",
+  "tr000583": "Memory Total",
+  "tr000584": "Read",
+  "tr000585": "Write",
+  "tr000586": "Net",
+  "tr000587": "Upload",
+  "tr000588": "Host",
+  "tr000589": "Protocol(s)",
+  "tr000590": "Open VPN status",
+  "tr000591": "I agree to terms..",
+  "tr000592": "SSH to GW",
+  "tr000593": "Link to GUI",
+  "tr000594": "Factory reset",
+  "tr000595": "Are you sure you want to reset this Gateway?",
+  "tr000596": "All the data will be deleted.",
+  "tr000597": "SMB Gateway Profile profile",
+  "tr000598": "Listen-Before-Talk / Polite Spectrum Access ",
+  "tr000599": "LoRa MAC Channels",
+  "tr000600": "Antenna Gain",
+  "tr000601": "Class-B Configuration",
+  "tr000602": "Spectrum Scan",
+  "tr000603": "Rescan Spectrum",
+  "tr000604": "Beacon Period",
+  "tr000605": "Beacon Frequency",
+  "tr000606": "Beacon Datarate",
+  "tr000607": "Beacon Bandwidth",
+  "tr000608": "Beacon Power",
+  "tr000609": "Beacon Info",
+  "tr000610": "Channel",
+  "tr000611": "Frequency (MHz)",
+  "tr000612": "Activate",
+  "tr000613": "Scan Time",
+  "tr000614": "Save Config",
+  "tr000615": "기기가 로드할 어플리케이션을 선택하십시오.",
+  "tr000616": "Select a device profile to associate with the device",
+  "tr000617": "Required",
+  "tr000618": "© 2020 Powered by MXC",
+  "tr000619": "Root Password",
+  "tr000620": "Warning: Displaying your root password will void your warranty",
+  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
+  "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
+  "tr000623": "Display Root Password",
+  "tr000624": "I want to keep my warranty",
+  "tr000625": "Below is your root password. If you change it, MatchX will not be able to recover it for you.",
+  "tr000626": "Region",
   "common": {
     "delete": "삭제",
     "reset": "재설정"
@@ -627,7 +683,8 @@
     },
     "control_panel": "제어판",
     "organization_list": "회사단체",
-    "nb_iot_server": "NB-IoT 서버",
+    "lpwan_management": "LPWAN Management",
+    "nb_iot_server": "5G NB-IoT Management",
     "lpwan_server": "LPWAN 서버",
     "powered_by": "Powered by",
     "lora_server": "LPWAN 서버",
@@ -728,6 +785,64 @@
       "admin": "관리자",
       "is_active": "활성 상태입니다.",
       "is_global_admin": "글로벌 어드민"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "roleOrgAdmin": "Organization Admin",
+      "roleDeviceAdmin": "Device Admin",
+      "roleGatewayAdmin": "Gateway Admin",
+      "topupButton": "Topup MXC",
+      "totalUsers": "Total Users",
+      "totalOrgs": "Total Organizations",
+      "totalGateways": "Total Gateways",
+      "totalDevices": "Total Devices",
+      "totalApps": "Total Applications",
+      "tickets": {
+        "title": "Tickets",
+        "view_history": "View History",
+        "approved": "Approved",
+        "pending": "Pending",
+        "subtext": "Today's ticket"
+      },
+      "withdrawal": {
+        "title": "Withdrawal",
+        "subtext": "Revenue today"
+      },
+      "topup": {
+        "title": "Topup",
+        "subtext": "Revenue today"
+      },
+      "mxcAmountChart": {
+        "title": "Total amounts of MXC in Supernode",
+        "subtext": "Payment volume chart",
+        "statSubText": "Total"
+      },
+      "stakingAmountChart": {
+        "title": "Total Staking amounts in Supernode",
+        "subtext": "Payment volume chart",
+        "statSubText": "Total"
+      },
+      "earnedAmountChart": {
+        "title": "Amount earned Data utilities and Staking",
+        "statSubText": "Revenue Today"
+      },
+      "packetsReceivedChart": {
+        "title": "Data Packets receieved by Gateways",
+        "subTitle": "In 24 hours, last 30 days"
+      },
+      "packetsSentChart": {
+        "title": "Data Packets sent by Gateways",
+        "subTitle": "In 24 hours, last 30 days"
+      },
+      "dataMap": {
+        "title": "Data Map"
+      },
+      "packetsByChannel": {
+        "title": "Packets on Channel"
+      },
+      "packetsBySpreadFactor": {
+        "title": "Packets on SpreadFactor"
+      }
     }
   }
 }

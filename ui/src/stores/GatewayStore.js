@@ -124,7 +124,21 @@ class GatewayStore extends EventEmitter {
     });
   }
 
-  update(gateway, callbackFunc) {
+  getConfig(id, callbackFunc) {
+    // Run the following in development environment and early exit from function
+    this.swagger.then(client => {
+      client.apis.GatewayService.GetGwConfig({
+        gatewayId: id,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  update(gateway, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.Update({
         "gateway.id": gateway.id,
@@ -137,9 +151,34 @@ class GatewayStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
+
+  updateConfig(gateway, config, callbackFunc, errorCallbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.UpdateGwConfig({
+        "gatewayId": gateway.id,
+        body: {
+          gatewayId: gateway.id,
+          conf: JSON.stringify(config)
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notify("updated");
+        callbackFunc(resp.obj);
+      })
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
+    });
+  }
+
 
   delete(id, callbackFunc) {
     this.swagger.then(client => {
@@ -269,6 +308,23 @@ class GatewayStore extends EventEmitter {
         type: "success",
         message: "gateway has been " + action,
       },
+    });
+  }
+
+  getRootConfig(id, callbackFunc, errorCallbackFunc) {
+    // Run the following in development environment and early exit from function
+    this.swagger.then(client => {
+      client.apis.GatewayService.GetGwPwd({
+        gatewayId: id,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 }

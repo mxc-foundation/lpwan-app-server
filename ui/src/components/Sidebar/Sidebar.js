@@ -199,6 +199,19 @@ class Sidebar extends Component {
             this.initMenu();
         }
 
+        // on route change - switch to default
+        const innerExcludePaths = ['/history/', '/topup/', '/control-panel/history', '/control-panel/system-settings', '/control-panel/modify-account'];
+        
+        if (this.props.location !== prevProps.location && ([SUPERNODE_WALLET, WALLET, SUPERNODE_SETTING, SETTING].indexOf(prevProps.currentSidebarId) !== -1)) {
+          if (this.props.location) {
+            const match = innerExcludePaths.findIndex(p => this.props.location.pathname.startsWith(p));
+            if (match === -1)
+              this.switchSidebar(DEFAULT);  
+          }
+          
+        }
+
+
         if (this.props === prevProps) {
             return;
         }

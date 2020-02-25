@@ -72,6 +72,14 @@ class MapTileLayerCluster extends Component {
         this.map.addLayer(markers);
     }
 
+    componentDidUpdate(prevProps) {
+      if (JSON.stringify(prevProps.crd) !== JSON.stringify(this.props.crd)) {
+        if (this.map && this.props.crd.latitude && this.props.crd.longitude) {
+          this.map.setView([this.props.crd.latitude, this.props.crd.longitude]);
+        }
+      }
+    }
+
     loadData = async () => {
         try {
             var result = await loadGatewayData();

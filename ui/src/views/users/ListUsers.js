@@ -135,7 +135,7 @@ class ListUsers extends Component {
         </TitleBar>
         <Row>
           <Col>
-            <Card className="card-box shadow-sm" style={{ minWidth: "25rem" }}>
+            <Card className="card-box shadow-sm position-relative">
               {this.state.loading && <Loader />}
               <AdvancedTable
                 data={this.state.data}

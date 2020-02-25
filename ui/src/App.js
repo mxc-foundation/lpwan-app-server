@@ -27,7 +27,7 @@ import ListNetworkServers from "./views/network-servers/ListNetworkServers";
 import CreateNetworkServer from "./views/network-servers/CreateNetworkServer";
 import NetworkServerLayout from "./views/network-servers/NetworkServerLayout";
 
-// SMB Gateway
+// SMB Gateway Profile
 import ListGatewayProfiles from "./views/gateway-profiles/ListGatewayProfiles";
 import CreateGatewayProfile from "./views/gateway-profiles/CreateGatewayProfile";
 import GatewayProfileLayout from "./views/gateway-profiles/GatewayProfileLayout";
@@ -109,6 +109,8 @@ import SuperAdminWithdraw from "./views/controlPanel/withdraw/withdraw"
 import SupernodeHistory from "./views/controlPanel/history/History"
 import SystemSettings from "./views/controlPanel/settings/Settings"
 
+//dashboard
+//import Dashboard from "./views/dashboards/";
 // home
 import HomeComponent from './views/Home';
 
@@ -216,11 +218,13 @@ class LoggedInRoutes extends Component {
         <Route exact path="/" component={HomeComponent} />
         <Route exact path="/logout" component={Logout} />
 
+        {/* <Route exact path="/dashboard" component={Dashboard} /> */}
+
         <Route exact path="/users" component={ListUsers} />
         <Route exact path="/users/create" component={CreateUser} />
         <Route exact path="/users/:userID(\d+)" component={UserLayout} />
         <Route exact path="/users/:userID(\d+)/password" component={ChangeUserPassword} />
-        
+
         <Route exact path="/network-servers" component={ListNetworkServers} />
         <Route exact path="/network-servers/create" component={CreateNetworkServer} />
         <Route path="/network-servers/:networkServerID" component={NetworkServerLayout} />
@@ -542,7 +546,7 @@ class App extends Component {
                     />
                   }
                 />
-                <LoggedInRoutes switchToSidebarId={this.switchToSidebarId}/>
+                <LoggedInRoutes switchToSidebarId={this.switchToSidebarId} />
 
               </Switch>
               <Footer />
