@@ -26,9 +26,9 @@ func NewTopUpServerAPI(validator auth.Validator) *TopUpServerAPI {
 
 // GetTopUpHistory defines the topup history request and response
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpHistory")
+	log.WithField("orgId", req.UserId).Info("grpc_api/GetTopUpHistory")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
 	if err != nil {
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -42,7 +42,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	topupClient := api.NewTopUpServiceClient(m2mClient)
 
 	resp, err := topupClient.GetTopUpHistory(ctx, &api.GetTopUpHistoryRequest{
-		OrgId:  req.OrgId,
+		UserId:  req.UserId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
@@ -59,9 +59,9 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 
 // GetTopUpDestination defines the topup destination request and response
 func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTopUpDestinationRequest) (*api.GetTopUpDestinationResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpDestination")
+	log.WithField("orgId", req.UserId).Info("grpc_api/GetTopUpDestination")
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
 	if err != nil {
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
@@ -75,7 +75,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	topupClient := api.NewTopUpServiceClient(m2mClient)
 
 	resp, err := topupClient.GetTopUpDestination(ctx, &api.GetTopUpDestinationRequest{
-		OrgId:     req.OrgId,
+		UserId:     req.UserId,
 		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {

@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/withdraw/{orgId}/confirm/{moneyAbbr}": {
+    "/api/withdraw/{userId}/confirm/{moneyAbbr}": {
       "post": {
         "summary": "ConfirmWithdraw is after supernode owner clicks the confirm or deny.",
         "operationId": "ConfirmWithdraw",
@@ -25,7 +25,7 @@
         },
         "parameters": [
           {
-            "name": "orgId",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -37,7 +37,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           },
           {
@@ -54,7 +56,7 @@
         ]
       }
     },
-    "/api/withdraw/{orgId}/get-withdraw-fee/{moneyAbbr}": {
+    "/api/withdraw/{userId}/get-withdraw-fee/{moneyAbbr}": {
       "get": {
         "summary": "GetWithdrawFee data for current withdraw fee",
         "operationId": "GetWithdrawFee",
@@ -68,7 +70,7 @@
         },
         "parameters": [
           {
-            "name": "orgId",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -81,7 +83,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           }
         ],
@@ -90,7 +94,7 @@
         ]
       }
     },
-    "/api/withdraw/{orgId}/history/{moneyAbbr}": {
+    "/api/withdraw/{userId}/history/{moneyAbbr}": {
       "get": {
         "operationId": "GetWithdrawHistory",
         "responses": {
@@ -103,7 +107,7 @@
         },
         "parameters": [
           {
-            "name": "orgId",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -115,7 +119,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           },
           {
@@ -138,7 +144,7 @@
         ]
       }
     },
-    "/api/withdraw/{orgId}/modify-withdraw-fee/{moneyAbbr}": {
+    "/api/withdraw/{userId}/modify-withdraw-fee/{moneyAbbr}": {
       "put": {
         "operationId": "ModifyWithdrawFee",
         "responses": {
@@ -151,7 +157,7 @@
         },
         "parameters": [
           {
-            "name": "orgId",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -163,7 +169,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           },
           {
@@ -180,7 +188,7 @@
         ]
       }
     },
-    "/api/withdraw/{orgId}/withdraw/{moneyAbbr}": {
+    "/api/withdraw/{userId}/withdraw/{moneyAbbr}": {
       "post": {
         "summary": "WithdrawReq when the user clicks the withdraw",
         "operationId": "WithdrawReq",
@@ -194,7 +202,7 @@
         },
         "parameters": [
           {
-            "name": "orgId",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -206,7 +214,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           },
           {
@@ -228,7 +238,7 @@
     "m2m_uiConfirmWithdrawRequest": {
       "type": "object",
       "properties": {
-        "orgId": {
+        "userId": {
           "type": "string",
           "format": "int64"
         },
@@ -301,7 +311,7 @@
           "type": "number",
           "format": "double"
         },
-        "orgId": {
+        "userId": {
           "type": "string",
           "format": "int64"
         }
@@ -322,9 +332,11 @@
     "m2m_uiMoney": {
       "type": "string",
       "enum": [
-        "Ether"
+        "ETH",
+        "MXC",
+        "TETH"
       ],
-      "default": "Ether"
+      "default": "ETH"
     },
     "m2m_uiOrganizationLink": {
       "type": "object",
@@ -446,7 +458,7 @@
     "m2m_uiWithdrawReqRequest": {
       "type": "object",
       "properties": {
-        "orgId": {
+        "userId": {
           "type": "string",
           "format": "int64"
         },
@@ -456,6 +468,9 @@
         "amount": {
           "type": "number",
           "format": "double"
+        },
+        "ethAddress": {
+          "type": "string"
         }
       }
     },

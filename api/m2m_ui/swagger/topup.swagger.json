@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/top-up/{orgId}/history": {
+    "/api/top-up/{userId}/history": {
       "get": {
         "operationId": "GetTopUpHistory",
         "responses": {
@@ -24,7 +24,7 @@
         },
         "parameters": [
           {
-            "name": "orgId",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -50,7 +50,7 @@
         ]
       }
     },
-    "/api/top-up/{orgId}/supernode-account/{moneyAbbr}": {
+    "/api/top-up/{userId}/supernode-account/{moneyAbbr}": {
       "get": {
         "operationId": "GetTopUpDestination",
         "responses": {
@@ -63,7 +63,7 @@
         },
         "parameters": [
           {
-            "name": "orgId",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string",
@@ -75,7 +75,9 @@
             "required": true,
             "type": "string",
             "enum": [
-              "Ether"
+              "ETH",
+              "MXC",
+              "TETH"
             ]
           }
         ],
@@ -118,9 +120,11 @@
     "m2m_uiMoney": {
       "type": "string",
       "enum": [
-        "Ether"
+        "ETH",
+        "MXC",
+        "TETH"
       ],
-      "default": "Ether"
+      "default": "ETH"
     },
     "m2m_uiOrganizationLink": {
       "type": "object",

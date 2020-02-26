@@ -27,7 +27,9 @@ service MoneyService {
 }
 
 enum Money {
-    Ether = 0;
+    ETH = 0;
+    MXC = 1;
+    TETH = 2;
 }
 
 message ModifyMoneyAccountRequest {
