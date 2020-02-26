@@ -1,6 +1,6 @@
 From: MXC <{{ .From }}>
 To: {{ .To }}
-Subject: MXProtocol 회원가입 인증 메일입니다.   
+Subject: Subject: Please confirm the e-mail linked to your Mxprotocol Super Node Server provider
 Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -11,8 +11,9 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-MXProtocol에 대한 새로운 사용자 액세스 권한을 작성했습니다. 아래 링크를 클릭하셔서 회원가입을 완료 하십시오. 
-주소. 아래 링크를 클릭 할 수 없으시면, 복사하여 브라우저의 URL 창에 붙여 넣기 해 주십시오. 
+You have created a new user access to Super Node Server. Please click the link below to verify your email
+address. If you are unable to click the link, copy and paste this URL
+into your browser.
 
 {{ .Link }}
 
@@ -24,7 +25,7 @@ Content-ID: html-body
 <!DOCTYPE html>
 <html>
 <head>
-	<title>MXC 이메일</title>
+	<title>MXC E-Mail</title>
 </head>
 <body>
 
@@ -46,7 +47,7 @@ Content-ID: html-body
 								<img style=3D"font-family: Montserrat, Helvetica; width: 100px !important; margin: 15px;" class=3D"logo" src=3D"https://lora.supernode.matchx.io/mxc_logo.png">
 							</td>
 							<td>
-                            	<img style=3D"font-family: Montserrat, Helvetica; width: 180px !important; margin: 15px;" class=3D"logo" src=3D{{ .Logo }}>
+                                <img style=3D"font-family: Montserrat, Helvetica; width: 180px !important; margin: 15px;" class=3D"logo" src=3D{{ .Logo }}>
                             </td>
 							<td style=3D"font-family: Montserrat, Helvetica; padding: 10px 0 0 0;">
 								<a style=3D"font-family: Montserrat, Helvetica; color: white !important; text-decoration:none !important;" target=3D"_blank" href=3D"https://www.mxc.org/">
@@ -69,7 +70,7 @@ Content-ID: html-body
 				    border-width: 0 10px; ">
 					<tr>
 					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 30px; font-weight: 700; line-height: 37px; padding: 0 15%;">
-							안녕하세요. MXProtocol에 회원가입을 환영합니다. 
+							Welcome to your supernode access.
 					    </td>
 					</tr>
 				</table>
@@ -79,7 +80,9 @@ Content-ID: html-body
 				    border-width: 0 10px 10px 10px; ">
 					<tr>
 					    <td style=3D"font-family: Montserrat, Helvetica; font-size: 14px; font-weight: 300; line-height: 140%;">
-							<p>아래 링크를 클릭하여, 가입 절차를 완료해주세요. (클릭으로 인증이 되지 않는 경우 인증링크를 복사하여 웹 브라우저의 주소 입력 창에 붙여넣기 하거나 직접 입력하여 다시 시도해 보세요.)</p>
+							<p>You have created a new user access to Super Node Server. Please click the link below to verify your email
+                               address. If you are unable to click the link, copy and paste this URL
+                               into your browser.</p>
 							<p><a target=3D"_blank" href=3D"{{ .Link }}">{{ .Link }}</a></p>
 					    </td>
 					</tr>
@@ -90,7 +93,7 @@ Content-ID: html-body
 					<tbody>
 						<tr>
 							<td>
-								MXC Foundation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
+								MXC Foundation gGmbH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Brückenstraße 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10179 Berlin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Germany&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2019
 							</td>
 						</tr>
 					</tbody>
