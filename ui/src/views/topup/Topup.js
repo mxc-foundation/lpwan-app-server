@@ -1,27 +1,36 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
+import classNames from "classnames";
 
-import { Row, Col, Card, CardBody } from 'reactstrap';
+import { Row, Col, Card, CardBody, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 import SessionStorage from "../../stores/SessionStore";
-import TopupForm from "./TopupForm";
-import InfoCard from "./InfoCard";
+import TopupCrypto from "./TopupCrypto";
+import TopupHistory from "./TopupHistory";
 
 
 class Topup extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      activeTab: "0",
+    };
+
+    this.onTabToggle = this.onTabToggle.bind(this);
   }
 
   componentDidUpdate(oldProps) {
     if (this.props === oldProps) {
       return;
     }
+  }
+
+  onTabToggle(tab) {
+    this.setState({ activeTab: tab });
   }
 
   onSubmit = () => {
@@ -34,11 +43,10 @@ class Topup extends Component {
 
   render() {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-    const path = `/modify-account/${this.props.match.params.organizationID}`;
 
     return (<React.Fragment>
       <TitleBar>
-        <OrgBreadCumb orgListCallback={() => { this.props.switchToSidebarId('DEFAULT'); }} 
+        <OrgBreadCumb orgListCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
           orgNameCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
           organizationID={currentOrgID} items={[
             { label: i18n.t(`${packageNS}:tr000568`), active: false },
@@ -48,20 +56,36 @@ class Topup extends Component {
       <Row>
         <Col>
           <Card>
-            <CardBody>
-              <TopupForm
-                reps={this.state.accounts} {...this.props}
-                orgId={this.props.match.params.organizationID}
-                path={path}
-              />
+            <CardBody className="pb-0">
+              <Nav tabs>
+                <NavItem>
+                  <NavLink
+                    className={classNames('nav-link', { active: this.state.activeTab === '0' })} href='#'
+                    onClick={(e) => this.onTabToggle("0")}
+                  >{i18n.t(`${packageNS}:menu.topup.crypto`)}</NavLink>
+                </NavItem>
+                <NavItem>
+                  <NavLink
+                    className={classNames('nav-link', { active: this.state.activeTab === '1' })} href='#'
+                    onClick={(e) => this.onTabToggle("1")} disabled
+                  >{i18n.t(`${packageNS}:menu.topup.fiat`)}</NavLink>
+                </NavItem>
+              </Nav>
+
+              <TabContent activeTab={this.state.activeTab}>
+                <TabPane tabId="0">
+                  <TopupCrypto />
+                </TabPane>
+                <TabPane tabId="1">
+                </TabPane>
+              </TabContent>
 
             </CardBody>
           </Card>
         </Col>
-        <Col>
-          <InfoCard path={path} />
-        </Col>
       </Row>
+
+      <TopupHistory organizationID={currentOrgID} />
     </React.Fragment>
     );
   }

@@ -14,7 +14,7 @@ class TopupStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/topup.swagger.json", sessionStore.getClientOpts());
   }
 
-  getTopUpDestination(moneyAbbr, orgId, callbackFunc) {
+  getTopUpDestination(moneyAbbr, orgId, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.TopUpService.GetTopUpDestination({
         moneyAbbr,
@@ -24,7 +24,10 @@ class TopupStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.body);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -44,7 +47,7 @@ class TopupStore extends EventEmitter {
     });
   }
 
-  getTransactionsHistory(orgId, offset, limit, callbackFunc) {
+  getTransactionsHistory(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.TopUpService.GetTransactionsHistory({
         orgId,
@@ -56,7 +59,10 @@ class TopupStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.body);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
