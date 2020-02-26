@@ -655,7 +655,8 @@
       "choose_a_manufacturer": "Choose a Manufacturer",
       "other": "Other",
       "enter_your_gateway_serial_number": "Enter Your Gateway Serial Number",
-      "were_searching_with_your_gateway_please_wait": "We're Searching with your Gateway, please wait..."
+      "were_searching_with_your_gateway_please_wait": "We're Searching with your Gateway, please wait...",
+      "qr_code_scan": "QR Code Scan"
     },
     "staking": {
       "staking": "Staking",

@@ -655,7 +655,8 @@
       "choose_a_manufacturer": "製造元を選択",
       "other": "その他",
       "enter_your_gateway_serial_number": "ゲートウェイのシリアルナンバーを入力してください",
-      "were_searching_with_your_gateway_please_wait": "ゲートウェイを検索しています。しばらくお待ちください。"
+      "were_searching_with_your_gateway_please_wait": "ゲートウェイを検索しています。しばらくお待ちください。",
+      "qr_code_scan": "QRコードスキャン"
     },
     "staking": {
       "staking": "ステーキング",
