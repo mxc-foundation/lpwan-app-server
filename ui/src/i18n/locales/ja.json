@@ -572,7 +572,24 @@
       "notice": "注意",
       "notice001": "資金を追加する前にあなたのスーパーのーどのETHアカウントを変更してください。",
       "notice002": "MXCを追加する前にETHアカウントを登録してください。",
-      "notice003": "ETHアカウントメニューでアカウントの更新を行いますか？"
+      "notice003": "ETHアカウントメニューでアカウントの更新を行いますか？",
+      "crypto": "Crypto",
+      "fiat": "Fiat (Coming Soon)",
+      "eth_address": "ETH Address",
+      "copy_addr": "Copy Address",
+      "show_qr_code": "Show QR Code",
+      "click_to_copy": "Click to Copy",
+      "copied_notice": "Address copied!",
+      "download_qr_code": "Download QR Code",
+      "instruction001": "Send only MXC to this deposit address.",
+      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
+      "instruction003": "Your MXC will be deposited after 12 network confirmations.",
+      "history": {
+        "status": "Status",
+        "amount": "Amount",
+        "date": "Date",
+        "tx_hash": "TX hash"
+      }
     },
     "history": {
       "history": "履歴",
