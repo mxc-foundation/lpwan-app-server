@@ -632,7 +632,8 @@
       "choose_a_manufacturer": "选择制造商。",
       "other": "其他。",
       "enter_your_gateway_serial_number": "输入您的网关序列号。",
-      "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候..."
+      "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候...",
+      "qr_code_scan": "QR码扫描"
     },
     "staking": {
       "staking": "质押",

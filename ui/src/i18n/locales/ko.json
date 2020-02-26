@@ -632,7 +632,8 @@
       "choose_a_manufacturer": "제조사를 선택하세요.",
       "other": "그외의 제조사들",
       "enter_your_gateway_serial_number": "게이트웨이 일련번호를 입력하세요.",
-      "were_searching_with_your_gateway_please_wait": "게이트웨이를 찾고 있습니다."
+      "were_searching_with_your_gateway_please_wait": "게이트웨이를 찾고 있습니다.",
+      "qr_code_scan": "QR 코드 스캔"
     },
     "staking": {
       "staking": "스테이킹",
