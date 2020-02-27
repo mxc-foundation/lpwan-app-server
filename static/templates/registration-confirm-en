@@ -1,6 +1,6 @@
 From: {{ .Operator }} Supernode <{{ .From }}>
 To: {{ .To }}
-Subject: Subject: Please confirm the e-mail linked to your {{ .Operator }} Supernode
+Subject: Please confirm the e-mail linked to your {{ .Operator }} Supernode
 Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
