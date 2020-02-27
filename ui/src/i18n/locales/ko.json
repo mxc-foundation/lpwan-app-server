@@ -585,9 +585,9 @@
       "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
       "instruction003": "Your MXC will be deposited after 12 network confirmations.",
       "history": {
-        "status": "Status",
-        "amount": "Amount",
-        "date": "Date",
+        "status": "상태",
+        "amount": "금액",
+        "date": "날짜",
         "tx_hash": "TX hash"
       }
     },
@@ -656,7 +656,7 @@
       "other": "그외의 제조사들",
       "enter_your_gateway_serial_number": "게이트웨이 일련번호를 입력하세요.",
       "were_searching_with_your_gateway_please_wait": "게이트웨이를 찾고 있습니다.",
-      "qr_code_scan": "QR 코드 스캔"
+      "qr_code_scan": "QR Code Scan"
     },
     "staking": {
       "staking": "스테이킹",
