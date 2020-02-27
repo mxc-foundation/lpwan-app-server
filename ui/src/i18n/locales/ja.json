@@ -585,9 +585,9 @@
       "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
       "instruction003": "Your MXC will be deposited after 12 network confirmations.",
       "history": {
-        "status": "Status",
-        "amount": "Amount",
-        "date": "Date",
+        "status": "状態",
+        "amount": "金額",
+        "date": "日付",
         "tx_hash": "TX hash"
       }
     },
@@ -656,7 +656,7 @@
       "other": "その他",
       "enter_your_gateway_serial_number": "ゲートウェイのシリアルナンバーを入力してください",
       "were_searching_with_your_gateway_please_wait": "ゲートウェイを検索しています。しばらくお待ちください。",
-      "qr_code_scan": "QRコードスキャン"
+      "qr_code_scan": "QR Code Scan"
     },
     "staking": {
       "staking": "ステーキング",
