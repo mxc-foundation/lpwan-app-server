@@ -585,9 +585,9 @@
       "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
       "instruction003": "Your MXC will be deposited after 12 network confirmations.",
       "history": {
-        "status": "Status",
-        "amount": "Amount",
-        "date": "Date",
+        "status": "状态",
+        "amount": "金额",
+        "date": "日期",
         "tx_hash": "TX hash"
       }
     },
@@ -656,7 +656,7 @@
       "other": "其他。",
       "enter_your_gateway_serial_number": "输入您的网关序列号。",
       "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候...",
-      "qr_code_scan": "QR码扫描"
+      "qr_code_scan": "QR Code Scan"
     },
     "staking": {
       "staking": "质押",
