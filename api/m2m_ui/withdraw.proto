@@ -11,14 +11,14 @@ service WithdrawService {
     // GetWithdrawFee data for current withdraw fee
     rpc GetWithdrawFee (GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse) {
         option (google.api.http) = {
-			get: "/api/withdraw/{user_id}/get-withdraw-fee/{money_abbr}"
+			get: "/api/withdraw/get-withdraw-fee/{money_abbr}"
 		};
     }
 
     // WithdrawReq when the user clicks the withdraw
     rpc WithdrawReq (WithdrawReqRequest) returns (WithdrawReqResponse) {
         option (google.api.http) = {
-			post: "/api/withdraw/{user_id}/withdraw/{money_abbr}"
+			post: "/api/withdraw/{money_abbr}"
 			body: "*"
 		};
     }
@@ -26,21 +26,27 @@ service WithdrawService {
     // ConfirmWithdraw is after supernode owner clicks the confirm or deny.
     rpc ConfirmWithdraw (ConfirmWithdrawRequest) returns (ConfirmWithdrawResponse) {
         option (google.api.http) = {
-			post: "/api/withdraw/{user_id}/confirm/{money_abbr}"
+			post: "/api/withdraw/confirm/{money_abbr}"
 			body: "*"
 		};
     }
 
     rpc GetWithdrawHistory (GetWithdrawHistoryRequest) returns (GetWithdrawHistoryResponse) {
         option (google.api.http) = {
-			get: "/api/withdraw/{user_id}/history/{money_abbr}"
+			get: "/api/withdraw/history/{money_abbr}"
 		};
     }
 
     rpc ModifyWithdrawFee (ModifyWithdrawFeeRequest) returns (ModifyWithdrawFeeResponse) {
         option(google.api.http) = {
-			put: "/api/withdraw/{user_id}/modify-withdraw-fee/{money_abbr}"
+			put: "/api/withdraw/modify-withdraw-fee/{money_abbr}"
 			body: "*"
+		};
+    }
+
+    rpc GetWithdrawRequestList (GetWithdrawRequestListRequest) returns (GetWithdrawRequestListResponse) {
+        option (google.api.http) = {
+			get: "/api/withdraw/requests"
 		};
     }
 }
@@ -48,7 +54,6 @@ service WithdrawService {
 message GetWithdrawFeeRequest {
     // type of crypto currency
     Money money_abbr = 1;
-    int64 user_id = 2;
 }
 
 message GetWithdrawFeeResponse {
@@ -70,11 +75,12 @@ message WithdrawReqResponse {
 }
 
 message ConfirmWithdrawRequest {
-    int64 user_id = 1;
-    bool confirm_status = 2;
-    Money money_abbr = 3;
+    int64  user_id = 1;
+    bool   confirm_status = 2;
+    Money  money_abbr = 3;
     double amount = 4;
     string deny_comment = 5;
+    int64  withdraw_id = 6;
 }
 
 message ConfirmWithdrawResponse {
@@ -94,7 +100,7 @@ message WithdrawHistory {
     string tx_sent_time = 2;
     string tx_status = 3;
 	string tx_hash = 4;
-    string comment = 5;
+    string deny_comment = 5;
 }
 
 message GetWithdrawHistoryResponse {
@@ -112,4 +118,22 @@ message ModifyWithdrawFeeRequest {
 message ModifyWithdrawFeeResponse {
     bool status = 1;
     ProfileResponse user_profile = 2;
+}
+
+message GetWithdrawRequestListRequest {
+    int64 offset = 1;
+    int64 limit = 2;
+}
+
+message WithdrawRequest {
+    string user_name = 1;
+    double available_token = 2;
+    double amount = 3;
+    int64  withdraw_id = 4;
+}
+
+message GetWithdrawRequestListResponse {
+    int64 count = 1;
+    repeated WithdrawRequest withdraw_request = 2;
+    ProfileResponse user_profile = 3;
 }
