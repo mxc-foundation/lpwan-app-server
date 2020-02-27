@@ -46,15 +46,15 @@ class EnterSerialNum extends Component {
         this.setState({ object });
         console.log('serial', serial);
 
-        if(serial.serial.length === 0){
+        if (serial.serial.length === 0) {
             return false;
         }
 
-        if(serial.serial.substring(0,2) !== 'MX'){   
+        if (serial.serial.substring(0, 2) !== 'MX') {
             this.props.history.push(
                 `/organizations/${this.props.match.params.organizationID}/gateways/create`
             );
-        }else{
+        } else {
             let gateway = {};
             gateway.organizationId = this.props.match.params.organizationID;
             gateway.sn = serial
@@ -123,68 +123,66 @@ class EnterSerialNum extends Component {
                 buttonLabel={i18n.t(`${packageNS}:tr000277`)}
                 callback={this.handleLink} />}
             <Card>
-                <Row>
-                    <Col xs={12}>
-                        <Card className={classes.center} >
-                            <CardHeader className={classes.center} style={{ marginTop: 100 }}>
-                                <img src={logo} alt="" height="53" />
-                            </CardHeader>
-                            {this.state.stage === 0 && <CardBody className={classes.center} >
-                                <Formik
-                                    enableReinitialize
-                                    initialValues={this.state.object}
-                                    validationSchema={formSchema}
-                                    onSubmit={(values) => {
-                                        const castValues = formSchema.cast(values);
-                                        this.onSubmit({ ...castValues })
-                                    }}>
-                                    {({
-                                        handleSubmit,
-                                        handleChange,
-                                        setFieldValue,
-                                        values,
-                                        handleBlur,
-                                    }) => (
-                                            <Form onSubmit={handleSubmit} noValidate>
-                                                <div style={{ position: 'relative', display: 'inline-block' }}>
-                                                    <QReaderModal
-                                                        buttonLabel={i18n.t(`${packageNS}:tr000277`)}
-                                                        callback={this.readQR} />
-                                                    <Field
-                                                        type="text"
-                                                        label={label}
-                                                        name="serial"
-                                                        id="serial"
-                                                        value={this.state.object.serial || ""}
-                                                        autoComplete='off'
-                                                        component={ReactstrapInput}
-                                                        onBlur={handleBlur}
-                                                        onChange={handleChange}
+                <Col xs={12}>
+                    <Card className={classes.center} >
+                        <CardHeader className={classes.center} style={{ marginTop: 100 }}>
+                            <img src={logo} alt="" height="53" />
+                        </CardHeader>
+                        {this.state.stage === 0 && <CardBody className={classes.center} >
+                            <Formik
+                                enableReinitialize
+                                initialValues={this.state.object}
+                                validationSchema={formSchema}
+                                onSubmit={(values) => {
+                                    const castValues = formSchema.cast(values);
+                                    this.onSubmit({ ...castValues })
+                                }}>
+                                {({
+                                    handleSubmit,
+                                    handleChange,
+                                    setFieldValue,
+                                    values,
+                                    handleBlur,
+                                }) => (
+                                        <Form onSubmit={handleSubmit} noValidate>
+                                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                                                <QReaderModal
+                                                    buttonLabel={i18n.t(`${packageNS}:tr000277`)}
+                                                    callback={this.readQR} />
+                                                <Field
+                                                    type="text"
+                                                    label={label}
+                                                    name="serial"
+                                                    id="serial"
+                                                    value={this.state.object.serial || ""}
+                                                    autoComplete='off'
+                                                    component={ReactstrapInput}
+                                                    onBlur={handleBlur}
+                                                    onChange={handleChange}
 
-                                                        inputProps={{
-                                                            clearable: true,
-                                                            cache: false,
-                                                        }}
-                                                    />
-                                                </div>
-                                                <Row>
-                                                    <Col className={classes.between}>
-                                                        <Link to={`/organizations/${currentOrgID}/gateways/brand`}><Button color="secondary" onClick={this.back}>{i18n.t(`${packageNS}:menu.common.back`)}</Button></Link>
-                                                        <Button type="submit" color="secondary" className="btn" >{i18n.t(`${packageNS}:menu.common.submit`)}</Button>
-                                                    </Col>
-                                                </Row>
-                                            </Form>
-                                        )}
-                                </Formik>
-                            </CardBody>}
-                            {this.state.stage === 1 && <CardBody className={classes.center} style={{ height: '25vw' }}>
-                                <span style={{ fontSize: 30, fontWeight: 400 }}>{i18n.t(`${packageNS}:menu.gateways.were_searching_with_your_gateway_please_wait`)}</span>
-                            </CardBody>}
-                            {this.state.stage === 2 && <CardBody className={classes.center} style={{ height: '25vw' }}>
-                            </CardBody>}
-                        </Card>
-                    </Col>
-                </Row>
+                                                    inputProps={{
+                                                        clearable: true,
+                                                        cache: false,
+                                                    }}
+                                                />
+                                            </div>
+                                            <Row>
+                                                <Col className={classes.between}>
+                                                    <Link to={`/organizations/${currentOrgID}/gateways/brand`}><Button color="secondary" onClick={this.back}>{i18n.t(`${packageNS}:menu.common.back`)}</Button></Link>
+                                                    <Button type="submit" color="secondary" className="btn" >{i18n.t(`${packageNS}:menu.common.submit`)}</Button>
+                                                </Col>
+                                            </Row>
+                                        </Form>
+                                    )}
+                            </Formik>
+                        </CardBody>}
+                        {this.state.stage === 1 && <CardBody className={classes.center} style={{ height: '25vw' }}>
+                            <span style={{ fontSize: 30, fontWeight: 400 }}>{i18n.t(`${packageNS}:menu.gateways.were_searching_with_your_gateway_please_wait`)}</span>
+                        </CardBody>}
+                        {this.state.stage === 2 && <CardBody className={classes.center} style={{ height: '25vw' }}>
+                        </CardBody>}
+                    </Card>
+                </Col>
             </Card>
         </React.Fragment>
         );
