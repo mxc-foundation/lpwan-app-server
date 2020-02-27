@@ -1,6 +1,6 @@
 From: {{ .Operator }} Supernode <{{ .From }}>
 To: {{ .To }}
-Subject: {{ .Operator }} Supernode Withdraw Request
+Subject: {{ .Operator }} Supernode Withdraw Success
 Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -11,7 +11,7 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-You requested to withdraw some token. If you didn't, you'll probably want to change your password.
+Your withdrawal was successful.
 
 {{ .Link }}
 
@@ -53,7 +53,7 @@ Content-ID: html-body
                                 style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #000; font-weight: 500; text-align: center; border-radius: 3px 3px 0 0; background-color: #ffcc00; margin: 0; padding: 20px;"
                                 align="center" bgcolor="#ffcc00" valign="top">
                                 <a href=3D"#"> <img src="{{ .OperatorLogo }}" height="20" alt="logo"></a>
-                                <span style=3D"margin-top: 20px;display: block;"><strong>{{ .Operator }} Supernode Withdraw Request</strong></span>
+                                <span style=3D"margin-top: 20px;display: block;"><strong>{{ .Operator }} Supernode Withdraw Success</strong></span>
                             </td>
                         </tr>
                         <tr
@@ -68,8 +68,7 @@ Content-ID: html-body
                                         <td class=3D"content-block"
                                             style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            You requested to withdraw {{ .WithdrawAmount }} MXC from your {{ .Operator }} Supernode Wallet. <br><br>
-                                            Use this code to confirm your withdrawal: <strong>{{ .AuthCode }}</strong>
+                                            Your withdrawal request of {{ .WithdrawAmount }} MXC from your {{ .Operator }} Supernode Wallet has been approved. You can view the transaction at: {{ .TxHash }} <br><br>
                                         </td>
                                     </tr>
                                     <tr
@@ -77,7 +76,7 @@ Content-ID: html-body
                                         <td class=3D"content-block"
                                             style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;"
                                             valign="top">
-                                            If you didn't request this code, please change your password and contact us immediately at: {{ .OperatorSupport }}
+                                            If you didn't request a withdrawal, please change your password and contact us immediately at: {{ .OperatorSupport }}
                                         </td>
                                     </tr>
                                 </table>
