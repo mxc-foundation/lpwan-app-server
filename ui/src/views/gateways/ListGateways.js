@@ -320,7 +320,8 @@ class ListGateways extends Component {
             icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
             onClick={this.toggle}
             //to={`/organizations/${this.props.match.params.organizationID}/gateways/brand`}
-            to={`/organizations/${currentOrgID}/gateways/create`}
+            //to={`/organizations/${currentOrgID}/gateways/create`}
+            to={`/organizations/${currentOrgID}/gateways/input-serial`}
           />
         </GatewayAdmin>}
       >

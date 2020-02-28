@@ -1,7 +1,9 @@
 import React from "react";
 import { Bar, defaults as ChartJsDefaults } from "react-chartjs-2";
-import { Row, Col, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown } from "reactstrap";
+import { Row, Col } from "reactstrap";
 import classNames from "classnames";
+
+import WidgetActions from './WidgetActions';
 
 // default
 ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';
@@ -61,13 +63,7 @@ const DataPacketChart = (props) => {
 
     return <div className="card-box">
         <div className="float-right">
-            <UncontrolledButtonDropdown>
-                <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
-                <DropdownMenu right>
-                    <DropdownItem>Week</DropdownItem>
-                    <DropdownItem>Month</DropdownItem>
-                </DropdownMenu>
-            </UncontrolledButtonDropdown>
+            <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
         </div>
 
         <h4 className="header-title mt-0">{props.title}</h4>

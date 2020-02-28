@@ -4,10 +4,6 @@
     "title": "withdraw.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -15,9 +11,52 @@
     "application/json"
   ],
   "paths": {
+    "/api/withdraw/{orgId}/confirm/{moneyAbbr}": {
+      "post": {
+        "summary": "ConfirmWithdraw is after supernode owner clicks the confirm or deny.",
+        "operationId": "ConfirmWithdraw",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/m2m_uiConfirmWithdrawResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "Ether"
+            ]
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/m2m_uiConfirmWithdrawRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
     "/api/withdraw/{orgId}/get-withdraw-fee/{moneyAbbr}": {
       "get": {
-        "summary": "Get data for current withdraw fee",
+        "summary": "GetWithdrawFee data for current withdraw fee",
         "operationId": "GetWithdrawFee",
         "responses": {
           "200": {
@@ -143,6 +182,7 @@
     },
     "/api/withdraw/{orgId}/withdraw/{moneyAbbr}": {
       "post": {
+        "summary": "WithdrawReq when the user clicks the withdraw",
         "operationId": "WithdrawReq",
         "responses": {
           "200": {
@@ -185,6 +225,41 @@
     }
   },
   "definitions": {
+    "m2m_uiConfirmWithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "confirmStatus": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "moneyAbbr": {
+          "$ref": "#/definitions/m2m_uiMoney"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "denyComment": {
+          "type": "string"
+        }
+      }
+    },
+    "m2m_uiConfirmWithdrawResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/m2m_uiProfileResponse"
+        }
+      }
+    },
     "m2m_uiGetWithdrawFeeResponse": {
       "type": "object",
       "properties": {
@@ -350,20 +425,7 @@
     "m2m_uiWithdrawHistory": {
       "type": "object",
       "properties": {
-        "from": {
-          "type": "string"
-        },
-        "to": {
-          "type": "string"
-        },
-        "moneyType": {
-          "type": "string"
-        },
         "amount": {
-          "type": "number",
-          "format": "double"
-        },
-        "withdrawFee": {
           "type": "number",
           "format": "double"
         },
@@ -373,10 +435,10 @@
         "txStatus": {
           "type": "string"
         },
-        "txApprovedTime": {
+        "txHash": {
           "type": "string"
         },
-        "txHash": {
+        "comment": {
           "type": "string"
         }
       }
