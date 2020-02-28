@@ -6,6 +6,7 @@ import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import TitleBar from "../../components/TitleBar";
+import Loader from "../../components/Loader";
 import NetworkServerForm from "./NetworkServerForm";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
@@ -20,13 +21,18 @@ const styles = {
 class CreateNetworkServer extends Component {
   constructor() {
     super();
+    this.state = {
+      loading: false,
+    }
     this.onSubmit = this.onSubmit.bind(this);
   }
 
   onSubmit(networkServer) {
+    this.setState({ loading: true });
     NetworkServerStore.create(networkServer, resp => {
+      this.setState({ loading: false });
       this.props.history.push("/network-servers");
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   render() {
@@ -43,6 +49,7 @@ class CreateNetworkServer extends Component {
         </TitleBar>
 
         <Card className="card-box shadow-sm">
+          {this.state.loading && <Loader />}
           <NetworkServerForm
             onSubmit={this.onSubmit}
             submitLabel={i18n.t(`${packageNS}:tr000041`)}

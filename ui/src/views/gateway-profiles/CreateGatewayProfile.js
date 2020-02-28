@@ -3,6 +3,7 @@ import { withRouter, Link } from 'react-router-dom';
 
 import { withStyles } from '@material-ui/core/styles';
 import Modal from '../../components/Modal';
+import Loader from "../../components/Loader";
 import { Button, Breadcrumb, BreadcrumbItem, Form, FormGroup, Label, Input, FormText, Container, Row, Col, Card, CardBody } from 'reactstrap';
 
 
@@ -39,6 +40,7 @@ class CreateGatewayProfile extends Component {
     super();
     this.state = {
       nsDialog: false,
+      loading: false,
     };
     this.onSubmit = this.onSubmit.bind(this);
     this.closeDialog = this.closeDialog.bind(this);
@@ -61,9 +63,11 @@ class CreateGatewayProfile extends Component {
   }
 
   onSubmit(gatewayProfile) {
+    this.setState({ loading: true });
     GatewayProfileStore.create(gatewayProfile, resp => {
+      this.setState({ loading: false });
       this.props.history.push("/gateway-profiles");
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   render() {
@@ -90,6 +94,7 @@ class CreateGatewayProfile extends Component {
           <Col>
             <Card>
               <CardBody>
+                {this.state.loading && <Loader />}
                 <GatewayProfileForm
                   submitLabel={i18n.t(`${packageNS}:tr000277`)}
                   onSubmit={this.onSubmit}

@@ -8,6 +8,7 @@ import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import SessionStore from '../../stores/SessionStore';
@@ -52,7 +53,8 @@ class ListGatewayProfiles extends Component {
     this.getPage = this.getPage.bind(this);
     this.state = {
       data: [],
-      totalSize: 0
+      totalSize: 0,
+      loading: false,
     }
   }
 
@@ -69,13 +71,14 @@ class ListGatewayProfiles extends Component {
    */
   getPage = (limit, offset) => {
     limit = MAX_DATA_LIMIT;
+    this.setState({ loading: true });
     GatewayProfileStore.list(0, limit, offset, (res) => {
       const object = this.state;
       object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({ object });
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   componentDidMount() {
@@ -107,6 +110,7 @@ class ListGatewayProfiles extends Component {
       <Row>
         <Col>
           <Card className="card-box shadow-sm" >
+            {this.state.loading && <Loader />}
             <AdvancedTable data={this.state.data} columns={getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
           </Card>
         </Col>
