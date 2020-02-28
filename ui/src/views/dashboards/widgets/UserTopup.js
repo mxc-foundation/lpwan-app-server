@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import defaultProfilePic from "../../../assets/images/users/profile-icon.png";
 import i18n, { packageNS } from '../../../i18n';
 import SessionStore from "../../../stores/SessionStore";
+import WidgetActions from './WidgetActions';
 
 
 /**
@@ -13,7 +14,7 @@ import SessionStore from "../../../stores/SessionStore";
  */
 const Topup = (props) => {
     const data = props.data || {};
-    const { user: { id, profilePic, username } } = props;
+    const { profilePic, username }  = SessionStore.getUser();
     const formattedVal = (data.amount || 0).toLocaleString(navigator.language, { minimumFractionDigits: 4 });
 
     const userRole = SessionStore.isOrganizationAdmin() ? i18n.t(`${packageNS}:menu.dashboard.roleOrgAdmin`) :
@@ -24,7 +25,7 @@ const Topup = (props) => {
 
     return <div className="card-box">
         <div className="float-right">
-            
+            <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
         </div>
 
         <Media className="align-items-center">

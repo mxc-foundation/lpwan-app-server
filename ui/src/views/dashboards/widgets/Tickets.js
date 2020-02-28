@@ -1,9 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { Doughnut, defaults as ChartJsDefaults } from "react-chartjs-2";
 import { Row, Col, Progress } from "reactstrap";
 
 import i18n, { packageNS } from '../../../i18n';
+import WidgetActions from './WidgetActions';
 
 // default
 ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';
@@ -40,15 +40,17 @@ const Tickets = (props) => {
 
     return <div className="card-box">
         <div className="float-right">
-            <Link className="text-muted" to='#'>{i18n.t(`${packageNS}:menu.dashboard.tickets.view_history`)}</Link>
+            <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: i18n.t(`${packageNS}:menu.dashboard.tickets.view_history`) }]}
+                onDelete={props.onDelete} />
         </div>
 
         <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.tickets.title`)}</h4>
+        <p>&nbsp;</p>
 
         <div className="widget-chart mt-3">
             <Row>
                 <Col lg={6}>
-                    <Doughnut data={chartData} options={donutOpts} height={160} />
+                    <Doughnut data={chartData} options={donutOpts} height={200} />
                 </Col>
                 <Col lg={6} className="">
                     <div className="pl-2">

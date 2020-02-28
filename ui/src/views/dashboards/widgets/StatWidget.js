@@ -1,19 +1,15 @@
 import React from "react";
-import { DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown } from 'reactstrap';
 
-const StatWidget = ({ label, value, formatNum }) => {
+import WidgetActions from './WidgetActions';
 
-    const formattedVal = formatNum ? (value || 0).toLocaleString(navigator.language, { minimumFractionDigits: 0 }) : value;
+
+const StatWidget = (props) => {
+    const { label, data, formatNum } = props;
+    const formattedVal = formatNum ? (data || 0).toLocaleString(navigator.language, { minimumFractionDigits: 0 }) : data;
 
     return <div className="card-box">
         <div className="float-right">
-            <UncontrolledButtonDropdown>
-                <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
-                <DropdownMenu right>
-                    <DropdownItem>Week</DropdownItem>
-                    <DropdownItem>Month</DropdownItem>
-                </DropdownMenu>
-            </UncontrolledButtonDropdown>
+            <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
         </div>
 
         <h4 className="header-title mt-0 mb-3">{label}</h4>

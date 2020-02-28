@@ -3,6 +3,7 @@ import { Bar, defaults as ChartJsDefaults } from "react-chartjs-2";
 import { Row, Col } from "reactstrap";
 
 import i18n, { packageNS } from '../../../i18n';
+import WidgetActions from './WidgetActions';
 
 // default
 ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';
@@ -77,15 +78,16 @@ const Withdrawal = (props) => {
 
     return <div className="card-box">
         <div className="float-right">
-            
+            <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
         </div>
 
         <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.withdrawal.title`)}</h4>
+        <p>&nbsp;</p>
 
         <div className="widget-chart mt-3">
             <Row>
                 <Col className="mb-0">
-                    <Bar data={chartData} options={barOpts} height={160} />
+                    <Bar data={chartData} options={barOpts} height={200} />
                 </Col>
             </Row>
             <Row>

@@ -1,20 +1,34 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "reactstrap";
 
 import i18n, { packageNS } from '../../../i18n';
 
 /**
  * Widget Actions
  */
-const WidgetActions = ({ widget, onDelete }) => {
+
+const ActionTarget = ({ item }) => {
+    if (item.to)
+        return <Link to={item.to} className="dropdown-item">{item.label}</Link>
+    else if (item.onClick)
+        return <Link to='#'  className="dropdown-item" onClick={item.onClick}>{item.label}</Link>
+    else
+        return <div className="dropdown-item">{item.label}</div>
+}
+
+
+const WidgetActions = ({ widget, actionItems, onDelete }) => {
+    const actions = actionItems || [];
+
     return <UncontrolledButtonDropdown>
         <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
         <DropdownMenu right>
-            <DropdownItem>Week</DropdownItem>
-            <DropdownItem>Month</DropdownItem>
-            <DropdownItem className="">
-                <Link to='#' className="text-warning" onClick={(e) => { onDelete ? onDelete(widget) : '' }}>{i18n.t(`${packageNS}:menu.dashboard.remove`)}</Link>
-            </DropdownItem>
+            {actions.map((item, i) => {
+                return <ActionTarget item={item} key={i} />
+            })}
+            <DropdownItem divider />
+                <Link to='#' className="dropdown-item text-danger" onClick={(e) => { if (onDelete) onDelete(widget); }}>{i18n.t(`${packageNS}:menu.dashboard.remove`)}</Link>
         </DropdownMenu>
     </UncontrolledButtonDropdown>
 }

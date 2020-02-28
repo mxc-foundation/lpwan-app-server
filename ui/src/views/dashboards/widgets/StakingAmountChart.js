@@ -3,6 +3,7 @@ import { Line, defaults as ChartJsDefaults } from "react-chartjs-2";
 import { Row, Col } from "reactstrap";
 
 import i18n, { packageNS } from '../../../i18n';
+import WidgetActions from './WidgetActions';
 
 
 // default
@@ -74,7 +75,9 @@ const StakingAmountChart = (props) => {
 
 
     return <div className="card-box">
-        <div className="float-right"></div>
+        <div className="float-right">
+            <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
+        </div>
 
         <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.title`)}</h4>
         <p className="mt-0 text-warning">{i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.subtext`)}</p>

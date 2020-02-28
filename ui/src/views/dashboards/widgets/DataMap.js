@@ -1,13 +1,14 @@
 import React from "react";
-import { Row, Col, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown } from "reactstrap";
+import { Row, Col } from "reactstrap";
 import { Map, Marker } from 'react-leaflet';
 import FoundLocationMap from "../../../components/FoundLocationMap"
 
 import i18n, { packageNS } from '../../../i18n';
+import WidgetActions from "./WidgetActions";
 
 
 const DataMap = (props) => {
-    const position = props.position;
+    const position = props.data;
     const style = {
         height: 360,
         zIndex: 1
@@ -15,13 +16,7 @@ const DataMap = (props) => {
 
     return <div className="card-box">
         <div className="float-right">
-            <UncontrolledButtonDropdown>
-                <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
-                <DropdownMenu right>
-                    <DropdownItem>Week</DropdownItem>
-                    <DropdownItem>Month</DropdownItem>
-                </DropdownMenu>
-            </UncontrolledButtonDropdown>
+            <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
         </div>
 
         <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.dataMap.title`)}</h4>

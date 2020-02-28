@@ -8,7 +8,7 @@ import TitleBar from "../../components/TitleBar";
 import Loader from "../../components/Loader";
 
 import AddWidget from './AddWidget';
-import { adminWidgetCatalog } from './widgets/';
+import { adminWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_STAT, WIDGET_TYPE_MAP } from './widgets/';
 
 class AdminDashboard extends Component {
     constructor() {
@@ -24,6 +24,7 @@ class AdminDashboard extends Component {
         this.openAddWidget = this.openAddWidget.bind(this);
         this.closeAddWidget = this.closeAddWidget.bind(this);
         this.onAddWidget = this.onAddWidget.bind(this);
+        this.onDeletewidget = this.onDeletewidget.bind(this);
         this.getData = this.getData.bind(this);
     }
 
@@ -37,13 +38,23 @@ class AdminDashboard extends Component {
 
     onAddWidget(widget) {
         let widgets = [...this.state.widgets];
-        widget.push(widget);
+        widgets.push(widget);
         this.setState({widgets: widgets, openAddWidget: false});
         this.getData();
     }
 
+    onDeletewidget(widget) {
+        let widgets = [...this.state.widgets];
+        widgets = widgets.filter(w => w.name !== widget.name);
+        this.setState({widgets: widgets});
+    }
+
     componentDidMount() {
         this.getData();
+
+        // showing dummy widgets on load - remove this when API is available
+        let widgets = [...adminWidgetCatalog];
+        this.setState({widgets});
     }
 
     getData() {
@@ -153,13 +164,27 @@ class AdminDashboard extends Component {
                 "totalGateways": 90,
                 "totalDevices": 260,
                 "totalApplications": 260,
+                "dataMap": [51, 13]
             }
         });
     }
 
+    /**
+     * Gets the widgets by type
+     * @param {*} type 
+     * @param {*} startIdx 
+     * @param {*} size 
+     */
+    getWidgets(type, startIdx, size) {
+        let typeWiseWidgets = [];
+        for (const widget of this.state.widgets) {
+            if (widget['type'] === type)
+                typeWiseWidgets.push({ meta: widget, component: widget.component, data: this.state.data[widget.name] });
+        }
+        return typeWiseWidgets.slice(startIdx, startIdx + size) || [];
+    }
 
     render() {
-
         return (<React.Fragment>
 
             <TitleBar buttons={[
@@ -170,96 +195,69 @@ class AdminDashboard extends Component {
                 </Breadcrumb>
             </TitleBar>
 
-            {this.state.openAddWidget ? <AddWidget availableWidgets={adminWidgetCatalog} closeModal={this.closeAddWidget} /> : null}
+            {this.state.openAddWidget ? <AddWidget availableWidgets={adminWidgetCatalog} closeModal={this.closeAddWidget}
+                addWidget={this.onAddWidget} addedWidgets={this.state.widgets} /> : null}
 
             <Row>
                 <Col>
                     <div className="position-relative">
                         {this.state.loading ? <Loader /> : null}
 
-                        {/* <Row>
-                            <Col lg={4}>
-                                <Tickets data={this.state.data.tickets} />
-                            </Col>
-                            <Col lg={4}>
-                                <Withdrawal data={this.state.data.withdrawal} />
-                            </Col>
-                            <Col lg={4}>
-                                <Topup data={this.state.data.topup} />
-                            </Col>
+                        <Row>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 3).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalUsers`)}
-                                    value={this.state.data.totalUsers} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalOrgs`)}
-                                    value={this.state.data.totalOrganizations} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalGateways`)}
-                                    value={this.state.data.totalGateways} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalDevices`)}
-                                    value={this.state.data.totalDevices} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalApps`)}
-                                    value={this.state.data.totalApplications} formatNum={true}></StatWidget>
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_STAT, 0, 5).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col lg={4} className="mb-0">
-                                <MXCAmountChart data={this.state.data.supernodeAmount} />
-                            </Col>
-                            <Col lg={4} className="mb-0">
-                                <StakingAmountChart data={this.state.data.stakingAmount} />
-                            </Col>
-                            <Col lg={4} className="mb-0">
-                                <EarnedAmountChart data={this.state.data.earnedAmount} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 3, 3).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsReceived} color="#10c469"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.title`)}
-                                    subTitle={i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.subTitle`)}
-                                    subTitleClass="text-success" labelField="day" />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 6, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsSent} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.title`)}
-                                    subTitle={i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.subTitle`)}
-                                    subTitleClass="text-primary" labelField="day" />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 7, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataMap position={[51, 13]} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_MAP, 0, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col lg={6} className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsByChannel} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsByChannel.title`)}
-                                    labelField="channel" showYAxis={true} />
-                            </Col>
-                            <Col lg={6} className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsBySpreadFactor} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.title`)}
-                                    labelField="spreadFactor" showYAxis={true} />
-                            </Col>
-                        </Row> */}
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 8, 2).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
+                        </Row>
                     </div>
                 </Col>
             </Row>

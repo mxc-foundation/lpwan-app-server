@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, Row, Col, Media } from 'reactstrap';
+import classNames from "classnames";
 
 import i18n, { packageNS } from '../../i18n';
 
 const AddWidget = (props) => {
-    const { closeModal, show = true, availableWidgets = [] } = props;
+    const { addWidget, closeModal, show = true, availableWidgets = [], addedWidgets = [] } = props;
     const [modal, setModal] = useState(show);
 
     const toggle = () => {
@@ -17,7 +18,7 @@ const AddWidget = (props) => {
             <ModalHeader toggle={toggle}>{i18n.t(`${packageNS}:menu.dashboard.addWidget.title`)}</ModalHeader>
             <ModalBody>
                 {availableWidgets.map((widget, idx) => {
-                    return <div className="p-2 border-bottom" key={idx}>
+                    return <div className={classNames("p-2", {"border-bottom": idx + 1 < availableWidgets.length})} key={idx}>
                         <Row>
                             <Col className="mb-0">
                                 <Media>
@@ -31,7 +32,10 @@ const AddWidget = (props) => {
                                         <p>{widget.description}</p>
                                     </Media>
                                     <Media right className="align-self-center">
-                                        <Button color="primary" size="sm">{i18n.t(`${packageNS}:menu.dashboard.addWidget.add`)}</Button>
+                                        <Button color="primary" size="sm"
+                                            onClick={() => addWidget(widget)}
+                                            disabled={addedWidgets.findIndex(w => w.name === widget.name) !== -1}>
+                                            {i18n.t(`${packageNS}:menu.dashboard.addWidget.add`)}</Button>
                                     </Media>
                                 </Media>
                             </Col>
