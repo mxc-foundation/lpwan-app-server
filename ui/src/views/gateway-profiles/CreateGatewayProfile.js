@@ -1,8 +1,24 @@
 import React, { Component } from "react";
 import { withRouter, Link } from 'react-router-dom';
 
+import { withStyles } from '@material-ui/core/styles';
 import Modal from '../../components/Modal';
-import { Breadcrumb, BreadcrumbItem, Form, Row, Col, Card, CardBody } from 'reactstrap';
+import Loader from "../../components/Loader";
+import { Button, Breadcrumb, BreadcrumbItem, Form, FormGroup, Label, Input, FormText, Container, Row, Col, Card, CardBody } from 'reactstrap';
+
+
+
+/* import Grid from '@material-ui/core/Grid';
+import Card from '@material-ui/core/Card';
+import { CardContent } from "@material-ui/core";
+
+
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle'; */
+
 
 import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
