@@ -13,6 +13,16 @@ import UserTopup from './UserTopup';
 import Withdrawal from './Withdrawal';
 
 import ticketImg from './images/tickets.png';
+import extAmtImg from './images/ex-amt.png';
+import mapImg from './images/map.png';
+import mxcAmtImg from './images/mxc_amount.png';
+import packetsImg from './images/packets.png';
+import packets2Img from './images/packets2.png';
+import stakingAmtImg from './images/staking-amt.png';
+import statImg from './images/stat.png';
+import userTopupImg from './images/user-topup.png';
+import withDrawImg from './images/withdraw.png';
+import topupImg from './images/topup2.png';
 
 const WIDGET_TYPE_GRAPH = "graph";
 const WIDGET_TYPE_STAT = "stat";
@@ -78,77 +88,77 @@ const adminWidgetCatalog = [
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'withdrawal', label: i18n.t(`${packageNS}:menu.dashboard.withdrawal.title`),
-        component: Withdrawal, avatar: ticketImg,
+        component: Withdrawal, avatar: withDrawImg,
         description: i18n.t(`${packageNS}:menu.dashboard.withdrawal.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'topup', label: i18n.t(`${packageNS}:menu.dashboard.topup.title`),
-        component: Topup, avatar: ticketImg,
+        component: Topup, avatar: topupImg,
         description: i18n.t(`${packageNS}:menu.dashboard.topup.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalUsers', label: i18n.t(`${packageNS}:menu.dashboard.totalUsers.title`),
-        component: TotalUsers, avatar: ticketImg,
+        component: TotalUsers, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalUsers.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalOrganizations', label: i18n.t(`${packageNS}:menu.dashboard.totalOrgs.title`),
-        component: TotalOrgs, avatar: ticketImg,
+        component: TotalOrgs, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalOrgs.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalGateways', label: i18n.t(`${packageNS}:menu.dashboard.totalGateways.title`),
-        component: TotalGateway, avatar: ticketImg,
+        component: TotalGateway, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalOrgs.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalDevices', label: i18n.t(`${packageNS}:menu.dashboard.totalDevices.title`),
-        component: TotalDevices, avatar: ticketImg,
+        component: TotalDevices, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalDevices.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalApplications', label: i18n.t(`${packageNS}:menu.dashboard.totalApps.title`),
-        component: TotalApps, avatar: ticketImg,
+        component: TotalApps, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalApps.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'supernodeAmount', label: i18n.t(`${packageNS}:menu.dashboard.mxcAmountChart.title`),
-        component: MXCAmountChart, avatar: ticketImg,
+        component: MXCAmountChart, avatar: mxcAmtImg,
         description: i18n.t(`${packageNS}:menu.dashboard.mxcAmountChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'stakingAmount', label: i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.title`),
-        component: StakingAmountChart, avatar: ticketImg,
+        component: StakingAmountChart, avatar: stakingAmtImg,
         description: i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'earnedAmount', label: i18n.t(`${packageNS}:menu.dashboard.earnedAmountChart.title`),
-        component: EarnedAmountChart, avatar: ticketImg,
+        component: EarnedAmountChart, avatar: extAmtImg,
         description: i18n.t(`${packageNS}:menu.dashboard.earnedAmountChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsReceived', label: i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.title`),
-        component: DataPacketsReceived, avatar: ticketImg,
+        component: DataPacketsReceived, avatar: packetsImg,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsSent', label: i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.title`),
-        component: DataPacketsSent, avatar: ticketImg,
+        component: DataPacketsSent, avatar: packetsImg,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.description`),
     },
     {
         type: WIDGET_TYPE_MAP, name: 'dataMap', label: i18n.t(`${packageNS}:menu.dashboard.dataMap.title`),
-        component: DataMap, avatar: ticketImg,
+        component: DataMap, avatar: mapImg,
         description: i18n.t(`${packageNS}:menu.dashboard.dataMap.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsByChannel', label: i18n.t(`${packageNS}:menu.dashboard.packetsByChannel.title`),
-        component: DataPacketsByChannel, avatar: ticketImg,
+        component: DataPacketsByChannel, avatar: packets2Img,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsByChannel.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsBySpreadFactor', label: i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.title`),
-        component: DataPacketsBySpread, avatar: ticketImg,
+        component: DataPacketsBySpread, avatar: packets2Img,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.description`),
     },
 ];
@@ -156,67 +166,67 @@ const adminWidgetCatalog = [
 const userWidgetCatalog = [
     {
         type: WIDGET_TYPE_GRAPH, name: 'topup', label: i18n.t(`${packageNS}:menu.dashboard.topup.title`),
-        component: UserTopup, avatar: ticketImg,
+        component: UserTopup, avatar: userTopupImg,
         description: i18n.t(`${packageNS}:menu.dashboard.topup.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalUsers', label: i18n.t(`${packageNS}:menu.dashboard.totalUsers.title`),
-        component: TotalUsers, avatar: ticketImg,
+        component: TotalUsers, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalUsers.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalGateways', label: i18n.t(`${packageNS}:menu.dashboard.totalGateways.title`),
-        component: TotalGateway, avatar: ticketImg,
+        component: TotalGateway, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalOrgs.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalDevices', label: i18n.t(`${packageNS}:menu.dashboard.totalDevices.title`),
-        component: TotalDevices, avatar: ticketImg,
+        component: TotalDevices, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalDevices.description`),
     },
     {
         type: WIDGET_TYPE_STAT, name: 'totalApplications', label: i18n.t(`${packageNS}:menu.dashboard.totalApps.title`),
-        component: TotalApps, avatar: ticketImg,
+        component: TotalApps, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalApps.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'supernodeAmount', label: i18n.t(`${packageNS}:menu.dashboard.mxcAmountChart.title`),
-        component: MXCAmountChart, avatar: ticketImg,
+        component: MXCAmountChart, avatar: mxcAmtImg,
         description: i18n.t(`${packageNS}:menu.dashboard.mxcAmountChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'stakingAmount', label: i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.title`),
-        component: StakingAmountChart, avatar: ticketImg,
+        component: StakingAmountChart, avatar: stakingAmtImg,
         description: i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'earnedAmount', label: i18n.t(`${packageNS}:menu.dashboard.earnedAmountChart.title`),
-        component: EarnedAmountChart, avatar: ticketImg,
+        component: EarnedAmountChart, avatar: extAmtImg,
         description: i18n.t(`${packageNS}:menu.dashboard.earnedAmountChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsReceived', label: i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.title`),
-        component: DataPacketsReceived, avatar: ticketImg,
+        component: DataPacketsReceived, avatar: packetsImg,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsSent', label: i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.title`),
-        component: DataPacketsSent, avatar: ticketImg,
+        component: DataPacketsSent, avatar: packetsImg,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.description`),
     },
     {
         type: WIDGET_TYPE_MAP, name: 'dataMap', label: i18n.t(`${packageNS}:menu.dashboard.dataMap.title`),
-        component: DataMap, avatar: ticketImg,
+        component: DataMap, avatar: mapImg,
         description: i18n.t(`${packageNS}:menu.dashboard.dataMap.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsByChannel', label: i18n.t(`${packageNS}:menu.dashboard.packetsByChannel.title`),
-        component: DataPacketsByChannel, avatar: ticketImg,
+        component: DataPacketsByChannel, avatar: packets2Img,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsByChannel.description`),
     },
     {
         type: WIDGET_TYPE_GRAPH, name: 'packetsBySpreadFactor', label: i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.title`),
-        component: DataPacketsBySpread, avatar: ticketImg,
+        component: DataPacketsBySpread, avatar: packets2Img,
         description: i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.description`),
     },
 ];

@@ -196,7 +196,7 @@ class UserDashboard extends Component {
                         </Row>
 
                         <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 3, 3).map((widget, idx) => {
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 1, 3).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
                                     <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                 </Col>
@@ -204,7 +204,7 @@ class UserDashboard extends Component {
                         </Row>
 
                         <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 6, 1).map((widget, idx) => {
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 4, 1).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
                                     <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                 </Col>
@@ -212,7 +212,7 @@ class UserDashboard extends Component {
                         </Row>
 
                         <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 7, 1).map((widget, idx) => {
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 5, 1).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
                                     <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                 </Col>
@@ -228,7 +228,7 @@ class UserDashboard extends Component {
                         </Row>
 
                         <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 8, 2).map((widget, idx) => {
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 6, 2).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
                                     <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                 </Col>

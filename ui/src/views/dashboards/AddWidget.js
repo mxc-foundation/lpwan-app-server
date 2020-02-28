@@ -21,22 +21,16 @@ const AddWidget = (props) => {
                     return <div className={classNames("p-2", {"border-bottom": idx + 1 < availableWidgets.length})} key={idx}>
                         <Row>
                             <Col className="mb-0">
-                                <Media>
-                                    <Media left className="align-self-center">
-                                        <div className="avatar-lg pr-3">
-                                            <img src={widget.avatar} alt="" className="img-fluid" />
-                                        </div>
-                                    </Media>
-                                    <Media body className="pr-2">
+                                <Media className="align-items-center">
+                                    <img src={widget.avatar} alt="" className="img-fluid border rounded avatar-xl mr-3" />
+                                    <Media body className="mr-2">
                                         <Media heading tag="h5">{widget.label}</Media>
                                         <p>{widget.description}</p>
                                     </Media>
-                                    <Media right className="align-self-center">
-                                        <Button color="primary" size="sm"
-                                            onClick={() => addWidget(widget)}
-                                            disabled={addedWidgets.findIndex(w => w.name === widget.name) !== -1}>
-                                            {i18n.t(`${packageNS}:menu.dashboard.addWidget.add`)}</Button>
-                                    </Media>
+                                    <Button color="primary" size="sm"
+                                        onClick={() => addWidget(widget)}
+                                        disabled={addedWidgets.findIndex(w => w.name === widget.name) !== -1}>
+                                        {i18n.t(`${packageNS}:menu.dashboard.addWidget.add`)}</Button>
                                 </Media>
                             </Col>
                         </Row>
