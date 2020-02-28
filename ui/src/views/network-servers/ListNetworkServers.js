@@ -73,7 +73,7 @@ class ListNetworkServers extends Component {
       object.data = res.result;
       object.loading = false;
       this.setState({object});
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   componentDidMount() {

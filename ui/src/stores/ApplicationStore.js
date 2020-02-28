@@ -42,7 +42,7 @@ class ApplicationStore extends EventEmitter {
     });
   }
 
-  update(application, callbackFunc) {
+  update(application, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.Update({
         "application.id": application.id,
@@ -55,7 +55,10 @@ class ApplicationStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -106,7 +109,7 @@ class ApplicationStore extends EventEmitter {
     });
   }
 
-  createHTTPIntegration(integration, callbackFunc) {
+  createHTTPIntegration(integration, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.CreateHTTPIntegration({
         "integration.applicationId": integration.applicationID,
@@ -119,7 +122,10 @@ class ApplicationStore extends EventEmitter {
         this.integrationNotification("http", "created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -168,7 +174,7 @@ class ApplicationStore extends EventEmitter {
     });
   }
 
-  createInfluxDBIntegration(integration, callbackFunc) {
+  createInfluxDBIntegration(integration, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.CreateInfluxDBIntegration({
         "integration.applicationId": integration.applicationID,
@@ -181,7 +187,10 @@ class ApplicationStore extends EventEmitter {
         this.integrationNotification("InfluxDB", "created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -229,7 +238,7 @@ class ApplicationStore extends EventEmitter {
     });
   }
 
-  createThingsBoardIntegration(integration, callbackFunc) {
+  createThingsBoardIntegration(integration, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.CreateThingsBoardIntegration({
         "integration.applicationId": integration.applicationID,
@@ -242,7 +251,10 @@ class ApplicationStore extends EventEmitter {
           this.integrationNotification("ThingsBoard.io", "created");
           callbackFunc(resp.obj);
         })
-      .catch(errorHandler);
+        .catch(error => {
+          errorHandler(error);
+          if (errorCallbackFunc) errorCallbackFunc(error);
+        });
     });
   }
 
