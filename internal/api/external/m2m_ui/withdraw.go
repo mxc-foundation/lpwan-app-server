@@ -58,13 +58,6 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 
 // GetWithdrawFee gets the withdraw fee
 func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWithdrawFeeRequest) (*api.GetWithdrawFeeResponse, error) {
-	log.WithField("orgId", req.UserId).Info("grpc_api/GetWithdrawFee")
-
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
-	if err != nil {
-		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
-
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
@@ -75,7 +68,6 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 
 	resp, err := withdrawClient.GetWithdrawFee(ctx, &api.GetWithdrawFeeRequest{
 		MoneyAbbr: req.MoneyAbbr,
-		UserId:     req.UserId,
 	})
 	if err != nil {
 		return &api.GetWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -83,7 +75,6 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 
 	return &api.GetWithdrawFeeResponse{
 		WithdrawFee: resp.WithdrawFee,
-		UserProfile: &prof,
 	}, nil
 }
 
@@ -155,4 +146,9 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 
 func (s *WithdrawServerAPI) ConfirmWithdraw (ctx context.Context, req *api.ConfirmWithdrawRequest) (*api.ConfirmWithdrawResponse, error) {
 	return &api.ConfirmWithdrawResponse{}, nil
+}
+
+func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api.GetWithdrawRequestListRequest) (*api.GetWithdrawRequestListResponse, error) {
+
+	return &api.GetWithdrawRequestListResponse{}, nil
 }

@@ -54,12 +54,12 @@ service WithdrawService {
 message GetWithdrawFeeRequest {
     // type of crypto currency
     Money money_abbr = 1;
+
 }
 
 message GetWithdrawFeeResponse {
     // Withdraw object.
     double withdrawFee = 1;
-    ProfileResponse user_profile = 2;
 }
 
 message WithdrawReqRequest {
@@ -67,6 +67,7 @@ message WithdrawReqRequest {
     Money money_abbr = 2;
     double amount = 3;
     string eth_address = 4;
+    int64 org_id = 5;
 }
 
 message WithdrawReqResponse {
@@ -81,6 +82,7 @@ message ConfirmWithdrawRequest {
     double amount = 4;
     string deny_comment = 5;
     int64  withdraw_id = 6;
+    int64 org_id = 7;
 }
 
 message ConfirmWithdrawResponse {
@@ -93,6 +95,7 @@ message GetWithdrawHistoryRequest {
     int64 offset = 2;
     int64 limit = 3;
     Money money_abbr = 4;
+    int64 org_id = 5;
 }
 
 message WithdrawHistory {
