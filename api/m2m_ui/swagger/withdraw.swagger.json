@@ -4,6 +4,10 @@
     "title": "withdraw.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -11,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/withdraw/{userId}/confirm/{moneyAbbr}": {
+    "/api/withdraw/confirm/{moneyAbbr}": {
       "post": {
         "summary": "ConfirmWithdraw is after supernode owner clicks the confirm or deny.",
         "operationId": "ConfirmWithdraw",
@@ -24,13 +28,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
           {
             "name": "moneyAbbr",
             "in": "path",
@@ -56,7 +53,7 @@
         ]
       }
     },
-    "/api/withdraw/{userId}/get-withdraw-fee/{moneyAbbr}": {
+    "/api/withdraw/get-withdraw-fee/{moneyAbbr}": {
       "get": {
         "summary": "GetWithdrawFee data for current withdraw fee",
         "operationId": "GetWithdrawFee",
@@ -69,13 +66,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
           {
             "name": "moneyAbbr",
             "description": "type of crypto currency",
@@ -94,7 +84,7 @@
         ]
       }
     },
-    "/api/withdraw/{userId}/history/{moneyAbbr}": {
+    "/api/withdraw/history/{moneyAbbr}": {
       "get": {
         "operationId": "GetWithdrawHistory",
         "responses": {
@@ -107,13 +97,6 @@
         },
         "parameters": [
           {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
-          {
             "name": "moneyAbbr",
             "in": "path",
             "required": true,
@@ -123,6 +106,13 @@
               "MXC",
               "TETH"
             ]
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           },
           {
             "name": "offset",
@@ -137,6 +127,13 @@
             "required": false,
             "type": "string",
             "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -144,7 +141,7 @@
         ]
       }
     },
-    "/api/withdraw/{userId}/modify-withdraw-fee/{moneyAbbr}": {
+    "/api/withdraw/modify-withdraw-fee/{moneyAbbr}": {
       "put": {
         "operationId": "ModifyWithdrawFee",
         "responses": {
@@ -156,13 +153,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
           {
             "name": "moneyAbbr",
             "in": "path",
@@ -188,7 +178,39 @@
         ]
       }
     },
-    "/api/withdraw/{userId}/withdraw/{moneyAbbr}": {
+    "/api/withdraw/requests": {
+      "get": {
+        "operationId": "GetWithdrawRequestList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/m2m_uiGetWithdrawRequestListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/{moneyAbbr}": {
       "post": {
         "summary": "WithdrawReq when the user clicks the withdraw",
         "operationId": "WithdrawReq",
@@ -201,13 +223,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
           {
             "name": "moneyAbbr",
             "in": "path",
@@ -255,6 +270,14 @@
         },
         "denyComment": {
           "type": "string"
+        },
+        "withdrawId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -277,9 +300,6 @@
           "type": "number",
           "format": "double",
           "description": "Withdraw object."
-        },
-        "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
@@ -294,6 +314,24 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/m2m_uiWithdrawHistory"
+          }
+        },
+        "userProfile": {
+          "$ref": "#/definitions/m2m_uiProfileResponse"
+        }
+      }
+    },
+    "m2m_uiGetWithdrawRequestListResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "withdrawRequest": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/m2m_uiWithdrawRequest"
           }
         },
         "userProfile": {
@@ -450,7 +488,7 @@
         "txHash": {
           "type": "string"
         },
-        "comment": {
+        "denyComment": {
           "type": "string"
         }
       }
@@ -471,6 +509,10 @@
         },
         "ethAddress": {
           "type": "string"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -483,6 +525,26 @@
         },
         "userProfile": {
           "$ref": "#/definitions/m2m_uiProfileResponse"
+        }
+      }
+    },
+    "m2m_uiWithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "userName": {
+          "type": "string"
+        },
+        "availableToken": {
+          "type": "number",
+          "format": "double"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "withdrawId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     }

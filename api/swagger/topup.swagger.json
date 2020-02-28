@@ -4,6 +4,10 @@
     "title": "topup.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -11,7 +15,50 @@
     "application/json"
   ],
   "paths": {
-    "/api/top-up/{userId}/history": {
+    "/api/top-up/account/{moneyAbbr}": {
+      "get": {
+        "operationId": "GetTopUpDestination",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/m2m_uiGetTopUpDestinationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "moneyAbbr",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "ETH",
+              "MXC",
+              "TETH"
+            ]
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TopUpService"
+        ]
+      }
+    },
+    "/api/top-up/history": {
       "get": {
         "operationId": "GetTopUpHistory",
         "responses": {
@@ -25,8 +72,8 @@
         "parameters": [
           {
             "name": "userId",
-            "in": "path",
-            "required": true,
+            "in": "query",
+            "required": false,
             "type": "string",
             "format": "int64"
           },
@@ -43,42 +90,13 @@
             "required": false,
             "type": "string",
             "format": "int64"
-          }
-        ],
-        "tags": [
-          "TopUpService"
-        ]
-      }
-    },
-    "/api/top-up/{userId}/supernode-account/{moneyAbbr}": {
-      "get": {
-        "operationId": "GetTopUpDestination",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/m2m_uiGetTopUpDestinationResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
           },
           {
-            "name": "moneyAbbr",
-            "in": "path",
-            "required": true,
+            "name": "orgId",
+            "in": "query",
+            "required": false,
             "type": "string",
-            "enum": [
-              "ETH",
-              "MXC",
-              "TETH"
-            ]
+            "format": "int64"
           }
         ],
         "tags": [

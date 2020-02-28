@@ -4,6 +4,10 @@
     "title": "wallet.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -11,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/wallet/{orgId}/balance": {
+    "/api/wallet/balance": {
       "get": {
         "operationId": "GetWalletBalance",
         "responses": {
@@ -24,9 +28,16 @@
         },
         "parameters": [
           {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
             "name": "orgId",
-            "in": "path",
-            "required": true,
+            "in": "query",
+            "required": false,
             "type": "string",
             "format": "int64"
           }
