@@ -816,56 +816,87 @@
       "roleDeviceAdmin": "Device Admin",
       "roleGatewayAdmin": "Gateway Admin",
       "topupButton": "Topup MXC",
-      "totalUsers": "Total Users",
-      "totalOrgs": "Total Organizations",
-      "totalGateways": "Total Gateways",
-      "totalDevices": "Total Devices",
-      "totalApps": "Total Applications",
+      "remove": "Remove",
+      "totalUsers": {
+        "title": "Total Users",
+        "description": "Show total number of active users"
+      },
+      "totalOrgs": {
+        "title": "Total Organizations",
+        "description": "Shows total number of active organizations"
+      },
+      "totalGateways": {
+        "title": "Total Gateways",
+        "description": "Shows total number of gateways"
+      },
+      "totalDevices": {
+        "title": "Total Devices",
+        "description": "Shows total number of devices"
+      },
+      "totalApps": {
+        "title": "Total Applications",
+        "description": "Shows total number of applications"
+      },
       "tickets": {
         "title": "Tickets",
         "view_history": "View History",
         "approved": "Approved",
         "pending": "Pending",
-        "subtext": "Today's ticket"
+        "subtext": "Today's ticket",
+        "description": "Shows tickets history"
       },
       "withdrawal": {
         "title": "Withdrawal",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows today's total withdrawal"
       },
       "topup": {
         "title": "Topup",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows topup information"
       },
       "mxcAmountChart": {
         "title": "Total amounts of MXC in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows total amounts of MXC in Supernode"
       },
       "stakingAmountChart": {
         "title": "Total Staking amounts in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows stacking amount in Supernode"
       },
       "earnedAmountChart": {
         "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today"
+        "statSubText": "Revenue Today",
+        "description": "Shows amount earned through data utilities and staking"
       },
       "packetsReceivedChart": {
         "title": "Data Packets receieved by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows received data packets"
       },
       "packetsSentChart": {
         "title": "Data Packets sent by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows sent data packets"
       },
       "dataMap": {
-        "title": "Data Map"
+        "title": "Data Map",
+        "description": "Shows information on map"
       },
       "packetsByChannel": {
-        "title": "Packets on Channel"
+        "title": "Packets on Channel",
+        "description": "Shows data packets by channel"
       },
       "packetsBySpreadFactor": {
-        "title": "Packets on SpreadFactor"
+        "title": "Packets on SpreadFactor",
+        "description": "Shows data packets by spread factor"
+      },
+      "addWidget": {
+        "title": "Dashboard Widgets",
+        "add": "Add Widget"
       }
     }
   }
