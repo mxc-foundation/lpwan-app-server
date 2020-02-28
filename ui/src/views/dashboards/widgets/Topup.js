@@ -1,30 +1,31 @@
 import React from "react";
-import { Line, defaults as ChartJsDefaults } from "react-chartjs-2";
+import { Bar, defaults as ChartJsDefaults } from "react-chartjs-2";
 import { Row, Col } from "reactstrap";
 
-import i18n, { packageNS } from '../../i18n';
-
+import i18n, { packageNS } from '../../../i18n';
 
 // default
 ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';
 ChartJsDefaults.global.defaultFontSize = 12;
 ChartJsDefaults.global.defaultFontFamily = 'Karla, Microsoft YaHei';
 
-
-const StakingAmountChart = (props) => {
-    const data = props.data || {};
-
-    const lineOpts = {
+/**
+ * Topup
+ * @param {*} props 
+ */
+const Topup = (props) => {
+    const topup = props.data || {};
+    const barOpts = {
         maintainAspectRatio: false,
         legend: {
             display: false
         },
         tooltips: {
             callbacks: {
-                label: function (tooltipItems) {
+                label: function (tooltipItems, data) {
                     return tooltipItems.yLabel / 1000 + 'k';
                 }
-            },
+            }
         },
         scales: {
             yAxes: [{
@@ -35,8 +36,7 @@ const StakingAmountChart = (props) => {
                 ticks: {
                     callback: function (label, index, labels) {
                         return label / 1000 + 'k';
-                    },
-                    min: 0
+                    }
                 },
             }],
             xAxes: [{
@@ -52,47 +52,49 @@ const StakingAmountChart = (props) => {
 
     let labels = [];
     let series = [];
-    for (const v of (data.data || [])) {
-        labels.push(v.day);
+    let colors = [];
+    let hoverColors = [];
+    for (const v of (topup.data || [])) {
+        labels.push(v.month);
         series.push(v.amount);
+        hoverColors.push('#10c469');
+        colors.push('rgba(16,196,105,0.5)');
     }
 
     const chartData = {
         labels: labels,
         datasets: [{
-            label: i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.title`),
+            label: i18n.t(`${packageNS}:menu.dashboard.topup.title`),
             data: series,
-            backgroundColor: "rgba(91,105,188,0.1)",
-            borderColor: "#5b69bc",
-            borderWidth: 3,
-            pointBorderWidth: 2,
-            pointBackgroundColor: "#ffffff",
-            pointHoverBackgroundColor: "#ffffff",
-            pointHoverBorderColor: "#5b69bc",
+            backgroundColor: colors,
+            hoverBackgroundColor: hoverColors,
+            barPercentage: 0.65,
+            categoryPercentage: 0.5,
         }]
     };
 
 
     return <div className="card-box">
-        <div className="float-right"></div>
+        <div className="float-right">
+            
+        </div>
 
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.title`)}</h4>
-        <p className="mt-0 text-warning">{i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.subtext`)}</p>
+        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.topup.title`)}</h4>
 
         <div className="widget-chart mt-3">
             <Row>
                 <Col className="mb-0">
-                    <Line data={chartData} options={lineOpts} height={200} />
+                    <Bar data={chartData} options={barOpts} height={160} />
                 </Col>
             </Row>
             <Row>
                 <Col className="text-right mb-0">
-                    <h2 className="mb-1">{data.total ? data.total / 1000 : 0}k MXC</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.stakingAmountChart.statSubText`)}</p>
+                    <h2 className="mb-1">{topup.total ? topup.total / 1000 : 0}k MXC</h2>
+                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.topup.subtext`)}</p>
                 </Col>
             </Row>
         </div>
     </div>;
 }
 
-export default StakingAmountChart;
+export default Topup;

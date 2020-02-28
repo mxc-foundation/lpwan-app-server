@@ -1,81 +1,10 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Col, Row } from 'reactstrap';
 
-import {
-    Breadcrumb, BreadcrumbItem, Row, Col, UncontrolledButtonDropdown, DropdownMenu, DropdownItem, DropdownToggle,
-    Media, Badge
-} from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import SessionStore from "../../stores/SessionStore";
-import TitleBar from "../../components/TitleBar";
 import Loader from "../../components/Loader";
-import defaultProfilePic from "../../assets/images/users/profile-icon.png";
-
-import StatWidget from "./StatWidget";
-import MXCAmountChart from "./MXCAmountChart";
-import StakingAmountChart from "./StakingAmountChart";
-import EarnedAmountChart from "./EarnedAmountChart";
-import DataPacketChart from "./DataPacketChart";
-import DataMap from "./DataMap";
-
-
-/**
- * Chart Actions
- */
-const ChartActions = () => {
-    return <UncontrolledButtonDropdown>
-        <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
-        <DropdownMenu right>
-            <DropdownItem>Week</DropdownItem>
-            <DropdownItem>Month</DropdownItem>
-        </DropdownMenu>
-    </UncontrolledButtonDropdown>
-}
-
-
-/**
- * Topup
- * @param {*} props 
- */
-const Topup = (props) => {
-    const data = props.data || {};
-    const { user: { id, profilePic, username } } = props;
-    const formattedVal = (data.amount || 0).toLocaleString(navigator.language, { minimumFractionDigits: 4 });
-
-    const userRole = SessionStore.isOrganizationAdmin() ? i18n.t(`${packageNS}:menu.dashboard.roleOrgAdmin`) :
-        SessionStore.isOrganizationDeviceAdmin() ? i18n.t(`${packageNS}:menu.dashboard.roleDeviceAdmin`) :
-            SessionStore.isOrganizationGatewayAdmin() ? i18n.t(`${packageNS}:menu.dashboard.roleGatewayAdmin`) : "";
-
-    const orgId = SessionStore.getOrganizationID();
-
-    return <div className="card-box">
-        <div className="float-right">
-            <ChartActions />
-        </div>
-
-        <Media className="align-items-center">
-            <Media left className="avatar-xl">
-                <img src={profilePic || defaultProfilePic} className="img-fluid rounded-circle" alt="user" />
-            </Media>
-            <Media body>
-                <div className="ml-2">
-                    <h3 className="font-weight-normal mt-0">{username}</h3>
-                    <h5 className="text-primary mb-0">{userRole}</h5>
-                </div>
-            </Media>
-        </Media>
-
-        <Row className="mt-3">
-            <Col className="text-right mb-0">
-                {data.growth ? <h5><Badge className="px-1">
-                    {data.growth} <i className="mdi mdi-arrow-up"></i></Badge></h5> : null}
-                <h2 className="my-2 font-2rem">{formattedVal} MXC</h2>
-                <Link className="btn btn-primary" to={`/topup/${orgId}`}>{i18n.t(`${packageNS}:menu.dashboard.topupButton`)}</Link>
-            </Col>
-        </Row>
-    </div>;
-}
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 
 
 class UserDashboard extends Component {
@@ -189,7 +118,7 @@ class UserDashboard extends Component {
                     <div className="position-relative">
                         {this.state.loading ? <Loader /> : null}
 
-                        <Row>
+                        {/* <Row>
                             <Col lg={6}>
                                 <Topup data={this.state.data.topup} user={this.props.user} />
                             </Col>
@@ -262,7 +191,7 @@ class UserDashboard extends Component {
                                     title={i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.title`)}
                                     labelField="spreadFactor" showYAxis={true} />
                             </Col>
-                        </Row>
+                        </Row> */}
                     </div>
                 </Col>
             </Row>

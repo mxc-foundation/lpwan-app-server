@@ -1,9 +1,9 @@
 import React from "react";
 import { Row, Col, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledButtonDropdown } from "reactstrap";
 import { Map, Marker } from 'react-leaflet';
-import FoundLocationMap from "../../components/FoundLocationMap"
+import FoundLocationMap from "../../../components/FoundLocationMap"
 
-import i18n, { packageNS } from '../../i18n';
+import i18n, { packageNS } from '../../../i18n';
 
 
 const DataMap = (props) => {

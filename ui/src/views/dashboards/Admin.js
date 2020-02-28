@@ -1,300 +1,52 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
-import { Doughnut, Bar, defaults as ChartJsDefaults } from "react-chartjs-2";
-import { Breadcrumb, BreadcrumbItem, Row, Col, UncontrolledButtonDropdown, DropdownMenu, DropdownItem, DropdownToggle, Progress } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Row, Col, Button } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
-
 import TitleBar from "../../components/TitleBar";
 import Loader from "../../components/Loader";
-import StatWidget from "./StatWidget";
-import MXCAmountChart from "./MXCAmountChart";
-import StakingAmountChart from "./StakingAmountChart";
-import EarnedAmountChart from "./EarnedAmountChart";
-import DataPacketChart from "./DataPacketChart";
-import DataMap from "./DataMap";
 
-
-// default
-ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';
-ChartJsDefaults.global.defaultFontSize = 12;
-ChartJsDefaults.global.defaultFontFamily = 'Karla, Microsoft YaHei';
-
-
-/**
- * Tickets
- * @param {*} param0 
- */
-const Tickets = (props) => {
-    const data = props.data || {};
-    const donutOpts = {
-        maintainAspectRatio: false,
-        cutoutPercentage: 80,
-        legend: {
-            display: false
-        }
-    };
-
-    const chartData = {
-        labels: [i18n.t(`${packageNS}:menu.dashboard.tickets.approved`), i18n.t(`${packageNS}:menu.dashboard.tickets.pending`)],
-        datasets: [{
-            data: [data.approved, data.pending],
-            backgroundColor: ['#10c469', '#ff5b5b'],
-            hoverBackgroundColor: ['#10c469', '#ff5b5b']
-        }]
-    };
-
-    const approvedPer = (data && data.approved ? (data.approved / data.total) * 100 : 0).toFixed(2);
-    const pendingPer = (data && data.pending ? (data.pending / data.total) * 100 : 0).toFixed(2);
-
-
-    return <div className="card-box">
-        <div className="float-right">
-            <Link className="text-muted" to='#'>{i18n.t(`${packageNS}:menu.dashboard.tickets.view_history`)}</Link>
-        </div>
-
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.tickets.title`)}</h4>
-
-        <div className="widget-chart mt-3">
-            <Row>
-                <Col lg={6}>
-                    <Doughnut data={chartData} options={donutOpts} height={160} />
-                </Col>
-                <Col lg={6} className="">
-                    <div className="pl-2">
-                        <label className="mb-1">{i18n.t(`${packageNS}:menu.dashboard.tickets.approved`)}</label>
-                        <Row className="align-items-center no-gutters">
-                            <Col lg={7}>
-                                <Progress value={approvedPer} color="success" className="mt-0" />
-                            </Col>
-                            <Col lg={2}><span className="pl-2">{approvedPer}%</span></Col>
-                        </Row>
-                        <hr />
-                        <label className="mb-1">{i18n.t(`${packageNS}:menu.dashboard.tickets.pending`)}</label>
-                        <Row className="align-items-center no-gutters">
-                            <Col lg={7}>
-                                <Progress value={pendingPer} color="danger" className="mt-0" />
-                            </Col>
-                            <Col lg={2}><span className="pl-2">{pendingPer}%</span></Col>
-                        </Row>
-                    </div>
-                </Col>
-            </Row>
-            <Row>
-                <Col className="text-right mb-0">
-                    <h2 className="mb-1">{data.total}</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.tickets.subtext`)}</p>
-                </Col>
-            </Row>
-        </div>
-    </div>;
-}
-
-/**
- * Chart Actions
- */
-const ChartActions = () => {
-    return <UncontrolledButtonDropdown>
-        <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
-        <DropdownMenu right>
-            <DropdownItem>Week</DropdownItem>
-            <DropdownItem>Month</DropdownItem>
-        </DropdownMenu>
-    </UncontrolledButtonDropdown>
-}
-
-
-/**
- * Withdrawal
- * @param {*} props 
- */
-const Withdrawal = (props) => {
-    const withdrawal = props.data || {};
-    const barOpts = {
-        maintainAspectRatio: false,
-        legend: {
-            display: false
-        },
-        tooltips: {
-            callbacks: {
-                label: function (tooltipItems, data) {
-                    return tooltipItems.yLabel / 1000 + 'k';
-                }
-            }
-        },
-        scales: {
-            yAxes: [{
-                gridLines: {
-                    color: "#ebeff2"
-                },
-                stacked: false,
-                ticks: {
-                    callback: function (label, index, labels) {
-                        return label / 1000 + 'k';
-                    }
-                },
-            }],
-            xAxes: [{
-                stacked: false,
-                gridLines: {
-                    display: false,
-                    zeroLineColor: '#ebeff2'
-                },
-                zeroLineColor: '#ebeff2'
-            }]
-        }
-    };
-
-    let labels = [];
-    let series = [];
-    let colors = [];
-    let hoverColors = [];
-    for (const v of (withdrawal.data || [])) {
-        labels.push(v.day);
-        series.push(v.amount);
-        hoverColors.push('#ff5b5b');
-        colors.push('rgba(255,91,91,0.65)');
-    }
-
-    const chartData = {
-        labels: labels,
-        datasets: [{
-            label: i18n.t(`${packageNS}:menu.dashboard.withdrawal.title`),
-            data: series,
-            backgroundColor: colors,
-            hoverBackgroundColor: hoverColors,
-            barPercentage: 0.65,
-            categoryPercentage: 0.5,
-        }]
-    };
-
-
-    return <div className="card-box">
-        <div className="float-right">
-            <ChartActions />
-        </div>
-
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.withdrawal.title`)}</h4>
-
-        <div className="widget-chart mt-3">
-            <Row>
-                <Col className="mb-0">
-                    <Bar data={chartData} options={barOpts} height={160} />
-                </Col>
-            </Row>
-            <Row>
-                <Col className="text-right mb-0">
-                    <h2 className="mb-1">{withdrawal.total ? withdrawal.total / 1000 : 0}k MXC</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.withdrawal.subtext`)}</p>
-                </Col>
-            </Row>
-        </div>
-    </div>;
-}
-
-
-/**
- * Topup
- * @param {*} props 
- */
-const Topup = (props) => {
-    const topup = props.data || {};
-    const barOpts = {
-        maintainAspectRatio: false,
-        legend: {
-            display: false
-        },
-        tooltips: {
-            callbacks: {
-                label: function (tooltipItems, data) {
-                    return tooltipItems.yLabel / 1000 + 'k';
-                }
-            }
-        },
-        scales: {
-            yAxes: [{
-                gridLines: {
-                    color: "#ebeff2"
-                },
-                stacked: false,
-                ticks: {
-                    callback: function (label, index, labels) {
-                        return label / 1000 + 'k';
-                    }
-                },
-            }],
-            xAxes: [{
-                stacked: false,
-                gridLines: {
-                    display: false,
-                    zeroLineColor: '#ebeff2'
-                },
-                zeroLineColor: '#ebeff2'
-            }]
-        }
-    };
-
-    let labels = [];
-    let series = [];
-    let colors = [];
-    let hoverColors = [];
-    for (const v of (topup.data || [])) {
-        labels.push(v.month);
-        series.push(v.amount);
-        hoverColors.push('#10c469');
-        colors.push('rgba(16,196,105,0.5)');
-    }
-
-    const chartData = {
-        labels: labels,
-        datasets: [{
-            label: i18n.t(`${packageNS}:menu.dashboard.topup.title`),
-            data: series,
-            backgroundColor: colors,
-            hoverBackgroundColor: hoverColors,
-            barPercentage: 0.65,
-            categoryPercentage: 0.5,
-        }]
-    };
-
-
-    return <div className="card-box">
-        <div className="float-right">
-            <ChartActions />
-        </div>
-
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.topup.title`)}</h4>
-
-        <div className="widget-chart mt-3">
-            <Row>
-                <Col className="mb-0">
-                    <Bar data={chartData} options={barOpts} height={160} />
-                </Col>
-            </Row>
-            <Row>
-                <Col className="text-right mb-0">
-                    <h2 className="mb-1">{topup.total ? topup.total / 1000 : 0}k MXC</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.topup.subtext`)}</p>
-                </Col>
-            </Row>
-        </div>
-    </div>;
-}
-
+import AddWidget from './AddWidget';
+import { adminWidgetCatalog } from './widgets/';
 
 class AdminDashboard extends Component {
     constructor() {
         super();
 
-
         this.state = {
             data: {},
-            loading: false
-        };
+            loading: false,
+            openAddWidget: false,
+            widgets: []
+        }
+
+        this.openAddWidget = this.openAddWidget.bind(this);
+        this.closeAddWidget = this.closeAddWidget.bind(this);
+        this.onAddWidget = this.onAddWidget.bind(this);
+        this.getData = this.getData.bind(this);
+    }
+
+    openAddWidget() {
+        this.setState({ openAddWidget: true });
+    }
+
+    closeAddWidget() {
+        this.setState({ openAddWidget: false });
+    }
+
+    onAddWidget(widget) {
+        let widgets = [...this.state.widgets];
+        widget.push(widget);
+        this.setState({widgets: widgets, openAddWidget: false});
+        this.getData();
     }
 
     componentDidMount() {
+        this.getData();
+    }
+
+    getData() {
         // TODO - call api to get the data
         this.setState({ loading: true });
         // mimiking the loading - should reverted later when we integrate api
@@ -402,7 +154,7 @@ class AdminDashboard extends Component {
                 "totalDevices": 260,
                 "totalApplications": 260,
             }
-        })
+        });
     }
 
 
@@ -410,18 +162,22 @@ class AdminDashboard extends Component {
 
         return (<React.Fragment>
 
-            <TitleBar buttons={[]}>
+            <TitleBar buttons={[
+                <Button color="primary" onClick={this.openAddWidget}><i className="mdi mdi-plus"></i></Button>
+            ]}>
                 <Breadcrumb>
                     <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.dashboard.title`)}</BreadcrumbItem>
                 </Breadcrumb>
             </TitleBar>
+
+            {this.state.openAddWidget ? <AddWidget availableWidgets={adminWidgetCatalog} closeModal={this.closeAddWidget} /> : null}
 
             <Row>
                 <Col>
                     <div className="position-relative">
                         {this.state.loading ? <Loader /> : null}
 
-                        <Row>
+                        {/* <Row>
                             <Col lg={4}>
                                 <Tickets data={this.state.data.tickets} />
                             </Col>
@@ -503,7 +259,7 @@ class AdminDashboard extends Component {
                                     title={i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.title`)}
                                     labelField="spreadFactor" showYAxis={true} />
                             </Col>
-                        </Row>
+                        </Row> */}
                     </div>
                 </Col>
             </Row>
