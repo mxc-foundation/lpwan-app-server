@@ -4,7 +4,6 @@ package m2m_ui;
 
 
 import "google/api/annotations.proto";
-import "profile.proto";
 import "ext_account.proto";
 
 service TopUpService {
@@ -22,10 +21,9 @@ service TopUpService {
 }
 
 message GetTopUpHistoryRequest {
-    int64 user_id = 1;
+    int64 org_id = 1;
     int64 offset = 2;
     int64 limit = 3;
-    int64 org_id = 4;
 }
 
 message TopUpHistory {
@@ -37,16 +35,13 @@ message TopUpHistory {
 message GetTopUpHistoryResponse {
     int64 count = 1;
     repeated TopUpHistory topup_history = 2;
-    ProfileResponse user_profile = 3;
 }
 
 message GetTopUpDestinationRequest {
-    int64 user_id = 1;
+    int64 org_id = 1;
     Money money_abbr = 2;
-    int64 org_id = 3;
 }
 
 message GetTopUpDestinationResponse {
     string active_account = 1;
-    ProfileResponse user_profile = 2;
 }

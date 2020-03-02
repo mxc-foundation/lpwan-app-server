@@ -958,11 +958,11 @@ var fileDescriptor_4f4a0a6fe690dc29 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // FUOTADeploymentServiceClient is the client API for FUOTADeploymentService service.
 //
@@ -981,10 +981,10 @@ type FUOTADeploymentServiceClient interface {
 }
 
 type fUOTADeploymentServiceClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewFUOTADeploymentServiceClient(cc *grpc.ClientConn) FUOTADeploymentServiceClient {
+func NewFUOTADeploymentServiceClient(cc grpc.ClientConnInterface) FUOTADeploymentServiceClient {
 	return &fUOTADeploymentServiceClient{cc}
 }
 

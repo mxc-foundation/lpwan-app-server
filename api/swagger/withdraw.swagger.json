@@ -4,10 +4,6 @@
     "title": "withdraw.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -203,6 +199,13 @@
             "required": false,
             "type": "string",
             "format": "int64"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -287,9 +290,6 @@
         "status": {
           "type": "boolean",
           "format": "boolean"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
@@ -315,9 +315,6 @@
           "items": {
             "$ref": "#/definitions/m2m_uiWithdrawHistory"
           }
-        },
-        "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
@@ -333,9 +330,6 @@
           "items": {
             "$ref": "#/definitions/m2m_uiWithdrawRequest"
           }
-        },
-        "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
@@ -361,9 +355,6 @@
         "status": {
           "type": "boolean",
           "format": "boolean"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
@@ -375,102 +366,6 @@
         "TETH"
       ],
       "default": "ETH"
-    },
-    "m2m_uiOrganizationLink": {
-      "type": "object",
-      "properties": {
-        "organizationID": {
-          "type": "string",
-          "format": "int64",
-          "description": "Organization ID."
-        },
-        "organizationName": {
-          "type": "string",
-          "description": "Organization name."
-        },
-        "isAdmin": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "User is admin within the context of this organization."
-        },
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Created at timestamp."
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Last update timestamp."
-        }
-      },
-      "description": "Defines an organization to which an user is associated."
-    },
-    "m2m_uiProfileResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/m2m_uiUser",
-          "description": "User object."
-        },
-        "organizations": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/m2m_uiOrganizationLink"
-          },
-          "description": "Organizations to which the user is associated."
-        },
-        "settings": {
-          "$ref": "#/definitions/m2m_uiProfileSettings",
-          "description": "Profile settings."
-        }
-      }
-    },
-    "m2m_uiProfileSettings": {
-      "type": "object",
-      "properties": {
-        "disableAssignExistingUsers": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
-        }
-      }
-    },
-    "m2m_uiUser": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "User ID.\nWill be set automatically on create."
-        },
-        "username": {
-          "type": "string",
-          "description": "Username of the user."
-        },
-        "sessionTTL": {
-          "type": "integer",
-          "format": "int32",
-          "description": "The session timeout, in minutes."
-        },
-        "isAdmin": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Set to true to make the user a global administrator."
-        },
-        "isActive": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Set to false to disable the user."
-        },
-        "email": {
-          "type": "string",
-          "description": "E-mail of the user."
-        },
-        "note": {
-          "type": "string",
-          "description": "Optional note to store with the user."
-        }
-      }
     },
     "m2m_uiWithdrawHistory": {
       "type": "object",
@@ -522,9 +417,6 @@
         "status": {
           "type": "boolean",
           "format": "boolean"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
