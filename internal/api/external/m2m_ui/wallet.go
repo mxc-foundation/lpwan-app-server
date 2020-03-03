@@ -26,12 +26,7 @@ func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
 
 // GetWalletBalance gets the wallet balance
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
-	log.WithField("userId", req.UserId).Info("grpc_api/GetWalletBalance")
-
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
-	if err != nil {
-		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
+	log.WithField("orgID", req.OrgId).Info("grpc_api/GetWalletBalance")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -50,7 +45,6 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 
 	return &api.GetWalletBalanceResponse{
 		Balance:     resp.Balance,
-		UserProfile: &prof,
 	}, nil
 }
 

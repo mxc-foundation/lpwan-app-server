@@ -34,13 +34,11 @@ service WalletService {
 
 
 message GetWalletBalanceRequest {
-    int64 user_id = 1;
     int64 org_id = 2;
 }
 
 message GetWalletBalanceResponse {
     double balance = 1;
-    ProfileResponse user_profile = 2;
 }
 
 message GetVmxcTxHistoryRequest {
