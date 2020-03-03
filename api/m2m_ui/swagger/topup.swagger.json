@@ -35,13 +35,6 @@
             ]
           },
           {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
             "name": "orgId",
             "in": "query",
             "required": false,
@@ -67,7 +60,7 @@
         },
         "parameters": [
           {
-            "name": "userId",
+            "name": "orgId",
             "in": "query",
             "required": false,
             "type": "string",
@@ -82,13 +75,6 @@
           },
           {
             "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "orgId",
             "in": "query",
             "required": false,
             "type": "string",

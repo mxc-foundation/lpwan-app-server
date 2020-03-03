@@ -25,7 +25,7 @@ service WithdrawService {
     // ConfirmWithdraw is after supernode owner clicks the confirm or deny.
     rpc ConfirmWithdraw (ConfirmWithdrawRequest) returns (ConfirmWithdrawResponse) {
         option (google.api.http) = {
-			post: "/api/withdraw/confirm/{money_abbr}"
+			post: "/api/withdraw/confirm"
 			body: "*"
 		};
     }
@@ -66,6 +66,7 @@ message WithdrawReqRequest {
     Money money_abbr = 2;
     double amount = 3;
     string eth_address = 4;
+    double available_balance = 5;
 }
 
 message WithdrawReqResponse {
@@ -75,10 +76,8 @@ message WithdrawReqResponse {
 message ConfirmWithdrawRequest {
     int64  org_id = 1;
     bool   confirm_status = 2;
-    Money  money_abbr = 3;
-    double amount = 4;
-    string deny_comment = 5;
-    int64  withdraw_id = 6;
+    string deny_comment = 3;
+    int64  withdraw_id = 4;
 }
 
 message ConfirmWithdrawResponse {

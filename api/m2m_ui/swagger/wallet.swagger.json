@@ -24,13 +24,6 @@
         },
         "parameters": [
           {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
             "name": "orgId",
             "in": "query",
             "required": false,
@@ -184,9 +177,6 @@
         "balance": {
           "type": "number",
           "format": "double"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },
