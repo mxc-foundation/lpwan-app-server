@@ -934,13 +934,18 @@
       "next": "Next",
       "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
       "mnemonic_phrase_title": "Write down your Mnemonic phrase",
-      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in correct order"
+      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in correct order",
+      "2fa_title": "Set up two-factor authentication using Google Authenticator."
     },
     "menmonic_phrase": {
       "write_button": "I wrote it down",
       "skip_button": "Skip",
       "confirm_button": "Confirm",
       "back_button": "Back"
+    },
+    "google_2fa": {
+      "confirm_button": "Confirm",
+      "skip_button": "Skip"
     }
   }
 }

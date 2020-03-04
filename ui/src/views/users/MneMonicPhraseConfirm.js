@@ -54,7 +54,8 @@ const MneMonicPhraseConfirm = ({ title, phrase, next, back }) => {
 
                 <Row className="mt-2 text-left">
                     <Col className="mb-0">
-                        <Button color="primary" className="btn-block" onClick={() => next(selectedPhrase)}>{i18n.t(`${packageNS}:menu.menmonic_phrase.confirm_button`)}</Button>
+                        <Button color="primary" className="btn-block" onClick={() => next(selectedPhrase)}
+                            disabled={!selectedPhrase.length}>{i18n.t(`${packageNS}:menu.menmonic_phrase.confirm_button`)}</Button>
                     </Col>
                     <Col className="mb-0">
                         <Button color="primary" outline className="btn-block" onClick={back}>{i18n.t(`${packageNS}:menu.menmonic_phrase.back_button`)}</Button>

@@ -14,6 +14,7 @@ import i18n, { packageNS } from '../../i18n';
 
 import MneMonicPhrase from './MneMonicPhrase';
 import MneMonicPhraseConfirm from './MneMonicPhraseConfirm';
+import Google2FA from './Google2FA';
 
 
 const regSchema = Yup.object().shape({
@@ -162,8 +163,8 @@ class Registration extends Component {
     this.state = {
       isVerified: false,
       bypassCaptcha: bypassCaptcha,
-      showRegisterForm: false,
-      startMnemonicPhrase: true,
+      showRegisterForm: true,
+      startMnemonicPhrase: false,
       showMnemonicPhraseList: false,
       showMnemonicPhraseConfirm: false,
       showTwoFactorAuth: false
@@ -173,6 +174,8 @@ class Registration extends Component {
     this.showMnemonicPhraseList = this.showMnemonicPhraseList.bind(this);
     this.showMnemonicPhraseListConfirm = this.showMnemonicPhraseListConfirm.bind(this);
     this.confirmMnemonicPhraseList = this.confirmMnemonicPhraseList.bind(this);
+    this.confirm2fa = this.confirm2fa.bind(this);
+    this.skip2fa = this.skip2fa.bind(this);
   }
 
   componentDidMount() {
@@ -211,7 +214,7 @@ class Registration extends Component {
     if (isEmail(user.username)) {
       this.setState({ loading: true });
       SessionStore.register(user, () => {
-        this.setState({ loading: false, showRegisterForm: false, startMnemonicPhrase: true });
+        this.setState({user: user, loading: false, showRegisterForm: false, startMnemonicPhrase: true });
 
         // this.props.history.push("/");
       });
@@ -231,8 +234,23 @@ class Registration extends Component {
   }
 
   confirmMnemonicPhraseList(phrases) {
-    // TODO - API call to confirm order
+    // TODO - API call to confirm order of phrase
     this.setState({ showMnemonicPhraseList: false, startMnemonicPhrase: false, showMnemonicPhraseConfirm: false, showTwoFactorAuth: true });
+
+    // TODO - API call to get the code for 2FA
+    this.setState({auth_2fa_code: '123'});
+  }
+
+  confirm2fa(confirmCode) {
+    // TODO  - API call to confirm
+    this.setState({ showMnemonicPhraseList: false, startMnemonicPhrase: false, showMnemonicPhraseConfirm: false, showTwoFactorAuth: false });
+
+    this.props.history.push("/");
+  }
+
+  skip2fa() {
+    // TODO - for now redirecting to login
+    this.props.history.push("/");
   }
 
   render() {
@@ -271,6 +289,11 @@ class Registration extends Component {
                         {this.state.showMnemonicPhraseConfirm ? <MneMonicPhraseConfirm 
                           title={i18n.t(`${packageNS}:menu.registration.mnemonic_phrase_confirm_title`)}
                           phrase={this.state.phrases} next={this.confirmMnemonicPhraseList} back={this.showMnemonicPhraseList} /> : null}
+
+                        {this.state.showTwoFactorAuth ? <Google2FA
+                          title={i18n.t(`${packageNS}:menu.registration.2fa_title`)}
+                          code={this.state.auth_2fa_code}
+                          confirm={this.confirm2fa} skip={this.skip2fa} /> : null}
                       </React.Fragment>}
 
                   </div>
