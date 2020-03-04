@@ -39,6 +39,8 @@ services:
     image: postgres:9.6-alpine
     volumes:
       - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_PASSWORD=local_superuser_pass
 
   redis:
     image: redis:5-alpine
@@ -122,6 +124,8 @@ services:
     volumes:
       - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
       - postgresqldata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=local_superuser_pass
 
   redis:
     image: redis:5-alpine

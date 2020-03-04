@@ -45,7 +45,7 @@ func run(cmd *cobra.Command, args []string) error {
 		migrateGatewayStats,
 		setupM2MServer,
 		setupIntegration,
-		// setupSMTP,
+		//setupSMTP,
 		setupCodec,
 		handleDataDownPayloads,
 		startGatewayPing,

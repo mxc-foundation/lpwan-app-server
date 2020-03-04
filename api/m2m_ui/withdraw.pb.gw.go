@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/grpc-ecosystem/grpc-gateway/utilities"
@@ -22,11 +23,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// Suppress "imported and not used" errors
 var _ codes.Code
 var _ io.Reader
 var _ status.Status
 var _ = runtime.String
 var _ = utilities.NewDoubleArray
+var _ = descriptor.ForMessage
 
 func request_WithdrawService_GetWithdrawFee_0(ctx context.Context, marshaler runtime.Marshaler, client WithdrawServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWithdrawFeeRequest
@@ -176,27 +179,6 @@ func request_WithdrawService_ConfirmWithdraw_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	var (
-		val string
-		e   int32
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["money_abbr"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "money_abbr")
-	}
-
-	e, err = runtime.Enum(val, Money_value)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "money_abbr", err)
-	}
-
-	protoReq.MoneyAbbr = Money(e)
-
 	msg, err := client.ConfirmWithdraw(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
@@ -213,27 +195,6 @@ func local_request_WithdrawService_ConfirmWithdraw_0(ctx context.Context, marsha
 	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-
-	var (
-		val string
-		e   int32
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["money_abbr"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "money_abbr")
-	}
-
-	e, err = runtime.Enum(val, Money_value)
-
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "money_abbr", err)
-	}
-
-	protoReq.MoneyAbbr = Money(e)
 
 	msg, err := server.ConfirmWithdraw(ctx, &protoReq)
 	return msg, metadata, err
@@ -718,7 +679,7 @@ var (
 
 	pattern_WithdrawService_WithdrawReq_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"api", "withdraw", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_WithdrawService_ConfirmWithdraw_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "withdraw", "confirm", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_WithdrawService_ConfirmWithdraw_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "withdraw", "confirm"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_WithdrawService_GetWithdrawHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "withdraw", "history", "money_abbr"}, "", runtime.AssumeColonVerbOpt(true)))
 
