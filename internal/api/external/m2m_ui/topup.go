@@ -26,12 +26,7 @@ func NewTopUpServerAPI(validator auth.Validator) *TopUpServerAPI {
 
 // GetTopUpHistory defines the topup history request and response
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {
-	log.WithField("orgId", req.UserId).Info("grpc_api/GetTopUpHistory")
-
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
-	if err != nil {
-		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpHistory")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -42,7 +37,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	topupClient := api.NewTopUpServiceClient(m2mClient)
 
 	resp, err := topupClient.GetTopUpHistory(ctx, &api.GetTopUpHistoryRequest{
-		UserId:  req.UserId,
+		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
@@ -53,18 +48,12 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	return &api.GetTopUpHistoryResponse{
 		Count:        resp.Count,
 		TopupHistory: resp.TopupHistory,
-		UserProfile:  &prof,
 	}, nil
 }
 
 // GetTopUpDestination defines the topup destination request and response
 func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTopUpDestinationRequest) (*api.GetTopUpDestinationResponse, error) {
-	log.WithField("orgId", req.UserId).Info("grpc_api/GetTopUpDestination")
-
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.UserId)
-	if err != nil {
-		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
-	}
+	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpDestination")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -75,7 +64,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	topupClient := api.NewTopUpServiceClient(m2mClient)
 
 	resp, err := topupClient.GetTopUpDestination(ctx, &api.GetTopUpDestinationRequest{
-		UserId:     req.UserId,
+		OrgId:     req.OrgId,
 		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {
@@ -84,6 +73,5 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 
 	return &api.GetTopUpDestinationResponse{
 		ActiveAccount: resp.ActiveAccount,
-		UserProfile:   &prof,
 	}, nil
 }
