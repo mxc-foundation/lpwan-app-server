@@ -14,7 +14,7 @@ class ServiceProfileStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/serviceProfile.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(serviceProfile, callbackFunc) {
+  create(serviceProfile, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ServiceProfileService.Create({
         body: {
@@ -26,7 +26,10 @@ class ServiceProfileStore extends EventEmitter {
         this.notify("created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -43,7 +46,7 @@ class ServiceProfileStore extends EventEmitter {
     });
   }
 
-  update(serviceProfile, callbackFunc) {
+  update(serviceProfile, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ServiceProfileService.Update({
         "serviceProfile.id": serviceProfile.id,
@@ -56,7 +59,10 @@ class ServiceProfileStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -74,7 +80,7 @@ class ServiceProfileStore extends EventEmitter {
     });
   }
 
-  list(organizationID, limit, offset, callbackFunc) {
+  list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
     return this.swagger.then(client => {
       client.apis.ServiceProfileService.List({
         organizationID: organizationID,
@@ -85,7 +91,10 @@ class ServiceProfileStore extends EventEmitter {
       .then(resp => {
         callbackFunc && callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 

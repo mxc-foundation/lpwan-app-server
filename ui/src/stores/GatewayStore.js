@@ -110,6 +110,23 @@ class GatewayStore extends EventEmitter {
     });
   }
 
+  register(gateway, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.Register({
+        body: {
+          organizationId: gateway.organizationId,
+          sn: gateway.sn
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notify("registered");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
   get(id, callbackFunc) {
     // Run the following in development environment and early exit from function
     this.swagger.then(client => {
