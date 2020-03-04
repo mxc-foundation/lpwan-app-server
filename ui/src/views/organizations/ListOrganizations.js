@@ -10,6 +10,7 @@ import AdvancedTable from "../../components/AdvancedTable";
 
 import OrganizationStore from "../../stores/OrganizationStore";
 import TitleBarButton from "../../components/TitleBarButton";
+import Loader from "../../components/Loader";
 
 
 class ListOrganizations extends Component {
@@ -25,7 +26,8 @@ class ListOrganizations extends Component {
 
     this.state = {
       data: [],
-      totalSize: 0
+      totalSize: 0,
+      loading: false,
     }
   }
 
@@ -87,13 +89,14 @@ class ListOrganizations extends Component {
 
   getPage(limit, offset) {
     limit = MAX_DATA_LIMIT;
+    this.setState({ loading: true });
     OrganizationStore.list("", limit, offset, (res) => {
       const object = this.state;
       object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({ object });
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   componentDidMount() {
@@ -121,6 +124,7 @@ class ListOrganizations extends Component {
         <Row>
           <Col>
             <Card className="card-box shadow-sm">
+              {this.state.loading && <Loader />}  
               <AdvancedTable data={this.state.data} columns={this.getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
             </Card>
           </Col>

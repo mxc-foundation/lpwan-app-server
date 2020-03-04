@@ -69,6 +69,8 @@ class SuperNodeEthAccount extends Component {
       object.data = res.changeHistory;
       object.loading = false;
       this.setState({object});
+    }, error => {
+      this.setState({loading: false})
     }); 
   }
 

@@ -14,7 +14,7 @@ class NetworkServerStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/networkServer.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(networkServer, callbackFunc) {
+  create(networkServer, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.NetworkServerService.Create({
         body: {
@@ -26,7 +26,10 @@ class NetworkServerStore extends EventEmitter {
         this.notify("created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -43,7 +46,7 @@ class NetworkServerStore extends EventEmitter {
     });
   }
 
-  update(networkServer, callbackFunc) {
+  update(networkServer, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.NetworkServerService.Update({
         "networkServer.id": networkServer.id,
@@ -56,7 +59,10 @@ class NetworkServerStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -84,7 +90,7 @@ class NetworkServerStore extends EventEmitter {
     });
   }
   
-  list(organizationID, limit, offset, callbackFunc) {
+  list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
     this.swagger.then((client) => {
       client.apis.NetworkServerService.List({
         organizationID: organizationID,
@@ -95,7 +101,10 @@ class NetworkServerStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 }
