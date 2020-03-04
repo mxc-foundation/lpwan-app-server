@@ -557,7 +557,13 @@
       "incorrect_username_or_password": "ユーザー名またはパスワードが間違っています。",
       "cancel": "キャンセル",
       "proceed": "続行",
-      "deny":"拒む"
+      "deny":"拒む",
+      "confirm_modal_title": "確認：スーパーノードの撤回",
+      "deny_reason": "ユーザーとMXCの記録に対する拒否の理由を追加します",
+      "confirm_text": "利用可能なトークンの残高から撤回することを確認しています。よろしいですか？",
+      "deny_text": "利用可能なトークンの残高から撤回するリクエストを拒否しています。",
+      "requester": "リクエスター",
+      "balance": "残高"
     },
     "topup": {
       "topup": "資金を追加する",

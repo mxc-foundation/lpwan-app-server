@@ -558,7 +558,13 @@
       "cancel": "CANCEL",
       "proceed": "PROCEED",
       "deny": "Deny",
-      "total_token_available": "Total Token Available"
+      "total_token_available": "Total Token Available",
+      "confirm_modal_title": "Confirmation: Supernode withdawal",
+      "deny_reason": "Add a reason for a denial for the User and for MXC’s records",
+      "confirm_text": "You are confirming that withdraw from their balance of available tokens. Are you sure?",
+      "deny_text": "You are denying a request to withdraw from their balance of available tokens.",
+      "requester": "Requester",
+      "balance": "Balance"
 
     },
     "topup": {
