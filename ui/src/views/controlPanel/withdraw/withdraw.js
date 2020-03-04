@@ -55,7 +55,6 @@ class SuperAdminWithdraw extends Component {
         this.setState({ loading: true });
    
         WithdrawStore.getWithdrawRequestList(limit, offset, (res) => {
-            console.log('res', res);
             const object = this.state;
             object.totalSize = Number(res.count);
             object.data = res.withdrawRequest;
@@ -80,19 +79,16 @@ class SuperAdminWithdraw extends Component {
             return;
         }
         let req = {};
-        req.userId = row.userId;  
+        req.orgId = 1;  
         req.confirmStatus = confirmStatus;  
-        req.moneyAbbr = row.moneyAbbr;  
-        req.amount = row.amount;  
         req.denyComment = "";  
         req.withdrawId = row.withdrawId;  
-        req.orgId = this.props.match.params.organizationID;  
 
         WithdrawStore.confirmWithdraw(req, (res) => {
             const object = this.state;
             object.loading = false;
             this.props.history.push(`/control-panel/withdraw`);
-        }); 
+        });
     }
 
     ConfirmationColumn = (cell, row, index, extraData) => {
@@ -104,6 +100,10 @@ class SuperAdminWithdraw extends Component {
                 {i18n.t(`${packageNS}:menu.withdraw.deny`)}
             </Button>
         </div>;
+    }
+
+    AvailableTokenColumn = (cell, row, index, extraData) => {
+        return <div>{row.availableToken} MXC</div>;
     }
 
     AmountColumn = (cell, row, index, extraData) => {
@@ -118,7 +118,8 @@ class SuperAdminWithdraw extends Component {
         }, {
             dataField: 'availableToken',
             text: i18n.t(`${packageNS}:menu.withdraw.total_token_available`),
-            sort: false
+            sort: false,
+            formatter: this.AvailableTokenColumn
         }, {
             dataField: 'amount',
             text: i18n.t(`${packageNS}:menu.withdraw.amount`),
