@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
-	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
@@ -30,7 +30,7 @@ func getUserProfileByJwt(ctx context.Context, v auth.Validator, organizationID i
 	userProfile := api.ProfileResponse{}
 
 	userProfile.User = &api.User{
-		Id:         string(prof.User.ID),
+		Id:         prof.User.ID,
 		Username:   prof.User.Username,
 		SessionTtl: prof.User.SessionTTL,
 		IsAdmin:    prof.User.IsAdmin,

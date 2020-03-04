@@ -3,7 +3,7 @@ package m2m_ui
 import (
 	"context"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"

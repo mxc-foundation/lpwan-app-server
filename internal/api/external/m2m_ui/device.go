@@ -3,7 +3,7 @@ package m2m_ui
 import (
 	"context"
 
-	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -39,7 +39,7 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := api.NewDeviceServiceClient(m2mClient)
+	devClient := api.NewDSDeviceServiceClient(m2mClient)
 
 	resp, err := devClient.GetDeviceList(ctx, &api.GetDeviceListRequest{
 		OrgId:  req.OrgId,
@@ -58,31 +58,31 @@ func (s *DeviceServerAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceL
 }
 
 // GetDeviceProfile defines the function to get the device profile
-func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDeviceProfileRequest) (*api.GetDeviceProfileResponse, error) {
+func (s *DeviceServerAPI) GetDeviceProfile(ctx context.Context, req *api.GetDSDeviceProfileRequest) (*api.GetDSDeviceProfileResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDeviceProfile")
 
 	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
-		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
-		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := api.NewDeviceServiceClient(m2mClient)
+	devClient := api.NewDSDeviceServiceClient(m2mClient)
 
-	resp, err := devClient.GetDeviceProfile(ctx, &api.GetDeviceProfileRequest{
+	resp, err := devClient.GetDeviceProfile(ctx, &api.GetDSDeviceProfileRequest{
 		OrgId: req.OrgId,
 		DevId: req.DevId,
 	})
 	if err != nil {
-		return &api.GetDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetDeviceProfileResponse{
+	return &api.GetDSDeviceProfileResponse{
 		DevProfile:  resp.DevProfile,
 		UserProfile: &prof,
 	}, nil
@@ -103,7 +103,7 @@ func (s *DeviceServerAPI) GetDeviceHistory(ctx context.Context, req *api.GetDevi
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := api.NewDeviceServiceClient(m2mClient)
+	devClient := api.NewDSDeviceServiceClient(m2mClient)
 
 	resp, err := devClient.GetDeviceHistory(ctx, &api.GetDeviceHistoryRequest{
 		OrgId:  req.OrgId,
@@ -136,7 +136,7 @@ func (s *DeviceServerAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceM
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := api.NewDeviceServiceClient(m2mClient)
+	devClient := api.NewDSDeviceServiceClient(m2mClient)
 
 	resp, err := devClient.SetDeviceMode(ctx, &api.SetDeviceModeRequest{
 		OrgId:   req.OrgId,
