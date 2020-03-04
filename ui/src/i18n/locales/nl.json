@@ -556,7 +556,8 @@
       "type_here": "Type Here",
       "incorrect_username_or_password": "Incorrect username or password.",
       "cancel": "CANCEL",
-      "proceed": "PROCEED"
+      "proceed": "PROCEED",
+      "deny": "Deny"
     },
     "topup": {
       "topup": "Top up",

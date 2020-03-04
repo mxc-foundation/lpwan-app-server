@@ -45,6 +45,20 @@ class WithdrawStore extends EventEmitter {
     });
   }
 
+  getWithdrawRequestList(limit, offset, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.WithdrawService.GetWithdrawRequestList({
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
   WithdrawReq(apiWithdrawReqRequest, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WithdrawService.WithdrawReq({
@@ -53,6 +67,31 @@ class WithdrawStore extends EventEmitter {
         body: {
           amount: apiWithdrawReqRequest.amount,
           moneyAbbr: apiWithdrawReqRequest.moneyAbbr,
+          orgId: apiWithdrawReqRequest.orgId
+        },
+      })
+      .then(checkStatus)
+      //.then(updateOrganizations)
+      .then(resp => {
+        this.notify("updated");
+        this.emit("withdraw");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  confirmWithdraw(apiWithdrawReqRequest, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.WithdrawService.ConfirmWithdraw({
+        "moneyAbbr": apiWithdrawReqRequest.moneyAbbr,
+        body: {
+          userId: apiWithdrawReqRequest.userId,
+          confirmStatus:apiWithdrawReqRequest.confirmStatus,
+          moneyAbbr: apiWithdrawReqRequest.moneyAbbr,
+          amount: apiWithdrawReqRequest.amount,
+          denyComment: apiWithdrawReqRequest.denyComment,
+          withdrawId: apiWithdrawReqRequest.withdrawId,
           orgId: apiWithdrawReqRequest.orgId
         },
       })

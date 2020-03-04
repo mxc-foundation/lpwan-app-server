@@ -556,7 +556,8 @@
       "type_here": "이 칸에 작성하십시오",
       "incorrect_username_or_password": "사용자 이름 또는 비밀번호가 정확하지 않습니다.",
       "cancel": "취소",
-      "proceed": "진행"
+      "proceed": "진행",
+      "deny": "거부"
     },
     "topup": {
       "topup": "충전",
