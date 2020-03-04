@@ -4,6 +4,10 @@
     "title": "withdraw.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -104,7 +108,7 @@
             ]
           },
           {
-            "name": "userId",
+            "name": "orgId",
             "in": "query",
             "required": false,
             "type": "string",
@@ -119,13 +123,6 @@
           },
           {
             "name": "limit",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "orgId",
             "in": "query",
             "required": false,
             "type": "string",
@@ -199,13 +196,6 @@
             "required": false,
             "type": "string",
             "format": "int64"
-          },
-          {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
           }
         ],
         "tags": [
@@ -256,7 +246,7 @@
     "m2m_uiConfirmWithdrawRequest": {
       "type": "object",
       "properties": {
-        "userId": {
+        "orgId": {
           "type": "string",
           "format": "int64"
         },
@@ -275,10 +265,6 @@
           "type": "string"
         },
         "withdrawId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "orgId": {
           "type": "string",
           "format": "int64"
         }
@@ -336,16 +322,16 @@
     "m2m_uiModifyWithdrawFeeRequest": {
       "type": "object",
       "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
         "moneyAbbr": {
           "$ref": "#/definitions/m2m_uiMoney"
         },
         "withdrawFee": {
           "type": "number",
           "format": "double"
-        },
-        "userId": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -391,7 +377,7 @@
     "m2m_uiWithdrawReqRequest": {
       "type": "object",
       "properties": {
-        "userId": {
+        "orgId": {
           "type": "string",
           "format": "int64"
         },
@@ -404,10 +390,6 @@
         },
         "ethAddress": {
           "type": "string"
-        },
-        "orgId": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },

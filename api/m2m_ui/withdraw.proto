@@ -106,8 +106,9 @@ message GetWithdrawHistoryResponse {
 }
 
 message ModifyWithdrawFeeRequest {
-    Money money_abbr = 1;
-    double withdraw_fee = 2;
+    int64 org_id = 1;
+    Money money_abbr = 2;
+    double withdraw_fee = 3;
 }
 
 message ModifyWithdrawFeeResponse {
