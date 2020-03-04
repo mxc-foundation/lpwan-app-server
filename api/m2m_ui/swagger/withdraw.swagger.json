@@ -15,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/withdraw/confirm/{moneyAbbr}": {
+    "/api/withdraw/confirm": {
       "post": {
         "summary": "ConfirmWithdraw is after supernode owner clicks the confirm or deny.",
         "operationId": "ConfirmWithdraw",
@@ -28,17 +28,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "moneyAbbr",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "enum": [
-              "ETH",
-              "MXC",
-              "TETH"
-            ]
-          },
           {
             "name": "body",
             "in": "body",
@@ -254,13 +243,6 @@
           "type": "boolean",
           "format": "boolean"
         },
-        "moneyAbbr": {
-          "$ref": "#/definitions/m2m_uiMoney"
-        },
-        "amount": {
-          "type": "number",
-          "format": "double"
-        },
         "denyComment": {
           "type": "string"
         },
@@ -390,6 +372,10 @@
         },
         "ethAddress": {
           "type": "string"
+        },
+        "availableBalance": {
+          "type": "number",
+          "format": "double"
         }
       }
     },
