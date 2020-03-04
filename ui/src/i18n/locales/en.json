@@ -921,6 +921,26 @@
         "title": "Dashboard Widgets",
         "add": "Add Widget"
       }
+    },
+    "registration": {
+      "email": "Email Address",
+      "password": "Password",
+      "password_hint": "(8 characters or longer. At least one number of symbol)",
+      "password_match_error": "Password must contain atleast 8 characters, one number and one symbol",
+      "confirm_password": "Confirm Your Password",
+      "confirm_password_match_error": "Password and confirm password must be same",
+      "org_name": "Organization Name",
+      "org_display_name": "Organization Display Name",
+      "next": "Next",
+      "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
+      "mnemonic_phrase_title": "Write down your Mnemonic phrase",
+      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in correct order"
+    },
+    "menmonic_phrase": {
+      "write_button": "I wrote it down",
+      "skip_button": "Skip",
+      "confirm_button": "Confirm",
+      "back_button": "Back"
     }
   }
 }
