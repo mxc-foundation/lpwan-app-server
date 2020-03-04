@@ -10,6 +10,7 @@ import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import Admin from '../../components/Admin';
 import AdvancedTable from "../../components/AdvancedTable";
 import TitleBarButton from "../../components/TitleBarButton";
+import Loader from "../../components/Loader";
 
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 
@@ -23,6 +24,7 @@ class ListServiceProfiles extends Component {
     this.serviceProfileColumn = this.serviceProfileColumn.bind(this)
     this.state = {
       data: [],
+      loading: false,
       columns: [{
         dataField: 'name',
         text: i18n.t(`${packageNS}:tr000042`),
@@ -45,13 +47,14 @@ class ListServiceProfiles extends Component {
    * Fetches data from server
    */
   getPage = (organizationID, limit, offset) => {
+    this.setState({ loading: true });
     ServiceProfileStore.list(organizationID, limit, offset, (res) => {
       const object = this.state;
       object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({ object });
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   serviceProfileColumn = (cell, row, index, extraData) => {
@@ -87,6 +90,7 @@ class ListServiceProfiles extends Component {
         <Row>
           <Col>
             <Card className="card-box shadow-sm">
+            {this.state.loading && <Loader />}
               <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
             </Card>
           </Col>

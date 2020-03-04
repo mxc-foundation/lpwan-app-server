@@ -11,6 +11,7 @@ import OrganizationStore from "../../stores/OrganizationStore";
 
 import AdvancedTable from "../../components/AdvancedTable";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import Loader from "../../components/Loader";
 
 
 const UserNameColumn = (cell, row, index, extraData) => {
@@ -47,7 +48,8 @@ class ListOrganizationUsers extends Component {
 
     this.state = {
       data: [],
-      totalSize: 0
+      totalSize: 0,
+      loading: false,
     }
   }
 
@@ -81,7 +83,7 @@ class ListOrganizationUsers extends Component {
       object.data = res.result;
       object.loading = false;
       this.setState({ object });
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   componentDidMount() {
@@ -108,6 +110,7 @@ class ListOrganizationUsers extends Component {
         <Row>
           <Col>
             <Card className="card-box shadow-sm">
+            {this.state.loading && <Loader />}
               <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
                 keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
             </Card>
