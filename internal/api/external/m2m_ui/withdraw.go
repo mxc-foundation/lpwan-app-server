@@ -26,7 +26,7 @@ func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
 
 // ModifyWithdrawFee modifies the withdraw fee
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
-	log.Info("grpc_api/ModifyWithdrawFee")
+	log.WithField("orgId", req.OrgId).Info("grpc_api/ModifyWithdrawFee")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -39,6 +39,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 	resp, err := withdrawClient.ModifyWithdrawFee(ctx, &api.ModifyWithdrawFeeRequest{
 		MoneyAbbr:   req.MoneyAbbr,
 		WithdrawFee: req.WithdrawFee,
+		OrgId:       req.OrgId,
 	})
 	if err != nil {
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Unavailable, err.Error())
