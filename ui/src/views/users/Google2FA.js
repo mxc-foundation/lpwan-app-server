@@ -5,13 +5,13 @@ import QRCode from "qrcode.react";
 import i18n, { packageNS } from '../../i18n';
 
 
-const Google2FA = ({ title, code, confirm, skip }) => {
+const Google2FA = ({ title, code, confirm, skip, titleClass = "" }) => {
     const [confirmCode, setconfirmCode] = useState("");
 
     return <React.Fragment>
         <Row className="text-center">
             <Col className="mb-0">
-                <h4>{title}</h4>
+                <h5 className={titleClass}>{title}</h5>
 
                 <Row className="mt-3 text-center">
                     <Col>

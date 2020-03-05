@@ -13,7 +13,7 @@ const Phrase = ({ phrase, isSelected, select }) => {
     </React.Fragment>
 }
 
-const MneMonicPhraseConfirm = ({ title, phrase, next, back }) => {
+const MneMonicPhraseConfirm = ({ title, phrase, next, back, showBackButton = true, showSkipButton = false, titleClass = "" }) => {
 
     const [selectedPhrase, setSelectedPhrase] = useState([]);
 
@@ -30,7 +30,7 @@ const MneMonicPhraseConfirm = ({ title, phrase, next, back }) => {
     return <React.Fragment>
         <Row className="text-center">
             <Col className="mb-0">
-                <h5>{title}</h5>
+                <h5 className={titleClass}>{title}</h5>
 
                 <Row className="mt-3 text-left">
                     <Col className="mb-0">
@@ -52,7 +52,7 @@ const MneMonicPhraseConfirm = ({ title, phrase, next, back }) => {
                     </Col>
                 </Row>
 
-                <Row className="mt-2 text-left">
+                {showBackButton ? <Row className="mt-2 text-left">
                     <Col className="mb-0">
                         <Button color="primary" className="btn-block" onClick={() => next(selectedPhrase)}
                             disabled={!selectedPhrase.length}>{i18n.t(`${packageNS}:menu.menmonic_phrase.confirm_button`)}</Button>
@@ -60,7 +60,16 @@ const MneMonicPhraseConfirm = ({ title, phrase, next, back }) => {
                     <Col className="mb-0">
                         <Button color="primary" outline className="btn-block" onClick={back}>{i18n.t(`${packageNS}:menu.menmonic_phrase.back_button`)}</Button>
                     </Col>
-                </Row>
+                </Row>: null}
+
+                {showSkipButton ? <Row className="mt-2 text-left">
+                    <Col className="mb-0">
+                        <Button color="primary" className="btn-block" onClick={() => next(selectedPhrase)}
+                            disabled={!selectedPhrase.length}>{i18n.t(`${packageNS}:menu.menmonic_phrase.confirm_button`)}</Button>
+                        
+                        <Button color="link" className="btn-block" onClick={back}>{i18n.t(`${packageNS}:menu.menmonic_phrase.skip_button`)}</Button>
+                    </Col>
+                </Row> : null}
 
             </Col>
         </Row>

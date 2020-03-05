@@ -21,22 +21,22 @@ const Item = ({id, notification, hideNotification}) => {
   });
 
   if (notification) {
-    switch(notification.type) {
-      case 'error':
-        toastr.error(notification.message);
-        break;
-      case 'success':
-        toastr.success(notification.message);
-        break;
-      case 'warning':
-        toastr.warning(notification.message);
-        break;
-      case 'info':
-        toastr.info(notification.message);
-        break;
-      default:
-        break;
-    }
+    // switch(notification.type) {
+    //   case 'error':
+    //     toastr.error(notification.message);
+    //     break;
+    //   case 'success':
+    //     toastr.success(notification.message);
+    //     break;
+    //   case 'warning':
+    //     toastr.warning(notification.message);
+    //     break;
+    //   case 'info':
+    //     toastr.info(notification.message);
+    //     break;
+    //   default:
+    //     break;
+    // }
   }
 
   return <React.Fragment></React.Fragment>;
