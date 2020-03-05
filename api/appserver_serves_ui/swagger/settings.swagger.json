@@ -1,0 +1,104 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "settings.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/settings": {
+      "get": {
+        "operationId": "GetSettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetSettingsResponse"
+            }
+          }
+        },
+        "tags": [
+          "SettingsService"
+        ]
+      },
+      "put": {
+        "operationId": "ModifySettings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiModifySettingsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiModifySettingsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SettingsService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiGetSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "lowBalanceWarning": {
+          "type": "string",
+          "format": "int64"
+        },
+        "downlinkFee": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transactionPercentageShare": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiModifySettingsRequest": {
+      "type": "object",
+      "properties": {
+        "lowBalanceWarning": {
+          "type": "string",
+          "format": "int64"
+        },
+        "downlinkFee": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transactionPercentageShare": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiModifySettingsResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    }
+  }
+}

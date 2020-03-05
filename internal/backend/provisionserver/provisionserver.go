@@ -6,7 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	api "github.com/mxc-foundation/lpwan-app-server/api/ps"
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"

@@ -1,0 +1,395 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "m2mserver_device.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/device/{orgId}/device-history/{devId}": {
+      "get": {
+        "operationId": "GetDeviceHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetDeviceHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "devId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DSDeviceService"
+        ]
+      }
+    },
+    "/api/device/{orgId}/device-list": {
+      "get": {
+        "operationId": "GetDeviceList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetDeviceListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DSDeviceService"
+        ]
+      }
+    },
+    "/api/device/{orgId}/device-mode/{devId}": {
+      "post": {
+        "operationId": "SetDeviceMode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiSetDeviceModeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "devId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiSetDeviceModeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DSDeviceService"
+        ]
+      }
+    },
+    "/api/device/{orgId}/device-profile/{devId}": {
+      "get": {
+        "operationId": "GetDeviceProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetDSDeviceProfileResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "devId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DSDeviceService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiDSDeviceProfile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "devEui": {
+          "type": "string"
+        },
+        "fkWallet": {
+          "type": "string",
+          "format": "int64"
+        },
+        "mode": {
+          "$ref": "#/definitions/appserver_serves_uiDeviceMode"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "lastSeenAt": {
+          "type": "string"
+        },
+        "applicationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiDeviceMode": {
+      "type": "string",
+      "enum": [
+        "DV_INACTIVE",
+        "DV_FREE_GATEWAYS_LIMITED",
+        "DV_WHOLE_NETWORK",
+        "DV_DELETED"
+      ],
+      "default": "DV_INACTIVE"
+    },
+    "appserver_serves_uiGetDSDeviceProfileResponse": {
+      "type": "object",
+      "properties": {
+        "devProfile": {
+          "$ref": "#/definitions/appserver_serves_uiDSDeviceProfile"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
+        }
+      }
+    },
+    "appserver_serves_uiGetDeviceHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "devHistory": {
+          "type": "string"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
+        }
+      }
+    },
+    "appserver_serves_uiGetDeviceListResponse": {
+      "type": "object",
+      "properties": {
+        "devProfile": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiDSDeviceProfile"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
+        }
+      }
+    },
+    "appserver_serves_uiOrganizationLink": {
+      "type": "object",
+      "properties": {
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID."
+        },
+        "organizationName": {
+          "type": "string",
+          "description": "Organization name."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is admin within the context of this organization.\nThere is no need to set the is_device_admin and is_gateway_admin flags."
+        },
+        "isDeviceAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is able to modify device related resources (applications,\ndevice-profiles, devices, multicast-groups)."
+        },
+        "isGatewayAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "User is able to modify gateways."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Created at timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp."
+        }
+      },
+      "description": "Defines an organization to which an user is associated."
+    },
+    "appserver_serves_uiProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/appserver_serves_uiUser",
+          "description": "User object."
+        },
+        "organizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiOrganizationLink"
+          },
+          "description": "Organizations to which the user is associated."
+        },
+        "settings": {
+          "$ref": "#/definitions/appserver_serves_uiProfileSettings",
+          "description": "Profile settings."
+        }
+      }
+    },
+    "appserver_serves_uiProfileSettings": {
+      "type": "object",
+      "properties": {
+        "disableAssignExistingUsers": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
+        }
+      }
+    },
+    "appserver_serves_uiSetDeviceModeRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "devId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "devMode": {
+          "$ref": "#/definitions/appserver_serves_uiDeviceMode"
+        }
+      }
+    },
+    "appserver_serves_uiSetDeviceModeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
+        }
+      }
+    },
+    "appserver_serves_uiUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "User ID.\nWill be set automatically on create."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user."
+        },
+        "sessionTTL": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The session timeout, in minutes."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to true to make the user a global administrator."
+        },
+        "isActive": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Set to false to disable the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "E-mail of the user."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional note to store with the user."
+        }
+      }
+    }
+  }
+}
