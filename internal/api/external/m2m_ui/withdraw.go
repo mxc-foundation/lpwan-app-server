@@ -131,7 +131,31 @@ func (s *WithdrawServerAPI) ConfirmWithdraw (ctx context.Context, req *api.Confi
 	return &api.ConfirmWithdrawResponse{}, nil
 }
 
+// GetWithdrawRequestList returns all users withdrawal requests to the front-end
 func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api.GetWithdrawRequestListRequest) (*api.GetWithdrawRequestListResponse, error) {
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
 
-	return &api.GetWithdrawRequestListResponse{}, nil
+	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
+
+	resp, err := withdrawClient.GetWithdrawRequestList(ctx, &api.GetWithdrawRequestListRequest{
+		Offset: req.Offset,
+		Limit:  req.Limit,
+	})
+	if err != nil {
+		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	// ToDo: Get the user name from DB
+	/*for _, v := range resp.WithdrawRequest {
+		v.UserName = ""
+	}*/
+
+	return &api.GetWithdrawRequestListResponse{
+		Count:           resp.Count,
+		WithdrawRequest: resp.WithdrawRequest,
+	}, nil
 }
