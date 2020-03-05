@@ -49,7 +49,7 @@ class TopupStore extends EventEmitter {
 
   getTransactionsHistory(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
-      client.apis.TopUpService.GetTransactionsHistory({
+      client.apis.TopUpService.GetTopUpHistory({
         orgId,
         offset,
         limit
