@@ -1,4 +1,4 @@
-package m2m_ui
+package external
 
 import (
 	"context"
@@ -113,7 +113,6 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 
 	resp, err := withdrawClient.WithdrawReq(ctx, &api.WithdrawReqRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: req.MoneyAbbr,
 		Amount:    req.Amount,
 	})
 	if err != nil {

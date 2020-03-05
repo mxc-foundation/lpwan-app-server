@@ -1,4 +1,4 @@
-package m2m_ui
+package external
 
 import (
 	"context"
@@ -65,7 +65,6 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 
 	resp, err := topupClient.GetTopUpDestination(ctx, &api.GetTopUpDestinationRequest{
 		OrgId:     req.OrgId,
-		MoneyAbbr: req.MoneyAbbr,
 	})
 	if err != nil {
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())

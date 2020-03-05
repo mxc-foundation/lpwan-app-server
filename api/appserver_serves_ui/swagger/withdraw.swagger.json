@@ -11,6 +11,33 @@
     "application/json"
   ],
   "paths": {
+    "/api/withdraw": {
+      "post": {
+        "summary": "WithdrawReq when the user clicks the withdraw",
+        "operationId": "WithdrawReq",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawReqResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawReqRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
     "/api/withdraw/confirm": {
       "post": {
         "summary": "ConfirmWithdraw is after supernode owner clicks the confirm or deny.",
@@ -38,7 +65,7 @@
         ]
       }
     },
-    "/api/withdraw/get-withdraw-fee/{moneyAbbr}": {
+    "/api/withdraw/get-withdraw-fee": {
       "get": {
         "summary": "GetWithdrawFee data for current withdraw fee",
         "operationId": "GetWithdrawFee",
@@ -53,15 +80,16 @@
         "parameters": [
           {
             "name": "moneyAbbr",
-            "description": "type of crypto currency",
-            "in": "path",
-            "required": true,
+            "description": "type of crypto currency.",
+            "in": "query",
+            "required": false,
             "type": "string",
             "enum": [
               "ETH",
               "MXC",
               "TETH"
-            ]
+            ],
+            "default": "ETH"
           }
         ],
         "tags": [
@@ -69,7 +97,7 @@
         ]
       }
     },
-    "/api/withdraw/history/{moneyAbbr}": {
+    "/api/withdraw/history": {
       "get": {
         "operationId": "GetWithdrawHistory",
         "responses": {
@@ -81,17 +109,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "moneyAbbr",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "enum": [
-              "ETH",
-              "MXC",
-              "TETH"
-            ]
-          },
           {
             "name": "orgId",
             "in": "query",
@@ -112,6 +129,18 @@
             "required": false,
             "type": "string",
             "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ETH",
+              "MXC",
+              "TETH"
+            ],
+            "default": "ETH"
           }
         ],
         "tags": [
@@ -119,7 +148,7 @@
         ]
       }
     },
-    "/api/withdraw/modify-withdraw-fee/{moneyAbbr}": {
+    "/api/withdraw/modify-withdraw-fee": {
       "put": {
         "operationId": "ModifyWithdrawFee",
         "responses": {
@@ -131,17 +160,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "moneyAbbr",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "enum": [
-              "ETH",
-              "MXC",
-              "TETH"
-            ]
-          },
           {
             "name": "body",
             "in": "body",
@@ -181,44 +199,6 @@
             "required": false,
             "type": "string",
             "format": "int64"
-          }
-        ],
-        "tags": [
-          "WithdrawService"
-        ]
-      }
-    },
-    "/api/withdraw/{moneyAbbr}": {
-      "post": {
-        "summary": "WithdrawReq when the user clicks the withdraw",
-        "operationId": "WithdrawReq",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/appserver_serves_uiWithdrawReqResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "moneyAbbr",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "enum": [
-              "ETH",
-              "MXC",
-              "TETH"
-            ]
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/appserver_serves_uiWithdrawReqRequest"
-            }
           }
         ],
         "tags": [
@@ -354,9 +334,6 @@
         "orgId": {
           "type": "string",
           "format": "int64"
-        },
-        "moneyAbbr": {
-          "$ref": "#/definitions/appserver_serves_uiMoney"
         },
         "amount": {
           "type": "number",

@@ -1,4 +1,4 @@
-package m2m_ui
+package external
 
 import (
 	"context"

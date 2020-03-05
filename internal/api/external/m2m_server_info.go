@@ -1,4 +1,4 @@
-package m2m_ui
+package external
 
 import (
 	"context"
@@ -35,7 +35,7 @@ func (s *M2MServerAPI) GetVersion(ctx context.Context, req *empty.Empty) (*api.G
 		return &api.GetVersionResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	verClient := api.NewServerInfoServiceClient(m2mClient)
+	verClient := api.NewM2MServerInfoServiceClient(m2mClient)
 
 	resp, err := verClient.GetVersion(ctx, req)
 	if err != nil {

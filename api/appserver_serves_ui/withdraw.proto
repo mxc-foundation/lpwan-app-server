@@ -10,14 +10,14 @@ service WithdrawService {
     // GetWithdrawFee data for current withdraw fee
     rpc GetWithdrawFee (GetWithdrawFeeRequest) returns (GetWithdrawFeeResponse) {
         option (google.api.http) = {
-			get: "/api/withdraw/get-withdraw-fee/{money_abbr}"
+			get: "/api/withdraw/get-withdraw-fee"
 		};
     }
 
     // WithdrawReq when the user clicks the withdraw
     rpc WithdrawReq (WithdrawReqRequest) returns (WithdrawReqResponse) {
         option (google.api.http) = {
-			post: "/api/withdraw/{money_abbr}"
+			post: "/api/withdraw"
 			body: "*"
 		};
     }
@@ -32,13 +32,13 @@ service WithdrawService {
 
     rpc GetWithdrawHistory (GetWithdrawHistoryRequest) returns (GetWithdrawHistoryResponse) {
         option (google.api.http) = {
-			get: "/api/withdraw/history/{money_abbr}"
+			get: "/api/withdraw/history"
 		};
     }
 
     rpc ModifyWithdrawFee (ModifyWithdrawFeeRequest) returns (ModifyWithdrawFeeResponse) {
         option(google.api.http) = {
-			put: "/api/withdraw/modify-withdraw-fee/{money_abbr}"
+			put: "/api/withdraw/modify-withdraw-fee"
 			body: "*"
 		};
     }
@@ -63,10 +63,9 @@ message GetWithdrawFeeResponse {
 
 message WithdrawReqRequest {
     int64 org_id = 1;
-    Money money_abbr = 2;
-    double amount = 3;
-    string eth_address = 4;
-    double available_balance = 5;
+    double amount = 2;
+    string eth_address = 3;
+    double available_balance = 4;
 }
 
 message WithdrawReqResponse {

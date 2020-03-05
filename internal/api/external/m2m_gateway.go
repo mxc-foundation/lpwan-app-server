@@ -1,4 +1,4 @@
-package m2m_ui
+package external
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := api.NewGatewayServiceClient(m2mClient)
+	gwClient := api.NewGSGatewayServiceClient(m2mClient)
 
 	resp, err := gwClient.GetGatewayList(ctx, &api.GetGatewayListRequest{
 		OrgId:  req.OrgId,
@@ -58,33 +58,33 @@ func (s *GatewayServerAPI) GetGatewayList(ctx context.Context, req *api.GetGatew
 }
 
 // GetGatewayProfile defines the get Gateway Profile request and response
-func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGatewayProfileRequest) (*api.GetGatewayProfileResponse, error) {
+func (s *GatewayServerAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewayProfileRequest) (*api.GetGSGatewayProfileResponse, error) {
 	log.WithField("orgId", req.OrgId).Info("grpc_api/GetGatewayProfile")
 
 	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
 	if err != nil {
-		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
-		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := api.NewGatewayServiceClient(m2mClient)
+	gwClient := api.NewGSGatewayServiceClient(m2mClient)
 
-	resp, err := gwClient.GetGatewayProfile(ctx, &api.GetGatewayProfileRequest{
+	resp, err := gwClient.GetGatewayProfile(ctx, &api.GetGSGatewayProfileRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
 	if err != nil {
-		return &api.GetGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.GetGatewayProfileResponse{
+	return &api.GetGSGatewayProfileResponse{
 		GwProfile:   resp.GwProfile,
 		UserProfile: &prof,
 	}, nil
@@ -105,7 +105,7 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := api.NewGatewayServiceClient(m2mClient)
+	gwClient := api.NewGSGatewayServiceClient(m2mClient)
 
 	resp, err := gwClient.GetGatewayHistory(ctx, &api.GetGatewayHistoryRequest{
 		OrgId:  req.OrgId,
@@ -138,7 +138,7 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := api.NewGatewayServiceClient(m2mClient)
+	gwClient := api.NewGSGatewayServiceClient(m2mClient)
 
 	resp, err := gwClient.SetGatewayMode(ctx, &api.SetGatewayModeRequest{
 		OrgId:  req.OrgId,
