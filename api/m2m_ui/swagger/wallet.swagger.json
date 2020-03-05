@@ -4,6 +4,10 @@
     "title": "wallet.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -23,6 +27,13 @@
           }
         },
         "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
           {
             "name": "orgId",
             "in": "query",
@@ -177,6 +188,9 @@
         "balance": {
           "type": "number",
           "format": "double"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/m2m_uiProfileResponse"
         }
       }
     },

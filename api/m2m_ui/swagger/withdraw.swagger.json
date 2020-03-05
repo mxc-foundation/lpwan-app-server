@@ -4,6 +4,10 @@
     "title": "withdraw.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -11,7 +15,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/withdraw/confirm": {
+    "/api/withdraw/confirm/{moneyAbbr}": {
       "post": {
         "summary": "ConfirmWithdraw is after supernode owner clicks the confirm or deny.",
         "operationId": "ConfirmWithdraw",
@@ -24,6 +28,17 @@
           }
         },
         "parameters": [
+          {
+            "name": "moneyAbbr",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "ETH",
+              "MXC",
+              "TETH"
+            ]
+          },
           {
             "name": "body",
             "in": "body",
@@ -239,6 +254,13 @@
           "type": "boolean",
           "format": "boolean"
         },
+        "moneyAbbr": {
+          "$ref": "#/definitions/m2m_uiMoney"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
         "denyComment": {
           "type": "string"
         },
@@ -300,6 +322,10 @@
     "m2m_uiModifyWithdrawFeeRequest": {
       "type": "object",
       "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
         "moneyAbbr": {
           "$ref": "#/definitions/m2m_uiMoney"
         },
@@ -364,10 +390,6 @@
         },
         "ethAddress": {
           "type": "string"
-        },
-        "availableBalance": {
-          "type": "number",
-          "format": "double"
         }
       }
     },

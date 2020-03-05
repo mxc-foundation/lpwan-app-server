@@ -311,11 +311,11 @@ var fileDescriptor_8eec749941d0cb6c = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // TopUpServiceClient is the client API for TopUpService service.
 //
@@ -326,10 +326,10 @@ type TopUpServiceClient interface {
 }
 
 type topUpServiceClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewTopUpServiceClient(cc grpc.ClientConnInterface) TopUpServiceClient {
+func NewTopUpServiceClient(cc *grpc.ClientConn) TopUpServiceClient {
 	return &topUpServiceClient{cc}
 }
 
