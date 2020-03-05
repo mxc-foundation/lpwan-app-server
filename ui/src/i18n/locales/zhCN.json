@@ -563,7 +563,19 @@
       "confirm_text": "您正在确认从其可用令牌余额中提取。 你确定吗？",
       "deny_text": "您拒绝从他们的可用令牌余额中提款的请求。",
       "requester": "请求者",
-      "balance": "天平"
+      "balance": "天平",
+      "destination": "目的地",
+      "available":"可用",
+      "submit_withdrawal_request": "提交提款请求",
+      "date_requested": "请求日期",
+      "status": "状态", 
+      "transaction_hash": "交易哈希",
+      "request_withdraw_title": "您确定要退出吗？",
+      "request_withdraw_text_0": "您正在请求退出此超级节点。 请求完成后，超级节点操作员必须确认退出。",
+      "request_withdraw_text_1": "金额超过1000美元的金额将由Supernode运营商和MXC Foundation确认。",
+      "request_withdraw_text_2": "  您确定要退出吗？",
+      "request_withdraw_text_com": "您的提款请求已成功提交，超级节点运营商将在下一个工作日内确认此交易。",
+      "confirmed": "已确认。"
     },
     "topup": {
       "topup": "充值",
@@ -767,7 +779,9 @@
       "control_panel": "控制面板",
       "back": "回去",
       "submit": "完成了",
-      "cancel": "取消"
+      "cancel": "取消",
+      "comment": "评论",
+      "done": "完成"
     },
     "system_settings": {
       "system_settings": "系统设定"

@@ -563,7 +563,19 @@
       "confirm_text": "사용 가능한 토큰 잔액을 인출하고 있음을 확인하고 있습니다. 계속 하시겠습니까?",
       "deny_text": "사용 가능한 토큰 잔액에서 인출 요청을 거부합니다.",
       "requester": "요청자",
-      "balance": "잔액"
+      "balance": "잔액",
+      "destination": "계좌번호",
+      "available":"이용 가능",
+      "submit_withdrawal_request": "출금 요청",
+      "date_requested": "요청 날짜", 
+      "status": "상태", 
+      "transaction_hash": "트랜잭션 해쉬",
+      "request_withdraw_title": "계속 진행하시겠습니까?",
+      "request_withdraw_text_0": "이 수퍼 노드에서 탈퇴를 요청하고 있습니다. 요청이 완료되면 수퍼 노드 운영자는이 탈퇴를 확인해야합니다.",
+      "request_withdraw_text_1": "1000 USD 이상의 금액은 수퍼 노드 운영자와 MXC 재단에서 확인합니다.",
+      "request_withdraw_text_2": "출금을 계속하시겠습니까?",
+      "request_withdraw_text_com": "철회 요청이 성공적으로 제출되었으며 수퍼 노드 운영자가 다음 영업일 이내에이 거래를 확인합니다.",
+      "confirmed": " 확인했습니다."
     },
     "topup": {
       "topup": "충전",
@@ -767,7 +779,9 @@
       "control_panel": "콘트롤 패널",
       "back": "뒤로",
       "submit": "완료",
-      "cancel": "취소"
+      "cancel": "취소",
+      "comment": "주석",
+      "done": "완료"
     },
     "system_settings": {
       "system_settings": "수수료"

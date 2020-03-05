@@ -3,7 +3,7 @@ import { withRouter } from "react-router-dom";
 
 import { withStyles } from "@material-ui/core/styles";
 import localStyles from "./WithdrawStyle"
-
+import i18n, { packageNS } from "../../i18n";
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 import { MAX_DATA_LIMIT } from '../../util/pagination';
@@ -75,35 +75,30 @@ class Withdraw extends Component {
     AmountColumn = (cell, row, index, extraData) => {
         return <div>{row.amount} MXC</div>;
     }
-
+    
     getColumns = () => (
         [{
             dataField: 'txSentTime',
-            //text: i18n.t(`${packageNS}:menu.withdraw.username`),
-            text: 'Date Requested',
+            text: i18n.t(`${packageNS}:menu.withdraw.date_requested`),
             sort: false,
             formatter: this.DateRequestedColumn
         }, {
             dataField: 'txStatus',
-            //text: i18n.t(`${packageNS}:menu.withdraw.total_token_available`),
-            text: 'Status',
+            text: i18n.t(`${packageNS}:menu.withdraw.status`),
             sort: false
         }, {
             dataField: 'amount',
-            //text: i18n.t(`${packageNS}:menu.withdraw.amount`),
-            text: 'Amount',
+            text: i18n.t(`${packageNS}:menu.withdraw.amount`),
             sort: false,
             formatter: this.AmountColumn
         }, {
             dataField: 'denyComment',
-            //text: i18n.t(`${packageNS}:menu.withdraw.amount`),
-            text: 'Comment',
+            text: i18n.t(`${packageNS}:menu.common.comment`),
             sort: false,
             formatter: this.AmountColumn
         }, {
             dataField: 'txHash',
-            //text: i18n.t(`${packageNS}:menu.withdraw.amount`),
-            text: 'Transaction Hash',
+            text: i18n.t(`${packageNS}:menu.withdraw.transaction_hash`),
             sort: false,
             formatter: this.AmountColumn
         }]

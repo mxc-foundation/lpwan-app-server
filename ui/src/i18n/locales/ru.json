@@ -563,7 +563,19 @@
       "confirm_text": "You are confirming that withdraw from their balance of available tokens. Are you sure?",
       "deny_text": "You are denying a request to withdraw from their balance of available tokens.",
       "requester": "Requester",
-      "balance": "Balance"
+      "balance": "Balance",
+      "destination": "Destination",
+      "available":"Available",
+      "submit_withdrawal_request": "Submit Withdrawal Request",
+      "date_requested": "Date Requested", 
+      "status": "Status", 
+      "transaction_hash": "Transaction Hash",
+      "request_withdraw_title": "Are you sure?",
+      "request_withdraw_text_0": "You are requesting to withdraw from this Supernode. Once the request is completed, the Supernode operator must confirm this withdrawal.",
+      "request_withdraw_text_1": "Amounts valued above 1000 USD will be confirmed by the Supernode operator and the MXC Foundation.",
+      "request_withdraw_text_2": "Are you sure you want to withdraw?",
+      "request_withdraw_text_com": "Your withdrawal request was successfully submitted and the Supernode Operator will confirm this transaction within the next business day.",
+      "confirmed": "Confirmed"
     },
     "topup": {
       "topup": "Top up",
@@ -767,7 +779,9 @@
       "control_panel": "Control Panel",
       "back": "Back",
       "submit": "Submit",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "comment": "Comment",
+      "done": "Done"
     },
     "system_settings": {
       "system_settings": "System Fees"
