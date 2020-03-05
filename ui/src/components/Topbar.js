@@ -57,12 +57,12 @@ class Topbar extends Component {
   loadData = async () => {
     try {
       let orgid = await SessionStore.getOrganizationID();
-      let result = await getWalletBalance(orgid);
+      //let result = await getWalletBalance(orgid);
 
       //const balance = (SessionStore.isAdmin()) ? result.amount : result.balance; //edit 2020-03-02 in the case of admin, no longer getIncome
-      const balance = result.balance;
+      //const balance = result.balance;
 
-      this.setState({ balance });
+      //this.setState({ balance });
 
     } catch (error) {
       console.error(error);

@@ -1,157 +1,203 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import Grid from "@material-ui/core/Grid";
-import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
-import i18n, { packageNS } from '../../i18n';
-import MoneyStore from "../../stores/MoneyStore";
-import WithdrawStore from "../../stores/WithdrawStore";
-import SupernodeStore from "../../stores/SupernodeStore";
-import WalletStore from "../../stores/WalletStore";
-import Modal from "./Modal";
+import { Row, Col, Card, Button, Breadcrumb, BreadcrumbItem, FormGroup, Label, Input } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import localStyles from "./WithdrawStyle"
-import { ETHER } from "../../util/CoinType"
-import { SUPER_ADMIN } from "../../util/M2mUtil"
-import theme from "../../theme";
-import TableCell from "@material-ui/core/TableCell";
+import i18n, { packageNS } from "../../i18n";
+import NumberFormat from 'react-number-format';
+
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import Modal from './Modal';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+import TitleBar from "../../components/TitleBar";
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
+import WithdrawStore from "../../stores/WithdrawStore";
+import MoneyStore from "../../stores/MoneyStore";
 
 const styles = {
   ...breadcrumbStyles,
   ...localStyles
 };
 
-function formatNumber(number) {
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+const NumberFormatMXC = (props) => {
+  const { inputRef, onChange, ...other } = props;
 
-function loadWithdrawFee(ETHER, organizationID) {
-  return new Promise((resolve, reject) => {
-    WithdrawStore.getWithdrawFee(ETHER, organizationID,
-      resp => {
-        resp.moneyAbbr = ETHER;
-        resolve(resp);
-      })
-  });
-}  
-
-function loadCurrentAccount(ETHER, orgId) {
-  return new Promise((resolve, reject) => {
-    if (orgId === SUPER_ADMIN) {
-      SupernodeStore.getSuperNodeActiveMoneyAccount(ETHER, orgId, resp => {
-        resolve(resp.supernodeActiveAccount);
-        
-      });
-    }else{
-      MoneyStore.getActiveMoneyAccount(ETHER, orgId, resp => {
-        resolve(resp.activeAccount);
-        
-      });
-    }
-  });
-}
-
-      
-function loadWalletBalance(orgId) {
-  return new Promise((resolve, reject) => {
-    WalletStore.getWalletBalance(orgId,
-      resp => {
-        /* Object.keys(resp).forEach(attr => {
-          const value = resp[attr];
-  
-          if (typeof value === 'number') {
-            resp[attr] = formatNumber(value);
+  return (
+    <NumberFormat
+      {...other}
+      getInputRef={inputRef}
+      onValueChange={(values) => {
+        onChange({
+          target: {
+            value: values.value
           }
-        }); */
-        resolve(resp);
-      });
-  });
+        });
+      }}
+      suffix=" MXC"
+    />
+  );
 }
 
 class Withdraw extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loading: false,
-      modal: null,
-    };
+      data: [],
+      stats: {},
+      totalSize: 0,
+      nsDialog: false
+    }
+  }
+  /**
+     * Handles table changes including pagination, sorting, etc
+     */
+  handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+    // TODO - how can I pass search query to server?
+    this.getPage(sizePerPage, offset);
   }
 
-  loadData = async () => {
-    try {
-      const orgId = this.props.match.params.organizationID;
-      this.setState({loading: true})
-      var result = await loadWithdrawFee(ETHER, orgId);
-      var wallet = await loadWalletBalance(orgId);
-      var account = await loadCurrentAccount(ETHER, orgId);
-      
-      /* this.setState({
-        activeAccount: resp.supernodeActiveAccount,
-      }); */
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
+    const defaultOrgId = 0;
+    this.setState({ loading: true });
+    const moneyAbbr = 2;
+    const orgId = this.props.match.params.organizationID;
 
-      const txinfo = {};
-      txinfo.withdrawFee = result.withdrawFee;
-      txinfo.balance = wallet.balance;
-      
-      txinfo.account = account;
+    WithdrawStore.getWithdrawHistory(moneyAbbr, orgId, limit, offset, (res) => {
+      console.log('res', res);
+      const object = this.state;
+      object.totalSize = Number(res.count);
+      object.data = res.withdrawRequest;
+      object.loading = false;
+      this.setState({ object });
+    });
+  }
 
+
+  loadData = () => {
+
+    const orgId = this.props.match.params.organizationID;
+
+    MoneyStore.getActiveMoneyAccount(0, orgId, resp => {
+      console.log('resp', resp);
       this.setState({
-        txinfo
+        activeAccount: resp.activeAccount,
       });
-      this.setState({loading: false})
-    } catch (error) {
-      this.setState({loading: false})
-      console.error(error);
-      this.setState({ error });
-    }
+    });
   }
 
   componentDidMount() {
-    //this.loadData();
+    this.loadData();
+    this.getPage(MAX_DATA_LIMIT);
   }
 
-  componentDidUpdate(oldProps) {
-    if (this.props === oldProps) {
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state && prevState.data !== this.state.data) {
+
+    }
+  }
+
+  confirm = (row, confirmStatus) => {
+    if (!row.hasOwnProperty('withdrawId')) {
       return;
     }
-    this.loadData();
-  }
-  
-  showModal(modal) {
-    this.setState({ modal });
-  }
+    let req = {};
+    req.orgId = 1;
+    req.confirmStatus = confirmStatus;
+    req.denyComment = (this.state.value === undefined) ? '' : this.state.value;
+    req.withdrawId = row.withdrawId;
 
-  onSubmit = (e, apiWithdrawReqRequest) => {
-    e.preventDefault();
-    this.showModal(apiWithdrawReqRequest);
-  }
-
-  handleCloseModal = () => {
-    this.setState({
-      modal: null
-    })
-  }
-
-  onConfirm = (data) => {
-    data.moneyAbbr = ETHER;
-    data.orgId = this.props.match.params.organizationID;
-    if(data.amount === 0){
-      alert(i18n.t(`${packageNS}:menu.messages.invalid_amount`));
-      return false;
-    } 
-
-    if(data.destination){
-      alert(i18n.t(`${packageNS}:menu.messages.invalid_account`));
-      return false;
-    }
-    
-    this.setState({loading: true});
-    WithdrawStore.WithdrawReq(data, resp => {
-      this.setState({loading: false});
+    WithdrawStore.confirmWithdraw(req, (res) => {
+      const object = this.state;
+      object.loading = false;
+      this.props.history.push(`/control-panel/withdraw`);
     });
+  }
 
+  ConfirmationColumn = (cell, row, index, extraData) => {
+    return <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <Button style={{ width: 120, marginRight: 10 }} color="primary" onClick={() => { this.openModal(row, true) }}>
+        {i18n.t(`${packageNS}:menu.withdraw.confirm`)}
+      </Button>
+      <Button outline style={{ width: 120 }} color="primary" onClick={() => { this.openModal(row, false) }}>
+        {i18n.t(`${packageNS}:menu.withdraw.deny`)}
+      </Button>
+    </div>;
+  }
+
+  openModal = (row, status) => {
+    this.setState({
+      nsDialog: true,
+      row,
+      status
+    });
+  };
+
+  DateRequestedColumn = (cell, row, index, extraData) => {
+    return <div>{row.txSentTime.substring(0, 10)}</div>;
+  }
+
+  AmountColumn = (cell, row, index, extraData) => {
+    return <div>{row.amount} MXC</div>;
+  }
+
+  getColumns = () => (
+    [{
+      dataField: 'txSentTime',
+      //text: i18n.t(`${packageNS}:menu.withdraw.username`),
+      text: 'Date Requested',
+      sort: false,
+      formatter: this.DateRequestedColumn
+    }, {
+      dataField: 'txStatus',
+      //text: i18n.t(`${packageNS}:menu.withdraw.total_token_available`),
+      text: 'Status',
+      sort: false
+    }, {
+      dataField: 'amount',
+      //text: i18n.t(`${packageNS}:menu.withdraw.amount`),
+      text: 'Amount',
+      sort: false,
+      formatter: this.AmountColumn
+    }, {
+      dataField: 'denyComment',
+      //text: i18n.t(`${packageNS}:menu.withdraw.amount`),
+      text: 'Comment',
+      sort: false,
+      formatter: this.AmountColumn
+    }, {
+      dataField: 'txHash',
+      //text: i18n.t(`${packageNS}:menu.withdraw.amount`),
+      text: 'Transaction Hash',
+      sort: false,
+      formatter: this.AmountColumn
+    }]
+  );
+
+  handleChange = (event) => {
+    this.setState({ value: event.target.value });
+  }
+
+  submitWithdrawReq = () => {
+    let req = {};
+    
+    WithdrawStore.WithdrawReq(req, (res) => {
+      const object = this.state;
+      object.loading = false;
+      this.props.history.push(`/withdraw/${this.props.match.params.organizationID}`);
+    });
   }
 
   render() {
@@ -159,62 +205,77 @@ class Withdraw extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
-      <Grid container spacing={24} className={this.props.classes.backgroundColor}>
-        {this.state.modal && 
-          <Modal title={i18n.t(`${packageNS}:menu.messages.confirmation`)} description={i18n.t(`${packageNS}:menu.messages.confirmation_text`)} onClose={this.handleCloseModal} open={!!this.state.modal} data={this.state.modal} onConfirm={this.onConfirm} />}
-        <Grid item xs={12} className={this.props.classes.divider}>
-          <div className={this.props.classes.TitleBar}>
-            <Breadcrumb className={classes.breadcrumb}>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations`}
-                  onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-                >
-                    Organizations
-                </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <Link
-                  className={classes.breadcrumbItemLink}
-                  to={`/organizations/${currentOrgID}`}
-                  onClick={() => { this.props.switchToSidebarId('DEFAULT'); }}
-                >
-                  {currentOrgID}
-                </Link>
-              </BreadcrumbItem>
-              <BreadcrumbItem className={classes.breadcrumbItem}>Wallet</BreadcrumbItem>
-              <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
-            </Breadcrumb>    
-          </div>
 
-        </Grid>
-        <Grid item xs={6}>
-          <TableCell align={this.props.align}>
-            <span style={
-              {
-                textDecoration: "none",
-                color: theme.palette.primary.main,
-                cursor: "pointer",
-                padding: 0,
-                fontWeight: "bold",
-                fontSize: 20,
-                opacity: 0.7,
-                "&:hover": {
-                  opacity: 1,
-                }
-              }
-            } className={this.props.classes.link} >
-                {i18n.t(`${packageNS}:menu.messages.coming_soon`)}
-            </span>
-          </TableCell>
-          {/*<WithdrawForm
-            submitLabel={i18n.t(`${packageNS}:menu.withdraw.withdraw`)}
-            txinfo={this.state.txinfo} {...this.props}
-            onSubmit={this.onSubmit}
-          />*/}
-        </Grid>
-      </Grid>
+      <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}
+          context={(this.state.status) ? i18n.t(`${packageNS}:menu.withdraw.confirm_text`) : i18n.t(`${packageNS}:menu.withdraw.deny_text`)}
+          status={this.state.status}
+          row={this.state.row}
+          handleChange={this.handleChange}
+          closeModal={() => this.setState({ nsDialog: false })}
+          callback={() => { this.confirm(this.state.row, this.state.status) }} />}
+        <TitleBar>
+
+          <Breadcrumb className={classes.breadcrumb}>
+            <BreadcrumbItem>
+              <Link
+                className={classes.breadcrumbItemLink}
+                to={`/organizations`}
+                onClick={() => {
+                  // Change the sidebar content
+                  this.props.switchToSidebarId('DEFAULT');
+                }}
+              >
+                {i18n.t(`${packageNS}:tr000049`)}
+              </Link>
+            </BreadcrumbItem>
+            <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:tr000084`)}</BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
+          </Breadcrumb>
+        </TitleBar>
+        <Row>
+          <Col xs="4">
+            <FormGroup>
+              <Label for="exampleEmail">Destination</Label>
+              <NumberFormat className={classes.s_input} value={"asdasdasd"} />
+            </FormGroup>
+            <FormGroup>
+              <Label for="amount">Amount</Label>
+              <NumberFormat className={classes.s_input} value={246} thousandSeparator={true} suffix={' MXC'} />
+            </FormGroup>
+            <FormGroup>
+              <Label for="exampleEmail">Available MXC</Label>
+              <NumberFormat className={classes.s_input} value={6981} thousandSeparator={true} suffix={' MXC'} />
+            </FormGroup>
+          </Col>
+          <Col xs="4"></Col>
+          <Col xs="4"></Col>
+        </Row>
+        <Row>
+          <Col>
+            <FormGroup>
+              <Button onClick={this.submitWithdrawReq} color="primary">Submit Withdrawal Request</Button>
+            </FormGroup>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <Card className="card-box shadow-sm">
+              {/* {this.state.loading && <Loader />} */}
+              <AdvancedTable
+                data={this.state.data}
+                columns={this.getColumns()}
+                keyField="id"
+                onTableChange={this.handleTableChange}
+                rowsPerPage={10}
+                totalSize={this.state.totalSize}
+                searchEnabled={false}
+              />
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }
