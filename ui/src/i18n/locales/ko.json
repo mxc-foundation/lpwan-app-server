@@ -557,7 +557,13 @@
       "incorrect_username_or_password": "사용자 이름 또는 비밀번호가 정확하지 않습니다.",
       "cancel": "취소",
       "proceed": "진행",
-      "deny": "거부"
+      "deny": "거부",
+      "confirm_modal_title": "승인: 수퍼노드 출금",
+      "deny_reason": "사용자 및 MXC 레코드 거부 사유 추가",
+      "confirm_text": "사용 가능한 토큰 잔액을 인출하고 있음을 확인하고 있습니다. 계속 하시겠습니까?",
+      "deny_text": "사용 가능한 토큰 잔액에서 인출 요청을 거부합니다.",
+      "requester": "요청자",
+      "balance": "잔액"
     },
     "topup": {
       "topup": "충전",

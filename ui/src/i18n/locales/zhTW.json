@@ -557,7 +557,13 @@
       "incorrect_username_or_password": "用戶名或密碼錯誤",
       "cancel": "取消",
       "proceed": "繼續",
-      "deny": "拒絕"
+      "deny": "拒絕",
+      "confirm_modal_title": "確認：超級節點退出",
+      "deny_reason": "添加拒絕用戶和MXC記錄的原因",
+      "confirm_text": "您正在確認從其可用令牌餘額中提取。 你確定嗎？",
+      "deny_text": "您拒絕從他們的可用令牌餘額中提款的請求。",
+      "requester": "請求者",
+      "balance": "天平"
     },
     "topup": {
       "topup": "充值",
