@@ -556,7 +556,8 @@
       "type_here": "ここに入力",
       "incorrect_username_or_password": "ユーザー名またはパスワードが間違っています。",
       "cancel": "キャンセル",
-      "proceed": "続行"
+      "proceed": "続行",
+      "deny":"拒む"
     },
     "topup": {
       "topup": "資金を追加する",

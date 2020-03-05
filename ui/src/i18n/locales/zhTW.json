@@ -556,7 +556,8 @@
       "type_here": "在此輸入",
       "incorrect_username_or_password": "用戶名或密碼錯誤",
       "cancel": "取消",
-      "proceed": "繼續"
+      "proceed": "繼續",
+      "deny": "拒絕"
     },
     "topup": {
       "topup": "充值",

@@ -20,12 +20,12 @@ const SideNavSupernodeWalletContent = (props) => {
                         </Link>
                     </li>
 
-                    {/* <li>
+                    <li>
                         <Link to={`/control-panel/withdraw/`} className="waves-effect side-nav-link-ref">
                             <i className="ti-cloud-down"></i>
                             <span> {i18n.t(`${packageNS}:menu.withdraw.withdraw`)} </span>
                         </Link>
-                    </li> */}
+                    </li>
 
                     <li>
                         <Link to={`/control-panel/history/`} className="waves-effect side-nav-link-ref">
