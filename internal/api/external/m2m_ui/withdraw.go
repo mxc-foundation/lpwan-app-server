@@ -113,9 +113,10 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
 
 	resp, err := withdrawClient.WithdrawReq(ctx, &api.WithdrawReqRequest{
-		OrgId:     req.OrgId,
-		MoneyAbbr: req.MoneyAbbr,
-		Amount:    req.Amount,
+		OrgId:      req.OrgId,
+		MoneyAbbr:  req.MoneyAbbr,
+		Amount:     req.Amount,
+		EthAddress: req.EthAddress,
 	})
 	if err != nil {
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unavailable, err.Error())
