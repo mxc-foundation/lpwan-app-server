@@ -5,20 +5,14 @@ import { Row, Col, Card, Button, Breadcrumb, BreadcrumbItem, FormGroup, Label, I
 import { withStyles } from "@material-ui/core/styles";
 import localStyles from "./WithdrawStyle"
 import i18n, { packageNS } from "../../i18n";
-import NumberFormat from 'react-number-format';
 import WithdrawHistory from "./WithdrawHistory";
 import WithdrawForm from "./WithdrawForm";
 
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 import Modal from './Modal';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
-import AdvancedTable from "../../components/AdvancedTable";
-import Loader from "../../components/Loader";
-import WithdrawStore from "../../stores/WithdrawStore";
 import MoneyStore from "../../stores/MoneyStore";
-import WalletStore from "../../stores/WalletStore";
 
 const styles = {
   ...breadcrumbStyles,
@@ -60,10 +54,8 @@ class Withdraw extends Component {
 
   render() {
     const { classes } = this.props;
-    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
-
       <React.Fragment>
         {this.state.nsDialog && <Modal
           title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}

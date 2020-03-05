@@ -1,15 +1,16 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import { Row, Col, Button,FormGroup, Label, Input } from 'reactstrap';
+import { Row, Col, Button, FormGroup, Label, Input } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
 import localStyles from "./WithdrawStyle"
 import i18n, { packageNS } from "../../i18n";
 import NumberFormat from 'react-number-format';
-import {ETHER} from "../../util/CoinType"
+import { ETHER } from "../../util/CoinType"
 
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 import Modal from './Modal';
+import ModalCom from './ModalComplete';
 import WithdrawStore from "../../stores/WithdrawStore";
 import MoneyStore from "../../stores/MoneyStore";
 import WalletStore from "../../stores/WalletStore";
@@ -32,6 +33,7 @@ class Withdraw extends Component {
     super(props);
     this.state = {
       nsDialog: false,
+      comDialog: false,
       activeAccount: "",
       balance: 0,
       amount: 0
@@ -55,7 +57,7 @@ class Withdraw extends Component {
         object
       });
     });
-    
+
   }
 
   componentDidMount() {
@@ -68,11 +70,9 @@ class Withdraw extends Component {
     }
   }
 
-  openModal = (row, status) => {
+  openModal = (modal) => {
     this.setState({
-      nsDialog: true,
-      row,
-      status
+      [modal]: true
     });
   };
 
@@ -84,46 +84,49 @@ class Withdraw extends Component {
     const orgId = this.props.match.params.organizationID;
 
     let req = {};
-    req.orgId= orgId;
-    req.moneyAbbr= ETHER;
-    req.amount= this.state.amount;
-    req.ethAddress= this.state.activeAccount;
-    req.availableBalance= this.state.balance;
+    req.orgId = orgId;
+    req.moneyAbbr = ETHER;
+    req.amount = this.state.amount;
+    req.ethAddress = this.state.activeAccount;
+    req.availableBalance = this.state.balance;
 
     WithdrawStore.withdrawReq(req, (res) => {
       const object = this.state;
       object.loading = false;
+
       this.props.history.push(`/withdraw/${this.props.match.params.organizationID}`);
+      this.openModal('comDialog');
     });
   }
 
   render() {
     const { classes } = this.props;
-    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
-
       <React.Fragment>
         {this.state.nsDialog && <Modal
           title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}
           context={(this.state.status) ? i18n.t(`${packageNS}:menu.withdraw.confirm_text`) : i18n.t(`${packageNS}:menu.withdraw.deny_text`)}
           status={this.state.status}
-          row={this.state.row}
+          amount={this.state.amount}
           handleChange={this.handleChange}
           closeModal={() => this.setState({ nsDialog: false })}
-          callback={() => { this.confirm(this.state.row, this.state.status) }} />}
+          callback={() => { this.submitWithdrawReq() }} />}
+        {this.state.comDialog && <ModalCom
+          closeModal={() => this.setState({ comDialog: false })}
+        />}
         <Row>
           <Col xs="4">
             <FormGroup>
-              <Label for="activeAccount">Destination</Label>
-              <Input type="text" name="activeAccount" id="activeAccount" value={this.state.activeAccount} readOnly/>
+              <Label for="activeAccount">{i18n.t(`${packageNS}:menu.withdraw.destination`)}</Label>
+              <Input type="text" name="activeAccount" id="activeAccount" value={this.state.activeAccount} readOnly />
             </FormGroup>
             <FormGroup>
-              <Label for="amount">Amount</Label>
+              <Label for="amount">{i18n.t(`${packageNS}:menu.withdraw.amount`)}</Label>
               <NumberFormat id="amount" className={classes.s_input} value={this.state.amount} onChange={this.handleChange} thousandSeparator={true} suffix={' MXC'} />
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">Available MXC</Label>
+              <Label for="exampleEmail">{i18n.t(`${packageNS}:menu.withdraw.available`)} MXC</Label>
               <NumberFormat id="amount" className={classes.s_input} value={this.state.balance} onChange={this.handleChange} thousandSeparator={true} readOnly={true} suffix={' MXC'} />
             </FormGroup>
           </Col>
@@ -133,7 +136,7 @@ class Withdraw extends Component {
         <Row>
           <Col>
             <FormGroup>
-              <Button onClick={this.submitWithdrawReq} color="primary">Submit Withdrawal Request</Button>
+              <Button onClick={() => { this.openModal('nsDialog') }} color="primary">{i18n.t(`${packageNS}:menu.withdraw.submit_withdrawal_request`)}</Button>
             </FormGroup>
           </Col>
         </Row>

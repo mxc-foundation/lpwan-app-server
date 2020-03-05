@@ -563,7 +563,19 @@
       "confirm_text": "利用可能なトークンの残高から撤回することを確認しています。よろしいですか？",
       "deny_text": "利用可能なトークンの残高から撤回するリクエストを拒否しています。",
       "requester": "リクエスター",
-      "balance": "残高"
+      "balance": "残高",
+      "destination": "宛先",
+      "available":"利用可能",
+      "submit_withdrawal_request": "出金リクエストの送信",
+      "date_requested": "要求日",
+      "status": "ステータス", 
+      "transaction_hash": "トランザクションハッシュ",
+      "request_withdraw_title": "撤回してもよろしいですか？",
+      "request_withdraw_text_0": "このスーパーノードからの撤退をリクエストしています。 要求が完了すると、スーパーノードオペレーターはこの撤回を確認する必要があります。 ",
+      "request_withdraw_text_1": "1000米ドルを超える金額は、スーパーノードオペレーターとMXC財団によって確認されます。",
+      "request_withdraw_text_2": "撤回してもよろしいですか？",
+      "request_withdraw_text_com": "出金リクエストは正常に送信され、スーパーノードオペレーターは翌営業日以内にこの取引を確認します。",
+      "confirmed": "確認済み。"
     },
     "topup": {
       "topup": "資金を追加する",
@@ -767,7 +779,9 @@
       "control_panel": "コントロールパネル",
       "back": "戻る",
       "submit": "送信",
-      "cancel": "キャンセル"
+      "cancel": "キャンセル",
+      "comment": "コメント",
+      "done": "完了"
     },
     "system_settings": {
       "system_settings": "システム手数料"
