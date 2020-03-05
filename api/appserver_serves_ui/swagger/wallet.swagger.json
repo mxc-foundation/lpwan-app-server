@@ -4,10 +4,6 @@
     "title": "wallet.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -190,7 +186,7 @@
           "format": "double"
         },
         "userProfile": {
-          "$ref": "#/definitions/m2m_uiProfileResponse"
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
         }
       }
     },

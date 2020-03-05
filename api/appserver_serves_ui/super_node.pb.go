@@ -266,11 +266,11 @@ var fileDescriptor_02e142dc5bc4ebd3 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // SuperNodeServiceClient is the client API for SuperNodeService service.
 //
@@ -281,10 +281,10 @@ type SuperNodeServiceClient interface {
 }
 
 type superNodeServiceClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewSuperNodeServiceClient(cc *grpc.ClientConn) SuperNodeServiceClient {
+func NewSuperNodeServiceClient(cc grpc.ClientConnInterface) SuperNodeServiceClient {
 	return &superNodeServiceClient{cc}
 }
 
