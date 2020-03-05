@@ -10,6 +10,7 @@ import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import ServiceProfileForm from "./ServiceProfileForm";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
+import Loader from "../../components/Loader";
 
 
 class CreateServiceProfile extends Component {
@@ -42,9 +43,11 @@ class CreateServiceProfile extends Component {
     let sp = serviceProfile;
     sp.organizationID = this.props.match.params.organizationID;
 
+    this.setState({ loading: true });
     ServiceProfileStore.create(sp, resp => {
+      this.setState({ loading: false });
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   render() {
@@ -61,6 +64,8 @@ class CreateServiceProfile extends Component {
           <Col>
             <Card>
               <CardBody>
+              {this.state.loading && <Loader />}
+
                 <ServiceProfileForm
                   match={this.props.match}
                   submitLabel={i18n.t(`${packageNS}:tr000277`)}

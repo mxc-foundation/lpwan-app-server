@@ -535,10 +535,10 @@
       "delete_service_profile": "您确定要删除该服务资料吗？"
     },
     "network_servers": {
-      "delete_server": "Are you sure you want to delete this network-server?"
+      "delete_server": "您确定要删除此网络服务器吗？"
     },
     "gateways": {
-      "delete_gateway": "Are you sure you want to delete this gateway?"
+      "delete_gateway": "您确定要删除此网关吗？"
     }
   },
   "menu": {
@@ -579,7 +579,24 @@
       "notice": "注意.",
       "notice001": "警告: 在用户充值 MXC 之前，请先更改您的超级节点 ETH 账户",
       "notice002": "警告: 在充值 MXC 之前，请先注册一个 ETH 账户",
-      "notice003": "您想要前往 ETH 账户页面更新您的 ETH 账户吗?"
+      "notice003": "您想要前往 ETH 账户页面更新您的 ETH 账户吗?",
+      "crypto": "加密货币",
+      "fiat": "Fiat (即将到来)",
+      "eth_address": "ETH 地址",
+      "copy_addr": "复制地址",
+      "show_qr_code": "显示二维码",
+      "click_to_copy": "点击复制",
+      "copied_notice": "地址已复制",
+      "download_qr_code": "下载二维码",
+      "instruction001": "仅发送MXC极域到该存款地址。",
+      "instruction002": "将除ETH以外的硬币或通证发送到该地址可能会导致您的存款丢失。",
+      "instruction003": "经过12次网络确认后，您的MXC极域将被存入。",
+      "history": {
+        "status": "状态",
+        "amount": "金额",
+        "date": "日期",
+        "tx_hash": "TX hash"
+      }
     },
     "history": {
       "history": "历史记录",
@@ -645,7 +662,8 @@
       "choose_a_manufacturer": "选择制造商。",
       "other": "其他。",
       "enter_your_gateway_serial_number": "输入您的网关序列号。",
-      "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候..."
+      "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候...",
+      "qr_code_scan": "二维码扫描"
     },
     "staking": {
       "staking": "质押",
@@ -800,61 +818,92 @@
       "is_global_admin": "是全球管理员"
     },
     "dashboard": {
-      "title": "Dashboard",
-      "roleOrgAdmin": "Organization Admin",
-      "roleDeviceAdmin": "Device Admin",
-      "roleGatewayAdmin": "Gateway Admin",
-      "topupButton": "Topup MXC",
-      "totalUsers": "Total Users",
-      "totalOrgs": "Total Organizations",
-      "totalGateways": "Total Gateways",
-      "totalDevices": "Total Devices",
-      "totalApps": "Total Applications",
+      "title": "仪表盘",
+      "roleOrgAdmin": "组织管理",
+      "roleDeviceAdmin": "设备管理",
+      "roleGatewayAdmin": "网关管理",
+      "topupButton": "充值MXC极域",
+      "remove": "移除",
+      "totalUsers": {
+        "title": "用户总数",
+        "description": "显示活跃用户总数"
+      },
+      "totalOrgs": {
+        "title": "组织总数",
+        "description": "显示活跃组织总数"
+      },
+      "totalGateways": {
+        "title": "网关总数",
+        "description": "显示网关总数"
+      },
+      "totalDevices": {
+        "title": "设备总数",
+        "description": "显示设备总数"
+      },
+      "totalApps": {
+        "title": "应用程序总数",
+        "description": "显示应用程序总数"
+      },
       "tickets": {
-        "title": "Tickets",
-        "view_history": "View History",
-        "approved": "Approved",
-        "pending": "Pending",
-        "subtext": "Today's ticket"
+        "title": "票务",
+        "view_history": "查看历史",
+        "approved": "已确认",
+        "pending": "待审核",
+        "subtext": "今天的票",
+        "description": "Shows tickets history"
       },
       "withdrawal": {
-        "title": "Withdrawal",
-        "subtext": "Revenue today"
+        "title": "提取",
+        "subtext": "今日收入",
+        "description": "显示今天的总提款"
       },
       "topup": {
-        "title": "Topup",
-        "subtext": "Revenue today"
+        "title": "充值",
+        "subtext": "今日收入",
+        "description": "显示充值信息"
       },
       "mxcAmountChart": {
-        "title": "Total amounts of MXC in Supernode",
-        "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "title": "超级节点中MXC极域总数",
+        "subtext": "付款量表",
+        "statSubText": "总计",
+        "description": "显示超级节点中MXC极域的总数"
       },
       "stakingAmountChart": {
-        "title": "Total Staking amounts in Supernode",
-        "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "title": "超级节点的总质押金额",
+        "subtext": "付款量表",
+        "statSubText": "总计",
+        "description": "显示超级节点中总质押量"
       },
       "earnedAmountChart": {
-        "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today"
+        "title": "数据工具和质押赚取的金额",
+        "statSubText": "今日收入",
+        "description": "显示通过数据工具和质押获得的收入"
       },
       "packetsReceivedChart": {
-        "title": "Data Packets receieved by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "title": "网关收到的数据包",
+        "subTitle": "在过去 30 天24小时内，",
+        "description": "显示接收到的数据包"
       },
       "packetsSentChart": {
-        "title": "Data Packets sent by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "title": "网关发送的数据包",
+        "subTitle": "在过去 30 天24小时内，",
+        "description": "显示已发送的数据包"
       },
       "dataMap": {
-        "title": "Data Map"
+        "title": "数据图",
+        "description": "在地图上显示所在位置"
       },
       "packetsByChannel": {
-        "title": "Packets on Channel"
+        "title": "通道上的数据包",
+        "description": "按频道显示数据包"
       },
       "packetsBySpreadFactor": {
-        "title": "Packets on SpreadFactor"
+        "title": "SpreadFactor上的数据包",
+        "description": "按传播系数显示数据包"
+      },
+      "addWidget": {
+        "title": "仪表板小部件",
+        "add": "添加小部件"
       }
     }
   }

@@ -13,7 +13,7 @@ class MoneyStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/ext_account.swagger.json", sessionStore.getClientOpts());
   }
 
-  getActiveMoneyAccount(moneyAbbr, orgId, callbackFunc) {
+  getActiveMoneyAccount(moneyAbbr, orgId, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.MoneyService.GetActiveMoneyAccount({
         moneyAbbr,
@@ -24,7 +24,10 @@ class MoneyStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 

@@ -59,19 +59,35 @@ class WithdrawStore extends EventEmitter {
     });
   }
 
-  WithdrawReq(apiWithdrawReqRequest, callbackFunc) {
+  getWithdrawHistory(moneyAbbr, orgId, limit, offset, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.WithdrawService.GetWithdrawHistory({
+        moneyAbbr,
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  withdrawReq(req, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WithdrawService.WithdrawReq({
-        "orgId": apiWithdrawReqRequest.orgId,
-        "moneyAbbr": apiWithdrawReqRequest.moneyAbbr,
+        "moneyAbbr": req.moneyAbbr,
         body: {
-          amount: apiWithdrawReqRequest.amount,
-          moneyAbbr: apiWithdrawReqRequest.moneyAbbr,
-          orgId: apiWithdrawReqRequest.orgId
+          orgId: req.orgId,
+          moneyAbbr: req.moneyAbbr,
+          amount: req.amount,
+          ethAddress: req.ethAddress,
+          availableBalance: req.availableBalance
         },
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         this.notify("updated");
         this.emit("withdraw");

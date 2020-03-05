@@ -579,7 +579,24 @@
       "notice": "알림",
       "notice001": "MXC 토큰을 충전하기 전에 수퍼노드용 이더리움 어카운트를 등록해주세요.",
       "notice002": "MXC 토큰을 충전하기 전에 귀하의 이더리움 어카운트를 등록해주세요.",
-      "notice003": "이더리움 어카운트 등록을 위해 이더리움 어카운트 메뉴로 이동 하시겠습니까?"
+      "notice003": "이더리움 어카운트 등록을 위해 이더리움 어카운트 메뉴로 이동 하시겠습니까?",
+      "crypto": "Crypto",
+      "fiat": "Fiat (Coming Soon)",
+      "eth_address": "ETH Address",
+      "copy_addr": "Copy Address",
+      "show_qr_code": "Show QR Code",
+      "click_to_copy": "Click to Copy",
+      "copied_notice": "Address copied!",
+      "download_qr_code": "Download QR Code",
+      "instruction001": "Send only MXC to this deposit address.",
+      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
+      "instruction003": "Your MXC will be deposited after 12 network confirmations.",
+      "history": {
+        "status": "상태",
+        "amount": "금액",
+        "date": "날짜",
+        "tx_hash": "TX hash"
+      }
     },
     "history": {
       "history": "기록",
@@ -645,7 +662,8 @@
       "choose_a_manufacturer": "제조사를 선택하세요.",
       "other": "그외의 제조사들",
       "enter_your_gateway_serial_number": "게이트웨이 일련번호를 입력하세요.",
-      "were_searching_with_your_gateway_please_wait": "게이트웨이를 찾고 있습니다."
+      "were_searching_with_your_gateway_please_wait": "게이트웨이를 찾고 있습니다.",
+      "qr_code_scan": "QR Code Scan"
     },
     "staking": {
       "staking": "스테이킹",
@@ -805,56 +823,87 @@
       "roleDeviceAdmin": "Device Admin",
       "roleGatewayAdmin": "Gateway Admin",
       "topupButton": "Topup MXC",
-      "totalUsers": "Total Users",
-      "totalOrgs": "Total Organizations",
-      "totalGateways": "Total Gateways",
-      "totalDevices": "Total Devices",
-      "totalApps": "Total Applications",
+      "remove": "Remove",
+      "totalUsers": {
+        "title": "Total Users",
+        "description": "Show total number of active users"
+      },
+      "totalOrgs": {
+        "title": "Total Organizations",
+        "description": "Shows total number of active organizations"
+      },
+      "totalGateways": {
+        "title": "Total Gateways",
+        "description": "Shows total number of gateways"
+      },
+      "totalDevices": {
+        "title": "Total Devices",
+        "description": "Shows total number of devices"
+      },
+      "totalApps": {
+        "title": "Total Applications",
+        "description": "Shows total number of applications"
+      },
       "tickets": {
         "title": "Tickets",
         "view_history": "View History",
         "approved": "Approved",
         "pending": "Pending",
-        "subtext": "Today's ticket"
+        "subtext": "Today's ticket",
+        "description": "Shows tickets history"
       },
       "withdrawal": {
         "title": "Withdrawal",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows today's total withdrawal"
       },
       "topup": {
         "title": "Topup",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows topup information"
       },
       "mxcAmountChart": {
         "title": "Total amounts of MXC in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows total amounts of MXC in Supernode"
       },
       "stakingAmountChart": {
         "title": "Total Staking amounts in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows stacking amount in Supernode"
       },
       "earnedAmountChart": {
         "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today"
+        "statSubText": "Revenue Today",
+        "description": "Shows amount earned through data utilities and staking"
       },
       "packetsReceivedChart": {
         "title": "Data Packets receieved by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows received data packets"
       },
       "packetsSentChart": {
         "title": "Data Packets sent by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows sent data packets"
       },
       "dataMap": {
-        "title": "Data Map"
+        "title": "Data Map",
+        "description": "Shows information on map"
       },
       "packetsByChannel": {
-        "title": "Packets on Channel"
+        "title": "Packets on Channel",
+        "description": "Shows data packets by channel"
       },
       "packetsBySpreadFactor": {
-        "title": "Packets on SpreadFactor"
+        "title": "Packets on SpreadFactor",
+        "description": "Shows data packets by spread factor"
+      },
+      "addWidget": {
+        "title": "Dashboard Widgets",
+        "add": "Add Widget"
       }
     }
   }
