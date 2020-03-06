@@ -24,7 +24,7 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
-	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"

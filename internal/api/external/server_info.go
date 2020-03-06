@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 

@@ -52,10 +52,7 @@ ui/build:
 
 api:
 	@echo "Generating API code from .proto files"
-	@go mod vendor
-	@go generate api/api.go
-	@go generate api/m2m_ui/api.go
-	@rm -rf vendor/
+	@go generate api/appserver_serves_ui/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
 	@echo "Generating static files"
@@ -65,9 +62,8 @@ internal/statics internal/migrations: static/swagger/api.swagger.json
 
 static/swagger/api.swagger.json:
 	@echo "Generating combined Swagger JSON"
-	@cp api/m2m_ui/swagger/*.json api/swagger
-	@GOOS="" GOARCH="" go run api/swagger/main.go api/swagger > static/swagger/api.swagger.json
-	@cp api/swagger/*.json static/swagger
+	@GOOS="" GOARCH="" go run api/appserver_serves_ui/swagger/main.go api/appserver_serves_ui/swagger > static/swagger/api.swagger.json
+	@cp api/appserver_serves_ui/swagger/*.json static/swagger
 
 
 # shortcuts for development
