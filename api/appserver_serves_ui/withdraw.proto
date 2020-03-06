@@ -3,7 +3,7 @@ syntax = "proto3";
 package appserver_serves_ui;
 
 import "google/api/annotations.proto";
-import "ext_account.proto";
+import "topup.proto";
 
 // WithdrawService is the service managing the withdraw access.
 service WithdrawService {
