@@ -11,14 +11,12 @@ import i18n, { packageNS } from '../../i18n';
 
 const tableCols = [
   {
-    dataField: 'status',
-    text: i18n.t(`${packageNS}:menu.topup.history.status`),
-    sort: false,
-  },
-  {
     dataField: 'amount',
     text: i18n.t(`${packageNS}:menu.topup.history.amount`),
     sort: false,
+    formatter: (cell, row, rowIndex, formatExtraData) => {
+      return <React.Fragment>{cell} MXC</React.Fragment>
+    },
   },
   {
     dataField: 'lastUpdateTime',
