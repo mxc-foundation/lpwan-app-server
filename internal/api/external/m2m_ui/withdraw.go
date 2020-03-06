@@ -128,7 +128,29 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 }
 
 func (s *WithdrawServerAPI) ConfirmWithdraw (ctx context.Context, req *api.ConfirmWithdrawRequest) (*api.ConfirmWithdrawResponse, error) {
-	return &api.ConfirmWithdrawResponse{}, nil
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	withdrawClient := api.NewWithdrawServiceClient(m2mClient)
+
+	resp, err := withdrawClient.ConfirmWithdraw(ctx, &api.ConfirmWithdrawRequest{
+		OrgId:         req.OrgId,
+		ConfirmStatus: req.ConfirmStatus,
+		MoneyAbbr:     req.MoneyAbbr,
+		Amount:        req.Amount,
+		DenyComment:   req.DenyComment,
+		WithdrawId:    req.WithdrawId,
+	})
+	if err != nil {
+		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &api.ConfirmWithdrawResponse{
+		Status: resp.Status,
+	}, nil
 }
 
 // GetWithdrawRequestList returns all users withdrawal requests to the front-end
