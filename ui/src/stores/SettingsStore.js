@@ -17,7 +17,6 @@ class SettingsStore extends EventEmitter {
     this.swagger.then(client => {
       client.apis.SettingsService.GetSettings()
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.obj);
       })
@@ -31,7 +30,6 @@ class SettingsStore extends EventEmitter {
         body
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.obj);
       })

@@ -99,7 +99,7 @@ class SetStake extends FormComponent {
             </Card>
           </Col>
         </Row>
-        <Row xs="1" lg="2">
+        <Row xs="1" lg="1">
           <Col>
             <Card>
               <CardBody>
@@ -107,7 +107,7 @@ class SetStake extends FormComponent {
               </CardBody>
             </Card>
           </Col>
-          <Col><InfoCard path={path} /></Col>
+          {/* <Col><InfoCard path={path} /></Col> */}
         </Row>
       </>
     );
