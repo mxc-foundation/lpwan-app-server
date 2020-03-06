@@ -136,8 +136,6 @@ func (s *WithdrawServerAPI) ConfirmWithdraw (ctx context.Context, req *api.Confi
 	resp, err := withdrawClient.ConfirmWithdraw(ctx, &api.ConfirmWithdrawRequest{
 		OrgId:         req.OrgId,
 		ConfirmStatus: req.ConfirmStatus,
-		MoneyAbbr:     req.MoneyAbbr,
-		Amount:        req.Amount,
 		DenyComment:   req.DenyComment,
 		WithdrawId:    req.WithdrawId,
 	})
