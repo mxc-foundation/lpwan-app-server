@@ -60,3 +60,24 @@ body.authentication-bg {
     bottom: 30px;
     right: 30px;
 }
+
+// registration
+.phrase-item {
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center !important;
+
+    .no {
+        font-weight: $font-weight-bold;
+        width: 25%;
+        text-align: right;
+    }
+    
+    .word {
+        padding: 0.70rem;
+        width: 75%;
+        display: inline-block;
+        margin-left: 6px;
+        border: 1px solid #dee2e6 !important;
+    }
+}
