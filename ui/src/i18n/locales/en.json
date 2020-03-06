@@ -920,7 +920,8 @@
       "addWidget": {
         "title": "Dashboard Widgets",
         "add": "Add Widget"
-      }
+      },
+      "coming_soon": "Coming Soon"
     },
     "registration": {
       "email": "Email Address",
