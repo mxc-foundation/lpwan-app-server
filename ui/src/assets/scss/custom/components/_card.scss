@@ -293,3 +293,21 @@
     align-items: center !important;
     display: flex;
 }
+
+.card-coming-soon-2 {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    border-radius: $card-border-radius;
+    background: rgba($white, 0.85);
+    justify-content: center !important;
+    display: flex;
+
+    .title {
+        position: relative;
+        top: 15%;
+    }
+}

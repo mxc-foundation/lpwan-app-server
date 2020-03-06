@@ -918,7 +918,8 @@
       "addWidget": {
         "title": "仪表板小部件",
         "add": "添加小部件"
-      }
+      },
+      "coming_soon": "Coming Soon"
     },
     "registration": {
       "email": "Email Address",
