@@ -919,6 +919,62 @@
         "title": "Dashboard Widgets",
         "add": "Add Widget"
       }
+    },
+    "registration": {
+      "email": "Email Address",
+      "password": "Password",
+      "password_hint": "(8 characters or longer. At least one number of symbol)",
+      "password_match_error": "Password must contain atleast 8 characters, one number and one symbol",
+      "confirm_password": "Confirm Your Password",
+      "confirm_password_match_error": "Password and confirm password must be same",
+      "org_name": "Organization Name",
+      "org_display_name": "Organization Display Name",
+      "next": "Next",
+      "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
+      "mnemonic_phrase_title": "Write down your Mnemonic phrase",
+      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in the correct order",
+      "2fa_title": "Set up two-factor authentication using Google Authenticator."
+    },
+    "menmonic_phrase": {
+      "write_button": "I wrote it down",
+      "skip_button": "Skip",
+      "confirm_button": "Confirm",
+      "back_button": "Back"
+    },
+    "google_2fa": {
+      "confirm_button": "Confirm",
+      "skip_button": "Skip"
+    },
+    "profile_2fa": {
+      "title": "Two-Factor Authentication",
+      "google": {
+        "title": "Google Authenticator",
+        "setup_button": "Setting",
+        "2fa_title": "2FA Setting",
+        "2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "reset_2fa_title": "Two-factor authentication",
+        "reset_2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "mnemonic_phrase_confirm_title": "To reset, please click mnemonic phrase in the correct order"
+      }
+    },
+    "profile_password_reset": {
+      "title": "Password",
+      "account_password": {
+        "title": "Account Password",
+        "reset_button": "Reset"
+      },
+      "coming_soon": "Coming Soon"
+    },
+    "dashboard_2fa": {
+      "title": "Your Supernode Account has a new feature!",
+      "description": "Two-factor authentication is now an option. As part of this feature addition, each account is assigned a mnemonic phrase. This phrase is the only way to reset your two-factor authentication method. On the next screen your phrase will be displayed. Please write it down and keep it in a secure location.",
+      "agree_instruction": "I understand that if I don't write down my Mnemonic phrase I could lose access to my account.",
+      "next_button": "Next",
+      "skip_button": "Not now",
+      "done_button": "Done",
+      "menmonic_step_1_title": "Write this down and keep it in a safe place.",
+      "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
+      "menmonic_step_3_title": "Confirmed"
     }
   }
 }

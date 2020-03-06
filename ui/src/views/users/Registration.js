@@ -163,8 +163,8 @@ class Registration extends Component {
     this.state = {
       isVerified: false,
       bypassCaptcha: bypassCaptcha,
-      showRegisterForm: true,
-      startMnemonicPhrase: false,
+      showRegisterForm: false,
+      startMnemonicPhrase: true,
       showMnemonicPhraseList: false,
       showMnemonicPhraseConfirm: false,
       showTwoFactorAuth: false

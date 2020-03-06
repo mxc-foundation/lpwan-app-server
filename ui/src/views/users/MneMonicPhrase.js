@@ -12,7 +12,7 @@ const Phrase = ({ srNo, phrase }) => {
     </React.Fragment>
 }
 
-const MneMonicPhrase = ({ title, phrase, showSkip, next, close }) => {
+const MneMonicPhrase = ({ title, titleClass="", phrase, showSkip, next, close }) => {
     let list = [...(phrase || [])];
     const chunks = [];
     let chunkCount = 3;
@@ -26,7 +26,7 @@ const MneMonicPhrase = ({ title, phrase, showSkip, next, close }) => {
     return <React.Fragment>
         <Row className="text-center">
             <Col className="mb-0">
-                <h4>{title}</h4>
+                <h4 className={titleClass}>{title}</h4>
 
                 <Row className="text-left mt-3">
                     {chunks.length ? <Col>

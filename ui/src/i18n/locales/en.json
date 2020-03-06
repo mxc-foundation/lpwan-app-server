@@ -966,6 +966,17 @@
         "reset_button": "Reset"
       },
       "coming_soon": "Coming Soon"
+    },
+    "dashboard_2fa": {
+      "title": "Your Supernode Account has a new feature!",
+      "description": "Two-factor authentication is now an option. As part of this feature addition, each account is assigned a mnemonic phrase. This phrase is the only way to reset your two-factor authentication method. On the next screen your phrase will be displayed. Please write it down and keep it in a secure location.",
+      "agree_instruction": "I understand that if I don't write down my Mnemonic phrase I could lose access to my account.",
+      "next_button": "Next",
+      "skip_button": "Not now",
+      "done_button": "Done",
+      "menmonic_step_1_title": "Write this down and keep it in a safe place.",
+      "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
+      "menmonic_step_3_title": "Confirmed"
     }
   }
 }

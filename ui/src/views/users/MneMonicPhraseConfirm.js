@@ -13,7 +13,15 @@ const Phrase = ({ phrase, isSelected, select }) => {
     </React.Fragment>
 }
 
-const MneMonicPhraseConfirm = ({ title, phrase, next, back, showBackButton = true, showSkipButton = false, titleClass = "" }) => {
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+const MneMonicPhraseConfirm = ({ title, phrase, next, back, skip, showBackButton = true, showSkipButton = false, titleClass = "" }) => {
 
     const [selectedPhrase, setSelectedPhrase] = useState([]);
 
@@ -26,6 +34,8 @@ const MneMonicPhraseConfirm = ({ title, phrase, next, back, showBackButton = tru
         }
         setSelectedPhrase(phrases);
     }
+
+    const randomizedPhraseList = shuffleArray([...(phrase || [])]);
 
     return <React.Fragment>
         <Row className="text-center">
@@ -45,29 +55,26 @@ const MneMonicPhraseConfirm = ({ title, phrase, next, back, showBackButton = tru
                 <Row className="mt-3 text-left">
                     <Col className="mb-0">
                         <div>
-                            {(phrase || []).map((word, idx) => {
+                            {randomizedPhraseList.map((word, idx) => {
                                 return selectedPhrase.indexOf(word) === -1 ? <Phrase key={idx} phrase={word} isSelected={false} select={() => { onSelect(word, false) }} />: null
                             })}
                         </div>
                     </Col>
                 </Row>
 
-                {showBackButton ? <Row className="mt-2 text-left">
+                <Row className="mt-2 text-left">
                     <Col className="mb-0">
                         <Button color="primary" className="btn-block" onClick={() => next(selectedPhrase)}
                             disabled={!selectedPhrase.length}>{i18n.t(`${packageNS}:menu.menmonic_phrase.confirm_button`)}</Button>
                     </Col>
-                    <Col className="mb-0">
+                    {showBackButton ? <Col className="mb-0">
                         <Button color="primary" outline className="btn-block" onClick={back}>{i18n.t(`${packageNS}:menu.menmonic_phrase.back_button`)}</Button>
-                    </Col>
-                </Row>: null}
+                    </Col> : null}
+                </Row>
 
                 {showSkipButton ? <Row className="mt-2 text-left">
                     <Col className="mb-0">
-                        <Button color="primary" className="btn-block" onClick={() => next(selectedPhrase)}
-                            disabled={!selectedPhrase.length}>{i18n.t(`${packageNS}:menu.menmonic_phrase.confirm_button`)}</Button>
-                        
-                        <Button color="link" className="btn-block" onClick={back}>{i18n.t(`${packageNS}:menu.menmonic_phrase.skip_button`)}</Button>
+                        <Button color="link" className="btn-block" onClick={skip}>{i18n.t(`${packageNS}:menu.menmonic_phrase.skip_button`)}</Button>
                     </Col>
                 </Row> : null}
 

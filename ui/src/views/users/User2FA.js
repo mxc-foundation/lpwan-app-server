@@ -110,7 +110,7 @@ class User2FA extends Component {
                     <MneMonicPhraseConfirm
                       title={i18n.t(`${packageNS}:menu.profile_2fa.google.mnemonic_phrase_confirm_title`)}
                       titleClass="font-weight-normal" showSkipButton={true} showBackButton={false}
-                      phrase={this.state.phrases} next={this.confirmMnemonicPhraseList} back={this.skipReset2fa} /> :
+                      phrase={this.state.phrases} next={this.confirmMnemonicPhraseList} skip={this.skipReset2fa} /> :
 
                     <Google2FA
                       title={i18n.t(`${packageNS}:menu.profile_2fa.google.reset_2fa_instruction`)}
