@@ -26,8 +26,6 @@ protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=plugins
 	  fuotaDeployment.proto \
     internal.proto \
     serverInfo.proto \
-    ext_account.proto \
-    super_node.proto \
     topup.proto \
     wallet.proto \
     withdraw.proto \
@@ -55,8 +53,6 @@ protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_o
 	  fuotaDeployment.proto \
     internal.proto \
     serverInfo.proto \
-    ext_account.proto \
-    super_node.proto \
     topup.proto \
     wallet.proto \
     withdraw.proto \
@@ -84,8 +80,6 @@ protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=js
 	  fuotaDeployment.proto \
     internal.proto \
     serverInfo.proto \
-    ext_account.proto \
-    super_node.proto \
     topup.proto \
     wallet.proto \
     withdraw.proto \

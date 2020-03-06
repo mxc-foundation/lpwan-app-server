@@ -96,11 +96,9 @@ func setupAPI(conf config.Config) error {
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
 	//api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
 	api.RegisterDSDeviceServiceServer(grpcServer, NewDeviceServerAPI(validator))
-	api.RegisterMoneyServiceServer(grpcServer, NewMoneyServerAPI(validator))
 	api.RegisterGSGatewayServiceServer(grpcServer, NewGatewayServerAPI(validator))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI(validator))
 	api.RegisterStakingServiceServer(grpcServer, NewStakingServerAPI(validator))
-	api.RegisterSuperNodeServiceServer(grpcServer, NewSupernodeServerAPI(validator))
 	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI(validator))
 	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI(validator))
 	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI(validator))
@@ -284,16 +282,10 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	if err := api.RegisterDSDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := api.RegisterMoneyServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
 	if err := api.RegisterGSGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := api.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterSuperNodeServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := api.RegisterTopUpServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {

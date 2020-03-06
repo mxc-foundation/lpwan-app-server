@@ -19,6 +19,12 @@ service TopUpService {
     }
 }
 
+enum Money {
+    ETH = 0;
+    MXC = 1;
+    TETH = 2;
+}
+
 message GetTopUpHistoryRequest {
     int64 org_id = 1;
     int64 offset = 2;

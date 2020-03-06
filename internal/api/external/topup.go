@@ -2,8 +2,10 @@ package external
 
 import (
 	"context"
+	"fmt"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -26,51 +28,94 @@ func NewTopUpServerAPI(validator auth.Validator) *TopUpServerAPI {
 
 // GetTopUpHistory defines the topup history request and response
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpHistory")
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetTopUpHistory org=%d", req.OrgId)
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
-		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, "fail to connect to m2m server: %s", err.Error())
 	}
 
-	topupClient := api.NewTopUpServiceClient(m2mClient)
+	topupClient := m2mServer.NewTopUpServiceClient(m2mClient)
 
-	resp, err := topupClient.GetTopUpHistory(ctx, &api.GetTopUpHistoryRequest{
+	resp, err := topupClient.GetTopUpHistory(ctx, &m2mServer.GetTopUpHistoryRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
 	if err != nil {
-		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, "call API in m2m failed: &s", err.Error())
+	}
+
+	var topUpHistoryList []*api.TopUpHistory
+	for _, item := range resp.TopupHistory {
+		topUpHistory := &api.TopUpHistory{
+			Amount:    item.Amount,
+			CreatedAt: item.CreatedAt,
+			TxHash:    item.TxHash,
+		}
+
+		topUpHistoryList = append(topUpHistoryList, topUpHistory)
 	}
 
 	return &api.GetTopUpHistoryResponse{
 		Count:        resp.Count,
-		TopupHistory: resp.TopupHistory,
-	}, nil
+		TopupHistory: topUpHistoryList,
+	}, status.Error(codes.OK, "")
 }
 
 // GetTopUpDestination defines the topup destination request and response
 func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTopUpDestinationRequest) (*api.GetTopUpDestinationResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetTopUpDestination")
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetTopUpDestination org=%d", req.OrgId)
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
-		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, "fail to connect to m2m server: %s", err.Error())
 	}
 
-	topupClient := api.NewTopUpServiceClient(m2mClient)
+	topupClient := m2mServer.NewTopUpServiceClient(m2mClient)
 
-	resp, err := topupClient.GetTopUpDestination(ctx, &api.GetTopUpDestinationRequest{
-		OrgId:     req.OrgId,
+	resp, err := topupClient.GetTopUpDestination(ctx, &m2mServer.GetTopUpDestinationRequest{
+		OrgId: req.OrgId,
 	})
 	if err != nil {
-		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, "call API in m2m failed: &s", err.Error())
 	}
 
 	return &api.GetTopUpDestinationResponse{
 		ActiveAccount: resp.ActiveAccount,
-	}, nil
+	}, status.Error(codes.OK, "")
 }

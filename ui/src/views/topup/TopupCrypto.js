@@ -14,7 +14,7 @@ import i18n, { packageNS } from '../../i18n';
 
 function loadSuperNodeActiveMoneyAccount(organizationID) {
   return new Promise((resolve, reject) => {
-    TopupStore.getTopUpDestination(ETHER, organizationID, resp => {
+    TopupStore.getTopUpDestination(organizationID, resp => {
       resolve(resp.activeAccount);
     }, reject);
   });
@@ -22,11 +22,19 @@ function loadSuperNodeActiveMoneyAccount(organizationID) {
 
 function loadActiveMoneyAccount(organizationID) {
   return new Promise((resolve, reject) => {
-    MoneyStore.getActiveMoneyAccount(ETHER, organizationID, resp => {
+    TopupStore.getTopUpDestination(organizationID, resp => {
       resolve(resp.activeAccount);
     }, reject);
   });
 }
+
+/*function loadActiveMoneyAccount(organizationID) {
+  return new Promise((resolve, reject) => {
+    MoneyStore.getActiveMoneyAccount(ETHER, organizationID, resp => {
+      resolve(resp.activeAccount);
+    }, reject);
+  });
+}*/
 
 
 class TopupCrypto extends Component {
