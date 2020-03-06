@@ -25,7 +25,6 @@ class HistoryStore extends EventEmitter {
         limit
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.body);
         })
@@ -42,7 +41,6 @@ class HistoryStore extends EventEmitter {
         offset,
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.obj);
         })
@@ -58,7 +56,6 @@ class HistoryStore extends EventEmitter {
         offset,
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.obj);
         })

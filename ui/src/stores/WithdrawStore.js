@@ -21,7 +21,6 @@ class WithdrawStore extends EventEmitter {
         orgId
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.obj);
       })
@@ -37,7 +36,6 @@ class WithdrawStore extends EventEmitter {
         body
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.obj);
       })
@@ -108,7 +106,6 @@ class WithdrawStore extends EventEmitter {
         },
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         this.notify("updated");
         this.emit("withdraw");
