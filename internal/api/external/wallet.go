@@ -2,8 +2,10 @@ package external
 
 import (
 	"context"
+	"fmt"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -26,126 +28,200 @@ func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
 
 // GetWalletBalance gets the wallet balance
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
-	log.WithField("userId", req.UserId).Info("grpc_api/GetWalletBalance")
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetWalletBalance org=%d", req.OrgId)
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
 	if err != nil {
-		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	walletClient := api.NewWalletServiceClient(m2mClient)
+	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
-	resp, err := walletClient.GetWalletBalance(ctx, &api.GetWalletBalanceRequest{
+	resp, err := walletClient.GetWalletBalance(ctx, &m2mServer.GetWalletBalanceRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetWalletBalanceResponse{
-		Balance:     resp.Balance,
-		UserProfile: &prof,
-	}, nil
+		Balance: resp.Balance,
+	}, status.Error(codes.OK, "")
 }
 
 // GetVmxcTxHistory gets virtual MXC transaction history
 func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxcTxHistoryRequest) (*api.GetVmxcTxHistoryResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetVmxcTxHistory")
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetVmxcTxHistory org=%d", req.OrgId)
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
 	if err != nil {
-		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	walletClient := api.NewWalletServiceClient(m2mClient)
+	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
-	resp, err := walletClient.GetVmxcTxHistory(ctx, &api.GetVmxcTxHistoryRequest{
+	resp, err := walletClient.GetVmxcTxHistory(ctx, &m2mServer.GetVmxcTxHistoryRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	var vmxcTxHistoryList []*api.VmxcTxHistory
+	for _, item := range resp.TxHistory {
+		vmxcTxHistory := &api.VmxcTxHistory{
+			From:      item.From,
+			To:        item.To,
+			TxType:    item.TxType,
+			Amount:    item.Amount,
+			CreatedAt: item.CreatedAt,
+		}
+
+		vmxcTxHistoryList = append(vmxcTxHistoryList, vmxcTxHistory)
+	}
+
 	return &api.GetVmxcTxHistoryResponse{
-		Count:       resp.Count,
-		TxHistory:   resp.TxHistory,
-		UserProfile: &prof,
-	}, nil
+		Count:     resp.Count,
+		TxHistory: vmxcTxHistoryList,
+	}, status.Error(codes.OK, "")
 }
 
 // GetWalletUsageHist gets the walllet usage history
 func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWalletUsageHistRequest) (*api.GetWalletUsageHistResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetWalletUsageHist")
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetWalletUsageHist org=%d", req.OrgId)
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
 	if err != nil {
-		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	walletClient := api.NewWalletServiceClient(m2mClient)
+	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
-	resp, err := walletClient.GetWalletUsageHist(ctx, &api.GetWalletUsageHistRequest{
+	resp, err := walletClient.GetWalletUsageHist(ctx, &m2mServer.GetWalletUsageHistRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	var walletUsageHistoryList []*api.GetWalletUsageHist
+	for _, item := range resp.WalletUsageHis {
+		walletUsageHist := &api.GetWalletUsageHist{
+			StartAt:         item.StartAt,
+			DurationMinutes: item.DurationMinutes,
+			DlCntDv:         item.DlCntDv,
+			DlCntDvFree:     item.DlCntDvFree,
+			UlCntDv:         item.UlCntDv,
+			UlCntDvFree:     item.UlCntDvFree,
+			DlCntGw:         item.DlCntGw,
+			DlCntGwFree:     item.DlCntDvFree,
+			UlCntGw:         item.UlCntGw,
+			UlCntGwFree:     item.UlCntGwFree,
+			Spend:           item.Spend,
+			Income:          item.Income,
+			UpdatedBalance:  item.UpdatedBalance,
+		}
+
+		walletUsageHistoryList = append(walletUsageHistoryList, walletUsageHist)
+	}
+
 	return &api.GetWalletUsageHistResponse{
-		WalletUsageHis: resp.WalletUsageHis,
-		UserProfile:    &prof,
+		WalletUsageHis: walletUsageHistoryList,
 		Count:          resp.Count,
-	}, nil
+	}, status.Error(codes.OK, "")
 }
 
 // GetDlPrice gets downlink price from m2m wallet
 func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPriceRequest) (*api.GetDownLinkPriceResponse, error) {
-	log.WithField("orgId", req.OrgId).Info("grpc_api/GetDlPrice")
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetDlPrice org=%d", req.OrgId)
 
-	prof, err := getUserProfileByJwt(ctx, s.validator, req.OrgId)
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
 	if err != nil {
-		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, err.Error())
+		log.WithError(err).Error(logInfo)
+		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	walletClient := api.NewWalletServiceClient(m2mClient)
+	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
-	resp, err := walletClient.GetDlPrice(ctx, &api.GetDownLinkPriceRequest{
+	resp, err := walletClient.GetDlPrice(ctx, &m2mServer.GetDownLinkPriceRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.GetDownLinkPriceResponse{
 		DownLinkPrice: resp.DownLinkPrice,
-		UserProfile:   &prof,
-	}, nil
+	}, status.Error(codes.OK, "")
 }
