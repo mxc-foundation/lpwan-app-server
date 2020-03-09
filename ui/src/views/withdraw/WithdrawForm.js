@@ -36,7 +36,8 @@ class Withdraw extends Component {
       comDialog: false,
       activeAccount: "",
       balance: 0,
-      amount: 0
+      amount: 0,
+      fee: 0
     }
   }
 
@@ -44,20 +45,16 @@ class Withdraw extends Component {
     const orgId = this.props.match.params.organizationID;
 
     var result = await getWalletBalance(orgId);
-    const balance = result.balance;
-
-    MoneyStore.getActiveMoneyAccount(0, orgId, resp => {
-      const activeAccount = resp.activeAccount;
-
+    const fee = result.withdrawFee;
+    
+    WithdrawStore.getWithdrawFee(0, resp => {
       const object = this.state;
-      object.balance = balance;
-      object.activeAccount = activeAccount;
+      object.fee = resp.withdrawFee;
 
       this.setState({
         object
       });
     });
-
   }
 
   componentDidMount() {
@@ -118,20 +115,25 @@ class Withdraw extends Component {
         <Row>
           <Col xs="4">
             <FormGroup>
-              <Label for="activeAccount">{i18n.t(`${packageNS}:menu.withdraw.destination`)}</Label>
-              <Input type="text" name="activeAccount" id="activeAccount" value={this.state.activeAccount} readOnly />
-            </FormGroup>
-            <FormGroup>
               <Label for="amount">{i18n.t(`${packageNS}:menu.withdraw.amount`)}</Label>
               <NumberFormat id="amount" className={classes.s_input} value={this.state.amount} onChange={this.handleChange} thousandSeparator={true} suffix={' MXC'} />
             </FormGroup>
             <FormGroup>
-              <Label for="exampleEmail">{i18n.t(`${packageNS}:menu.withdraw.available`)} MXC</Label>
-              <NumberFormat id="amount" className={classes.s_input} value={this.state.balance} onChange={this.handleChange} thousandSeparator={true} readOnly={true} suffix={' MXC'} />
+              <Label for="activeAccount">{i18n.t(`${packageNS}:menu.withdraw.destination`)}</Label>
+              <Input type="text" name="activeAccount" id="activeAccount" value={this.state.activeAccount} placeholder={'0x00000000000000000000000000000000'} readOnly />
+            </FormGroup>
+            <FormGroup>
+              <Label for="fee">{i18n.t(`${packageNS}:menu.withdraw.currentFee`)}:</Label>{' '}
+              <NumberFormat id="fee" displayType={'text'} value={this.state.fee} onChange={this.handleChange} thousandSeparator={true} readOnly={true}  suffix={' MXC'} />
             </FormGroup>
           </Col>
-          <Col xs="4"></Col>
-          <Col xs="4"></Col>
+          <Col xs="2"></Col>
+          <Col xs="6">
+            <FormGroup>
+              <Label for="exampleEmail">{i18n.t(`${packageNS}:menu.withdraw.available`)} MXC</Label>
+              <NumberFormat id="amount" className={classes.t_input}  value={this.state.balance} onChange={this.handleChange} thousandSeparator={true} readOnly={true} suffix={' MXC'} />
+            </FormGroup>
+          </Col>
         </Row>
         <Row>
           <Col>

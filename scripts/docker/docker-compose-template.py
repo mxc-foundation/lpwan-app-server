@@ -12,7 +12,7 @@ services:
       - ./configuration/loraserver:/etc/loraserver
       
   mxprotocol-server:
-    image: mxprotocol-server_mxprotocol-server:latest
+    image: mxprotocolserver_mxprotocol-server:latest
     volumes:
       - ../mxprotocol-server/configuration:/etc/mxprotocol-server
       - ../mxprotocol-server:/mxprotocol-server

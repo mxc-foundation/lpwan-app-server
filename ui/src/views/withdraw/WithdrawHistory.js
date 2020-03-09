@@ -48,11 +48,11 @@ class Withdraw extends Component {
         this.setState({ loading: true });
         const moneyAbbr = 2;
         const orgId = this.props.match.params.organizationID;
-
+        
         WithdrawStore.getWithdrawHistory(moneyAbbr, orgId, limit, offset, (res) => {
             const object = this.state;
             object.totalSize = Number(res.count);
-            object.data = res.withdrawRequest;
+            object.data = res.withdrawHistory;
             object.loading = false;
             this.setState({ object });
         });

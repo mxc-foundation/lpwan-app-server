@@ -575,7 +575,8 @@
       "request_withdraw_text_1": "1000米ドルを超える金額は、スーパーノードオペレーターとMXC財団によって確認されます。",
       "request_withdraw_text_2": "撤回してもよろしいですか？",
       "request_withdraw_text_com": "出金リクエストは正常に送信され、スーパーノードオペレーターは翌営業日以内にこの取引を確認します。",
-      "confirmed": "確認済み。"
+      "confirmed": "確認済み。",
+      "currentFee": "現在の料金"
     },
     "topup": {
       "topup": "資金を追加する",

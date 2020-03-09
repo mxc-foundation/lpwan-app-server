@@ -38,25 +38,27 @@ const ModalComplete = (props) => {
         <div>
             {/* {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>} */}
             <Modal isOpen={modal} toggle={toggle} className={className} centered={true}>
-                <ModalHeader toggle={toggle} >
-                    
+                <ModalHeader toggle={toggle} className="border-0">
+
                 </ModalHeader>
                 <ModalBody>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <FormGroup row style={{ display: 'flex', justifyContent: 'center',marginBottom: 0, height: 200 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <FormGroup row style={{ display: 'flex', justifyContent: 'center', marginBottom: 0, height: 200 }}>
                             <i className="mdi mdi-check-circle-outline" style={{ color: '#10C469', fontSize: '150px' }}></i>
                         </FormGroup>
                         <FormGroup row style={{ display: 'flex', justifyContent: 'center' }}>
                             <span style={{ fontSize: '26px' }}>{i18n.t(`${packageNS}:menu.withdraw.confirmed`)}</span>
                         </FormGroup>
                     </div>
-                    <FormGroup row>
-                        <Col sm={12}>
-                            <span>{i18n.t(`${packageNS}:menu.withdraw.request_withdraw_text_com`)}</span>
-                        </Col>
-                    </FormGroup>
+                    <div className="text-center">
+                        <p>{i18n.t(`${packageNS}:menu.withdraw.request_withdraw_text_com`)}</p>
+                        <FormGroup row>
+                            <Col sm={12}>
+                            </Col>
+                        </FormGroup>
+                    </div>
                 </ModalBody>
-                <ModalFooter style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
+                <ModalFooter className="border-0" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
                     {showCloseButton && <Button color="primary" onClick={toggle}>{i18n.t(`${packageNS}:menu.common.done`)}</Button>}
                 </ModalFooter>
             </Modal>
