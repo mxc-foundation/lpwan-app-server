@@ -163,6 +163,9 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 			log.WithError(err).Error(logInfo)
 			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
+	} else {
+		log.WithError(err).Error(logInfo)
+		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
