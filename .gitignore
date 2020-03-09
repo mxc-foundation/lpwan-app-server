@@ -35,6 +35,7 @@ build
 # node modules
 node_modules
 ui/node_modules
+ui/package-lock.json
 #docker-compose
 /*.yml
 *.sum
