@@ -4,23 +4,10 @@ package m2m_ui;
 
 
 import "google/api/annotations.proto";
-import "google/protobuf/timestamp.proto";
 import "profile.proto";
 import "ext_account.proto";
 
 service TopUpService {
-    rpc GetTransactionsHistory(GetTransactionsHistoryRequest) returns (GetTransactionsHistoryResponse){
-        option(google.api.http) = {
-			get: "/api/transactions/{org_id}/history"
-		};
-    }
-
-    rpc GetIncome(GetIncomeRequest) returns (GetIncomeResponse){
-        option(google.api.http) = {
-			get: "/api/transactions/{org_id}/income"
-		};
-    }
-
     rpc GetTopUpHistory(GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse){
         option(google.api.http) = {
 			get: "/api/top-up/{org_id}/history"
@@ -34,37 +21,6 @@ service TopUpService {
     }
 }
 
-message GetTransactionsHistoryRequest {
-    int64 org_id = 1;
-    int64 offset = 2;
-    int64 limit = 3;
-}
-
-message GetTransactionsHistoryResponse {
-    int64 count = 1;
-    repeated TransactionsHistory transaction_history = 2;
-    ProfileResponse user_profile = 3;
-}
-
-message GetIncomeRequest {
-    int64 org_id = 1;
-}
-
-message GetIncomeResponse {
-    double amount = 1;    
-}
-
-message TransactionsHistory {
-    string from = 1;
-    string to = 2;
-    string money_abbr = 3;
-    double amount = 4;
-    string status = 5;
-    string tx_hash = 6;
-    string transaction_type = 7;
-    google.protobuf.Timestamp last_update_time = 8;
-}
-
 message GetTopUpHistoryRequest {
     int64 org_id = 1;
     int64 offset = 2;
@@ -72,12 +28,9 @@ message GetTopUpHistoryRequest {
 }
 
 message TopUpHistory {
-    string from = 1;
-    string to = 2;
-    double amount = 3;
-    string created_at = 4;
-    string money_type = 5;
-	string tx_hash = 6;
+    double amount = 1;
+    string created_at = 2;
+	string tx_hash = 3;
 }
 
 message GetTopUpHistoryResponse {

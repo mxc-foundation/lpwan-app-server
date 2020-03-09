@@ -7,6 +7,7 @@ import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import Modal from "../../components/Modal";
 import GatewayAdmin from "../../components/GatewayAdmin";
 import GatewayStore from "../../stores/GatewayStore";
 import SessionStore from "../../stores/SessionStore";
@@ -21,9 +22,11 @@ class GatewayLayout extends Component {
     super();
     this.state = {
       activeTab: '0',
+      nsDialog: false,
       admin: false,
     };
     this.deleteGateway = this.deleteGateway.bind(this);
+    this.openConfirmModal = this.openConfirmModal.bind(this);
     this.locationToTab = this.locationToTab.bind(this);
     this.setIsAdmin = this.setIsAdmin.bind(this);
   }
@@ -58,12 +61,16 @@ class GatewayLayout extends Component {
     });
   }
 
+  openConfirmModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
+
   deleteGateway() {
-    if (window.confirm("Are you sure you want to delete this gateway?")) {
-      GatewayStore.delete(this.props.match.params.gatewayID, () => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
-      });
-    }
+    GatewayStore.delete(this.props.match.params.gatewayID, () => {
+      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
+    });
   }
 
   locationToTab() {
@@ -98,7 +105,7 @@ class GatewayLayout extends Component {
               color="danger"
               label={i18n.t(`${packageNS}:tr000061`)}
               icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
-              onClick={this.deleteGateway}
+              onClick={this.openConfirmModal}
             />
           </GatewayAdmin>}
         >
@@ -106,6 +113,12 @@ class GatewayLayout extends Component {
             { label: i18n.t(`${packageNS}:tr000063`), active: false, to: `/organizations/${currentOrgID}/gateways` },
             { label: this.state.gateway.gateway.name, active: true }]}></OrgBreadCumb>
         </TitleBar>
+
+        {this.state.nsDialog && <Modal
+          title={""}
+          closeModal={() => this.setState({ nsDialog: false })}
+          context={i18n.t(`${packageNS}:lpwan.gateways.delete_gateway`)}
+          callback={this.deleteGateway} />}
 
         <Row>
           <Col>

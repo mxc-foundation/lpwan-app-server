@@ -533,6 +533,12 @@
     },
     "service_profiles": {
       "delete_service_profile": "您確定要刪除該服務資料嗎？"
+    },
+    "network_servers": {
+      "delete_server": "Are you sure you want to delete this network-server?"
+    },
+    "gateways": {
+      "delete_gateway": "Are you sure you want to delete this gateway?"
     }
   },
   "menu": {
@@ -566,7 +572,24 @@
       "notice": "注意",
       "notice001": "警告: 在用戶充值 MXC 之前，請先更改您的超級節點 ETH 賬戶",
       "notice002": "警告: 在充值 MXC 之前，請先註冊一個 ETH 賬戶",
-      "notice003": "您想要前往 ETH 賬戶頁面更新您的 ETH 賬戶嗎?"
+      "notice003": "您想要前往 ETH 賬戶頁面更新您的 ETH 賬戶嗎?",
+      "crypto": "Crypto",
+      "fiat": "Fiat (Coming Soon)",
+      "eth_address": "ETH Address",
+      "copy_addr": "Copy Address",
+      "show_qr_code": "Show QR Code",
+      "click_to_copy": "Click to Copy",
+      "copied_notice": "Address copied!",
+      "download_qr_code": "Download QR Code",
+      "instruction001": "Send only MXC to this deposit address.",
+      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
+      "instruction003": "Your MXC will be deposited after 12 network confirmations.",
+      "history": {
+        "status": "狀態",
+        "amount": "金額",
+        "date": "日期",
+        "tx_hash": "TX hash"
+      }
     },
     "history": {
       "history": "歷史紀錄",
@@ -632,7 +655,8 @@
       "choose_a_manufacturer": "選擇製造商",
       "other": "其他",
       "enter_your_gateway_serial_number": "輸入您的網關序列號",
-      "were_searching_with_your_gateway_please_wait": "我們正在搜索您的網關，請稍候..."
+      "were_searching_with_your_gateway_please_wait": "我們正在搜索您的網關，請稍候...",
+      "qr_code_scan": "QR Code Scan"
     },
     "staking": {
       "staking": "質押",

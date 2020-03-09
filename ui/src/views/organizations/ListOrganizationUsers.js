@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
-
-import Check from "mdi-material-ui/Check";
-import Close from "mdi-material-ui/Close";
+import classNames from 'classnames';
 
 import { Button, Row, Col, Card } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
@@ -21,11 +19,7 @@ const UserNameColumn = (cell, row, index, extraData) => {
 }
 
 const AdminColumn = (cell, row, index, extraData) => {
-  if (row.isAdmin) {
-    return <Check />;
-  } else {
-    return <Close />;
-  }
+  return <i className={classNames("mdi", {"mdi-check": row.isAdmin, "mdi-close": !row.isAdmin}, "font-20")}></i>;
 }
 
 const getColumns = (organizationId) => (
@@ -104,7 +98,7 @@ class ListOrganizationUsers extends Component {
             <Button color="primary"
               key={1}
               onClick={this.createUser}
-              className=""><i className="mdi mdi-account-multiple-plus"></i>{' '}{i18n.t(`${packageNS}:tr000041`)}
+              className=""><i className="mdi mdi-plus"></i>{' '}{i18n.t(`${packageNS}:tr000041`)}
             </Button>,
           ]}
         >
