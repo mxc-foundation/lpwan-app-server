@@ -575,7 +575,8 @@
       "request_withdraw_text_1": "金額超過1000美元的金額將由Supernode運營商和MXC Foundation確認。",
       "request_withdraw_text_2": "您確定要退出嗎？",
       "request_withdraw_text_com": "您的提款請求已成功提交，超級節點運營商將在下一個工作日內確認此交易。",
-      "confirmed": "已確認。"
+      "confirmed": "已確認。",
+      "currentFee": "當前費用"
     },
     "topup": {
       "topup": "充值",

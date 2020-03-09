@@ -575,7 +575,8 @@
       "request_withdraw_text_1": "金额超过1000美元的金额将由Supernode运营商和MXC Foundation确认。",
       "request_withdraw_text_2": "  您确定要退出吗？",
       "request_withdraw_text_com": "您的提款请求已成功提交，超级节点运营商将在下一个工作日内确认此交易。",
-      "confirmed": "已确认。"
+      "confirmed": "已确认。",
+      "currentFee": "当前费用"
     },
     "topup": {
       "topup": "充值",

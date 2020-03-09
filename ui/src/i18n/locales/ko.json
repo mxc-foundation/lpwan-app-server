@@ -575,7 +575,8 @@
       "request_withdraw_text_1": "1000 USD 이상의 금액은 수퍼 노드 운영자와 MXC 재단에서 확인합니다.",
       "request_withdraw_text_2": "출금을 계속하시겠습니까?",
       "request_withdraw_text_com": "철회 요청이 성공적으로 제출되었으며 수퍼 노드 운영자가 다음 영업일 이내에이 거래를 확인합니다.",
-      "confirmed": " 확인했습니다."
+      "confirmed": " 확인했습니다.",
+      "currentFee": "수수료"
     },
     "topup": {
       "topup": "충전",

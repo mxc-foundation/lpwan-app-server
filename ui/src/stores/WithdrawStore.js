@@ -14,15 +14,14 @@ class WithdrawStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/withdraw.swagger.json", sessionStore.getClientOpts());
   }
 
-  getWithdrawFee(moneyAbbr, orgId, callbackFunc) {
+  getWithdrawFee(moneyAbbr, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WithdrawService.GetWithdrawFee({
-        moneyAbbr,
-        orgId
+        moneyAbbr
       })
       .then(checkStatus)
       .then(resp => {
-        callbackFunc(resp.obj);
+        callbackFunc(resp.body);
       })
       .catch(errorHandler);
     });
@@ -51,10 +50,6 @@ class WithdrawStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        resp.obj.totalCount = 2;
-       resp.obj.withdrawRequest.push({withdrawId:1, userName: "pepe", availableToken:"ETH", amount: 112, updateAt: "2020-03-03T06:33:06.812528Z"});
-       resp.obj.withdrawRequest.push({withdrawId:2, userName: "depa", availableToken:"MXC", amount: 222, updateAt: "2020-03-03T06:33:06.812528Z"});
-
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);

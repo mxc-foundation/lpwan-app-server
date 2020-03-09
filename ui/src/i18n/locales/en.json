@@ -577,7 +577,8 @@
       "request_withdraw_text_1": "Amounts valued above 1000 USD will be confirmed by the Supernode operator and the MXC Foundation.",
       "request_withdraw_text_2": "Are you sure you want to withdraw?",
       "request_withdraw_text_com": "Your withdrawal request was successfully submitted and the Supernode Operator will confirm this transaction within the next business day.",
-      "confirmed": "Confirmed"
+      "confirmed": "Confirmed",
+      "currentFee": "Current Fee"
     },
     "topup": {
       "topup": "Top up",
