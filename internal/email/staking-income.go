@@ -1,6 +1,7 @@
 package email
 
-type stakingIncomeEmailInterface struct {}
+type stakingIncomeEmailInterface struct{}
+
 var stakingIncomeEmail stakingIncomeEmailInterface
 
 func (*stakingIncomeEmailInterface) sendEmail(user, token string, language EmailLanguage) error {

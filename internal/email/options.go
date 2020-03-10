@@ -3,7 +3,6 @@ package email
 import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-	"os"
 	"text/template"
 )
 
@@ -38,10 +37,6 @@ func loadEmailTemplates() {
 			tmpNames[EmailLanguage(language)] = mailTemplateStruct{
 				templatePath: "templates/email/" + string(option) + "/" + string(option) + "-" + language,
 			}
-
-			/*mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
-				templatePath: "templates/email/" + string(option) + "/" + string(option) + "-" + language,
-			}*/
 		}
 
 		mailTemplateNames[option] = tmpNames
@@ -60,19 +55,14 @@ func loadEmailTemplates() {
 
 	for option, _ := range emailOptionsList {
 		for _, language := range pb.Language_name {
-			filePath := mailTemplateNames[option][EmailLanguage(language)].templatePath
-			_, err := os.Stat(filePath)
-			if os.IsNotExist(err) {
+			_, err := static.AssetInfo(mailTemplateNames[option][EmailLanguage(language)].templatePath)
+			if err != nil {
 				continue
 			}
 
 			tmpTemplates[EmailLanguage(language)] = template.Must(
 				template.New(mailTemplateNames[option][EmailLanguage(language)].templatePath).Parse(
 					string(static.MustAsset(mailTemplateNames[option][EmailLanguage(language)].templatePath))))
-
-			/*			mailTemplates[option][EmailLanguage(language)] = template.Must(
-						template.New(mailTemplateNames[option][EmailLanguage(language)].templatePath).Parse(
-							string(static.MustAsset(mailTemplateNames[option][EmailLanguage(language)].templatePath))))*/
 		}
 
 		mailTemplates[option] = tmpTemplates

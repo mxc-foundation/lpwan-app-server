@@ -140,8 +140,8 @@ func initConfig() {
 			"@postgresql:5432/", fmt.Sprintf("@%s:5432/", remoteServer), -1)
 		config.C.ApplicationServer.Integration.MQTT.Server = strings.Replace(config.C.ApplicationServer.Integration.MQTT.Server,
 			"//mosquitto:1883", fmt.Sprintf("//%s:1883", remoteServer), -1)
-/*		config.C.Redis.URL = strings.Replace(config.C.Redis.URL,
-			"//redis:6379", fmt.Sprintf("//%s:6379", remoteServer), -1)*/
+		/*		config.C.Redis.URL = strings.Replace(config.C.Redis.URL,
+				"//redis:6379", fmt.Sprintf("//%s:6379", remoteServer), -1)*/
 	}
 
 }

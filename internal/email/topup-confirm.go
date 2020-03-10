@@ -1,6 +1,7 @@
 package email
 
-type topupConfirmEmailInterface struct {}
+type topupConfirmEmailInterface struct{}
+
 var topupConfirmEmail topupConfirmEmailInterface
 
 func (*topupConfirmEmailInterface) sendEmail(user, token string, language EmailLanguage) error {

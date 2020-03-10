@@ -991,7 +991,7 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 
 	// send the req to provision server
 	provReq := api.GetRootPWDRequest{
-		Sn:            req.Sn,
+		Sn: req.Sn,
 	}
 
 	provConf := config.C.ProvisionServer
