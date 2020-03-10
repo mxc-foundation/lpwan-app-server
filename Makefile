@@ -25,6 +25,16 @@ test: internal/statics internal/migrations
 	@go vet $(PKGS)
 	@go test -p 1 -v $(PKGS) -cover -coverprofile coverage.out
 
+lint:
+	@echo "Running code syntax check"
+	@go get -u golang.org/x/lint/golint
+	@golint -set_exit_status $(PKGS)
+
+sec:
+	@echo "Running code security check"
+	@go get github.com/securego/gosec/cmd/gosec
+	@gosec ./...
+
 dist: ui/build internal/statics internal/migrations
 	@goreleaser
 	mkdir -p dist/upload/tar
