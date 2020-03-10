@@ -1,17 +1,12 @@
 package email
 
 import (
-	"bytes"
-	"crypto/rand"
 	"encoding/base32"
-	"net/smtp"
-	"os"
-	"text/template"
-	"time"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"os"
+	"text/template"
 )
 
 var (
@@ -31,9 +26,9 @@ type mailTemplatesType map[EmailOptions]map[EmailLanguage]*template.Template
 type mailTemplateNamesType map[EmailOptions]map[EmailLanguage]mailTemplateStruct
 
 var (
-	mailTemplates     mailTemplatesType
+	mailTemplates     = mailTemplatesType{}
 	base32endocoding  *base32.Encoding
-	mailTemplateNames mailTemplateNamesType
+	mailTemplateNames = mailTemplateNamesType{}
 )
 
 // Setup configures the package.
@@ -60,34 +55,7 @@ func SendInvite(user, token string, language EmailLanguage, option EmailOptions)
 		return errors.New("Unable to send confirmation email")
 	}
 
-	link := host + mailTemplateNames[option][language].url + token
-
-	logo := host + "/branding.png"
-
-	b := make([]byte, 20)
-	if _, err := rand.Read(b); err != nil {
-		return err
-	}
-	messageID := time.Now().Format("20060102150405.") + base32endocoding.EncodeToString(b)
-
-	var msg bytes.Buffer
-	if err := mailTemplates[option][language].Execute(&msg, struct {
-		From, To, Host, MsgID, Boundary, Link, Logo string
-	}{
-		From:     senderID,
-		To:       user,
-		Host:     host,
-		MsgID:    messageID + "@" + host,
-		Boundary: "----=_Part_" + messageID,
-		Link:     link,
-		Logo:     logo,
-	}); err != nil {
-		log.Error(err)
-		return err
-	}
-
-	err = smtp.SendMail(smtpServer+":"+smtpPort,
-		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
+	err = emailOptionsList[option].sendEmail(user, token, language)
 
 	return errors.Wrap(err, "")
 }
