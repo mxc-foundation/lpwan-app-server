@@ -199,11 +199,16 @@ message BrandingResponse {
 }
 
 enum Language {
-	en = 0;
-	ko = 1;
-	zhcn = 2;
-	zhtw = 3;
+	de = 0;
+	en = 1;
+	es = 2;
+	fr = 3;
 	ja = 4;
+	ko = 5;
+	nl = 6;
+	ru = 7;
+	zhCN = 8;
+	zhTW = 9;
 }
 
 message RegisterUserRequest {
