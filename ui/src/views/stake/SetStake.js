@@ -73,13 +73,6 @@ class SetStake extends FormComponent {
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    let path = null;
-    if (currentOrgID === process.env.REACT_APP_SUPER_ADMIN_LPWAN) {
-      path = '/control-panel/modify-account/';
-    } else {
-      path = `/modify-account/${currentOrgID}`;
-    }
-
     return (
       <>
         <TitleBar>
