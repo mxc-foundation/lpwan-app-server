@@ -925,8 +925,8 @@
     "registration": {
       "email": "Email Address",
       "password": "Password",
-      "password_hint": "(8 characters or longer. At least one number of symbol)",
-      "password_match_error": "Password must contain atleast 8 characters, one number and one symbol",
+      "password_hint": "(パスワードは8文字以上、英字と必ず1つ以上の数字と特殊文字を含める必要があります。)",
+      "password_match_error": "パスワードは8文字以上、英字と必ず1つ以上の数字と特殊文字を含める必要があります。",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",
       "org_name": "Organization Name",
