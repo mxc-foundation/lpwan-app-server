@@ -21,6 +21,7 @@ import Spinner from "../../components/ScaleLoader";
 import { EXT_URL_STAKE } from "../../util/Data"
 import InfoCard from "../topup/InfoCard";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import StakeHistory from "./StakeHistory";
 
 const localStyles = {};
 
@@ -108,6 +109,15 @@ class SetStake extends FormComponent {
             </Card>
           </Col>
           {/* <Col><InfoCard path={path} /></Col> */}
+        </Row>
+        <Row xs="1" lg="1">
+          <Col>
+            <Card>
+              <CardBody>
+                <StakeHistory />
+              </CardBody>
+            </Card>
+          </Col>
         </Row>
       </>
     );
