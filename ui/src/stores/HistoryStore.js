@@ -25,7 +25,6 @@ class HistoryStore extends EventEmitter {
         limit
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.body);
         })
@@ -42,7 +41,6 @@ class HistoryStore extends EventEmitter {
         offset,
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.obj);
         })
@@ -58,7 +56,6 @@ class HistoryStore extends EventEmitter {
         offset,
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.obj);
         })
@@ -66,7 +63,7 @@ class HistoryStore extends EventEmitter {
     });
   }
 
-  getChangeMoneyAccountHistory(moneyAbbr, orgId, limit, offset, callbackFunc) {
+  getChangeMoneyAccountHistory(moneyAbbr, orgId, limit, offset, callbackFunc, errorCallbackFunc) {
     this.moneySwagger.then((client) => {
       client.apis.MoneyService.GetChangeMoneyAccountHistory({
         moneyAbbr,
@@ -78,7 +75,10 @@ class HistoryStore extends EventEmitter {
         .then(resp => {
           callbackFunc(resp.obj);
         })
-        .catch(errorHandler);
+        .catch(error => {
+          errorHandler(error);
+          if (errorCallbackFunc) errorCallbackFunc(error);
+        });
     });
   }
 

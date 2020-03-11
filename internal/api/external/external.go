@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/m2m_ui"
-
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
@@ -24,10 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/mxc-foundation/lpwan-app-server/api"
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
-	m2m_pb "github.com/mxc-foundation/lpwan-app-server/api/m2m_ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -100,16 +95,14 @@ func setupAPI(conf config.Config) error {
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
 	//api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
-	m2m_api.RegisterDeviceServiceServer(grpcServer, m2m_ui.NewDeviceServerAPI(validator))
-	m2m_api.RegisterMoneyServiceServer(grpcServer, m2m_ui.NewMoneyServerAPI(validator))
-	m2m_api.RegisterGatewayServiceServer(grpcServer, m2m_ui.NewGatewayServerAPI(validator))
-	m2m_api.RegisterSettingsServiceServer(grpcServer, m2m_ui.NewSettingsServerAPI(validator))
-	m2m_api.RegisterStakingServiceServer(grpcServer, m2m_ui.NewStakingServerAPI(validator))
-	m2m_api.RegisterSuperNodeServiceServer(grpcServer, m2m_ui.NewSupernodeServerAPI(validator))
-	m2m_api.RegisterTopUpServiceServer(grpcServer, m2m_ui.NewTopUpServerAPI(validator))
-	m2m_api.RegisterWalletServiceServer(grpcServer, m2m_ui.NewWalletServerAPI(validator))
-	m2m_api.RegisterWithdrawServiceServer(grpcServer, m2m_ui.NewWithdrawServerAPI(validator))
-	m2m_api.RegisterServerInfoServiceServer(grpcServer, m2m_ui.NewM2MServerAPI(validator))
+	api.RegisterDSDeviceServiceServer(grpcServer, NewDeviceServerAPI(validator))
+	api.RegisterGSGatewayServiceServer(grpcServer, NewGatewayServerAPI(validator))
+	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI(validator))
+	api.RegisterStakingServiceServer(grpcServer, NewStakingServerAPI(validator))
+	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI(validator))
+	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI(validator))
+	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI(validator))
+	api.RegisterM2MServerInfoServiceServer(grpcServer, NewM2MServerAPI(validator))
 
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
@@ -241,79 +234,73 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		},
 	))
 
-	if err := pb.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register application handler error")
 	}
-	if err := pb.RegisterDeviceQueueServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterDeviceQueueServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register downlink queue handler error")
 	}
-	if err := pb.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register node handler error")
 	}
-	if err := pb.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register user handler error")
 	}
-	if err := pb.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register internal handler error")
 	}
-	if err := pb.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register gateway handler error")
 	}
-	if err := pb.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register gateway-profile handler error")
 	}
-	if err := pb.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register organization handler error")
 	}
-	if err := pb.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register network-server handler error")
 	}
-	if err := pb.RegisterServiceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterServiceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register service-profile handler error")
 	}
-	if err := pb.RegisterDeviceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterDeviceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register device-profile handler error")
 	}
-	if err := pb.RegisterMulticastGroupServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterMulticastGroupServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register multicast-group handler error")
 	}
-	if err := pb.RegisterFUOTADeploymentServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterFUOTADeploymentServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register fuota deployment handler error")
 	}
-	if err := pb.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register server info handler error")
 	}
 	//if err := pb.RegisterProxyRequestHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 	//	return nil, errors.Wrap(err, "register proxy request handler error")
 	//}
-	if err := m2m_pb.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterDSDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := m2m_pb.RegisterMoneyServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterGSGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := m2m_pb.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := m2m_pb.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterTopUpServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := m2m_pb.RegisterSuperNodeServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := m2m_pb.RegisterTopUpServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := m2m_pb.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
-	if err := m2m_pb.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := m2m_pb.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := m2m_pb.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+	if err := api.RegisterM2MServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 

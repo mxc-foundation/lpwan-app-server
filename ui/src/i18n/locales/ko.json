@@ -556,7 +556,27 @@
       "type_here": "이 칸에 작성하십시오",
       "incorrect_username_or_password": "사용자 이름 또는 비밀번호가 정확하지 않습니다.",
       "cancel": "취소",
-      "proceed": "진행"
+      "proceed": "진행",
+      "deny": "거부",
+      "confirm_modal_title": "승인: 수퍼노드 출금",
+      "deny_reason": "사용자 및 MXC 레코드 거부 사유 추가",
+      "confirm_text": "사용 가능한 토큰 잔액을 인출하고 있음을 확인하고 있습니다. 계속 하시겠습니까?",
+      "deny_text": "사용 가능한 토큰 잔액에서 인출 요청을 거부합니다.",
+      "requester": "요청자",
+      "balance": "잔액",
+      "destination": "계좌번호",
+      "available":"이용 가능",
+      "submit_withdrawal_request": "출금 요청",
+      "date_requested": "요청 날짜", 
+      "status": "상태", 
+      "transaction_hash": "트랜잭션 해쉬",
+      "request_withdraw_title": "계속 진행하시겠습니까?",
+      "request_withdraw_text_0": "이 수퍼 노드에서 탈퇴를 요청하고 있습니다. 요청이 완료되면 수퍼 노드 운영자는이 탈퇴를 확인해야합니다.",
+      "request_withdraw_text_1": "1000 USD 이상의 금액은 수퍼 노드 운영자와 MXC 재단에서 확인합니다.",
+      "request_withdraw_text_2": "출금을 계속하시겠습니까?",
+      "request_withdraw_text_com": "철회 요청이 성공적으로 제출되었으며 수퍼 노드 운영자가 다음 영업일 이내에이 거래를 확인합니다.",
+      "confirmed": " 확인했습니다.",
+      "currentFee": "수수료"
     },
     "topup": {
       "topup": "충전",
@@ -760,7 +780,9 @@
       "control_panel": "콘트롤 패널",
       "back": "뒤로",
       "submit": "완료",
-      "cancel": "취소"
+      "cancel": "취소",
+      "comment": "주석",
+      "done": "완료"
     },
     "system_settings": {
       "system_settings": "수수료"
@@ -816,57 +838,145 @@
       "roleDeviceAdmin": "Device Admin",
       "roleGatewayAdmin": "Gateway Admin",
       "topupButton": "Topup MXC",
-      "totalUsers": "Total Users",
-      "totalOrgs": "Total Organizations",
-      "totalGateways": "Total Gateways",
-      "totalDevices": "Total Devices",
-      "totalApps": "Total Applications",
+      "remove": "Remove",
+      "totalUsers": {
+        "title": "Total Users",
+        "description": "Show total number of active users"
+      },
+      "totalOrgs": {
+        "title": "Total Organizations",
+        "description": "Shows total number of active organizations"
+      },
+      "totalGateways": {
+        "title": "Total Gateways",
+        "description": "Shows total number of gateways"
+      },
+      "totalDevices": {
+        "title": "Total Devices",
+        "description": "Shows total number of devices"
+      },
+      "totalApps": {
+        "title": "Total Applications",
+        "description": "Shows total number of applications"
+      },
       "tickets": {
         "title": "Tickets",
         "view_history": "View History",
         "approved": "Approved",
         "pending": "Pending",
-        "subtext": "Today's ticket"
+        "subtext": "Today's ticket",
+        "description": "Shows tickets history"
       },
       "withdrawal": {
         "title": "Withdrawal",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows today's total withdrawal"
       },
       "topup": {
         "title": "Topup",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows topup information"
       },
       "mxcAmountChart": {
         "title": "Total amounts of MXC in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows total amounts of MXC in Supernode"
       },
       "stakingAmountChart": {
         "title": "Total Staking amounts in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows stacking amount in Supernode"
       },
       "earnedAmountChart": {
         "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today"
+        "statSubText": "Revenue Today",
+        "description": "Shows amount earned through data utilities and staking"
       },
       "packetsReceivedChart": {
         "title": "Data Packets receieved by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows received data packets"
       },
       "packetsSentChart": {
         "title": "Data Packets sent by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows sent data packets"
       },
       "dataMap": {
-        "title": "Data Map"
+        "title": "Data Map",
+        "description": "Shows information on map"
       },
       "packetsByChannel": {
-        "title": "Packets on Channel"
+        "title": "Packets on Channel",
+        "description": "Shows data packets by channel"
       },
       "packetsBySpreadFactor": {
-        "title": "Packets on SpreadFactor"
+        "title": "Packets on SpreadFactor",
+        "description": "Shows data packets by spread factor"
+      },
+      "addWidget": {
+        "title": "Dashboard Widgets",
+        "add": "Add Widget"
+      },
+      "coming_soon": "Coming Soon"
+    },
+    "registration": {
+      "email": "Email Address",
+      "password": "Password",
+      "password_hint": "(8 characters or longer. At least one number of symbol)",
+      "password_match_error": "Password must contain atleast 8 characters, one number and one symbol",
+      "confirm_password": "Confirm Your Password",
+      "confirm_password_match_error": "Password and confirm password must be same",
+      "org_name": "Organization Name",
+      "org_display_name": "Organization Display Name",
+      "next": "Next",
+      "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
+      "mnemonic_phrase_title": "Write down your Mnemonic phrase",
+      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in the correct order",
+      "2fa_title": "Set up two-factor authentication using Google Authenticator."
+    },
+    "menmonic_phrase": {
+      "write_button": "I wrote it down",
+      "skip_button": "Skip",
+      "confirm_button": "Confirm",
+      "back_button": "Back"
+    },
+    "google_2fa": {
+      "confirm_button": "Confirm",
+      "skip_button": "Skip"
+    },
+    "profile_2fa": {
+      "title": "Two-Factor Authentication",
+      "google": {
+        "title": "Google Authenticator",
+        "setup_button": "Setting",
+        "2fa_title": "2FA Setting",
+        "2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "reset_2fa_title": "Two-factor authentication",
+        "reset_2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "mnemonic_phrase_confirm_title": "To reset, please click mnemonic phrase in the correct order"
       }
+    },
+    "profile_password_reset": {
+      "title": "Password",
+      "account_password": {
+        "title": "Account Password",
+        "reset_button": "Reset"
+      },
+      "coming_soon": "Coming Soon"
+    },
+    "dashboard_2fa": {
+      "title": "Your Supernode Account has a new feature!",
+      "description": "Two-factor authentication is now an option. As part of this feature addition, each account is assigned a mnemonic phrase. This phrase is the only way to reset your two-factor authentication method. On the next screen your phrase will be displayed. Please write it down and keep it in a secure location.",
+      "agree_instruction": "I understand that if I don't write down my Mnemonic phrase I could lose access to my account.",
+      "next_button": "Next",
+      "skip_button": "Not now",
+      "done_button": "Done",
+      "menmonic_step_1_title": "Write this down and keep it in a safe place.",
+      "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
+      "menmonic_step_3_title": "Confirmed"
     }
   }
 }

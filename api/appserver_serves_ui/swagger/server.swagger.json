@@ -1,0 +1,42 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "server.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/server-info/version": {
+      "get": {
+        "summary": "get version",
+        "operationId": "GetVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetVersionResponse"
+            }
+          }
+        },
+        "tags": [
+          "M2MServerInfoService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiGetVersionResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

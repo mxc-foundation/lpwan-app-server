@@ -1,0 +1,381 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "withdraw.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/withdraw": {
+      "post": {
+        "summary": "WithdrawReq when the user clicks the withdraw",
+        "operationId": "WithdrawReq",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawReqResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiWithdrawReqRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/confirm": {
+      "post": {
+        "summary": "ConfirmWithdraw is after supernode owner clicks the confirm or deny.",
+        "operationId": "ConfirmWithdraw",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiConfirmWithdrawResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiConfirmWithdrawRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/get-withdraw-fee": {
+      "get": {
+        "summary": "GetWithdrawFee data for current withdraw fee",
+        "operationId": "GetWithdrawFee",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawFeeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "moneyAbbr",
+            "description": "type of crypto currency.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ETH",
+              "MXC",
+              "TETH"
+            ],
+            "default": "ETH"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/history": {
+      "get": {
+        "operationId": "GetWithdrawHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "moneyAbbr",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "ETH",
+              "MXC",
+              "TETH"
+            ],
+            "default": "ETH"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/modify-withdraw-fee": {
+      "put": {
+        "operationId": "ModifyWithdrawFee",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiModifyWithdrawFeeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiModifyWithdrawFeeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/requests": {
+      "get": {
+        "operationId": "GetWithdrawRequestList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawRequestListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiConfirmWithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "confirmStatus": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "denyComment": {
+          "type": "string"
+        },
+        "withdrawId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiConfirmWithdrawResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawFeeResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawFee": {
+          "type": "number",
+          "format": "double",
+          "description": "Withdraw object."
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "withdrawHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiWithdrawHistory"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawRequestListResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "withdrawRequest": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiWithdrawRequest"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiModifyWithdrawFeeRequest": {
+      "type": "object",
+      "properties": {
+        "moneyAbbr": {
+          "$ref": "#/definitions/appserver_serves_uiMoney"
+        },
+        "withdrawFee": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "appserver_serves_uiModifyWithdrawFeeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "appserver_serves_uiMoney": {
+      "type": "string",
+      "enum": [
+        "ETH",
+        "MXC",
+        "TETH"
+      ],
+      "default": "ETH"
+    },
+    "appserver_serves_uiWithdrawHistory": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "txSentTime": {
+          "type": "string"
+        },
+        "txStatus": {
+          "type": "string"
+        },
+        "txHash": {
+          "type": "string"
+        },
+        "denyComment": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiWithdrawReqRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "ethAddress": {
+          "type": "string"
+        },
+        "availableBalance": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "appserver_serves_uiWithdrawReqResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "appserver_serves_uiWithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "userName": {
+          "type": "string"
+        },
+        "availableToken": {
+          "type": "number",
+          "format": "double"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "withdrawId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    }
+  }
+}

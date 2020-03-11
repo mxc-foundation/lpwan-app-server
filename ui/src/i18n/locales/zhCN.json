@@ -535,10 +535,10 @@
       "delete_service_profile": "您确定要删除该服务资料吗？"
     },
     "network_servers": {
-      "delete_server": "Are you sure you want to delete this network-server?"
+      "delete_server": "您确定要删除此网络服务器吗？"
     },
     "gateways": {
-      "delete_gateway": "Are you sure you want to delete this gateway?"
+      "delete_gateway": "您确定要删除此网关吗？"
     }
   },
   "menu": {
@@ -556,7 +556,27 @@
       "type_here": "在此输入",
       "incorrect_username_or_password": "用户名或密码错误",
       "cancel": "取消",
-      "proceed": "继续"
+      "proceed": "继续",
+      "deny": "拒绝",
+      "confirm_modal_title": "确认：超级节点退出",
+      "deny_reason": "添加拒绝用户和MXC记录的原因",
+      "confirm_text": "您正在确认从其可用令牌余额中提取。 你确定吗？",
+      "deny_text": "您拒绝从他们的可用令牌余额中提款的请求。",
+      "requester": "请求者",
+      "balance": "天平",
+      "destination": "目的地",
+      "available":"可用",
+      "submit_withdrawal_request": "提交提款请求",
+      "date_requested": "请求日期",
+      "status": "状态", 
+      "transaction_hash": "交易哈希",
+      "request_withdraw_title": "您确定要退出吗？",
+      "request_withdraw_text_0": "您正在请求退出此超级节点。 请求完成后，超级节点操作员必须确认退出。",
+      "request_withdraw_text_1": "金额超过1000美元的金额将由Supernode运营商和MXC Foundation确认。",
+      "request_withdraw_text_2": "  您确定要退出吗？",
+      "request_withdraw_text_com": "您的提款请求已成功提交，超级节点运营商将在下一个工作日内确认此交易。",
+      "confirmed": "已确认。",
+      "currentFee": "当前费用"
     },
     "topup": {
       "topup": "充值",
@@ -573,17 +593,17 @@
       "notice001": "警告: 在用户充值 MXC 之前，请先更改您的超级节点 ETH 账户",
       "notice002": "警告: 在充值 MXC 之前，请先注册一个 ETH 账户",
       "notice003": "您想要前往 ETH 账户页面更新您的 ETH 账户吗?",
-      "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
-      "eth_address": "ETH Address",
-      "copy_addr": "Copy Address",
-      "show_qr_code": "Show QR Code",
-      "click_to_copy": "Click to Copy",
-      "copied_notice": "Address copied!",
-      "download_qr_code": "Download QR Code",
-      "instruction001": "Send only MXC to this deposit address.",
-      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
-      "instruction003": "Your MXC will be deposited after 12 network confirmations.",
+      "crypto": "加密货币",
+      "fiat": "Fiat (即将到来)",
+      "eth_address": "ETH 地址",
+      "copy_addr": "复制地址",
+      "show_qr_code": "显示二维码",
+      "click_to_copy": "点击复制",
+      "copied_notice": "地址已复制",
+      "download_qr_code": "下载二维码",
+      "instruction001": "仅发送MXC极域到该存款地址。",
+      "instruction002": "将除ETH以外的硬币或通证发送到该地址可能会导致您的存款丢失。",
+      "instruction003": "经过12次网络确认后，您的MXC极域将被存入。",
       "history": {
         "status": "状态",
         "amount": "金额",
@@ -656,7 +676,7 @@
       "other": "其他。",
       "enter_your_gateway_serial_number": "输入您的网关序列号。",
       "were_searching_with_your_gateway_please_wait": "我们正在搜索您的网关，请稍候...",
-      "qr_code_scan": "QR Code Scan"
+      "qr_code_scan": "二维码扫描"
     },
     "staking": {
       "staking": "质押",
@@ -760,7 +780,9 @@
       "control_panel": "控制面板",
       "back": "回去",
       "submit": "完成了",
-      "cancel": "取消"
+      "cancel": "取消",
+      "comment": "评论",
+      "done": "完成"
     },
     "system_settings": {
       "system_settings": "系统设定"
@@ -811,62 +833,150 @@
       "is_global_admin": "是全球管理员"
     },
     "dashboard": {
-      "title": "Dashboard",
-      "roleOrgAdmin": "Organization Admin",
-      "roleDeviceAdmin": "Device Admin",
-      "roleGatewayAdmin": "Gateway Admin",
-      "topupButton": "Topup MXC",
-      "totalUsers": "Total Users",
-      "totalOrgs": "Total Organizations",
-      "totalGateways": "Total Gateways",
-      "totalDevices": "Total Devices",
-      "totalApps": "Total Applications",
+      "title": "仪表盘",
+      "roleOrgAdmin": "组织管理",
+      "roleDeviceAdmin": "设备管理",
+      "roleGatewayAdmin": "网关管理",
+      "topupButton": "充值MXC极域",
+      "remove": "移除",
+      "totalUsers": {
+        "title": "用户总数",
+        "description": "显示活跃用户总数"
+      },
+      "totalOrgs": {
+        "title": "组织总数",
+        "description": "显示活跃组织总数"
+      },
+      "totalGateways": {
+        "title": "网关总数",
+        "description": "显示网关总数"
+      },
+      "totalDevices": {
+        "title": "设备总数",
+        "description": "显示设备总数"
+      },
+      "totalApps": {
+        "title": "应用程序总数",
+        "description": "显示应用程序总数"
+      },
       "tickets": {
-        "title": "Tickets",
-        "view_history": "View History",
-        "approved": "Approved",
-        "pending": "Pending",
-        "subtext": "Today's ticket"
+        "title": "票务",
+        "view_history": "查看历史",
+        "approved": "已确认",
+        "pending": "待审核",
+        "subtext": "今天的票",
+        "description": "Shows tickets history"
       },
       "withdrawal": {
-        "title": "Withdrawal",
-        "subtext": "Revenue today"
+        "title": "提取",
+        "subtext": "今日收入",
+        "description": "显示今天的总提款"
       },
       "topup": {
-        "title": "Topup",
-        "subtext": "Revenue today"
+        "title": "充值",
+        "subtext": "今日收入",
+        "description": "显示充值信息"
       },
       "mxcAmountChart": {
-        "title": "Total amounts of MXC in Supernode",
-        "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "title": "超级节点中MXC极域总数",
+        "subtext": "付款量表",
+        "statSubText": "总计",
+        "description": "显示超级节点中MXC极域的总数"
       },
       "stakingAmountChart": {
-        "title": "Total Staking amounts in Supernode",
-        "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "title": "超级节点的总质押金额",
+        "subtext": "付款量表",
+        "statSubText": "总计",
+        "description": "显示超级节点中总质押量"
       },
       "earnedAmountChart": {
-        "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today"
+        "title": "数据工具和质押赚取的金额",
+        "statSubText": "今日收入",
+        "description": "显示通过数据工具和质押获得的收入"
       },
       "packetsReceivedChart": {
-        "title": "Data Packets receieved by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "title": "网关收到的数据包",
+        "subTitle": "在过去 30 天24小时内，",
+        "description": "显示接收到的数据包"
       },
       "packetsSentChart": {
-        "title": "Data Packets sent by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "title": "网关发送的数据包",
+        "subTitle": "在过去 30 天24小时内，",
+        "description": "显示已发送的数据包"
       },
       "dataMap": {
-        "title": "Data Map"
+        "title": "数据图",
+        "description": "在地图上显示所在位置"
       },
       "packetsByChannel": {
-        "title": "Packets on Channel"
+        "title": "通道上的数据包",
+        "description": "按频道显示数据包"
       },
       "packetsBySpreadFactor": {
-        "title": "Packets on SpreadFactor"
+        "title": "SpreadFactor上的数据包",
+        "description": "按传播系数显示数据包"
+      },
+      "addWidget": {
+        "title": "仪表板小部件",
+        "add": "添加小部件"
+      },
+      "coming_soon": "Coming Soon"
+    },
+    "registration": {
+      "email": "Email Address",
+      "password": "Password",
+      "password_hint": "(8 characters or longer. At least one number of symbol)",
+      "password_match_error": "Password must contain atleast 8 characters, one number and one symbol",
+      "confirm_password": "Confirm Your Password",
+      "confirm_password_match_error": "Password and confirm password must be same",
+      "org_name": "Organization Name",
+      "org_display_name": "Organization Display Name",
+      "next": "Next",
+      "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
+      "mnemonic_phrase_title": "Write down your Mnemonic phrase",
+      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in the correct order",
+      "2fa_title": "Set up two-factor authentication using Google Authenticator."
+    },
+    "menmonic_phrase": {
+      "write_button": "I wrote it down",
+      "skip_button": "Skip",
+      "confirm_button": "Confirm",
+      "back_button": "Back"
+    },
+    "google_2fa": {
+      "confirm_button": "Confirm",
+      "skip_button": "Skip"
+    },
+    "profile_2fa": {
+      "title": "Two-Factor Authentication",
+      "google": {
+        "title": "Google Authenticator",
+        "setup_button": "Setting",
+        "2fa_title": "2FA Setting",
+        "2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "reset_2fa_title": "Two-factor authentication",
+        "reset_2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "mnemonic_phrase_confirm_title": "To reset, please click mnemonic phrase in the correct order"
       }
+    },
+    "profile_password_reset": {
+      "title": "Password",
+      "account_password": {
+        "title": "Account Password",
+        "reset_button": "Reset"
+      },
+      "coming_soon": "Coming Soon"
+    },
+    "dashboard_2fa": {
+      "title": "Your Supernode Account has a new feature!",
+      "description": "Two-factor authentication is now an option. As part of this feature addition, each account is assigned a mnemonic phrase. This phrase is the only way to reset your two-factor authentication method. On the next screen your phrase will be displayed. Please write it down and keep it in a secure location.",
+      "agree_instruction": "I understand that if I don't write down my Mnemonic phrase I could lose access to my account.",
+      "next_button": "Next",
+      "skip_button": "Not now",
+      "done_button": "Done",
+      "menmonic_step_1_title": "Write this down and keep it in a safe place.",
+      "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
+      "menmonic_step_3_title": "Confirmed"
     }
   }
 }

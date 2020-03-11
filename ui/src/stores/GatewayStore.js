@@ -23,12 +23,6 @@ class GatewayStore extends EventEmitter {
   }
 
   getGatewayList(orgId, offset, limit, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockGatewayStoreApi.getGatewayList(orgId)))();
-      return;
-    } */
-
     this.swaggerM2M.then(client => {
       client.apis.GatewayService.GetGatewayList({
         orgId,
@@ -36,7 +30,6 @@ class GatewayStore extends EventEmitter {
         limit
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.body);
       })
@@ -128,7 +121,6 @@ class GatewayStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
     this.swagger.then(client => {
       client.apis.GatewayService.Get({
         id: id,
@@ -142,7 +134,6 @@ class GatewayStore extends EventEmitter {
   }
 
   getConfig(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
     this.swagger.then(client => {
       client.apis.GatewayService.GetGwConfig({
         gatewayId: id,
@@ -281,7 +272,6 @@ class GatewayStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsStatus = "CONNECTED";
       this.emit("ws.status.change");
       onOpen();
@@ -303,14 +293,12 @@ class GatewayStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsStatus = null;
       this.emit("ws.status.change");
       onClose();
     });
 
     conn.addEventListener("error", () => {
-      //console.log("error");
       this.wsStatus = "ERROR";
       this.emit("ws.status.change");
     });
@@ -329,7 +317,6 @@ class GatewayStore extends EventEmitter {
   }
 
   getRootConfig(id, callbackFunc, errorCallbackFunc) {
-    // Run the following in development environment and early exit from function
     this.swagger.then(client => {
       client.apis.GatewayService.GetGwPwd({
         gatewayId: id,

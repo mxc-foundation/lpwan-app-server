@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -498,7 +498,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(obj.Username, *obj.SecurityToken, int32(req.Language))
+	err = email.SendInvite(obj.Username, *obj.SecurityToken, email.EmailLanguage(pb.Language_name[int32(req.Language)]), email.RegistrationConfirmation)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"username": user.Username,

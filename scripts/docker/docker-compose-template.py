@@ -10,7 +10,28 @@ services:
       - 8000:8000
     volumes:
       - ./configuration/loraserver:/etc/loraserver
-  
+      
+  mxprotocol-server:
+    image: mxprotocolserver_mxprotocol-server:latest
+    volumes:
+      - ../mxprotocol-server/configuration:/etc/mxprotocol-server
+      - ../mxprotocol-server:/mxprotocol-server
+    links:
+      - network-server
+      - postgresql
+      - redis
+      - mosquitto
+    environment:
+      - APPSERVER=http://localhost:8080
+      - MXPROTOCOL_SERVER=http://localhost:4000
+    tty: true
+    ports:
+      - 4000:4000
+    security_opt:
+      - seccomp:unconfined
+    cap_add:
+      - SYS_PTRACE
+      
   appserver:
     build:
       context: .
@@ -23,6 +44,7 @@ services:
       - redis
       - mosquitto
       - network-server
+      - mxprotocol-server
     ports:
       - 8080:8080
     environment:
@@ -39,6 +61,8 @@ services:
     image: postgres:9.6-alpine
     volumes:
       - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
+    environment:
+      - POSTGRES_PASSWORD=local_superuser_pass
 
   redis:
     image: redis:5-alpine
@@ -122,6 +146,8 @@ services:
     volumes:
       - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
       - postgresqldata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=local_superuser_pass
 
   redis:
     image: redis:5-alpine

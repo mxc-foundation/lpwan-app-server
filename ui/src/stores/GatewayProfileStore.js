@@ -14,7 +14,7 @@ class GatewayProfileStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/gatewayProfile.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(gatewayProfile, callbackFunc) {
+  create(gatewayProfile, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayProfileService.Create({
         body: {
@@ -26,7 +26,10 @@ class GatewayProfileStore extends EventEmitter {
         this.notify("created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -43,7 +46,7 @@ class GatewayProfileStore extends EventEmitter {
     });
   }
 
-  update(gatewayProfile, callbackFunc) {
+  update(gatewayProfile, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayProfileService.Update({
         "gatewayProfile.id": gatewayProfile.id,
@@ -56,7 +59,10 @@ class GatewayProfileStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -74,7 +80,7 @@ class GatewayProfileStore extends EventEmitter {
     });
   }
 
-  list(networkServerID, limit, offset, callbackFunc) {
+  list(networkServerID, limit, offset, callbackFunc, errorCallbackFunc) {
     this.swagger.then((client) => {
       client.apis.GatewayProfileService.List({
         networkServerID: networkServerID,
@@ -85,7 +91,10 @@ class GatewayProfileStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
