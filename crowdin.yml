@@ -1,4 +1,3 @@
-commit_message: '[ci skip]'
 files:
   - source: /ui/src/i18n/locales
     ignore:
