@@ -74,6 +74,9 @@ class User2FA extends Component {
       <React.Fragment>
         <Card className="h-auto">
           <CardBody className="pb-0">
+          <div className="card-coming-soon">
+              <h5>{i18n.t(`${packageNS}:menu.profile_password_reset.coming_soon`)}</h5>
+            </div>
             <h5>{i18n.t(`${packageNS}:menu.profile_2fa.title`)}</h5>
             <Row>
               <Col>
