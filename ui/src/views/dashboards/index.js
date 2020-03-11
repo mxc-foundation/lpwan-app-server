@@ -20,7 +20,7 @@ class Dashboard extends Component {
 
     componentDidMount() {
         // TODO - api call to check if user has not enabled the feature
-        this.setState({ show2FaFeature: true });
+        this.setState({ show2FaFeature: false });//edited 2020-03-11 by Namgyeong
     }
 
     render() {
