@@ -26,9 +26,9 @@ Content-ID: html-body
 
 <head>
     <meta charset="utf-8">
-    <title>{{ . Operator }} Supernode Top-Up</title>
+    <title> {{ .Operator }} Supernode Top-Up</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="You topped up your {{ . Operator }} Supernode account." name="description">
+    <meta content="You topped up your {{ .Operator }} Supernode account." name="description">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 </head>
 
