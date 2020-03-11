@@ -5,6 +5,7 @@ import i18n, { packageNS } from '../../i18n';
 import Google2FA from './Google2FA';
 import MneMonicPhraseConfirm from './MneMonicPhraseConfirm';
 import speakeasy from 'speakeasy';
+import qrcode from "qrcode.react";
 
 
 class User2FA extends Component {
@@ -31,8 +32,8 @@ class User2FA extends Component {
     // TODO - API Call to fetch the initial code
     var secret = speakeasy.generateSecret({ length: 20 });
     console.log(secret.base32); //save to user db
-    var qr = secret.google_auth_qr;
-    this.setState({ showSetup2FA: true, auth_2fa_code: secret, qr: qr });
+    // <QRCode value=secret.otpauth_url />, mountNode
+    this.setState({ showSetup2FA: true, auth_2fa_code: secret });
   }
 
   confirm2fa(confirmCode) {
