@@ -1,4 +1,4 @@
-.PHONY: build clean test package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags --always |sed -e "s/^v//")
 
@@ -24,6 +24,16 @@ test: internal/statics internal/migrations
 	done
 	@go vet $(PKGS)
 	@go test -p 1 -v $(PKGS) -cover -coverprofile coverage.out
+
+lint:
+	@echo "Running code syntax check"
+	@go get -u golang.org/x/lint/golint
+	@golint -set_exit_status $(PKGS)
+
+sec:
+	@echo "Running code security check"
+	@go get github.com/securego/gosec/cmd/gosec
+	@gosec ./...
 
 dist: ui/build internal/statics internal/migrations
 	@goreleaser
