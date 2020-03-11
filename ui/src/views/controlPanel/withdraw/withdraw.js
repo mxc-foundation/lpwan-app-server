@@ -154,49 +154,8 @@ class SuperAdminWithdraw extends Component {
                 <div className="card-coming-soon-2">{/* will be taken off  */}
                     <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>{/* will be taken off  */}
                 </div>{/* will be taken off  */}
-                {this.state.nsDialog && <Modal
-                    title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}
-                    context={(this.state.status) ? i18n.t(`${packageNS}:menu.withdraw.confirm_text`) : i18n.t(`${packageNS}:menu.withdraw.deny_text`)}
-                    status={this.state.status}
-                    row={this.state.row}
-                    handleChange={this.handleChange}
-                    closeModal={() => this.setState({ nsDialog: false })}
-                    callback={() => { this.confirm(this.state.row, this.state.status) }} />}
-                <TitleBar>
+                <Row style={{width: '100%', height: '700px'}}>
 
-                    <Breadcrumb className={classes.breadcrumb}>
-                        <BreadcrumbItem>
-                            <Link
-                                className={classes.breadcrumbItemLink}
-                                to={`/organizations`}
-                                onClick={() => {
-                                    // Change the sidebar content
-                                    this.props.switchToSidebarId('DEFAULT');
-                                }}
-                            >
-                                {i18n.t(`${packageNS}:menu.control_panel`)}
-                            </Link>
-                        </BreadcrumbItem>
-                        <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:tr000084`)}</BreadcrumbItem>
-                        <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
-                    </Breadcrumb>
-                </TitleBar>
-
-                <Row>
-                    <Col>
-                        <Card className="card-box shadow-sm">
-                            {this.state.loading && <Loader />}
-                            <AdvancedTable
-                                data={this.state.data}
-                                columns={this.getColumns()}
-                                keyField="id"
-                                onTableChange={this.handleTableChange}
-                                rowsPerPage={10}
-                                totalSize={this.state.totalSize}
-                                searchEnabled={false}
-                            />
-                        </Card>
-                    </Col>
                 </Row>
                 </div>{/* will be taken off  */}
             </React.Fragment>
