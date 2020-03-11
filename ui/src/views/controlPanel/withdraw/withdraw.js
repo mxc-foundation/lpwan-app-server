@@ -49,9 +49,10 @@ class SuperAdminWithdraw extends Component {
     getPage = (limit, offset) => {
         limit = MAX_DATA_LIMIT;
         const defaultOrgId = 0;
-        this.setState({ loading: true });
+        //this.setState({ loading: true });//commented out by Namgyeong 
 
         WithdrawStore.getWithdrawRequestList(limit, offset, (res) => {
+            console.log('res', res);
             const object = this.state;
             object.totalSize = Number(res.count);
             object.data = res.withdrawRequest;
@@ -149,6 +150,10 @@ class SuperAdminWithdraw extends Component {
         return (
 
             <React.Fragment>
+                <div className="position-relative">{/* will be taken off  */}
+                <div className="card-coming-soon-2">{/* will be taken off  */}
+                    <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>{/* will be taken off  */}
+                </div>{/* will be taken off  */}
                 {this.state.nsDialog && <Modal
                     title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}
                     context={(this.state.status) ? i18n.t(`${packageNS}:menu.withdraw.confirm_text`) : i18n.t(`${packageNS}:menu.withdraw.deny_text`)}
@@ -193,6 +198,7 @@ class SuperAdminWithdraw extends Component {
                         </Card>
                     </Col>
                 </Row>
+                </div>{/* will be taken off  */}
             </React.Fragment>
         );
     }
