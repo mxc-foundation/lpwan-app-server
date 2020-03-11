@@ -12,7 +12,9 @@ services:
       - ./configuration/loraserver:/etc/loraserver
       
   mxprotocol-server:
-    image: mxprotocolserver_mxprotocol-server:latest
+    build:
+      context: ../mxprotocol-server
+      dockerfile: Dockerfile-devel
     volumes:
       - ../mxprotocol-server/configuration:/etc/mxprotocol-server
       - ../mxprotocol-server:/mxprotocol-server
