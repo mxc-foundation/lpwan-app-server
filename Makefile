@@ -1,4 +1,4 @@
-.PHONY: build clean test package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags --always |sed -e "s/^v//")
 
@@ -84,6 +84,8 @@ dev-requirements:
 	go install github.com/golang/protobuf/protoc-gen-go
 	go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
 	go install github.com/jteeuwen/go-bindata/go-bindata
+	go get -u golang.org/x/lint/golint
+	go get github.com/securego/gosec/cmd/gosec
 
 ui-requirements:
 	@echo "Installing UI requirements"

@@ -34,11 +34,11 @@ class Topup extends Component {
   }
 
   onSubmit = () => {
-    if (SessionStorage.getUser().isAdmin) {
+    /* if (SessionStorage.getUser().isAdmin) {
       this.props.history.push(`/control-panel/modify-account`);
     } else {
       this.props.history.push(`/modify-account/${this.props.match.params.organizationID}`);
-    }
+    } */
   }
 
   render() {

@@ -13,6 +13,6 @@ files:
       - ru.json
     translation: /ui/src/i18n/locales/%two_letters_code%.json
   - source: /static/templates/email/
-      ignore:
-        - /**/*?-%two_letters_code%
+    ignore:
+      - /**/*?-%two_letters_code%
     translation: /%original_path%/%original_file_name%-%two_letters_code%

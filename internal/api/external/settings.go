@@ -4,6 +4,7 @@ import (
 	"context"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -26,18 +27,32 @@ func NewSettingsServerAPI(validator auth.Validator) *SettingsServerAPI {
 
 // GetSettings defines the settings of the Server API request and response
 func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSettingsRequest) (*api.GetSettingsResponse, error) {
-	log.WithField("", "").Info("grpc_api/GetSettings")
+	logInfo := "api/appserver_serves_ui/GetSettings"
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetSettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		log.WithError(err).Error(logInfo)
+		return &api.GetSettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	settingClient := api.NewSettingsServiceClient(m2mClient)
+	settingClient := m2mServer.NewSettingsServiceClient(m2mClient)
 
-	resp, err := settingClient.GetSettings(ctx, &api.GetSettingsRequest{})
+	resp, err := settingClient.GetSettings(ctx, &m2mServer.GetSettingsRequest{})
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
@@ -45,31 +60,45 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 		LowBalanceWarning:          resp.LowBalanceWarning,
 		DownlinkFee:                resp.DownlinkFee,
 		TransactionPercentageShare: resp.TransactionPercentageShare,
-	}, nil
+	}, status.Error(codes.OK, "")
 }
 
 // ModifySettings defines the modification of the Server API settings
 func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifySettingsRequest) (*api.ModifySettingsResponse, error) {
-	log.WithField("", "").Info("grpc_api/ModifySettings")
+	logInfo := "api/appserver_serves_ui/ModifySettings"
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.ModifySettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		log.WithError(err).Error(logInfo)
+		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	settingClient := api.NewSettingsServiceClient(m2mClient)
+	settingClient := m2mServer.NewSettingsServiceClient(m2mClient)
 
-	resp, err := settingClient.ModifySettings(ctx, &api.ModifySettingsRequest{
+	resp, err := settingClient.ModifySettings(ctx, &m2mServer.ModifySettingsRequest{
 		LowBalanceWarning:          req.LowBalanceWarning,
 		DownlinkFee:                req.DownlinkFee,
 		TransactionPercentageShare: req.TransactionPercentageShare,
 	})
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.ModifySettingsResponse{
 		Status: resp.Status,
-	}, nil
+	}, status.Error(codes.OK, "")
 }

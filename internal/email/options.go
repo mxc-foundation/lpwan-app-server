@@ -31,43 +31,38 @@ var emailOptionsList = map[EmailOptions]emailInterface{
 
 func loadEmailTemplates() {
 	for option, _ := range emailOptionsList {
-		tmpNames := make(map[EmailLanguage]mailTemplateStruct)
+		mailTemplateNames[option] = make(map[EmailLanguage]mailTemplateStruct)
 
 		for _, language := range pb.Language_name {
-			tmpNames[EmailLanguage(language)] = mailTemplateStruct{
+			mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
 				templatePath: "templates/email/" + string(option) + "/" + string(option) + "-" + language,
 			}
 		}
 
-		mailTemplateNames[option] = tmpNames
-
 		if option == RegistrationConfirmation {
 			for _, language := range pb.Language_name {
 				mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
+					templatePath: mailTemplateNames[option][EmailLanguage(language)].templatePath,
 					url: "/#/registration-confirm/",
 				}
 			}
 		}
-
 	}
 
-	tmpTemplates := make(map[EmailLanguage]*template.Template)
-
 	for option, _ := range emailOptionsList {
+		mailTemplates[option] = make(map[EmailLanguage]*template.Template)
+
 		for _, language := range pb.Language_name {
 			_, err := static.AssetInfo(mailTemplateNames[option][EmailLanguage(language)].templatePath)
 			if err != nil {
 				continue
 			}
 
-			tmpTemplates[EmailLanguage(language)] = template.Must(
+			mailTemplates[option][EmailLanguage(language)] = template.Must(
 				template.New(mailTemplateNames[option][EmailLanguage(language)].templatePath).Parse(
 					string(static.MustAsset(mailTemplateNames[option][EmailLanguage(language)].templatePath))))
 		}
-
-		mailTemplates[option] = tmpTemplates
 	}
-
 }
 
 // define interfaces for each email option
