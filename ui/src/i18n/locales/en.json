@@ -924,7 +924,7 @@
       },
       "coming_soon": "Coming Soon"
     },
-    "registration": {
+    "registration": { 
       "email": "Email Address",
       "password": "Password",
       "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
