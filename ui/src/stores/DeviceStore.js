@@ -29,7 +29,7 @@ class DeviceStore extends EventEmitter {
 
   getDeviceList(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
     this.swaggerM2M.then(client => {
-      client.apis.DeviceService.GetDeviceList({
+      client.apis.DSDeviceService.GetDeviceList({
         orgId,
         offset,
         limit
@@ -48,7 +48,7 @@ class DeviceStore extends EventEmitter {
 
   getDeviceHistory(orgId, offset, limit, callbackFunc) {    
     this.swaggerM2M.then(client => {
-      client.apis.DeviceService.GetDeviceHistory({
+      client.apis.DSDeviceService.GetDeviceHistory({
         orgId,
         offset,
         limit
@@ -63,7 +63,7 @@ class DeviceStore extends EventEmitter {
 
   setDeviceMode(orgId, devId, devMode, callbackFunc) {
     this.swaggerM2M.then(client => {
-    client.apis.DeviceService.SetDeviceMode({
+    client.apis.DSDeviceService.SetDeviceMode({
       "orgId": orgId,
       "devId": devId,
       body: {

@@ -2,7 +2,7 @@ package external
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
@@ -28,7 +28,7 @@ func NewTopUpServerAPI(validator auth.Validator) *TopUpServerAPI {
 
 // GetTopUpHistory defines the topup history request and response
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetTopUpHistory org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/GetTopUpHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -82,7 +82,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 
 // GetTopUpDestination defines the topup destination request and response
 func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTopUpDestinationRequest) (*api.GetTopUpDestinationResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetTopUpDestination org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/GetTopUpDestination org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
