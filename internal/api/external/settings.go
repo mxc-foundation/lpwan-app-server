@@ -2,7 +2,6 @@ package external
 
 import (
 	"context"
-	"strconv"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
