@@ -63,7 +63,7 @@ class Withdraw extends Component {
       <React.Fragment>
         
                 
-            
+        <div style={{padding: 30 }}>
         {this.state.nsDialog && <Modal
           title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}
           context={(this.state.status) ? i18n.t(`${packageNS}:menu.withdraw.confirm_text`) : i18n.t(`${packageNS}:menu.withdraw.deny_text`)}
