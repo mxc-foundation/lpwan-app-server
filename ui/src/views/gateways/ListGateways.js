@@ -321,7 +321,7 @@ class ListGateways extends Component {
             onClick={this.toggle}
             //to={`/organizations/${this.props.match.params.organizationID}/gateways/brand`}
             //to={`/organizations/${currentOrgID}/gateways/create`}
-            to={`/organizations/${currentOrgID}/gateways/input-serial`}
+            to={`/organizations/${currentOrgID}/gateways/create`}
           />
         </GatewayAdmin>}
       >
