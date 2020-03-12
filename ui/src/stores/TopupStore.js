@@ -45,25 +45,6 @@ class TopupStore extends EventEmitter {
     });
   }
 
-  getTransactionsHistory(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.TopUpService.GetTopUpHistory({
-        orgId,
-        offset,
-        limit
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(error => {
-        errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
-  }
-
-
     getIncome(orgId, callbackFunc) {
     this.swagger.then(client => {
       client.apis.TopUpService.GetIncome({

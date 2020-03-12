@@ -24,7 +24,7 @@ const SideNavContent = (props) => {
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.control_panel`)}</li>
 
                     <li>
-                        <Link to="/control-panel/history/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_WALLET)}>
+                        <Link to="/control-panel/withdraw/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_WALLET)}>
                             <i className="mdi mdi-wallet"></i>
                             <span> {i18n.t(`${packageNS}:tr000084`)} </span>
                             <span className="menu-arrow"></span>
