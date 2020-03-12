@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	m2m "github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
@@ -85,8 +85,8 @@ func CreateOrganization(ctx context.Context, db sqlx.Queryer, org *Organization)
 		log.WithError(err).Error("CreateOrganization: failed to get m2m client")
 	} else {
 
-		topUpClient := api.NewTopUpServiceClient(m2mClient)
-		resp, err := topUpClient.GetTopUpDestination(ctx, &api.GetTopUpDestinationRequest{
+		topUpClient := m2mServer.NewTopUpServiceClient(m2mClient)
+		resp, err := topUpClient.GetTopUpDestination(ctx, &m2mServer.GetTopUpDestinationRequest{
 			OrgId: org.ID,
 		})
 		if err != nil {
