@@ -27,7 +27,7 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 
 	var msg bytes.Buffer
 	if err := mailTemplates[s.option][language].Execute(&msg, struct {
-		From, To, Host, MsgID, Boundary, Link, Logo string
+		From, To, Host, MsgID, Boundary, Link, Logo, Operator, PrimaryColor, SecondaryColor string
 	}{
 		From:     senderID,
 		To:       user,
@@ -36,6 +36,9 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 		Boundary: "----=_Part_" + messageID,
 		Link:     link,
 		Logo:     logo,
+		Operator: "your",
+		PrimaryColor: "#09006E",
+		SecondaryColor: "#00FFD9",
 	}); err != nil {
 		log.Error(err)
 		return err
