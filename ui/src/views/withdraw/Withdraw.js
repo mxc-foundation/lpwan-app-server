@@ -56,11 +56,12 @@ class Withdraw extends Component {
     const { classes } = this.props;
 
     return (
-      <React.Fragment>
-        <div className="position-relative">
+      <div className="position-relative">
                 <div className="card-coming-soon-2">
                     <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>
                 </div>
+      <React.Fragment>
+        
                 
         <div style={{padding: 30 }}>
         {this.state.nsDialog && <Modal
@@ -90,6 +91,8 @@ class Withdraw extends Component {
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
+        
+                
         <WithdrawForm />
         <Row>
           <Col>
@@ -99,9 +102,9 @@ class Withdraw extends Component {
             </Card>
           </Col>
         </Row>
-        </div>    
-        </div>
+        
       </React.Fragment>
+      </div>
     );
   }
 }
