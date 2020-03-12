@@ -3,7 +3,6 @@ package email
 import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-	"runtime"
 	"text/template"
 )
 
@@ -50,7 +49,6 @@ func loadEmailTemplates() {
 		}
 	}
 
-	runtime.Breakpoint()
 	for option, _ := range emailOptionsList {
 		mailTemplates[option] = make(map[EmailLanguage]*template.Template)
 
