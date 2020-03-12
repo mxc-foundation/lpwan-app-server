@@ -521,7 +521,8 @@
   "tr000626": "Region",
   "common": {
     "delete": "削除",
-    "reset": "リセット"
+    "reset": "リセット",
+    "comment": "Comment"
   },
   "lpwan": {
     "org_users": {
@@ -557,7 +558,8 @@
       "incorrect_username_or_password": "ユーザー名またはパスワードが間違っています。",
       "cancel": "キャンセル",
       "proceed": "続行",
-      "deny":"拒む",
+      "deny": "拒む",
+      "total_token_available": "Total Token Available",
       "confirm_modal_title": "確認：スーパーノードの撤回",
       "deny_reason": "ユーザーとMXCの記録に対する拒否の理由を追加します",
       "confirm_text": "利用可能なトークンの残高から撤回することを確認しています。よろしいですか？",
@@ -565,17 +567,17 @@
       "requester": "リクエスター",
       "balance": "残高",
       "destination": "宛先",
-      "available":"利用可能",
+      "available": "利用可能",
       "submit_withdrawal_request": "出金リクエストの送信",
       "date_requested": "要求日",
-      "status": "ステータス", 
+      "status": "状態",
       "transaction_hash": "トランザクションハッシュ",
       "request_withdraw_title": "撤回してもよろしいですか？",
       "request_withdraw_text_0": "このスーパーノードからの撤退をリクエストしています。 要求が完了すると、スーパーノードオペレーターはこの撤回を確認する必要があります。 ",
       "request_withdraw_text_1": "1000米ドルを超える金額は、スーパーノードオペレーターとMXC財団によって確認されます。",
       "request_withdraw_text_2": "撤回してもよろしいですか？",
       "request_withdraw_text_com": "出金リクエストは正常に送信され、スーパーノードオペレーターは翌営業日以内にこの取引を確認します。",
-      "confirmed": "確認済み。",
+      "confirmed": "確認済",
       "currentFee": "現在の料金"
     },
     "topup": {
@@ -920,13 +922,13 @@
         "title": "Dashboard Widgets",
         "add": "Add Widget"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "近日公開"
     },
     "registration": {
-      "email": "Email Address",
-      "password": "Password",
-      "password_hint": "(8 characters or longer. At least one number of symbol)",
-      "password_match_error": "Password must contain atleast 8 characters, one number and one symbol",
+      "email": "Eメールアドレス",
+      "password": "パスワード",
+      "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
+      "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",
       "org_name": "Organization Name",
@@ -940,11 +942,11 @@
     "menmonic_phrase": {
       "write_button": "I wrote it down",
       "skip_button": "Skip",
-      "confirm_button": "Confirm",
-      "back_button": "Back"
+      "confirm_button": "確定する",
+      "back_button": "戻る"
     },
     "google_2fa": {
-      "confirm_button": "Confirm",
+      "confirm_button": "確定する",
       "skip_button": "Skip"
     },
     "profile_2fa": {
@@ -960,12 +962,12 @@
       }
     },
     "profile_password_reset": {
-      "title": "Password",
+      "title": "パスワード",
       "account_password": {
         "title": "Account Password",
         "reset_button": "Reset"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "近日公開"
     },
     "dashboard_2fa": {
       "title": "Your Supernode Account has a new feature!",
@@ -976,7 +978,7 @@
       "done_button": "Done",
       "menmonic_step_1_title": "Write this down and keep it in a safe place.",
       "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
-      "menmonic_step_3_title": "Confirmed"
+      "menmonic_step_3_title": "確認済"
     }
   }
 }
