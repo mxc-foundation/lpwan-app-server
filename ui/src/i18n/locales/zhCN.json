@@ -521,7 +521,8 @@
   "tr000626": "地区",
   "common": {
     "delete": "删除",
-    "reset": "重置"
+    "reset": "重置",
+    "comment": "评论"
   },
   "lpwan": {
     "org_users": {
@@ -558,24 +559,25 @@
       "cancel": "取消",
       "proceed": "继续",
       "deny": "拒绝",
+      "total_token_available": "可用记录总数",
       "confirm_modal_title": "确认：超级节点退出",
       "deny_reason": "添加拒绝用户和MXC记录的原因",
       "confirm_text": "您正在确认从其可用令牌余额中提取。 你确定吗？",
       "deny_text": "您拒绝从他们的可用令牌余额中提款的请求。",
       "requester": "请求者",
-      "balance": "天平",
+      "balance": "余额",
       "destination": "目的地",
-      "available":"可用",
+      "available": "可用",
       "submit_withdrawal_request": "提交提款请求",
       "date_requested": "请求日期",
-      "status": "状态", 
+      "status": "状态",
       "transaction_hash": "交易哈希",
       "request_withdraw_title": "您确定要退出吗？",
       "request_withdraw_text_0": "您正在请求退出此超级节点。 请求完成后，超级节点操作员必须确认退出。",
       "request_withdraw_text_1": "金额超过1000美元的金额将由Supernode运营商和MXC Foundation确认。",
       "request_withdraw_text_2": "  您确定要退出吗？",
       "request_withdraw_text_com": "您的提款请求已成功提交，超级节点运营商将在下一个工作日内确认此交易。",
-      "confirmed": "已确认。",
+      "confirmed": "已确认",
       "currentFee": "当前费用"
     },
     "topup": {
@@ -608,7 +610,7 @@
         "status": "状态",
         "amount": "金额",
         "date": "日期",
-        "tx_hash": "TX hash"
+        "tx_hash": "哈希"
       }
     },
     "history": {
@@ -865,7 +867,7 @@
         "approved": "已确认",
         "pending": "待审核",
         "subtext": "今天的票",
-        "description": "Shows tickets history"
+        "description": "客服单历史记录"
       },
       "withdrawal": {
         "title": "提取",
@@ -920,63 +922,63 @@
         "title": "仪表板小部件",
         "add": "添加小部件"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "敬请期待"
     },
     "registration": {
-      "email": "Email Address",
-      "password": "Password",
-      "password_hint": "(密码必须至少包含8个字符或更多，一个数字，一个符号和一个字母。)",
-      "password_match_error": "密码必须至少包含8个字符或更多，一个数字，一个符号和一个字母。",
-      "confirm_password": "Confirm Your Password",
-      "confirm_password_match_error": "Password and confirm password must be same",
-      "org_name": "Organization Name",
-      "org_display_name": "Organization Display Name",
-      "next": "Next",
-      "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
-      "mnemonic_phrase_title": "Write down your Mnemonic phrase",
-      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in the correct order",
-      "2fa_title": "Set up two-factor authentication using Google Authenticator."
+      "email": "电子邮箱地址",
+      "password": "密码",
+      "password_hint": "(单词必须包含至少 8 个字符，一个数字，一个符号，一个字母。)",
+      "password_match_error": "密码必须包含至少 8 个字符或更多，一个数字，一个符号和一个字母。",
+      "confirm_password": "确认密码",
+      "confirm_password_match_error": "密码和确认密码必须相同。",
+      "org_name": "组织名称",
+      "org_display_name": "组织显示名称",
+      "next": "下一步",
+      "mnemonic_phrase_instruction": "在下一个屏幕上，我们将显示您的 Mnemon语句。请将其写下来。 您的Mnemon语句是重置您双重身份验证的唯一方式。 如果您丢失此项，您可能会失去对您超级节点账户的访问权，并充值或错过MXC。",
+      "mnemonic_phrase_title": "保存您的恢复短语",
+      "mnemonic_phrase_confirm_title": "请按正确顺序点击助记符",
+      "2fa_title": "此操作将用 Google Authenticator 启用两步验证"
     },
     "menmonic_phrase": {
-      "write_button": "I wrote it down",
-      "skip_button": "Skip",
-      "confirm_button": "Confirm",
-      "back_button": "Back"
+      "write_button": "我已将它写下来：",
+      "skip_button": "跳过",
+      "confirm_button": "确认",
+      "back_button": "返回"
     },
     "google_2fa": {
-      "confirm_button": "Confirm",
-      "skip_button": "Skip"
+      "confirm_button": "确认",
+      "skip_button": "跳过"
     },
     "profile_2fa": {
-      "title": "Two-Factor Authentication",
+      "title": "双重身份验证",
       "google": {
-        "title": "Google Authenticator",
-        "setup_button": "Setting",
-        "2fa_title": "2FA Setting",
-        "2fa_instruction": "Set up two-factor authentication using Google Authenticator",
-        "reset_2fa_title": "Two-factor authentication",
-        "reset_2fa_instruction": "Set up two-factor authentication using Google Authenticator",
-        "mnemonic_phrase_confirm_title": "To reset, please click mnemonic phrase in the correct order"
+        "title": "Google 身份验证器",
+        "setup_button": "查看",
+        "2fa_title": "两步认证设置",
+        "2fa_instruction": "此操作将用 Google Authenticator 启用两步验证",
+        "reset_2fa_title": "双重认证",
+        "reset_2fa_instruction": "此操作将用 Google Authenticator 启用两步验证",
+        "mnemonic_phrase_confirm_title": "请按正确顺序点击助记符"
       }
     },
     "profile_password_reset": {
-      "title": "Password",
+      "title": "密码",
       "account_password": {
-        "title": "Account Password",
-        "reset_button": "Reset"
+        "title": "账户密码",
+        "reset_button": "重置"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "敬请期待"
     },
     "dashboard_2fa": {
-      "title": "Your Supernode Account has a new feature!",
-      "description": "Two-factor authentication is now an option. As part of this feature addition, each account is assigned a mnemonic phrase. This phrase is the only way to reset your two-factor authentication method. On the next screen your phrase will be displayed. Please write it down and keep it in a secure location.",
-      "agree_instruction": "I understand that if I don't write down my Mnemonic phrase I could lose access to my account.",
-      "next_button": "Next",
-      "skip_button": "Not now",
-      "done_button": "Done",
-      "menmonic_step_1_title": "Write this down and keep it in a safe place.",
-      "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
-      "menmonic_step_3_title": "Confirmed"
+      "title": "您的 Supernode 帐户有一个新功能！",
+      "description": "双重身份验证现在是一个选项。作为此功能添加的一部分，每个帐户都被分配给一个密语句。 此短语是重置您的双重身份验证方法的唯一途径。 在下一个屏幕上将显示您的短语。请将其写下并保持在一个安全的位置。",
+      "agree_instruction": "我明白，如果我不记下我的Mnemon语句，我可能无法访问我的帐户。",
+      "next_button": "下一步",
+      "skip_button": "暂不",
+      "done_button": "完成",
+      "menmonic_step_1_title": "将此写下来并将其保存在一个安全的地方。",
+      "menmonic_step_2_title": "请按正确顺序点击助记符",
+      "menmonic_step_3_title": "已确认"
     }
   }
 }

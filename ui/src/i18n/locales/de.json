@@ -521,7 +521,8 @@
   "tr000626": "Region",
   "common": {
     "delete": "DELETE",
-    "reset": "RESET"
+    "reset": "RESET",
+    "comment": "Comment"
   },
   "lpwan": {
     "org_users": {
@@ -558,6 +559,7 @@
       "cancel": "CANCEL",
       "proceed": "PROCEED",
       "deny": "Deny",
+      "total_token_available": "Total Token Available",
       "confirm_modal_title": "Confirmation: Supernode withdawal",
       "deny_reason": "Add a reason for a denial for the User and for MXC’s records",
       "confirm_text": "You are confirming that withdraw from their balance of available tokens. Are you sure?",
@@ -565,10 +567,10 @@
       "requester": "Requester",
       "balance": "Balance",
       "destination": "Destination",
-      "available":"Available",
+      "available": "Available",
       "submit_withdrawal_request": "Submit Withdrawal Request",
-      "date_requested": "Date Requested", 
-      "status": "Status", 
+      "date_requested": "Date Requested",
+      "status": "Status",
       "transaction_hash": "Transaction Hash",
       "request_withdraw_title": "Are you sure?",
       "request_withdraw_text_0": "You are requesting to withdraw from this Supernode. Once the request is completed, the Supernode operator must confirm this withdrawal.",
@@ -940,11 +942,11 @@
     "menmonic_phrase": {
       "write_button": "I wrote it down",
       "skip_button": "Skip",
-      "confirm_button": "Confirm",
+      "confirm_button": "Bestätigen",
       "back_button": "Back"
     },
     "google_2fa": {
-      "confirm_button": "Confirm",
+      "confirm_button": "Bestätigen",
       "skip_button": "Skip"
     },
     "profile_2fa": {
@@ -960,7 +962,7 @@
       }
     },
     "profile_password_reset": {
-      "title": "Password",
+      "title": "Passwort",
       "account_password": {
         "title": "Account Password",
         "reset_button": "Reset"
