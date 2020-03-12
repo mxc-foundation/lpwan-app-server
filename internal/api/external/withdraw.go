@@ -2,8 +2,6 @@ package external
 
 import (
 	"context"
-	"fmt"
-
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
@@ -12,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strconv"
 )
 
 // WithdrawServerAPI validates the withdraw server api
@@ -28,7 +27,7 @@ func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
 
 // ModifyWithdrawFee modifies the withdraw fee
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/ModifyWithdrawFee")
+	logInfo := "api/appserver_serves_ui/ModifyWithdrawFee"
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -66,7 +65,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 
 // GetWithdrawFee gets the withdraw fee
 func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWithdrawFeeRequest) (*api.GetWithdrawFeeResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetWithdrawFee")
+	logInfo := "api/appserver_serves_ui/GetWithdrawFee"
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -92,7 +91,7 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 
 // GetWithdrawHistory gets the withdraw history
 func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.GetWithdrawHistoryRequest) (*api.GetWithdrawHistoryResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetWithdrawHistory org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/GetWithdrawHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -149,7 +148,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 
 // WithdrawReq defines request for withdraw
 func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawReqRequest) (*api.WithdrawReqResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/WithdrawReq org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/WithdrawReq org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -194,7 +193,7 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 }
 
 func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.ConfirmWithdrawRequest) (*api.ConfirmWithdrawResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/ConfirmWithdraw org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/ConfirmWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -235,8 +234,7 @@ func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.Confir
 
 // GetWithdrawRequestList returns all users withdrawal requests to the front-end
 func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api.GetWithdrawRequestListRequest) (*api.GetWithdrawRequestListResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetWithdrawRequestList")
-
+	logInfo := "api/appserver_serves_ui/GetWithdrawRequestList"
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
 	if err != nil {

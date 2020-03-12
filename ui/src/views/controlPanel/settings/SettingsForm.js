@@ -30,7 +30,7 @@ class SettingsForm extends Component {
       const organizationID = 0;
       //this.setState({loading: true})
 
-      WithdrawStore.getWithdrawFee(ETHER, organizationID, (resp) => {
+      WithdrawStore.getWithdrawFee(ETHER, (resp) => {
         this.setState({ object: { withdrawFee: resp.withdrawFee } });
       });
 

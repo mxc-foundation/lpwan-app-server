@@ -925,8 +925,8 @@
     "registration": {
       "email": "Email Address",
       "password": "Password",
-      "password_hint": "(8 characters or longer. At least one number of symbol)",
-      "password_match_error": "Password must contain atleast 8 characters, one number and one symbol",
+      "password_hint": "(密碼必須至少包含8個字符或更多，一個數字，一個符號和一個字母。)",
+      "password_match_error": "密碼必須至少包含8個字符或更多，一個數字，一個符號和一個字母。",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",
       "org_name": "Organization Name",

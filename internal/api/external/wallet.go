@@ -2,7 +2,7 @@ package external
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
@@ -28,7 +28,7 @@ func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
 
 // GetWalletBalance gets the wallet balance
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetWalletBalance org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/GetWalletBalance org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -68,7 +68,7 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 
 // GetVmxcTxHistory gets virtual MXC transaction history
 func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxcTxHistoryRequest) (*api.GetVmxcTxHistoryResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetVmxcTxHistory org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/GetVmxcTxHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -124,7 +124,7 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 
 // GetWalletUsageHist gets the walllet usage history
 func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWalletUsageHistRequest) (*api.GetWalletUsageHistResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetWalletUsageHist org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/GetWalletUsageHist org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
@@ -188,7 +188,7 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 
 // GetDlPrice gets downlink price from m2m wallet
 func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPriceRequest) (*api.GetDownLinkPriceResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetDlPrice org=%d", req.OrgId)
+	logInfo := "api/appserver_serves_ui/GetDlPrice org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)

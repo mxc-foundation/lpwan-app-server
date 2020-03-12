@@ -17,7 +17,7 @@ class WalletStore extends EventEmitter {
 
   getDlPrice(orgId, callbackFunc) {
     this.swagger.then(client => {
-      client.apis.ProxyRequest.GetDlPrice({
+      client.apis.WalletService.GetDlPrice({
         orgId,
       })
         .then(checkStatus)
