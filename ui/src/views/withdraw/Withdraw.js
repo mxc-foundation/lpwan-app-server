@@ -62,7 +62,7 @@ class Withdraw extends Component {
                     <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>
                 </div>
                 
-            
+        <div style={{padding: 30 }}>
         {this.state.nsDialog && <Modal
           title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}
           context={(this.state.status) ? i18n.t(`${packageNS}:menu.withdraw.confirm_text`) : i18n.t(`${packageNS}:menu.withdraw.deny_text`)}
@@ -99,6 +99,7 @@ class Withdraw extends Component {
             </Card>
           </Col>
         </Row>
+        </div>    
         </div>
       </React.Fragment>
     );
