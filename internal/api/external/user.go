@@ -462,6 +462,13 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 
 // RegisterUser adds new user and sends activation email
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
+	logInfo := "api/appserver_serves_ui/RegisterUser"
+
+	log.WithFields(log.Fields{
+		"email": req.Email,
+		"languange": pb.Language_name[int32(req.Language)],
+	}).Info(logInfo)
+
 	user := storage.User{
 		Username:   req.Email,
 		SessionTTL: 0,
@@ -471,6 +478,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 
 	u, err := uuid.NewV4()
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
 	token := u.String()
@@ -480,12 +488,14 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		// user has never been created yet
 		err = storage.RegisterUser(storage.DB(), &user, token)
 		if err != nil {
+			log.WithError(err).Error(logInfo)
 			return nil, helpers.ErrToRPCError(err)
 		}
 
 		// get user again
 		obj, err = storage.GetUserByUsername(ctx, storage.DB(), user.Username)
 		if err != nil {
+			log.WithError(err).Error(logInfo)
 			// internal error
 			return nil, helpers.ErrToRPCError(err)
 		}
@@ -500,9 +510,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 
 	err = email.SendInvite(obj.Username, *obj.SecurityToken, email.EmailLanguage(pb.Language_name[int32(req.Language)]), email.RegistrationConfirmation)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"username": user.Username,
-		}).Info("Send email error!")
+		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
 
