@@ -145,6 +145,17 @@ Then open in your web browser: http://localhost:3000
 
 Now when you make changes it will automatically refresh
 
+## Code syntax and security testing
+
+Before commiting your changes it's good to check for code syntax and missing error handlers.
+Run the following Make jobs and fix any finding pre-commit, so the CI pipeline does not fail.
+
+```bash
+cd lpwan-app-server &&
+make lint
+make sec
+```
+
 ## Library Requirements
 
 All libraries used in the UI should provide React Native support

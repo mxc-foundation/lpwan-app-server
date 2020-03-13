@@ -96,7 +96,7 @@ class Registration extends Component {
     super();
 
     let bypassCaptcha = false;
-    if (window.location.origin.includes("http://localhost")) {
+    if (window.location.origin.includes("https://lora.demo")) {
       bypassCaptcha = true;
     }
 
