@@ -609,6 +609,10 @@
         "amount": "금액",
         "date": "날짜",
         "tx_hash": "TX hash"
+      },
+      "info": {
+        "title": "알림",
+        "notice": "이 페이지는 테스트넷에서 운행 중입니다."
       }
     },
     "history": {

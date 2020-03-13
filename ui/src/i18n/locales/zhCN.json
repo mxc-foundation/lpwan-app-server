@@ -609,6 +609,10 @@
         "amount": "金额",
         "date": "日期",
         "tx_hash": "TX hash"
+      },
+      "info": {
+        "title": "信息。",
+        "notice": "这是在测试网上运行。"
       }
     },
     "history": {

@@ -609,6 +609,10 @@
         "amount": "Amount",
         "date": "Date",
         "tx_hash": "TX hash"
+      },
+      "info": {
+        "title": "Info",
+        "notice": "This is running on test-net."
       }
     },
     "history": {
