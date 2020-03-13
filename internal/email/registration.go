@@ -37,8 +37,8 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 		Link:     link,
 		Logo:     logo,
 		Operator: "your",
-		PrimaryColor: "#09006E",
-		SecondaryColor: "#00FFD9",
+		PrimaryColor: "#71B6F9",
+		SecondaryColor: "#10c469",
 	}); err != nil {
 		log.Error(err)
 		return err

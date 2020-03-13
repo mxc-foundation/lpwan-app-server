@@ -41,6 +41,11 @@ Content-ID: html-body
                         <td class=3D"content-wrap" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; display: inline-block; font-size: 14px; vertical-align: top; margin: 0; padding: 30px;border: 3px solid {{ .PrimaryColor }};border-radius: 7px; background-color: #fff;" valign="top">
                             <meta itemprop="name" content="Confirm Email" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                             <table width="100%" cellpadding="0" cellspacing="0" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;border-collapse: collapse;">
+                                <tr style=3D"box-sizing:border-box;page-break-inside:avoid; flex:display; content-justified: center;">
+                                    <td style=3D"text-align:center;box-sizing:border-box">
+                                        <img style=3D"font-family: Montserrat, Helvetica; width: 100px !important; margin: 15px;" class=3D"logo" src=3D"{{ .Logo }}" alt="logo" height="54">
+                                    </td>
+                                </tr>
                                 <tr style=3D"box-sizing: border-box;page-break-inside: avoid;">
                                     <td style=3D"text-align: center;box-sizing: border-box;">
                                         <a href=3D"#" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
