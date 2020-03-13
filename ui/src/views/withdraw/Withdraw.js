@@ -102,7 +102,7 @@ class Withdraw extends Component {
             </Card>
           </Col>
         </Row>
-        
+        </div>
       </React.Fragment>
       </div>
     );

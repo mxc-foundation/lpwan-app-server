@@ -611,6 +611,10 @@
         "amount": "金額",
         "date": "日付",
         "tx_hash": "TX hash"
+      },
+      "info": {
+        "title": "情報",
+        "notice": "これはテストネットで実行されています。"
       }
     },
     "history": {
