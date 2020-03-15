@@ -1,6 +1,7 @@
 package external
 
 import (
+	"os"
 	"encoding/json"
 	"fmt"
 	"google.golang.org/grpc/status"
@@ -391,7 +392,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 		Logo:         brandingHeader,
 		Registration: brandingRegistration,
 		Footer:       brandingFooter,
-		LogoPath:     brandingLogoPath,
+		LogoPath:     os.Getenv("APPSERVER") + "/branding.png",
 	}
 
 	return &resp, nil
