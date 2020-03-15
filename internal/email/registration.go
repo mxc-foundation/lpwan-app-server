@@ -2,6 +2,7 @@ package email
 
 import (
 	"bytes"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"net/smtp"
@@ -15,6 +16,11 @@ type registrationEmailInterface struct {
 var registrationEmail = registrationEmailInterface{option: RegistrationConfirmation}
 
 func (s *registrationEmailInterface) sendEmail(user, token string, language EmailLanguage) error {
+	mailTemplate := mailTemplates[s.option][language]
+	if mailTemplate == nil {
+		mailTemplate = mailTemplates[s.option][EmailLanguage(pb.Language_name[int32(pb.Language_en)])]
+	}
+
 	link := host + mailTemplateNames[s.option][language].url + token
 
 	logo := host + "/branding.png"
@@ -26,7 +32,7 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 	messageID := time.Now().Format("20060102150405.") + base32endocoding.EncodeToString(b)
 
 	var msg bytes.Buffer
-	if err := mailTemplates[s.option][language].Execute(&msg, struct {
+	if err := mailTemplate.Execute(&msg, struct {
 		From, To, Host, MsgID, Boundary, Link, Logo, Operator, PrimaryColor, SecondaryColor string
 	}{
 		From:     senderID,
