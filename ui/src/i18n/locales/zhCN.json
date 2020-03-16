@@ -596,7 +596,7 @@
       "notice002": "警告: 在充值 MXC 之前，请先注册一个 ETH 账户",
       "notice003": "您想要前往 ETH 账户页面更新您的 ETH 账户吗?",
       "crypto": "加密货币",
-      "fiat": "Fiat (即将到来)",
+      "otc": "OTC (即将到来)",
       "eth_address": "ETH 地址",
       "copy_addr": "复制地址",
       "show_qr_code": "显示二维码",

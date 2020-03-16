@@ -596,7 +596,7 @@
       "notice002": "Please, Register your ETH account before topping up MXC.",
       "notice003": "Would you like to go to the ETH account menu to update your account?",
       "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH Address",
       "copy_addr": "Copy Address",
       "show_qr_code": "Show QR Code",

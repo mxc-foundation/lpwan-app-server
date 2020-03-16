@@ -79,7 +79,7 @@ class Topup extends Component {
                   <NavLink
                     className={classNames('nav-link', { active: this.state.activeTab === '1' })} href='#'
                     onClick={(e) => this.onTabToggle("1")} disabled
-                  >{i18n.t(`${packageNS}:menu.topup.fiat`)}</NavLink>
+                  >{i18n.t(`${packageNS}:menu.topup.otc`)}</NavLink>
                 </NavItem>
               </Nav>
 
