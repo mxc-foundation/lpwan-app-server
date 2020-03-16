@@ -69,10 +69,16 @@ class RegistrationConfirmForm extends FormComponent {
             return (<div></div>);
         }
 
+        let id = '';
+        if(object.object !== undefined){
+            id = object.object.object.id;
+        }
+
         let fieldsSchema = {
+            id: Yup.string().trim(),
             username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
-            password: Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g, i18n.t(`${packageNS}:menu.registration.password_hint`)).required(i18n.t(`${packageNS}:tr000431`)),
-            passwordConfirmation: Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g, i18n.t(`${packageNS}:menu.registration.password_hint`)).required(i18n.t(`${packageNS}:tr000431`)),
+            password: Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`)),
+            passwordConfirmation: Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`)),
             organizationName: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
             organizationDisplayName: Yup.string().required(i18n.t(`${packageNS}:tr000431`))
         }
@@ -87,6 +93,7 @@ class RegistrationConfirmForm extends FormComponent {
             <Formik
                 enableReinitialize
                 initialValues={{
+                    id: id,
                     username: username || '',
                     password: object.password || '',
                     passwordConfirmation: object.passwordConfirmation || '',
@@ -201,7 +208,7 @@ class RegistrationConfirm extends Component {
     }
 
     onSubmit(data) {
-        console.log('data', data);
+        //console.log('data', data);
         if (data.password === data.passwordConfirmation) {
             this.setState({
                 isPwdMatch: true
@@ -228,7 +235,6 @@ class RegistrationConfirm extends Component {
     }
 
     render() {
-        console.log(this.props);
         return (
             <Grid container justify="center">
                 <Grid item xs={6} lg={4}>
