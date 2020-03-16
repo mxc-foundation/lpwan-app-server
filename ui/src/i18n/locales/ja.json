@@ -596,7 +596,7 @@
       "notice002": "MXCを追加する前にETHアカウントを登録してください。",
       "notice003": "ETHアカウントメニューでアカウントの更新を行いますか？",
       "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH Address",
       "copy_addr": "Copy Address",
       "show_qr_code": "Show QR Code",
