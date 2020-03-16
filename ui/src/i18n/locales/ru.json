@@ -767,7 +767,8 @@
       "moreThan": "amount must be greater than 0 or less than balance.",
       "min": "The minimum is 0.",
       "need_number": "Requires a number",
-      "need_19_digit": "Requires number less than 19 digits"
+      "need_19_digit": "Requires number less than 19 digits",
+      "format_unmatch":"please match the requested format."
     },
     "store": {
       "device_has_been": "Device(s) has been",
