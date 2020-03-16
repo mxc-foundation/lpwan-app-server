@@ -596,7 +596,7 @@
       "notice002": "MXC 토큰을 충전하기 전에 귀하의 이더리움 어카운트를 등록해주세요.",
       "notice003": "이더리움 어카운트 등록을 위해 이더리움 어카운트 메뉴로 이동 하시겠습니까?",
       "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH Address",
       "copy_addr": "Copy Address",
       "show_qr_code": "Show QR Code",
@@ -682,7 +682,8 @@
       "other": "그외의 제조사들",
       "enter_your_gateway_serial_number": "게이트웨이 일련번호를 입력하세요.",
       "were_searching_with_your_gateway_please_wait": "게이트웨이를 찾고 있습니다.",
-      "qr_code_scan": "QR Code Scan"
+      "qr_code_scan": "QR 코드 스캔",
+      "reset_lora_config": "리셋 Lora 설정"
     },
     "staking": {
       "staking": "스테이킹",

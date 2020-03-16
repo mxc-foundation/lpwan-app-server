@@ -863,7 +863,7 @@ class GatewayForm extends Component {
                           //   }
                           // }
                           >
-                            {"Reset Lara Config"}
+                            {i18n.t(`${packageNS}:menu.gateways.reset_lora_config`)}
                           </Button>
                         </Col>
                       </Row>

@@ -596,7 +596,7 @@
       "notice002": "MXCを追加する前にETHアカウントを登録してください。",
       "notice003": "ETHアカウントメニューでアカウントの更新を行いますか？",
       "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH Address",
       "copy_addr": "Copy Address",
       "show_qr_code": "Show QR Code",
@@ -682,7 +682,8 @@
       "other": "その他",
       "enter_your_gateway_serial_number": "ゲートウェイのシリアルナンバーを入力してください",
       "were_searching_with_your_gateway_please_wait": "ゲートウェイを検索しています。しばらくお待ちください。",
-      "qr_code_scan": "QR Code Scan"
+      "qr_code_scan": "QR Code Scan",
+      "reset_lora_config": "リセット Lora 構成"
     },
     "staking": {
       "staking": "ステーキング",

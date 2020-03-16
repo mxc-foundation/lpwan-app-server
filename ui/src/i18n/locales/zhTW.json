@@ -596,7 +596,7 @@
       "notice002": "警告: 在充值 MXC 之前，請先註冊一個 ETH 賬戶",
       "notice003": "您想要前往 ETH 賬戶頁面更新您的 ETH 賬戶嗎?",
       "crypto": "加密貨幣",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH地址",
       "copy_addr": "拷貝網址",
       "show_qr_code": "顯示 QR 代碼",
@@ -682,7 +682,8 @@
       "other": "其他",
       "enter_your_gateway_serial_number": "輸入您的網關序列號",
       "were_searching_with_your_gateway_please_wait": "我們正在搜索您的網關，請稍候...",
-      "qr_code_scan": "QR 碼掃描"
+      "qr_code_scan": "QR 碼掃描",
+      "reset_lora_config": "重啟 Lora 配置"
     },
     "staking": {
       "staking": "質押",
