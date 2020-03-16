@@ -613,8 +613,8 @@
         "tx_hash": "TX hash"
       },
       "info": {
-        "title": "情報",
-        "notice": "これはテストネットで実行されています。"
+        "title": "Info",
+        "notice": "This is running on test-net."
       }
     },
     "history": {
@@ -931,8 +931,8 @@
     "registration": {
       "email": "Eメールアドレス",
       "password": "パスワード",
-      "password_hint": "(パスワードは8文字以上、英字と必ず1つ以上の数字と特殊文字を含める必要があります。)",
-      "password_match_error": "パスワードは8文字以上、英字と必ず1つ以上の数字と特殊文字を含める必要があります。",
+      "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
+      "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",
       "org_name": "Organization Name",
