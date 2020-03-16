@@ -763,7 +763,11 @@
       "unstake_successful": "ステーク解除成功。あなたのM2Mウォレット残高にMXCが追加されました。",
       "staking_enhances": "ステークをすることにより全ての参加者が公平にネットワークに参加することが可能になり、データ取引が向上します。",
       "close_to_acquiring": "月収入獲得までもう少しです。今ステークを解除すると収入を受け取ることができません。",
-      "coming_soon": "近日公開"
+      "coming_soon": "近日公開",
+      "moreThan": "金額は0より大きいか、balance未満でなければなりません。",
+      "min": "最小値は0です。",
+      "need_number": "数字が必要です。",
+      "need_19_digit": "19桁未満の数字が必要です。"
     },
     "store": {
       "device_has_been": "端末は",

@@ -763,7 +763,11 @@
       "unstake_successful": "解除質押成功。MXC 已添加到您的 M2M 錢包中。",
       "staking_enhances": "質押透過鼓勵持有者的公平參與來增強數據交易流程。",
       "close_to_acquiring": "您即將獲得每月收入。如果現在放棄，您將錯過每月收入。",
-      "coming_soon": "敬請期待"
+      "coming_soon": "敬請期待",
+      "moreThan": "金額必須大於0或小於餘額。",
+      "min": "最小值為0。",
+      "need_number": "需要一個數字。",
+      "need_19_digit": "需要少於19位數字。"
     },
     "store": {
       "device_has_been": "設備已",
