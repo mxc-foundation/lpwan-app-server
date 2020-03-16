@@ -513,7 +513,7 @@
   "tr000618": "© 2020 Powered by MXC",
   "tr000619": "Root Password",
   "tr000620": "Warning: Displaying your root password will void your warranty",
-  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
+  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by Gateway.",
   "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
   "tr000623": "Display Root Password",
   "tr000624": "I want to keep my warranty",
@@ -521,7 +521,8 @@
   "tr000626": "Region",
   "common": {
     "delete": "削除",
-    "reset": "リセット"
+    "reset": "リセット",
+    "comment": "Comment"
   },
   "lpwan": {
     "org_users": {
@@ -557,7 +558,8 @@
       "incorrect_username_or_password": "ユーザー名またはパスワードが間違っています。",
       "cancel": "キャンセル",
       "proceed": "続行",
-      "deny":"拒む",
+      "deny": "拒む",
+      "total_token_available": "Total Token Available",
       "confirm_modal_title": "確認：スーパーノードの撤回",
       "deny_reason": "ユーザーとMXCの記録に対する拒否の理由を追加します",
       "confirm_text": "利用可能なトークンの残高から撤回することを確認しています。よろしいですか？",
@@ -565,17 +567,17 @@
       "requester": "リクエスター",
       "balance": "残高",
       "destination": "宛先",
-      "available":"利用可能",
+      "available": "利用可能",
       "submit_withdrawal_request": "出金リクエストの送信",
       "date_requested": "要求日",
-      "status": "ステータス", 
+      "status": "状態",
       "transaction_hash": "トランザクションハッシュ",
       "request_withdraw_title": "撤回してもよろしいですか？",
       "request_withdraw_text_0": "このスーパーノードからの撤退をリクエストしています。 要求が完了すると、スーパーノードオペレーターはこの撤回を確認する必要があります。 ",
       "request_withdraw_text_1": "1000米ドルを超える金額は、スーパーノードオペレーターとMXC財団によって確認されます。",
       "request_withdraw_text_2": "撤回してもよろしいですか？",
       "request_withdraw_text_com": "出金リクエストは正常に送信され、スーパーノードオペレーターは翌営業日以内にこの取引を確認します。",
-      "confirmed": "確認済み。",
+      "confirmed": "確認済",
       "currentFee": "現在の料金"
     },
     "topup": {
@@ -594,7 +596,7 @@
       "notice002": "MXCを追加する前にETHアカウントを登録してください。",
       "notice003": "ETHアカウントメニューでアカウントの更新を行いますか？",
       "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH Address",
       "copy_addr": "Copy Address",
       "show_qr_code": "Show QR Code",
@@ -609,6 +611,10 @@
         "amount": "金額",
         "date": "日付",
         "tx_hash": "TX hash"
+      },
+      "info": {
+        "title": "Info",
+        "notice": "This is running on test-net."
       }
     },
     "history": {
@@ -676,7 +682,8 @@
       "other": "その他",
       "enter_your_gateway_serial_number": "ゲートウェイのシリアルナンバーを入力してください",
       "were_searching_with_your_gateway_please_wait": "ゲートウェイを検索しています。しばらくお待ちください。",
-      "qr_code_scan": "QR Code Scan"
+      "qr_code_scan": "QR Code Scan",
+      "reset_lora_config": "リセット Lora 構成"
     },
     "staking": {
       "staking": "ステーキング",
@@ -756,7 +763,11 @@
       "unstake_successful": "ステーク解除成功。あなたのM2Mウォレット残高にMXCが追加されました。",
       "staking_enhances": "ステークをすることにより全ての参加者が公平にネットワークに参加することが可能になり、データ取引が向上します。",
       "close_to_acquiring": "月収入獲得までもう少しです。今ステークを解除すると収入を受け取ることができません。",
-      "coming_soon": "近日公開"
+      "coming_soon": "近日公開",
+      "moreThan": "金額は0より大きいか、balance未満でなければなりません。",
+      "min": "最小値は0です。",
+      "need_number": "数字が必要です。",
+      "need_19_digit": "19桁未満の数字が必要です。"
     },
     "store": {
       "device_has_been": "端末は",
@@ -920,13 +931,13 @@
         "title": "Dashboard Widgets",
         "add": "Add Widget"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "近日公開"
     },
     "registration": {
-      "email": "Email Address",
-      "password": "Password",
-      "password_hint": "(パスワードは8文字以上、英字と必ず1つ以上の数字と特殊文字を含める必要があります。)",
-      "password_match_error": "パスワードは8文字以上、英字と必ず1つ以上の数字と特殊文字を含める必要があります。",
+      "email": "Eメールアドレス",
+      "password": "パスワード",
+      "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
+      "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",
       "org_name": "Organization Name",
@@ -940,11 +951,11 @@
     "menmonic_phrase": {
       "write_button": "I wrote it down",
       "skip_button": "Skip",
-      "confirm_button": "Confirm",
-      "back_button": "Back"
+      "confirm_button": "確定する",
+      "back_button": "戻る"
     },
     "google_2fa": {
-      "confirm_button": "Confirm",
+      "confirm_button": "確定する",
       "skip_button": "Skip"
     },
     "profile_2fa": {
@@ -960,12 +971,12 @@
       }
     },
     "profile_password_reset": {
-      "title": "Password",
+      "title": "パスワード",
       "account_password": {
         "title": "Account Password",
         "reset_button": "Reset"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "近日公開"
     },
     "dashboard_2fa": {
       "title": "Your Supernode Account has a new feature!",
@@ -976,7 +987,7 @@
       "done_button": "Done",
       "menmonic_step_1_title": "Write this down and keep it in a safe place.",
       "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
-      "menmonic_step_3_title": "Confirmed"
+      "menmonic_step_3_title": "確認済"
     }
   }
 }

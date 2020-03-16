@@ -22,6 +22,7 @@ react_test_frontend:
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
 
@@ -40,6 +41,7 @@ syntax_test_backend:
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
 
@@ -58,6 +60,7 @@ security_test_backend:
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
     
@@ -77,6 +80,7 @@ build_image: # this needs changing to native build to speed up 2-3 times
     - docker push $CONTAINER_IMAGE
   except:
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - buildserver-native
 

@@ -131,7 +131,7 @@ class Login extends Component {
     super();
 
     let bypassCaptcha = false;
-    if (window.location.origin.includes("http://localhost")) {
+    if (window.location.origin.includes("https://lora.demo") || window.location.origin.includes("http://localhost")) {
       bypassCaptcha = true;
     }
 

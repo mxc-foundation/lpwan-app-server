@@ -21,7 +21,7 @@ class UserForm extends Component {
     };
   }
 
-  handleUploadedProfilePic = (output) => {
+  /* handleUploadedProfilePic = (output) => { //edit 
     const { result, successMessage, errorMessage } = output;
 
     if (errorMessage) {
@@ -34,7 +34,7 @@ class UserForm extends Component {
       successMessageUploadingProfilePic: successMessage,
       uploadedProfilePic: result
     });
-  }
+  } */
 
   setValidationErrors = (errors) => {
     this.setState({
@@ -70,7 +70,7 @@ class UserForm extends Component {
   }
 
   render() {
-    const { uploadedProfilePic, errorMessageUploadingProfilePic, successMessageUploadingProfilePic } = this.state;
+    //const { uploadedProfilePic, errorMessageUploadingProfilePic, successMessageUploadingProfilePic } = this.state;//edit 
 
     const { object } = this.state;
     const { loading, update } = this.props;
@@ -89,7 +89,7 @@ class UserForm extends Component {
             {
               object: {
                 id: object.id || undefined,
-                profilePic: object.profilePic || uploadedProfilePic || defaultProfilePic,
+                //profilePic: object.profilePic || uploadedProfilePic || defaultProfilePic, //edit 
                 username: object.username || "",
                 email: object.email || "",
                 note: object.note || "",
@@ -187,7 +187,7 @@ class UserForm extends Component {
                       </>
                     }
 
-                    <label htmlFor="object.profilePic" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                    {/* <label htmlFor="object.profilePic" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}> //edit
                       {i18n.t(`${packageNS}:tr000454`)}
                     </label>
                     <UserProfilePicFile
@@ -200,9 +200,9 @@ class UserForm extends Component {
                         />
                       }
                       onChange={this.handleUploadedProfilePic}
-                    />
+                    /> 
                     {successMessageUploadingProfilePic}
-                    {errorMessageUploadingProfilePic}
+                    {errorMessageUploadingProfilePic}*/}
 
                     <Field
                       id="profilePic"

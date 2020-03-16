@@ -44,9 +44,9 @@
   "tr000043": "서버",
   "tr000044": "네트워크 서버",
   "tr000045": "총",
-  "tr000046": "SMB Gateway Profiles",
+  "tr000046": "게이트웨이 프로파일",
   "tr000047": "네트워크 서버",
-  "tr000048": "Test SMB Gateway Profile",
+  "tr000048": "데스트 게이트웨이 프로파일",
   "tr000049": "회사단체",
   "tr000050": "게이트웨이 보유 가능",
   "tr000051": "LPWAN 서버",
@@ -68,7 +68,7 @@
   "tr000067": "회사단체 유저",
   "tr000068": "회사단체 유저",
   "tr000069": "서비스 프로파일",
-  "tr000070": "SMB Device Profiles",
+  "tr000070": "기기 프로파일",
   "tr000071": "프로파일-1",
   "tr000072": "게이트웨이",
   "tr000073": "리스트",
@@ -220,7 +220,7 @@
   "tr000221": "LSB",
   "tr000222": "입력값의 바이트 오더를 토글합니다. 일부 장치는 LSB를 사용합니다.",
   "tr000223": "게이트웨이가 연결할 네트워크 서버를 선택하십시오. 드롭 다운에 사용 가능한 네트워크 서버가 없으면 이 회사단체에 대한 서비스 프로필이 있는지 확인하십시오.",
-  "tr000224": "SMB Gateway Profile",
+  "tr000224": "게이트웨이 프로파일",
   "tr000225": "게이트웨이 프로파일 선택",
   "tr000226": "옵션 없음",
   "tr000227": "게이트웨이에 할당 할 수있는 선택적 게이트웨이 프로필입니다. 이 구성은 LoRa 게이트웨이 Bridge가 패킷 전 달기 구성을 관리하도록 구성된 경우 게이트웨이를 자동으로 재구성하는 데 사용할 수 있습니다.",
@@ -275,7 +275,7 @@
   "tr000278": "기기장치",
   "tr000279": "Applications/Gw_Dev_Pri_Application/Devices/Dev_Pri",
   "tr000280": "추가 기재 사항",
-  "tr000281": "SMB Device Profile",
+  "tr000281": "기기 프로파일",
   "tr000282": "상태",
   "tr000283": "마지막 온라인",
   "tr000284": "다운 링크 페이로드 대기열",
@@ -285,7 +285,7 @@
   "tr000288": "BASE64 인코딩됨",
   "tr000289": "BASE64 인코딩 스트링",
   "tr000290": "JSON OBJECT",
-  "tr000291": "The device must be configured with a SMB Device Profile supporting a Codec which is able to encode the given (JSON) payload.",
+  "tr000291": "지정된 (JSON) 페이로드를 인코딩 할 수있는 Codec을 지원하는 장치 프로파일로 장치를 구성해야합니다.",
   "tr000292": "대기열 페이로드",
   "tr000293": "다운링크 큐",
   "tr000294": "FCnt",
@@ -440,7 +440,7 @@
   "tr000462": "로그인 화면으로 돌아가기",
   "tr000463": "돌아가기",
   "tr000500": "외부 전원 공급",
-  "tr000501": "SMB Device Profile",
+  "tr000501": "기기 프로파일",
   "tr000502": "기관 기기",
   "tr000503": "장치 추가",
   "tr000551": "페이로드 디코더 스크립트",
@@ -449,7 +449,7 @@
   "tr000554": "기기 세부정보",
   "tr000555": "FUOTA",
   "tr000556": "{{num}} 에러 감지. 재제출 전 각 탭에 표시된 발리데이션 에러를 수정하십시오.",
-  "tr000557": "Select an application for the device to load only SMB Device Profiles associated with the application",
+  "tr000557": "기기가 로드할 어플리케이션을 선택하십시오.",
   "tr000558": "애플리케이션을 추가 하시겠습니까?",
   "tr000559": "기기가 사용할 어플리키에션을 새로 만들 수 있습니다.",
   "tr000560": "애플리케이션을 새로 만드시겠습니까?",
@@ -464,32 +464,32 @@
   "tr000569": "JSON 입력의 예상치 못한 종료",
   "tr000570": "프로필 생성",
   "tr000571": "Gateway Manufacturer",
-  "tr000572": "Mac Address",
+  "tr000572": "Mac 주소",
   "tr000573": "Gateway Altitude",
-  "tr000574": "WiFi SSID",
+  "tr000574": "와이파이 SSID",
   "tr000575": "Board model",
-  "tr000576": "LAN IP address",
-  "tr000577": "OS Version",
+  "tr000576": "IP 주소",
+  "tr000577": "운영 체제 버전",
   "tr000578": "LBT FPGA firmware version",
-  "tr000579": "Upgrade",
-  "tr000580": "Process",
-  "tr000581": "Uptime",
-  "tr000582": "CPU Total",
+  "tr000579": "업데이트",
+  "tr000580": "과정",
+  "tr000581": "가동 시간",
+  "tr000582": "총 CPU",
   "tr000583": "Memory Total",
-  "tr000584": "Read",
-  "tr000585": "Write",
-  "tr000586": "Net",
-  "tr000587": "Upload",
-  "tr000588": "Host",
-  "tr000589": "Protocol(s)",
-  "tr000590": "Open VPN status",
-  "tr000591": "I agree to terms..",
+  "tr000584": "읽음",
+  "tr000585": "쓰기",
+  "tr000586": "네트워크",
+  "tr000587": "올리기",
+  "tr000588": "호스트",
+  "tr000589": "프로토콜",
+  "tr000590": "VPN 상태 표시",
+  "tr000591": "동의합니다 {terms}",
   "tr000592": "SSH to GW",
-  "tr000593": "Link to GUI",
-  "tr000594": "Factory reset",
+  "tr000593": "연결 대상 [",
+  "tr000594": "공장 초기화",
   "tr000595": "Are you sure you want to reset this Gateway?",
-  "tr000596": "All the data will be deleted.",
-  "tr000597": "SMB Gateway Profile profile",
+  "tr000596": "Usage data will be deleted.",
+  "tr000597": "게이트웨이 프로파일",
   "tr000598": "Listen-Before-Talk / Polite Spectrum Access ",
   "tr000599": "LoRa MAC Channels",
   "tr000600": "Antenna Gain",
@@ -502,9 +502,9 @@
   "tr000607": "Beacon Bandwidth",
   "tr000608": "Beacon Power",
   "tr000609": "Beacon Info",
-  "tr000610": "Channel",
-  "tr000611": "Frequency (MHz)",
-  "tr000612": "Activate",
+  "tr000610": "채널",
+  "tr000611": "주파수(MHz)",
+  "tr000612": "설치물 활성화",
   "tr000613": "Scan Time",
   "tr000614": "Save Config",
   "tr000615": "기기가 로드할 어플리케이션을 선택하십시오.",
@@ -513,7 +513,7 @@
   "tr000618": "© 2020 Powered by MXC",
   "tr000619": "Root Password",
   "tr000620": "Warning: Displaying your root password will void your warranty",
-  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
+  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by Gateway.",
   "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
   "tr000623": "Display Root Password",
   "tr000624": "I want to keep my warranty",
@@ -521,7 +521,8 @@
   "tr000626": "Region",
   "common": {
     "delete": "삭제",
-    "reset": "재설정"
+    "reset": "재설정",
+    "comment": "Comment"
   },
   "lpwan": {
     "org_users": {
@@ -558,6 +559,7 @@
       "cancel": "취소",
       "proceed": "진행",
       "deny": "거부",
+      "total_token_available": "Total Token Available",
       "confirm_modal_title": "승인: 수퍼노드 출금",
       "deny_reason": "사용자 및 MXC 레코드 거부 사유 추가",
       "confirm_text": "사용 가능한 토큰 잔액을 인출하고 있음을 확인하고 있습니다. 계속 하시겠습니까?",
@@ -565,17 +567,17 @@
       "requester": "요청자",
       "balance": "잔액",
       "destination": "계좌번호",
-      "available":"이용 가능",
+      "available": "사용가능",
       "submit_withdrawal_request": "출금 요청",
-      "date_requested": "요청 날짜", 
-      "status": "상태", 
+      "date_requested": "요청 날짜",
+      "status": "상태",
       "transaction_hash": "트랜잭션 해쉬",
       "request_withdraw_title": "계속 진행하시겠습니까?",
       "request_withdraw_text_0": "이 수퍼 노드에서 탈퇴를 요청하고 있습니다. 요청이 완료되면 수퍼 노드 운영자는이 탈퇴를 확인해야합니다.",
       "request_withdraw_text_1": "1000 USD 이상의 금액은 수퍼 노드 운영자와 MXC 재단에서 확인합니다.",
       "request_withdraw_text_2": "출금을 계속하시겠습니까?",
       "request_withdraw_text_com": "철회 요청이 성공적으로 제출되었으며 수퍼 노드 운영자가 다음 영업일 이내에이 거래를 확인합니다.",
-      "confirmed": " 확인했습니다.",
+      "confirmed": "컨펌됨",
       "currentFee": "수수료"
     },
     "topup": {
@@ -594,21 +596,25 @@
       "notice002": "MXC 토큰을 충전하기 전에 귀하의 이더리움 어카운트를 등록해주세요.",
       "notice003": "이더리움 어카운트 등록을 위해 이더리움 어카운트 메뉴로 이동 하시겠습니까?",
       "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH Address",
-      "copy_addr": "Copy Address",
-      "show_qr_code": "Show QR Code",
-      "click_to_copy": "Click to Copy",
-      "copied_notice": "Address copied!",
-      "download_qr_code": "Download QR Code",
-      "instruction001": "Send only MXC to this deposit address.",
-      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
-      "instruction003": "Your MXC will be deposited after 12 network confirmations.",
+      "copy_addr": "게좌 복사",
+      "show_qr_code": "QR코드 보기",
+      "click_to_copy": "복사",
+      "copied_notice": "복사되었습니다!",
+      "download_qr_code": "QR Code 다운로드",
+      "instruction001": "이 입금계좌로는 MXC만 보내세요.",
+      "instruction002": "ETH외의 코인이나 토큰을 이 계좌로 보낼 경우 손실이 발생할 수 있습니다.",
+      "instruction003": "12개의 네트워크 승인 후, MXC가 입금 완료 됩니다.",
       "history": {
         "status": "상태",
         "amount": "금액",
         "date": "날짜",
         "tx_hash": "TX hash"
+      },
+      "info": {
+        "title": "Info",
+        "notice": "This is running on test-net."
       }
     },
     "history": {
@@ -676,7 +682,8 @@
       "other": "그외의 제조사들",
       "enter_your_gateway_serial_number": "게이트웨이 일련번호를 입력하세요.",
       "were_searching_with_your_gateway_please_wait": "게이트웨이를 찾고 있습니다.",
-      "qr_code_scan": "QR Code Scan"
+      "qr_code_scan": "QR 코드 스캔",
+      "reset_lora_config": "리셋 Lora 설정"
     },
     "staking": {
       "staking": "스테이킹",
@@ -756,7 +763,11 @@
       "unstake_successful": "스테이킹 취소가 완료되었습니다. MXC 토큰이 M2M 지갑에 입금되었습니다.",
       "staking_enhances": "스테이킹은 모든 토큰 보유자에게 네트워크에 참여할 수있는 공정한 방법을 제공함으로써 데이터 거래를 향상시킵니다.",
       "close_to_acquiring": "곧 월별 이익분을 받으실 수 있습니다. 지금 스테이킹을 취소하면 받으실 수 없습니다.",
-      "coming_soon": "추후 공개"
+      "coming_soon": "추후 공개",
+      "moreThan": "스테이크 가능한 금액은 0보다 크고 가용 잔액 이하입니다.",
+      "min": "최소값은 0입니다.",
+      "need_number": "숫자를 입력하세요.",
+      "need_19_digit": "숫자 19자리를 입력하세요."
     },
     "store": {
       "device_has_been": "기기가",
@@ -833,14 +844,14 @@
       "is_global_admin": "글로벌 어드민"
     },
     "dashboard": {
-      "title": "Dashboard",
+      "title": "대쉬보드",
       "roleOrgAdmin": "Organization Admin",
-      "roleDeviceAdmin": "Device Admin",
+      "roleDeviceAdmin": "기기 관리자",
       "roleGatewayAdmin": "Gateway Admin",
       "topupButton": "Topup MXC",
-      "remove": "Remove",
+      "remove": "삭제",
       "totalUsers": {
-        "title": "Total Users",
+        "title": "총 사용자 수",
         "description": "Show total number of active users"
       },
       "totalOrgs": {
@@ -852,7 +863,7 @@
         "description": "Shows total number of gateways"
       },
       "totalDevices": {
-        "title": "Total Devices",
+        "title": "모든 장치",
         "description": "Shows total number of devices"
       },
       "totalApps": {
@@ -860,38 +871,38 @@
         "description": "Shows total number of applications"
       },
       "tickets": {
-        "title": "Tickets",
-        "view_history": "View History",
-        "approved": "Approved",
-        "pending": "Pending",
+        "title": "티켓",
+        "view_history": "이력 보기",
+        "approved": "승인",
+        "pending": "보류 중",
         "subtext": "Today's ticket",
         "description": "Shows tickets history"
       },
       "withdrawal": {
-        "title": "Withdrawal",
-        "subtext": "Revenue today",
+        "title": "철수",
+        "subtext": "수익 흐름",
         "description": "Shows today's total withdrawal"
       },
       "topup": {
         "title": "Topup",
-        "subtext": "Revenue today",
-        "description": "Shows topup information"
+        "subtext": "수익 흐름",
+        "description": "상세한 정보 보기"
       },
       "mxcAmountChart": {
         "title": "Total amounts of MXC in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total",
+        "statSubText": "합계",
         "description": "Shows total amounts of MXC in Supernode"
       },
       "stakingAmountChart": {
         "title": "Total Staking amounts in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total",
+        "statSubText": "합계",
         "description": "Shows stacking amount in Supernode"
       },
       "earnedAmountChart": {
         "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today",
+        "statSubText": "수익 흐름",
         "description": "Shows amount earned through data utilities and staking"
       },
       "packetsReceivedChart": {
@@ -920,13 +931,13 @@
         "title": "Dashboard Widgets",
         "add": "Add Widget"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "추후 공개"
     },
     "registration": {
-      "email": "Email Address",
-      "password": "Password",
-      "password_hint": "(패스워드는 8글자 이상, 영문자와 반드시 1개 이상의 숫자와 특수문자를 포함해야 합니다.)",
-      "password_match_error": "패스워드는 8글자 이상, 영문자와 반드시 1개 이상의 숫자와 특수문자를 포함해야 합니다.",
+      "email": "이메일",
+      "password": "비밀번호",
+      "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
+      "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",
       "org_name": "Organization Name",
@@ -939,44 +950,44 @@
     },
     "menmonic_phrase": {
       "write_button": "I wrote it down",
-      "skip_button": "Skip",
-      "confirm_button": "Confirm",
-      "back_button": "Back"
+      "skip_button": "건너뛰기",
+      "confirm_button": "확인",
+      "back_button": "돌아가기"
     },
     "google_2fa": {
-      "confirm_button": "Confirm",
-      "skip_button": "Skip"
+      "confirm_button": "확인",
+      "skip_button": "건너뛰기"
     },
     "profile_2fa": {
-      "title": "Two-Factor Authentication",
+      "title": "이중 인증(TFA)",
       "google": {
         "title": "Google Authenticator",
-        "setup_button": "Setting",
+        "setup_button": "설정",
         "2fa_title": "2FA Setting",
-        "2fa_instruction": "Set up two-factor authentication using Google Authenticator",
-        "reset_2fa_title": "Two-factor authentication",
-        "reset_2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "2fa_instruction": "이 것은 구글 인증을 사용하는 2중 인증 기능을 동작시킵니다.",
+        "reset_2fa_title": "이중 인증",
+        "reset_2fa_instruction": "이 것은 구글 인증을 사용하는 2중 인증 기능을 동작시킵니다.",
         "mnemonic_phrase_confirm_title": "To reset, please click mnemonic phrase in the correct order"
       }
     },
     "profile_password_reset": {
-      "title": "Password",
+      "title": "비밀번호",
       "account_password": {
-        "title": "Account Password",
-        "reset_button": "Reset"
+        "title": "계정 암호",
+        "reset_button": "재설정"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "추후 공개"
     },
     "dashboard_2fa": {
       "title": "Your Supernode Account has a new feature!",
       "description": "Two-factor authentication is now an option. As part of this feature addition, each account is assigned a mnemonic phrase. This phrase is the only way to reset your two-factor authentication method. On the next screen your phrase will be displayed. Please write it down and keep it in a secure location.",
       "agree_instruction": "I understand that if I don't write down my Mnemonic phrase I could lose access to my account.",
-      "next_button": "Next",
-      "skip_button": "Not now",
-      "done_button": "Done",
+      "next_button": "다음",
+      "skip_button": "지금은 아닙니다",
+      "done_button": "완료",
       "menmonic_step_1_title": "Write this down and keep it in a safe place.",
       "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
-      "menmonic_step_3_title": "Confirmed"
+      "menmonic_step_3_title": "컨펌됨"
     }
   }
 }

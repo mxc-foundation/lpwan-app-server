@@ -1,8 +1,10 @@
 package external
 
 import (
+	"os"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc/status"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -390,7 +392,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 		Logo:         brandingHeader,
 		Registration: brandingRegistration,
 		Footer:       brandingFooter,
-		LogoPath:     brandingLogoPath,
+		LogoPath:     os.Getenv("APPSERVER") + "/branding.png",
 	}
 
 	return &resp, nil
@@ -521,13 +523,13 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.ConfirmRegistrationRequest) (*pb.ConfirmRegistrationResponse, error) {
 	user, err := storage.GetUserByToken(storage.DB(), req.Token)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	log.Println("Confirming GetJwt", user.Username)
 	jwt, err := storage.MakeJWT(user.Username, user.SessionTTL)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &pb.ConfirmRegistrationResponse{
@@ -536,14 +538,14 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.Confi
 		IsAdmin:  user.IsAdmin,
 		IsActive: user.IsActive,
 		Jwt:      jwt,
-	}, nil
+	}, status.Errorf(codes.OK, "")
 }
 
 // FinishRegistration sets new user password and creates a new organization
 func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.FinishRegistrationRequest) (*empty.Empty, error) {
 	if err := a.validator.Validate(ctx, auth.ValidateUserAccess(req.UserId, auth.FinishRegistration)); err != nil {
 		log.Println("UpdatePassword", err)
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org := storage.Organization{
@@ -621,8 +623,8 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 	})
 
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &empty.Empty{}, status.Errorf(codes.OK, "")
 }

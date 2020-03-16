@@ -12,6 +12,8 @@ import SessionStorage from "../../stores/SessionStore";
 import TopupCrypto from "./TopupCrypto";
 import TopupHistory from "./TopupHistory";
 
+import { Alert } from 'reactstrap';
+
 
 class Topup extends Component {
   constructor(props) {
@@ -52,7 +54,16 @@ class Topup extends Component {
             { label: i18n.t(`${packageNS}:tr000568`), active: false },
             { label: i18n.t(`${packageNS}:menu.topup.topup`), active: true }]}></OrgBreadCumb>
       </TitleBar>
-
+      <div>
+        <Alert color="info">
+          <h4 className="alert-heading">{i18n.t(`${packageNS}:menu.topup.info.title`)}</h4>
+            <p>
+              {i18n.t(`${packageNS}:menu.topup.info.notice`)}
+            </p>
+            <hr />
+          <p className="mb-0"></p>
+        </Alert>
+      </div>
       <Row>
         <Col>
           <Card>
@@ -68,7 +79,7 @@ class Topup extends Component {
                   <NavLink
                     className={classNames('nav-link', { active: this.state.activeTab === '1' })} href='#'
                     onClick={(e) => this.onTabToggle("1")} disabled
-                  >{i18n.t(`${packageNS}:menu.topup.fiat`)}</NavLink>
+                  >{i18n.t(`${packageNS}:menu.topup.otc`)}</NavLink>
                 </NavItem>
               </Nav>
 
