@@ -763,7 +763,11 @@
       "unstake_successful": "Unstake successful. MXC has been added to your M2M Wallet balance.",
       "staking_enhances": "Staking enhances data trade by giving all holders a fair way to take part in the network.",
       "close_to_acquiring": "You are close to acquiring your monthly revenue. If you unstake now, you will miss it.",
-      "coming_soon": "Coming Soon"
+      "coming_soon": "Coming Soon",
+      "moreThan": "amount must be greater than 0 or less than balance.",
+      "min": "The minimum is 0.",
+      "need_number": "Requires a number",
+      "need_19_digit": "Requires number less than 19 digits"
     },
     "store": {
       "device_has_been": "Device(s) has been",
