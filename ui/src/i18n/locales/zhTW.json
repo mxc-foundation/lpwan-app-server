@@ -613,8 +613,8 @@
         "tx_hash": "TX hash"
       },
       "info": {
-        "title": "信息。",
-        "notice": "這是在測試網上運行。"
+        "title": "Info",
+        "notice": "This is running on test-net."
       }
     },
     "history": {
@@ -932,8 +932,8 @@
     "registration": {
       "email": "電子信箱地址",
       "password": "密碼",
-      "password_hint": "(密碼必須至少包含8個字符或更多，一個數字，一個符號和一個字母。)",
-      "password_match_error": "密碼必須至少包含8個字符或更多，一個數字，一個符號和一個字母。",
+      "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
+      "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
       "confirm_password": "確認您的密碼",
       "confirm_password_match_error": "密碼和確認密碼必須相同。",
       "org_name": "組織名稱",
