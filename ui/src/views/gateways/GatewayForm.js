@@ -919,7 +919,7 @@ class GatewayForm extends Component {
                         onDataChanged={this.onClassBDataChanged}
                       />
 
-                      <Row>
+                      {/* <Row>
                         <Col lg={12}>
                           <FormGroup>
                             <Input
@@ -977,7 +977,7 @@ class GatewayForm extends Component {
                             </Button>
                           </FormGroup>
                         </Col>
-                      </Row>
+                      </Row> */}
                       {/* <Field
                         id="location-accuracy"
                         name="object.location.accuracy"
