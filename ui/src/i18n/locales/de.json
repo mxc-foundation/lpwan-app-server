@@ -930,7 +930,7 @@
     },
     "registration": {
       "email": "Email Address",
-      "password": "Password",
+      "password": "Passwort",
       "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
       "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
       "confirm_password": "Confirm Your Password",
