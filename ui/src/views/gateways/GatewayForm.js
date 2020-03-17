@@ -640,7 +640,7 @@ class GatewayForm extends Component {
                         </>
                       }
                       <Row>
-                        <Col lg={5}>
+                        <Col sm={12} lg={6}>
                           {values.networkServerID &&
                             <>
                               <Field
@@ -744,7 +744,7 @@ class GatewayForm extends Component {
                               </div>
                             ) : null}
                         </Col>
-                        <Col lg={4}>
+                        <Col sm={12} lg={6}>
                           <Field
                             id="description"
                             name="description"
@@ -833,39 +833,7 @@ class GatewayForm extends Component {
                           ) : null
                       } */}
                         </Col>
-                        <Col lg={3} className="text-right">
-                          <Button
-                            type="submit"
-                            color="primary"
-                            className="mr-2"
-                            disabled={
-                              (errors && Object.keys(errors).length > 0) ||
-                              isLoading ||
-                              isSubmitting
-                            }
-                            onClick={() => {
-                              validateForm().then(() => { });
-                            }}
-                          >
-                            {this.props.submitLabel ||
-                              (this.props.update
-                                ? i18n.t(`${packageNS}:tr000614`)
-                                : i18n.t(`${packageNS}:tr000277`))}
-                          </Button>
-                          <Button
-                            type="submit"
-                            color="secondary"
-                            className="d-inline"
-                          // onClick={
-                          //   () => {
-                          //       resetLaraConfig().then(() => {
-                          //     })
-                          //   }
-                          // }
-                          >
-                            {i18n.t(`${packageNS}:menu.gateways.reset_lora_config`)}
-                          </Button>
-                        </Col>
+                        
                       </Row>
 
                       <GatewayFormLBT
@@ -1131,10 +1099,27 @@ class GatewayForm extends Component {
                               type="button"
                               variant="outlined"
                               className="mb-2"
+                              style={{width: '275px'}}
                               onClick={() => { arrayHelpers.push({ fpgaID: '', fineTimestampKey: '' }); }}
                             >
                               {i18n.t(`${packageNS}:tr000234`)}
                             </Button>
+                            {' '}
+                            <Button
+                            type="submit"
+                            color="secondary"
+                            className="mb-2"
+                            style={{width: '275px'}}
+                            //className="d-inline"
+                          // onClick={
+                          //   () => {
+                          //       resetLaraConfig().then(() => {
+                          //     })
+                          //   }
+                          // }
+                          >
+                            {i18n.t(`${packageNS}:menu.gateways.reset_lora_config`)}
+                          </Button>
                           </div>
                         )}
                       />
@@ -1171,6 +1156,30 @@ class GatewayForm extends Component {
                           : null
                         } */}
                       </div>
+                      <Row>
+                      <Col lg={12} className="text-right">
+                      <Button
+                            type="submit"
+                            color="primary"
+                            //className="mr-2"
+                            style={{width: '100%'}}
+                            disabled={
+                              (errors && Object.keys(errors).length > 0) ||
+                              isLoading ||
+                              isSubmitting
+                            }
+                            onClick={() => {
+                              validateForm().then(() => { });
+                            }}
+                          >
+                            {this.props.submitLabel ||
+                              (this.props.update
+                                ? i18n.t(`${packageNS}:tr000614`)
+                                : i18n.t(`${packageNS}:tr000277`))}
+                          </Button>
+                          
+                        </Col>
+                        </Row>
                     </Form>
                   );
                 }}

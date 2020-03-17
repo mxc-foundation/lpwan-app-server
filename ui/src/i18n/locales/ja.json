@@ -513,7 +513,7 @@
   "tr000618": "© 2020 Powered by MXC",
   "tr000619": "Root Password",
   "tr000620": "Warning: Displaying your root password will void your warranty",
-  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
+  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by Gateway.",
   "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
   "tr000623": "Display Root Password",
   "tr000624": "I want to keep my warranty",
@@ -763,7 +763,12 @@
       "unstake_successful": "ステーク解除成功。あなたのM2Mウォレット残高にMXCが追加されました。",
       "staking_enhances": "ステークをすることにより全ての参加者が公平にネットワークに参加することが可能になり、データ取引が向上します。",
       "close_to_acquiring": "月収入獲得までもう少しです。今ステークを解除すると収入を受け取ることができません。",
-      "coming_soon": "近日公開"
+      "coming_soon": "近日公開",
+      "moreThan": "金額は0より大きいか、balance未満でなければなりません。",
+      "min": "最小値は0です。",
+      "need_number": "数字が必要です。",
+      "need_19_digit": "19桁未満の数字が必要です。",
+      "format_unmatch":"要求された形式と一致してください。"
     },
     "store": {
       "device_has_been": "端末は",

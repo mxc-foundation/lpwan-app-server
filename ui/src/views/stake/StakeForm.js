@@ -322,7 +322,7 @@ class StakeForm extends Component {
     let trashold = (isUnstake) ? amount : balance;
 
     let fieldsSchema = {
-      amount: Yup.number().moreThan(0).max(trashold).required(i18n.t(`${packageNS}:tr000431`)),
+      amount: Yup.number().moreThan(0, i18n.t(`${packageNS}:menu.messages.moreThan`)).max(trashold).required(i18n.t(`${packageNS}:tr000431`)),
       revRate: Yup.number(),
     }
 
