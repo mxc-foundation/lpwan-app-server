@@ -45,8 +45,6 @@ class TopupCrypto extends Component {
       loading: false,
       showCopied: false,
       showQRCode: false,
-      nsDialog: false,
-      description: null,
       object: this.props.object || {},
     };
 
@@ -89,39 +87,14 @@ class TopupCrypto extends Component {
         account: account,
       }
 
-      if (SessionStorage.getUser().isAdmin && !superNodeAccount) {
-        this.showModal(true);
-      }
-
-      if (!accounts.account && !SessionStorage.getUser().isAdmin) {
-        this.showModal(true);
-      }
-
-      let description = '';
-      if (SessionStorage.getUser().isAdmin) {
-        description = i18n.t(`${packageNS}:menu.topup.notice001`) + " " + i18n.t(`${packageNS}:menu.topup.notice003`);
-      } else {
-        description = i18n.t(`${packageNS}:menu.topup.notice002`) + " " + i18n.t(`${packageNS}:menu.topup.notice003`);
-      }
-      
       this.setState({
-        object: object,
-        description
+        object
       });
 
       this.setState({ loading: false });
     } catch (error) {
       this.setState({ loading: false, error });
     }
-  }
-
-  showModal = (nsDialog) => {
-    this.setState({ nsDialog });
-  }
-
-  handleLink = () => {
-    //window.location.replace(`http://wallet.mxc.org/`);
-    this.props.history.push(this.props.path);
   }
 
   /**
@@ -164,13 +137,6 @@ class TopupCrypto extends Component {
     }
 
     return (<React.Fragment>
-
-      {this.state.nsDialog && <Modal
-        title={i18n.t(`${packageNS}:menu.topup.notice`)}
-        left={"DISMISS"}
-        right={"ADD ETH ACCOUNT"}
-        context={this.state.description}
-        callback={this.handleLink} />}
 
       <div className="position-relative">
         {this.state.loading ? <Loader /> : null}
