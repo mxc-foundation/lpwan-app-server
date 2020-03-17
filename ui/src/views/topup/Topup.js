@@ -54,16 +54,6 @@ class Topup extends Component {
             { label: i18n.t(`${packageNS}:tr000568`), active: false },
             { label: i18n.t(`${packageNS}:menu.topup.topup`), active: true }]}></OrgBreadCumb>
       </TitleBar>
-      <div>
-        <Alert color="info">
-          <h4 className="alert-heading">{i18n.t(`${packageNS}:menu.topup.info.title`)}</h4>
-            <p>
-              {i18n.t(`${packageNS}:menu.topup.info.notice`)}
-            </p>
-            <hr />
-          <p className="mb-0"></p>
-        </Alert>
-      </div>
       <Row>
         <Col>
           <Card>
