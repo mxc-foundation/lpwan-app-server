@@ -21,7 +21,7 @@ service TopUpService {
 
 enum Money {
     ETH = 0;
-    MXC = 1;
+    ETH_MXC = 1;
     TETH = 2;
 }
 
