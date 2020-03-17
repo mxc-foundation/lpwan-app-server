@@ -4,6 +4,9 @@ files:
   - source: /static/templates/email/2fa-login/2fa-login-en
     dest: /static/2fa-login/2fa-login-en.html
     type: html
+  - source: /static/templates/email/topup-change-en
+    dest: /static/2fa-login/topup-change-en.html
+    type: html
     translation: /static/2fa-login/2fa-login-%two_letters_code%
   - source: /static/templates/email/2fa-withdraw/2fa-withdraw-en
     dest: /static/2fa-withdraw/2fa-withdraw-en.html
