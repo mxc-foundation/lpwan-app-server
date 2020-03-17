@@ -12,7 +12,7 @@ import breadcrumbStyles from "../common/BreadcrumbStyles";
 import Modal from './Modal';
 import ModalCom from './ModalComplete';
 import WithdrawStore from "../../stores/WithdrawStore";
-import MoneyStore from "../../stores/MoneyStore";
+import SessionStore from "../../stores/SessionStore";
 import WalletStore from "../../stores/WalletStore";
 
 const styles = {
@@ -20,9 +20,9 @@ const styles = {
   ...localStyles
 };
 
-function getWalletBalance(organizationId) {
+function getWalletBalance(organizationId, userId) {
   return new Promise((resolve, reject) => {
-    WalletStore.getWalletBalance(organizationId, resp => {
+    WalletStore.getWalletBalance(organizationId, userId, resp => {
       return resolve(resp);
     });
   });
@@ -43,8 +43,9 @@ class Withdraw extends Component {
 
   loadData = async () => {
     const orgId = this.props.match.params.organizationID;
-
-    var result = await getWalletBalance(orgId);
+    let user = await SessionStore.getUser();
+    
+    var result = await getWalletBalance(orgId, user.id);
     const fee = result.withdrawFee;
     
     WithdrawStore.getWithdrawFee(0, resp => {
