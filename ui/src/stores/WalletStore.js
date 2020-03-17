@@ -28,10 +28,11 @@ class WalletStore extends EventEmitter {
     });
   }
 
-  getWalletBalance(orgId, callbackFunc) {
+  getWalletBalance(orgId, userId, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WalletService.GetWalletBalance({
-        orgId,
+        userId,
+        orgId
       })
         .then(checkStatus)
         .then(resp => {
