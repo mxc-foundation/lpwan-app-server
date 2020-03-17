@@ -35,7 +35,7 @@ import styles from "./StakeStyle"
     />
   );
 } */
-function getWalletBalance() {
+function getWalletBalance(userId) {
   var organizationId = SessionStore.getOrganizationID();
   if (!organizationId) {
     return 0;
@@ -46,7 +46,7 @@ function getWalletBalance() {
   } */
 
   return new Promise((resolve, reject) => {
-    WalletStore.getWalletBalance(organizationId, resp => {
+    WalletStore.getWalletBalance(organizationId, userId, resp => {
       return resolve(resp);
     });
   });
@@ -92,9 +92,11 @@ class StakeForm extends Component {
   }
 
   loadData = async () => {
-    var result = await getWalletBalance();
+    let user = await SessionStore.getUser();
+      console.log('user', user.id);
+    var result = await getWalletBalance(user.id);
     const balance = result.balance;
-
+console.log('balance', balance);
     let res = await StakeStore.getActiveStakes(this.props.match.params.organizationID);
     let amount = 0;
     let isUnstake = false;
