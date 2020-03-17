@@ -58,7 +58,7 @@ class Topbar extends Component {
     try {
       let orgid = await SessionStore.getOrganizationID();
       let user = await SessionStore.getUser();
-      console.log('user', user.id);
+      //console.log('user', user.id);
       
       let result = await getWalletBalance(orgid, user.id);
 
