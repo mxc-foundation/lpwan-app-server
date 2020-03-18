@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-import { Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
+import { Button, FormGroup, Label, FormText, Card, CardBody, Alert } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { ReactstrapInput } from '../../components/FormInputs';
@@ -63,8 +63,8 @@ class StakeForm extends Component {
         revRate: 0,
         isUnstake: false,
         info: '',
-        modal: null,
-        modalTimer: null,
+        modal: false,
+        modalTimer: false,
         infoStatus: 0,
         notice: {
           succeed: i18n.t(`${packageNS}:menu.messages.congratulations_stake_set`),
@@ -185,7 +185,7 @@ class StakeForm extends Component {
   openModalTimer = () => {
     const object = this.state.object;
     object.modalTimer = true;
-    object.modal = null
+    object.modal = false;
 
     this.setState({
       object
@@ -281,7 +281,7 @@ class StakeForm extends Component {
 
   handleCloseModal = () => {
     const object = this.state.object;
-    object.modal = null;
+    object.modal = false;
     this.setState({
       object
     })
@@ -289,7 +289,7 @@ class StakeForm extends Component {
 
   closeInfoModal = () => {
     const object = this.state.object;
-    object.infoModal = null;
+    object.infoModal = false;
     this.setState({
       object
     })
@@ -301,7 +301,7 @@ class StakeForm extends Component {
 
   handleProgress = (oldCompleted) => {
     const object = this.state.object;
-    object.modalTimer = null
+    object.modalTimer = false
     this.setState({
       object
     })
@@ -309,6 +309,26 @@ class StakeForm extends Component {
     if (oldCompleted === 100) {
       this.onSubmit(this.state.object.amount);
     }
+  }
+
+  closeModal = () => {
+    const object = this.state;
+    object.object.modal = false;
+    object.amount = 0;
+    this.setState({ object })
+  }
+
+  closeModalTimer = () => {
+    const object = this.state;
+    object.amount = 0;
+    object.object.modalTimer = false;
+    this.setState({ object })
+  }
+
+  closeInfoModal = () => {
+    const object = this.state;
+    object.object.infoModal = false;
+    this.setState({ object })
   }
 
   render() {
@@ -324,7 +344,7 @@ class StakeForm extends Component {
     let trashold = (isUnstake) ? amount : balance;
 
     let fieldsSchema = {
-      amount: Yup.number().moreThan(0, i18n.t(`${packageNS}:menu.messages.moreThan`)).max(trashold).required(i18n.t(`${packageNS}:tr000431`)),
+      amount: Yup.number().moreThan(0, i18n.t(`${packageNS}:menu.messages.moreThan`)).max(trashold, i18n.t(`${packageNS}:menu.messages.moreThan`)).required(i18n.t(`${packageNS}:tr000431`)),
       revRate: Yup.number(),
     }
 
@@ -337,6 +357,7 @@ class StakeForm extends Component {
           left={i18n.t(`${packageNS}:menu.staking.cancel`)}
           right={i18n.t(`${packageNS}:menu.staking.confirm`)}
           context={this.state.object.info}
+          closeModal={() => this.closeInfoModal()}
           callback={this.closeInfoModal}
         />}
 
@@ -344,9 +365,10 @@ class StakeForm extends Component {
           title={i18n.t(`${packageNS}:menu.messages.confirmation`)}
           left={i18n.t(`${packageNS}:menu.staking.cancel`)}
           right={i18n.t(`${packageNS}:menu.staking.confirm`)}
-          onProgress={this.handleProgress}
-          onCancelProgress={this.handleCancel}
-          onClose={this.handleCloseModal}
+          //onProgress={this.handleProgress}
+          //onCancelProgress={this.handleCancel}
+          //onClose={this.handleCloseModal}
+          closeModal={() => this.closeModal()}
           context={i18n.t(`${packageNS}:menu.messages.stake_confirmation_text`)}
           callback={this.openModalTimer} />}
 
@@ -356,6 +378,7 @@ class StakeForm extends Component {
           right={i18n.t(`${packageNS}:menu.staking.confirm`)}
           handleProgress={this.handleProgress}
           onClose={this.handleCloseModal}
+          closeModal={() => this.closeModalTimer()}
           context={i18n.t(`${packageNS}:menu.messages.stake_confirmation_text`)}
           callback={this.onSubmit} />}
 

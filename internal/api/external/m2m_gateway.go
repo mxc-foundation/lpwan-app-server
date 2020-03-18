@@ -201,8 +201,7 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 			return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 	} else {
-		log.WithError(err).Error(logInfo)
-		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
 
