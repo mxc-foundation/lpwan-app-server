@@ -49,8 +49,9 @@ class StakeHistory extends Component {
         this.setState({ loading: true });
         const moneyAbbr = 2;
         const orgId = this.props.match.params.organizationID;
-        console.log('paramter:', orgId, offset, limit);
+
         StakeStore.getStakingHistory(orgId, offset, limit, (res) => {
+            console.log(res);
             const object = this.state;
             object.totalSize = Number(res.count);
             object.data = res.stakingHist;

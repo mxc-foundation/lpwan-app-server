@@ -604,7 +604,7 @@
       "copied_notice": "地址已复制",
       "download_qr_code": "下载二维码",
       "instruction001": "仅发送MXC极域到该存款地址。",
-      "instruction002": "将除MXC以外的代币或通证发送到该地址可能会导致您的存款丢失。",
+      "instruction002": "将除ETH以外的代币或通证发送到该地址可能会导致您的存款丢失。",
       "instruction003": "经过12次网络确认后，您的MXC极域将被存入。",
       "history": {
         "status": "状态",
