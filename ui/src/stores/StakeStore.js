@@ -85,7 +85,7 @@ class StakeStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        
+        callbackFunc(resp.body);
       })
       .catch(errorHandler);
     });
