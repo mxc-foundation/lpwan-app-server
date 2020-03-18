@@ -604,7 +604,7 @@
       "copied_notice": "Address copied!",
       "download_qr_code": "Download QR Code",
       "instruction001": "Send only MXC to this deposit address.",
-      "instruction002": "Sending coin or token other than MXC to this address may result in the loss of your deposit.",
+      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
       "instruction003": "Your MXC will be deposited after 12 network confirmations.",
       "history": {
         "status": "Status",

@@ -603,9 +603,9 @@
       "click_to_copy": "點擊複製",
       "copied_notice": "已複製位址",
       "download_qr_code": "Download QR Code",
-      "instruction001": "僅發送MXC到該存款地址。",
-      "instruction002": "將MXC以外的硬幣或代幣發送到該地址可能會導致您的存款丟失。",
-      "instruction003": "您的MXC將在12個網絡確認後存入。",
+      "instruction001": "Send only MXC to this deposit address.",
+      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
+      "instruction003": "Your MXC will be deposited after 12 network confirmations.",
       "history": {
         "status": "狀態",
         "amount": "金額",

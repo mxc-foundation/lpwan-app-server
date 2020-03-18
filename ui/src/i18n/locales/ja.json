@@ -603,9 +603,9 @@
       "click_to_copy": "Click to Copy",
       "copied_notice": "Address copied!",
       "download_qr_code": "Download QR Code",
-      "instruction001": "このデポジットアドレスにMXCのみを送信します。",
-      "instruction002": "MXC以外のコインまたはトークンをこのアドレスに送信すると、デポジットが失われる場合があります。",
-      "instruction003": "MXCは、12回のネットワーク確認後にデポジットされます。",
+      "instruction001": "Send only MXC to this deposit address.",
+      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
+      "instruction003": "Your MXC will be deposited after 12 network confirmations.",
       "history": {
         "status": "状態",
         "amount": "金額",
