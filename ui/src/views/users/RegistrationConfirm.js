@@ -77,8 +77,8 @@ class RegistrationConfirmForm extends FormComponent {
         let fieldsSchema = {
             id: Yup.string().trim(),
             username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
-            password: Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`)),
-            passwordConfirmation: Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`)),
+            password: Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!])[A-Za-z\d!]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`)),
+            passwordConfirmation: Yup.string().oneOf([Yup.ref('password'), null], i18n.t(`${packageNS}:menu.registration.confirm_password_match_error`)),
             organizationName: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
             organizationDisplayName: Yup.string().required(i18n.t(`${packageNS}:tr000431`))
         }
