@@ -93,10 +93,10 @@ class StakeForm extends Component {
 
   loadData = async () => {
     let user = await SessionStore.getUser();
-      console.log('user', user.id);
+
     var result = await getWalletBalance(user.id);
     const balance = result.balance;
-console.log('balance', balance);
+
     let res = await StakeStore.getActiveStakes(this.props.match.params.organizationID);
     let amount = 0;
     let isUnstake = false;
