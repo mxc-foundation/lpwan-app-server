@@ -62,7 +62,7 @@ class UserForm extends Component {
 
     // Create
     if (!this.props.update) {
-      fieldsSchema.object.fields.password = Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!])[A-Za-z\d!]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.password = Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[/\W/])[A-Za-z\d/\W/]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("password");
     }
 
