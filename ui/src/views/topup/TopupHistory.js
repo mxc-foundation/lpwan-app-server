@@ -19,7 +19,7 @@ const tableCols = [
     },
   },
   {
-    dataField: 'lastUpdateTime',
+    dataField: 'createdAt',
     text: i18n.t(`${packageNS}:menu.topup.history.date`),
     sort: false,
   },
@@ -29,8 +29,6 @@ const tableCols = [
     sort: false,
   }
 ]
-
-
 
 class TopupHistory extends Component {
   constructor(props) {
