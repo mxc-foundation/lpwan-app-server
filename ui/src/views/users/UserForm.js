@@ -62,7 +62,7 @@ class UserForm extends Component {
 
     // Create
     if (!this.props.update) {
-      fieldsSchema.object.fields.password = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.password = Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!])[A-Za-z\d!]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("password");
     }
 
@@ -237,7 +237,7 @@ class UserForm extends Component {
                       value={values.object.username}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      helpText="Username must only contain letters, and digits"
+                      helpText={i18n.t(`${packageNS}:tr000565`)} 
                       label={i18n.t(`${packageNS}:tr000056`)}
                       component={ReactstrapInput}
                       className={
@@ -325,7 +325,7 @@ class UserForm extends Component {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           label={i18n.t(`${packageNS}:tr000004`)}
-                          helpText="Password must be at least 6 characters long"
+                          helpText={i18n.t(`${packageNS}:menu.registration.password_hint`)}
                           component={ReactstrapInput}
                           className={
                             errors.object && errors.object.password
