@@ -163,8 +163,7 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 	} else {
-		log.WithError(err).Error(logInfo)
-		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -203,8 +202,7 @@ func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.Confir
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		log.WithError(err).Error(logInfo)
-		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -243,8 +241,7 @@ func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),

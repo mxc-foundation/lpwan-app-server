@@ -37,8 +37,7 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		log.WithError(err).Error(logInfo)
-		return &api.GetSettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return &api.GetSettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -75,8 +74,7 @@ func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifyS
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		log.WithError(err).Error(logInfo)
-		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
