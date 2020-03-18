@@ -63,9 +63,9 @@ class TopupHistory extends Component {
   };
 
 
-  getPage(offset) {
+  getPage(limit, offset) {
     this.setState({ loading: true });
-    TopupStore.getTopUpHistory(this.props.organizationID, offset, MAX_DATA_LIMIT, res => {
+    TopupStore.getTopUpHistory(this.props.organizationID, offset, limit, res => {
       const object = this.state;
 
       object.totalSize = Number(res.count);
