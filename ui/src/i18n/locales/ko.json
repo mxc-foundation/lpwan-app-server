@@ -937,17 +937,17 @@
     "registration": {
       "email": "이메일",
       "password": "비밀번호",
-      "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
-      "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
-      "confirm_password": "Confirm Your Password",
-      "confirm_password_match_error": "Password and confirm password must be same",
-      "org_name": "Organization Name",
-      "org_display_name": "Organization Display Name",
-      "next": "Next",
-      "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
-      "mnemonic_phrase_title": "Write down your Mnemonic phrase",
-      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in the correct order",
-      "2fa_title": "Set up two-factor authentication using Google Authenticator."
+      "password_hint": "(최소 8글자, 하나의 숫자와 특수 문자를 포함하여야 합니다.)",
+      "password_match_error": "최소 8글자, 하나의 숫자와 특수 문자를 포함하여야 합니다.",
+      "confirm_password": "승인",
+      "confirm_password_match_error": "패스워드와 확인 패스워드가 일치하지 않습니다.",
+      "org_name": "기관명",
+      "org_display_name": "기관 표시명",
+      "next": "다음",
+      "mnemonic_phrase_instruction": "다음 화면에는 연상 문구가 표시됩니다. 적어주세요. 문구는 2 단계 인증을 재설정하는 유일한 방법입니다. 이 정보를 잃어 버리면 수퍼 노드 계정에 액세스하지 못하게 될 수 있습니다.",
+      "mnemonic_phrase_title": "연상 문구를 적어주세요.",
+      "mnemonic_phrase_confirm_title": "연상 문구를 순서대로 클릭해주세요.",
+      "2fa_title": "구글 인증기를 통한 2FA 셋업"
     },
     "menmonic_phrase": {
       "write_button": "I wrote it down",

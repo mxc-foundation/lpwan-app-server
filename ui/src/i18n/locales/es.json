@@ -937,8 +937,8 @@
     "registration": {
       "email": "Email Address",
       "password": "Password",
-      "password_hint": "(Password must contain at least 8 characters or more, one number, one symbol, and one letter.)",
-      "password_match_error": "Password must contain at least 8 characters or more, one number, one symbol, and one letter.",
+      "password_hint": "(Minimum eight characters, at least one letter, one number and one special character)",
+      "password_match_error": "Minimum eight characters, at least one letter, one number and one special character",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",
       "org_name": "Organization Name",
