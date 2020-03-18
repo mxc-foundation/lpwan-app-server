@@ -62,7 +62,11 @@ class Topbar extends Component {
       
       let result = await getWalletBalance(orgid, user.id);
 
-      const balance = result.balance;
+      let balance = 0;
+      if(result !== undefined){
+        balance = result.balance;
+      }
+      
       this.setState({ balance });
 
     } catch (error) {
