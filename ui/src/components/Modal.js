@@ -3,6 +3,7 @@ import i18n, { packageNS } from '../i18n';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 const CommonModal = (props) => {
+
     const {
         className,
         closeModal,
@@ -16,11 +17,13 @@ const CommonModal = (props) => {
     const toggle = () => {
         setModal(!modal);
         if (closeModal)
-            closeModal();
+            closeModal(1);
     }
     
     const proc = () => {
         setModal(!modal);
+        if (closeModal)
+            closeModal(1);
         props.callback();
     }
 
