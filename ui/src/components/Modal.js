@@ -3,6 +3,7 @@ import i18n, { packageNS } from '../i18n';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 const CommonModal = (props) => {
+
     const {
         className,
         closeModal,
@@ -15,11 +16,14 @@ const CommonModal = (props) => {
 
     const toggle = () => {
         setModal(!modal);
-        closeModal();
+        if (closeModal)
+            closeModal(1);
     }
     
     const proc = () => {
         setModal(!modal);
+        if (closeModal)
+            closeModal(1);
         props.callback();
     }
 
@@ -27,7 +31,7 @@ const CommonModal = (props) => {
         <div>
             {/* {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>} */}
             <Modal isOpen={modal} toggle={toggle} className={className} centered={true}>
-                <ModalHeader toggle={toggle}>{props.title}</ModalHeader>
+                {props.title ? <ModalHeader toggle={toggle}>{props.title}</ModalHeader>: null}
                 <ModalBody>
                     {props.context}
                 </ModalBody>

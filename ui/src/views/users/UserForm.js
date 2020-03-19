@@ -21,7 +21,7 @@ class UserForm extends Component {
     };
   }
 
-  handleUploadedProfilePic = (output) => {
+  /* handleUploadedProfilePic = (output) => { //edit 
     const { result, successMessage, errorMessage } = output;
 
     if (errorMessage) {
@@ -34,7 +34,7 @@ class UserForm extends Component {
       successMessageUploadingProfilePic: successMessage,
       uploadedProfilePic: result
     });
-  }
+  } */
 
   setValidationErrors = (errors) => {
     this.setState({
@@ -62,7 +62,7 @@ class UserForm extends Component {
 
     // Create
     if (!this.props.update) {
-      fieldsSchema.object.fields.password = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
+      fieldsSchema.object.fields.password = Yup.string().trim().matches(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[/\W/])[A-Za-z\d/\W/]{8,}$/g, i18n.t(`${packageNS}:menu.messages.format_unmatch`)).required(i18n.t(`${packageNS}:tr000431`));
       fieldsSchema.object._nodes.push("password");
     }
 
@@ -70,7 +70,7 @@ class UserForm extends Component {
   }
 
   render() {
-    const { uploadedProfilePic, errorMessageUploadingProfilePic, successMessageUploadingProfilePic } = this.state;
+    //const { uploadedProfilePic, errorMessageUploadingProfilePic, successMessageUploadingProfilePic } = this.state;//edit 
 
     const { object } = this.state;
     const { loading, update } = this.props;
@@ -89,7 +89,7 @@ class UserForm extends Component {
             {
               object: {
                 id: object.id || undefined,
-                profilePic: object.profilePic || uploadedProfilePic || defaultProfilePic,
+                //profilePic: object.profilePic || uploadedProfilePic || defaultProfilePic, //edit 
                 username: object.username || "",
                 email: object.email || "",
                 note: object.note || "",
@@ -187,7 +187,7 @@ class UserForm extends Component {
                       </>
                     }
 
-                    <label htmlFor="object.profilePic" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                    {/* <label htmlFor="object.profilePic" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}> //edit
                       {i18n.t(`${packageNS}:tr000454`)}
                     </label>
                     <UserProfilePicFile
@@ -200,9 +200,9 @@ class UserForm extends Component {
                         />
                       }
                       onChange={this.handleUploadedProfilePic}
-                    />
+                    /> 
                     {successMessageUploadingProfilePic}
-                    {errorMessageUploadingProfilePic}
+                    {errorMessageUploadingProfilePic}*/}
 
                     <Field
                       id="profilePic"
@@ -237,7 +237,7 @@ class UserForm extends Component {
                       value={values.object.username}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      helpText="Username must only contain letters, and digits"
+                      helpText={i18n.t(`${packageNS}:tr000565`)} 
                       label={i18n.t(`${packageNS}:tr000056`)}
                       component={ReactstrapInput}
                       className={
@@ -325,7 +325,7 @@ class UserForm extends Component {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           label={i18n.t(`${packageNS}:tr000004`)}
-                          helpText="Password must be at least 6 characters long"
+                          helpText={i18n.t(`${packageNS}:menu.registration.password_hint`)}
                           component={ReactstrapInput}
                           className={
                             errors.object && errors.object.password

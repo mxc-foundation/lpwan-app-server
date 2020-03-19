@@ -26,9 +26,11 @@ table {
 // Allow sufficient height in the table so that if a column has a selection box value
 // at least two of the list items appear so the user knows that there are more values
 // that they may be able to scroll down to view
-.react-bootstrap-table.table-responsive {
-    height: 100%;
-}
+
+// UPDATE:: Commented on Feb 25 by Nikhil - this is messing up the overall scroll, we do not need to set height for the above described issue
+// .react-bootstrap-table.table-responsive {
+//     height: 100%;
+// }
 
 // This is required to for the horizontal scrollbar to appear
 // when some columns do not fit in the screen on smaller devices

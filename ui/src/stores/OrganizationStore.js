@@ -14,7 +14,7 @@ class OrganizationStore extends EventEmitter {
   }
 
   
-  create(organization, callbackFunc) {
+  create(organization, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.Create({
         body: {
@@ -27,7 +27,10 @@ class OrganizationStore extends EventEmitter {
         this.notify("created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -44,7 +47,7 @@ class OrganizationStore extends EventEmitter {
     });
   }
 
-  update(organization, callbackFunc) {
+  update(organization, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.Update({
         "organization.id": organization.id,
@@ -58,7 +61,10 @@ class OrganizationStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -114,8 +120,8 @@ class OrganizationStore extends EventEmitter {
   getUser(organizationID, userID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.GetUser({
-        organizationId: organizationID,
-        userId: userID,
+        organizationID: organizationID,
+        userID: userID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -128,8 +134,8 @@ class OrganizationStore extends EventEmitter {
   deleteUser(organizationID, userID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.DeleteUser({
-        organizationId: organizationID,
-        userId: userID,
+        organizationID: organizationID,
+        userID: userID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -156,10 +162,10 @@ class OrganizationStore extends EventEmitter {
     });
   }
 
-  listUsers(organizationID, limit, offset, callbackFunc) {
+  listUsers(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.ListUsers({
-        organizationId: organizationID,
+        organizationID: organizationID,
         limit: limit,
         offset: offset,
       })
@@ -167,7 +173,10 @@ class OrganizationStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 

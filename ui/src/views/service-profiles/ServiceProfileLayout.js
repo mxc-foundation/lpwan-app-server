@@ -65,15 +65,17 @@ class ServiceProfileLayout extends Component {
   };
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
       this.state.serviceProfile ? <React.Fragment>
+        
         {this.state.nsDialog && <Modal
           title={""}
           context={i18n.t(`${packageNS}:lpwan.service_profiles.delete_service_profile`)}
+          closeModal={() => this.setState({ nsDialog: false })}
           callback={this.deleteServiceProfile} />}
+
         <TitleBar
           buttons={
             <Admin>

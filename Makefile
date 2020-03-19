@@ -1,4 +1,4 @@
-.PHONY: build clean test package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags --always |sed -e "s/^v//")
 
@@ -24,6 +24,16 @@ test: internal/statics internal/migrations
 	done
 	@go vet $(PKGS)
 	@go test -p 1 -v $(PKGS) -cover -coverprofile coverage.out
+
+lint:
+	@echo "Running code syntax check"
+	@go get -u golang.org/x/lint/golint
+	@golint -set_exit_status $(PKGS)
+
+sec:
+	@echo "Running code security check"
+	@go get github.com/securego/gosec/cmd/gosec
+	@gosec ./...
 
 dist: ui/build internal/statics internal/migrations
 	@goreleaser
@@ -52,10 +62,7 @@ ui/build:
 
 api:
 	@echo "Generating API code from .proto files"
-	@go mod vendor
-	@go generate api/api.go
-	@go generate api/m2m_ui/api.go
-	@rm -rf vendor/
+	@go generate api/appserver_serves_ui/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
 	@echo "Generating static files"
@@ -65,9 +72,8 @@ internal/statics internal/migrations: static/swagger/api.swagger.json
 
 static/swagger/api.swagger.json:
 	@echo "Generating combined Swagger JSON"
-	@cp api/m2m_ui/swagger/*.json api/swagger
-	@GOOS="" GOARCH="" go run api/swagger/main.go api/swagger > static/swagger/api.swagger.json
-	@cp api/swagger/*.json static/swagger
+	@GOOS="" GOARCH="" go run api/appserver_serves_ui/swagger/main.go api/appserver_serves_ui/swagger > static/swagger/api.swagger.json
+	@cp api/appserver_serves_ui/swagger/*.json static/swagger
 
 
 # shortcuts for development
@@ -78,6 +84,8 @@ dev-requirements:
 	go install github.com/golang/protobuf/protoc-gen-go
 	go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
 	go install github.com/jteeuwen/go-bindata/go-bindata
+	go get -u golang.org/x/lint/golint
+	go get github.com/securego/gosec/cmd/gosec
 
 ui-requirements:
 	@echo "Installing UI requirements"

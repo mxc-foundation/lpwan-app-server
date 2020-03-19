@@ -8,6 +8,7 @@ import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 
 import ApplicationStore from "../../stores/ApplicationStore";
+import Loader from "../../components/Loader";
 import IntegrationForm from "./IntegrationForm";
 
 
@@ -21,7 +22,9 @@ const styles = {
 class CreateIntegration extends Component {
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      loading: false
+    };
     this.onSubmit = this.onSubmit.bind(this);
   }
 
@@ -37,25 +40,31 @@ class CreateIntegration extends Component {
     let integr = integration;
     integr.applicationID = this.props.match.params.applicationID;
 
+    this.setState({ loading: true });
+
     switch (integr.kind) {
       case "http":
         ApplicationStore.createHTTPIntegration(integr, resp => {
+          this.setState({ loading: false });
           this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
-        });
+        }, error => { this.setState({ loading: false }) });
         break;
       case "influxdb":
         ApplicationStore.createInfluxDBIntegration(integr, resp => {
+          this.setState({ loading: false });
           this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
-        });
+        }, error => { this.setState({ loading: false }) });
         break;
       case "thingsboard":
         ApplicationStore.createThingsBoardIntegration(integr, resp => {
+          this.setState({ loading: false });
           this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
-        });
+        }, error => { this.setState({ loading: false }) });
         break;
       default:
         break;
     }
+    this.setState({ loading: false });
   }
 
   render() {
@@ -85,6 +94,8 @@ class CreateIntegration extends Component {
           <span>&nbsp;</span>
           <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
+        
+        {this.state.loading && <Loader />}
         <IntegrationForm
           match={this.props.match}
           onSubmit={this.onSubmit}

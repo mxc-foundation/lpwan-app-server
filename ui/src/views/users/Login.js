@@ -131,7 +131,7 @@ class Login extends Component {
     super();
 
     let bypassCaptcha = false;
-    if (window.location.origin.includes("http://localhost")) {
+    if (window.location.origin.includes("https://lora.demo") || window.location.origin.includes("http://localhost")) {
       bypassCaptcha = true;
     }
 
@@ -140,7 +140,7 @@ class Login extends Component {
       open: true,
       accessOn: false,
       isVerified: false,
-      logoPath: "/logo/MATCHX-SUPERNODE2.png",
+      logoPath: "",
       loading: false,
       showLoginContainer: true,
       bypassCaptcha: bypassCaptcha
@@ -162,7 +162,7 @@ class Login extends Component {
 
       this.setState({
         registration: result.registration,
-        logoPath: result.logoPath
+        logoPath: result.logoPath || "/logo/MATCHX-SUPERNODE2.png"
       });
     } catch (error) {
       console.error(error);
@@ -240,7 +240,9 @@ class Login extends Component {
         {this.state.showLoginContainer && <div className="login-form-container">
           <div className="d-flex align-items-center w-100 h-100 p-2 p-sm-3 mx-auto">
             <div className="w-100">
-              <img src={this.state.logoPath} className="mx-auto d-block img-fluid logo" alt={i18n.t(`${packageNS}:tr000051`)} height="54" />
+              
+              {this.state.logoPath ?
+                <img src={this.state.logoPath} className="mx-auto d-block img-fluid logo" alt={i18n.t(`${packageNS}:tr000051`)} height="54" /> : null}
 
               <div className="mt-2">
                 <Card className="shadow-sm">

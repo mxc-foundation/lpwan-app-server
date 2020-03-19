@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package appserver_serves_ui;
+
+import "google/api/annotations.proto";
+import "internal.proto";
+
+service WalletService {
+    rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
+        option(google.api.http) = {
+			get: "/api/wallet/balance"
+		};
+    }
+
+    rpc GetVmxcTxHistory(GetVmxcTxHistoryRequest) returns (GetVmxcTxHistoryResponse){
+        option(google.api.http) = {
+			get: "/api/wallet/{org_id}/tx-history"
+		};
+    }
+
+    rpc GetWalletUsageHist(GetWalletUsageHistRequest) returns (GetWalletUsageHistResponse) {
+        option(google.api.http) = {
+    		get: "/api/wallet/{org_id}/usage-history"
+    	};
+    }
+
+    rpc GetDlPrice (GetDownLinkPriceRequest) returns (GetDownLinkPriceResponse) {
+        option(google.api.http) = {
+    		get: "/api/wallet/{org_id}/downlink_price"
+    	};
+    }
+}
+
+message GetWalletBalanceRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+}
+
+message GetWalletBalanceResponse {
+    double balance = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message GetVmxcTxHistoryRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+}
+
+message VmxcTxHistory {
+    string from = 1;
+    string to = 2;
+    string tx_type = 3;
+    double amount = 4;
+    string created_at = 5;
+}
+
+message GetVmxcTxHistoryResponse {
+    int64 count = 1;
+    repeated VmxcTxHistory tx_history = 2;
+    ProfileResponse user_profile = 3;
+}
+
+message GetWalletUsageHistRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+}
+
+message GetWalletUsageHist {
+    string StartAt = 1;
+    int64 DurationMinutes = 2;
+
+    int64 DlCntDv = 3;
+    int64 DlCntDvFree = 4;
+    int64 UlCntDv = 5;
+    int64 UlCntDvFree = 6;
+    int64 DlCntGw = 7;
+    int64 DlCntGwFree = 8;
+    int64 UlCntGw = 9;
+    int64 UlCntGwFree = 10;
+
+    double Spend = 11;
+    double Income = 12;
+    double UpdatedBalance = 13;
+}
+
+message GetWalletUsageHistResponse {
+    repeated GetWalletUsageHist wallet_usage_his = 1;
+    ProfileResponse user_profile = 2;
+    int64 count = 3;
+}
+
+message GetDownLinkPriceRequest {
+    int64 org_id = 1;
+}
+
+message GetDownLinkPriceResponse {
+    double down_link_price = 1;
+    ProfileResponse user_profile = 2;
+}

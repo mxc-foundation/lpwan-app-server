@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 )
 
 func (ts *APITestSuite) TestOrganization() {

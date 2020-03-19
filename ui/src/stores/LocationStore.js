@@ -13,17 +13,6 @@ function checkStatus(response) {
 };
 
 function errorHandler(error) {
-  // error.then((data) => {
-  //   if (data.code === 16) {
-  //     history.push("/login");
-  //   } else {
-  //     dispatcher.dispatch({
-  //       type: "CREATE_ERROR",
-  //       error: data,
-  //     });
-  //   }
-  // });
-
   if (error.response === undefined) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",

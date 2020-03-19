@@ -21,6 +21,7 @@ import Spinner from "../../components/ScaleLoader";
 import { EXT_URL_STAKE } from "../../util/Data"
 import InfoCard from "../topup/InfoCard";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import StakeHistory from "./StakeHistory";
 
 const localStyles = {};
 
@@ -72,13 +73,6 @@ class SetStake extends FormComponent {
     const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    let path = null;
-    if (currentOrgID === process.env.REACT_APP_SUPER_ADMIN_LPWAN) {
-      path = '/control-panel/modify-account/';
-    } else {
-      path = `/modify-account/${currentOrgID}`;
-    }
-
     return (
       <>
         <TitleBar>
@@ -99,7 +93,7 @@ class SetStake extends FormComponent {
             </Card>
           </Col>
         </Row>
-        <Row xs="1" lg="2">
+        <Row xs="1" lg="1">
           <Col>
             <Card>
               <CardBody>
@@ -107,7 +101,16 @@ class SetStake extends FormComponent {
               </CardBody>
             </Card>
           </Col>
-          <Col><InfoCard path={path} /></Col>
+          {/* <Col><InfoCard path={path} /></Col> */}
+        </Row>
+        <Row xs="1" lg="1">
+          <Col>
+            <Card>
+              <CardBody>
+                <StakeHistory />
+              </CardBody>
+            </Card>
+          </Col>
         </Row>
       </>
     );

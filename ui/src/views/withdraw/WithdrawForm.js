@@ -1,98 +1,151 @@
-import React from "react";
-import { withRouter, Link  } from "react-router-dom";
+import React, { Component } from "react";
+import { withRouter, Link } from "react-router-dom";
 
-import TextField from '@material-ui/core/TextField';
-import i18n, { packageNS } from '../../i18n';
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
-import TitleBarTitle from "../../components/TitleBarTitle";
-//import Button from "@material-ui/core/Button";
-import Spinner from "../../components/ScaleLoader"
+import { Row, Col, Button, FormGroup, Label, Input } from 'reactstrap';
+import { withStyles } from "@material-ui/core/styles";
+import localStyles from "./WithdrawStyle"
+import i18n, { packageNS } from "../../i18n";
+import NumberFormat from 'react-number-format';
+import { ETHER } from "../../util/CoinType"
 
-class WithdrawForm extends FormComponent {
-  
-  state = {
-    amount: ''
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+import Modal from './Modal';
+import ModalCom from './ModalComplete';
+import WithdrawStore from "../../stores/WithdrawStore";
+import SessionStore from "../../stores/SessionStore";
+import WalletStore from "../../stores/WalletStore";
+
+const styles = {
+  ...breadcrumbStyles,
+  ...localStyles
+};
+
+function getWalletBalance(organizationId, userId) {
+  return new Promise((resolve, reject) => {
+    WalletStore.getWalletBalance(organizationId, userId, resp => {
+      return resolve(resp);
+    });
+  });
+}
+
+class Withdraw extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      nsDialog: false,
+      comDialog: false,
+      activeAccount: "",
+      balance: 0,
+      amount: 0,
+      fee: 0
+    }
   }
- 
-  onChange = (event) => {
-    const { id, value } = event.target;
+
+  loadData = async () => {
+    const orgId = this.props.match.params.organizationID;
+    let user = await SessionStore.getUser();
     
-    this.setState({
-      [id]: value
+    var result = await getWalletBalance(orgId, user.id);
+    const fee = result.withdrawFee;
+    
+    WithdrawStore.getWithdrawFee(0, resp => {
+      const object = this.state;
+      object.fee = resp.withdrawFee;
+
+      this.setState({
+        object
+      });
     });
   }
 
-  clear() {
+  componentDidMount() {
+    this.loadData();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state && prevState.data !== this.state.data) {
+
+    }
+  }
+
+  openModal = (modal) => {
     this.setState({
-      amount: ''
-    })
+      [modal]: true
+    });
+  };
+
+  handleChange = (event) => {
+    this.setState({ [event.target.id]: event.target.value });
+  }
+
+  submitWithdrawReq = () => {
+    const orgId = this.props.match.params.organizationID;
+
+    let req = {};
+    req.orgId = orgId;
+    req.moneyAbbr = ETHER;
+    req.amount = this.state.amount;
+    req.ethAddress = this.state.activeAccount;
+    req.availableBalance = this.state.balance;
+
+    WithdrawStore.withdrawReq(req, (res) => {
+      const object = this.state;
+      object.loading = false;
+
+      this.props.history.push(`/withdraw/${this.props.match.params.organizationID}`);
+      this.openModal('comDialog');
+    });
   }
 
   render() {
-    if (this.props.txinfo === undefined) {
-      return(<Spinner on={this.state.loading}/>);
-    }
-    
-    const w_limit = this.props.txinfo.balance - this.props.txinfo.withdrawFee;
-    const { txinfo } = this.props;
-    
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        //extraButtons={extraButtons}
-        onSubmit={(e) => this.props.onSubmit(e, {
-          amount: parseFloat(this.state.amount),
-        })}
-      >
-        <TextField
-          id="amount"
-          label={i18n.t(`${packageNS}:menu.withdraw.amount`)}
-          margin="normal"
-          value={this.state.amount}
-          placeholder={i18n.t(`${packageNS}:menu.withdraw.type_here`)}
-          onChange={this.onChange}
-          autoComplete='off'
-          
-          required
-          fullWidth
-          type="number"
-          inputProps={{
-            min: 0,
-            max: w_limit
-          }}
-        />
-        
-        <TextField
-          id="txFee"
-          label={i18n.t(`${packageNS}:menu.withdraw.transaction_fee`)}
-          margin="normal"
-          
-          value={this.props.txinfo.withdrawFee || "0"}
-          InputProps={{
-            readOnly: true,
-          }}
-          fullWidth
-        />
-        
-        <TextField
-          id="destination"
-          label={i18n.t(`${packageNS}:menu.withdraw.to_eth_account`)}
-          helperText=""
-          margin="normal"
-          value={this.props.txinfo.account || ""}
-          onChange={this.onChange}
-          
-          InputProps={{
-            readOnly: true,
-          }}
-          
-          fullWidth
-        />
-        <TitleBarTitle component={Link} to={`/modify-account/${this.props.orgId}`} title={i18n.t(`${packageNS}:menu.withdraw.change_eth_account`)} />
-      </Form>
+    const { classes } = this.props;
+
+    return (
+      <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={i18n.t(`${packageNS}:menu.withdraw.confirm_modal_title`)}
+          context={(this.state.status) ? i18n.t(`${packageNS}:menu.withdraw.confirm_text`) : i18n.t(`${packageNS}:menu.withdraw.deny_text`)}
+          status={this.state.status}
+          amount={this.state.amount}
+          handleChange={this.handleChange}
+          closeModal={() => this.setState({ nsDialog: false })}
+          callback={() => { this.submitWithdrawReq() }} />}
+        {this.state.comDialog && <ModalCom
+          closeModal={() => this.setState({ comDialog: false })}
+        />}
+        <Row>
+          <Col xs="4">
+            <FormGroup>
+              <Label for="amount">{i18n.t(`${packageNS}:menu.withdraw.amount`)}</Label>
+              <NumberFormat id="amount" className={classes.s_input} value={this.state.amount} onChange={this.handleChange} thousandSeparator={true} suffix={' MXC'} />
+            </FormGroup>
+            <FormGroup>
+              <Label for="activeAccount">{i18n.t(`${packageNS}:menu.withdraw.destination`)}</Label>
+              <Input type="text" name="activeAccount" id="activeAccount" value={this.state.activeAccount} placeholder={'0x00000000000000000000000000000000'} readOnly />
+            </FormGroup>
+            <FormGroup>
+              <Label for="fee">{i18n.t(`${packageNS}:menu.withdraw.currentFee`)}:</Label>{' '}
+              <NumberFormat id="fee" displayType={'text'} value={this.state.fee} onChange={this.handleChange} thousandSeparator={true} readOnly={true}  suffix={' MXC'} />
+            </FormGroup>
+          </Col>
+          <Col xs="2"></Col>
+          <Col xs="6">
+            <FormGroup>
+              <Label for="exampleEmail">{i18n.t(`${packageNS}:menu.withdraw.available`)} MXC</Label>
+              <NumberFormat id="amount" className={classes.t_input}  value={this.state.balance} onChange={this.handleChange} thousandSeparator={true} readOnly={true} suffix={' MXC'} />
+            </FormGroup>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <FormGroup>
+              <Button onClick={() => { this.openModal('nsDialog') }} color="primary">{i18n.t(`${packageNS}:menu.withdraw.submit_withdrawal_request`)}</Button>
+            </FormGroup>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }
 
-export default withRouter(WithdrawForm);
+export default withStyles(styles)(withRouter(Withdraw));

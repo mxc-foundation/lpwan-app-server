@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody,
   CardSubtitle, CardTitle, Col, Container, Row, Spinner } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
 
 import i18n, { packageNS } from '../../i18n';
 import { MAX_DATA_LIMIT } from '../../util/pagination';
@@ -11,17 +10,8 @@ import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 
 import AdvancedTable from "../../components/AdvancedTable";
-
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 const NetworkServerColumn = (cell, row, index, extraData) => {
   return <Link to={`/network-servers/${row.id}`}>{row.name}</Link>;
@@ -83,7 +73,7 @@ class ListNetworkServers extends Component {
       object.data = res.result;
       object.loading = false;
       this.setState({object});
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   componentDidMount() {
@@ -91,7 +81,6 @@ class ListNetworkServers extends Component {
   }
 
   render() {
-    const { classes } = this.props;
 
     return(
       <React.Fragment>
@@ -107,8 +96,8 @@ class ListNetworkServers extends Component {
             </TitleBarButton>,
           ]}
         >
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
@@ -135,4 +124,4 @@ class ListNetworkServers extends Component {
   }
 }
 
-export default withStyles(styles)(ListNetworkServers);
+export default ListNetworkServers;
