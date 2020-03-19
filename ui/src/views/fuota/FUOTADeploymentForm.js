@@ -89,8 +89,8 @@ class FUOTADeploymentForm extends Component {
         redundancy: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`)),
         unicastTimeout: Yup.string()
-          .trim().matches(/^[0-9]*$/, "Requires a number")
-          .max(19, 'Requires number less than 19 digits')
+          .trim().matches(/^[0-9]*$/, i18n.t(`${packageNS}:menu.messages.need_number`))
+          .max(19, i18n.t(`${packageNS}:menu.messages.need_19_digit`))
           .required(i18n.t(`${packageNS}:tr000431`)),
         dr: Yup.number()
           .required(i18n.t(`${packageNS}:tr000431`)),

@@ -513,7 +513,7 @@
   "tr000618": "© 2020 Powered by MXC",
   "tr000619": "Root Password",
   "tr000620": "Warning: Displaying your root password will void your warranty",
-  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
+  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by Gateway.",
   "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
   "tr000623": "Display Root Password",
   "tr000624": "I want to keep my warranty",
@@ -521,7 +521,8 @@
   "tr000626": "Region",
   "common": {
     "delete": "DELETE",
-    "reset": "RESET"
+    "reset": "RESET",
+    "comment": "Comment"
   },
   "lpwan": {
     "org_users": {
@@ -556,7 +557,28 @@
       "type_here": "Type Here",
       "incorrect_username_or_password": "Incorrect username or password.",
       "cancel": "CANCEL",
-      "proceed": "PROCEED"
+      "proceed": "PROCEED",
+      "deny": "Deny",
+      "total_token_available": "Total Token Available",
+      "confirm_modal_title": "Confirmation: Supernode withdawal",
+      "deny_reason": "Add a reason for a denial for the User and for MXC’s records",
+      "confirm_text": "You are confirming that withdraw from their balance of available tokens. Are you sure?",
+      "deny_text": "You are denying a request to withdraw from their balance of available tokens.",
+      "requester": "Requester",
+      "balance": "Balance",
+      "destination": "Destination",
+      "available":"Available",
+      "submit_withdrawal_request": "Submit Withdrawal Request",
+      "date_requested": "Date Requested", 
+      "status": "Status", 
+      "transaction_hash": "Transaction Hash",
+      "request_withdraw_title": "Are you sure?",
+      "request_withdraw_text_0": "You are requesting to withdraw from this Supernode. Once the request is completed, the Supernode operator must confirm this withdrawal.",
+      "request_withdraw_text_1": "Amounts valued above 1000 USD will be confirmed by the Supernode operator and the MXC Foundation.",
+      "request_withdraw_text_2": "Are you sure you want to withdraw?",
+      "request_withdraw_text_com": "Your withdrawal request was successfully submitted and the Supernode Operator will confirm this transaction within the next business day.",
+      "confirmed": "Confirmed",
+      "currentFee": "Current Fee"
     },
     "topup": {
       "topup": "Top up",
@@ -574,7 +596,7 @@
       "notice002": "Please, Register your ETH account before topping up MXC.",
       "notice003": "Would you like to go to the ETH account menu to update your account?",
       "crypto": "Crypto",
-      "fiat": "Fiat (Coming Soon)",
+      "otc": "OTC (Coming Soon)",
       "eth_address": "ETH Address",
       "copy_addr": "Copy Address",
       "show_qr_code": "Show QR Code",
@@ -582,13 +604,17 @@
       "copied_notice": "Address copied!",
       "download_qr_code": "Download QR Code",
       "instruction001": "Send only MXC to this deposit address.",
-      "instruction002": "Sending coin or token other than ETH to this address may result in the loss of your deposit.",
+      "instruction002": "Sending coin or token other than MXC to this address may result in the loss of your deposit.",
       "instruction003": "Your MXC will be deposited after 12 network confirmations.",
       "history": {
         "status": "Status",
         "amount": "Amount",
         "date": "Date",
         "tx_hash": "TX hash"
+      },
+      "info": {
+        "title": "Info",
+        "notice": "This is running on test-net."
       }
     },
     "history": {
@@ -656,7 +682,8 @@
       "other": "Other",
       "enter_your_gateway_serial_number": "Enter Your Gateway Serial Number",
       "were_searching_with_your_gateway_please_wait": "We're Searching with your Gateway, please wait...",
-      "qr_code_scan": "QR Code Scan"
+      "qr_code_scan": "QR Code Scan",
+      "reset_lora_config": "Reset Lora Config"
     },
     "staking": {
       "staking": "Staking",
@@ -736,7 +763,12 @@
       "unstake_successful": "Unstake successful. MXC has been added to your M2M Wallet balance.",
       "staking_enhances": "Staking enhances data trade by giving all holders a fair way to take part in the network.",
       "close_to_acquiring": "You are close to acquiring your monthly revenue. If you unstake now, you will miss it.",
-      "coming_soon": "Coming Soon"
+      "coming_soon": "Coming Soon",
+      "moreThan": "amount must be greater than 0 or less than balance.",
+      "min": "The minimum is 0.",
+      "need_number": "Requires a number.",
+      "need_19_digit": "Requires number less than 19 digits.",
+      "format_unmatch":"please match the requested format."
     },
     "store": {
       "device_has_been": "Device(s) has been",
@@ -760,7 +792,9 @@
       "control_panel": "Control Panel",
       "back": "Back",
       "submit": "Submit",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "comment": "Comment",
+      "done": "Done"
     },
     "system_settings": {
       "system_settings": "System Fees"
@@ -816,57 +850,145 @@
       "roleDeviceAdmin": "Device Admin",
       "roleGatewayAdmin": "Gateway Admin",
       "topupButton": "Topup MXC",
-      "totalUsers": "Total Users",
-      "totalOrgs": "Total Organizations",
-      "totalGateways": "Total Gateways",
-      "totalDevices": "Total Devices",
-      "totalApps": "Total Applications",
+      "remove": "Remove",
+      "totalUsers": {
+        "title": "Total Users",
+        "description": "Show total number of active users"
+      },
+      "totalOrgs": {
+        "title": "Total Organizations",
+        "description": "Shows total number of active organizations"
+      },
+      "totalGateways": {
+        "title": "Total Gateways",
+        "description": "Shows total number of gateways"
+      },
+      "totalDevices": {
+        "title": "Total Devices",
+        "description": "Shows total number of devices"
+      },
+      "totalApps": {
+        "title": "Total Applications",
+        "description": "Shows total number of applications"
+      },
       "tickets": {
         "title": "Tickets",
         "view_history": "View History",
         "approved": "Approved",
         "pending": "Pending",
-        "subtext": "Today's ticket"
+        "subtext": "Today's ticket",
+        "description": "Shows tickets history"
       },
       "withdrawal": {
         "title": "Withdrawal",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows today's total withdrawal"
       },
       "topup": {
         "title": "Topup",
-        "subtext": "Revenue today"
+        "subtext": "Revenue today",
+        "description": "Shows topup information"
       },
       "mxcAmountChart": {
         "title": "Total amounts of MXC in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows total amounts of MXC in Supernode"
       },
       "stakingAmountChart": {
         "title": "Total Staking amounts in Supernode",
         "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "statSubText": "Total",
+        "description": "Shows stacking amount in Supernode"
       },
       "earnedAmountChart": {
         "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today"
+        "statSubText": "Revenue Today",
+        "description": "Shows amount earned through data utilities and staking"
       },
       "packetsReceivedChart": {
         "title": "Data Packets receieved by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows received data packets"
       },
       "packetsSentChart": {
         "title": "Data Packets sent by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "subTitle": "In 24 hours, last 30 days",
+        "description": "Shows sent data packets"
       },
       "dataMap": {
-        "title": "Data Map"
+        "title": "Data Map",
+        "description": "Shows information on map"
       },
       "packetsByChannel": {
-        "title": "Packets on Channel"
+        "title": "Packets on Channel",
+        "description": "Shows data packets by channel"
       },
       "packetsBySpreadFactor": {
-        "title": "Packets on SpreadFactor"
+        "title": "Packets on SpreadFactor",
+        "description": "Shows data packets by spread factor"
+      },
+      "addWidget": {
+        "title": "Dashboard Widgets",
+        "add": "Add Widget"
+      },
+      "coming_soon": "Coming Soon"
+    },
+    "registration": { 
+      "email": "Email Address",
+      "password": "Password",
+      "password_hint": "(Minimum eight characters, at least one letter, one number and one special character)",
+      "password_match_error": "Minimum eight characters, at least one letter, one number and one special character",
+      "confirm_password": "Confirm Your Password",
+      "confirm_password_match_error": "Password and confirm password must be same",
+      "org_name": "Organization Name",
+      "org_display_name": "Organization Display Name",
+      "next": "Next",
+      "mnemonic_phrase_instruction": "On the next screen we will display your Mnemonic phrase. Please write this down. Your Mnemonic phrase is the only way to reset your two-factor authentication. If you lose this, you may lose access to your supernode account and topped up or staked MXC.",
+      "mnemonic_phrase_title": "Write down your Mnemonic phrase",
+      "mnemonic_phrase_confirm_title": "Please click mnemonic phrase in the correct order",
+      "2fa_title": "Set up two-factor authentication using Google Authenticator."
+    },
+    "menmonic_phrase": {
+      "write_button": "I wrote it down",
+      "skip_button": "Skip",
+      "confirm_button": "Confirm",
+      "back_button": "Back"
+    },
+    "google_2fa": {
+      "confirm_button": "Confirm",
+      "skip_button": "Skip"
+    },
+    "profile_2fa": {
+      "title": "Two-Factor Authentication",
+      "google": {
+        "title": "Google Authenticator",
+        "setup_button": "Setting",
+        "2fa_title": "2FA Setting",
+        "2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "reset_2fa_title": "Two-factor authentication",
+        "reset_2fa_instruction": "Set up two-factor authentication using Google Authenticator",
+        "mnemonic_phrase_confirm_title": "To reset, please click mnemonic phrase in the correct order"
       }
+    },
+    "profile_password_reset": {
+      "title": "Password",
+      "account_password": {
+        "title": "Account Password",
+        "reset_button": "Reset"
+      },
+      "coming_soon": "Coming Soon"
+    },
+    "dashboard_2fa": {
+      "title": "Your Supernode Account has a new feature!",
+      "description": "Two-factor authentication is now an option. As part of this feature addition, each account is assigned a mnemonic phrase. This phrase is the only way to reset your two-factor authentication method. On the next screen your phrase will be displayed. Please write it down and keep it in a secure location.",
+      "agree_instruction": "I understand that if I don't write down my Mnemonic phrase I could lose access to my account.",
+      "next_button": "Next",
+      "skip_button": "Not now",
+      "done_button": "Done",
+      "menmonic_step_1_title": "Write this down and keep it in a safe place.",
+      "menmonic_step_2_title": "Please click mnemonic phrase in the correct order",
+      "menmonic_step_3_title": "Confirmed"
     }
   }
 }

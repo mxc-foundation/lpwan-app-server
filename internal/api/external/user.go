@@ -1,8 +1,10 @@
 package external
 
 import (
+	"os"
 	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc/status"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -15,7 +17,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -390,7 +392,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 		Logo:         brandingHeader,
 		Registration: brandingRegistration,
 		Footer:       brandingFooter,
-		LogoPath:     brandingLogoPath,
+		LogoPath:     os.Getenv("APPSERVER") + "/branding.png",
 	}
 
 	return &resp, nil
@@ -462,6 +464,13 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 
 // RegisterUser adds new user and sends activation email
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
+	logInfo := "api/appserver_serves_ui/RegisterUser"
+
+	log.WithFields(log.Fields{
+		"email": req.Email,
+		"languange": pb.Language_name[int32(req.Language)],
+	}).Info(logInfo)
+
 	user := storage.User{
 		Username:   req.Email,
 		SessionTTL: 0,
@@ -471,6 +480,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 
 	u, err := uuid.NewV4()
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
 	token := u.String()
@@ -480,12 +490,14 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		// user has never been created yet
 		err = storage.RegisterUser(storage.DB(), &user, token)
 		if err != nil {
+			log.WithError(err).Error(logInfo)
 			return nil, helpers.ErrToRPCError(err)
 		}
 
 		// get user again
 		obj, err = storage.GetUserByUsername(ctx, storage.DB(), user.Username)
 		if err != nil {
+			log.WithError(err).Error(logInfo)
 			// internal error
 			return nil, helpers.ErrToRPCError(err)
 		}
@@ -498,11 +510,9 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(obj.Username, *obj.SecurityToken, int32(req.Language))
+	err = email.SendInvite(obj.Username, *obj.SecurityToken, email.EmailLanguage(pb.Language_name[int32(req.Language)]), email.RegistrationConfirmation)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"username": user.Username,
-		}).Info("Send email error!")
+		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -513,13 +523,13 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.ConfirmRegistrationRequest) (*pb.ConfirmRegistrationResponse, error) {
 	user, err := storage.GetUserByToken(storage.DB(), req.Token)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	log.Println("Confirming GetJwt", user.Username)
 	jwt, err := storage.MakeJWT(user.Username, user.SessionTTL)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &pb.ConfirmRegistrationResponse{
@@ -528,14 +538,14 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.Confi
 		IsAdmin:  user.IsAdmin,
 		IsActive: user.IsActive,
 		Jwt:      jwt,
-	}, nil
+	}, status.Errorf(codes.OK, "")
 }
 
 // FinishRegistration sets new user password and creates a new organization
 func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.FinishRegistrationRequest) (*empty.Empty, error) {
 	if err := a.validator.Validate(ctx, auth.ValidateUserAccess(req.UserId, auth.FinishRegistration)); err != nil {
 		log.Println("UpdatePassword", err)
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org := storage.Organization{
@@ -613,8 +623,8 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 	})
 
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &empty.Empty{}, status.Errorf(codes.OK, "")
 }

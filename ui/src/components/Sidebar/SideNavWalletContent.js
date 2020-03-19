@@ -32,12 +32,12 @@ const SideNavWalletContent = (props) => {
                     </Link>
                 </li>
 
-                {/* <li>
+                <li>
                     <Link to={`/withdraw/${props.orgId}`} className="waves-effect side-nav-link-ref">
                         <i className="ti-cloud-down"></i>
                         <span> {i18n.t(`${packageNS}:menu.withdraw.withdraw`)} </span>
                     </Link>
-                </li> */}
+                </li>
 
                 <li>
                     <Link to={`/history/${props.orgId}`} className="waves-effect side-nav-link-ref">

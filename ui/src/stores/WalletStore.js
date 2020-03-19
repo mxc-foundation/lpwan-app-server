@@ -16,14 +16,8 @@ class WalletStore extends EventEmitter {
   }
 
   getDlPrice(orgId, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockWalletStoreApi.getDlPrice(orgId)))();
-      return;
-    } */
-
     this.swagger.then(client => {
-      client.apis.ProxyRequest.GetDlPrice({
+      client.apis.WalletService.GetDlPrice({
         orgId,
       })
         .then(checkStatus)
@@ -34,10 +28,11 @@ class WalletStore extends EventEmitter {
     });
   }
 
-  getWalletBalance(orgId, callbackFunc) {
+  getWalletBalance(orgId, userId, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WalletService.GetWalletBalance({
-        orgId,
+        userId,
+        orgId
       })
         .then(checkStatus)
         .then(resp => {

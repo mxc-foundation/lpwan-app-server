@@ -21,13 +21,6 @@ const SideNavSupernodeSettingContent = (props) => {
                     </li>
 
                     <li>
-                        <Link to={`/control-panel/modify-account`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-ethereum"></i>
-                            <span> {i18n.t(`${packageNS}:menu.eth_account.eth_account`)} </span>
-                        </Link>
-                    </li>
-
-                    <li>
                         <Link to={`/control-panel/system-settings`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-settings"></i>
                             <span> {i18n.t(`${packageNS}:menu.system_settings.system_settings`)} </span>

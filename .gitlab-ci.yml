@@ -17,11 +17,13 @@ react_test_frontend:
     - cd ui
     - npm install
     - npm test
+  allow_failure: true
   except:
     - master
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
 
@@ -35,11 +37,13 @@ syntax_test_backend:
     - go get -u golang.org/x/lint/golint
   script:
     - golint -set_exit_status $(go list ./... | grep -v "migrations" | grep -v "static" | grep -v "integration") | grep -v "underscore in package name"
+  allow_failure: true
   except:
     - master
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
 
@@ -53,11 +57,13 @@ security_test_backend:
     - go get github.com/securego/gosec/cmd/gosec
   script:
     - gosec ./...
+  allow_failure: true
   except:
     - master
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
     
@@ -77,6 +83,7 @@ build_image: # this needs changing to native build to speed up 2-3 times
     - docker push $CONTAINER_IMAGE
   except:
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - buildserver-native
 

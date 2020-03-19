@@ -28,20 +28,13 @@ class DeviceStore extends EventEmitter {
   }
 
   getDeviceList(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockDeviceStoreApi.getDeviceList()))();
-      return;
-    } */
-
     this.swaggerM2M.then(client => {
-      client.apis.DeviceService.GetDeviceList({
+      client.apis.DSDeviceService.GetDeviceList({
         orgId,
         offset,
         limit
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.body);
       })
@@ -55,7 +48,7 @@ class DeviceStore extends EventEmitter {
 
   getDeviceHistory(orgId, offset, limit, callbackFunc) {    
     this.swaggerM2M.then(client => {
-      client.apis.DeviceService.GetDeviceHistory({
+      client.apis.DSDeviceService.GetDeviceHistory({
         orgId,
         offset,
         limit
@@ -70,7 +63,7 @@ class DeviceStore extends EventEmitter {
 
   setDeviceMode(orgId, devId, devMode, callbackFunc) {
     this.swaggerM2M.then(client => {
-    client.apis.DeviceService.SetDeviceMode({
+    client.apis.DSDeviceService.SetDeviceMode({
       "orgId": orgId,
       "devId": devId,
       body: {
@@ -106,12 +99,6 @@ class DeviceStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockDeviceStoreApi.get()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.DeviceService.Get({
         devEui: id,
@@ -168,37 +155,6 @@ class DeviceStore extends EventEmitter {
     });
   }
 
-  // TODO - check if this is implemented in backend
-
-  // listLocations(callbackFunc) {
-  //   this.swagger.then(client => {
-  //     client.apis.DeviceService.ListLocations()
-  //     .then(checkStatus)
-  //     .then(resp => {
-  //       callbackFunc(resp.obj);
-  //     })
-  //     .catch(errorHandler);
-  //   });
-  // }
-
-  // TODO - check if this is implemented in backend
-
-  // getStats(devEUI, start, end, callbackFunc) {
-  //   this.swagger.then(client => {
-  //     client.apis.DeviceService.GetStats({
-  //       devEui: devEUI,
-  //       interval: "DAY",
-  //       startTimestamp: start,
-  //       endTimestamp: end,
-  //     })
-  //     .then(checkStatus)
-  //     .then(resp => {
-  //       callbackFunc(resp.obj);
-  //     })
-  //     .catch(errorHandler);
-  //   });
-  // }
-
   getKeys(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.GetKeys({
@@ -247,12 +203,6 @@ class DeviceStore extends EventEmitter {
   }
 
   getActivation(devEUI, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockDeviceStoreApi.getDeviceActivation()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.DeviceService.GetActivation({
         "devEui": devEUI,
@@ -315,7 +265,6 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsDataStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -336,13 +285,11 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsDataStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", () => {
-      //console.log("error");
       this.wsDataStatus = "ERROR";
       this.emit("ws.status.change");
     });
@@ -364,7 +311,6 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsFramesStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -385,13 +331,11 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsFramesStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", (e) => {
-      //console.log("error", e);
       this.wsFramesStatus = "ERROR";
       this.emit("ws.status.change");
     });

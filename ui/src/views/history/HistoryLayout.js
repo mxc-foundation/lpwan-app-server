@@ -8,7 +8,6 @@ import TitleBar from "../../components/TitleBar";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 import StakeStore from "../../stores/StakeStore";
-import EthAccount from "./EthAccount";
 import Transactions from "./Transactions";
 import NetworkActivityHistory from "./NetworkActivityHistory";
 import Stakes from "./Stakes";
@@ -51,13 +50,11 @@ class HistoryLayout extends Component {
 
   locationToTab(prevLoc) {
     let tab = 0;
-    if (window.location.href.endsWith("/eth-account")) {
+    /* if (window.location.href.endsWith("/network-activity")) {
       tab = 1;
-    } else if (window.location.href.endsWith("/network-activity")) {
-      tab = 2;
     } else if (window.location.href.endsWith("/stake")) {
-      tab = 3;
-    }
+      tab = 2;
+    } */
 
     this.setState({
       activeTab: tab + '',
@@ -92,26 +89,8 @@ class HistoryLayout extends Component {
                   <NavItem>
                     <Link
                       className={classNames('nav-link', { active: this.state.activeTab === '0' })}
-                      to={`/history/${this.props.match.params.organizationID}/`}
-                    >{i18n.t(`${packageNS}:menu.history.transactions`)}</Link>
-                  </NavItem>
-                  {this.state.admin && <NavItem>
-                    <Link
-                      className={classNames('nav-link', { active: this.state.activeTab === '1' })}
-                      to={`/history/${this.props.match.params.organizationID}/eth-account`}
-                    >{i18n.t(`${packageNS}:menu.history.eth_account`)}</Link>
-                  </NavItem>}
-                  <NavItem>
-                    <Link
-                      className={classNames('nav-link', { active: this.state.activeTab === '2' })}
                       to={`/history/${this.props.match.params.organizationID}/network-activity`}
                     >{i18n.t(`${packageNS}:menu.history.network_activity`)}</Link>
-                  </NavItem>
-                  <NavItem>
-                    <Link
-                      className={classNames('nav-link', { active: this.state.activeTab === '3' })}
-                      to={`/history/${this.props.match.params.organizationID}/stake`}
-                    >{i18n.t(`${packageNS}:menu.history.staking`)}</Link>
                   </NavItem>
                 </Nav>
 
@@ -119,10 +98,7 @@ class HistoryLayout extends Component {
                   <Col>
                     <Card className="card-box shadow-sm">
                       <Switch>
-                        <Route exact path={`${this.props.match.path}`} render={props => <Transactions organizationID={currentOrgID} {...props} />} />
-                        <Route exact path={`${this.props.match.path}/eth-account`} render={props => <EthAccount organizationID={currentOrgID} {...props} />} />
-                        <Route exact path={`${this.props.match.path}/network-activity`} render={props => <NetworkActivityHistory organizationID={currentOrgID} {...props} />} />
-                        <Route exact path={`${this.props.match.path}/stake`} render={props => <Stakes organizationID={currentOrgID} {...props} />} />
+                        <Route exact path={`${this.props.match.path}`} render={props => <NetworkActivityHistory organizationID={currentOrgID} {...props} />} />
                       </Switch>
                     </Card>
                   </Col>

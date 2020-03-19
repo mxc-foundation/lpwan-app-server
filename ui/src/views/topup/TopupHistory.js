@@ -8,22 +8,22 @@ import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TopupStore from "../../stores/TopupStore";
 import i18n, { packageNS } from '../../i18n';
 
-
 const tableCols = [
-  {
-    dataField: 'status',
-    text: i18n.t(`${packageNS}:menu.topup.history.status`),
-    sort: false,
-  },
   {
     dataField: 'amount',
     text: i18n.t(`${packageNS}:menu.topup.history.amount`),
     sort: false,
+    formatter: (cell, row, rowIndex, formatExtraData) => {
+      return <React.Fragment>{cell} MXC</React.Fragment>
+    },
   },
   {
-    dataField: 'lastUpdateTime',
+    dataField: 'createdAt',
     text: i18n.t(`${packageNS}:menu.topup.history.date`),
     sort: false,
+    formatter: (cell, row, rowIndex, formatExtraData) => {
+      return row.createdAt.substring(0, 10);
+    },
   },
   {
     dataField: 'txHash',
@@ -31,8 +31,6 @@ const tableCols = [
     sort: false,
   }
 ]
-
-
 
 class TopupHistory extends Component {
   constructor(props) {
@@ -65,14 +63,17 @@ class TopupHistory extends Component {
   };
 
 
-  getPage(offset) {
+  getPage(limit, offset) {
     this.setState({ loading: true });
-    TopupStore.getTransactionsHistory(this.props.organizationID, offset, MAX_DATA_LIMIT, res => {
-      const object = { ...this.state };
-      object.totalSize = Number(res.totalCount);
-      object.data = res.transactionHistory;
+    TopupStore.getTopUpHistory(this.props.organizationID, offset, limit, res => {
+      const object = this.state;
+
+      object.totalSize = Number(res.count);
+      object.data = res.topupHistory;
       object.loading = false;
       this.setState({ object });
+
+      console.log(this.state);
     }, error => {
       this.setState({ loading: false });
     });

@@ -12,6 +12,8 @@ import SessionStorage from "../../stores/SessionStore";
 import TopupCrypto from "./TopupCrypto";
 import TopupHistory from "./TopupHistory";
 
+import { Alert } from 'reactstrap';
+
 
 class Topup extends Component {
   constructor(props) {
@@ -34,11 +36,11 @@ class Topup extends Component {
   }
 
   onSubmit = () => {
-    if (SessionStorage.getUser().isAdmin) {
+    /* if (SessionStorage.getUser().isAdmin) {
       this.props.history.push(`/control-panel/modify-account`);
     } else {
       this.props.history.push(`/modify-account/${this.props.match.params.organizationID}`);
-    }
+    } */
   }
 
   render() {
@@ -52,7 +54,6 @@ class Topup extends Component {
             { label: i18n.t(`${packageNS}:tr000568`), active: false },
             { label: i18n.t(`${packageNS}:menu.topup.topup`), active: true }]}></OrgBreadCumb>
       </TitleBar>
-
       <Row>
         <Col>
           <Card>
@@ -68,7 +69,7 @@ class Topup extends Component {
                   <NavLink
                     className={classNames('nav-link', { active: this.state.activeTab === '1' })} href='#'
                     onClick={(e) => this.onTabToggle("1")} disabled
-                  >{i18n.t(`${packageNS}:menu.topup.fiat`)}</NavLink>
+                  >{i18n.t(`${packageNS}:menu.topup.otc`)}</NavLink>
                 </NavItem>
               </Nav>
 

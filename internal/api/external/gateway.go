@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apex/log"
-	api "github.com/mxc-foundation/lpwan-app-server/api/ps"
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"google.golang.org/grpc/status"
@@ -24,7 +24,7 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/lorawan"
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
@@ -991,7 +991,7 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 
 	// send the req to provision server
 	provReq := api.GetRootPWDRequest{
-		Sn:            req.Sn,
+		Sn: req.Sn,
 	}
 
 	provConf := config.C.ProvisionServer

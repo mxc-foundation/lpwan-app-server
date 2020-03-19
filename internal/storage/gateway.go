@@ -14,7 +14,7 @@ import (
 
 	"github.com/lib/pq"
 
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-server/api/ns"

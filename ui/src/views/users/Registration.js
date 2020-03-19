@@ -72,7 +72,7 @@ class RegistrationForm extends Component {
                 </FormGroup>
 
                 <div className="mt-1">
-                  <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000011`)}</Button>
+                  <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000020`)}</Button>
                   <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
                 </div>
               </Form>
@@ -96,7 +96,7 @@ class Registration extends Component {
     super();
 
     let bypassCaptcha = false;
-    if (window.location.origin.includes("http://localhost")) {
+    if (window.location.origin.includes("https://lora.demo") || window.location.origin.includes("http://localhost")) {
       bypassCaptcha = true;
     }
 
@@ -136,7 +136,7 @@ class Registration extends Component {
     }
 
     if (SessionStore.getLanguage() && SessionStore.getLanguage().id) {
-      user.language = SessionStore.getLanguage().id.toLowerCase();
+      user.language = SessionStore.getLanguage().id;
     } else {
       user.language = 'en';
     }

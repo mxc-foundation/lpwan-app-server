@@ -13,16 +13,16 @@ import TopupStore from "../stores/TopupStore";
 /* import logoSm from '../assets/images/logo-sm.png';
 import logo from '../assets/images/MATCHX-SUPERNODE2.png'; */
 
-function getWalletBalance(orgId) {
+function getWalletBalance(orgId, userId) {
   if (SessionStore.isAdmin()) {
-    return new Promise((resolve, reject) => {
+    /* return new Promise((resolve, reject) => {
       TopupStore.getIncome('0', resp => {
         return resolve(resp);
       });
-    });
+    }); */
   } else {
     return new Promise((resolve, reject) => {
-      WalletStore.getWalletBalance(orgId, resp => {
+      WalletStore.getWalletBalance(orgId, userId, resp => {
         return resolve(resp);
       });
     });
@@ -57,10 +57,16 @@ class Topbar extends Component {
   loadData = async () => {
     try {
       let orgid = await SessionStore.getOrganizationID();
-      let result = await getWalletBalance(orgid);
+      let user = await SessionStore.getUser();
+      //console.log('user', user.id);
+      
+      let result = await getWalletBalance(orgid, user.id);
 
-      const balance = (SessionStore.isAdmin()) ? result.amount : result.balance;
-
+      let balance = 0;
+      if(result !== undefined){
+        balance = result.balance;
+      }
+      
       this.setState({ balance });
 
     } catch (error) {
