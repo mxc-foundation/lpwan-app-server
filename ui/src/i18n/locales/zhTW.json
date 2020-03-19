@@ -536,7 +536,7 @@
       "delete_service_profile": "您確定要刪除該服務資料嗎？"
     },
     "network_servers": {
-      "delete_server": "Are you sure you want to delete this network-server?"
+      "delete_server": "您確定要刪除此網路伺服器嗎？"
     },
     "gateways": {
       "delete_gateway": "你確定要刪除這個 gadget?"
@@ -596,13 +596,13 @@
       "notice002": "警告: 在充值 MXC 之前，請先註冊一個 ETH 賬戶",
       "notice003": "您想要前往 ETH 賬戶頁面更新您的 ETH 賬戶嗎?",
       "crypto": "加密貨幣",
-      "otc": "OTC (Coming Soon)",
+      "otc": "OTC (即將到來)",
       "eth_address": "ETH地址",
       "copy_addr": "拷貝網址",
       "show_qr_code": "顯示 QR 代碼",
       "click_to_copy": "點擊複製",
       "copied_notice": "已複製位址",
-      "download_qr_code": "Download QR Code",
+      "download_qr_code": "下載QR Code",
       "instruction001": "僅發送MXC到該存款地址。",
       "instruction002": "將MXC以外的硬幣或代幣發送到該地址可能會導致您的存款丟失。",
       "instruction003": "您的MXC將在12個網絡確認後存入。",
@@ -610,11 +610,11 @@
         "status": "狀態",
         "amount": "金額",
         "date": "日期",
-        "tx_hash": "TX hash"
+        "tx_hash": "TX 哈希值"
       },
       "info": {
-        "title": "Info",
-        "notice": "This is running on test-net."
+        "title": "訊息",
+        "notice": "這是在測試網上運行。"
       }
     },
     "history": {
@@ -625,7 +625,7 @@
       "staking": "質押",
       "from": "從",
       "to": "到",
-      "tx_hash": "TxHash",
+      "tx_hash": "Tx哈希值",
       "type": "類別",
       "mxc_amount": "MXC 數量",
       "update_date": "更新日期",
@@ -734,8 +734,8 @@
     },
     "control_panel": "控制面板",
     "organization_list": "組織列表",
-    "lpwan_management": "LPWAN Management",
-    "nb_iot_server": "5G NB-IoT Management",
+    "lpwan_management": "LPWAN 管理",
+    "nb_iot_server": "5G NB-IoT 管理",
     "lpwan_server": "LPWAN伺服器",
     "powered_by": "提供技術支持",
     "lora_server": "Lora伺服器",
@@ -768,7 +768,7 @@
       "min": "最小值為0。",
       "need_number": "需要一個數字。",
       "need_19_digit": "需要少於19位數字。",
-      "format_unmatch":"請匹配要求的格式。"
+      "format_unmatch": "請匹配要求的格式。"
     },
     "store": {
       "device_has_been": "設備已",
@@ -845,54 +845,54 @@
       "is_global_admin": "是全球管理員"
     },
     "dashboard": {
-      "title": "Dashboard",
-      "roleOrgAdmin": "Organization Admin",
+      "title": "監控面板",
+      "roleOrgAdmin": "組織管理員",
       "roleDeviceAdmin": "設備管理",
-      "roleGatewayAdmin": "Gateway Admin",
-      "topupButton": "Topup MXC",
+      "roleGatewayAdmin": "閘道器管理員",
+      "topupButton": "充值MXC極域",
       "remove": "移除",
       "totalUsers": {
         "title": "用戶總數：",
-        "description": "Show total number of active users"
+        "description": "顯示在線用戶總數"
       },
       "totalOrgs": {
-        "title": "Total Organizations",
-        "description": "Shows total number of active organizations"
+        "title": "組織總數",
+        "description": "顯示在線組織總數"
       },
       "totalGateways": {
-        "title": "Total Gateways",
-        "description": "Shows total number of gateways"
+        "title": "閘道器總數",
+        "description": "顯示閘道器總數"
       },
       "totalDevices": {
-        "title": "Total Devices",
-        "description": "Shows total number of devices"
+        "title": "設備總數",
+        "description": "顯示設備總數"
       },
       "totalApps": {
-        "title": "Total Applications",
-        "description": "Shows total number of applications"
+        "title": "應用總數",
+        "description": "顯示應用總數"
       },
       "tickets": {
         "title": "工單",
         "view_history": "檢視紀錄",
         "approved": "已核準",
         "pending": "可能",
-        "subtext": "Today's ticket",
-        "description": "Shows tickets history"
+        "subtext": "今天的工單",
+        "description": "顯示工單歷史記錄"
       },
       "withdrawal": {
         "title": "支出",
-        "subtext": "Revenue today",
-        "description": "Shows today's total withdrawal"
+        "subtext": "今日收入",
+        "description": "顯示今天的總提出通證"
       },
       "topup": {
-        "title": "Topup",
-        "subtext": "Revenue today",
-        "description": "Shows topup information"
+        "title": "充值",
+        "subtext": "今日收入",
+        "description": "顯示充值訊息"
       },
       "mxcAmountChart": {
-        "title": "Total amounts of MXC in Supernode",
-        "subtext": "Payment volume chart",
-        "statSubText": "Total",
+        "title": "超級節點中MXC極域通證總數",
+        "subtext": "交易數據量表",
+        "statSubText": "總共",
         "description": "Shows total amounts of MXC in Supernode"
       },
       "stakingAmountChart": {
