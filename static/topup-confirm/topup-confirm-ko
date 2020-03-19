@@ -11,9 +11,7 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-You have created a new user access to Super Node Server. Please click the link below to verify your email
-address. If you are unable to click the link, copy and paste this URL
-into your browser.
+Your top-up has arrived!
 
 {{ .Link }}
 
