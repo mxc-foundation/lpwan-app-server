@@ -4,14 +4,15 @@ files:
   - source: /static/templates/email/2fa-login/2fa-login-en
     dest: /static/2fa-login/2fa-login-en.html
     type: html
+    translation: /static/templates/email/2fa-login/2fa-login-%two_letters_code%
   - source: /static/templates/email/topup-change-en
-    dest: /static/2fa-login/topup-change-en.html
+    dest: /static/top-up/topup-change-en.html
     type: html
-    translation: /static/2fa-login/2fa-login-%two_letters_code%
+    translation: /static/templates/email/topup-change-%two_letters_code%
   - source: /static/templates/email/2fa-withdraw/2fa-withdraw-en
     dest: /static/2fa-withdraw/2fa-withdraw-en.html
     type: html
-    translation: /static/2fa-withdraw/2fa-withdraw-%two_letters_code%
+    translation: /static/templates/email/2fa-withdraw/2fa-withdraw-%two_letters_code%
   - source: /static/templates/email/registration-confirm/registration-confirm-en
     dest: /static/registration-confirm/registration-confirm-en.html
     type: html
@@ -19,7 +20,7 @@ files:
   - source: /static/templates/email/staking-income/staking-income-en
     dest: /static/staking-income/staking-income-en.html
     type: html
-    translation: /static/staking-income/staking-income-%two_letters_code%
+    translation: /static/templates/email/staking-income/staking-income-%two_letters_code%
   - source: /static/templates/email/topup-confirm/topup-confirm-en
     dest: /static/topup-confirm/topup-confirm-en.html
     type: html
@@ -27,4 +28,4 @@ files:
   - source: /static/templates/email/withdraw-success/withdraw-success-en
     dest: /static/withdraw-success/withdraw-success-en.html
     type: html
-    translation: /static/withdraw-success/withdraw-success-%two_letters_code%
+    translation: /static/templates/email/withdraw-success/withdraw-success-%two_letters_code%
