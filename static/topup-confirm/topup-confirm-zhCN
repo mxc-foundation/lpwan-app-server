@@ -1,6 +1,6 @@
-From: {{ .Operator }} Supernode <{{ .From }}>
+From: {{ .Operator }} 超级节点<{{ .From }}>
 To: {{ .To }}
-Subject: You added {{ .TopUpAmount }} MXC to your {{ .Operator }} Supernode
+Subject: 您充值了 {{ .TopUpAmount }} MXC极域到{{ .Operator }} 超级节点
 Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -11,7 +11,7 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-Your top-up has arrived!
+您的充值已经成功！
 
 {{ .Link }}
 
@@ -55,7 +55,7 @@ Content-ID: html-body
  style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 16px; vertical-align: top; color: #fff; font-weight: 500; text-align: center; border-radius: 3px 0 0; background-color: #3bb143; margin: padding: 20px;"
  align =center bgcolor                                =#71b6f9 valign="top">
                                 <a href="3D&quot;#&quot;"> <img src="{{ .OperatorLogo }}" height="20" alt="logo"></a>
-                                <span style=3D"margin-top: 20px;display: block;">You're all topped-up.</span>
+                                <span style=3D"margin-top: 20px;display: block;">您已经充值成功。</span>
                             </td>
                         </tr>
                         <tr
@@ -70,8 +70,8 @@ Content-ID: html-body
                                         <td class=3D"content-block"
                                             style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 20px;"
  valign                                            =top>
-                                            You added <strong
-                                                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"> {{ .TopUpAmount }} MXC</strong> to your {{ .Operator }} Supernode M2M Wallet.
+                                            您充值了<strong
+                                                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"> {{ .TopUpAmount }} MXC极域</strong> 到您的 {{ .Operator }} 超级节点M2M 钱包。
                                         </td>
                                     </tr>
                                     <tr
@@ -79,8 +79,8 @@ Content-ID: html-body
                                         <td class=3D"content-block"
                                             style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 20px;"
  valign                                            =top>
-                                            Your funds can be used for device transactions or MXC Staking.
-                                            If you have any questions regarding MXC Staking, please contact us at {{ .OperatorSupport }}.
+                                            您的资金可以用于智慧城市应用或MXC极域质押。
+                                            如果您有任何关于 MXC极域质押 的问题，请联系我们 {{ .OperatorSupport }}。
                                         </td>
                                     </tr>
                                 </table>
@@ -108,8 +108,8 @@ Content-ID: html-body
                                 <td class=3D"aligncenter content-block"
  style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 20px;"
  align                                    =center valign="top"><a href=3D"#"
-                                        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">Unsubscribe</a>
-                                    from these alerts.
+                                        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">取消订阅</a>
+                                    这些邮件。
                                 </td>
                             </tr>
                         </table>
