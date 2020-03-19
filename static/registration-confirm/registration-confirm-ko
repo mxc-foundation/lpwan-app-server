@@ -1,6 +1,6 @@
-From: {{ .Operator }} Supernode <{{ .From }}>
+From: {{ .Operator }} 슈퍼노드 <{{ .From }}>
 To: {{ .To }}
-Subject: Please confirm the e-mail linked to your {{ .Operator }} Supernode
+Subject: {{ .Operator }} 슈퍼노드에 사용된 이메일 인증 부탁드립니다
 Message-Id: <{{ .MsgID }}>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -11,8 +11,7 @@ Content-Type: text/plain;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: text-body
 
-You have created a new user access to Super Node Server. Please click the link below to verify your email
-address. If you are unable to click the link, copy and paste this URL
+슈퍼노드 서버에 새로운 유저 엑세스를 개설하셨습니다. 아래 링크를 클릭하셔서 이메일 인증을 해 주십시오. If you are unable to click the link, copy and paste this URL
 into your browser.
 
 {{ .Link }}

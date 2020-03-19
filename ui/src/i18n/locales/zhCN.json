@@ -55,7 +55,7 @@
   "tr000054": "每行页数",
   "tr000055": "所有用户",
   "tr000056": "用户名",
-  "tr000057": "在线",
+  "tr000057": "激活",
   "tr000058": "管理员",
   "tr000059": "lora服务器",
   "tr000060": "组织 设置",
@@ -839,8 +839,8 @@
       "change_password": "更改密码",
       "delete": "删除",
       "username": "用户名",
-      "active": "Active",
-      "admin": "Admin",
+      "active": "激活",
+      "admin": "管理员",
       "is_active": "已启用",
       "is_global_admin": "是全局管理员"
     },
@@ -932,11 +932,11 @@
         "title": "监控面板部件",
         "add": "添加部件"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "敬请期待"
     },
     "registration": {
-      "email": "Email Address",
-      "password": "Password",
+      "email": "电子邮箱地址",
+      "password": "密码",
       "password_hint": "(单词必须包含至少 8 个字符，一个数字，一个符号，一个字母。)",
       "password_match_error": "密码必须包含至少 8 个字符或更多，一个数字，一个符号和一个字母。",
       "confirm_password": "确认密码",
@@ -952,11 +952,11 @@
     "menmonic_phrase": {
       "write_button": "我已将它抄写下来：",
       "skip_button": "跳过",
-      "confirm_button": "Confirm",
-      "back_button": "Back"
+      "confirm_button": "确认",
+      "back_button": "返回"
     },
     "google_2fa": {
-      "confirm_button": "Confirm",
+      "confirm_button": "确认",
       "skip_button": "跳过"
     },
     "profile_2fa": {
@@ -972,12 +972,12 @@
       }
     },
     "profile_password_reset": {
-      "title": "Password",
+      "title": "密码",
       "account_password": {
         "title": "账户密码",
         "reset_button": "重置"
       },
-      "coming_soon": "Coming Soon"
+      "coming_soon": "敬请期待"
     },
     "dashboard_2fa": {
       "title": "您的超级节点帐户有一个新功能！",
@@ -988,7 +988,7 @@
       "done_button": "完成",
       "menmonic_step_1_title": "将此抄写下来并将其保存在一个安全的地方。",
       "menmonic_step_2_title": "请按正确顺序点击助记词",
-      "menmonic_step_3_title": "Confirmed"
+      "menmonic_step_3_title": "已确认"
     }
   }
 }
