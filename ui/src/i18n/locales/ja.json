@@ -768,7 +768,7 @@
       "min": "最小値は0です。",
       "need_number": "数字が必要です。",
       "need_19_digit": "19桁未満の数字が必要です。",
-      "format_unmatch":"要求された形式と一致してください。"
+      "format_unmatch": "要求された形式と一致してください。"
     },
     "store": {
       "device_has_been": "端末は",
