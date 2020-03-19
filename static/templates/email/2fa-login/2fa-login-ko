@@ -113,7 +113,7 @@ Content-ID: html-body
  14px;margin: 0;page-break-inside: avoid;">
                                 <td class=3D"aligncenter content-block" style=3D"font-family: 'Helvetica Neue' ,Helvetica,Arial,sans-serif;
  box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin:
- 0; padding: 0 20px;" align =center valign="top"><a href="3D3D&quot;{{" .Unsubscribe }}"
+ 0; padding: 0 20px;" align =center valign="top"><a href="3D3D&quot;"{{ .Unsubscribe }}"
  style=3D"font-family: 'Helvetica Neue' ,Helvetica,Arial,sans-serif;box-sizing: border-box;font-size:
  12px;color: #999;text-decoration: underline;margin: 0;background-color:
  transparent;">구독해지</a>
