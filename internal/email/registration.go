@@ -5,7 +5,6 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
-	"net/smtp"
 	"time"
 )
 
@@ -50,8 +49,7 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 		return err
 	}
 
-	err := smtp.SendMail(smtpServer+":"+smtpPort,
-		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
+	err := sendEmail(user, msg)
 
 	return err
 }
