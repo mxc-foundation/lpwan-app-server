@@ -14,12 +14,12 @@ const SideNavContent = (props) => {
 
         <div id="sidebar-menu">
             <ul className="metismenu" id="side-menu">
-                {/* <li>
+                <li>
                     <Link to="/dashboard" className="waves-effect side-nav-link-ref">
                         <i className="mdi mdi-view-dashboard"></i>
                         <span> {i18n.t(`${packageNS}:menu.dashboard.title`)} </span>
                     </Link>
-                </li> */}
+                </li>
                 <Admin>
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.control_panel`)}</li>
 
@@ -67,20 +67,14 @@ const SideNavContent = (props) => {
                         </Link>
                     </li>
 
-                    {/*<li>
-                        <Link to={`/organizations/${props.orgId}/edit`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-domain"></i>
-                            <span> {i18n.t(`${packageNS}:tr000418`)} </span>
-                        </Link>
-                    </li>*/}
-
                     <li>
-                        <Link to="/control-panel/modify-account/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_SETTING)}>
+                        <Link to="/control-panel/system-settings" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_SETTING)}>
                             <i className="mdi mdi-settings"></i>
                             <span> {i18n.t(`${packageNS}:tr000451`)} </span>
                             <span className="menu-arrow"></span>
                         </Link>
                     </li>
+                    
                 </Admin>
 
                 <NonAdmin>

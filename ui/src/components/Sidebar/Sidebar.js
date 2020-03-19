@@ -200,7 +200,7 @@ class Sidebar extends Component {
         }
 
         // on route change - switch to default
-        const innerExcludePaths = ['/history/', '/topup/', '/control-panel/history', '/control-panel/system-settings', '/control-panel/modify-account'];
+        const innerExcludePaths = ['/history/', '/topup/', '/withdraw/', '/control-panel/history', '/control-panel/withdraw', '/control-panel/system-settings'];
         
         if (this.props.location !== prevProps.location && ([SUPERNODE_WALLET, WALLET, SUPERNODE_SETTING, SETTING].indexOf(prevProps.currentSidebarId) !== -1)) {
           if (this.props.location) {

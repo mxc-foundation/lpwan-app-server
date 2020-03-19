@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package appserver_serves_ui;
+
+import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
+
+
+// SettingsService is the service managing system settings.
+service SettingsService {
+    rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse) {
+        option (google.api.http) = {
+			get: "/api/settings"
+		};
+    }
+
+    rpc ModifySettings (ModifySettingsRequest) returns (ModifySettingsResponse) {
+        option(google.api.http) = {
+			put: "/api/settings"
+			body: "*"
+		};
+    }
+}
+
+message GetSettingsRequest {}
+
+message GetSettingsResponse {
+    int64 lowBalanceWarning = 1;
+    int64 downlinkFee = 2;
+    int64 transactionPercentageShare = 3;
+}
+
+message ModifySettingsRequest {
+    google.protobuf.Int64Value lowBalanceWarning = 1;
+    google.protobuf.Int64Value downlinkFee = 2;
+    google.protobuf.Int64Value transactionPercentageShare = 3;
+}
+
+message ModifySettingsResponse {
+    bool status = 1;
+}

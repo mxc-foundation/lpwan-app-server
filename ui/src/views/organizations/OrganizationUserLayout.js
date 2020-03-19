@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
-import { Breadcrumb, BreadcrumbItem, Button, Row, Col } from 'reactstrap';
+import { Button, Row, Col } from 'reactstrap';
 
 import Modal from '../../components/Modal';
 import i18n, { packageNS } from '../../i18n';
@@ -61,7 +61,6 @@ class OrganizationUserLayout extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     if (this.state.organizationUser === undefined) {
@@ -74,7 +73,7 @@ class OrganizationUserLayout extends Component {
       titleButtons.push(<Button color="danger"
         key={1}
         onClick={this.openModal}
-        className=""><i className="mdi mdi-delete-empty"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
+        className=""><i className="mdi mdi-delete"></i>{' '}{i18n.t(`${packageNS}:common.delete`)}
       </Button>);
     }
 
@@ -90,35 +89,13 @@ class OrganizationUserLayout extends Component {
         {this.state.nsDialog && <Modal
           title={""}
           context={i18n.t(`${packageNS}:lpwan.org_users.delete_user`)}
+          closeModal={() => this.setState({ nsDialog: false })}
           callback={this.deleteOrganizationUser} />}
+
         <TitleBar buttons={titleButtons}>
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations`}
-              >
-                Organizations
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}`}
-              >
-                {currentOrgID}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem>
-              <Link
-                className={classes.breadcrumbItemLink}
-                to={`/organizations/${currentOrgID}/users`}
-              >
-                {i18n.t(`${packageNS}:tr000068`)}
-              </Link>
-            </BreadcrumbItem>
-            <BreadcrumbItem active>{this.state.organizationUser.organizationUser.username}</BreadcrumbItem>
-          </Breadcrumb>
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000068`), active: false, to: `/organizations/${currentOrgID}/users` },
+            { label: this.state.organizationUser.organizationUser.username, active: true }]}></OrgBreadCumb>
         </TitleBar>
         <Row>
           <Col>

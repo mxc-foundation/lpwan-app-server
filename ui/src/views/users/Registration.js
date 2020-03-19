@@ -96,7 +96,7 @@ class Registration extends Component {
     super();
 
     let bypassCaptcha = false;
-    if (window.location.origin.includes("http://localhost")) {
+    if (window.location.origin.includes("https://lora.demo") || window.location.origin.includes("http://localhost")) {
       bypassCaptcha = true;
     }
 
@@ -132,7 +132,7 @@ class Registration extends Component {
     // }
 
     if (SessionStore.getLanguage() && SessionStore.getLanguage().id) {
-      user.language = SessionStore.getLanguage().id.toLowerCase();
+      user.language = SessionStore.getLanguage().id;
     } else {
       user.language = 'en';
     }

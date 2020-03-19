@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, CardBody, Row, Col, Collapse, NavLink } from 'reactstrap';
+import { Row, Col, Collapse, NavLink } from 'reactstrap';
 import moment from "moment";
 
 import JSONTree from "./JSONTree";
@@ -33,16 +33,17 @@ const LoRaWANFrameLog = (props) => {
 
   return (<React.Fragment>
 
-    <Card className="border shadow-none mb-1">
-      <NavLink className="d-block pt-2 pb-2 text-dark" href="#" onClick={toggle}>
-        <div className="d-flex">
-          <div className="d-flex flex-row align-items-center">
-            <div className="px-2">{dir}</div>
-            <div className="px-2">{receivedAt}</div>
-            <div className="px-2">{mType}</div>
-            <div className="px-2">{devID}</div>
-          </div>
-          <div className="ml-auto">
+    <div className="border shadow-none mb-1">
+      <NavLink className="d-block pt-2 pb-1 text-dark" href="#" onClick={toggle}>
+        <div className="d-flex justify-content-between">
+          <ul className="list-unstyled align-self-center mb-1">
+            <li className="px-2 list-inline-item">{dir}</li>
+            <li className="px-2 list-inline-item">{receivedAt}</li>
+            <li className="px-2 list-inline-item">{mType}</li>
+            <li className="px-2 list-inline-item">{devID}</li>
+          </ul>
+
+          <div className="">
             {!isOpen && <i className="mdi mdi-chevron-down font-20"></i>}
             {isOpen && <i className="mdi mdi-chevron-up font-20"></i>}
           </div>
@@ -50,7 +51,7 @@ const LoRaWANFrameLog = (props) => {
       </NavLink>
 
       <Collapse isOpen={isOpen}>
-        <CardBody>
+        <div className="p-3">
           <Row>
             <Col>
               <div className="p-2 border">
@@ -64,9 +65,9 @@ const LoRaWANFrameLog = (props) => {
               </div>
             </Col>
           </Row>
-        </CardBody>
+        </div>
       </Collapse>
-    </Card>
+    </div>
   </React.Fragment>
   );
 }

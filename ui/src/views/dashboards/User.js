@@ -1,82 +1,14 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
-import {
-    Breadcrumb, BreadcrumbItem, Row, Col, UncontrolledButtonDropdown, DropdownMenu, DropdownItem, DropdownToggle,
-    Media, Badge
-} from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Row, Col, Button } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
-import SessionStore from "../../stores/SessionStore";
 import TitleBar from "../../components/TitleBar";
 import Loader from "../../components/Loader";
-import defaultProfilePic from "../../assets/images/users/profile-icon.png";
 
-import StatWidget from "./StatWidget";
-import MXCAmountChart from "./MXCAmountChart";
-import StakingAmountChart from "./StakingAmountChart";
-import EarnedAmountChart from "./EarnedAmountChart";
-import DataPacketChart from "./DataPacketChart";
-import DataMap from "./DataMap";
-
-
-/**
- * Chart Actions
- */
-const ChartActions = () => {
-    return <UncontrolledButtonDropdown>
-        <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
-        <DropdownMenu right>
-            <DropdownItem>Week</DropdownItem>
-            <DropdownItem>Month</DropdownItem>
-        </DropdownMenu>
-    </UncontrolledButtonDropdown>
-}
-
-
-/**
- * Topup
- * @param {*} props 
- */
-const Topup = (props) => {
-    const data = props.data || {};
-    const { user: { id, profilePic, username } } = props;
-    const formattedVal = (data.amount || 0).toLocaleString(navigator.language, { minimumFractionDigits: 4 });
-
-    const userRole = SessionStore.isOrganizationAdmin() ? i18n.t(`${packageNS}:menu.dashboard.roleOrgAdmin`) :
-        SessionStore.isOrganizationDeviceAdmin() ? i18n.t(`${packageNS}:menu.dashboard.roleDeviceAdmin`) :
-            SessionStore.isOrganizationGatewayAdmin() ? i18n.t(`${packageNS}:menu.dashboard.roleGatewayAdmin`) : "";
-
-    const orgId = SessionStore.getOrganizationID();
-
-    return <div className="card-box">
-        <div className="float-right">
-            <ChartActions />
-        </div>
-
-        <Media className="align-items-center">
-            <Media left className="avatar-xl">
-                <img src={profilePic || defaultProfilePic} className="img-fluid rounded-circle" alt="user" />
-            </Media>
-            <Media body>
-                <div className="ml-2">
-                    <h3 className="font-weight-normal mt-0">{username}</h3>
-                    <h5 className="text-primary mb-0">{userRole}</h5>
-                </div>
-            </Media>
-        </Media>
-
-        <Row className="mt-3">
-            <Col className="text-right mb-0">
-                {data.growth ? <h5><Badge className="px-1">
-                    {data.growth} <i className="mdi mdi-arrow-up"></i></Badge></h5> : null}
-                <h2 className="my-2 font-2rem">{formattedVal} MXC</h2>
-                <Link className="btn btn-primary" to={`/topup/${orgId}`}>{i18n.t(`${packageNS}:menu.dashboard.topupButton`)}</Link>
-            </Col>
-        </Row>
-    </div>;
-}
-
+import AddWidget from './AddWidget';
+import { userWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_STAT, WIDGET_TYPE_MAP } from './widgets/';
 
 class UserDashboard extends Component {
     constructor() {
@@ -84,11 +16,48 @@ class UserDashboard extends Component {
 
         this.state = {
             data: {},
-            loading: false
-        };
+            loading: false,
+            openAddWidget: false,
+            widgets: []
+        }
+
+        this.openAddWidget = this.openAddWidget.bind(this);
+        this.closeAddWidget = this.closeAddWidget.bind(this);
+        this.onAddWidget = this.onAddWidget.bind(this);
+        this.onDeletewidget = this.onDeletewidget.bind(this);
+        this.getData = this.getData.bind(this);
+    }
+
+    openAddWidget() {
+        this.setState({ openAddWidget: true });
+    }
+
+    closeAddWidget() {
+        this.setState({ openAddWidget: false });
+    }
+
+    onAddWidget(widget) {
+        let widgets = [...this.state.widgets];
+        widgets.push(widget);
+        this.setState({ widgets: widgets, openAddWidget: false });
+        this.getData();
+    }
+
+    onDeletewidget(widget) {
+        let widgets = [...this.state.widgets];
+        widgets = widgets.filter(w => w.name !== widget.name);
+        this.setState({ widgets: widgets });
     }
 
     componentDidMount() {
+        this.getData();
+
+        // showing dummy widgets on load - remove this when API is available
+        let widgets = [...userWidgetCatalog];
+        this.setState({ widgets });
+    }
+
+    getData() {
         // TODO - call api to get the data
         this.setState({ loading: true });
         // mimiking the loading - should reverted later when we integrate api
@@ -170,19 +139,39 @@ class UserDashboard extends Component {
                 "totalDevices": 260,
                 "totalApplications": 260,
             }
-        })
+        });
     }
 
+    /**
+     * Gets the widgets by type
+     * @param {*} type 
+     * @param {*} startIdx 
+     * @param {*} size 
+     */
+    getWidgets(type, startIdx, size) {
+        let typeWiseWidgets = [];
+        for (const widget of this.state.widgets) {
+            if (widget['type'] === type)
+                typeWiseWidgets.push({ meta: widget, component: widget.component, data: this.state.data[widget.name] });
+        }
+        return typeWiseWidgets.slice(startIdx, startIdx + size) || [];
+    }
 
     render() {
+        const statWidgets = this.getWidgets(WIDGET_TYPE_STAT, 0, 4) || [];
 
         return (<React.Fragment>
 
-            <TitleBar buttons={[]}>
+            <TitleBar buttons={[
+                <Button color="primary" onClick={this.openAddWidget}><i className="mdi mdi-plus"></i></Button>
+            ]}>
                 <Breadcrumb>
                     <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.dashboard.title`)}</BreadcrumbItem>
                 </Breadcrumb>
             </TitleBar>
+
+            {this.state.openAddWidget ? <AddWidget availableWidgets={userWidgetCatalog} closeModal={this.closeAddWidget}
+                addWidget={this.onAddWidget} addedWidgets={this.state.widgets} /> : null}
 
             <Row>
                 <Col>
@@ -190,78 +179,60 @@ class UserDashboard extends Component {
                         {this.state.loading ? <Loader /> : null}
 
                         <Row>
-                            <Col lg={6}>
-                                <Topup data={this.state.data.topup} user={this.props.user} />
-                            </Col>
-                            <Col lg={6}>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
+                            <Col>
                                 <Row>
-                                    <Col className="mb-0" lg={6}>
-                                        <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalUsers`)}
-                                            value={this.state.data.totalUsers} formatNum={true}></StatWidget>
-                                    </Col>
-                                    <Col className="mb-0" lg={6}>
-                                        <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalGateways`)}
-                                            value={this.state.data.totalGateways} formatNum={true}></StatWidget>
-                                    </Col>
-                                    <Col className="mb-0" lg={6}>
-                                        <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalDevices`)}
-                                            value={this.state.data.totalDevices} formatNum={true}></StatWidget>
-                                    </Col>
-                                    <Col className="mb-0" lg={6}>
-                                        <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalApps`)}
-                                            value={this.state.data.totalApplications} formatNum={true}></StatWidget>
-                                    </Col>
+                                    {statWidgets.map((widget, idx) => {
+                                        return <Col lg={statWidgets.length > 2 ? 6 : 12} key={idx} className="mb-0">
+                                            <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                        </Col>
+                                    })}
                                 </Row>
                             </Col>
                         </Row>
 
                         <Row>
-                            <Col lg={4} className="mb-0">
-                                <MXCAmountChart data={this.state.data.supernodeAmount} />
-                            </Col>
-                            <Col lg={4} className="mb-0">
-                                <StakingAmountChart data={this.state.data.stakingAmount} />
-                            </Col>
-                            <Col lg={4} className="mb-0">
-                                <EarnedAmountChart data={this.state.data.earnedAmount} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 1, 3).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsReceived} color="#10c469"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.title`)}
-                                    subTitle={i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.subTitle`)}
-                                    subTitleClass="text-success" labelField="day" />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 4, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsSent} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.title`)}
-                                    subTitle={i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.subTitle`)}
-                                    subTitleClass="text-primary" labelField="day" />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 5, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataMap position={[51, 13]} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_MAP, 0, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col lg={6} className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsByChannel} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsByChannel.title`)}
-                                    labelField="channel" showYAxis={true} />
-                            </Col>
-                            <Col lg={6} className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsBySpreadFactor} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.title`)}
-                                    labelField="spreadFactor" showYAxis={true} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 6, 2).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
                     </div>
                 </Col>

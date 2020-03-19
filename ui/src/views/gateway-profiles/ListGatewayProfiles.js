@@ -1,32 +1,24 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
+import { Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card } from 'reactstrap';
 
 import i18n, { packageNS } from '../../i18n';
 import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import SessionStore from '../../stores/SessionStore';
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-
-const localStyles = {};
-
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 const GatewayColumn = (cell, row, index, extraData) => {
-  return SessionStore.isAdmin() ? <Link to={`/gateway-profiles/${row.id}`}>{row.name}</Link>: <span>{row.name}</span>;
+  return SessionStore.isAdmin() ? <Link to={`/gateway-profiles/${row.id}`}>{row.name}</Link> : <span>{row.name}</span>;
 }
 
 const NetworkColumn = (cell, row, index, extraData) => {
-  return SessionStore.isAdmin() ? <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link>: <span>{row.networkServerName}</span>;
+  return SessionStore.isAdmin() ? <Link to={`/network-servers/${row.networkServerID}`}>{row.networkServerName}</Link> : <span>{row.networkServerName}</span>;
 }
 
 const getColumns = () => (
@@ -52,7 +44,8 @@ class ListGatewayProfiles extends Component {
     this.getPage = this.getPage.bind(this);
     this.state = {
       data: [],
-      totalSize: 0
+      totalSize: 0,
+      loading: false,
     }
   }
 
@@ -69,13 +62,14 @@ class ListGatewayProfiles extends Component {
    */
   getPage = (limit, offset) => {
     limit = MAX_DATA_LIMIT;
+    this.setState({ loading: true });
     GatewayProfileStore.list(0, limit, offset, (res) => {
       const object = this.state;
       object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
       this.setState({ object });
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   componentDidMount() {
@@ -83,7 +77,6 @@ class ListGatewayProfiles extends Component {
   }
 
   render() {
-    const { classes } = this.props;
 
     const buttons = SessionStore.isAdmin() ? [<TitleBarButton
       aria-label={i18n.t(`${packageNS}:tr000277`)}
@@ -92,14 +85,14 @@ class ListGatewayProfiles extends Component {
       key={'b-1'}
       to={`/gateway-profiles/create`}
       className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
-    </TitleBarButton>,]: [];
+    </TitleBarButton>,] : [];
 
     return (<React.Fragment>
       <TitleBar
         buttons={buttons}
       >
-        <Breadcrumb className={classes.breadcrumb}>
-          <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
+        <Breadcrumb>
+          <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
           <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000046`)}</BreadcrumbItem>
         </Breadcrumb>
       </TitleBar>
@@ -107,6 +100,7 @@ class ListGatewayProfiles extends Component {
       <Row>
         <Col>
           <Card className="card-box shadow-sm" >
+            {this.state.loading && <Loader />}
             <AdvancedTable data={this.state.data} columns={getColumns()} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
           </Card>
         </Col>
@@ -116,4 +110,4 @@ class ListGatewayProfiles extends Component {
   }
 }
 
-export default withStyles(styles)(ListGatewayProfiles);
+export default ListGatewayProfiles;

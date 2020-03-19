@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PARENT_PATH=$(dirname $0)
+MXPROTOCOL_SERVER_PATH=$PARENT_PATH/../mxprotocol-server
 CONFIG=$PARENT_PATH/config
 TAG=$(git describe --tags)
 SERVICENAME=appserver
@@ -90,6 +91,11 @@ if [ "$*" = "remote" ] || [ "$*" = "local" ]; then
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
 
   if [ "$supernode_mode" = "development" ]; then
+    # build mxprotocol-server
+    if [ -d "$MXPROTOCOL_SERVER_PATH" ]; then
+      docker-compose exec -d mxprotocol-server bash --init-file "$MXPROTOCOL_SERVER_PATH"/m2m/scripts/compile/develop-compile
+    fi
+    # build appserver
     docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
   fi
 

@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
-
-import Check from "mdi-material-ui/Check";
-import Close from "mdi-material-ui/Close";
+import classNames from 'classnames';
 
 import { Button, Row, Col, Card } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
@@ -13,6 +11,7 @@ import OrganizationStore from "../../stores/OrganizationStore";
 
 import AdvancedTable from "../../components/AdvancedTable";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import Loader from "../../components/Loader";
 
 
 const UserNameColumn = (cell, row, index, extraData) => {
@@ -21,11 +20,7 @@ const UserNameColumn = (cell, row, index, extraData) => {
 }
 
 const AdminColumn = (cell, row, index, extraData) => {
-  if (row.isAdmin) {
-    return <Check />;
-  } else {
-    return <Close />;
-  }
+  return <i className={classNames("mdi", {"mdi-check": row.isAdmin, "mdi-close": !row.isAdmin}, "font-20")}></i>;
 }
 
 const getColumns = (organizationId) => (
@@ -53,7 +48,8 @@ class ListOrganizationUsers extends Component {
 
     this.state = {
       data: [],
-      totalSize: 0
+      totalSize: 0,
+      loading: false,
     }
   }
 
@@ -87,7 +83,7 @@ class ListOrganizationUsers extends Component {
       object.data = res.result;
       object.loading = false;
       this.setState({ object });
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   componentDidMount() {
@@ -104,7 +100,7 @@ class ListOrganizationUsers extends Component {
             <Button color="primary"
               key={1}
               onClick={this.createUser}
-              className=""><i className="mdi mdi-account-multiple-plus"></i>{' '}{i18n.t(`${packageNS}:tr000041`)}
+              className=""><i className="mdi mdi-plus"></i>{' '}{i18n.t(`${packageNS}:tr000041`)}
             </Button>,
           ]}
         >
@@ -114,6 +110,7 @@ class ListOrganizationUsers extends Component {
         <Row>
           <Col>
             <Card className="card-box shadow-sm">
+            {this.state.loading && <Loader />}
               <AdvancedTable data={this.state.data} columns={getColumns(this.props.match.params.organizationID)}
                 keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
             </Card>

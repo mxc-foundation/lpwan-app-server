@@ -38,7 +38,7 @@ class SupernodeHistory extends Component {
     this.setState({loading:true});
     this.locationToTab();
     this.setState({loading:false});
-    this.getIncome();
+    //this.getIncome();
   }
 
   componentDidUpdate(oldProps) {
@@ -50,9 +50,9 @@ class SupernodeHistory extends Component {
   }
 
   getIncome(){
-    topupStore.getIncome(0, resp => {
+    /* topupStore.getIncome(0, resp => {
       this.setState({income:resp.amount});
-    });
+    }); */
   }
 
   onChangeTab(e, v) {

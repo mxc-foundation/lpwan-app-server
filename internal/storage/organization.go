@@ -2,10 +2,13 @@ package storage
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"regexp"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
+	m2m "github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -74,6 +77,25 @@ func CreateOrganization(ctx context.Context, db sqlx.Queryer, org *Organization)
 		"name":   org.Name,
 		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("organization created")
+
+	// create wallet for this organization
+	m2mClient, err := m2m.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error("CreateOrganization: failed to get m2m client")
+	} else {
+
+		topUpClient := m2mServer.NewTopUpServiceClient(m2mClient)
+		resp, err := topUpClient.GetTopUpDestination(ctx, &m2mServer.GetTopUpDestinationRequest{
+			OrgId: org.ID,
+		})
+		if err != nil {
+			log.WithError(err).Error("CreateOrganization: failed to call topUpClient.GetTopUpDestination")
+		} else {
+			log.Info("CreateOrganization: successfully created wallet account: ", resp.ActiveAccount)
+		}
+	}
+
 	return nil
 }
 

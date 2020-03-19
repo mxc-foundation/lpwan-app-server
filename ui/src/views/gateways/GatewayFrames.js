@@ -167,7 +167,11 @@ class GatewayFrames extends Component {
                 <span className="sr-only">...</span>
               </div>
             </div>}
+        </Col>
+      </Row>
 
+      <Row>
+        <Col className="mb-0">
           {frames.length > 0 && frames}
         </Col>
       </Row>
