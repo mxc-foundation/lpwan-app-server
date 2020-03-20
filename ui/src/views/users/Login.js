@@ -97,13 +97,12 @@ class LoginForm extends Component {
                 component={ReactstrapPasswordInput}
                 onBlur={handleBlur}
               />
-
-              {/* <FormGroup className="mt-2 small">
+               <FormGroup className="mt-2 small">
                 <ReCAPTCHA
                   sitekey={process.env.REACT_APP_PUBLIC_KEY}
                   onChange={this.onReCapChange}
                 />
-              </FormGroup> */}
+              </FormGroup>
 
               <div className="mt-1">
                 <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000011`)}</Button>

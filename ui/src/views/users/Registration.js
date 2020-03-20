@@ -63,13 +63,12 @@ class RegistrationForm extends Component {
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                 />
-
-                {/*                <FormGroup className="mt-2">
+                <FormGroup className="mt-2">
                   <ReCAPTCHA
                     sitekey={process.env.REACT_APP_PUBLIC_KEY}
                     onChange={this.onReCapChange}
                   />
-                </FormGroup>*/}
+                </FormGroup>
 
                 <div className="mt-1">
                   <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000020`)}</Button>
