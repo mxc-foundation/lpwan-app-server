@@ -35,6 +35,7 @@ class AdvancedTable extends Component {
     const { ExportCSVButton } = CSVExport;
     const rowsPerPage = this.props.rowsPerPage || 10;
     const totalSize = this.props.totalSize;
+    const { onColumnMatch = null } = this.props;
 
     const columns = this.props.columns || [];
 
@@ -52,7 +53,9 @@ class AdvancedTable extends Component {
           keyField={this.props.keyField}
           data={this.props.data}
           columns={this.props.columns}
-          search>
+          search={{
+            onColumnMatch
+          }}>
           {props => (
             <React.Fragment>
 
