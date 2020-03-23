@@ -318,7 +318,7 @@ class SessionStore extends EventEmitter {
       type: "CREATE_NOTIFICATION",
       notification: {
         type: "success",
-        message: i18n.t(`${packageNS}:tr000018`),
+        message: i18n.t(`${packageNS}:tr000018`), // "Confirmation email has been sent"
       },
     });
   }
