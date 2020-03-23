@@ -313,11 +313,12 @@ class SessionStore extends EventEmitter {
   }
 
   notifyActivation() {
+    console.log(123);
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
       notification: {
         type: "success",
-        message: i18n.t(`${packageNS}:tr000018`),
+        message: i18n.t(`${packageNS}:tr000018`), // "Confirmation email has been sent"
       },
     });
   }
