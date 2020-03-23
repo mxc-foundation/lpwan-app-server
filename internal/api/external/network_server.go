@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
@@ -207,7 +207,7 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 	var count int
 	var nss []storage.NetworkServer
 
-	if req.OrganizationId == 0 {
+	if req.OrganizationId == 0 || req.OrganizationId == 1 {
 		if isAdmin {
 			count, err = storage.GetNetworkServerCount(ctx, storage.DB())
 			if err != nil {

@@ -2,14 +2,13 @@ import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 
 import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 
 import ApplicationStore from "../../stores/ApplicationStore";
+import Loader from "../../components/Loader";
 import IntegrationForm from "./IntegrationForm";
 
 
@@ -23,7 +22,9 @@ const styles = {
 class CreateIntegration extends Component {
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+      loading: false
+    };
     this.onSubmit = this.onSubmit.bind(this);
   }
 
@@ -39,54 +40,68 @@ class CreateIntegration extends Component {
     let integr = integration;
     integr.applicationID = this.props.match.params.applicationID;
 
+    this.setState({ loading: true });
+
     switch (integr.kind) {
       case "http":
         ApplicationStore.createHTTPIntegration(integr, resp => {
+          this.setState({ loading: false });
           this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
-        });
+        }, error => { this.setState({ loading: false }) });
         break;
       case "influxdb":
         ApplicationStore.createInfluxDBIntegration(integr, resp => {
+          this.setState({ loading: false });
           this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
-        });
+        }, error => { this.setState({ loading: false }) });
         break;
       case "thingsboard":
         ApplicationStore.createThingsBoardIntegration(integr, resp => {
+          this.setState({ loading: false });
           this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`);
-        });
+        }, error => { this.setState({ loading: false }) });
         break;
       default:
         break;
     }
+    this.setState({ loading: false });
   }
 
   render() {
-    if (this.state.application === undefined) {
+    const { application } = this.state;
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+
+    if (application === undefined) {
       return(<div></div>);
     }
 
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title="Applications" to={`/organizations/${this.props.match.params.organizationID}/applications`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${currentOrgID}/applications`} />
+          <span>&nbsp;</span>
           <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.application.application.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
+          <span>&nbsp;</span>
+          <TitleBarTitle title={application.application.name} to={`/organizations/${currentOrgID}/applications/${currentApplicationID}`} />
+          <span>&nbsp;</span>
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Integrations" to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />
+          <span>&nbsp;</span>
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000384`)} to={`/organizations/${currentOrgID}/applications/${currentApplicationID}/integrations`} />
+          <span>&nbsp;</span>
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <span>&nbsp;</span>
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000277`)} />
         </TitleBar>
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <IntegrationForm
-                submitLabel="Create"
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        
+        {this.state.loading && <Loader />}
+        <IntegrationForm
+          match={this.props.match}
+          onSubmit={this.onSubmit}
+          submitLabel={i18n.t(`${packageNS}:tr000277`)}
+        />
+      </React.Fragment>
     );
   }
 }

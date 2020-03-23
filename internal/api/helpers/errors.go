@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -29,6 +28,7 @@ var errToCode = map[error]codes.Code{
 	influxdb.ErrInvalidPrecision:               codes.InvalidArgument,
 }
 
+// ErrToRPCError defines the error
 func ErrToRPCError(err error) error {
 	cause := errors.Cause(err)
 
@@ -42,5 +42,5 @@ func ErrToRPCError(err error) error {
 	if !ok {
 		code = codes.Unknown
 	}
-	return grpc.Errorf(code, cause.Error())
+	return status.Errorf(code, cause.Error())
 }

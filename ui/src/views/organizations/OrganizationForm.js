@@ -1,69 +1,88 @@
-import React from "react";
+import React, { Component } from "react";
 
-import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from "@material-ui/core/FormGroup";
-import FormHelperText from '@material-ui/core/FormHelperText';
-import Checkbox from '@material-ui/core/Checkbox';
+import { Row, Col, Button } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 
-import FormControl from "../../components/FormControl";
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
+import { ReactstrapInput, ReactstrapCheckbox } from '../../components/FormInputs';
+import i18n, { packageNS } from '../../i18n';
 
 
+const orgSchema = Yup.object().shape({
+  name: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+  displayName: Yup.string().required(i18n.t(`${packageNS}:tr000431`)), 
+});
 
-class OrganizationForm extends FormComponent {
+
+class OrganizationForm extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      object: this.props.object || {name: "", displayName: ""},
+    };
+  }
+
+
   render() {
-    if (this.state.object === undefined) {
-      return(<div></div>);
-    }
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-        <TextField
-          id="name"
-          label="Organization name"
-          helperText="The name may only contain words, numbers and dashes."
-          margin="normal"
-          value={this.state.object.name || ""}
-          onChange={this.onChange}
-          inputProps={{
-            pattern: "[\\w-]+",
-          }}
-          required
-          fullWidth
-        />
-        <TextField
-          id="displayName"
-          label="Display name"
-          margin="normal"
-          value={this.state.object.displayName || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-        />
-        <FormControl
-          label="Gateways"
-        >
-          <FormGroup>
-            <FormControlLabel
-              label="Organization can have gateways"
-              control={
-                <Checkbox
-                  id="canHaveGateways"
-                  checked={!!this.state.object.canHaveGateways}
-                  onChange={this.onChange}
-                  value="true"
-                  color="primary"
-                />
-              }
-            />
-          </FormGroup>
-          <FormHelperText>When checked, it means that organization administrators are able to add their own gateways to the network. Note that the usage of the gateways is not limited to this organization.</FormHelperText>
-        </FormControl>
-      </Form>
+
+    return (<React.Fragment>
+      <Row>
+        <Col>
+          <Formik
+              enableReinitialize
+              initialValues={this.state.object}
+              validationSchema={orgSchema}
+              onSubmit={this.props.onSubmit}>
+            {({
+                handleSubmit,
+                handleChange,
+                handleBlur,
+              }) => (
+                <Form onSubmit={handleSubmit} noValidate>
+                  <Field
+                      type="text"
+                      label={i18n.t(`${packageNS}:tr000030`)+'*'}
+                      name="name"
+                      id="name"
+                      helpText={i18n.t(`${packageNS}:tr000062`)}
+                      component={ReactstrapInput}
+                      onBlur={handleBlur}
+                      onChange={handleChange}
+                      required
+                  />
+
+                  <Field
+                      type="text"
+                      label={i18n.t(`${packageNS}:tr000126`)+'*'}
+                      name="displayName"
+                      id="displayName"
+                      helpText={i18n.t(`${packageNS}:tr000031`)}
+                      component={ReactstrapInput}
+                      onBlur={handleBlur}
+                      onChange={handleChange}
+                      required
+                  />
+
+                  <h4>{i18n.t(`${packageNS}:tr000127`)}</h4>
+
+                  <Field
+                      type="checkbox"
+                      label={i18n.t(`${packageNS}:tr000064`)}
+                      name="canHaveGateways"
+                      id="canHaveGateways"
+                      helpText={i18n.t(`${packageNS}:tr000065`)}
+                      component={ReactstrapCheckbox}
+                      onChange={handleChange}
+                  />
+
+                  <Button type="submit" color="primary">{this.props.submitLabel}</Button>
+                </Form>
+            )}
+          </Formik>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }

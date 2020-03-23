@@ -1,149 +1,285 @@
 import React, { Component } from "react";
 import { withRouter, Link } from "react-router-dom";
 
-import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Typography from "@material-ui/core/Typography";
-import { withStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
+import { Row, Col, Card, CardBody, Button, FormGroup } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 
-import Form from "../../components/Form";
-import FormComponent from "../../classes/FormComponent";
+import ReCAPTCHA from "react-google-recaptcha";
+import { Map } from 'react-leaflet';
+
+import FoundLocationMap from "../../components/FoundLocationMap"
+import { ReactstrapInput, ReactstrapPasswordInput } from '../../components/FormInputs';
+import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
+import Loader from "../../components/Loader";
 import SessionStore from "../../stores/SessionStore";
-import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
-const styles = {
-  textField: {
-    width: "100%",
-  },
-  link: {
-    "& a": {
-      color: theme.palette.textSecondary.main,
-      textDecoration: "none",
-    },
-  },
-  padding: {
-    paddingTop: 230,
-  },
-  padd: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    top: 0,
-    left: 0,
-    backgroundImage: 'url("/img/world-map.png")',
+const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
+
+const loginSchema = Yup.object().shape({
+  username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+  password: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
+})
+
+class LoginForm extends Component {
+  constructor(props) {
+    super(props);
+    this.onChangeLanguage = this.onChangeLanguage.bind(this);
+
+    let object = this.props.object || { username: "", password: "" };
+
+    if (window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)) {
+      object['username'] = process.env.REACT_APP_DEMO_USER;
+      object['password'] = process.env.REACT_APP_DEMO_USER_PASSWORD;
+      object['helpText'] = i18n.t(`${packageNS}:tr000010`);
+    }
+
+    this.state = {
+      object: object,
+      isVerified: false,
+      bypassCaptcha: this.props.bypassCaptcha
+    }
   }
-};
 
+  onChangeLanguage = e => {
+    const newLanguage = {
+      id: e.id,
+      label: e.label,
+      value: e.value,
+      code: e.code
+    }
 
+    this.props.onChangeLanguage(newLanguage);
+  }
 
-class LoginForm extends FormComponent {
+  onReCapChange = (value) => {
+    const req = {
+      secret: process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.setState({ isVerified: resp.success });
+    });
+  }
+
   render() {
-    if (this.state.object === undefined) {
-      return null;
-    }
-    
-    const extraButtons = [
-      <Button color="primary.main" component={Link} to={`/registration`} type="button" disabled={false}>Register</Button>
-    ]
-    let demoUsername = "";
-    let demoPassword = "";
-    let helpText = "";
-    if(window.location.origin.includes(process.env.REACT_APP_DEMO_HOST_SERVER)){
-      demoUsername = process.env.REACT_APP_DEMO_USER;
-      demoPassword = process.env.REACT_APP_DEMO_USER_PASSWORD;
-      helpText = "You can access with this account right now as a demo user.";
-    }
 
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        extraButtons={extraButtons}
-        onSubmit={this.onSubmit}
-      >
-        <TextField
-          id="username"
-          label="Username"
-          margin="normal"
-          value={this.state.object.username === undefined 
-                  ? this.state.object.username = demoUsername 
-                  : this.state.object.username }
-          autoComplete='off'
-          onChange={this.onChange}
-          fullWidth
-          required
-        />
-        <TextField
-          id="password"
-          label="Password"
-          type="password"
-          margin="normal"
-          value={this.state.object.password === undefined 
-                  ? this.state.object.password = demoPassword 
-                  : this.state.object.password }
-          helperText={helpText}
-          onChange={this.onChange}
-          fullWidth
-          required
-        />
-      </Form>
+    return (<React.Fragment>
+      <Formik
+        initialValues={this.state.object}
+        validationSchema={loginSchema}
+        onSubmit={(values) => {
+          const castValues = loginSchema.cast(values);
+          this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
+        }}>
+        {({
+          handleSubmit,
+          handleBlur
+        }) => (
+            <Form onSubmit={handleSubmit} noValidate>
+              <Field
+                type="text"
+                label={i18n.t(`${packageNS}:tr000003`)}
+                name="username"
+                id="username"
+                component={ReactstrapInput}
+                onBlur={handleBlur}
+              />
+
+              <Field
+                helpText={this.state.object.helpText}
+                label={i18n.t(`${packageNS}:tr000004`)}
+                name="password"
+                id="password"
+                component={ReactstrapPasswordInput}
+                onBlur={handleBlur}
+              />
+               <FormGroup className="mt-2 small">
+                <ReCAPTCHA
+                  sitekey={process.env.REACT_APP_PUBLIC_KEY}
+                  onChange={this.onReCapChange}
+                />
+              </FormGroup>
+
+              <div className="mt-1">
+                <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000011`)}</Button>
+                <Link to={`/registration`} className="btn btn-outline-primary btn-block mt-2">{i18n.t(`${packageNS}:tr000020`)}</Link>
+                {/* <Link to={`/password-recovery`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000009`)}</Link> */}
+              </div>
+            </Form>
+          )}
+      </Formik>
+    </React.Fragment>
     );
   }
 }
 
+function GetBranding() {
+  return new Promise((resolve, reject) => {
+    SessionStore.getBranding(resp => {
+      return resolve(resp);
+    });
+  });
+}
 
 class Login extends Component {
   constructor() {
     super();
 
+    let bypassCaptcha = false;
+    if (window.location.origin.includes("https://lora.demo") || window.location.origin.includes("http://localhost")) {
+      bypassCaptcha = true;
+    }
+
     this.state = {
       registration: null,
+      open: true,
+      accessOn: false,
+      isVerified: false,
+      logoPath: "",
+      loading: false,
+      showLoginContainer: true,
+      bypassCaptcha: bypassCaptcha
     };
 
     this.onSubmit = this.onSubmit.bind(this);
+    this.showLoginContainer = this.showLoginContainer.bind(this);
+    this.hideLoginContainer = this.hideLoginContainer.bind(this);
   }
 
-  componentDidMount() {
-    SessionStore.logout(() => {});
 
-    SessionStore.getBranding(resp => {
-      if (resp.registration !== "") {
-        this.setState({
-          registration: resp.registration,
-        });
-      }
-    });
+  componentDidMount() {
+    this.loadData();
+  }
+
+  loadData = async () => {
+    try {
+      let result = await GetBranding();
+
+      this.setState({
+        registration: result.registration,
+        logoPath: result.logoPath || "/logo/MATCHX-SUPERNODE2.png"
+      });
+    } catch (error) {
+      console.error(error);
+      this.setState({ error });
+    }
+  }
+
+
+  componentDidUpdate(oldProps) {
+    if (this.props.logoPath === oldProps.logoPath) {
+      return;
+    }
+
+    this.loadData();
+  }
+
+  onChangeLanguage = (newLanguageState) => {
+    this.props.onChangeLanguage(newLanguageState);
+  }
+
+  hideLoginContainer = () => {
+    this.setState({ showLoginContainer: false })
+  }
+
+  showLoginContainer = () => {
+    this.setState({ showLoginContainer: true })
   }
 
   onSubmit(login) {
-    SessionStore.login(login, () => {
-      this.props.history.push("/");
+    // if (login.hasOwnProperty('isVerified')) {
+    //   if (!login.isVerified) {
+    //     alert(VERIFY_ERROR_MESSAGE);
+    //     return false;
+    //   }
+
+      SessionStore.login(login, () => {
+        this.setState({ loading: false });
+
+        const orgs = SessionStore.getOrganizations();
+
+        if (SessionStore.getToken() && orgs.length > 0) {
+          this.props.history.push(`/`);
+        } else {
+          console.log('User has no organisations. Redirecting to login');
+          this.props.history.push("/");
+        }
+      });
+    // } else {
+    //   alert(VERIFY_ERROR_MESSAGE);
+    //   return false;
+    // }
+  }
+
+  onClick = () => {
+    this.setState(function (prevState) {
+      return { accessOn: !prevState.accessOn };
     });
   }
 
   render() {
-    return(
-      <div className={this.props.classes.padd}>
-      <Grid container justify="center" className={this.props.classes.padding}>
-        <Grid item xs={6} lg={4}>
-          <Card>
-            <CardContent>
-              <LoginForm
-                submitLabel="Login"
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-            {this.state.registration && <CardContent>
-              <Typography className={this.props.classes.link} dangerouslySetInnerHTML={{__html: this.state.registration}}></Typography>
-             </CardContent>}
-          </Card>
-        </Grid>
-      </Grid>
+
+    let position = [];
+
+    position = [51, 13];
+
+    return (<React.Fragment>
+      <div>
+        <Map center={position} zoom={6} className="map-container" animate={true} scrollWheelZoom={false}>
+          <FoundLocationMap />
+
+          {!this.state.showLoginContainer && <Button type="button" color="primary" className="back-to-login-btn" onClick={this.showLoginContainer}>
+            <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000462`)}</Button>}
+        </Map>
+
+        {this.state.showLoginContainer && <div className="login-form-container">
+          <div className="d-flex align-items-center w-100 h-100 p-2 p-sm-3 mx-auto">
+            <div className="w-100">
+              
+              {this.state.logoPath ?
+                <img src={this.state.logoPath} className="mx-auto d-block img-fluid logo" alt={i18n.t(`${packageNS}:tr000051`)} height="54" /> : null}
+
+              <div className="mt-2">
+                <Card className="shadow-sm">
+                  <CardBody>
+                    <div className="position-relative">
+                      {this.state.loading && <Loader />}
+                      <LoginForm
+                        onSubmit={this.onSubmit}
+                        bypassCaptcha={this.state.bypassCaptcha}
+                      />
+                    </div>
+
+                    <Row className="align-items-center">
+                      <Col>
+                        <Button type="button" color="link" className="btn-block text-muted align-middle mt-0" onClick={this.hideLoginContainer}>
+                          <i className="mdi mdi-arrow-left mr-1"></i>{i18n.t(`${packageNS}:tr000461`)}</Button>
+                      </Col>
+                      <Col className="text-right">
+                        <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} extraSelectOpts={{menuPlacement: 'top'}} />
+                      </Col>
+                    </Row>
+
+                    {this.state.registration &&
+                      <Row className="mt-2">
+                        <Col>
+                          <h6 dangerouslySetInnerHTML={{ __html: this.state.registration }}></h6>
+                        </Col>
+                      </Row>}
+                  </CardBody>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>}
       </div>
+    </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(Login));
+export default withRouter(Login);

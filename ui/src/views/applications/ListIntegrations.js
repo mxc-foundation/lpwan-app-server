@@ -2,15 +2,14 @@ import React, { Component } from "react";
 import { Link } from "react-router-dom";
 
 import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-import Button from '@material-ui/core/Button';
 
-import Plus from "mdi-material-ui/Plus";
-
-import TableCellLink from "../../components/TableCellLink";
-import DataTable from "../../components/DataTable";
+import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
+import TitleBar from "../../components/TitleBar";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import TitleBarButton from "../../components/TitleBarButton";
 import ApplicationStore from "../../stores/ApplicationStore";
 import theme from "../../theme";
 
@@ -27,49 +26,108 @@ const styles = {
   },
 };
 
+const ApplicationKindColumn = (cell, row, index, extraData) => {
+  const currentOrgID = extraData['currentOrgID'];
+  const applicationId = extraData['applicationId'];
+  const kind = row.kind.toLowerCase();
+
+  return <Link to={`/organizations/${currentOrgID}/applications/${applicationId}/integrations/${kind}`}>{row.kind}</Link>;
+}
+
+const getColumns = (currentOrgID, applicationId) => (
+  [
+    {
+      dataField: 'kind',
+      text: i18n.t(`${packageNS}:tr000412`),
+      sort: false,
+      formatter: ApplicationKindColumn,
+      formatExtraData: {
+        currentOrgID: currentOrgID,
+        applicationId: applicationId
+      }
+    }
+  ]
+);
+
 
 class ListIntegrations extends Component {
   constructor() {
     super();
-    this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+
+    this.state = {
+      data: [],
+      loading: true,
+      totalSize: 0
+    }
   }
 
-  getPage(limit, offset, callbackFunc) {
-    ApplicationStore.listIntegrations(this.props.match.params.applicationID, callbackFunc);
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage ;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+
+    this.getPage(sizePerPage, offset);
   }
 
-  getRow(obj) {
-    const kind = obj.kind.toLowerCase();
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    this.setState({ loading: true });
 
-    return(
-      <TableRow key={obj.kind}>
-        <TableCellLink to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations/${kind}`}>{obj.kind}</TableCellLink>
-      </TableRow>
-    );
+    ApplicationStore.listIntegrations("", this.props.match.params.applicationID, currentOrgID, limit, offset, (res) => {
+      const object = this.state;
+      object.totalSize = Number(res.totalCount);
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
+    });
+  }
+
+  componentDidMount() {
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+
     return(
-      <Grid container spacing={4}>
-        <Grid item xs={12} className={this.props.classes.buttons}>
-          <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations/create`}>
-            <Plus className={this.props.classes.icon} />
-            Create
-          </Button>
-        </Grid>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>Kind</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
+      <React.Fragment>
+        <TitleBar
+          buttons={
+            <TitleBarButton
+              key={1}
+              label={i18n.t(`${packageNS}:tr000277`)}
+              icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+              to={`/organizations/${currentOrgID}/applications/${currentApplicationID}/integrations/create`}
+            />
+          }
+        >
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000553`)} />
+        </TitleBar>
+
+        <div className="position-relative">
+          {this.state.loading && <Loader />}
+          <AdvancedTable
+            data={this.state.data}
+            columns={getColumns(currentOrgID, currentApplicationID)}
+            keyField="kind"
+            onTableChange={this.handleTableChange}
+            rowsPerPage={10}
+            totalSize={this.state.totalSize}
+            searchEnabled={false}
           />
-        </Grid>
-      </Grid>
+        </div>
+      </React.Fragment>
     );
   }
 }

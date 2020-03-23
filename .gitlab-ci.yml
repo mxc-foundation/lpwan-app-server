@@ -1,0 +1,149 @@
+stages: 
+  - test # unit tests and so on (native 2mins w. conflicts or dockerized 5mins w. clean env)
+  - build # compile code without creating an image (should use buildserver native as only takes 7-10mins)
+  - image # create an actual docker image for deployments (doing same build as above but creating an image takes 20mins)
+  - release-private # store the prev. compile image in gitlab registry for buildserver deployments (just tagging above image 2mins)
+  - release-public  # store the same image in dockerhub registry for live server deployments (also just tagging above image 2mins)
+  - deploy # deploy the same image on either, buildserver for QA or live servers for live (deploy via ssh needed to start up all containers 5mins)
+
+react_test_frontend:
+  image: golang:1.12-alpine
+  stage: test
+  environment:
+    name: development
+  before_script:
+    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+  script:
+    - cd ui
+    - npm install
+    - npm test
+  allow_failure: true
+  except:
+    - master
+    - develop
+    - buildserver
+    - /crowdin/
+    - /l10n_buildserver/
+  tags:
+    - kubernetes
+
+syntax_test_backend:
+  image: golang:1.12-alpine
+  stage: test
+  environment:
+    name: development
+  before_script: 
+    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - go get -u golang.org/x/lint/golint
+  script:
+    - golint -set_exit_status $(go list ./... | grep -v "migrations" | grep -v "static" | grep -v "integration") | grep -v "underscore in package name"
+  allow_failure: true
+  except:
+    - master
+    - develop
+    - buildserver
+    - /crowdin/
+    - /l10n_buildserver/
+  tags:
+    - kubernetes
+
+security_test_backend:
+  image: golang:1.12-alpine
+  stage: test
+  environment:
+    name: development
+  before_script: 
+    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
+    - go get github.com/securego/gosec/cmd/gosec
+  script:
+    - gosec ./...
+  allow_failure: true
+  except:
+    - master
+    - develop
+    - buildserver
+    - /crowdin/
+    - /l10n_buildserver/
+  tags:
+    - kubernetes
+    
+variables:
+  SERVICE_NAME: $APP_NAME
+  CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  DOCKER_USER: $DOCKER_USER
+  DOCKER_PASS: $DOCKER_PASS
+  DOCKER_REPO: $DOCKER_REPO
+  DOCKER_URL: $DOCKER_URL
+
+build_image: # this needs changing to native build to speed up 2-3 times
+  stage: build
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --pull -t $CONTAINER_IMAGE .
+    - docker push $CONTAINER_IMAGE
+  except:
+    - /crowdin/
+    - /l10n_buildserver/
+  tags:
+    - buildserver-native
+
+release_image_gitlab:
+  stage: release-private
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - export VERSION=$(git describe --tags|sed -e "s/^v//")
+    - docker pull $CONTAINER_IMAGE
+    - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+    - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+  only:
+    - master # should really be this one only
+    - develop # but we keep this enabled too
+    - buildserver # and this to build image for buildserver deploy for QA
+  tags:
+    - buildserver-native
+
+release_image_dockerhub:
+  stage: release-public
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - export VERSION=$(git describe --tags|sed -e "s/^v//")
+    - docker pull $CONTAINER_IMAGE
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
+    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
+    - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
+  only:
+    - tags
+    - master
+  tags:
+    - buildserver-native
+
+.deploy_to_staging: #this needs migrating here from lpwan-server-docker project!!!
+  stage: deploy
+  script:
+    - sed -i "s/DOCKER_USER/$DOCKER_USER/" config
+    - sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
+    - ./mxp-supernode
+    - ls -l
+    - docker-compose up -d appserver
+  environment:
+    name: staging
+    url: http://35.246.213.251:8080
+  only:
+    - master
+  tags:
+    - buildserver
+
+trigger_qa_deploy: #until above is working use a simple multiproject trigger
+  stage: deploy
+  image: alpine
+  environment:
+    name: staging
+    url: $STAGINGURL
+  before_script: 
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+  only:
+    - buildserver
+  tags:
+    - buildserver

@@ -1,82 +1,87 @@
 import { createMuiTheme } from "@material-ui/core/styles";
+import { border } from "@material-ui/system";
+//import { teal } from "@material-ui/core/colors";
 
-const blueHighLight = '#4D89E5';
-const blueHighLight20 = '#4D89E520';
-//"#206CDF"
 const tealHighLight = '#00FFD9';
 const tealHighLight20 = '#00FFD920';
 const blueMxcBrand = '#09006E';
-const blueBG = '#090046';
+const blueMxcBrand20 = '#09006E20';
+const blueBG = '#070033';
 const overlayBG = '#0C027060';
-const white = '#F9FAFC';
-const linkTextColor = '#216CDF';
+const white = 'white';
+const dark = '#323a46';
+const linkTextColor = '#BBE9E8';
 
 const theme = createMuiTheme({
     palette: {
-      primary: { main: tealHighLight, secondary: tealHighLight20 }, 
+      primary: { main: blueMxcBrand, secondary: blueMxcBrand20 }, 
       secondary: { main: blueMxcBrand, secondary: overlayBG }, 
       darkBG: { main: blueBG }, 
-      textPrimary: { main: white }, 
-      textSecondary: { main: linkTextColor } 
+      textPrimary: {main: dark}, 
+      textSecondary: {main: blueMxcBrand},
+      background: {
+        paper: "#fff",
+        default: "#ebeff2"
+      }
     },
     MuiListItemIcon: {
       root: {
-        color: white
+        color: dark
       }
     },
     //tab 
     MuiTypography: {
       root: {
-        color: white
+        color: dark,
+      },
+      body1: {
+        color: dark,
+      },
+      colorTextSecondary: {
+        color: dark,
       },
     },
     typography: {
+      //useNextVariants: true,
       subheading: {
-        color: white
+        color: dark,
+        "&:hover": {
+          color: 'dark',
+        },
       },
       title: {
-        color: white
+        color: dark
       },
       fontFamily: [
-        'Montserrat',
+        'Karla',
       ].join(','),
     },
     overrides: {
       MuiTypography: {
         root: {
-          color: white,
+          color: dark,
         },
         body1: {
-          color: white,
+          color: dark,
+          fontSize: '0.8rem'
         },
         body2: {
-          color: white,
+          color: dark,
           fontSize: '0.7rem'
         },
         colorTextSecondary: {
-          color: white,
+          color: dark,
         },
-        overline: {
-          color: white
-        },
-        subtitle1: {
-          color: white
-        },        
-        subtitle2: {
-          color: white
+        headline: {
+          color: dark
         },
         caption: {
-          color: white
+          color: dark
         },
-      },
-      MuiListItem: {
-        root: {
-          padding: '5px 0',
-        }
       },
       MuiInput: {
         root: {
-          color: white,
+          color: dark
         },
         underline: {
           "&:before": {
@@ -87,17 +92,19 @@ const theme = createMuiTheme({
           }
         },
       },
-      MuiInputLabel: {
+      MuiAppBar: {
         root: {
-          color: white,
-          "&$focused": {
-            color: white
-          }
+          //width: '1024px',
+          color: dark
+        },
+        positionFixed: {
+          left: 'inherit',
+          right: 'inherit'
         }
       },
       MuiSelect: {
         icon: {
-          color: white,
+          color: dark,
           right: 0,
           position: 'absolute',
           pointerEvents: 'none',
@@ -105,55 +112,95 @@ const theme = createMuiTheme({
       },
       MuiIconButton: {
         root: {
-          color: white,
+          color: dark,
         }
       },
-      MuiInputBase: {
+/*       MuiInputBase: {
         input: {
-          color: white,
+          color: '#F9FAFC',
+          fontWeight: "bolder",
+          "&:-webkit-autofill": {
+            WebkitBoxShadow: "0 0 0 1000px #F9FAFC inset"
+          }
         }
-      },
+      }, */
       MuiDivider: {
         root: {
           backgroundColor: '#00000040',
-          margin: '5px 10px',
+          margin: '5px 0px 5px 0px',
         },
         light: {
-          backgroundColor: '#FFFFFF40',
+          backgroundColor: '#FFFFFF50',
+        }
+      },
+      MuiTable: {
+        root: {
+          background: 'transparent',
+          overflowX: 'auto',
+          width: '100%'
+          //minWidth: 840,
         }
       },
       MuiTableCell: {
         head: {
-          color: white,
-          fontWeight: 'bold'
+          color: dark,
+          fontWeight: '800',
+          fontSize: '1em',
+          padding: 10, 
         },
         body: {
-          color: white,
+          background: 'none',
+          color: dark,
+          //maxWidth: 140,
+          whiteSpace: 'nowrap', 
+          //overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          fontWeight: '400', 
         },
+        root: {
+          padding: '4px 5px',
+          //maxWidth: 140,
+          whiteSpace: 'nowrap', 
+          //overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          borderBottom: 'solid 1px #070033',
+          lineHeight: '40px',
+          textAlign: 'left',
+        }
       },
       MuiPaper: {
         root: {
-          backgroundColor: overlayBG,
+          backgroundColor: white,
+          overflow: 'auto',
           padding: 10,
+          //margin: 10,
+        }
+      },
+      MuiCardContent: {
+        root: {
+          padding: 4,
         }
       },
       MuiTablePagination: {
         root: {
-          color: white,
+          color: dark,
+          background: white,
+        },
+        actions: {
+          marginLeft: 0
         }
       },
       MuiButton: { 
         root: {
           background: tealHighLight,
           color: blueMxcBrand,
-          width: 160,
+          width: 150,
           height: 50,
           fontWeight: 'bolder',
           marginRight: 5,
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
           "&:hover": {
             backgroundColor: "#00CCAE",
-            fontSize: '1rem'
           },
         },
         outlined: {
@@ -163,46 +210,29 @@ const theme = createMuiTheme({
           fontWeight: 900,
           lineHeight: 1.5,
           borderWidth: 2,
-          borderColor: tealHighLight,
+          borderColor: white,
           "&:hover": {
             backgroundColor: tealHighLight20,
             borderColor: "#00CCAE",
-            color: "#00CCAE",
+            color: dark,
           },
         },
-        /*         link: {
-          color: tealHighLight,
-          //padding: 30,
-          fontWeight: 900,
-          lineHeight: 1.5,
+        colorInherit: {
+          color: dark,
           "&:hover": {
-            color: "#206CDF",
+            borderColor: white,
+            color: dark,
           },
-        }, */
-        text: { 
-          color: blueMxcBrand, 
-          marginBottom: 24,
-        },
-        textPrimary: {
-          color: blueMxcBrand,
-          "&:hover": {
-            backgroundColor: "#206CDF",
-          },
-        },
-      },
-      MuiFormControlLabel: {
-        root: { 
-          color: white, 
         },
       },
       MuiFormLabel: { 
         root: { 
-          color: white, 
+          color: dark, 
         },
       },
       MuiFormHelperText: { 
         root: { 
-          color: white, 
+          color: dark, 
         },
       },
       MuiPrivateTabScrollButton:{
@@ -212,51 +242,29 @@ const theme = createMuiTheme({
       },
       MuiTab: {
         root: {
-          textColor: white,
+          color: dark,
         },
         textColorPrimary: {
-          color: white
+          color: dark
         },
-        label: {
-          color: white,
-        },
-        textColorInherit: {
-          color: white,
-        }
       },
       MuiSvgIcon: {
         root: {
-          fill: '#F9FAFC80'
+          fill: dark,
         },
-        colorPrimary: {
-          fill: blueBG,
-        },
-        colorSecondary: {
-          fill: overlayBG
-        }
       },
       MuiDialog: {
-        color: white,
+        color: dark,
         root: {
-          color: white,
+          color: dark,
           boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)',
         },
-        paper:{
-          backgroundColor: '#191980'
-        }
       },
       MuiMenu: {
         paper: {
-          color: white,
-          backgroundColor: blueBG,
-          marginTop: '50px'
-        }
-      },
-      MuiMenuItem: {
-        root: {
-          "&:hover": {
-            backgroundColor: "#1a2d6e",
-          },
+          backgroundColor: white,
+          marginTop: '50px',
+          color: dark
         }
       }
     },

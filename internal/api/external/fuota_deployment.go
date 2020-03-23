@@ -11,7 +11,7 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/band"
-	"github.com/mxc-foundation/lpwan-app-server/api"
+	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
@@ -337,7 +337,7 @@ func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *api.G
 	return &resp, nil
 }
 
-// ListDevices lists the devices (and status) for the given fuota deployment ID.
+// ListDeploymentDevices lists the devices (and status) for the given fuota deployment ID.
 func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *api.ListFUOTADeploymentDevicesRequest) (*api.ListFUOTADeploymentDevicesResponse, error) {
 	fuotaDeploymentID, err := uuid.FromString(req.FuotaDeploymentId)
 	if err != nil {

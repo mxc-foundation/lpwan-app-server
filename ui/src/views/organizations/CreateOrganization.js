@@ -1,13 +1,10 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-
-import { CardContent } from "@material-ui/core";
-
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
+import Loader from "../../components/Loader";
 import OrganizationForm from "./OrganizationForm";
 import OrganizationStore from "../../stores/OrganizationStore";
 
@@ -15,34 +12,48 @@ import OrganizationStore from "../../stores/OrganizationStore";
 class CreateOrganization extends Component {
   constructor() {
     super();
+    this.state = {
+      loading: false
+    };
+
     this.onSubmit = this.onSubmit.bind(this);
   }
 
   onSubmit(organization) {
+    this.setState({ loading: true });
     OrganizationStore.create(organization, resp => {
+      this.setState({ loading: false });
       this.props.history.push("/organizations");
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
+
+    return (
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title="Organizations" to="/organizations" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
+            <BreadcrumbItem><Link to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <OrganizationForm
-                submitLabel="Create"
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+              {this.state.loading && <Loader />}
+                <OrganizationForm
+                    match={this.props.match}
+                    submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                    onSubmit={this.onSubmit}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }

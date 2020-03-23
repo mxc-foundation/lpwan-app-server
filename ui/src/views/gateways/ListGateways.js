@@ -1,156 +1,164 @@
 import React, { Component } from "react";
-import { Route, Switch, Link } from "react-router-dom";
+import { withRouter, Route, Switch, Link } from "react-router-dom";
 
-import { withStyles } from "@material-ui/core/styles";
-import Paper from '@material-ui/core/Paper';
-import Grid from "@material-ui/core/Grid";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import Plus from "mdi-material-ui/Plus";
-
+import BrandSelectModal from "./BrandSelectModal";
 import moment from "moment";
 import { Bar } from "react-chartjs-2";
 import { Map, Marker, Popup } from 'react-leaflet';
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
 import "leaflet.awesome-markers";
+import { Row, Col, Card, CardBody } from 'reactstrap';
 
+import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
 import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
 import GatewayAdmin from "../../components/GatewayAdmin";
 import GatewayStore from "../../stores/GatewayStore";
 import MapTileLayer from "../../components/MapTileLayer";
 
-import theme from "../../theme";
 
+const GatewayActivityColumn = (cell, row, index, extraData) => {
+  const stats = extraData['stats'];
 
-class GatewayRow extends Component {
-  constructor() {
-    super();
+  let rowStats = stats && stats[row.id] ? stats[row.id] : null;
 
-    this.state = {};
+  let dataTotal = 0;
+
+  if (rowStats) {
+    for (const row of rowStats) {
+      dataTotal += parseFloat(row.rxPacketsReceivedOK + row.txPacketsEmitted);
+    }
   }
 
-  componentWillMount() {
-    const start = moment().subtract(29, "days").toISOString();
-    const end = moment().toISOString();
+  return (
+    rowStats ? parseFloat(dataTotal) : <React.Fragment>0</React.Fragment>
+  );
+}
 
-    GatewayStore.getStats(this.props.gateway.id, start, end, resp => {
-      let stats = {
-        labels: [],
-        datasets: [
-          {
-            data: [],
-            fillColor: "rgba(33, 150, 243, 1)",
-          },
-        ],
-      };
+const GatewayColumn = (cell, row, index, extraData) => {
+  const organizationId = extraData['organizationId'];
+  return <Link to={`/organizations/${organizationId}/gateways/${row.id}`}>{row.name}</Link>;
+}
 
-      for (const row of resp.result) {
-        stats.labels.push(row.timestamp);
-        stats.datasets[0].data.push(row.rxPacketsReceivedOK + row.txPacketsEmitted);
-      }
+const LastSeenAtColumn = (cell, row, index, extraData) => {
+  return (row.lastSeenAt) ? row.lastSeenAt : '--:--';
+}
+const getColumns = (organizationId, stats) => (
+  [{
+    dataField: 'name',
+    text: i18n.t(`${packageNS}:tr000042`),
+    sort: false,
+    formatter: GatewayColumn,
+    formatExtraData: { organizationId: organizationId }
+  }, {
+    dataField: 'id',
+    text: i18n.t(`${packageNS}:tr000074`),
+    sort: false,
+  }, {
+    dataField: 'lastSeenAt',
+    text: i18n.t(`${packageNS}:tr000075`),
+    formatter: GatewayActivityColumn,
+    formatExtraData: { stats },
+    sort: false,
+  }, {
+    dataField: 'lastSeenAt',
+    text: i18n.t(`${packageNS}:tr000283`),
+    formatter: LastSeenAtColumn,
+    sort: false,
+  }, {
+    dataField: 'downlink_price',
+    text: i18n.t(`${packageNS}:tr000421`),
+    sort: false,
+  }, {
+    dataField: 'mode',
+    text: i18n.t(`${packageNS}:tr000422`),
+    sort: false,
+  }]
+);
 
-      this.setState({
-        stats: stats,
-      });
+class ListGatewaysTable extends Component {
+  constructor(props) {
+    super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
+    this.getPage = this.getPage.bind(this);
+    this.getGateWayStats = this.getGateWayStats.bind(this);
+    this.state = {
+      data: [],
+      stats: {},
+      totalSize: 0
+    }
+  }
+
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+    // TODO - how can I pass search query to server?
+    this.getPage(sizePerPage, offset);
+  }
+
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
+    this.setState({ loading: true });
+    GatewayStore.list("", this.props.organizationID, limit, offset, (res) => {
+      const object = this.state;
+      object.totalSize = Number(res.totalCount);
+      object.data = res.result;
+      object.loading = false;
+      this.setState({ object });
     });
   }
 
-  render() {
-    const options = {
-      elements: {
-        rectangle: {
-          backgroundColor: 'rgb(0, 255, 217)',
-        }
-      },
-      scales: {
-        xAxes: [{display: false}],
-        yAxes: [{display: false}],
-      },
-      tooltips: {
-        enabled: false,
-      },
-      legend: {
-        display: false,
-      },
-      responsive: false,
-      animation: {
-        duration: 0,
-      },
-    };
-
-    return(
-      <TableRow>
-          <TableCellLink to={`/organizations/${this.props.gateway.organizationID}/gateways/${this.props.gateway.id}`}>{this.props.gateway.name}</TableCellLink>
-          <TableCell>{this.props.gateway.id}</TableCell>
-          <TableCell>
-            {this.state.stats && <Bar
-              width={380}
-              height={23}
-              data={this.state.stats}
-              options={options}
-            />}
-          </TableCell>
-      </TableRow>
-    );
-  }
-}
-
-
-const styles = {
-  chart: {
-    width: 380,
-  },
-  tabs: {
-    borderBottom: "1px solid " + theme.palette.divider,
-    height: "48px",
-    overflow: "visible",
-  },
-};
-
-
-
-class ListGatewaysTable extends Component {
-  constructor() {
-    super();
-    this.getPage = this.getPage.bind(this);
-    this.getRow = this.getRow.bind(this);
+  /**
+   * Gets the stats from server
+   */
+  getGateWayStats = (gatewayId) => {
+    const start = moment().subtract(29, "days").toISOString();
+    const end = moment().toISOString();
+    GatewayStore.getStats(gatewayId, start, end, resp => {
+      let stats = { ...this.state.stats };
+      stats[gatewayId] = resp.result;
+      this.setState({ stats: stats });
+    });
   }
 
-  getPage(limit, offset, callbackFunc) {
-    GatewayStore.list("", this.props.organizationID, limit, offset, callbackFunc);
+  componentDidMount() {
+    this.getPage(MAX_DATA_LIMIT);
   }
 
-  getRow(obj) {
-    return(
-      <GatewayRow key={obj.id} gateway={obj} />
-    );
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState !== this.state && prevState.data !== this.state.data) {
+      for (const item of this.state.data) {
+        this.getGateWayStats(item.id);
+      }
+    }
   }
 
   render() {
-    return(
-      <DataTable
-        header={
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Gateway ID</TableCell>
-            <TableCell className={this.props.classes.chart}>Gateway activity (30d)</TableCell>
-          </TableRow>
-        }
-        getPage={this.getPage}
-        getRow={this.getRow}
-      />
+    return (
+      <div className="position-relative">
+        {this.state.loading && <Loader />}
+        <AdvancedTable data={this.state.data} columns={getColumns(this.props.organizationID, this.state.stats)}
+          keyField="id" onTableChange={this.handleTableChange} searchEnabled={false} totalSize={this.state.totalSize} rowsPerPage={10}></AdvancedTable>
+      </div>
     );
   }
 }
-ListGatewaysTable = withStyles(styles)(ListGatewaysTable);
 
 
 class ListGatewaysMap extends Component {
@@ -200,7 +208,7 @@ class ListGatewaysMap extends Component {
       prefix: "fa",
       markerColor: "red",
     });
-    
+
     for (const item of this.state.items) {
       const position = [item.location.latitude, item.location.longitude];
 
@@ -232,15 +240,14 @@ class ListGatewaysMap extends Component {
       );
     }
 
-    return(
-      <Paper>
-        <Map bounds={bounds} maxZoom={19} style={style} animate={true} scrollWheelZoom={false}>
-          <MapTileLayer />
-          <MarkerClusterGroup>
-            {markers}
-          </MarkerClusterGroup>
-        </Map>
-      </Paper>
+    return (<React.Fragment>
+      {bounds && <Map bounds={bounds} maxZoom={19} style={style} animate={true} scrollWheelZoom={false}>
+        <MapTileLayer />
+        <MarkerClusterGroup>
+          {markers}
+        </MarkerClusterGroup>
+      </Map>}
+    </React.Fragment>
     );
   }
 }
@@ -250,8 +257,12 @@ class ListGateways extends Component {
   constructor() {
     super();
 
+    this.switchToList = this.switchToList.bind(this);
+    this.locationToTab = this.locationToTab.bind(this);
     this.state = {
-      tab: 0,
+      viewMode: 'list',
+      nsDialog: false,
+      setModal: false
     };
   }
 
@@ -259,62 +270,81 @@ class ListGateways extends Component {
     this.locationToTab();
   }
 
-  onChangeTab = (e, v) => {
-    this.setState({
-      tab: v,
-    });
-  };
-
   locationToTab = () => {
-    let tab = 0;
-
     if (window.location.href.endsWith("/map")) {
-      tab = 1;
+      this.setState({ viewMode: 'map' });
     }
+  }
 
+  showModal = () => {
+    const object = this.state;
+    object.nsDialog = true;
+    this.setState({ object });
+  }
+
+  toggle = () => {
+    const object = this.state;
+    object.nsDialog = !object.nsDialog;
+    this.setState({ object });
+  }
+
+  handleCloseModal = () => {
+    const object = this.state;
+    object.nsDialog = null;
     this.setState({
-      tab: tab,
-    });
-  };
+      object
+    })
+  }
+  /**
+   * Switch to list
+   */
+  switchToList() {
+    this.setState({ viewMode: 'list' });
+  }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <TitleBar
-          buttons={
-            <GatewayAdmin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                key={1}
-                label="Create"
-                icon={<Plus />}
-                to={`/organizations/${this.props.match.params.organizationID}/gateways/create`}
-              />
-            </GatewayAdmin>
-          }
-        >
-          <TitleBarTitle title="Gateways" />
-        </TitleBar>
+    const { classes } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-        <Grid item xs={12}>
-          <Tabs
-            value={this.state.tab}
-            onChange={this.onChangeTab}
-            indicatorColor="primary"
-            className={this.props.classes.tabs}
-          >
-            <Tab label="List" component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways`} />
-          </Tabs>
-        </Grid>
+    return (<React.Fragment>
 
-        <Grid item xs={12}>
-          <Switch>
-            <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
-            <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
-          </Switch>
-        </Grid>
-      </Grid>
+      <TitleBar
+        buttons={<GatewayAdmin organizationID={this.props.match.params.organizationID}>
+
+          {/* <BrandSelectModal
+          buttonLabel={i18n.t(`${packageNS}:tr000277`)}
+          callback={this.handleLink} /> */}
+          <TitleBarButton
+            key={1}
+            label={i18n.t(`${packageNS}:tr000277`)}
+            icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+            onClick={this.toggle}
+            //to={`/organizations/${this.props.match.params.organizationID}/gateways/brand`}
+            //to={`/organizations/${currentOrgID}/gateways/create`}
+            to={`/organizations/${currentOrgID}/gateways/create`}
+          />
+        </GatewayAdmin>}
+      >
+        <OrgBreadCumb organizationID={currentOrgID} items={[
+          { label: i18n.t(`${packageNS}:tr000063`), active: true }]}></OrgBreadCumb>
+      </TitleBar>
+
+      <Row>
+        <Col>
+          <Card className="card-box shadow-sm">
+            {this.state.viewMode === 'map' &&
+              <Link to={`/organizations/${this.props.match.params.organizationID}/gateways`} className="btn btn-primary mb-3" onClick={this.switchToList}>Show List</Link>}
+
+            <Switch>
+              <Route exact path={this.props.match.path} render={props => <ListGatewaysTable {...props} organizationID={this.props.match.params.organizationID} />} />
+              <Route exact path={`${this.props.match.path}/map`} render={props => <ListGatewaysMap {...props} organizationID={this.props.match.params.organizationID} />} />
+            </Switch>
+          </Card>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(ListGateways);
+export default withRouter(ListGateways);

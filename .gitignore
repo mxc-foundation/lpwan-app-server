@@ -3,16 +3,13 @@
 *.bak
 # logs
 *.log
-
 # config files
 /*.toml
-
 # coverage file
 /coverage.out
-
 # builds
 /dist
-/build
+build
 /cache
 /internal/static/static_gen.go
 /internal/migrations/migrations_gen.go
@@ -37,7 +34,11 @@
 
 # node modules
 node_modules
-
+ui/node_modules
 #docker-compose
 /*.yml
 *.sum
+
+#python
+__pycache__
+*.pyc

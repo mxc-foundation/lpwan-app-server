@@ -6,6 +6,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler, errorHandlerIgnoreNotFoundWithCallback } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockDeviceStoreApi from '../api/mockDeviceStoreApi';
+import isDev from '../util/isDev';
 
 
 class DeviceStore extends EventEmitter {
@@ -14,6 +16,7 @@ class DeviceStore extends EventEmitter {
     this.wsDataStatus = null;
     this.wsFramesStatus = null;
     this.swagger = new Swagger("/swagger/device.swagger.json", sessionStore.getClientOpts());
+    this.swaggerM2M = new Swagger("/swagger/m2mserver_device.swagger.json", sessionStore.getClientOpts());
   }
 
   getWSDataStatus() {
@@ -22,6 +25,61 @@ class DeviceStore extends EventEmitter {
 
   getWSFramesStatus() {
     return this.wsFramesStatus;
+  }
+
+  getDeviceList(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
+    this.swaggerM2M.then(client => {
+      client.apis.DSDeviceService.GetDeviceList({
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch((error) => {
+        errorHandler(error);
+        if (errorCallbackFunc)
+          errorCallbackFunc(error);
+      });
+    });
+  }
+
+  getDeviceHistory(orgId, offset, limit, callbackFunc) {    
+    this.swaggerM2M.then(client => {
+      client.apis.DSDeviceService.GetDeviceHistory({
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  setDeviceMode(orgId, devId, devMode, callbackFunc) {
+    this.swaggerM2M.then(client => {
+    client.apis.DSDeviceService.SetDeviceMode({
+      "orgId": orgId,
+      "devId": devId,
+      body: {
+        orgId,
+        devId,
+        devMode
+      },
+    })
+    .then(checkStatus)
+    .then(resp => {
+      this.emit("update");
+      this.notify("updated");
+      callbackFunc(resp.obj);
+    })
+    .catch(errorHandler);
+    });
   }
 
   create(device, callbackFunc) {
@@ -207,7 +265,6 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsDataStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -228,13 +285,11 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsDataStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", () => {
-      //console.log("error");
       this.wsDataStatus = "ERROR";
       this.emit("ws.status.change");
     });
@@ -256,7 +311,6 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsFramesStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -277,13 +331,11 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsFramesStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", (e) => {
-      //console.log("error", e);
       this.wsFramesStatus = "ERROR";
       this.emit("ws.status.change");
     });

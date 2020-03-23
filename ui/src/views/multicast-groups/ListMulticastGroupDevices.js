@@ -11,12 +11,14 @@ import IconButton from "@material-ui/core/IconButton";
 import Plus from "mdi-material-ui/Plus";
 import Delete from "mdi-material-ui/Delete";
 
+import i18n, { packageNS } from '../../i18n';
 import DeviceAdmin from "../../components/DeviceAdmin";
 import TableCellLink from "../../components/TableCellLink";
 import DataTable from "../../components/DataTable";
 import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
 import multicastGroupStore from "../../stores/MulticastGroupStore";
+import {MAX_DATA_LIMIT} from "../../util/pagination";
 
 
 const styles = {
@@ -41,6 +43,7 @@ class ListMulticastGroupDevices extends Component {
   }
 
   getPage(limit, offset, callbackFunc) {
+    limit = MAX_DATA_LIMIT;
     DeviceStore.list({
       multicastGroupID: this.props.match.params.multicastGroupID,
       limit: limit,
@@ -77,7 +80,7 @@ class ListMulticastGroupDevices extends Component {
           <Grid item xs={12} className={this.props.classes.buttons}>
             <Button variant="outlined" className={this.props.classes.button} component={Link} to={`/organizations/${this.props.match.params.organizationID}/multicast-groups/${this.props.match.params.multicastGroupID}/devices/create`}>
               <Plus className={this.props.classes.icon} />
-              Add
+              {i18n.t(`${packageNS}:tr000041`)}
             </Button>
           </Grid>
         </DeviceAdmin>
@@ -85,8 +88,8 @@ class ListMulticastGroupDevices extends Component {
           <DataTable
             header={
               <TableRow>
-                <TableCell>Device name</TableCell>
-                <TableCell>Device EUI</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000300`)}</TableCell>
+                <TableCell>{i18n.t(`${packageNS}:tr000371`)}</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             }

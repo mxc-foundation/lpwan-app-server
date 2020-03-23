@@ -8,7 +8,7 @@ import (
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the LoRa App Server version",
+	Short: "Print the LPWAN App Server version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(version)
 	},

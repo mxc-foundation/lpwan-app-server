@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
+	"github.com/apex/log"
 	"reflect"
 	"time"
 
@@ -20,6 +21,7 @@ var (
 	maxExecutionTime = 10 * time.Millisecond
 )
 
+// Setup configures the maxExecutionTime
 func Setup(conf config.Config) error {
 	maxExecutionTime = conf.ApplicationServer.Codec.JS.MaxExecutionTime
 	return nil
@@ -70,8 +72,12 @@ func (c *CustomJS) DecodeBytes(data []byte) (err error) {
 	vm := otto.New()
 	vm.Interrupt = make(chan func(), 1)
 	vm.SetStackDepthLimit(32)
-	vm.Set("bytes", data)
-	vm.Set("fPort", c.fPort)
+	if err := vm.Set("bytes", data); err != nil {
+		log.WithError(err).Error("set bytes error")
+	}
+	if err := vm.Set("fPort", c.fPort); err != nil {
+		log.WithError(err).Error("set c.fPort error")
+	}
 
 	go func() {
 		time.Sleep(maxExecutionTime)
@@ -111,8 +117,14 @@ func (c CustomJS) EncodeToBytes() (b []byte, err error) {
 	vm := otto.New()
 	vm.Interrupt = make(chan func(), 1)
 	vm.SetStackDepthLimit(32)
-	vm.Set("obj", c.Data)
-	vm.Set("fPort", c.fPort)
+	err = vm.Set("obj", c.Data)
+	if err != nil {
+		return nil, errors.New("unknown vm.Set error")
+	}
+	err = vm.Set("fPort", c.fPort)
+	if err != nil {
+		return nil, errors.New("unknown fPort error")
+	}
 
 	go func() {
 		time.Sleep(maxExecutionTime)

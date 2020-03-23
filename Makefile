@@ -1,8 +1,8 @@
-.PHONY: build clean test package package-deb ui api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
-VERSION := $(shell git describe --tags |sed -e "s/^v//")
+VERSION := $(shell git describe --tags --always |sed -e "s/^v//")
 
-build: ui/build internal/statics internal/migrations
+build: internal/statics internal/migrations
 	mkdir -p build cache
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go
 
@@ -25,6 +25,16 @@ test: internal/statics internal/migrations
 	@go vet $(PKGS)
 	@go test -p 1 -v $(PKGS) -cover -coverprofile coverage.out
 
+lint:
+	@echo "Running code syntax check"
+	@go get -u golang.org/x/lint/golint
+	@golint -set_exit_status $(PKGS)
+
+sec:
+	@echo "Running code security check"
+	@go get github.com/securego/gosec/cmd/gosec
+	@gosec ./...
+
 dist: ui/build internal/statics internal/migrations
 	@goreleaser
 	mkdir -p dist/upload/tar
@@ -35,16 +45,24 @@ dist: ui/build internal/statics internal/migrations
 snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
 
+ui/test:
+	@echo "Running react tests"
+	@cd ui && npm test
+
+ui/build_dep:
+	@echo "Building node-sass"
+	@cd ui/node_modules/node-sass/ && npm install
+	@echo "Running npm audit fix"
+	@cd ui && npm audit fix
+
 ui/build:
-	@echo "Building ui"
+	@echo "BUilding ui"
 	@cd ui && npm run build
 	@mv ui/build/* static
 
 api:
 	@echo "Generating API code from .proto files"
-	@go mod vendor
-	@go generate api/api.go
-	@rm -rf vendor/
+	@go generate api/appserver_serves_ui/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
 	@echo "Generating static files"
@@ -54,27 +72,27 @@ internal/statics internal/migrations: static/swagger/api.swagger.json
 
 static/swagger/api.swagger.json:
 	@echo "Generating combined Swagger JSON"
-	@GOOS="" GOARCH="" go run api/swagger/main.go api/swagger > static/swagger/api.swagger.json
-	@cp api/swagger/*.json static/swagger
+	@GOOS="" GOARCH="" go run api/appserver_serves_ui/swagger/main.go api/appserver_serves_ui/swagger > static/swagger/api.swagger.json
+	@cp api/appserver_serves_ui/swagger/*.json static/swagger
 
 
 # shortcuts for development
 
 dev-requirements:
-	go install golang.org/x/lint/golint
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 	go install github.com/golang/protobuf/protoc-gen-go
 	go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
 	go install github.com/jteeuwen/go-bindata/go-bindata
-	go install golang.org/x/tools/cmd/stringer
+	go get -u golang.org/x/lint/golint
+	go get github.com/securego/gosec/cmd/gosec
 
 ui-requirements:
 	@echo "Installing UI requirements"
 	@cd ui && npm install
 
 serve: build
-	@echo "Starting Lora App Server"
+	@echo "Starting LPWAN App Server"
 	./build/lora-app-server
 
 update-vendor:

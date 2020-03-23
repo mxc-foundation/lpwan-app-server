@@ -1,158 +1,294 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
+import { Button } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
-import AESKeyField from "../../components/AESKeyField";
+import i18n, { packageNS } from '../../i18n';
+import { ReactstrapInput } from '../../components/FormInputs';
+import AESKeyField from "../../components/FormikAESKeyField";
+import Loader from "../../components/Loader";
 import DeviceStore from "../../stores/DeviceStore";
-
-
-class LW11DeviceKeysForm extends FormComponent {
-  render() {
-    let object = {};
-    if (this.props.object !== undefined) {
-      object = this.props.object;
-    }
-
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-        <AESKeyField
-          id="nwkKey"
-          label="Network key (LoRaWAN 1.1)"
-          helperText="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
-          onChange={this.onChange}
-          value={object.nwkKey || ""}
-          margin="normal"
-          fullWidth
-          required
-          random
-        />
-        <AESKeyField
-          id="appKey"
-          label="Application key (LoRaWAN 1.1)"
-          helperText="For LoRaWAN 1.1 devices. In case your device does not support LoRaWAN 1.1, update the device-profile first."
-          onChange={this.onChange}
-          value={object.appKey || ""}
-          margin="normal"
-          fullWidth
-          required
-          random
-        />
-      </Form>
-    );
-  }
-}
-
-class LW10DeviceKeysForm extends FormComponent {
-  render() {
-    let object = {};
-    if (this.props.object !== undefined) {
-      object = this.props.object;
-    }
-
-    return(
-      <Form
-        submitLabel={this.props.submitLabel}
-        onSubmit={this.onSubmit}
-      >
-        <AESKeyField
-          id="nwkKey"
-          label="Application key"
-          helperText="For LoRaWAN 1.0 devices. In case your device supports LoRaWAN 1.1, update the device-profile first."
-          onChange={this.onChange}
-          value={object.nwkKey || ""}
-          margin="normal"
-          fullWidth
-          required
-          random
-        />
-        <AESKeyField
-          id="genAppKey"
-          label="Gen Application key"
-          helperText="For LoRaWAN 1.0 devices. This key must only be set when the device implements the remote multicast setup specification / firmware updates over the air (FUOTA). Else leave this field blank."
-          onChange={this.onChange}
-          value={object.genAppKey || ""}
-          margin="normal"
-          fullWidth
-          random
-        />
-      </Form>
-    );
-  }
-}
 
 
 class DeviceKeys extends Component {
   constructor() {
     super();
     this.state = {
+      loading: true,
       update: false,
     };
-    this.onSubmit = this.onSubmit.bind(this);
   }
 
   componentDidMount() {
-    DeviceStore.getKeys(this.props.match.params.devEUI, resp => {
+    const { match } = this.props;
+
+    DeviceStore.getKeys(match.params.devEUI, resp => {
       if (resp === null) {
         this.setState({
-          deviceKeys: {
+          object: {
             deviceKeys: {},
           },
+          loading: false
         });
       } else {
         this.setState({
           update: true,
-          deviceKeys: resp,
+          object: resp,
+          loading: false
         });
       }
     });
   }
 
-  onSubmit(deviceKeys) {
+  onSubmit = (deviceKeys) => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    const isApplication = currentApplicationID && currentApplicationID !== "0"; 
+
+    const { history, match } = this.props;
+
     if (this.state.update) {
       DeviceStore.updateKeys(deviceKeys, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`);
+        isApplication
+        ? history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}`)
+        : history.push(`/organizations/${currentOrgID}`);
       });
     } else {
       let keys = deviceKeys;
-      keys.devEUI = this.props.match.params.devEUI;
+      keys.devEUI = match.params.devEUI;
       DeviceStore.createKeys(keys, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`);
+        isApplication
+        ? history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}`)
+        : history.push(`/organizations/${currentOrgID}`);
       });
     }
   }
 
+  formikFormSchema = () => {
+    let fieldsSchema = {
+      object: Yup.object().shape({
+        deviceKeys: Yup.object().shape({
+          // https://regexr.com/4rg3a
+          nwkKey: Yup.string().trim()
+            .required(i18n.t(`${packageNS}:tr000431`)),
+          devEUI: Yup.string().trim()
+            .required("DevEUI is required"),
+        })
+      })
+    }
+
+    if (this.props.deviceProfile.macVersion.startsWith("1.1")) {
+      fieldsSchema['object.deviceKeys.genAppKey'] = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
+    }
+
+    return Yup.object().shape(fieldsSchema);
+  }
+
   render() {
-    if (this.state.deviceKeys === undefined) {
-      return null;
+    const { loading, object } = this.state;
+    const { deviceProfile } = this.props;
+
+    if (object === undefined) {
+      return <React.Fragment>{loading && <Loader light />}</React.Fragment>
     }
 
     return(
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              {this.props.deviceProfile.macVersion.startsWith("1.0") && <LW10DeviceKeysForm
-                submitLabel="Set device-keys"
-                onSubmit={this.onSubmit}
-                object={this.state.deviceKeys.deviceKeys}
-              />}
-              {this.props.deviceProfile.macVersion.startsWith("1.1") && <LW11DeviceKeysForm
-                submitLabel="Set device-keys"
-                onSubmit={this.onSubmit}
-                object={this.state.deviceKeys.deviceKeys}
-              />}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <React.Fragment>
+        <Formik
+          enableReinitialize
+          initialValues={
+            {
+              object: {
+                deviceKeys: {
+                  devEUI: object.deviceKeys.devEUI || undefined,
+                  nwkKey: object.deviceKeys.nwkKey || undefined,
+                  genAppKey: object.deviceKeys.genAppKey || undefined,
+                  appKey: object.deviceKeys.appKey || undefined,
+                }
+              }
+            }
+          }
+          validateOnBlur
+          validateOnChange
+          validationSchema={this.formikFormSchema}
+          onSubmit={
+            (castValues, { setSubmitting }) => {
+              const values = this.formikFormSchema().cast(castValues);
+              console.log('Submitted values: ', values);
+
+              this.onSubmit(values.object.deviceKeys);
+              setSubmitting(false);
+            }
+          }
+        >
+          {
+            props => {
+              const {
+                dirty,
+                errors,
+                handleBlur,
+                handleChange,
+                handleReset,
+                handleSubmit,
+                isSubmitting,
+                isValidating,
+                setFieldValue,
+                touched,
+                validateForm,
+                values
+              } = props;
+              return (
+                <Form style={{ padding: "0px", backgroundColor: "#fff" }} onSubmit={handleSubmit} noValidate>
+                  {object && (deviceProfile.macVersion.startsWith("1.0") || deviceProfile.macVersion.startsWith("1.1")) && (
+                    <>
+                      <span style={{ display: 'block', fontSize: "16px", fontWeight: "700" }}>
+                        { deviceProfile.macVersion.startsWith("1.0") ? "LPWAN 1.0 Device Keys" : "" }
+                        { deviceProfile.macVersion.startsWith("1.1") ? "LPWAN 1.1 Device Keys" : "" }
+                      </span>
+                      <label htmlFor="object.deviceKeys.nwkKey" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                        {i18n.t(`${packageNS}:tr000388`)}
+                      </label>
+                      <AESKeyField
+                        id="nwkKey"
+                        name="object.deviceKeys.nwkKey"
+                        helperText={i18n.t(`${packageNS}:tr000397`)}
+                        onChange={handleChange}
+                        value={object.deviceKeys.nwkKey || ""}
+                        required
+                        random
+                        // FIXME - we need input field validation styles to work
+                        // className={
+                        //   errors.object && errors.object.deviceKeys.nwkKey
+                        //     ? 'is-invalid form-control'
+                        //     : ''
+                        // }
+                      />
+
+                      {
+                        errors.object && errors.object.deviceKeys.nwkKey
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {errors.object.deviceKeys.nwkKey}
+                            </div>
+                          ) : null
+                      }
+                    </>
+                  )}
+
+                  {object && deviceProfile.macVersion.startsWith("1.0") && (
+                    <>
+                      <label htmlFor="object.deviceKeys.genAppKey" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                        {i18n.t(`${packageNS}:tr000389`)}
+                      </label>
+                      <AESKeyField
+                        id="genAppKey"
+                        name="object.deviceKeys.genAppKey"
+                        helperText={i18n.t(`${packageNS}:tr000398`)}
+                        onChange={handleChange}
+                        value={object.deviceKeys.genAppKey || ""}
+                        random
+                      />
+                    </>
+                  )}
+                  {object && deviceProfile.macVersion.startsWith("1.1") && (
+                    <>
+                      <label htmlFor="object.deviceKeys.appKey" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                        {i18n.t(`${packageNS}:tr000387`)}
+                      </label>
+                      <AESKeyField
+                        id="appKey"
+                        name="object.deviceKeys.appKey"
+                        helperText={i18n.t(`${packageNS}:tr000386`)}
+                        onChange={handleChange}
+                        value={object.deviceKeys.appKey || ""}
+                        required
+                        random
+                      />
+
+                      {/* FIXME - this validation should be built-in to each input field */}
+                      {
+                        errors.object && errors.object.deviceKeys.appKey
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {errors.object.deviceKeys.appKey}
+                            </div>
+                          ) : null
+                      }
+                    </>
+                  )}
+
+                  <>
+                    <label htmlFor="object.deviceKeys.devEUI" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                      {i18n.t(`${packageNS}:tr000371`)}
+                    </label>
+                    &nbsp;&nbsp;{object.deviceKeys.devEUI}
+
+                    <input
+                      type="hidden"
+                      id="devEUI"
+                      disabled
+                      name="object.deviceKeys.devEUI"
+                      value={object.deviceKeys.devEUI || ""}
+                    />
+                    {
+                      errors.object && errors.object.deviceKeys.devEUI
+                        ? (
+                          <div
+                            className="invalid-feedback"
+                            style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                          >
+                            {errors.object.deviceKeys.devEUI}
+                          </div>
+                        ) : null
+                    }
+                  </>
+
+                  <div style={{ margin: "20px 0 10px 20px" }}>
+                    {isValidating
+                      ? <div style={{ display: "block", color: "orange", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
+                          Validating. Please wait...
+                        </div>
+                      : ''
+                    }
+                    {isSubmitting
+                      ? <div style={{ display: "block", color: "orange", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
+                          Submitting. Please wait...
+                        </div>
+                      : ''
+                    }
+                    {errors.object
+                      ? <div style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}>
+                          Form Validation Errors. Please enter valid inputs and try again...
+                        </div>
+                      : ''
+                    }
+                  </div>
+                  <Button
+                    type="submit"
+                    color="primary"
+                    disabled={(errors.object && Object.keys(errors.object).length > 0) || loading || isSubmitting}
+                    onClick={
+                      () => validateForm().then((formValidationErrors) =>
+                        console.log('Validated form with errors: ', formValidationErrors))
+                    }
+                  >
+                    {this.props.submitLabel || i18n.t(`${packageNS}:tr000292`)}
+                  </Button>
+                  <br />
+                </Form>
+              );
+            }
+          }
+        </Formik>
+      </React.Fragment>
     );
   }
 }

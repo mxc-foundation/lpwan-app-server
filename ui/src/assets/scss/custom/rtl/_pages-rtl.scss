@@ -1,0 +1,226 @@
+// 
+// pages-rtl.scss
+//
+
+
+// email
+
+.inbox-app-main{
+    margin-right: -20px;
+    margin-left: 0;
+}
+
+#sidebar{
+    .menu-segment{
+        .chat, .labels{
+            li{
+                a{
+                    span{
+                        float: left !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.nano{
+    >.nano-content{
+        left: -17px;
+        right: 0px !important;
+    }
+}
+
+#main {
+    left: 0px;
+    right: 490px;
+
+    .page-title{
+        .sidebar-toggle-btn{
+            float: right !important;
+        }
+    }
+
+    .search-box{
+        margin-left: 0px !important;
+        margin-right: 30px;
+        .icon{
+            left: 0;
+            right: auto !important;
+        }
+        input{
+            padding: 0px 0px 0px 36px !important;
+        }
+    }
+    .message-list{
+        li{
+            .mail-col-1{
+                float: right;
+                .checkbox-wrapper-mail, .dot, .star-toggle{
+                    float: right;
+                }
+                .checkbox-wrapper-mail{
+                    margin-right: 0px;
+                    margin-left: 10px;
+                }
+                .title{
+                    right: 140px;
+                    left: 0;   
+                }
+            }
+            .mail-col-2{
+                right: 400px;
+                left: 0;
+                .subject {
+                    right: 0;
+                    left: 200px;
+                }
+                .date {
+                    left: 0;
+                    right: auto;
+                    padding-right: 80px;
+                    padding-left: 0px;
+                }
+            }
+        }
+        li.active,
+        li.active:hover {
+            box-shadow: inset -3px 0 0 $primary;
+        }
+    }
+}
+
+.show-message {
+    #main {
+        margin-left: 40%;
+        margin-right: 0px;
+    }
+}
+
+#message{
+    right: 60%;
+    left: 0px;
+    transform: translateX(-200%);
+    .header{
+        .page-title{
+            .icon{
+                margin-left: 10px;
+                margin-right: 0px;
+                float: right;
+            }
+        }
+        
+    }
+}
+
+@media only screen and (max-width: 1500px) {
+    .show-message {
+        #main {
+            margin-left: 0;
+        }
+        #message {
+            right: 50%;
+        }
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    #main{
+        right: 340px;
+    }
+    .show-sidebar {
+
+        #main {
+            transform: translateX(250px);
+        }
+    }
+
+}
+
+@media only screen and (max-width: 768px) {
+    #sidebar {
+        transform: translateX(100%);
+    }
+    #main {
+        right: 0;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    #sidebar {
+        transform: translateX(100%);
+    }
+    #main {
+        right: 70px;
+        .header {
+            .page-title {
+                .sidebar-toggle-btn {
+                    margin-left: 20px;
+                    margin-right: 10px;
+                }
+            }
+        }
+    }
+    .show-sidebar {
+        #main {
+            transform: translateX(-250px);
+        }
+    }
+    .show-message {
+        #main {
+            margin-left: 0;
+        }
+        #message {
+            right: 20%;
+        }
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    #main {
+        right: 0;
+        .message-list {
+            li {
+                .mail-col-1 {
+                    right: 0;
+                    left: 120px;
+                }
+                .mail-col-2 {
+                    left: 0;
+                    right: auto;
+                    .date {
+                        padding-right: 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// authentication
+
+.home-btn {
+    position: absolute;
+    left: 25px;
+    right: auto;
+}
+
+// Taskboard
+
+.taskList {
+    .kanban-detail {
+        margin-right: 35px;
+        margin-left: 0px;
+    }
+}
+
+
+
+// Invoice
+
+@media print {
+    .content-page{
+        margin: 0px;
+    }
+}

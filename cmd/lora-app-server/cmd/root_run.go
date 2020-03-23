@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"os"
 	"os/signal"
 	"syscall"
@@ -40,6 +41,7 @@ func run(cmd *cobra.Command, args []string) error {
 		printStartMessage,
 		setupStorage,
 		setupNetworkServer,
+		setupProvisionServer,
 		migrateGatewayStats,
 		setupM2MServer,
 		setupIntegration,
@@ -87,7 +89,7 @@ func printStartMessage() error {
 	log.WithFields(log.Fields{
 		"version": version,
 		"docs":    "https://www.loraserver.io/",
-	}).Info("starting LoRa App Server")
+	}).Info("starting LPWAN App Server")
 	return nil
 }
 
@@ -154,6 +156,13 @@ func setupCodec() error {
 func setupNetworkServer() error {
 	if err := networkserver.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup networkserver error")
+	}
+	return nil
+}
+
+func setupProvisionServer() error {
+	if err := provisionserver.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup provisionserver error")
 	}
 	return nil
 }

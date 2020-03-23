@@ -2,9 +2,10 @@ package storage
 
 import (
 	"context"
-	"github.com/golang/protobuf/ptypes"
 	"strings"
 	"time"
+
+	"github.com/golang/protobuf/ptypes"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -15,7 +16,7 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/lorawan"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_server"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -165,8 +166,9 @@ func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
 	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
-		_, err = m2mClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
+		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
 			OrgId: app.OrganizationID,
 			DevProfile: &m2m_api.AppServerDeviceProfile{
 				DevEui:        d.DevEUI.String(),
@@ -304,7 +306,7 @@ func GetDeviceCount(ctx context.Context, db sqlx.Queryer, filters DeviceFilters)
 	return count, nil
 }
 
-// GetDevices returns a slice of devices.
+// GetAllDeviceEuis returns a slice of devices.
 func GetAllDeviceEuis(ctx context.Context, db sqlx.Queryer) ([]string, error) {
 	var devEuiList []string
 	var list []lorawan.EUI64
@@ -495,8 +497,9 @@ func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error 
 	// network server successfully
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
 	if err == nil {
-		_, err = m2mClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
+		_, err = dvClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
 			DevEui: devEUI.String(),
 		})
 		if err != nil && grpc.Code(err) != codes.NotFound {

@@ -14,6 +14,7 @@ export function getM2MLink() {
 export function openM2M(org, isBelongToOrg, path) {
     let orgName = org.name;
     let orgId = org.id;
+    
     if(!orgId){
       return false;
     }
@@ -30,7 +31,8 @@ export function openM2M(org, isBelongToOrg, path) {
       orgId,
       orgName,
       username: user.username,
-      loraHostUrl: window.location.origin
+      loraHostUrl: window.location.origin,
+      language: SessionStore.getLanguage()
     };
 
     const dataString = encodeURIComponent(JSON.stringify(data));

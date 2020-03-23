@@ -1,48 +1,50 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-
-import { CardContent } from "@material-ui/core";
-
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import NetworkServerForm from "./NetworkServerForm";
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
+import TitleBar from "../../components/TitleBar";
+import Loader from "../../components/Loader";
+import NetworkServerForm from "./NetworkServerForm";
 
 
 class CreateNetworkServer extends Component {
   constructor() {
     super();
+    this.state = {
+      loading: false,
+    }
     this.onSubmit = this.onSubmit.bind(this);
   }
 
   onSubmit(networkServer) {
+    this.setState({ loading: true });
     NetworkServerStore.create(networkServer, resp => {
+      this.setState({ loading: false });
       this.props.history.push("/network-servers");
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
+    return (
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title="Network-servers" to="/network-servers" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title="Add" />
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
+            <BreadcrumbItem><Link to={`/network-servers`}>{i18n.t(`${packageNS}:tr000040`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000277`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <NetworkServerForm
-                submitLabel="Add"
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+
+        <Card className="card-box shadow-sm">
+          {this.state.loading && <Loader />}
+          <NetworkServerForm
+            onSubmit={this.onSubmit}
+            submitLabel={i18n.t(`${packageNS}:tr000041`)}
+          />
+        </Card>
+      </React.Fragment>
     );
   }
 }

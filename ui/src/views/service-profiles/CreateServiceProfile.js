@@ -1,22 +1,16 @@
 import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
+import { Row, Col, Card, CardBody } from 'reactstrap';
 
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 import ServiceProfileForm from "./ServiceProfileForm";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import NetworkServerStore from "../../stores/NetworkServerStore";
+import Loader from "../../components/Loader";
 
 
 class CreateServiceProfile extends Component {
@@ -49,52 +43,40 @@ class CreateServiceProfile extends Component {
     let sp = serviceProfile;
     sp.organizationID = this.props.match.params.organizationID;
 
+    this.setState({ loading: true });
     ServiceProfileStore.create(sp, resp => {
+      this.setState({ loading: false });
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    });
+    }, error => { this.setState({ loading: false }) });
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <Dialog
-          open={this.state.nsDialog}
-          onClose={this.closeDialog}
-        >
-          <DialogTitle>Add a network-server?</DialogTitle>
-          <DialogContent>
-            <DialogContentText paragraph>
-              LoRa App Server isn't connected to a LoRa Server network-server.
-              Did you know that LoRa App Server can connect to multiple LoRa Server instances, e.g. to support multiple regions?
-            </DialogContentText>
-            <DialogContentText>
-              Would you like to connect to a network-server now?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary.main" component={Link} to="/network-servers/create" onClick={this.closeDialog}>Add</Button>
-            <Button color="primary.main" onClick={this.closeDialog}>Dismiss</Button>
-          </DialogActions>
-        </Dialog>
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
+    return (
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title="Service-profiles" to={`/organizations/${this.props.match.params.organizationID}/service-profiles`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+              { label: i18n.t(`${packageNS}:tr000078`), active: false, to: `/organizations/${currentOrgID}/service-profiles` },
+              { label: i18n.t(`${packageNS}:tr000277`), active: false }]}></OrgBreadCumb>
         </TitleBar>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+              {this.state.loading && <Loader />}
 
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <ServiceProfileForm
-                submitLabel="Create"
-                onSubmit={this.onSubmit}
-                match={this.props.match}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                <ServiceProfileForm
+                  match={this.props.match}
+                  submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                  onSubmit={this.onSubmit}
+                  object={{}}
+                />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }

@@ -1,48 +1,13 @@
 import React, { Component } from "react";
 
-import { withStyles } from "@material-ui/core/styles";
-import Avatar from "@material-ui/core/Avatar";
-import Chip from "@material-ui/core/Chip";
-import Grid from "@material-ui/core/Grid";
-import Button from '@material-ui/core/Button';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-
-import Play from "mdi-material-ui/Play";
-import Pause from "mdi-material-ui/Pause";
-import Download from "mdi-material-ui/Download";
-import Delete from "mdi-material-ui/Delete";
-import HelpCircleOutline from "mdi-material-ui/HelpCircleOutline";
-import AlertCircleOutline from "mdi-material-ui/AlertCircleOutline";
+import { Row, Col, Button as RButton, UncontrolledAlert } from 'reactstrap';
 
 import fileDownload from "js-file-download";
 
+import i18n, { packageNS } from '../../i18n';
 import LoRaWANFrameLog from "../../components/LoRaWANFrameLog";
+import CommonModal from '../../components/Modal';
 import GatewayStore from "../../stores/GatewayStore";
-import theme from "../../theme";
-
-
-const styles = {
-  buttons: {
-    textAlign: "right",
-  },
-  button: {
-    marginLeft: 2 * theme.spacing(1),
-  },
-  icon: {
-    marginRight: theme.spacing(1),
-  },
-  center: {
-    textAlign: "center",
-  },
-  progress: {
-    marginTop: 4 * theme.spacing(1),
-  },
-};
 
 
 class GatewayFrames extends Component {
@@ -65,7 +30,7 @@ class GatewayFrames extends Component {
   }
 
   componentDidMount() {
-    const conn = GatewayStore.getFrameLogsConnection(this.props.gateway.id, () => {}, () => {}, this.onFrame);
+    const conn = GatewayStore.getFrameLogsConnection(this.props.gateway.id, () => { }, () => { }, this.onFrame);
     this.setState({
       wsConn: conn,
     });
@@ -146,8 +111,6 @@ class GatewayFrames extends Component {
       });
     }
 
-    //console.log(frame);
-
     this.setState({
       frames: frames,
     });
@@ -155,62 +118,66 @@ class GatewayFrames extends Component {
 
   render() {
     const frames = this.state.frames.map((frame, i) => <LoRaWANFrameLog key={frame.id} frame={frame} />);
+    
+    return (<React.Fragment>
+      <Row>
+        <Col className="text-right">
+          <div className="button-list">
+            <CommonModal buttonLabel={<React.Fragment><i className="mdi mdi-help-circle mr-2"></i>{i18n.t(`${packageNS}:tr000248`)}</React.Fragment>}
+              outline={true}
+              buttonColor={"info"} callback={() => { }}
+              context={i18n.t(`${packageNS}:tr000249`)} title={i18n.t(`${packageNS}:tr000248`)}
+              showConfirmButton={false} left={i18n.t(`${packageNS}:tr000430`)}></CommonModal>
 
-    return(
-      <Grid container spacing={4}>
-        <Grid item xs={12} className={this.props.classes.buttons}>
-          <Dialog
-            open={this.state.dialogOpen}
-            onClose={this.toggleHelpDialog}
-            aria-labelledby="help-dialog-title"
-            aria-describedby="help-dialog-description"
-          >
-            <DialogTitle id="help-dialog-title">Help</DialogTitle>
-            <DialogContent>
-              <DialogContentText id="help-dialog-description">
-                The frames below are the raw (and encrypted) LoRaWAN PHYPayload frames as seen by the gateway(s). This data is intended for debugging only.
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.toggleHelpDialog} color="primary">Close</Button>
-            </DialogActions>
-          </Dialog>
+            {!this.state.paused && <RButton outline color="primary" onClick={this.togglePause}>
+              <i className="mdi mdi-pause mr-2"></i>
+              {i18n.t(`${packageNS}:tr000250`)}
+            </RButton>}
 
-          <Button variant="outlined" className={this.props.classes.button} onClick={this.toggleHelpDialog}>
-            <HelpCircleOutline className={this.props.classes.icon} />
-            Help
-          </Button>
-          {!this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
-            <Pause className={this.props.classes.icon} />
-            Pause
-          </Button>}
-          {this.state.paused && <Button variant="outlined" className={this.props.classes.button} onClick={this.togglePause}>
-            <Play className={this.props.classes.icon} />
-            Resume
-          </Button>}
-          <Button variant="outlined" className={this.props.classes.button} onClick={this.onDownload}>
-            <Download className={this.props.classes.icon} />
-            Download
-          </Button>
-          <Button variant="outlined" className={this.props.classes.button} color="secondary" onClick={this.onClear}>
-            <Delete className={this.props.classes.icon} />
-            Clear
-          </Button>
-        </Grid>
-        <Grid item xs={12}>
-          {!this.state.connected && <div className={this.props.classes.center}>
-            <Chip
-              color="secondary"
-              label="Not connected to Websocket API"
-              avatar={<Avatar><AlertCircleOutline /></Avatar>}
-            />
+            {this.state.paused && <RButton outline color="primary" onClick={this.togglePause}>
+              <i className="mdi mdi-play mr-2"></i>
+              {i18n.t(`${packageNS}:tr000355`)}
+            </RButton>}
+
+            <RButton outline color="secondary" onClick={this.onDownload}>
+              <i className="mdi mdi-download mr-2"></i>
+              {i18n.t(`${packageNS}:tr000251`)}
+            </RButton>
+
+            <RButton outline color="danger" onClick={this.onClear}>
+              <i className="mdi mdi-delete mr-2"></i>
+              {i18n.t(`${packageNS}:tr000252`)}
+            </RButton>
+          </div>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col>
+          {!this.state.connected && <div className="mt-3 mb-2">
+            <UncontrolledAlert color="info">
+              <p className="font-15 mb-0"><i className="mdi mdi-alert-circle mr-1"></i>
+                {i18n.t(`${packageNS}:tr000392`)}</p>
+            </UncontrolledAlert>
           </div>}
-          {(this.state.connected && frames.length === 0 && !this.state.paused) && <div className={this.props.classes.center}><CircularProgress className={this.props.classes.progress} /></div>}
+
+          {(this.state.connected && frames.length === 0 && !this.state.paused) &&
+            <div className="text-center mt-2 mb-2">
+              <div className="spinner-border text-primary" role="status">
+                <span className="sr-only">...</span>
+              </div>
+            </div>}
+        </Col>
+      </Row>
+
+      <Row>
+        <Col className="mb-0">
           {frames.length > 0 && frames}
-        </Grid>
-      </Grid>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(GatewayFrames);
+export default GatewayFrames;

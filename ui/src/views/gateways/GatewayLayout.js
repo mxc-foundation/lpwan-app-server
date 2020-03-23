@@ -1,16 +1,13 @@
 import React, { Component } from "react";
 import { Route, Switch, Link, withRouter } from "react-router-dom";
+import classNames from "classnames";
+import { Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 
-import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import Delete from "mdi-material-ui/Delete";
-
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import Modal from "../../components/Modal";
 import GatewayAdmin from "../../components/GatewayAdmin";
 import GatewayStore from "../../stores/GatewayStore";
 import SessionStore from "../../stores/SessionStore";
@@ -19,27 +16,17 @@ import UpdateGateway from "./UpdateGateway";
 import GatewayDiscovery from "./GatewayDiscovery";
 import GatewayFrames from "./GatewayFrames";
 
-import theme from "../../theme";
-
-
-const styles = {
-  tabs: {
-    borderBottom: "1px solid " + theme.palette.divider,
-    height: "48px",
-    overflow: "visible",
-  },
-};
-
 
 class GatewayLayout extends Component {
   constructor() {
     super();
     this.state = {
-      tab: 0,
+      activeTab: '0',
+      nsDialog: false,
       admin: false,
     };
     this.deleteGateway = this.deleteGateway.bind(this);
-    this.onChangeTab = this.onChangeTab.bind(this);
+    this.openConfirmModal = this.openConfirmModal.bind(this);
     this.locationToTab = this.locationToTab.bind(this);
     this.setIsAdmin = this.setIsAdmin.bind(this);
   }
@@ -50,7 +37,6 @@ class GatewayLayout extends Component {
         gateway: resp,
       });
     });
-
 
     SessionStore.on("change", this.setIsAdmin);
     this.setIsAdmin();
@@ -75,12 +61,16 @@ class GatewayLayout extends Component {
     });
   }
 
+  openConfirmModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
+
   deleteGateway() {
-    if (window.confirm("Are you sure you want to delete this gateway?")) {
-      GatewayStore.delete(this.props.match.params.gatewayID, () => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
-      });
-    }
+    GatewayStore.delete(this.props.match.params.gatewayID, () => {
+      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
+    });
   }
 
   locationToTab() {
@@ -99,69 +89,86 @@ class GatewayLayout extends Component {
     }
 
     this.setState({
-      tab: tab,
-    });
-  }
-
-  onChangeTab(e, v) {
-    this.setState({
-      tab: v,
+      activeTab: tab + '',
     });
   }
 
   render() {
-    if (this.state.gateway === undefined) {
-      return(<div></div>);
-    }
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    return(
-      <Grid container spacing={4}>
+    return (
+      this.state.gateway ? <React.Fragment>
         <TitleBar
-          buttons={
-            <GatewayAdmin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                key={1}
-                label="Delete"
-                icon={<Delete />}
-                onClick={this.deleteGateway}
-              />
-            </GatewayAdmin>
-          }
+          buttons={<GatewayAdmin organizationID={this.props.match.params.organizationID}>
+            <TitleBarButton
+              key={1}
+              color="danger"
+              label={i18n.t(`${packageNS}:tr000061`)}
+              icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+              onClick={this.openConfirmModal}
+            />
+          </GatewayAdmin>}
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/gateways`} title="Gateways" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.gateway.gateway.name} />
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000063`), active: false, to: `/organizations/${currentOrgID}/gateways` },
+            { label: this.state.gateway.gateway.name, active: true }]}></OrgBreadCumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <Tabs
-            value={this.state.tab}
-            onChange={this.onChangeTab}
-            indicatorColor="primary"
-            className={this.props.classes.tabs}
-          >
-            <Tab label="Gateway details" component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}`} />
-            {this.state.admin && <Tab label="Gateway configuration" component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/edit`} />}
-            <Tab label="Gateway discovery" disabled={!this.state.gateway.gateway.discoveryEnabled} component={Link} to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/discovery`} />
-            <Tab
-              label="Live LoRaWAN frames"
-              component={Link}
-              to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/frames`}
-            />
-          </Tabs>
-        </Grid>
-        
-        <Grid item xs={12}>
-        <Switch>
-          <Route exact path={`${this.props.match.path}`} render={props => <GatewayDetails gateway={this.state.gateway.gateway} lastSeenAt={this.state.gateway.lastSeenAt} {...props} />} />
-          <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateGateway gateway={this.state.gateway.gateway} {...props} />} />
-          <Route exact path={`${this.props.match.path}/discovery`} render={props => <GatewayDiscovery gateway={this.state.gateway.gateway} {...props} />} />
-          <Route exact path={`${this.props.match.path}/frames`} render={props => <GatewayFrames gateway={this.state.gateway.gateway} {...props} />} />
-        </Switch>
-        </Grid>
-      </Grid>
+        {this.state.nsDialog && <Modal
+          title={""}
+          closeModal={() => this.setState({ nsDialog: false })}
+          context={i18n.t(`${packageNS}:lpwan.gateways.delete_gateway`)}
+          callback={this.deleteGateway} />}
+
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <Nav tabs>
+                  <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '0' })}
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}`}
+                    >{i18n.t(`${packageNS}:tr000423`)}</Link>
+                  </NavItem>
+                  {this.state.admin && <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '1' })}
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/edit`}
+                    >{i18n.t(`${packageNS}:tr000298`)}</Link>
+                  </NavItem>}
+                  <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '2' })}
+                      disabled={!this.state.gateway.gateway.discoveryEnabled}
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/discovery`}
+                    >{i18n.t(`${packageNS}:tr000095`)}</Link>
+                  </NavItem>
+                  <NavItem>
+                    <Link
+                      className={classNames('nav-link', { active: this.state.activeTab === '3' })}
+                      to={`/organizations/${this.props.match.params.organizationID}/gateways/${this.props.match.params.gatewayID}/frames`}
+                    >{i18n.t(`${packageNS}:tr000247`)}</Link>
+                  </NavItem>
+                </Nav>
+
+                <Row className="pt-3">
+                  <Col>
+                    <Switch>
+                      <Route exact path={`${this.props.match.path}`} render={props => <GatewayDetails gateway={this.state.gateway.gateway} lastSeenAt={this.state.gateway.lastSeenAt} {...props} />} />
+                      <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateGateway gateway={this.state.gateway.gateway} {...props} />} />
+                      <Route exact path={`${this.props.match.path}/discovery`} render={props => <GatewayDiscovery gateway={this.state.gateway.gateway} {...props} />} />
+                      <Route exact path={`${this.props.match.path}/frames`} render={props => <GatewayFrames gateway={this.state.gateway.gateway} {...props} />} />
+                    </Switch>
+                  </Col>
+                </Row>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment> : <div></div>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(GatewayLayout));
+export default withRouter(GatewayLayout);

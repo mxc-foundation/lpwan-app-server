@@ -3,6 +3,10 @@ import { EventEmitter } from "events";
 import Swagger from "swagger-client";
 import { checkStatus, errorHandler, errorHandlerLogin } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import MockSessionStoreApi from '../api/mockSessionStoreApi';
+import isDev from '../util/isDev';
+import history from '../history';
 
 class SessionStore extends EventEmitter {
   constructor() {
@@ -43,6 +47,22 @@ class SessionStore extends EventEmitter {
     return localStorage.getItem("jwt");
   }
 
+  setSupportedLanguages(languages) {
+    localStorage.setItem("languages-supported", JSON.stringify(languages));
+  }
+
+  getSupportedLanguages() {
+    return JSON.parse(localStorage.getItem("languages-supported"));
+  }
+
+  setLanguage(language) {
+    localStorage.setItem("language", JSON.stringify(language));
+  }
+
+  getLanguage() {
+    return JSON.parse(localStorage.getItem("language"));
+  }
+
   getOrganizationID() {
     const orgID = localStorage.getItem("organizationID");
     if (!orgID) {
@@ -57,12 +77,44 @@ class SessionStore extends EventEmitter {
     this.emit("organization.change");
   }
 
+  setLogoPath(path) {
+    localStorage.setItem("logopath", path);
+  }
+
+  getLogoPath() {
+    return localStorage.getItem("logopath");
+  }
+
+  setUser(user) {
+    localStorage.setItem("user", JSON.stringify(user));
+  }
+
+  setOrganizations(organizations) {
+    localStorage.setItem("organizations", JSON.stringify(organizations));
+  }
+
   getUser() {
-    return this.user;
+    // Run the following in development environment and early exit from function
+    // Uncomment to show mock profile pic 
+    // if (isDev) {
+    //   return MockSessionStoreApi.getUser();
+    // }
+
+    let user = this.user;
+    if (!user) {
+      user = localStorage.getItem("user");
+      if (user) user = JSON.parse(user);
+    }
+    return user;
   }
 
   getOrganizations() {
-    return this.organizations;
+    let organizations = this.organizations;
+    if (!organizations || (organizations && organizations.length === 0)) {
+      organizations = localStorage.getItem("organizations");
+      if (organizations) organizations = JSON.parse(organizations);
+    }
+    return organizations || [];
   }
 
   getSettings() {
@@ -113,12 +165,15 @@ class SessionStore extends EventEmitter {
   }
 
   logout(callBackFunc) {
+    // preserving languages
+    const lang = this.getLanguage();
     localStorage.clear();
+    this.setLanguage(lang);
     this.user = null;
     this.organizations = [];
     this.settings = {};
     this.emit("change");
-    callBackFunc();
+    callBackFunc && callBackFunc();
   }
 
   async getProfile(){
@@ -139,10 +194,20 @@ class SessionStore extends EventEmitter {
         .then(checkStatus)
         .then(resp => {
           this.user = resp.obj.user;
+          this.setUser(this.user);
 
           if(resp.obj.organizations !== undefined) {
             this.organizations = resp.obj.organizations;
+            this.setOrganizations(this.organizations);
           }
+
+          if(this.organizations.length > 0){
+            this.setOrganizationID(this.organizations[0].organizationID);  
+          }
+
+          this.getBranding((resp)=>{
+            this.setLogoPath(resp.logoPath);
+          });
 
           if(resp.obj.settings !== undefined) {
             this.settings = resp.obj.settings;
@@ -186,6 +251,7 @@ class SessionStore extends EventEmitter {
       client.apis.InternalService.RegisterUser({
         body: {
           email: data.username,
+          language: data.language
         },
       })
       .then(checkStatus)
@@ -225,9 +291,24 @@ class SessionStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.fetchProfile(callbackFunc);
+        localStorage.clear();
+        this.user = null;
+        this.organizations = [];
+        this.settings = {};
+        history.push("/login");
       })
-      .catch(errorHandler);
+      
+    });
+  }
+
+  getVerifyingGoogleRecaptcha(req, callBackFunc) {
+    this.swagger.then(client => {
+      client.apis.InternalService.GetVerifyingGoogleRecaptcha({body: req})
+        .then(checkStatus)
+        .then(resp => {
+          callBackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -236,7 +317,7 @@ class SessionStore extends EventEmitter {
       type: "CREATE_NOTIFICATION",
       notification: {
         type: "success",
-        message: "Confirmation email has been sent.",
+        message: i18n.t(`${packageNS}:tr000018`),
       },
     });
   }

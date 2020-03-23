@@ -1,0 +1,43 @@
+.input-file {
+  align-items: center;
+  border: 1px dashed rgba(34, 36, 38, 0.15);
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: center;
+  font-size: 1.2em;
+}
+
+.input-file.true {
+  border-style: solid;
+}
+
+.input-file:hover {
+  background: rgba(200, 200, 200, 0.8);
+  cursor: pointer;
+}
+
+.input-file .label {
+  color: rgba(0, 0, 0, .6);
+}
+
+.fuota-input-file {
+  align-items: center;
+  padding: 0.2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: center;
+  font-size: 1.2em;
+}
+
+.fuota-input-file.true {
+  border-style: solid;
+}
+
+.fuota-input-file:hover {
+  background: rgba(200, 200, 200, 0.8);
+  cursor: pointer;
+}
+
+.fuota-input-file .label {
+  color: rgba(0, 0, 0, .6);
+}

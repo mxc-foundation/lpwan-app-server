@@ -1,8 +1,14 @@
 package external
 
 import (
-	"errors"
+	"os"
+	"encoding/json"
 	"fmt"
+	"google.golang.org/grpc/status"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -11,12 +17,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
 )
@@ -240,7 +247,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 	}
 
 	if user.Username == storage.DemoUser {
-		return nil, helpers.ErrToRPCError(errors.New(fmt.Sprintf("User %s can not change password.", storage.DemoUser)))
+		return nil, helpers.ErrToRPCError(fmt.Errorf("User %s can not change password", storage.DemoUser))
 	}
 
 	err = storage.UpdatePassword(ctx, storage.DB(), req.UserId, req.Password)
@@ -266,6 +273,53 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	}
 
 	return &pb.LoginResponse{Jwt: jwt}, nil
+}
+
+// IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
+func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
+	secret := config.C.Recaptcha.Secret
+	postURL := config.C.Recaptcha.HostServer
+
+	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
+	responsePost, err := http.PostForm(postURL, postStr)
+
+	if err != nil {
+		log.Warn(err)
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	defer func() {
+		err := responsePost.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("cannot close the responsePost body.")
+		}
+	}()
+
+	body, err := ioutil.ReadAll(responsePost.Body)
+
+	if err != nil {
+		log.Warn(err)
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	gresponse := &pb.GoogleRecaptchaResponse{}
+	err = json.Unmarshal(body, &gresponse)
+	if err != nil {
+		fmt.Println("unmarshal response", err)
+	}
+
+	return gresponse, nil
+}
+
+// GetVerifyingGoogleRecaptcha defines the request and response to verify the google recaptcha
+func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *pb.GoogleRecaptchaRequest) (*pb.GoogleRecaptchaResponse, error) {
+	res, err := IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
+	if err != nil {
+		log.WithError(err).Error("Cannot verify from google recaptcha")
+		return &pb.GoogleRecaptchaResponse{}, err
+	}
+
+	return &pb.GoogleRecaptchaResponse{Success: res.Success, ChallengeTs: res.ChallengeTs, Hostname: res.Hostname}, nil
 }
 
 type claims struct {
@@ -338,6 +392,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 		Logo:         brandingHeader,
 		Registration: brandingRegistration,
 		Footer:       brandingFooter,
+		LogoPath:     os.Getenv("APPSERVER") + "/branding.png",
 	}
 
 	return &resp, nil
@@ -409,6 +464,13 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 
 // RegisterUser adds new user and sends activation email
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
+	logInfo := "api/appserver_serves_ui/RegisterUser"
+
+	log.WithFields(log.Fields{
+		"email": req.Email,
+		"languange": pb.Language_name[int32(req.Language)],
+	}).Info(logInfo)
+
 	user := storage.User{
 		Username:   req.Email,
 		SessionTTL: 0,
@@ -418,6 +480,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 
 	u, err := uuid.NewV4()
 	if err != nil {
+		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
 	token := u.String()
@@ -427,12 +490,14 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		// user has never been created yet
 		err = storage.RegisterUser(storage.DB(), &user, token)
 		if err != nil {
+			log.WithError(err).Error(logInfo)
 			return nil, helpers.ErrToRPCError(err)
 		}
 
 		// get user again
 		obj, err = storage.GetUserByUsername(ctx, storage.DB(), user.Username)
 		if err != nil {
+			log.WithError(err).Error(logInfo)
 			// internal error
 			return nil, helpers.ErrToRPCError(err)
 		}
@@ -445,11 +510,9 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(obj.Username, *obj.SecurityToken)
+	err = email.SendInvite(obj.Username, *obj.SecurityToken, email.EmailLanguage(pb.Language_name[int32(req.Language)]), email.RegistrationConfirmation)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"username": user.Username,
-		}).Info("Send email error!")
+		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -460,13 +523,13 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.ConfirmRegistrationRequest) (*pb.ConfirmRegistrationResponse, error) {
 	user, err := storage.GetUserByToken(storage.DB(), req.Token)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	log.Println("Confirming GetJwt", user.Username)
 	jwt, err := storage.MakeJWT(user.Username, user.SessionTTL)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &pb.ConfirmRegistrationResponse{
@@ -475,14 +538,14 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.Confi
 		IsAdmin:  user.IsAdmin,
 		IsActive: user.IsActive,
 		Jwt:      jwt,
-	}, nil
+	}, status.Errorf(codes.OK, "")
 }
 
 // FinishRegistration sets new user password and creates a new organization
 func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.FinishRegistrationRequest) (*empty.Empty, error) {
 	if err := a.validator.Validate(ctx, auth.ValidateUserAccess(req.UserId, auth.FinishRegistration)); err != nil {
 		log.Println("UpdatePassword", err)
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org := storage.Organization{
@@ -502,16 +565,16 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 			return helpers.ErrToRPCError(err)
 		}
 
-		// add admin user into this organization
-		adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
-		if err == nil {
-			err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
-			if err != nil {
-				log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
-			}
-		} else {
-			log.WithError(err).Error("Get user by username 'admin' failed")
-		}
+		/*		// add admin user into this organization
+				adminUser, err := storage.GetUserByUsername(ctx, tx, "admin")
+				if err == nil {
+					err = storage.CreateOrganizationUser(ctx, tx, org.ID, adminUser.ID, false, false, false)
+					if err != nil {
+						log.WithError(err).Error("Insert admin into organization ", org.ID, " failed")
+					}
+				} else {
+					log.WithError(err).Error("Get user by username 'admin' failed")
+				}*/
 
 		err = storage.CreateOrganizationUser(ctx, tx, org.ID, req.UserId, true, false, false)
 		if err != nil {
@@ -560,8 +623,8 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 	})
 
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return &empty.Empty{}, nil
+	return &empty.Empty{}, status.Errorf(codes.OK, "")
 }

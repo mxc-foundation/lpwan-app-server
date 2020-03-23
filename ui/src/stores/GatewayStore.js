@@ -6,6 +6,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler, errorHandlerIgnoreNotFound } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockGatewayStoreApi from '../api/mockGatewayStoreApi';
+import isDev from '../util/isDev';
 
 
 class GatewayStore extends EventEmitter {
@@ -13,10 +15,76 @@ class GatewayStore extends EventEmitter {
     super();
     this.wsStatus = null;
     this.swagger = new Swagger("/swagger/gateway.swagger.json", sessionStore.getClientOpts());
+    this.swaggerM2M = new Swagger("/swagger/m2mserver_gateway.swagger.json", sessionStore.getClientOpts());
   }
 
   getWSStatus() {
     return this.wsStatus;
+  }
+
+  getGatewayList(orgId, offset, limit, callbackFunc) {
+    this.swaggerM2M.then(client => {
+      client.apis.GSGatewayService.GetGatewayList({
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  getGatewayProfile(gwId, callbackFunc) {
+    this.swaggerM2M.then(client => {
+      client.apis.GSGatewayService.GetGatewayProfile({
+        gwId,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  getGatewayHistory(orgId, gwId, offset, limit, callbackFunc) {    
+    this.swaggerM2M.then(client => {
+      client.apis.GSGatewayService.GetGatewayHistory({
+        orgId,
+        gwId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.body);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  setGatewayMode(orgId, gwId, gwMode, callbackFunc) {
+    this.swaggerM2M.then(client => {
+      client.apis.GSGatewayService.SetGatewayMode({
+        "orgId": orgId,
+        "gwId": gwId,
+        body: {
+          orgId,
+          gwId,
+          gwMode
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.emit("update");
+        this.notify("updated");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
   }
 
   create(gateway, callbackFunc) {
@@ -29,6 +97,23 @@ class GatewayStore extends EventEmitter {
       .then(checkStatus)
       .then(resp => {
         this.notify("created");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  register(gateway, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.Register({
+        body: {
+          organizationId: gateway.organizationId,
+          sn: gateway.sn
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notify("registered");
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);
@@ -48,7 +133,20 @@ class GatewayStore extends EventEmitter {
     });
   }
 
-  update(gateway, callbackFunc) {
+  getConfig(id, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.GetGwConfig({
+        gatewayId: id,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  update(gateway, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.Update({
         "gateway.id": gateway.id,
@@ -61,9 +159,34 @@ class GatewayStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
+
+  updateConfig(gateway, config, callbackFunc, errorCallbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.UpdateGwConfig({
+        "gatewayId": gateway.id,
+        body: {
+          gatewayId: gateway.id,
+          conf: JSON.stringify(config)
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notify("updated");
+        callbackFunc(resp.obj);
+      })
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
+    });
+  }
+
 
   delete(id, callbackFunc) {
     this.swagger.then(client => {
@@ -87,6 +210,17 @@ class GatewayStore extends EventEmitter {
         organizationID: organizationID,
         search: search,
       })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  listLocations(callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.ListLocations()
       .then(checkStatus)
       .then(resp => {
         callbackFunc(resp.obj);
@@ -138,7 +272,6 @@ class GatewayStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsStatus = "CONNECTED";
       this.emit("ws.status.change");
       onOpen();
@@ -160,14 +293,12 @@ class GatewayStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsStatus = null;
       this.emit("ws.status.change");
       onClose();
     });
 
     conn.addEventListener("error", () => {
-      //console.log("error");
       this.wsStatus = "ERROR";
       this.emit("ws.status.change");
     });
@@ -182,6 +313,22 @@ class GatewayStore extends EventEmitter {
         type: "success",
         message: "gateway has been " + action,
       },
+    });
+  }
+
+  getRootConfig(id, callbackFunc, errorCallbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.GetGwPwd({
+        gatewayId: id,
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 }

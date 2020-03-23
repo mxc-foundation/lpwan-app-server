@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 
 import Swagger from "swagger-client";
 
+import i18n, { packageNS } from '../i18n';
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
@@ -13,7 +14,7 @@ class NetworkServerStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/networkServer.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(networkServer, callbackFunc) {
+  create(networkServer, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.NetworkServerService.Create({
         body: {
@@ -22,10 +23,13 @@ class NetworkServerStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notifiy("created");
+        this.notify("created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -42,7 +46,7 @@ class NetworkServerStore extends EventEmitter {
     });
   }
 
-  update(networkServer, callbackFunc) {
+  update(networkServer, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.NetworkServerService.Update({
         "networkServer.id": networkServer.id,
@@ -52,19 +56,22 @@ class NetworkServerStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notifiy("updated");
+        this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
-  notifiy(action) {
+  notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
       notification: {
         type: "success",
-        message: "network-server has been " + action,
+        message: `${i18n.t(`${packageNS}:tr000356`)} ` + action,
       },
     });
   }
@@ -76,14 +83,14 @@ class NetworkServerStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notifiy("deleted");
+        this.notify("deleted");
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);
     });
   }
   
-  list(organizationID, limit, offset, callbackFunc) {
+  list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
     this.swagger.then((client) => {
       client.apis.NetworkServerService.List({
         organizationID: organizationID,
@@ -94,7 +101,10 @@ class NetworkServerStore extends EventEmitter {
       .then(resp => {
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 }

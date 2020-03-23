@@ -1,62 +1,125 @@
 import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody,
+  CardSubtitle, CardTitle, Col, Container, Row, Spinner } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-
-import Plus from "mdi-material-ui/Plus";
-
+import i18n, { packageNS } from '../../i18n';
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TableCellLink from "../../components/TableCellLink";
 import TitleBarButton from "../../components/TitleBarButton";
-import DataTable from "../../components/DataTable";
 
+import AdvancedTable from "../../components/AdvancedTable";
 import NetworkServerStore from "../../stores/NetworkServerStore";
 
 
+const NetworkServerColumn = (cell, row, index, extraData) => {
+  return <Link to={`/network-servers/${row.id}`}>{row.name}</Link>;
+}
+
+const NetworkServerAddressColumn = (cell, row, index, extraData) => {
+  return <div>{row.server}</div>;
+}
+
+const columns = [{
+  dataField: 'networkServerName',
+  text: i18n.t(`${packageNS}:tr000042`),
+  sort: false,
+  formatter: NetworkServerColumn
+}, {
+  dataField: 'networkServerAddress',
+  text: i18n.t(`${packageNS}:tr000043`),
+  sort: false,
+  formatter: NetworkServerAddressColumn
+}];
+
 class ListNetworkServers extends Component {
-  getPage(limit, offset, callbackFunc) {
-    NetworkServerStore.list(0, limit, offset, callbackFunc);
+  constructor(props) {
+    super(props);
+
+    this.handleTableChange = this.handleTableChange.bind(this);
+    this.getPage = this.getPage.bind(this);
+    this.state = {
+      data: [],
+      loading: true,
+      totalSize: 0
+    }
   }
 
-  getRow(obj) {
-    return(
-      <TableRow key={obj.id}>
-        <TableCellLink to={`/network-servers/${obj.id}`}>{obj.name}</TableCellLink>
-        <TableCell>{obj.server}</TableCell>
-      </TableRow>
-    );
+  /**
+   * Handles table changes including pagination, sorting, etc
+   */
+  handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
+    const offset = (page - 1) * sizePerPage ;
+
+    let searchQuery = null;
+    if (type === 'search' && searchText && searchText.length) {
+      searchQuery = searchText;
+    }
+
+    this.getPage(sizePerPage, offset);
+  }
+
+  /**
+   * Fetches data from server
+   */
+  getPage = (limit, offset) => {
+    limit = MAX_DATA_LIMIT;
+    const defaultOrgId = 0;
+    this.setState({ loading: true });
+    NetworkServerStore.list(defaultOrgId, limit, offset, (res) => {
+      const object = this.state;
+      object.totalSize = Number(res.totalCount);
+      object.data = res.result;
+      object.loading = false;
+      this.setState({object});
+    }, error => { this.setState({ loading: false }) });
+  }
+
+  componentDidMount() {
+    this.getPage(MAX_DATA_LIMIT);
   }
 
   render() {
+
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar
           buttons={[
             <TitleBarButton
-              key={1}
-              icon={<Plus />}
-              label="Add"
+              aria-label={i18n.t(`${packageNS}:tr000277`)}
+              icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+              label={i18n.t(`${packageNS}:tr000277`)}
+              key={'b-1'}
               to={`/network-servers/create`}
-            />,
+              className="btn btn-primary">{i18n.t(`${packageNS}:tr000277`)}
+            </TitleBarButton>,
           ]}
         >
-          <TitleBarTitle title="Network-servers" />
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <DataTable
-            header={
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Server</TableCell>
-              </TableRow>
-            }
-            getPage={this.getPage}
-            getRow={this.getRow}
-          />
-        </Grid>
-      </Grid>
+        <Row>
+          <Col>
+            <Card className="card-box shadow-sm">
+              {/* <CardBody className="position-relative"> */}
+                {this.state.loading && <Loader />}
+                <AdvancedTable
+                  data={this.state.data}
+                  columns={columns}
+                  keyField="id"
+                  onTableChange={this.handleTableChange}
+                  rowsPerPage={10}
+                  totalSize={this.state.totalSize}
+                  searchEnabled={false}
+                />
+              {/* </CardBody> */}
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   }
 }

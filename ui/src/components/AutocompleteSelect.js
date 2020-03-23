@@ -24,17 +24,17 @@ const customStyles = {
     // match with the menu
     borderRadius: state.isFocused ? "3px 3px 0 0" : 3,
     // Overwrittes the different states of border
-    borderColor: state.isFocused ? "#00FFD9" : "white",
+    borderColor: state.isFocused ? "#00FFD9" : "#EEEEEE",
     // Removes weird border around container
     boxShadow: state.isFocused ? null : null,
     "&:hover": {
       // Overwrittes the different states of border
-      borderColor: state.isFocused ? "#00FFD9" : "white"
+      borderColor: state.isFocused ? "#00FFD9" : "#DDDDDD"
     }
   }),
   menu: base => ({
     ...base,
-    background:'#1a2d6e',
+    background:'#FFFFFF',
     // override border radius to match the box
     borderRadius: 0,
     // kill the gap
@@ -42,7 +42,7 @@ const customStyles = {
   }),
   menuList: base => ({
     ...base,
-    background:'#1a2d6e',
+    background:'#FFFFFF',
     // kill the white space on first and last option
     padding: 0,
   }),
@@ -50,7 +50,7 @@ const customStyles = {
     ...base,
     // kill the white space on first and last option
     padding: '10px',
-    maxWidth: 221,
+    // maxWidth: 221,
     whiteSpace: 'nowrap', 
     overflow: 'hidden',
     textOverflow: 'ellipsis'
@@ -168,7 +168,6 @@ class AutocompleteSelect extends Component {
 
   setInitialOptions(callbackFunc) {
     this.props.getOptions("", options => {
-      
       this.setState({
         options: options,
       }, callbackFunc);
@@ -187,6 +186,20 @@ class AutocompleteSelect extends Component {
         this.setState({
           selectedOption: "",
         });
+
+        // If there are any organizations listed, then choose the first one by default
+        this.props.getOptions("", options => {
+          if (options.length > 0) {
+            this.setState({
+              selectedOption: options[0],
+            });
+
+            this.props.onChange({
+              target: options[0]
+            });
+          }
+        });
+
       }
     } else {
       if (this.props.value !== undefined && this.props.value !== "" && this.props.value !== null) {
@@ -233,6 +246,7 @@ class AutocompleteSelect extends Component {
     this.props.onChange({
       target: {
         id: this.props.id,
+        name: this.props.name,
         value,
         label
       },
@@ -241,8 +255,9 @@ class AutocompleteSelect extends Component {
 
   render() {
     const inputProps = this.props.inputProps || {};
+
     return(
-      <FormControl margin={this.props.margin || ""}  fullWidth={true} 
+      <FormControl margin={this.props.margin || "none"}  fullWidth={true}
         className={this.props.className}>
         <Input
           fullWidth
@@ -250,6 +265,7 @@ class AutocompleteSelect extends Component {
           inputComponent={SelectWrapped}
           placeholder={this.props.label}
           id={this.props.id}
+          name={this.props.id}
           onChange={this.onChange}
           disableUnderline
           inputProps={{...{

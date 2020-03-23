@@ -1,37 +1,27 @@
 import React, { Component } from "react";
 
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core/styles';
-
-
-const styles = {
-  clear: {
-    clear: "both",
-  },
-
-  left: {
-    float: "left",
-  },
-
-  right: {
-    float: "right",
-  },
-};
+import { Row, Col } from 'reactstrap';
 
 
 class TitleBar extends Component {
   render() {
-    return(
-        <Grid item xs className={this.props.classes.clear}>
-          <div className={this.props.classes.left}>
-              {this.props.children}
-          </div>
-          <div className={this.props.classes.right}>
+    const { noButtons } = this.props;
+
+    return (
+      <Row className="pt-3 pb-2">
+        <Col md={noButtons ? 12 : 8} style={{ display: "flex" }}>
+          {this.props.children}
+        </Col>
+        {noButtons ? null
+          : (
+            <Col md={4} className="text-md-right">
               {this.props.buttons}
-          </div>
-        </Grid>
+            </Col>
+          )
+        }
+      </Row>
     );
   }
 }
 
-export default withStyles(styles)(TitleBar);
+export default TitleBar;

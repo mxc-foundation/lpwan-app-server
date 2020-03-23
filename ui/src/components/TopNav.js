@@ -26,12 +26,14 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Wallet from "mdi-material-ui/WalletOutline";
+import i18n, { packageNS } from '../i18n';
 import { openM2M } from "../util/Util";
 
+import OrganizationStore from "../stores/OrganizationStore"
 import SessionStore from "../stores/SessionStore";
 import WalletStore from "../stores/WalletStore";
 import theme from "../theme";
-
+import DropdownMenuLanguage from "./DropdownMenuLanguage";
 
 const styles = {
   appBar: {
@@ -53,10 +55,14 @@ const styles = {
     height: 32,
     marginLeft: -45,
   },
+  brandLogo: {
+    height: 32,
+    marginLeft: 20,
+  },
   search: {
     marginRight: 3 * theme.spacing.unit,
     color: theme.palette.textPrimary.main,
-    backgroundColor: theme.palette.primary.secondary,
+    backgroundColor: '#08005C',
     width: 480,
     padding: 5,
     borderRadius: 3,
@@ -116,17 +122,25 @@ class TopNav extends Component {
       balance: null,
       organizationId: SessionStore.getOrganizationID(),
       search: "",
+      brandingLogo: null,
     };
 
+    this.onLogout = this.onLogout.bind(this);
     this.onMenuOpen = this.onMenuOpen.bind(this);
     this.onMenuClose = this.onMenuClose.bind(this);
-    this.onLogout = this.onLogout.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchSubmit = this.onSearchSubmit.bind(this);
   }
   
   componentDidMount() {
     this.loadData();
+    SessionStore.getBranding(resp => {
+      if (resp.logoPath !== "") {
+        this.setState({
+          brandingLogo: resp.logoPath,
+        });
+      }
+    });
 
     SessionStore.on("organization.change", () => {
       this.loadData();
@@ -137,13 +151,17 @@ class TopNav extends Component {
     try {
       let organizationId = SessionStore.getOrganizationID();
 
-      var result = await getWalletBalance(organizationId);
+      //var result = await getWalletBalance(organizationId);
       
-      this.setState({ balance: result.balance });
+      //this.setState({ balance: result.balance });
     } catch (error) {
       console.error(error);
       this.setState({ error });
     }
+  }
+
+  onChangeLanguage = (newLanguageState) => {
+    this.props.onChangeLanguage(newLanguageState);
   }
 
   onMenuOpen(e) {
@@ -160,7 +178,7 @@ class TopNav extends Component {
 
   onLogout() {
     SessionStore.logout(() => {
-      this.props.history.push("/login");
+      
     });
   }
 
@@ -171,8 +189,15 @@ class TopNav extends Component {
   }
 
   handlingExtLink = () => {
-    const orgId = this.props.location.pathname.split('/')[2];
-    openM2M(orgId, '/withdraw');
+    const resp = SessionStore.getProfile();
+    resp.then((res) => {
+      let orgId = this.props.location.pathname.split('/')[2];
+      const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
+
+      OrganizationStore.get(orgId, resp => {
+        openM2M(resp.organization, isBelongToOrg, '/withdraw');
+      });
+    })
   }
 
   onSearchSubmit(e) {
@@ -184,14 +209,15 @@ class TopNav extends Component {
     //let drawerIcon;
     let logoIcon;
     let searchbar;
+    let brandingLogo;
     if (!this.props.drawerOpen) {
       //drawerIcon = <Wallet />;
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
+      logoIcon = <img src="/logo/logo_LP.png" className={this.props.classes.logo} alt="LPWAN Server" />
       searchbar = <Input
-                    placeholder="Search organization, application, gateway or device"
+                    placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
                     disableUnderline={true}
                     value={this.state.search || ""}
@@ -203,6 +229,14 @@ class TopNav extends Component {
                     }
                   />
     }
+
+    if (this.state.brandingLogo != null) {
+      brandingLogo = <img src={this.state.brandingLogo} className={this.props.classes.brandLogo}/>;
+    }else {
+      brandingLogo = <div></div>
+    }
+    console.log("#######", brandingLogo);
+
     const { balance } = this.state;
     
     const balanceEl = balance === null ? 
@@ -227,6 +261,7 @@ class TopNav extends Component {
 
           <div className={this.props.classes.flex}>
             {logoIcon}
+            {brandingLogo}
           </div>
 
           <form onSubmit={this.onSearchSubmit}>
@@ -255,6 +290,9 @@ class TopNav extends Component {
               root: this.props.classes.chip,
             }}
           />
+
+          <DropdownMenuLanguage onChangeLanguage={this.onChangeLanguage} />
+
           <a href="https://www.mxc.org/support" target="mxc-support">
             <IconButton className={this.props.classes.iconButton}>
               <HelpCircle />
@@ -275,8 +313,8 @@ class TopNav extends Component {
             open={open}
             onClose={this.onMenuClose}
           >
-            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>Change password</MenuItem> :
-            <MenuItem onClick={this.onLogout}>Logout</MenuItem>
+            <MenuItem disabled={isDisabled} component={Link} to={`/users/${this.props.user.id}/password`}>{i18n.t(`${packageNS}:tr000038`)}</MenuItem>
+            <MenuItem onClick={this.onLogout}>{i18n.t(`${packageNS}:tr000035`)}</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>

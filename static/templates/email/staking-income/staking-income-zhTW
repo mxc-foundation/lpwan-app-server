@@ -1,0 +1,151 @@
+From: {{ .Operator }} 超級節點 <{{ .From }}>
+To: {{ .To }}
+Subject: 您的 {{ .Month }} 月度質押收益
+Message-Id: <{{ .MsgID }}>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="{{ .Boundary }}"
+
+--{{ .Boundary }}
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: text-body
+
+謝謝您參與超級節點的質押，助力區塊鏈智慧城市落地！ 現在我們看看本月有多少收益。 
+
+--{{ .Boundary }}
+Content-Type: text/html;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: html-body
+
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <title>Your {{ .Operator }} Supernode Monthly Revenue</title>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/EmailMessage"
+    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: none; width: 100% !important; height: 100%; line-height: 1.6em; background-color: #f6f6f6; margin: 0;"
+ bgcolor="#f6f6f6">
+
+    <table class=3D"body-wrap"
+        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; background-color: #f6f6f6; margin: 0;"
+ bgcolor="#f6f6f6">
+        <tr
+            style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+            <td style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;"
+ valign="top"></td>
+            <td class=3D"container" width="600"
+                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px clear: both margin: 0;"
+ valign =top>
+                <div class=3D"content"
+                    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0; padding: 20px;">
+                    <table class=3D"main" width="100%" cellpadding="0" cellspacing="0"
+                        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; margin: 0; border: none;">
+                        <tr
+                            style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                            <td class=3D"content-wrap aligncenter"
+ style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; display: block; margin: 0;padding: 20px;border: 3px solid {{ .PrimaryColor }};border-radius: 7px; background-color: #fff;"
+ valign="top">
+                                <table width="100%" cellpadding="0" cellspacing="0"
+                                    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                    <tr
+                                        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                        <td class=3D"content-block"
+                                            style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 20px;"
+ valign                                            =top>
+                                            <h2 class=3D"aligncenter"
+                                                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,'Lucida Grande',sans-serif; box-sizing: border-box; font-size: 22px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 10px 0 0;"
+ align="center">
+                                                <a href="3D&quot;#&quot;" style=3D"display: block;margin-bottom: 20px;"> <img
+                                                        src="{{ .OperatorLogo }}" height="20" alt="logo"></a>
+                                                感謝您的質押參與</h2>
+                                        </td>
+                                    </tr>
+                                    <tr
+                                        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                        <td class=3D"content-block aligncenter"
+ style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; margin: 0; padding: 0 10px;"
+ align                                            =center valign="top">
+                                            <table class=3D"invoice"
+                                                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; text-align: left; width: 80%; margin: 40px auto;">
+                                                <tr
+                                                    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                                    <td style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 5px 0;"
+ valign="top">{{ .OperatorLegal }}<br
+                                                            style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">支付 #{{ .PaymentNumber }}<br
+                                                            style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"> {{ .Date }}
+                                                    </td>
+                                                </tr>
+                                                <tr
+                                                    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                                    <td style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 5px 0;"
+ valign="top">
+                                                        <table class=3D"invoice-items" cellpadding="0" cellspacing="0"
+                                                            style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; margin: 0;">
+                                                            <tr
+                                                                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                                                <td style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; border-top-width: 1px; border-top-color: #eee; border-top-style: solid; margin: 0; padding: 5px 0;"
+ valign="top">質押收入
+                                                                </td>
+                                                                <td class=3D"alignright"
+                                                                    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: right; border-top-width: 1px; border-top-color: #eee; border-top-style: solid; margin: 0; padding: 5px 0;"
+ align="right" valign="top"> {{ .PaymentAmount }} MXC極域
+                                                                </td>
+                                                            </tr>
+                                                            <tr class=3D"total"
+                                                                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                                                <td class=3D"alignright" width="80%"
+                                                                    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: right; border-top-width: 2px; border-top-color: #333; border-top-style: solid; border-bottom-color: border-bottom-width: border-bottom-style: font-weight: 700; margin: 0; padding: 5px 0;"
+ align =right valign =top>總計
+                                                                </td>
+                                                                <td class=3D"alignright"
+                                                                    style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: right; border-top-width: 2px; border-top-color: #333; border-top-style: solid; border-bottom-color: border-bottom-width: border-bottom-style: font-weight: 700; margin: 0; padding: 5px 0;"
+ align =right valign =top> {{.PaymentAmount}} MXC極域
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                    <tr
+                                        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                        <td class=3D"content-block aligncenter"
+ style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; margin: 0; padding: 0 20px;"
+ align                                            =center valign="top">
+                                            {{ .OperatorLegal }}, {{ .OperatorAddress }}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                    <div
+                        style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; clear: both; color: #999; margin: 0; padding: 20px;">
+                        <table width="100%"
+                            style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                            <tr
+                                style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                                <td class=3D"aligncenter content-block"
+ style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; vertical-align: top; color: #999; text-align: center; margin: 0; padding: 0 20px;"
+ align                                    =center valign="top">有其他疑問？ Email <a href=3D"mailto:{{ .OperatorSupport }}"
+ style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 12px; color: #999; text-decoration: underline; margin: 0;">{{ .OperatorSupport }}</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </td>
+            <td style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;"
+ valign="top"></td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

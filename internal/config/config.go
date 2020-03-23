@@ -48,6 +48,25 @@ type Config struct {
 		TLSKey    string `mapstructure:"tls_key"`
 	} `mapstructure:"m2m_server"`
 
+	ProvisionServer struct {
+		ProvisionServer string `mapstructure:"provision_server"`
+		CACert          string `mapstructure:"ca_cert"`
+		TLSCert         string `mapstructure:"tls_cert"`
+		TLSKey          string `mapstructure:"tls_key"`
+	} `mapstructure:"provision_server"`
+
+	Recaptcha struct {
+		HostServer string `mapstructure:"host_server"`
+		Secret     string `mapstructure:"secret"`
+	} `mapstructure:"recaptcha"`
+
+	AliyunRecaptcha struct {
+		AppKey       string `mapstructure:"app_key"`
+		Scene        string `mapstructure:"scene"`
+		AccessKey    string `mapstructure:"acc_key"`
+		AccSecretKey string `mapstructure:"acc_secret_key"`
+	} `mapstructure:"aliyunrecaptcha"`
+
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
 
@@ -109,10 +128,12 @@ type Config struct {
 		} `mapstructure:"fuota_deployment"`
 
 		Branding struct {
-			Header       string
-			Footer       string
-			Registration string
-		}
+			Header       string `mapstructure:"header"`
+			Footer       string `mapstructure:"footer"`
+			Registration string `mapstructure:"registration"`
+			LogoPath     string `mapstructure:"logo_path"`
+		} `mapstructure:"branding"`
+
 	} `mapstructure:"application_server"`
 
 	RegistrationServer struct {

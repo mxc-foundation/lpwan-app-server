@@ -1,13 +1,11 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-
-import Delete from "mdi-material-ui/Delete";
-
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
+import Modal from "../../components/Modal";
 
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import UpdateNetworkServer from "./UpdateNetworkServer";
@@ -17,9 +15,12 @@ class NetworkServerLayout extends Component {
   constructor() {
     super();
 
-    this.state = {};
+    this.state = {
+      nsDialog: false,
+    };
 
     this.deleteNetworkServer = this.deleteNetworkServer.bind(this);
+    this.openConfirmModal = this.openConfirmModal.bind(this);
   }
 
   componentDidMount() {
@@ -31,39 +32,56 @@ class NetworkServerLayout extends Component {
   }
 
   deleteNetworkServer() {
-    if (window.confirm("Are you sure you want to delete this network-server?")) {
-      NetworkServerStore.delete(this.props.match.params.networkServerID, () => {
-        this.props.history.push("/network-servers");
-      });
-    }
+    NetworkServerStore.delete(this.props.match.params.networkServerID, () => {
+      this.props.history.push("/network-servers");
+    });
+    this.setState({ nsDialog: false });
   }
 
+  openConfirmModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
+
   render() {
+
     if (this.state.networkServer === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
-    return(
-      <Grid container spacing={4}>
+    return (
+      <React.Fragment>
         <TitleBar
           buttons={[
             <TitleBarButton
+              color="danger"
               key={1}
-              icon={<Delete />}
-              label="Delete"
-              onClick={this.deleteNetworkServer}
+              icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+              label={i18n.t(`${packageNS}:tr000061`)}
+              onClick={this.openConfirmModal}
             />,
           ]}
         >
-          <TitleBarTitle to="/network-servers" title="Network-servers" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={`${this.state.networkServer.networkServer.name} (${this.state.networkServer.region} @ ${this.state.networkServer.version})`} />
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
+            <BreadcrumbItem><Link to={
+              `/network-servers`}>{i18n.t(`${packageNS}:tr000040`)
+              }</Link></BreadcrumbItem>
+            <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
+            <BreadcrumbItem active>{this.state.networkServer.networkServer.id}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} />
-        </Grid>
-      </Grid>
+        {this.state.nsDialog && <Modal
+          title={""}
+          closeModal={() => this.setState({ nsDialog: false })}
+          context={i18n.t(`${packageNS}:lpwan.network_servers.delete_server`)}
+          callback={this.deleteNetworkServer} />}
+
+        <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} version={this.state.networkServer.version}
+          region={this.state.networkServer.region} />
+      </React.Fragment>
     );
   }
 }

@@ -6,8 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-import Delete from "mdi-material-ui/Delete";
-
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -18,9 +17,12 @@ import SessionStore from "../../stores/SessionStore";
 import ListDevices from "../devices/ListDevices";
 import UpdateApplication from "./UpdateApplication";
 import ListIntegrations from "./ListIntegrations";
+import CreateIntegration from "./CreateIntegration";
+import UpdateIntegration from "./UpdateIntegration";
 import ListFUOTADeploymentsForApplication from "../fuota/ListFUOTADeploymentsForApplication";
-
-
+import OrganizationDevices from "../devices/OrganizationDevices";
+import ApplicationDevices from "./ApplicationDevices";
+import Modal from "../common/Modal";
 import theme from "../../theme";
 
 
@@ -39,16 +41,14 @@ class ApplicationLayout extends Component {
     this.state = {
       tab: 0,
       admin: false,
+      openModal: false
     };
-
-    this.deleteApplication = this.deleteApplication.bind(this);
-    this.locationToTab = this.locationToTab.bind(this);
-    this.onChangeTab = this.onChangeTab.bind(this);
-    this.setIsAdmin = this.setIsAdmin.bind(this);
   }
 
   componentDidMount() {
-    ApplicationStore.get(this.props.match.params.applicationID, resp => {
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+
+    ApplicationStore.get(currentApplicationID, resp => {
       this.setState({
         application: resp,
       });
@@ -57,7 +57,7 @@ class ApplicationLayout extends Component {
     SessionStore.on("change", this.setIsAdmin);
 
     this.setIsAdmin();
-    this.locationToTab();
+    this.getMainTabAppIndexFromLocation();
   }
 
   componentWillUnmount() {
@@ -69,31 +69,37 @@ class ApplicationLayout extends Component {
       return;
     }
 
-    this.locationToTab();
+    this.getMainTabAppIndexFromLocation();
   }
 
-  setIsAdmin() {
+  setIsAdmin = () => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     this.setState({
-      admin: SessionStore.isAdmin() || SessionStore.isOrganizationAdmin(this.props.match.params.organizationID),
+      admin: SessionStore.isAdmin() || SessionStore.isOrganizationAdmin(currentOrgID),
     });
   }
 
-  deleteApplication() {
-    if (window.confirm("Are you sure you want to delete this application? This will also delete all devices part of this application.")) {
-      ApplicationStore.delete(this.props.match.params.applicationID, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications`);
-      });
-    }
+  openModal = () => {
+    this.setState({openModal:true});
   }
 
-  locationToTab() {
-    let tab = 0;
+  deleteApplication = (applicationId) => {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    if (window.location.href.endsWith("/edit")) {
+    ApplicationStore.delete(applicationId, resp => {
+      this.props.history.push(`/organizations/${currentOrgID}/applications`);
+    });
+  }
+
+  getMainTabAppIndexFromLocation() {
+    let tab = 0; // Devices
+
+    if (window.location.href.search("/edit") !== -1) {
       tab = 1;
-    } else if (window.location.href.endsWith("/integrations")) {
+    } else if (window.location.href.search("/integrations") !== -1) {
       tab = 2;
-    } else if (window.location.href.endsWith("/fuota-deployments")) {
+    } else if (window.location.href.search("/fuota-deployments") !== -1) {
       tab = 3;
     }
 
@@ -102,57 +108,42 @@ class ApplicationLayout extends Component {
     });
   }
 
-  onChangeTab(e, v) {
-    this.setState({
-      tab: v,
-    });
-  }
-
   render() {
-    if (this.state.application === undefined) {
+    const { admin, application, tab } = this.state;
+    const { children } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    if (application === undefined) {
       return(<div></div>);
     }
 
     return(
       <Grid container spacing={4}>
-        <TitleBar
-          buttons={
-            <Admin organizationID={this.props.match.params.organizationID}>
-              <TitleBarButton
-                label="Delete"
-                icon={<Delete />}
-                onClick={this.deleteApplication}
-              />
-            </Admin>
-          }
-        >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title="Applications" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.application.application.name} />
-        </TitleBar>
-
-        <Grid item xs={12}>
-          <Tabs
-            value={this.state.tab}
-            onChange={this.onChangeTab}
-            indicatorColor="primary"
-            className={this.props.classes.tabs}
+          <ApplicationDevices
+            {...this.props}
+            admin={admin}
+            application={application}
+            deleteApplication={this.deleteApplication}
+            mainTabAppIndex={tab}
+            organizationID={currentOrgID}
           >
-            <Tab label="Devices" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
-            {this.state.admin && <Tab label="Application configuration" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/edit`} />}
-            {this.state.admin && <Tab label="Integrations" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />}
-            {this.state.admin && <Tab label="FUOTA" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments`} />}
-          </Tabs>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Switch>
-            <Route exact path={`${this.props.match.path}/edit`} render={props => <UpdateApplication application={this.state.application.application} {...props} />} />
-            <Route exact path={`${this.props.match.path}/integrations`} render={props => <ListIntegrations application={this.state.application.application} {...props} />} />
-            <Route exact path={`${this.props.match.path}`} render={props => <ListDevices application={this.state.application.application} {...props} />} />
-            <Route exact path={`${this.props.match.path}/fuota-deployments`} render={props => <ListFUOTADeploymentsForApplication application={this.state.application.application} {...props} /> } />
-          </Switch>
-        </Grid>
+            {children}
+            <Switch>
+              <Route exact path={`${this.props.match.path}`} render={props =>
+                <ListDevices application={this.state.application.application} {...props} />} />
+              <Route exact path={`${this.props.match.path}/edit`} render={props =>
+                <UpdateApplication application={this.state.application.application} {...props} />} />
+              <Route exact path={`${this.props.match.path}/integrations/create`} render={props =>
+                <CreateIntegration application={this.state.application.application} {...props} /> } />
+              <Route exact path={`${this.props.match.path}/integrations/:kind`} render={props =>
+                <UpdateIntegration application={this.state.application.application} {...props} /> } />
+              <Route exact path={`${this.props.match.path}/integrations`} render={props =>
+                <ListIntegrations application={this.state.application.application} {...props} />} />
+              <Route exact path={`${this.props.match.path}/fuota-deployments`} render={props =>
+                <ListFUOTADeploymentsForApplication application={this.state.application.application} {...props} /> } />
+            </Switch>
+          </ApplicationDevices>
+        {/* </OrganizationDevices> */}
       </Grid>
     );
   }

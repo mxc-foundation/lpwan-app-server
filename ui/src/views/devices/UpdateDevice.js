@@ -2,10 +2,8 @@ import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 
 import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
 
+import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceForm from "./DeviceForm";
 
@@ -24,29 +22,26 @@ class UpdateDevice extends Component {
   }
 
   onSubmit(device) {
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    const isApplication = currentApplicationID && currentApplicationID !== "0"; 
+
     DeviceStore.update(device, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/devices/${this.props.match.params.devEUI}`);
+      isApplication
+      ? this.props.history.push(`/organizations/${this.props.match.params.organizationID}/applications/${currentApplicationID}/devices/${this.props.match.params.devEUI}`)
+      : this.props.history.push(`/organizations/${this.props.match.params.organizationID}/devices/${this.props.match.params.devEUI}`);
     });
   }
 
   render() {
     return(
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <DeviceForm
-                submitLabel="Update"
-                object={this.props.device}
-                onSubmit={this.onSubmit}
-                match={this.props.match}
-                update={true}
-                disabled={!this.props.admin}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      <DeviceForm
+        submitLabel={i18n.t(`${packageNS}:tr000066`)}
+        object={this.props.device}
+        onSubmit={this.onSubmit}
+        match={this.props.match}
+        update={true}
+        disabled={!this.props.admin}
+      />
     );
   }
 }

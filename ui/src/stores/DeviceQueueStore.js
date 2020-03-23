@@ -5,6 +5,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockDeviceQueueStoreApi from '../api/mockDeviceQueueStoreApi';
+import isDev from '../util/isDev';
 
 
 class DeviceQueueStore extends EventEmitter {

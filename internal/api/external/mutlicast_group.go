@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/lorawan"
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
@@ -490,7 +490,7 @@ func (a *MulticastGroupAPI) ListQueue(ctx context.Context, req *pb.ListMulticast
 	}
 
 	var resp pb.ListMulticastGroupQueueItemsResponse
-	for i, _ := range queueItems {
+	for i := range queueItems {
 		resp.MulticastQueueItems = append(resp.MulticastQueueItems, &queueItems[i])
 	}
 

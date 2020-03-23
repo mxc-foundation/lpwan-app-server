@@ -1,0 +1,119 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "topup.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/top-up/account": {
+      "get": {
+        "operationId": "GetTopUpDestination",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetTopUpDestinationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TopUpService"
+        ]
+      }
+    },
+    "/api/top-up/history": {
+      "get": {
+        "operationId": "GetTopUpHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetTopUpHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "TopUpService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiGetTopUpDestinationResponse": {
+      "type": "object",
+      "properties": {
+        "activeAccount": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetTopUpHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "topupHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiTopUpHistory"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiTopUpHistory": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "txHash": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

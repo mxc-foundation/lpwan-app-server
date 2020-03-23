@@ -16,6 +16,7 @@ import HelpCircle from "mdi-material-ui/HelpCircle";
 
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
+import i18n, { packageNS } from '../i18n';
 
 
 const styles = {
@@ -105,7 +106,7 @@ class TopBanner extends Component {
 
   onLogout() {
     SessionStore.logout(() => {
-      this.props.history.push("/login");
+      
     });
   }
 
@@ -129,9 +130,9 @@ class TopBanner extends Component {
       logoIcon = <Typography type="body2" style={{ color: '#FFFFFF', fontFamily: 'Montserrat', fontSize: '22px' }} >M2M Wallet</Typography>
     } else {
       //drawerIcon = <MenuIcon />;
-      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt="LoRa Server" />
+      logoIcon = <img src="/logo/logo.png" className={this.props.classes.logo} alt={i18n.t(`${packageNS}:tr000051`)} />
       searchbar = <Input
-                    placeholder="Search organization, application, gateway or device"
+                    placeholder={i18n.t(`${packageNS}:tr000033`)}
                     className={this.props.classes.search}
                     disableUnderline={true}
                     value={this.state.search || ""}
@@ -149,10 +150,7 @@ class TopBanner extends Component {
                         ?true
                         :false;
     return(
-      <AppBar className={this.props.classes.appBar}>
-            <div className={this.props.classes.flex}>
-                <span>THIS IS A DEMO VERSION.</span>
-            </div>
+      <AppBar>
       </AppBar>
     );
   }

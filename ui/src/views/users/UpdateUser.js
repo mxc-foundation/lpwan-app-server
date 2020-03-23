@@ -1,40 +1,41 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import { CardContent } from "@material-ui/core";
-
+import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
 import UserForm from "./UserForm";
+import User2FA from "./User2FA";
+import PasswordReset from "./PasswordReset";
+
 
 class UpdateUser extends Component {
-  constructor() {
-    super();
-    this.onSubmit = this.onSubmit.bind(this);
-  }
-
-  onSubmit(user) {
+  onSubmit = (user) => {
     UserStore.update(user, resp => {
       this.props.history.push("/users");
     });
   }
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <UserForm
-                submitLabel="Update"
-                object={this.props.user}
-                onSubmit={this.onSubmit}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+    const { loading, user } = this.props;
+
+    return (<React.Fragment>
+      <UserForm
+        submitLabel={i18n.t(`${packageNS}:tr000066`)}
+        loading={loading}
+        object={user}
+        onSubmit={this.onSubmit}
+        update={true}
+      />
+
+      <User2FA loading={loading}
+        object={user}
+        update={true} />
+
+      <PasswordReset loading={loading}
+        object={user}
+        update={true} />
+
+      </React.Fragment>
     );
   }
 }

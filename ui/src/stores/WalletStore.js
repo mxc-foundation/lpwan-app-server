@@ -3,26 +3,42 @@ import { EventEmitter } from "events";
 import Swagger from "swagger-client";
 
 import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
+import { checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockWalletStoreApi from '../api/mockWalletStoreApi';
+import isDev from '../util/isDev';
 
 
 class WalletStore extends EventEmitter {
   constructor() {
     super();
-    this.swagger = new Swagger("/swagger/proxyRequest.swagger.json", sessionStore.getClientOpts());
+    this.swagger = new Swagger("/swagger/wallet.swagger.json", sessionStore.getClientOpts());
   }
 
-  getWalletBalance(orgId, callbackFunc) {
+  getDlPrice(orgId, callbackFunc) {
     this.swagger.then(client => {
-      client.apis.ProxyRequest.GetWalletBalance({
+      client.apis.WalletService.GetDlPrice({
         orgId,
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
+    });
+  }
+
+  getWalletBalance(orgId, userId, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.WalletService.GetWalletBalance({
+        userId,
+        orgId
       })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 

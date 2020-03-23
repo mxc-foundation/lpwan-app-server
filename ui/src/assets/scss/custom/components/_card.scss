@@ -1,0 +1,313 @@
+// 
+// card.scss
+//
+
+.card {
+    margin-bottom: $grid-gutter-width;
+    box-shadow: $shadow-sm;
+    width: 100%;
+    height: 100%;
+    
+    .card-drop {
+        font-size: 20px;
+        line-height: 0;
+        color: inherit;
+    }
+}
+
+.col {
+    margin-bottom: 16px;
+}
+
+.card-widgets {
+    float: right;
+    height: 16px;
+    > a {
+        color: inherit;
+        font-size: 18px;
+        display: inline-block;
+        line-height: 1;
+
+        &.collapsed {
+            i {
+                &:before {
+                    content: "\F415";
+                }
+            }
+        }
+    }
+}
+
+
+// Card title / Card Header
+.card-title,
+.card-header {
+    margin-top: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    background: rgba($white, 0.8);
+    //background: rgba($grey, 0.8);
+    //color: rgba($white, 0.8);
+}
+
+.card-footer {
+    background: rgba($white, 0.8);
+}
+
+
+//Card disable loading (Custom Cards)
+.card-disabled {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border-radius: $card-border-radius;
+    background: rgba($white, 0.8);
+    cursor: progress;
+
+    .card-portlets-loader {
+        background-color: $dark;
+        animation: rotatebox 1.2s infinite ease-in-out;
+        height: 30px;
+        width: 30px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: - ($grid-gutter-width / 2);
+        margin-top: - ($grid-gutter-width / 2);
+    }
+}
+
+@keyframes rotatebox {
+    0% {
+        transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    }
+    50% {
+        transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    }
+    100% {
+        transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    }
+}
+
+@media (min-width: 576px) { 
+    // .modal-dialog { max-width: 500px; } 
+}
+
+// Custom card box
+.card-box {
+    background-color: $white;
+    padding: $card-spacer-x;
+    box-shadow: $shadow-sm;
+    margin-bottom: $grid-gutter-width;
+    @include border-radius($card-border-radius);
+
+    
+    .card-drop {
+        color: $gray-600;
+        font-size: 20px;
+        display: inline-block;
+        line-height: 1px;
+    }
+}
+
+.header-title {
+    font-size: 1rem;
+    margin: 0 0 7px 0;
+}
+
+.sub-header {
+    font-size: 0.875rem;
+    margin-bottom: $grid-gutter-width;
+    color: $gray-600;
+}
+
+// card desks
+
+@media (min-width: 576px) {
+    .card-deck {
+        margin-right: -12px;
+        margin-left: -12px;
+        .card{
+            margin-right: 12px;
+            margin-left: 12px;
+        }
+    }
+    // .modal-dialog { 
+    //     max-width: 80vw; 
+    //     max-height: 80vw; 
+    // }
+}
+@media only screen and (min-width: 1000px) {
+    .card-body {
+        padding: 20px;
+    }
+    .isMobile {
+        display: none;
+    }
+    .isDesk {
+        display: block;
+    }
+    .navbar-custom-subbar {
+        display: none;
+    }
+    //   .modal-dialog { max-width: 80vw; max-height: 80vw; }
+}
+
+@media only screen and (max-width: 800px) {
+    .card-body {
+        padding: 12px;
+    }
+    .small {
+        display: flex;
+        justify-content: center;
+    }
+    .isMobile {
+        display: block;
+    }
+    .isDesk {
+        display: none;
+    }
+    .navbar-custom-subbar {
+        display: flex;
+        justify-content: flex-end;
+    }
+    // .modal-dialog { 
+    //     max-width: 80vw; 
+    //     max-height: 80vw; 
+    // }
+}
+
+@media only screen and (max-width: 320px) {
+    
+    .card-body {
+        padding: 5px;
+    }
+
+    .small {
+        display: flex;
+        justify-content: center;
+        transform: scale(0.88, 0.88);
+        -ms-transform: scale(0.88, 0.88); /* IE 9 */
+        -webkit-transform: scale(0.88, 0.88); /* Safari and Chrome */
+        -o-transform: scale(0.88, 0.88); /* Opera */
+        -moz-transform: scale(0.88, 0.88); /* Firefox */
+    }
+    .isMobile {
+        display: block;
+    }
+    .isDesk {
+        display: none;
+    }
+    .navbar-custom-subbar {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    // .modal-dialog { 
+    //     max-width: 80vw; 
+    //     min-height: 70vw; 
+    // }
+}
+@media only screen and (min-width: 1000px) {
+    .card-body {
+        padding: 20px;
+    }
+    .isMobile {
+        display: none;
+    }
+    .isDesk {
+        display: block;
+    }
+    .navbar-custom-subbar {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 800px) {
+    .card-body {
+        padding: 12px;
+    }
+    .small {
+        display: flex;
+        justify-content: center;
+    }
+    .isMobile {
+        display: block;
+    }
+    .isDesk {
+        display: none;
+    }
+    .navbar-custom-subbar {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+@media only screen and (max-width: 320px) {
+    
+    .card-body {
+        padding: 0px;
+    }
+
+    .small {
+        display: flex;
+        justify-content: center;
+        transform: scale(0.88, 0.88);
+        -ms-transform: scale(0.88, 0.88); /* IE 9 */
+        -webkit-transform: scale(0.88, 0.88); /* Safari and Chrome */
+        -o-transform: scale(0.88, 0.88); /* Opera */
+        -moz-transform: scale(0.88, 0.88); /* Firefox */
+    }
+    .isMobile {
+        display: block;
+    }
+    .isDesk {
+        display: none;
+    }
+    .navbar-custom-subbar {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+// Draggable cards
+.card-draggable-placeholder {
+    border: 2px dashed rgba($dark, 0.4);
+    margin-bottom: 16px;
+    background-color: rgba($dark, 0.06);
+}
+
+
+.card-coming-soon {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1000;
+    border-radius: $card-border-radius;
+    background: rgba($white, 0.75);
+    justify-content: center !important;
+    align-items: center !important;
+    display: flex;
+}
+
+.card-coming-soon-2 {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 5;
+    border-radius: $card-border-radius;
+    background: rgba($white, 0.85);
+    justify-content: center !important;
+    display: flex;
+
+    .title {
+        position: relative;
+        top: 15%;
+    }
+}

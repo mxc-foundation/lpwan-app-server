@@ -5,6 +5,8 @@ import Swagger from "swagger-client";
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import MockFUOTADeploymentStoreApi from '../api/mockFUOTADeploymentStoreApi';
+import isDev from '../util/isDev';
 
 
 class FUOTADeploymentStore extends EventEmitter {
@@ -18,6 +20,7 @@ class FUOTADeploymentStore extends EventEmitter {
       client.apis.FUOTADeploymentService.CreateForDevice({
         devEui: devEUI,
         body: {
+          devEUI: devEUI,
           fuotaDeployment: fuotaDeployment,
         },
       })

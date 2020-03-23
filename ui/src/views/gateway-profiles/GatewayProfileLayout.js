@@ -1,13 +1,11 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 
-import Grid from '@material-ui/core/Grid';
+import Modal from '../../components/Modal';
+import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
 
-import Delete from "mdi-material-ui/Plus";
-
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import UpdateGatewayProfile from "./UpdateGatewayProfile";
 
@@ -16,7 +14,9 @@ class GatewayProfileLayout extends Component {
   constructor() {
     super();
 
-    this.state = {};
+    this.state = {
+      nsDialog: false
+    };
 
     this.deleteGatewayProfile = this.deleteGatewayProfile.bind(this);
   }
@@ -29,40 +29,52 @@ class GatewayProfileLayout extends Component {
     });
   }
 
-  deleteGatewayProfile() {
-    if (window.confirm("Are you sure you want to delete this gateway-profile?")) {
-      GatewayProfileStore.delete(this.props.match.params.gatewayProfileID, () => {
-        this.props.history.push("/gateway-profiles");
-      });
-    }
+  deleteGatewayProfile = () => {
+    GatewayProfileStore.delete(this.props.match.params.gatewayProfileID, () => {
+      this.props.history.push("/gateway-profiles");
+    });
+    this.setState({ nsDialog: false });
+  }
+
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
   }
 
   render() {
+  
     if (this.state.gatewayProfile === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
-    return(
-      <Grid container spacing={4}>
+    return (
+      <React.Fragment>
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:tr000426`)}
+          closeModal={() => this.setState({ nsDialog: false })}
+          callback={this.deleteGatewayProfile} />}
         <TitleBar
           buttons={[
-            <TitleBarButton
+            <Button color="danger"
               key={1}
-              label="Delete"
-              icon={<Delete />}
-              onClick={this.deleteGatewayProfile}
-            />,
+              onClick={this.openModal}
+              className=""><i className="mdi mdi-delete"></i>{' '}{i18n.t(`${packageNS}:tr000401`)}
+            </Button>
           ]}
         >
-          <TitleBarTitle to="/gateway-profiles" title="Gateway-profiles" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.gatewayProfile.gatewayProfile.name} />
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
+            <BreadcrumbItem><Link to={`/gateway-profiles`}>{i18n.t(`${packageNS}:tr000046`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
+            <BreadcrumbItem active>{`${this.state.gatewayProfile.gatewayProfile.name}`}</BreadcrumbItem>
+          </Breadcrumb>
         </TitleBar>
-
-        <Grid item xs={12}>
+        <Row>
           <UpdateGatewayProfile gatewayProfile={this.state.gatewayProfile.gatewayProfile} />
-        </Grid>
-      </Grid>
+        </Row>
+      </React.Fragment>
     );
   }
 }

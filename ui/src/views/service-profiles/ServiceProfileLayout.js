@@ -1,17 +1,17 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
+import { Row, Col, Card, CardBody } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-
-import Delete from "mdi-material-ui/Delete";
-
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
+
 import Admin from "../../components/Admin";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import SessionStore from "../../stores/SessionStore";
 import UpdateServiceProfile from "./UpdateServiceProfile";
+import Modal from "../../components/Modal";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 
 class ServiceProfileLayout extends Component {
@@ -19,6 +19,7 @@ class ServiceProfileLayout extends Component {
     super();
     this.state = {
       admin: false,
+      nsDialog: false,
     };
     this.deleteServiceProfile = this.deleteServiceProfile.bind(this);
     this.setIsAdmin = this.setIsAdmin.bind(this);
@@ -35,6 +36,12 @@ class ServiceProfileLayout extends Component {
     this.setIsAdmin();
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.props === prevProps) {
+      return;
+    }
+  }
+
   componentWillUnmount() {
     SessionStore.removeListener("change", this.setIsAdmin);
   }
@@ -46,41 +53,57 @@ class ServiceProfileLayout extends Component {
   }
 
   deleteServiceProfile() {
-    if (window.confirm("Are you sure you want to delete this service-profile?")) {
-      ServiceProfileStore.delete(this.props.match.params.serviceProfileID, resp => {
-        this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-      });
-    }
+    ServiceProfileStore.delete(this.props.match.params.serviceProfileID, resp => {
+      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
+    });
   }
 
-  render() {
-    if (this.state.serviceProfile === undefined) {
-      return(<div></div>);
-    }
+  openModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
 
-    return(
-      <Grid container spacing={4}>
+  render() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    return (
+      this.state.serviceProfile ? <React.Fragment>
+        
+        {this.state.nsDialog && <Modal
+          title={""}
+          context={i18n.t(`${packageNS}:lpwan.service_profiles.delete_service_profile`)}
+          closeModal={() => this.setState({ nsDialog: false })}
+          callback={this.deleteServiceProfile} />}
+
         <TitleBar
           buttons={
             <Admin>
               <TitleBarButton
                 key={1}
-                label="Delete"
-                icon={<Delete />}
-                onClick={this.deleteServiceProfile}
+                color="danger"
+                label={i18n.t(`${packageNS}:tr000061`)}
+                icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+                onClick={this.openModal}
               />
             </Admin>
           }
         >
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/service-profiles`} title="Service-profiles" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.serviceProfile.serviceProfile.name} />
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000078`), active: false, to: `/organizations/${currentOrgID}/service-profiles` },
+            { label: this.state.serviceProfile.serviceProfile.name, active: false }]}></OrgBreadCumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <UpdateServiceProfile serviceProfile={this.state.serviceProfile.serviceProfile} admin={this.state.admin} />
-        </Grid>
-      </Grid>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <UpdateServiceProfile serviceProfile={this.state.serviceProfile.serviceProfile} admin={this.state.admin} />
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </React.Fragment> : <div></div>
     );
   }
 }

@@ -1,30 +1,22 @@
 import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from "react-router-dom";
 
-import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
+import {
+  Row,
+  Col,
+  Card,
+  CardBody
+} from "reactstrap";
 
+import i18n, { packageNS } from "../../i18n";
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
+import Loader from "../../components/Loader";
+import CommonModal from "../../components/Modal";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 
 import GatewayForm from "./GatewayForm";
 import GatewayStore from "../../stores/GatewayStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
-
-
-const styles = {
-  card: {
-    overflow: "visible",
-  },
-};
 
 
 class CreateGateway extends Component {
@@ -33,78 +25,99 @@ class CreateGateway extends Component {
 
     this.state = {
       spDialog: false,
+      loading: true
     };
-
-    this.onSubmit = this.onSubmit.bind(this);
   }
 
   componentDidMount() {
-    ServiceProfileStore.list(this.props.match.params.organizationID, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          spDialog: true,
-        });
+    ServiceProfileStore.list(
+      this.props.match.params.organizationID,
+      0,
+      0,
+      resp => {
+        const state = {
+          loading: false
+        };
+        if (resp.totalCount === "0") {
+          state.spDialog = true;
+        }
+
+        this.setState(state);
       }
-    });
+    );
   }
 
   closeDialog = () => {
     this.setState({
-      spDialog: false,
+      spDialog: false
     });
-  }
+  };
 
-  onSubmit(gateway) {
-    let gw = gateway;
-    gw.organizationID = this.props.match.params.organizationID;
-
+  onSubmit = (gateway, config, classBConfig) => {
     GatewayStore.create(gateway, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/gateways`);
+      this.props.history.push(
+        `/organizations/${this.props.match.params.organizationID}/gateways`
+      );
     });
-  }
+  };
+
+  redirectToCreateServiceProfile = () => {
+    this.props.history.push(
+      `/organizations/${this.props.match.params.organizationID}/service-profiles/create`
+    );
+  };
 
   render() {
-    return(
-      <Grid container spacing={4}>
-        <Dialog
-          open={this.state.spDialog}
-          onClose={this.closeDialog}
-        >
-          <DialogTitle>Add a service-profile?</DialogTitle>
-          <DialogContent>
-            <DialogContentText paragraph>
-              The selected organization does not have a service-profile yet.
-              A service-profile connects an organization to a network-server and defines the features that an organization can use on this network-server.
-            </DialogContentText>
-            <DialogContentText>
-              Would you like to create a service-profile?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button color="primary.main" component={Link} to={`/organizations/${this.props.match.params.organizationID}/service-profiles/create`} onClick={this.closeDialog}>Create</Button>
-            <Button color="primary.main" onClick={this.closeDialog}>Dismiss</Button>
-          </DialogActions>
-        </Dialog>
+    const currentOrgID =
+      this.props.organizationID || this.props.match.params.organizationID;
+
+    return (
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title="Gateways" to={`/organizations/${this.props.match.params.organizationID}/gateways`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000063`), active: false, to: `/organizations/${currentOrgID}/gateways` },
+            { label: i18n.t(`${packageNS}:tr000277`), active: true }]}></OrgBreadCumb>
         </TitleBar>
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              <GatewayForm
-                match={this.props.match}
-                submitLabel="Create"
-                onSubmit={this.onSubmit}
-                object={{location: {}}}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <div className="position-relative">
+                  {this.state.loading && <Loader />}
+
+                  <GatewayForm
+                    match={this.props.match}
+                    submitLabel={i18n.t(`${packageNS}:tr000277`)}
+                    onSubmit={this.onSubmit}
+                  />
+                </div>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+        <CommonModal
+          showToggleButton={false}
+          callback={this.redirectToCreateServiceProfile}
+          show={this.state.spDialog}
+          context={
+            <React.Fragment>
+              <p>
+                {i18n.t(`${packageNS}:tr000165`)}
+                {i18n.t(`${packageNS}:tr000326`)}
+              </p>
+              <p>{i18n.t(`${packageNS}:tr000327`)}</p>
+            </React.Fragment>
+          }
+          title={i18n.t(`${packageNS}:tr000164`)}
+          showConfirmButton={true}
+          left={i18n.t(`${packageNS}:tr000166`)}
+          right={i18n.t(`${packageNS}:tr000277`)}
+        ></CommonModal>
+      </React.Fragment>
     );
   }
 }
 
-export default withRouter(withStyles(styles)(CreateGateway));
+export default withRouter(CreateGateway);

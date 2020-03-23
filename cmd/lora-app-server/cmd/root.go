@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -19,8 +21,8 @@ var version string
 
 var rootCmd = &cobra.Command{
 	Use:   "lora-app-server",
-	Short: "LoRa Server project application-server",
-	Long: `LoRa App Server is an open-source application-server, part of the LoRa Server project
+	Short: "LPWAN Server project application-server",
+	Long: `LPWAN App Server is an open-source application-server, part of the LPWAN Server project
 	> documentation & support: https://www.loraserver.io/lora-app-server
 	> source & copyright information: https://github.com/mxc-foundation/lpwan-app-server`,
 	RunE: run,
@@ -32,7 +34,9 @@ func init() {
 	rootCmd.PersistentFlags().Int("log-level", 4, "debug=5, info=4, error=2, fatal=1, panic=0")
 
 	// bind flag to config vars
-	viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
+	if err := viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
+		log.WithError(err).Error("BindPFlag error")
+	}
 
 	// defaults
 	viper.SetDefault("general.password_hash_iterations", 100000)
@@ -127,6 +131,19 @@ func initConfig() {
 	}
 
 	config.AppserverVersion = version
+
+	// replace servers with local env parameter
+	dataServiceMode := os.Getenv("SUPERNODE_DATA_SERVICE")
+	remoteServer := os.Getenv("REMOTE_SERVER_NAME")
+	if (dataServiceMode == "remote") && (remoteServer != "") {
+		config.C.PostgreSQL.DSN = strings.Replace(config.C.PostgreSQL.DSN,
+			"@postgresql:5432/", fmt.Sprintf("@%s:5432/", remoteServer), -1)
+		config.C.ApplicationServer.Integration.MQTT.Server = strings.Replace(config.C.ApplicationServer.Integration.MQTT.Server,
+			"//mosquitto:1883", fmt.Sprintf("//%s:1883", remoteServer), -1)
+		/*		config.C.Redis.URL = strings.Replace(config.C.Redis.URL,
+				"//redis:6379", fmt.Sprintf("//%s:6379", remoteServer), -1)*/
+	}
+
 }
 
 func viperBindEnvs(iface interface{}, parts ...string) {
@@ -148,7 +165,9 @@ func viperBindEnvs(iface interface{}, parts ...string) {
 			viperBindEnvs(v.Interface(), append(parts, tv)...)
 		default:
 			key := strings.Join(append(parts, tv), ".")
-			viper.BindEnv(key)
+			if err := viper.BindEnv(key); err != nil {
+				log.WithError(err).Error("BindEnv error")
+			}
 		}
 	}
 }

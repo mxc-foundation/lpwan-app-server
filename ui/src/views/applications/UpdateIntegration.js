@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
+import { Row, Col } from 'reactstrap';
 
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardContent from "@material-ui/core/CardContent";
-
+import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
@@ -115,37 +113,38 @@ class UpdateIntegration extends Component {
     }
 
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar
           buttons={[
             <TitleBarButton
               key={1}
-              label="Delete"
+              icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
+              label={i18n.t(`${packageNS}:tr000061`)}
               onClick={this.deleteIntegration}
             />,
           ]}
         >
-          <TitleBarTitle title="Applications" to={`/organizations/${this.props.match.params.organizationID}/applications`} />
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000076`)} to={`/organizations/${this.props.match.params.organizationID}/applications`} />
+          <span>&nbsp;</span>
           <TitleBarTitle title="/" />
+          <span>&nbsp;</span>
           <TitleBarTitle title={this.state.application.application.name} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} />
+          <span>&nbsp;</span>
           <TitleBarTitle title="/" />
-          <TitleBarTitle title="Integrations" to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />
+          <span>&nbsp;</span>
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000384`)} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/integrations`} />
+          <span>&nbsp;</span>
           <TitleBarTitle title="/" />
+          <span>&nbsp;</span>
           <TitleBarTitle title={this.props.match.params.kind} />
         </TitleBar>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <IntegrationForm
-                submitLabel="Update"
-                object={this.state.integration}
-                onSubmit={this.onSubmit}
-                update={true}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        <IntegrationForm
+          object={this.state.integration}
+          onSubmit={this.onSubmit}
+          submitLabel={i18n.t(`${packageNS}:tr000066`)}
+          update={true}
+        />
+      </React.Fragment>
     );
   }
 }

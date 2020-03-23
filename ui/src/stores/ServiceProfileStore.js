@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 
 import Swagger from "swagger-client";
 
+import i18n, { packageNS } from '../i18n';
 import sessionStore from "./SessionStore";
 import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
@@ -13,7 +14,7 @@ class ServiceProfileStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/serviceProfile.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(serviceProfile, callbackFunc) {
+  create(serviceProfile, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ServiceProfileService.Create({
         body: {
@@ -25,7 +26,10 @@ class ServiceProfileStore extends EventEmitter {
         this.notify("created");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -42,7 +46,7 @@ class ServiceProfileStore extends EventEmitter {
     });
   }
 
-  update(serviceProfile, callbackFunc) {
+  update(serviceProfile, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.ServiceProfileService.Update({
         "serviceProfile.id": serviceProfile.id,
@@ -55,7 +59,10 @@ class ServiceProfileStore extends EventEmitter {
         this.notify("updated");
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -66,15 +73,15 @@ class ServiceProfileStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        this.notify("deleted");
+        this.notify(i18n.t(`${packageNS}:tr000326`));
         callbackFunc(resp.ojb);
       })
       .catch(errorHandler);
     });
   }
 
-  list(organizationID, limit, offset, callbackFunc) {
-    this.swagger.then(client => {
+  list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
+    return this.swagger.then(client => {
       client.apis.ServiceProfileService.List({
         organizationID: organizationID,
         limit: limit,
@@ -82,9 +89,12 @@ class ServiceProfileStore extends EventEmitter {
       })
       .then(checkStatus)
       .then(resp => {
-        callbackFunc(resp.obj);
+        callbackFunc && callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 

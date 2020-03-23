@@ -1,236 +1,409 @@
 import React, { Component } from "react";
-import { withRouter } from 'react-router-dom';
-
-import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-import TextField from "@material-ui/core/TextField";
-import CardContent from "@material-ui/core/CardContent";
-import Typography from "@material-ui/core/Typography";
-import FormHelperText from "@material-ui/core/FormHelperText";
+import { withRouter, Link } from 'react-router-dom';
+import classNames from 'classnames';
+import { Nav, NavItem, Row, Col, Card, CardBody, Button } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
-import FormComponent from "../../classes/FormComponent";
-import Form from "../../components/Form";
+import Loader from "../../components/Loader";
+import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete, ReactstrapPasswordInput } from '../../components/FormInputs';
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import UserStore from "../../stores/UserStore";
 import OrganizationStore from "../../stores/OrganizationStore";
 import SessionStore from "../../stores/SessionStore";
-import theme from "../../theme";
+import i18n, { packageNS } from '../../i18n';
 
 
-const styles = {
-  card: {
-    overflow: "visible",
-  },
-  tabs: {
-    borderBottom: "1px solid " + theme.palette.divider,
-    height: "48px",
-    overflow: "visible",
-  },
-  formLabel: {
-    fontSize: 12,
-  },
-};
-
-
-
-class AssignUserForm extends FormComponent {
+class AssignUserForm extends Component {
   constructor() {
     super();
-
     // we need combo box
     // this.getUserOption = this.getUserOption.bind(this);
     this.getUserOptions = this.getUserOptions.bind(this);
   }
 
   getUserOptions(search, callbackFunc) {
-    UserStore.list(search, 10, 0, resp => {
+    UserStore.list(search, 99999999, 0, resp => {
       const options = resp.result.map((u, i) => {return {label: u.username, value: u.id}});
       callbackFunc(options);
     });
   }
 
   render() {
-    if (this.state.object === undefined) {
-      return(<div></div>);
-    }
+
+    const fieldsSchema = Yup.object().shape({
+      userID: Yup.string()
+          .required(i18n.t(`${packageNS}:tr000431`)),
+        isAdmin: Yup.bool(),
+        isDeviceAdmin: Yup.bool(),
+        isGatewayAdmin: Yup.bool(),
+    });
+  
 
     return(
-      <Form
-        submitLabel="Add"
-        onSubmit={this.onSubmit}
-      >
-        <FormControl margin="normal" fullWidth>
-          <FormLabel className={this.props.classes.formLabel} required>Username</FormLabel>
-          <AutocompleteSelect
-            id="userID"
-            label="Select username"
-            value={this.state.object.userID || null}
-            onChange={this.onChange}
-            getOptions={this.getUserOptions}
-          />
-        </FormControl>
-        <Typography variant="body1">
-          An user without additional permissions will be able to see all
-          resources under this organization and will be able to send and
-          receive device payloads.
-        </Typography>
-        <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label="User is organization admin"
-            control={
-              <Checkbox
-                id="isAdmin"
-                checked={!!this.state.object.isAdmin}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>An organization admin user is able to add and modify resources part of the organization.</FormHelperText>
-        </FormControl>
-        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label="User is device admin"
-            control={
-              <Checkbox
-                id="isDeviceAdmin"
-                checked={!!this.state.object.isDeviceAdmin}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>A device admin user is able to add and modify resources part of the organization that are related to devices.</FormHelperText>
-        </FormControl>}
-        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label="User is gateway admin"
-            control={
-              <Checkbox
-                id="isGatewayAdmin"
-                checked={!!this.state.object.isGatewayAdmin}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>A gateway admin user is able to add and modify gateways part of the organization.</FormHelperText>
-        </FormControl>}
-      </Form>
+      <React.Fragment>
+        <Row>
+          <Col>
+            <Formik
+              enableReinitialize
+              initialValues={{}}
+              validateOnBlur
+              validateOnChange
+              validationSchema={fieldsSchema}
+              onSubmit={
+                (values, { setSubmitting }) => {
+                  let newValues = {...values};
+                  if(newValues.isAdmin) {
+                    newValues.isGatewayAdmin = false;
+                    newValues.isDeviceAdmin = false;
+                  }
+                  this.props.onSubmit(newValues);
+                  setSubmitting(false);
+                }
+              }
+            >
+              {
+                props => {
+                  const {
+                    dirty,
+                    errors,
+                    handleBlur,
+                    handleChange,
+                    handleReset,
+                    handleSubmit,
+                    initialErrors,
+                    isSubmitting,
+                    isValidating,
+                    setFieldValue,
+                    touched,
+                    validateForm,
+                    values
+                  } = props;
+                  // errors && console.error('validation errors', errors);
+                  return (
+                    <Form onSubmit={handleSubmit} noValidate>
+                      <Field
+                            id="userID"
+                            name="userID"
+                            type="text"
+                            value={values.userID}
+                            onBlur={handleBlur}
+                            label={i18n.t(`${packageNS}:tr000056`) + ' *'}
+                            helpText={i18n.t(`${packageNS}:tr000138`)}
+                            getOptions={this.getUserOptions}
+                            setFieldValue={(field, val) => setFieldValue('userID', val)}
+                            inputProps={{
+                              clearable: true,
+                              cache: false,
+                              classNamePrefix: 'react-select-validation'
+                            }}
+                            component={AsyncAutoComplete}
+                            className={
+                              errors && errors.userID && touched && touched && touched['react-select-userID-input']
+                                ? 'is-invalid'
+                                : ''
+                            }
+                          />
+                          {
+                            errors && errors.userID && touched && touched && touched['react-select-userID-input']
+                              ? (
+                                <div
+                                  className="invalid-feedback"
+                                  style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                                >
+                                  {errors.userID}
+                                </div>
+                              ) : null
+                          }
+                        
+                      <Field
+                        id="isAdmin"
+                        name="isAdmin"
+                        type="checkbox"
+                        value={values.isAdmin}
+                        label={i18n.t(`${packageNS}:tr000139`)}
+                        helpText={i18n.t(`${packageNS}:tr000140`)}
+                        component={ReactstrapCheckbox}
+                        onChange={handleChange}
+                        className={
+                          errors && errors.isAdmin
+                            ? 'is-invalid form-control'
+                            : ''
+                        }
+                      />
+                      {
+                        errors && errors.isAdmin
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {errors.isAdmin}
+                            </div>
+                          ) : null
+                      }
+
+                      {!!!values.isAdmin ? <React.Fragment>
+                        <Field
+                          id="isDeviceAdmin"
+                          name="isDeviceAdmin"
+                          type="checkbox"
+                          value={values.isDeviceAdmin}
+                          label={i18n.t(`${packageNS}:tr000141`)}
+                          helpText={i18n.t(`${packageNS}:tr000142`)}
+                          onChange={handleChange}
+                          component={ReactstrapCheckbox}
+                          className={
+                            errors && errors.isDeviceAdmin
+                              ? 'is-invalid form-control'
+                              : ''
+                          }
+                        />
+                        {
+                          errors && errors.isDeviceAdmin
+                            ? (
+                              <div
+                                className="invalid-feedback"
+                                style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                              >
+                                {errors.isDeviceAdmin}
+                              </div>
+                            ) : null
+                        }
+
+                        <Field
+                          id="isGatewayAdmin"
+                          name="isGatewayAdmin"
+                          type="checkbox"
+                          value={values.isGatewayAdmin}
+                          onChange={handleChange}
+                          label={i18n.t(`${packageNS}:tr000143`)}
+                          helpText={i18n.t(`${packageNS}:tr000144`)}
+                          component={ReactstrapCheckbox}
+                          className={
+                            errors && errors.isGatewayAdmin
+                              ? 'is-invalid form-control'
+                              : ''
+                          }
+                        />
+                        {
+                          errors && errors.isGatewayAdmin
+                            ? (
+                              <div
+                                className="invalid-feedback"
+                                style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                              >
+                                {errors.isGatewayAdmin}
+                              </div>
+                            ) : null
+                        }
+                      </React.Fragment>: null}
+                        
+                      <Button type="submit" color="primary" className="btn-block"
+                        disabled={(errors && errors.userID) || !values.userID}>
+                        {i18n.t(`${packageNS}:tr000041`)}</Button>
+                    </Form>
+                  );
+                }
+              }
+            </Formik>
+          </Col>
+        </Row>
+      </React.Fragment>
     );
   };
 }
 
-AssignUserForm = withStyles(styles)(AssignUserForm);
 
-
-class CreateUserForm extends FormComponent {
+class CreateUserForm extends Component {
   render() {
-    if (this.state.object === undefined) {
-      return(<div></div>);
-    }
+    const fieldsSchema = Yup.object().shape({
+      username: Yup.string()
+          .required(i18n.t(`${packageNS}:tr000431`)),
+      email: Yup.string()
+          .email(i18n.t(`${packageNS}:tr000431`))
+          .required(i18n.t(`${packageNS}:tr000431`)),
+      note: Yup.string(),
+      password: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
+      isAdmin: Yup.bool(),
+      isDeviceAdmin: Yup.bool(),
+      isGatewayAdmin: Yup.bool(),
+    });
 
-    return(
-      <Form
-        submitLabel="Create"
-        onSubmit={this.onSubmit}
-      >
-        <TextField
-          id="username"
-          label="Username"
-          margin="normal"
-          value={this.state.object.username || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-        />
-        <TextField
-          id="email"
-          label="E-mail address"
-          margin="normal"
-          value={this.state.object.email || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-        />
-        <TextField
-          id="note"
-          label="Optional note"
-          helperText="Optional note, e.g. a phone number, address, comment..."
-          margin="normal"
-          value={this.state.object.note || ""}
-          onChange={this.onChange}
-          rows={4}
-          fullWidth
-          multiline
-        />
-        <TextField
-          id="password"
-          label="Password"
-          type="password"
-          margin="normal"
-          value={this.state.object.password || ""}
-          onChange={this.onChange}
-          required
-          fullWidth
-        />
-        <Typography variant="body1">
-          An user without additional permissions will be able to see all
-          resources under this organization and will be able to send and
-          receive device payloads.
-        </Typography>
-        <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label="User is organization admin"
-            control={
-              <Checkbox
-                id="isAdmin"
-                checked={!!this.state.object.isAdmin}
-                onChange={this.onChange}
-                color="primary"
-              />
+    return (<React.Fragment>
+      <Row>
+        <Col>
+          <Formik
+            enableReinitialize
+            initialValues={{}}
+            validateOnBlur
+            validateOnChange
+            validationSchema={fieldsSchema}
+            onSubmit={
+              (values, { setSubmitting }) => {
+                let newValues = { ...values };
+                if (newValues.isAdmin) {
+                  newValues.isGatewayAdmin = false;
+                  newValues.isDeviceAdmin = false;
+                }
+                this.props.onSubmit(newValues);
+                setSubmitting(false);
+              }
             }
-          />
-          <FormHelperText>An organization admin user is able to add and modify resources part of the organization.</FormHelperText>
-        </FormControl>
-        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label="User is device admin"
-            control={
-              <Checkbox
-                id="isDeviceAdmin"
-                checked={!!this.state.object.isDeviceAdmin}
-                onChange={this.onChange}
-                color="primary"
-              />
+          >
+            {
+              props => {
+                const {
+                  dirty,
+                  errors,
+                  handleBlur,
+                  handleChange,
+                  handleReset,
+                  handleSubmit,
+                  initialErrors,
+                  isSubmitting,
+                  isValidating,
+                  setFieldValue,
+                  touched,
+                  validateForm,
+                  values
+                } = props;
+                // errors && console.error('validation errors', errors);
+                return (
+                  <Form onSubmit={handleSubmit} noValidate>
+
+                    <Field
+                      type="text"
+                      label={i18n.t(`${packageNS}:tr000056`) + ' *'}
+                      name="username"
+                      id="username"
+                      component={ReactstrapInput}
+                      onBlur={handleBlur}
+                    />
+
+                    <Field
+                      type="text"
+                      label={i18n.t(`${packageNS}:tr000147`) + ' *'}
+                      name="email"
+                      id="email"
+                      component={ReactstrapInput}
+                      onBlur={handleBlur}
+                    />
+
+                    <Field
+                      type="textarea"
+                      label={i18n.t(`${packageNS}:tr000129`)}
+                      name="note"
+                      id="note"
+                      helpText={i18n.t(`${packageNS}:tr000130`)}
+                      component={ReactstrapInput}
+                      onBlur={handleBlur}
+                    />
+
+                    <Field
+                      label={i18n.t(`${packageNS}:tr000004`) + ' *'}
+                      name="password"
+                      id="password"
+                      helpText={i18n.t(`${packageNS}:tr000138`)}
+                      component={ReactstrapPasswordInput}
+                      onBlur={handleBlur}
+                    />
+
+                    <Field
+                      id="isAdmin"
+                      name="isAdmin"
+                      type="checkbox"
+                      value={values.isAdmin}
+                      label={i18n.t(`${packageNS}:tr000139`)}
+                      helpText={i18n.t(`${packageNS}:tr000140`)}
+                      component={ReactstrapCheckbox}
+                      onChange={handleChange}
+                      className={
+                        errors && errors.isAdmin
+                          ? 'is-invalid form-control'
+                          : ''
+                      }
+                    />
+                    {
+                      errors && errors.isAdmin
+                        ? (
+                          <div
+                            className="invalid-feedback"
+                            style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                          >
+                            {errors.isAdmin}
+                          </div>
+                        ) : null
+                    }
+
+                    {!!!values.isAdmin ? <React.Fragment>
+                      <Field
+                        id="isDeviceAdmin"
+                        name="isDeviceAdmin"
+                        type="checkbox"
+                        value={values.isDeviceAdmin}
+                        label={i18n.t(`${packageNS}:tr000141`)}
+                        helpText={i18n.t(`${packageNS}:tr000142`)}
+                        onChange={handleChange}
+                        component={ReactstrapCheckbox}
+                        className={
+                          errors && errors.isDeviceAdmin
+                            ? 'is-invalid form-control'
+                            : ''
+                        }
+                      />
+                      {
+                        errors && errors.isDeviceAdmin
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {errors.isDeviceAdmin}
+                            </div>
+                          ) : null
+                      }
+
+                      <Field
+                        id="isGatewayAdmin"
+                        name="isGatewayAdmin"
+                        type="checkbox"
+                        value={values.isGatewayAdmin}
+                        onChange={handleChange}
+                        label={i18n.t(`${packageNS}:tr000143`)}
+                        helpText={i18n.t(`${packageNS}:tr000144`)}
+                        component={ReactstrapCheckbox}
+                        className={
+                          errors && errors.isGatewayAdmin
+                            ? 'is-invalid form-control'
+                            : ''
+                        }
+                      />
+                      {
+                        errors && errors.isGatewayAdmin
+                          ? (
+                            <div
+                              className="invalid-feedback"
+                              style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                            >
+                              {errors.isGatewayAdmin}
+                            </div>
+                          ) : null
+                      }
+                    </React.Fragment> : null}
+                    
+                    <Button type="submit" color="primary" className="btn-block" 
+                      disabled={(errors && Object.keys(errors).length)|| (values && (!values.username || !values.email || !values.password))}>
+                        {i18n.t(`${packageNS}:tr000277`)}</Button>
+                  </Form>
+                );
+              }
             }
-          />
-          <FormHelperText>A device admin user is able to add and modify resources part of the organization that are related to devices.</FormHelperText>
-        </FormControl>}
-        {!!!this.state.object.isAdmin && <FormControl fullWidth margin="normal">
-          <FormControlLabel
-            label="User is gateway admin"
-            control={
-              <Checkbox
-                id="isGatewayAdmin"
-                checked={!!this.state.object.isGatewayAdmin}
-                onChange={this.onChange}
-                color="primary"
-              />
-            }
-          />
-          <FormHelperText>A gateway admin user is able to add and modify gateways part of the organization.</FormHelperText>
-        </FormControl>}
-      </Form>
+          </Formik>
+        </Col>
+      </Row>
+    </React.Fragment>
     );
   }
 }
@@ -243,6 +416,7 @@ class CreateOrganizationUser extends Component {
     this.state = {
       tab: 0,
       assignUser: false,
+      loading: false
     };
 
     this.onChangeTab = this.onChangeTab.bind(this);
@@ -268,15 +442,19 @@ class CreateOrganizationUser extends Component {
     });
   }
 
-  onChangeTab(e, v) {
+  onChangeTab(v) {
     this.setState({
       tab: v,
     });
   }
 
   onAssignUser(user) {
+    this.setState({loading: true});
     OrganizationStore.addUser(this.props.match.params.organizationID, user, resp => {
+      this.setState({loading: false});
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
+    }, error => {
+      this.setState({loading: false});
     });
   };
 
@@ -292,38 +470,65 @@ class CreateOrganizationUser extends Component {
     delete u.isDeviceAdmin;
     delete u.isGatewayAdmin;
 
-    UserStore.create(u, user.password, orgs, resp => {
+    this.setState({loading: true});
+    // on success or error handling loading
+    UserStore.create({user: u, password: user.password, organizations: orgs}, resp => {
+      this.setState({loading: false});
       this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
+    }, error => {
+      this.setState({loading: false});
     });
   };
 
   render() {
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
     return(
-      <Grid container spacing={4}>
+      <React.Fragment>
         <TitleBar>
-          <TitleBarTitle title="Organization users" to={`/organizations/${this.props.match.params.organizationID}/users`} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title="Create" />
+          <OrgBreadCumb organizationID={currentOrgID} items={[
+            { label: i18n.t(`${packageNS}:tr000068`), active: false, to: `/organizations/${currentOrgID}/users` },
+            { label: i18n.t(`${packageNS}:tr000277`), active: true }]}></OrgBreadCumb>
         </TitleBar>
 
-        <Grid item xs={12}>
-          <Tabs value={this.state.tab} onChange={this.onChangeTab} indicatorColor="primary" className={this.props.classes.tabs}>
-            {this.state.assignUser && <Tab label="Assign existing user" />}
-            <Tab label="Create and assign user" />
-          </Tabs>
-        </Grid>
+        <Row>
+          <Col>
+            <Card>
+              <CardBody>
+                <div className="position-relative">
+                  {this.state.loading ? <Loader /> : null}
+                  <Nav tabs>
+                    {this.state.assignUser ? <NavItem>
+                      <Link
+                        className={classNames('nav-link', { active: this.state.tab === 0 })}
+                        onClick={() => this.onChangeTab(0)}
+                        to='#'>{i18n.t(`${packageNS}:tr000136`)}</Link>
+                    </NavItem> : null}
 
-        <Grid item xs={12}>
-          <Card className={this.props.classes.card}>
-            <CardContent>
-              {(this.state.tab === 0 && this.state.assignUser) && <AssignUserForm onSubmit={this.onAssignUser} />}
-              {(this.state.tab === 1 || !this.state.assignUser) && <CreateUserForm onSubmit={this.onCreateUser} />}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+                    <NavItem>
+                      <Link
+                        className={classNames('nav-link', { active: this.state.tab === 1 })}
+                        onClick={() => this.onChangeTab(1)}
+                        to='#'
+                      >{i18n.t(`${packageNS}:tr000146`)}</Link>
+                    </NavItem>
+                  </Nav>
+
+                  <Row className="pt-2">
+                    <Col>
+                      {(this.state.tab === 0 && this.state.assignUser) && <AssignUserForm onSubmit={this.onAssignUser} />}
+                      {(this.state.tab === 1 || !this.state.assignUser) && <CreateUserForm onSubmit={this.onCreateUser} />}
+                    </Col>
+                  </Row>
+                </div>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+      </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(withRouter(CreateOrganizationUser));
+export default withRouter(CreateOrganizationUser);

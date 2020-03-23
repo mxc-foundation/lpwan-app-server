@@ -3,16 +3,13 @@ import { Route, Switch, Link } from "react-router-dom";
 
 import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 
 import ApplicationStore from "../../stores/ApplicationStore";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 import FUOTADeploymentDetails from "./FUOTADeploymentDetails";
 import ListFUOTADeploymentDevices from "./ListFUOTADeploymentDevices";
+import OrganizationDevices from "../devices/OrganizationDevices";
+import ApplicationFUOTADeploymentTabs from "../applications/ApplicationFUOTADeploymentTabs";
 
 import theme from "../../theme";
 
@@ -32,14 +29,14 @@ class FUOTADeploymentLayout extends Component {
 
     this.state = {
       tab: 0,
+      admin: false,
     };
-
-    this.onChangeTab = this.onChangeTab.bind(this);
-    this.locationToTab = this.locationToTab.bind(this);
   }
 
   componentDidMount() {
-    ApplicationStore.get(this.props.match.params.applicationID, resp => {
+    const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+
+    ApplicationStore.get(currentApplicationID, resp => {
       this.setState({
         application: resp,
       });
@@ -49,7 +46,7 @@ class FUOTADeploymentLayout extends Component {
 
 
     this.getFuotaDeployment();
-    this.locationToTab();
+    this.getMainTabAppIndexFromLocation();
   }
 
   componentWillUnmount() {
@@ -59,19 +56,13 @@ class FUOTADeploymentLayout extends Component {
   getFuotaDeployment = () => {
     FUOTADeploymentStore.get(this.props.match.params.fuotaDeploymentID, resp => {
       this.setState({
-        fuotaDeployment: resp,
+        fuotaDeployment: resp
       });
     });
   }
 
-  onChangeTab(e, v) {
-    this.setState({
-      tab: v,
-    });
-  }
-
-  locationToTab() {
-    let tab = 0;
+  getMainTabAppIndexFromLocation = () => {
+    let tab = 0; // Information
 
     if (window.location.href.endsWith("/devices")) {
       tab = 1;
@@ -84,40 +75,38 @@ class FUOTADeploymentLayout extends Component {
 
 
   render() {
-    if (this.state.application === undefined || this.state.fuotaDeployment === undefined) {
+    const { admin, application, fuotaDeployment, tab } = this.state;
+    const { children } = this.props;
+    const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
+
+    if (application === undefined || fuotaDeployment === undefined) {
       return null;
     }
 
     return(
       <Grid container spacing={4}>
-        <TitleBar>
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications`} title="Applications" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}`} title={this.state.application.application.name} />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments`} title="Firmware update jobs" />
-          <TitleBarTitle title="/" />
-          <TitleBarTitle title={this.state.fuotaDeployment.fuotaDeployment.name} />
-        </TitleBar>
-
-        <Grid item xs={12}>
-          <Tabs
-            indicatorColor="primary"
-            className={this.props.classes.tabs}
-            value={this.state.tab}
-            onChange={this.onChangeTab}
+        {/* <OrganizationDevices
+          mainTabIndex={1}
+          organizationID={currentOrgID}
+        > */}
+          <ApplicationFUOTADeploymentTabs
+            {...this.props}
+            admin={admin}
+            application={application}
+            deleteApplication={this.deleteApplication}
+            fuotaDeployment={fuotaDeployment}
+            mainTabAppIndex={tab}
+            organizationID={currentOrgID}
           >
-            <Tab label="Information" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${this.props.match.params.fuotaDeploymentID}`} />
-            <Tab label="Devices" component={Link} to={`/organizations/${this.props.match.params.organizationID}/applications/${this.props.match.params.applicationID}/fuota-deployments/${this.props.match.params.fuotaDeploymentID}/devices`} />
-          </Tabs>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Switch>
-            <Route exact path={`${this.props.match.path}`} render={props => <FUOTADeploymentDetails fuotaDeployment={this.state.fuotaDeployment} {...props} />} />
-            <Route exact path={`${this.props.match.path}/devices`} render={props => <ListFUOTADeploymentDevices fuotaDeployment={this.state.fuotaDeployment} {...props} />} />
-          </Switch>
-        </Grid>
+            {children}
+            <Switch>
+              <Route exact path={`${this.props.match.path}`} render={props =>
+                <FUOTADeploymentDetails fuotaDeployment={fuotaDeployment} {...props} />} />
+              <Route exact path={`${this.props.match.path}/devices`} render={props =>
+                <ListFUOTADeploymentDevices fuotaDeployment={fuotaDeployment} {...props} />} />
+            </Switch>
+          </ApplicationFUOTADeploymentTabs>
+        {/* </OrganizationDevices> */}
       </Grid>
     );
   }
