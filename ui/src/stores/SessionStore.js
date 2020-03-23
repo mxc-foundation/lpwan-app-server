@@ -313,6 +313,7 @@ class SessionStore extends EventEmitter {
   }
 
   notifyActivation() {
+    console.log(123);
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
       notification: {
