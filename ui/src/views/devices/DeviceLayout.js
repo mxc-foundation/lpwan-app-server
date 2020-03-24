@@ -1,34 +1,26 @@
-import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
-
-import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import Delete from "mdi-material-ui/Delete";
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
-
+import { withStyles } from "@material-ui/core/styles";
+import React, { Component } from "react";
+import { Route, Switch, withRouter } from "react-router-dom";
 import ApplicationStore from "../../stores/ApplicationStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-import SessionStore from "../../stores/SessionStore";
-import DeviceAdmin from "../../components/DeviceAdmin";
 import DeviceStore from "../../stores/DeviceStore";
 import OrganizationStore from "../../stores/OrganizationStore";
-import UpdateDevice from "./UpdateDevice";
-import DeviceKeys from "./DeviceKeys";
-import DeviceActivation from "./DeviceActivation"
-import DeviceData from "./DeviceData";
-import DeviceFrames from "./DeviceFrames";
-import ListFUOTADeploymentsForDevice from "../../views/fuota/ListFUOTADeploymentsForDevice";
-import DeviceDetailsDevicesTabs from "../../views/applications/DeviceDetailsDevicesTabs";
-import DeviceDetails from "./DeviceDetails";
-
+import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import DeviceDetailsDevicesTabs from "../../views/applications/DeviceDetailsDevicesTabs";
+import ListFUOTADeploymentsForDevice from "../../views/fuota/ListFUOTADeploymentsForDevice";
+import DeviceActivation from "./DeviceActivation";
+import DeviceData from "./DeviceData";
+import DeviceDetails from "./DeviceDetails";
+import DeviceFrames from "./DeviceFrames";
+import DeviceKeys from "./DeviceKeys";
+import UpdateDevice from "./UpdateDevice";
+
+
+
+
+
 
 
 const styles = {

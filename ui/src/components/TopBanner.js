@@ -1,22 +1,17 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
 import AppBar from "@material-ui/core/AppBar";
-import { withStyles } from "@material-ui/core/styles";
 import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
+import { withStyles } from "@material-ui/core/styles";
 import Typography from '@material-ui/core/Typography';
-
-//import MenuIcon from "mdi-material-ui/Menu";
-//import Backburger from "mdi-material-ui/Backburger";
-//import Wallet from "mdi-material-ui/Wallet";
-import AccountCircle from "mdi-material-ui/AccountCircle";
 import Magnify from "mdi-material-ui/Magnify";
-import HelpCircle from "mdi-material-ui/HelpCircle";
-
+import React, { Component } from "react";
+import { withRouter } from 'react-router-dom';
+import i18n, { packageNS } from '../i18n';
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
-import i18n, { packageNS } from '../i18n';
+
+
+
 
 
 const styles = {

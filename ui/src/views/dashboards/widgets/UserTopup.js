@@ -1,11 +1,11 @@
 import React from "react";
-import { Badge, Col, Media, Row } from 'reactstrap';
 import { Link } from "react-router-dom";
-
+import { Badge, Col, Media, Row } from 'reactstrap';
 import defaultProfilePic from "../../../assets/images/users/profile-icon.png";
 import i18n, { packageNS } from '../../../i18n';
 import SessionStore from "../../../stores/SessionStore";
 import WidgetActions from './WidgetActions';
+
 
 
 /**

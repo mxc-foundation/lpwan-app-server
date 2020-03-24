@@ -1,7 +1,7 @@
 import React from "react";
-import { Row, Col, Button } from 'reactstrap';
-
+import { Button, Col, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
+
 
 
 const Phrase = ({ srNo, phrase }) => {

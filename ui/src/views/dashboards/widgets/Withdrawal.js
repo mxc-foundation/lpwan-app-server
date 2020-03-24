@@ -1,9 +1,9 @@
 import React from "react";
 import { Bar, defaults as ChartJsDefaults } from "react-chartjs-2";
-import { Row, Col } from "reactstrap";
-
+import { Col, Row } from "reactstrap";
 import i18n, { packageNS } from '../../../i18n';
 import WidgetActions from './WidgetActions';
+
 
 // default
 ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';

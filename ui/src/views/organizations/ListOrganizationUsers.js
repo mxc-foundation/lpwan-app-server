@@ -1,17 +1,17 @@
-import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
 import classNames from 'classnames';
-
-import { Button, Row, Col, Card } from 'reactstrap';
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import TitleBar from "../../components/TitleBar";
-
-import OrganizationStore from "../../stores/OrganizationStore";
-
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import { Button, Card, Col, Row } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
-import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import Loader from "../../components/Loader";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
+import OrganizationStore from "../../stores/OrganizationStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
+
 
 
 const UserNameColumn = (cell, row, index, extraData) => {
@@ -63,10 +63,10 @@ class ListOrganizationUsers extends Component {
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
     // TODO - how can I pass search query to server?
     this.getPage(sizePerPage, offset);
   }

@@ -1,15 +1,15 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Formik, Form, Field } from 'formik';
+import { Link, withRouter } from "react-router-dom";
+import { Button, Card, CardBody, Col, Container, Row } from 'reactstrap';
 import * as Yup from 'yup';
 import { ReactstrapInput } from '../../components/FormInputs';
-import { Row, Col, Container, Card, CardBody, Button } from 'reactstrap';
-
-import SessionStore from "../../stores/SessionStore";
 import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
+import SessionStore from "../../stores/SessionStore";
 import { PASSWORD_RECOVERY_DESCRIPTION_001 } from "../../util/Messages";
+
+
 
 // validation
 const emailSchema = Yup.object().shape({

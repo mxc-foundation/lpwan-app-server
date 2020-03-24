@@ -1,12 +1,10 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
-import MockDeviceProfileStoreApi from '../api/mockDeviceProfileStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class DeviceProfileStore extends EventEmitter {

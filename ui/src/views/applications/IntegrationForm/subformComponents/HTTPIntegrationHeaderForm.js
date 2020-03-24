@@ -1,14 +1,13 @@
-import React from "react";
-
-import { Field } from 'formik';
-
 import Grid from "@material-ui/core/Grid";
-import TextField from '@material-ui/core/TextField';
 import IconButton from '@material-ui/core/IconButton';
+import { Field } from 'formik';
 import Delete from "mdi-material-ui/Delete";
-
-import { ReactstrapInput } from '../../../../components/FormInputs';
+import React from "react";
 import FormComponent from "../../../../classes/FormComponent";
+import { ReactstrapInput } from '../../../../components/FormInputs';
+
+
+
 
 class HTTPIntegrationHeaderForm extends FormComponent {
   constructor() {

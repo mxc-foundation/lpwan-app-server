@@ -1,11 +1,10 @@
-import React from "react";
-
-import TextField from '@material-ui/core/TextField';
 import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
-
+import TextField from '@material-ui/core/TextField';
+import React from "react";
 import FormComponent from "../../../../classes/FormComponent";
+
+
 
 class ThingsBoardIntegrationForm extends FormComponent {
   onChange(e) {

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import NumberFormat from 'react-number-format';
 
 export const SUPER_ADMIN = '0';

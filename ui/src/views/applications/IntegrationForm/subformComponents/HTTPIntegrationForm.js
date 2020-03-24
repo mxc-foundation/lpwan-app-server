@@ -1,13 +1,11 @@
-import React from "react";
-
-import { Button } from 'reactstrap';
-import TextField from '@material-ui/core/TextField';
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
-// import Button from "@material-ui/core/Button";
-
+import TextField from '@material-ui/core/TextField';
+import React from "react";
+import { Button } from 'reactstrap';
 import FormComponent from "../../../../classes/FormComponent";
 import HTTPIntegrationHeaderForm from "./HTTPIntegrationHeaderForm";
+
 
 class HTTPIntegrationForm extends FormComponent {
   constructor() {

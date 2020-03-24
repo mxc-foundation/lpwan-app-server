@@ -1,13 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
 import i18n, { packageNS } from '../i18n';
-import MockUserStoreApi from '../api/mockUserStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 class UserStore extends EventEmitter {
   constructor() {

@@ -1,16 +1,14 @@
-import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
 import classNames from "classnames";
-import { Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
+import React, { Component } from "react";
+import { Link, Route, Switch, withRouter } from "react-router-dom";
+import { Card, CardBody, Col, Nav, NavItem, Row } from 'reactstrap';
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import StakeStore from "../../stores/StakeStore";
-import Transactions from "./Transactions";
 import NetworkActivityHistory from "./NetworkActivityHistory";
-import Stakes from "./Stakes";
+
+
 
 
 class HistoryLayout extends Component {

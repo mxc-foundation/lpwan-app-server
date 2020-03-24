@@ -1,23 +1,19 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-
-import { getLoraHost } from "../../../util/M2mUtil";
-//import Wallet from "mdi-material-ui/OpenInNew";
-//import Typography from '@material-ui/core/Typography';
-import { DV_MODE_OPTION, DV_INACTIVE } from "../../../util/Data"
-
-import { withRouter } from 'react-router-dom';
 import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../../i18n';
-import { MAX_DATA_LIMIT } from '../../../util/pagination';
-import DeviceStore from "../../../stores/DeviceStore.js";
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
 import AdvancedTable from "../../../components/AdvancedTable";
 import Loader from "../../../components/Loader";
-import TitleBarTitle from "../../../components/TitleBarTitle";
-import TitleBar from "../../../components/TitleBar";
 import NativeSelects from "../../../components/m2m/NativeSelectsM2M";
 import SwitchLabels from "../../../components/m2m/SwitchM2M";
+import i18n, { packageNS } from '../../../i18n';
+import DeviceStore from "../../../stores/DeviceStore.js";
+//import Wallet from "mdi-material-ui/OpenInNew";
+//import Typography from '@material-ui/core/Typography';
+import { DV_INACTIVE, DV_MODE_OPTION } from "../../../util/Data";
+import { MAX_DATA_LIMIT } from '../../../util/pagination';
+
+
+
 
 const styles = {
   flex: {
@@ -165,10 +161,10 @@ class DeviceFormM2M extends Component {
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
 
     this.getPage(sizePerPage, offset);
   }

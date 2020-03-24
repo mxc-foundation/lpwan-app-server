@@ -1,10 +1,10 @@
 import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import { Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import i18n, { packageNS } from '../../../i18n';
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Card, CardBody, Col, Row } from 'reactstrap';
 import TitleBar from "../../../components/TitleBar";
+import i18n, { packageNS } from '../../../i18n';
 import SettingsForm from "./SettingsForm";
+
 
 
 class Settings extends Component {

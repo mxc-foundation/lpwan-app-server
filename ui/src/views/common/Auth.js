@@ -1,4 +1,3 @@
-import React from 'react';
 import jwt from "jsonwebtoken";
 import SessionStore from "../../stores/SessionStore";
 

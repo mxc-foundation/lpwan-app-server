@@ -4,7 +4,7 @@ import AsyncSelect from "react-select/async";
 import SessionStore from "../stores/SessionStore";
 import { SUPER_ADMIN } from "../util/M2mUtil";
 
-const customStyles = {
+/* const customStyles = {
   control: (base, state) => ({
     ...base,
     margin: 5,
@@ -46,7 +46,7 @@ const customStyles = {
     overflow: "hidden",
     textOverflow: "ellipsis"
   })
-};
+}; */
 
 const getOrgList = organizations => {
   let organizationList = null;

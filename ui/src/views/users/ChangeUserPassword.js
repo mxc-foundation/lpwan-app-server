@@ -1,18 +1,18 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import { Formik, Form, Field, FieldArray } from 'formik';
-import { ReactstrapInput } from '../../components/FormInputs';
-import * as Yup from 'yup';
-import { Breadcrumb, BreadcrumbItem, FormGroup, Label, Input, Button, Container, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-
-import TitleBar from "../../components/TitleBar";
-import UserStore from "../../stores/UserStore";
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody, Container, Row } from 'reactstrap';
+import * as Yup from 'yup';
 import FormComponent from "../../classes/FormComponent";
+import { ReactstrapInput } from '../../components/FormInputs';
+import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
-
+import UserStore from "../../stores/UserStore";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
+
 
 const localStyles = {};
 

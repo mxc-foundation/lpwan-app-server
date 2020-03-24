@@ -1,14 +1,14 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
+import Modal from "../../components/Modal";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-import Modal from "../../components/Modal";
-
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import UpdateNetworkServer from "./UpdateNetworkServer";
+
+
 
 
 class NetworkServerLayout extends Component {

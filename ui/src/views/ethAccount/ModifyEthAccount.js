@@ -1,14 +1,14 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import MoneyStore from "../../stores/MoneyStore";
 import SessionStore from "../../stores/SessionStore";
+import { ETHER } from "../../util/CoinType";
 import ModifyEthAccountForm from "./ModifyEthAccountForm";
 import NewEthAccountForm from "./NewEthAccountForm";
-import { ETHER } from "../../util/CoinType";
+
 
 
 class ModifyEthAccount extends Component {

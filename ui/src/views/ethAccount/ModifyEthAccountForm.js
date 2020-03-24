@@ -1,11 +1,11 @@
-import React, { Component, useEffect } from "react";
-
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from "react";
 import { Button } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import { ReactstrapInput } from '../../components/FormInputs';
 import * as Yup from 'yup';
-
+import { ReactstrapInput } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
+
+
 
 
 const fieldsSchema = {
@@ -97,7 +97,6 @@ class ModifyEthAccountForm extends Component {
                   value={this.state.object.newAccount || ""}
                   placeholder="0x0000000000000000000000000000000000000000"
                   component={ReactstrapInput}
-                  placeholder={i18n.t(`${packageNS}:menu.eth_account.new_account`)}
                   onBlur={handleBlur}
                   inputProps={{
                     clearable: true,

@@ -1,19 +1,19 @@
-import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Row, Col, Button, FormGroup, Label, Input } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import localStyles from "./WithdrawStyle"
-import i18n, { packageNS } from "../../i18n";
+import React, { Component } from "react";
 import NumberFormat from 'react-number-format';
-import { ETHER } from "../../util/CoinType"
-
+import { withRouter } from "react-router-dom";
+import { Button, Col, FormGroup, Input, Label, Row } from 'reactstrap';
+import i18n, { packageNS } from "../../i18n";
+import SessionStore from "../../stores/SessionStore";
+import WalletStore from "../../stores/WalletStore";
+import WithdrawStore from "../../stores/WithdrawStore";
+import { ETHER } from "../../util/CoinType";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 import Modal from './Modal';
 import ModalCom from './ModalComplete';
-import WithdrawStore from "../../stores/WithdrawStore";
-import SessionStore from "../../stores/SessionStore";
-import WalletStore from "../../stores/WalletStore";
+import localStyles from "./WithdrawStyle";
+
+
 
 const styles = {
   ...breadcrumbStyles,
@@ -46,7 +46,6 @@ class Withdraw extends Component {
     let user = await SessionStore.getUser();
     
     var result = await getWalletBalance(orgId, user.id);
-    const fee = result.withdrawFee;
     
     WithdrawStore.getWithdrawFee(0, resp => {
       const object = this.state;

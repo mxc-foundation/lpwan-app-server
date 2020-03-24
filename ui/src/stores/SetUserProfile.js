@@ -1,5 +1,5 @@
-import sessionStore from "./SessionStore";
 import hash from "object-hash";
+import sessionStore from "./SessionStore";
 
 export default function updateOrganizations(response) {
     const organizationList = response.body.organizations;

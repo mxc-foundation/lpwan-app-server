@@ -1,16 +1,16 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-import { isEmail } from 'validator';
-
-import { Row, Col, Container, Card, CardBody, Button, FormGroup } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
 import ReCAPTCHA from "react-google-recaptcha";
-
+import { Link, withRouter } from "react-router-dom";
+import { Button, Card, CardBody, Col, Container, FormGroup, Row } from 'reactstrap';
+import { isEmail } from 'validator';
+import * as Yup from 'yup';
 import { ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
-import SessionStore from "../../stores/SessionStore";
 import i18n, { packageNS } from '../../i18n';
+import SessionStore from "../../stores/SessionStore";
+
+
 
 const regSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),

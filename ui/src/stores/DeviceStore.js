@@ -1,13 +1,11 @@
 import { EventEmitter } from "events";
 import RobustWebSocket from "robust-websocket";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler, errorHandlerIgnoreNotFoundWithCallback } from "./helpers";
 import dispatcher from "../dispatcher";
-import MockDeviceStoreApi from '../api/mockDeviceStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler, errorHandlerIgnoreNotFoundWithCallback } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class DeviceStore extends EventEmitter {

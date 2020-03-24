@@ -1,15 +1,14 @@
+import { Form, Formik } from 'formik';
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
 import { Button } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-
-import i18n, { packageNS } from '../../i18n';
-import { ReactstrapInput } from '../../components/FormInputs';
 import AESKeyField from "../../components/FormikAESKeyField";
 import Loader from "../../components/Loader";
+import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
+
+
 
 
 class DeviceKeys extends Component {

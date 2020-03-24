@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
 import Toastr from 'toastr2';
-
-import NotificationStore from "../stores/NotificationStore";
 import dispatcher from "../dispatcher";
+import NotificationStore from "../stores/NotificationStore";
+
+
 
 
 const Item = ({id, notification, hideNotification}) => {

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-
-import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
+import React, { useState } from 'react';
+import { withRouter } from "react-router-dom";
+import { Button, Col, FormGroup, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
-import localStyles from "./WithdrawStyle"
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Col, Row } from 'reactstrap';
+import localStyles from "./WithdrawStyle";
+
 
 const styles = {
     ...localStyles
@@ -15,7 +15,6 @@ const ModalComplete = (props) => {
         className,
         closeModal,
         showCloseButton = true,
-        showConfirmButton = true,
         show = true,
     } = props;
 
@@ -27,13 +26,6 @@ const ModalComplete = (props) => {
             closeModal();
     }
 
-    const proc = () => {
-        setModal(!modal);
-        if (closeModal)
-            closeModal();
-        props.callback();
-    }
-    const { classes } = props;
     return (
         <div>
             {/* {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>} */}

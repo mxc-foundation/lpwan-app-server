@@ -1,15 +1,14 @@
 import React, { Component } from "react";
-import { Link, withRouter } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { Badge } from 'reactstrap';
-
-import ProfileDropdown from './ProfileDropdown';
-import DropdownMenuLanguage from "./DropdownMenuLanguage";
-
 import i18n, { packageNS } from '../i18n';
 import SessionStore from "../stores/SessionStore";
-import WithdrawStore from "../stores/WithdrawStore";
 import WalletStore from "../stores/WalletStore";
-import TopupStore from "../stores/TopupStore";
+import WithdrawStore from "../stores/WithdrawStore";
+import DropdownMenuLanguage from "./DropdownMenuLanguage";
+import ProfileDropdown from './ProfileDropdown';
+
+
 /* import logoSm from '../assets/images/logo-sm.png';
 import logo from '../assets/images/MATCHX-SUPERNODE2.png'; */
 

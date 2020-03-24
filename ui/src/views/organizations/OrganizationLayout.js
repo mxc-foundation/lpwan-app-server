@@ -1,16 +1,15 @@
 import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
+import { Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Card, CardBody, Col, Row } from 'reactstrap';
+import Admin from "../../components/Admin";
+import Modal from "../../components/Modal";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-
+import i18n, { packageNS } from '../../i18n';
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganization from "./UpdateOrganization";
-import Admin from "../../components/Admin";
-import UpdateServiceProfile from "../service-profiles/UpdateServiceProfile";
-import Modal from "../../components/Modal";
+
+
 
 
 class OrganizationLayout extends Component {

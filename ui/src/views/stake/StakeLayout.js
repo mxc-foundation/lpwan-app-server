@@ -1,25 +1,23 @@
-import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
 import Typography from '@material-ui/core/Typography';
-
-import Grid from "@material-ui/core/Grid";
-import TitleBar from "../../components/TitleBar";
-import WalletStore from "../../stores/WalletStore.js";
-import GatewayStore from "../../stores/GatewayStore.js";
-import Button from "@material-ui/core/Button";
-import StakeStore from "../../stores/StakeStore";
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import ExtLink from "../../components/ExtLink";
-
-//import WithdrawBalanceInfo from "./WithdrawBalanceInfo";
-
-import { EXT_URL_STAKE } from "../../util/Data"
+import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
-
-import localStyles from "./StakeStyle";
+import GatewayStore from "../../stores/GatewayStore.js";
+import StakeStore from "../../stores/StakeStore";
+import WalletStore from "../../stores/WalletStore.js";
+import { EXT_URL_STAKE } from "../../util/Data";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import localStyles from "./StakeStyle";
+
+
+
+
 
 const styles = {
   ...breadcrumbStyles,

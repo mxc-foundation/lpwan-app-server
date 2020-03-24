@@ -1,18 +1,18 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import { Card, Row, Col } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
-import DeviceAdmin from "../../components/DeviceAdmin";
+import { Card, Col, Row } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
+import DeviceAdmin from "../../components/DeviceAdmin";
 import Loader from "../../components/Loader";
+import TitleBar from "../../components/TitleBar";
+import TitleBarButton from "../../components/TitleBarButton";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import OrganizationDevices from "../devices/OrganizationDevices";
+
+
 
 
 const DeviceProfileNameColumn = (cell, row, index, extraData) => {
@@ -52,10 +52,10 @@ class ListDeviceProfiles extends Component {
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
     // TODO - how can I pass search query to server?
     this.getPage(sizePerPage, offset);
   }
@@ -81,7 +81,6 @@ class ListDeviceProfiles extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     // TODO - refactor this into a method or store in state on page load (apply to all components where this rushed approach used)
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 

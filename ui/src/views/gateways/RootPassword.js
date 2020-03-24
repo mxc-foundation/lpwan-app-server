@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { Button, CustomInput, Input, InputGroup, InputGroupAddon, Modal, ModalBody } from 'reactstrap';
-
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import GatewayStore from "../../stores/GatewayStore";
-import Loader from "../../components/Loader";
+
 
 
 class RootPassword extends Component {

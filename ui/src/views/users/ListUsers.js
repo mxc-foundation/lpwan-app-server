@@ -1,19 +1,19 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-
+import { withStyles } from "@material-ui/core/styles";
 import Check from "mdi-material-ui/Check";
 import Close from "mdi-material-ui/Close";
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Card, Col, Row } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
-import { Button, Breadcrumb, BreadcrumbItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
+import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-import Loader from "../../components/Loader";
+import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
-
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
 
 const localStyles = {};
 
@@ -77,10 +77,10 @@ class ListUsers extends Component {
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
     // TODO - how can I pass search query to server?
     this.getPage(sizePerPage, offset);
   }

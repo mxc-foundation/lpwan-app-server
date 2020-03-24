@@ -1,14 +1,14 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
-import { Breadcrumb, BreadcrumbItem, Row, Col, Button } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
+import { Breadcrumb, BreadcrumbItem, Button, Col, Row } from 'reactstrap';
 import Loader from "../../components/Loader";
-
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import AddWidget from './AddWidget';
-import { userWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_STAT, WIDGET_TYPE_MAP } from './widgets/';
+import { userWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_MAP, WIDGET_TYPE_STAT } from './widgets/';
+
+
+
 
 class UserDashboard extends Component {
     constructor() {

@@ -1,14 +1,13 @@
+import Card from "@material-ui/core/Card";
+import CardContent from "@material-ui/core/CardContent";
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import { Collapse, Button } from 'reactstrap';
-
-import Card from "@material-ui/core/Card";
-import CardHeader from "@material-ui/core/CardHeader";
-import CardContent from "@material-ui/core/CardContent";
-
+import { Button, Collapse } from 'reactstrap';
 import i18n, { packageNS } from '../../../../i18n';
 import DeviceQueueStore from "../../../../stores/DeviceQueueStore";
 import DeviceQueueItemForm from "./DeviceQueueItemForm";
+
+
 
 const CURRENT_CARD = "enqueueCard";
 

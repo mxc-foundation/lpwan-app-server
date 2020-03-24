@@ -1,13 +1,13 @@
-import React from "react";
-
-import TextField from '@material-ui/core/TextField';
 import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
 import FormHelperText from "@material-ui/core/FormHelperText";
-
+import FormLabel from "@material-ui/core/FormLabel";
+import TextField from '@material-ui/core/TextField';
+import React from "react";
 import FormComponent from "../../../../classes/FormComponent";
 import AutocompleteSelect from "../../../../components/AutocompleteSelect";
 import i18n, { packageNS } from '../../../../i18n';
+
+
 
 class InfluxDBIntegrationForm extends FormComponent {
   onChange(e) {

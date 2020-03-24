@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import { withRouter, Link, Redirect } from "react-router-dom";
-import { withStyles } from '@material-ui/core/styles';
+import { withRouter } from "react-router-dom";
 import SessionStore from "../../stores/SessionStore";
 
 class Logout extends Component {

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Button, Row, Col, Card, CardBody } from 'reactstrap';
-
+import { Button, Card, CardBody, Col, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
+
 
 
 

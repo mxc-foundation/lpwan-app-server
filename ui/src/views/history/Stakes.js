@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
-
 import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
 import StakeStore from "../../stores/StakeStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
 
 const StartColumn = (cell, row, index, extraData) => {
   return row.start.substring(0, 10);

@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import { Row, Col } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
-
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
 import ApplicationStore from "../../stores/ApplicationStore";
 import IntegrationForm from "./IntegrationForm";
+
+
 
 
 class UpdateIntegration extends Component {

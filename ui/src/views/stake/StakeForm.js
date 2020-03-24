@@ -1,21 +1,19 @@
+import { withStyles } from "@material-ui/core/styles";
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-
-import { Button, FormGroup, Label, FormText, Card, CardBody, Alert } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
+import { withRouter } from "react-router-dom";
+import { Button } from 'reactstrap';
 import * as Yup from 'yup';
 import { ReactstrapInput } from '../../components/FormInputs';
-import i18n, { packageNS } from '../../i18n';
 import Modal from "../../components/Modal";
 import ModalWithProgress from "../../components/ModalWithProgress";
+import i18n, { packageNS } from '../../i18n';
 import SessionStore from "../../stores/SessionStore";
-import WalletStore from "../../stores/WalletStore";
 import StakeStore from "../../stores/StakeStore";
-//import Spinner from "../../components/ScaleLoader"
-import { withRouter } from "react-router-dom";
-import { withStyles } from "@material-ui/core/styles";
+import WalletStore from "../../stores/WalletStore";
+import styles from "./StakeStyle";
 
-import NumberFormat from 'react-number-format';
-import styles from "./StakeStyle"
+
 
 /* const NumberFormatMXC = (props) => {
   const { inputRef, onChange, ...other } = props;

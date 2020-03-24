@@ -1,15 +1,12 @@
-import React from "react";
-import {
-  Button, Col, Collapse, FormFeedback, FormGroup, FormText, Input, Label,
-  TabContent, TabPane, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Row,
-} from 'reactstrap';
-// Example: https://final-form.org/docs/react-final-form/examples/record-level-validation
-import { Form, Field } from "react-final-form";
-import classnames from 'classnames';
-
 import { withStyles } from "@material-ui/core/styles";
-import i18n, { packageNS } from '../../i18n';
+import classnames from 'classnames';
+import React from "react";
+// Example: https://final-form.org/docs/react-final-form/examples/record-level-validation
+import { Field, Form } from "react-final-form";
+import { Button, Col, Collapse, FormFeedback, FormGroup, FormText, Input, Label, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import FormComponent from "../../classes/FormComponent";
+import i18n, { packageNS } from '../../i18n';
+
 
 const localStyles = {};
 
@@ -84,8 +81,8 @@ class NetworkServerForm extends FormComponent {
   }
 
   render() {
-    const { activeTab, collapsed, height, width } = this.state;
-    const { classes, onSubmit, submitLabel } = this.props;
+    const { activeTab, collapsed, width } = this.state;
+    const { onSubmit, submitLabel } = this.props;
 
     if (this.state.object === undefined) {
       return (null);
@@ -197,7 +194,7 @@ class NetworkServerForm extends FormComponent {
           }
           const errors = {};
 
-          if (activeTab == '0') {
+          if (activeTab === '0') {
             if (!values.name) {
               errors.name = "Required";
             }
@@ -205,7 +202,7 @@ class NetworkServerForm extends FormComponent {
               errors.server = "Required";
             }
           }
-          if (activeTab == '1') {
+          if (activeTab === '1') {
             if (values.gatewayDiscoveryEnabled && !values.gatewayDiscoveryInterval) {
               errors.gatewayDiscoveryInterval = "Required";
             }
