@@ -77,22 +77,21 @@ class ListUsers extends Component {
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    let searchQuery = '';
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
     }
-    // TODO - how can I pass search query to server?
-    this.getPage(sizePerPage, offset);
+    this.getPage(searchQuery, sizePerPage, offset);
   }
 
   /**
    * Fetches data from server
    */
-  getPage = (limit, offset) => {
+  getPage = (searchQuery, limit, offset) => {
     limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
 
-    UserStore.list("", limit, offset, (res) => {
+    UserStore.list(searchQuery, limit, offset, (res) => {
       const object = this.state;
       object.totalSize = Number(res.totalCount);
       object.data = res.result;
@@ -103,8 +102,17 @@ class ListUsers extends Component {
 
   componentDidMount() {
     // Note: If you do not provide a limit, then nothing is returned
-    this.getPage(MAX_DATA_LIMIT);
+    this.getPage('', MAX_DATA_LIMIT);
   }
+
+  /* onColumnMatch =({ // this is for searching items only for local. which means search again with the result that retrieved from data base.
+    searchText,
+    value,
+    column,
+    row
+  }) => {
+    return value && value.toLowerCase().startsWith(searchText.toLowerCase());
+  } */
 
   render() {
     const { classes } = this.props;
@@ -142,7 +150,7 @@ class ListUsers extends Component {
                 columns={getColumns()}
                 keyField="id"
                 onTableChange={this.handleTableChange}
-                searchEnabled={false}
+                searchEnabled={true}
                 rowsPerPage={10}
                 totalSize={this.state.totalSize}
               />
