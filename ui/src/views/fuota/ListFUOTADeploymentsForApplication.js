@@ -1,20 +1,17 @@
+import { withStyles } from "@material-ui/core/styles";
+import moment from "moment";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import moment from "moment";
-import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
-import Admin from "../../components/Admin";
+import TitleBar from "../../components/TitleBar";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 import theme from "../../theme";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
 
 
 const styles = {
@@ -108,10 +105,10 @@ class ListFUOTADeploymentsForApplication extends Component {
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
 
     this.getPage(sizePerPage, offset);
   }

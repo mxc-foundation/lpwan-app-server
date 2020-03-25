@@ -1,18 +1,18 @@
-import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Row, Col, Card, Button, Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import localStyles from "../../withdraw/WithdrawStyle"
-import i18n, { packageNS } from "../../../i18n";
-
-import breadcrumbStyles from "../../common/BreadcrumbStyles";
-import Modal from './Modal';
-import { MAX_DATA_LIMIT } from '../../../util/pagination';
-import TitleBar from "../../../components/TitleBar";
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Button, Card, Col, Row } from 'reactstrap';
 import AdvancedTable from "../../../components/AdvancedTable";
 import Loader from "../../../components/Loader";
+import TitleBar from "../../../components/TitleBar";
+import i18n, { packageNS } from "../../../i18n";
 import WithdrawStore from "../../../stores/WithdrawStore";
+import { MAX_DATA_LIMIT } from '../../../util/pagination';
+import breadcrumbStyles from "../../common/BreadcrumbStyles";
+import localStyles from "../../withdraw/WithdrawStyle";
+import Modal from './Modal';
+
+
 
 const styles = {
     ...breadcrumbStyles,
@@ -35,10 +35,10 @@ class SuperAdminWithdraw extends Component {
     handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
         const offset = (page - 1) * sizePerPage;
 
-        let searchQuery = null;
+        /* let searchQuery = null;
         if (type === 'search' && searchText && searchText.length) {
             searchQuery = searchText;
-        }
+        } */
         // TODO - how can I pass search query to server?
         this.getPage(sizePerPage, offset);
     }
@@ -48,7 +48,6 @@ class SuperAdminWithdraw extends Component {
      */
     getPage = (limit, offset) => {
         limit = MAX_DATA_LIMIT;
-        const defaultOrgId = 0;
         //this.setState({ loading: true });//commented out by Namgyeong 
 
         WithdrawStore.getWithdrawRequestList(limit, offset, (res) => {

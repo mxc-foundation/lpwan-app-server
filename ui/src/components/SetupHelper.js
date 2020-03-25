@@ -1,18 +1,18 @@
 import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
-
+import Button from "@material-ui/core/Button";
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
-
+import { Link, withRouter } from "react-router-dom";
 import i18n, { packageNS } from '../i18n';
-import SessionStore from "../stores/SessionStore";
+import DeviceProfileStore from "../stores/DeviceProfileStore";
 import NetworkServerStore from "../stores/NetworkServerStore";
 import ServiceProfileStore from "../stores/ServiceProfileStore";
-import DeviceProfileStore from "../stores/DeviceProfileStore";
+import SessionStore from "../stores/SessionStore";
+
+
 
 
 class SetupHelper extends Component {

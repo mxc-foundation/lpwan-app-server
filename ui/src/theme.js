@@ -1,5 +1,4 @@
 import { createMuiTheme } from "@material-ui/core/styles";
-import { border } from "@material-ui/system";
 //import { teal } from "@material-ui/core/colors";
 
 const tealHighLight = '#00FFD9';
@@ -10,7 +9,7 @@ const blueBG = '#070033';
 const overlayBG = '#0C027060';
 const white = 'white';
 const dark = '#323a46';
-const linkTextColor = '#BBE9E8';
+//const linkTextColor = '#BBE9E8';
 
 const theme = createMuiTheme({
     palette: {

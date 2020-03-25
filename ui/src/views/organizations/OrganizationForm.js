@@ -1,11 +1,11 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-
-import { Row, Col, Button } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
+import { Button, Col, Row } from 'reactstrap';
 import * as Yup from 'yup';
-
-import { ReactstrapInput, ReactstrapCheckbox } from '../../components/FormInputs';
+import { ReactstrapCheckbox, ReactstrapInput } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
+
+
 
 
 const orgSchema = Yup.object().shape({

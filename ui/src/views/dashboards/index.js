@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import SessionStore from "../../stores/SessionStore";
-
 import i18n, { packageNS } from '../../i18n';
+import SessionStore from "../../stores/SessionStore";
 import AdminDashboard from "./Admin";
-import UserDashboard from "./User";
 import Feature2FA from "./Feature2FA";
+import UserDashboard from "./User";
+
 
 
 class Dashboard extends Component {

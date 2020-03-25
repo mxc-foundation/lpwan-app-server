@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter } from "react-router-dom";
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader, Progress } from 'reactstrap';
 import i18n, { packageNS } from '../i18n';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Progress } from 'reactstrap';
 
 let timer = null;
 

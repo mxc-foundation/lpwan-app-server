@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Row, Col, Button, Input } from 'reactstrap';
-
 import QRCode from "qrcode.react";
+import React, { useState } from "react";
+import { Button, Col, Input, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
+
 
 
 const Google2FA = ({ title, code, confirm, skip, titleClass = "" }) => {

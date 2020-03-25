@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { Button, Modal, ModalHeader, ModalBody, Row, Col, Media } from 'reactstrap';
 import classNames from "classnames";
-
+import React, { useState } from 'react';
+import { Button, Col, Media, Modal, ModalBody, ModalHeader, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
+
 
 const AddWidget = (props) => {
     const { addWidget, closeModal, show = true, availableWidgets = [], addedWidgets = [] } = props;

@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import { Row, Col, Card, CardBody } from 'reactstrap';
-
-import Loader from "../../components/Loader";
+import { Card, CardBody, Col, Row } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import TopupStore from "../../stores/TopupStore";
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
+import TopupStore from "../../stores/TopupStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
 
 const tableCols = [
   {

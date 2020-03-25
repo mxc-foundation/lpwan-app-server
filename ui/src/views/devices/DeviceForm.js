@@ -1,30 +1,28 @@
-import React, { Component } from "react";
-
-import { withStyles } from "@material-ui/core/styles";
-import { TabContent, TabPane, Nav, NavItem, NavLink, Card, Button, Row, Col } from 'reactstrap';
-import { Formik, Form, Field, FieldArray } from 'formik';
-import * as Yup from 'yup';
-import classnames from 'classnames';
-
-import FormControl from "@material-ui/core/FormControl";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 import FormGroup from "@material-ui/core/FormGroup";
+import FormHelperText from "@material-ui/core/FormHelperText";
 import IconButton from '@material-ui/core/IconButton';
+import { withStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-
+import classnames from 'classnames';
+import { Field, FieldArray, Form, Formik } from 'formik';
 import Delete from "mdi-material-ui/Delete";
-
-import i18n, { packageNS } from '../../i18n';
-import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
+import React, { Component } from "react";
+import { Button, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
+import * as Yup from 'yup';
 import EUI64Field from "../../components/FormikEUI64Field";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
+import { AsyncAutoComplete, ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
+import i18n, { packageNS } from '../../i18n';
 import ApplicationStore from "../../stores/ApplicationStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-
 import theme from "../../theme";
+
+
+
+
+
 
 const clone = require('rfdc')();
 

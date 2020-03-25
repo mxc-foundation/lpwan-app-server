@@ -1,19 +1,19 @@
-import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-
 import { withStyles } from "@material-ui/core/styles";
 import Typograhy from "@material-ui/core/Typography";
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import { Button } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-
-import i18n, { packageNS } from '../../i18n';
 import AESKeyField from "../../components/FormikAESKeyField";
 import DevAddrField from "../../components/FormikDevAddrField";
-import Loader from "../../components/Loader";
 import { ReactstrapInput } from '../../components/FormInputs';
+import Loader from "../../components/Loader";
+import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
+
+
 
 
 const styles = {

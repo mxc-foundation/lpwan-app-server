@@ -1,13 +1,13 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
+import { Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Button, Row } from 'reactstrap';
 import Modal from '../../components/Modal';
-import { Button, Breadcrumb, BreadcrumbItem, Row } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
 import UpdateGatewayProfile from "./UpdateGatewayProfile";
+
+
 
 
 class GatewayProfileLayout extends Component {

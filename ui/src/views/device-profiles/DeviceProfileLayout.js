@@ -1,20 +1,20 @@
+import Grid from '@material-ui/core/Grid';
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { Link, withRouter } from "react-router-dom";
-
 import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import Grid from '@material-ui/core/Grid';
-
-import i18n, { packageNS } from '../../i18n';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
+import i18n, { packageNS } from '../../i18n';
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import SessionStore from "../../stores/SessionStore";
+import breadcrumbStyles from "../common/BreadcrumbStyles";
 import OrganizationDevices from "../devices/OrganizationDevices";
 import UpdateDeviceProfile from "./UpdateDeviceProfile";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
+
 
 const localStyles = {};
 

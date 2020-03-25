@@ -1,29 +1,20 @@
-import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
-
-import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
-import Admin from "../../components/Admin";
-
+import { withStyles } from "@material-ui/core/styles";
+import React, { Component } from "react";
+import { Route, Switch, withRouter } from "react-router-dom";
 import ApplicationStore from "../../stores/ApplicationStore";
 import SessionStore from "../../stores/SessionStore";
-import ListDevices from "../devices/ListDevices";
-import UpdateApplication from "./UpdateApplication";
-import ListIntegrations from "./ListIntegrations";
-import CreateIntegration from "./CreateIntegration";
-import UpdateIntegration from "./UpdateIntegration";
-import ListFUOTADeploymentsForApplication from "../fuota/ListFUOTADeploymentsForApplication";
-import OrganizationDevices from "../devices/OrganizationDevices";
-import ApplicationDevices from "./ApplicationDevices";
-import Modal from "../common/Modal";
 import theme from "../../theme";
+import ListDevices from "../devices/ListDevices";
+import ListFUOTADeploymentsForApplication from "../fuota/ListFUOTADeploymentsForApplication";
+import ApplicationDevices from "./ApplicationDevices";
+import CreateIntegration from "./CreateIntegration";
+import ListIntegrations from "./ListIntegrations";
+import UpdateApplication from "./UpdateApplication";
+import UpdateIntegration from "./UpdateIntegration";
+
+
+
 
 
 const styles = {

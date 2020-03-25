@@ -1,15 +1,14 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-
-import { Button } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import { ReactstrapInput } from '../../../components/FormInputs';
 import * as Yup from 'yup';
-
+import { ReactstrapInput } from '../../../components/FormInputs';
 import i18n, { packageNS } from '../../../i18n';
-
+import SettingsStore from '../../../stores/SettingsStore';
 import WithdrawStore from '../../../stores/WithdrawStore';
 import { ETHER } from '../../../util/CoinType';
-import SettingsStore from '../../../stores/SettingsStore';
+
+
+
 
 class SettingsForm extends Component {
 
@@ -27,7 +26,6 @@ class SettingsForm extends Component {
 
   loadSettings = async () => {
     try {
-      const organizationID = 0;
       //this.setState({loading: true})
 
       WithdrawStore.getWithdrawFee(ETHER, (resp) => {

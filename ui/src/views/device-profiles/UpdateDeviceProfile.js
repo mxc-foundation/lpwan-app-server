@@ -1,12 +1,12 @@
+import Grid from '@material-ui/core/Grid';
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
-import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-
 import i18n, { packageNS } from '../../i18n';
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceProfileForm from "./DeviceProfileForm";
+
+
 
 // FIXME - this isn't being used, and we can also remove `withStyles` here
 const styles = {

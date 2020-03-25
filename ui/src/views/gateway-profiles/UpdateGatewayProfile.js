@@ -1,14 +1,14 @@
+import { CardContent } from "@material-ui/core";
+import Card from '@material-ui/core/Card';
+import Grid from '@material-ui/core/Grid';
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import { CardContent } from "@material-ui/core";
-
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import GatewayProfileStore from "../../stores/GatewayProfileStore";
-import Loader from "../../components/Loader";
 import GatewayProfileForm from "./GatewayProfileForm";
+
+
 
 
 class UpdateGatewayProfile extends Component {

@@ -1,6 +1,6 @@
 import React from "react";
-
 import WidgetActions from './WidgetActions';
+
 
 
 const StatWidget = (props) => {

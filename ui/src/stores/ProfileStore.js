@@ -1,12 +1,12 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
-import updateOrganizations from "./SetUserProfile";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+import updateOrganizations from "./SetUserProfile";
+
+
 
 
 class ProfileStore extends EventEmitter {

@@ -1,25 +1,23 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import { UncontrolledDropdown, DropdownMenu, DropdownItem, DropdownToggle } from 'reactstrap';
-
+import MetisMenu from 'metismenujs/dist/metismenujs';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import MetisMenu from 'metismenujs/dist/metismenujs';
-
+import { withRouter } from 'react-router-dom';
 import OrganizationStore from '../../stores/OrganizationStore';
 import ServerInfoStore from '../../stores/ServerInfoStore';
 import SessionStore from '../../stores/SessionStore';
-import UserStore from '../../stores/UserStore';
-import { SUPERNODE_WALLET, SUPERNODE_SETTING, DEFAULT, WALLET, SETTING, ORGANIZATIONS } from '../../util/Data';
-
+import { DEFAULT, ORGANIZATIONS, SETTING, SUPERNODE_SETTING, SUPERNODE_WALLET, WALLET } from '../../util/Data';
 import SideNavContent from './SideNavContent';
+import SideNavOrganizationsContent from './SideNavOrganizationsContent';
 import SideNavSettingContent from './SideNavSettingContent';
 import SideNavSupernodeSettingContent from './SideNavSupernodeSettingContent';
 import SideNavSupernodeWalletContent from './SideNavSupernodeWalletContent';
 import SideNavWalletContent from './SideNavWalletContent';
-import SideNavOrganizationsContent from './SideNavOrganizationsContent';
 
-const ProfileMenus = [{
+
+
+
+/* const ProfileMenus = [{
     label: 'My Account',
     icon: 'fe-user',
     redirectTo: "/",
@@ -39,7 +37,7 @@ const ProfileMenus = [{
     icon: 'fe-log-out',
     redirectTo: "/logout",
     hasDivider: true
-}]
+}] */
 
 function loadServerVersion() {
     return new Promise((resolve, reject) => {

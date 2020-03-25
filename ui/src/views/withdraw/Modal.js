@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-
-import { withRouter } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
+import React, { useState } from 'react';
+import { withRouter } from "react-router-dom";
+import { Button, Col, FormGroup, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
-import localStyles from "./WithdrawStyle"
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, FormGroup, Label, Input, Col } from 'reactstrap';
+import localStyles from "./WithdrawStyle";
+
 
 const styles = {
     ...localStyles

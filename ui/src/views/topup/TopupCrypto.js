@@ -1,16 +1,12 @@
+import QRCode from "qrcode.react";
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import QRCode from "qrcode.react";
-import { Row, Col, Button, UncontrolledTooltip, Modal as RModal, ModalBody, ModalHeader } from 'reactstrap';
-
-import Modal from "../../components/Modal";
+import { Button, Col, Modal as RModal, ModalBody, ModalHeader, Row, UncontrolledTooltip } from 'reactstrap';
 import Loader from "../../components/Loader";
-import TopupStore from "../../stores/TopupStore";
-import MoneyStore from "../../stores/MoneyStore";
-import SessionStorage from "../../stores/SessionStore";
-import { ETHER } from "../../util/CoinType"
-
 import i18n, { packageNS } from '../../i18n';
+import TopupStore from "../../stores/TopupStore";
+
+
 
 function loadSuperNodeActiveMoneyAccount(organizationID) {
   return new Promise((resolve, reject) => {

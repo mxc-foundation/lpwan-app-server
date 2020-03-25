@@ -1,13 +1,11 @@
 import { EventEmitter } from "events";
 import RobustWebSocket from "robust-websocket";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler, errorHandlerIgnoreNotFound } from "./helpers";
 import dispatcher from "../dispatcher";
-import MockGatewayStoreApi from '../api/mockGatewayStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler, errorHandlerIgnoreNotFound } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class GatewayStore extends EventEmitter {
@@ -232,7 +230,7 @@ class GatewayStore extends EventEmitter {
   getStats(gatewayID, start, end, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.GetStats({
-        gatewayId: gatewayID,
+        gatewayID: gatewayID,
         interval: "DAY",
         startTimestamp: start,
         endTimestamp: end,
@@ -248,7 +246,7 @@ class GatewayStore extends EventEmitter {
   getLastPing(gatewayID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.GetLastPing({
-        gatewayId: gatewayID,
+        gatewayID: gatewayID,
       })
       .then(checkStatus)
       .then(resp => {

@@ -1,23 +1,23 @@
-import React, { Component } from "react";
-
-import { withStyles } from "@material-ui/core/styles";
-import { TabContent, TabPane, Nav, NavItem, NavLink, Button, FormGroup, Label } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import classnames from 'classnames';
-
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormHelperText from "@material-ui/core/FormHelperText";
-
-import {Controlled as CodeMirror} from "react-codemirror2";
+import { withStyles } from "@material-ui/core/styles";
+import classnames from 'classnames';
 import "codemirror/mode/javascript/javascript";
-
-import i18n, { packageNS } from '../../i18n';
-import { ReactstrapInput } from '../../components/FormInputs';
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from "react";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import { Button, FormGroup, Label, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
+import * as Yup from 'yup';
 import AutocompleteSelect from "../../components/AutocompleteSelect";
+import { ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
+
+
+
+
 
 const clone = require('rfdc')();
 

@@ -1,12 +1,12 @@
-import React, { Component } from "react";
-
 import Grid from "@material-ui/core/Grid";
-
+import React, { Component } from "react";
 import DeviceStore from "../../../stores/DeviceStore";
 import DetailsCard from "./subComponents/DetailsCard";
 import EnqueueCard from "./subComponents/EnqueueCard";
 import QueueCard from "./subComponents/QueueCard";
 import StatusCard from "./subComponents/StatusCard";
+
+
 
 class DeviceDetails extends Component {
   constructor() {

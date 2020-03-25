@@ -1,51 +1,28 @@
+import { Field, FieldArray, Form, Formik } from "formik";
 import React, { Component } from "react";
-
-import {
-  Row,
-  Col,
-  Button,
-  FormGroup,
-  Label,
-  FormText,
-  Card,
-  CardBody,
-  CardImg,
-  Input
-} from "reactstrap";
-import { Formik, Form, Field, FieldArray } from "formik";
-import * as Yup from "yup";
-
 import { Map, Marker } from "react-leaflet";
-import FormHelperText from "@material-ui/core/FormHelperText";
-
-import {
-  ReactstrapInput,
-  ReactstrapCheckbox,
-  AsyncAutoComplete
-} from "../../components/FormInputs";
-import i18n, { packageNS } from "../../i18n";
-
-import NetworkServerStore from "../../stores/NetworkServerStore";
-import GatewayProfileStore from "../../stores/GatewayProfileStore";
-import LocationStore from "../../stores/LocationStore";
-import MapTileLayer from "../../components/MapTileLayer";
-import EUI64Field from "../../components/FormikEUI64Field";
+import { Button, Card, CardBody, Col, FormGroup, FormText, Input, Label, Row } from "reactstrap";
+import * as Yup from "yup";
 import AESKeyField from "../../components/FormikAESKeyField";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
+import EUI64Field from "../../components/FormikEUI64Field";
+import { AsyncAutoComplete, ReactstrapInput } from "../../components/FormInputs";
 import Loader from "../../components/Loader";
+import MapTileLayer from "../../components/MapTileLayer";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-import GatewayStore from "../../stores/GatewayStore";
-
-import {
-  getLBTChannels,
-  getChannelsWithFrequency,
-  getAntennaGain,
-  getLBTConfigStatus
-} from "./utils";
+import i18n, { packageNS } from "../../i18n";
+import GatewayProfileStore from "../../stores/GatewayProfileStore";
+import LocationStore from "../../stores/LocationStore";
+import NetworkServerStore from "../../stores/NetworkServerStore";
+import GatewayFormClassB from "./GatewayFormClassB";
 import GatewayFormLBT from "./GatewayFormLBT";
 import GatewayFormMacChannels from "./GatewayFormMacChannels";
-import GatewayFormClassB from "./GatewayFormClassB";
+import { getAntennaGain, getChannelsWithFrequency, getLBTChannels, getLBTConfigStatus } from "./utils";
+
+
+
+
+
 
 const clone = require("rfdc")();
 
@@ -520,6 +497,7 @@ class GatewayForm extends Component {
     }
     // console.log(object.discoveryEnabled);
     const discoveryEnabled = object.discoveryEnabled;
+    
     return (
       <React.Fragment>
         <Row>
@@ -848,7 +826,7 @@ class GatewayForm extends Component {
                         )}
                         onDataChanged={this.onLoraMacChannelsChanged}
                       />
-                      <Row>
+                      {/* <Row>
                         <Col lg={3} sm={6} xs={12}>
                           <FormGroup>
                             <Label>{i18n.t(`${packageNS}:tr000600`)}</Label>
@@ -880,7 +858,7 @@ class GatewayForm extends Component {
                             ) : null}
                           </FormGroup>
                         </Col>
-                      </Row>
+                      </Row> */}
 
                       <GatewayFormClassB
                         records={this.state.classBConfig}

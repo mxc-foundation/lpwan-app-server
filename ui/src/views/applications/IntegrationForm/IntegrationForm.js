@@ -1,18 +1,18 @@
-import React from "react";
-
-import { withStyles } from "@material-ui/core/styles";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
-
+import { withStyles } from "@material-ui/core/styles";
+import React from "react";
 import FormComponent from "../../../classes/FormComponent";
-import Form from "../../../components/Form";
 import AutocompleteSelect from "../../../components/AutocompleteSelect";
-import theme from "../../../theme";
+import Form from "../../../components/Form";
 import i18n, { packageNS } from '../../../i18n';
-
+import theme from "../../../theme";
 import HTTPIntegrationForm from "./subformComponents/HTTPIntegrationForm";
 import InfluxDBIntegrationForm from "./subformComponents/InfluxDBIntegrationForm";
 import ThingsBoardIntegrationForm from "./subformComponents/ThingsBoardIntegrationForm";
+
+
+
 
 const styles = {
   delete: {

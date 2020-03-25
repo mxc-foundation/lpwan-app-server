@@ -1,9 +1,19 @@
 import React from 'react';
 import i18n, { packageNS } from '../../../i18n';
-
 import DataMap from './DataMap';
 import DataPacketChart from './DataPacketChart';
 import EarnedAmountChart from './EarnedAmountChart';
+import extAmtImg from './images/ex-amt.png';
+import mapImg from './images/map.png';
+import mxcAmtImg from './images/mxc_amount.png';
+import packetsImg from './images/packets.png';
+import packets2Img from './images/packets2.png';
+import stakingAmtImg from './images/staking-amt.png';
+import statImg from './images/stat.png';
+import ticketImg from './images/tickets.png';
+import topupImg from './images/topup2.png';
+import userTopupImg from './images/user-topup.png';
+import withDrawImg from './images/withdraw.png';
 import MXCAmountChart from './MXCAmountChart';
 import StakingAmountChart from './StakingAmountChart';
 import StatWidget from './StatWidget';
@@ -12,17 +22,7 @@ import Topup from './Topup';
 import UserTopup from './UserTopup';
 import Withdrawal from './Withdrawal';
 
-import ticketImg from './images/tickets.png';
-import extAmtImg from './images/ex-amt.png';
-import mapImg from './images/map.png';
-import mxcAmtImg from './images/mxc_amount.png';
-import packetsImg from './images/packets.png';
-import packets2Img from './images/packets2.png';
-import stakingAmtImg from './images/staking-amt.png';
-import statImg from './images/stat.png';
-import userTopupImg from './images/user-topup.png';
-import withDrawImg from './images/withdraw.png';
-import topupImg from './images/topup2.png';
+
 
 const WIDGET_TYPE_GRAPH = "graph";
 const WIDGET_TYPE_STAT = "stat";

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import i18n, { packageNS } from '../i18n';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 const CommonModal = (props) => {
 

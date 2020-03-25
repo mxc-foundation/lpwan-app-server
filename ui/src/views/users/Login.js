@@ -1,21 +1,21 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Row, Col, Card, CardBody, Button, FormGroup } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-
 import ReCAPTCHA from "react-google-recaptcha";
 import { Map } from 'react-leaflet';
-
-import FoundLocationMap from "../../components/FoundLocationMap"
-import { ReactstrapInput, ReactstrapPasswordInput } from '../../components/FormInputs';
+import { Link, withRouter } from "react-router-dom";
+import { Button, Card, CardBody, Col, FormGroup, Row } from 'reactstrap';
+import * as Yup from 'yup';
 import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
+import { ReactstrapInput, ReactstrapPasswordInput } from '../../components/FormInputs';
+import FoundLocationMap from "../../components/FoundLocationMap";
 import Loader from "../../components/Loader";
-import SessionStore from "../../stores/SessionStore";
 import i18n, { packageNS } from '../../i18n';
+import SessionStore from "../../stores/SessionStore";
 
-const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
+
+
+
+//const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 
 const loginSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),

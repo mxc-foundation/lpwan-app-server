@@ -1,9 +1,9 @@
 import React from "react";
-import { Doughnut, defaults as ChartJsDefaults } from "react-chartjs-2";
-import { Row, Col, Progress } from "reactstrap";
-
+import { defaults as ChartJsDefaults, Doughnut } from "react-chartjs-2";
+import { Col, Progress, Row } from "reactstrap";
 import i18n, { packageNS } from '../../../i18n';
 import WidgetActions from './WidgetActions';
+
 
 // default
 ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';

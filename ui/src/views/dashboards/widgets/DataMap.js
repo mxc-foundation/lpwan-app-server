@@ -1,10 +1,10 @@
 import React from "react";
-import { Row, Col } from "reactstrap";
 import { Map, Marker } from 'react-leaflet';
-import FoundLocationMap from "../../../components/FoundLocationMap"
-
+import { Col, Row } from "reactstrap";
+import FoundLocationMap from "../../../components/FoundLocationMap";
 import i18n, { packageNS } from '../../../i18n';
 import WidgetActions from "./WidgetActions";
+
 
 
 const DataMap = (props) => {

@@ -1,18 +1,16 @@
-import React, { Component, useState } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import { Button, Card, CardBody, Row, Col, CardHeader } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import { ReactstrapInput } from '../../components/FormInputs';
-import Tooltips from "./Tooltips";
 import { withStyles } from "@material-ui/core/styles";
-import i18n, { packageNS } from '../../i18n';
-import Spinner from "../../components/ScaleLoader";
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
+import { Button, Card, CardBody, CardHeader, Col, Row } from 'reactstrap';
+import * as Yup from 'yup';
 import logo from '../../assets/images/MATCHX-SUPERNODE2.png';
+import { ReactstrapInput } from '../../components/FormInputs';
+import Spinner from "../../components/ScaleLoader";
+import i18n, { packageNS } from '../../i18n';
 import GatewayStore from "../../stores/GatewayStore";
 import QReaderModal from './QReaderModal';
-import { Divider } from "@material-ui/core";
+
 
 const styles = {
     center: {

@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
 import OrganizationStore from "../../stores/OrganizationStore";
 import SessionStore from "../../stores/SessionStore";
+
 
 
 class OrganizationRedirect extends Component {

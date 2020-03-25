@@ -1,13 +1,13 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import Divider from '@material-ui/core/Divider';
-
-import i18n, { packageNS } from '../../i18n';
+import { Link } from 'react-router-dom';
 import mxcLogo from '../../assets/images/mxc_logo-social_2.png';
-import { SUPERNODE_WALLET, SUPERNODE_SETTING, WALLET, SETTING, ORGANIZATIONS } from '../../util/Data';
+import i18n, { packageNS } from '../../i18n';
+import { ORGANIZATIONS, SETTING, SUPERNODE_SETTING, SUPERNODE_WALLET, WALLET } from '../../util/Data';
 import Admin from '../Admin';
-import NonAdmin from '../NonAdmin';
 import DropdownMenu2 from '../DropdownMenu';
+import NonAdmin from '../NonAdmin';
+
 
 const SideNavContent = (props) => {
     return <React.Fragment>

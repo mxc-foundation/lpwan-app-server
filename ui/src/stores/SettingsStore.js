@@ -1,10 +1,9 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
+import { checkStatus, errorHandler } from "./helpers";
 import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
-import dispatcher from "../dispatcher";
+
+
 
 
 class SettingsStore extends EventEmitter {

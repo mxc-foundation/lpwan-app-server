@@ -1,19 +1,16 @@
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
-  TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import theme from "../../theme";
-import i18n, { packageNS } from "../../i18n";
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
-import DeviceAdmin from "../../components/DeviceAdmin";
+import { Breadcrumb, BreadcrumbItem, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import Admin from "../../components/Admin";
-
+import TitleBar from "../../components/TitleBar";
+import TitleBarButton from "../../components/TitleBarButton";
+import i18n, { packageNS } from "../../i18n";
+import theme from "../../theme";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
+
 
 const localStyles = {
   tabs: {

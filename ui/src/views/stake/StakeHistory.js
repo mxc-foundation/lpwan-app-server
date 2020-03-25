@@ -1,14 +1,13 @@
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
-import { withStyles } from "@material-ui/core/styles";
-import localStyles from "./StakeStyle"
-import i18n, { packageNS } from "../../i18n";
-import breadcrumbStyles from "../common/BreadcrumbStyles";
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import NumberFormat from 'react-number-format';
 import AdvancedTable from "../../components/AdvancedTable";
+import i18n, { packageNS } from "../../i18n";
 import StakeStore from "../../stores/StakeStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+import breadcrumbStyles from "../common/BreadcrumbStyles";
+import localStyles from "./StakeStyle";
+
 
 const styles = {
     ...breadcrumbStyles,
@@ -24,7 +23,6 @@ class StakeHistory extends Component {
             totalSize: 0,
             nsDialog: false
         }
-        const { classes } = this.props;
     }
     /**
        * Handles table changes including pagination, sorting, etc
@@ -32,10 +30,10 @@ class StakeHistory extends Component {
     handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
         const offset = (page - 1) * sizePerPage;
 
-        let searchQuery = null;
+        /* let searchQuery = null;
         if (type === 'search' && searchText && searchText.length) {
             searchQuery = searchText;
-        }
+        } */
         // TODO - how can I pass search query to server?
         this.getPage(sizePerPage, offset);
     }
@@ -45,9 +43,9 @@ class StakeHistory extends Component {
      */
     getPage = (limit, offset) => {
         limit = MAX_DATA_LIMIT;
-        const defaultOrgId = 0;
+        
         this.setState({ loading: true });
-        const moneyAbbr = 2;
+        
         const orgId = this.props.match.params.organizationID;
         
         StakeStore.getStakingHistory(orgId, offset, limit, (res) => {

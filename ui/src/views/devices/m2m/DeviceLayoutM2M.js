@@ -1,23 +1,17 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import Divider from '@material-ui/core/Divider';
-import { Card, CardBody, Row, Col } from 'reactstrap';
-import Grid from "@material-ui/core/Grid";
-import i18n, { packageNS } from '../../../i18n';
-import TitleBar from "../../../components/TitleBar";
-import TitleBarTitle from "../../../components/TitleBarTitle";
-import Typography from '@material-ui/core/Typography';
-import SessionStore from "../../../stores/SessionStore.js";
-import DeviceStore from "../../../stores/DeviceStore.js";
-import WalletStore from "../../../stores/WalletStore.js";
-import GatewayStore from "../../../stores/GatewayStore.js";
-import DeviceForm from "./DeviceFormM2M";
-import Modal from "../../../components/m2m/ModalM2M";
 //import WithdrawBalanceInfo from "./WithdrawBalanceInfo";
 import { withRouter } from "react-router-dom";
-
-import { DV_INACTIVE, DV_FREE_GATEWAYS_LIMITED, DV_WHOLE_NETWORK } from "../../../util/Data"
+import { Card, CardBody, Col, Row } from 'reactstrap';
+import TitleBar from "../../../components/TitleBar";
+import TitleBarTitle from "../../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../../i18n';
+import DeviceStore from "../../../stores/DeviceStore.js";
+import GatewayStore from "../../../stores/GatewayStore.js";
+import WalletStore from "../../../stores/WalletStore.js";
+import { DV_FREE_GATEWAYS_LIMITED, DV_INACTIVE, DV_WHOLE_NETWORK } from "../../../util/Data";
 import OrganizationDevices from "../OrganizationDevices";
+import DeviceForm from "./DeviceFormM2M";
+
 
 function doIHaveGateway(orgId) {
   return new Promise((resolve, reject) => {

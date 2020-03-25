@@ -1,17 +1,16 @@
-import React, { Component } from "react";
-import { Route, Switch, Link } from "react-router-dom";
-
-import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-
+import { withStyles } from "@material-ui/core/styles";
+import React, { Component } from "react";
+import { Route, Switch } from "react-router-dom";
 import ApplicationStore from "../../stores/ApplicationStore";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
+import theme from "../../theme";
+import ApplicationFUOTADeploymentTabs from "../applications/ApplicationFUOTADeploymentTabs";
 import FUOTADeploymentDetails from "./FUOTADeploymentDetails";
 import ListFUOTADeploymentDevices from "./ListFUOTADeploymentDevices";
-import OrganizationDevices from "../devices/OrganizationDevices";
-import ApplicationFUOTADeploymentTabs from "../applications/ApplicationFUOTADeploymentTabs";
 
-import theme from "../../theme";
+
+
 
 
 const styles = {

@@ -1,15 +1,15 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
-import { Button, Row, Col } from 'reactstrap';
-
+import { Button, Col, Row } from 'reactstrap';
 import Modal from '../../components/Modal';
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-import SessionStore from "../../stores/SessionStore";
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import OrganizationStore from "../../stores/OrganizationStore";
+import SessionStore from "../../stores/SessionStore";
 import UpdateOrganizationUser from "./UpdateOrganizationUser";
+
+
 
 
 class OrganizationUserLayout extends Component {

@@ -115,7 +115,6 @@ import Dashboard from "./views/dashboards/";
 import HomeComponent from './views/Home';
 
 //Temp banner
-import TopBanner from "./components/TopBanner";
 import { initJWTTimer } from "./util/JWTUti";
 
 const drawerWidth = 270;

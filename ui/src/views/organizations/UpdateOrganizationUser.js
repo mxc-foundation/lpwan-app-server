@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
 import { Card, CardBody } from 'reactstrap';
-
 import i18n, { packageNS } from '../../i18n';
 import OrganizationStore from "../../stores/OrganizationStore";
 import OrganizationUserForm from "./OrganizationUserForm";
+
+
 
 
 class UpdateOrganizationUser extends Component {

@@ -1,14 +1,14 @@
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
-import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../i18n';
+import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
 import ApplicationStore from "../../stores/ApplicationStore";
-import Loader from "../../components/Loader";
 import ApplicationForm from "./ApplicationForm";
+
+
 
 
 const styles = {

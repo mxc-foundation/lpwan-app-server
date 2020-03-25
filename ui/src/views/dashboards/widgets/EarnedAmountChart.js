@@ -1,9 +1,9 @@
 import React from "react";
-import { Line, defaults as ChartJsDefaults } from "react-chartjs-2";
-import { Row, Col } from "reactstrap";
-
+import { defaults as ChartJsDefaults, Line } from "react-chartjs-2";
+import { Col, Row } from "reactstrap";
 import i18n, { packageNS } from '../../../i18n';
 import WidgetActions from './WidgetActions';
+
 
 
 // default

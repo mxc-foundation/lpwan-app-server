@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import HistoryStore from "../../stores/HistoryStore";
+import { withRouter } from "react-router-dom";
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
-import LinkVariant from "mdi-material-ui/LinkVariant";
+import i18n, { packageNS } from '../../i18n';
+import HistoryStore from "../../stores/HistoryStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
 
 const PckRcvColumn = (cell, row, index, extraData) => {
   return parseInt(row.DlCntGw - row.DlCntGwFree);

@@ -1,39 +1,35 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import { withStyles } from "@material-ui/core/styles";
 import { IconButton } from "@material-ui/core";
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
-import Input from "@material-ui/core/Input";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import blue from "@material-ui/core/colors/blue";
+import AppBar from "@material-ui/core/AppBar";
 import Avatar from '@material-ui/core/Avatar';
 import Chip from '@material-ui/core/Chip';
-import Typography from '@material-ui/core/Typography';
-
-//import MenuIcon from "mdi-material-ui/Menu";
-//import Backburger from "mdi-material-ui/Backburger";
-//import Wallet from "mdi-material-ui/Wallet";
-import AccountCircle from "mdi-material-ui/AccountCircle";
-import Magnify from "mdi-material-ui/Magnify";
-import HelpCircle from "mdi-material-ui/HelpCircle";
-
+import Input from "@material-ui/core/Input";
+import InputAdornment from "@material-ui/core/InputAdornment";
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import { withStyles } from "@material-ui/core/styles";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from '@material-ui/core/Typography';
+import AccountCircle from "mdi-material-ui/AccountCircle";
+import HelpCircle from "mdi-material-ui/HelpCircle";
+import Magnify from "mdi-material-ui/Magnify";
 import Wallet from "mdi-material-ui/WalletOutline";
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
 import i18n, { packageNS } from '../i18n';
-import { openM2M } from "../util/Util";
-
-import OrganizationStore from "../stores/OrganizationStore"
+import OrganizationStore from "../stores/OrganizationStore";
 import SessionStore from "../stores/SessionStore";
 import WalletStore from "../stores/WalletStore";
 import theme from "../theme";
+import { openM2M } from "../util/Util";
 import DropdownMenuLanguage from "./DropdownMenuLanguage";
+
+
+
+
 
 const styles = {
   appBar: {
