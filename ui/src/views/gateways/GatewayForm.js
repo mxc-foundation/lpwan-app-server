@@ -520,6 +520,7 @@ class GatewayForm extends Component {
     }
     // console.log(object.discoveryEnabled);
     const discoveryEnabled = object.discoveryEnabled;
+    
     return (
       <React.Fragment>
         <Row>
@@ -848,7 +849,7 @@ class GatewayForm extends Component {
                         )}
                         onDataChanged={this.onLoraMacChannelsChanged}
                       />
-                      <Row>
+                      {/* <Row>
                         <Col lg={3} sm={6} xs={12}>
                           <FormGroup>
                             <Label>{i18n.t(`${packageNS}:tr000600`)}</Label>
@@ -880,7 +881,7 @@ class GatewayForm extends Component {
                             ) : null}
                           </FormGroup>
                         </Col>
-                      </Row>
+                      </Row> */}
 
                       <GatewayFormClassB
                         records={this.state.classBConfig}
