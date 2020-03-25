@@ -7,8 +7,8 @@ log_level=4
 # The number of times passwords must be hashed. A higher number is safer as
 # an attack takes more time to perform.
 password_hash_iterations=100000
-demo_user="build@mxc.org"
-host_server="lora.demo.cloud.mxc.org"
+
+
 # PostgreSQL settings.
 #
 # Please note that PostgreSQL 9.5+ is required.
@@ -71,24 +71,6 @@ max_idle=10
 # the timeout to a value less than the server's timeout.
 idle_timeout="5m0s"
 
-# SMTP settings
-#
-[smtp]
-
-email="registration-bounce@mxc.org"
-password="OhPZKM1SIfh3wZJoUzNgJx1DGz+sorcv"
-host="lora-test-srv.matchx.io"
-port="25"
-
-#email="namgyeong.cho@mxc.org"
-#password="3abASYMQ79ngB26"
-#host="mail.smtp2go.com"
-#port="587"
-
-# Mxprotocol-server settings
-[mxprotocol_server]
-mxp_server="http://localhost:4000"
-mxp_server_development="http://localhost:3000"
 
 # Application-server settings.
 [application_server]
@@ -299,14 +281,14 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
 
   # JWT secret used for api authentication / authorization
   # You could generate this by executing 'openssl rand -base64 32' for example
-  jwt_secret="DOE1KiNzpQ82elRQ9HMWyxmADQ5f2B2TBAgOjL7ZZWA="
+  jwt_secret="verysecret"
 
   # Allow origin header (CORS).
-  #cross
+  #
   # Set this to allows cross-domain communication from the browser (CORS).
   # Example value: https://example.com.
   # When left blank (default), CORS will not be used.
-  cors_allow_origin="http://172.18.0.5:8080"
+  cors_allow_origin=""
 
   # when set, existing users can't be re-assigned (to avoid exposure of all users to an organization admin)"
   disable_assign_existing_users=false
@@ -396,3 +378,4 @@ tls_key=""
 
   # # Key Encryption Key.
   # kek="01020304050607080102030405060708"
+

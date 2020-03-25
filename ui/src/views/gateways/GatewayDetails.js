@@ -23,6 +23,7 @@ class GatewayDetails extends Component {
   }
 
   loadStats() {
+    
     const end = moment().toISOString()
     const start = moment().subtract(30, "days").toISOString()
 
