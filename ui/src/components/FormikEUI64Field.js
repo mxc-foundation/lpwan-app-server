@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-
-import { Field, connect } from 'formik';
-import { Button, UncontrolledTooltip } from 'reactstrap';
-import { ReactstrapInputGroup } from './FormInputs';
-import MaskedInput from "react-text-mask";
 import classNames from 'classnames';
-
+import { connect, Field } from 'formik';
+import MaskedInput from "react-text-mask";
+import { Button, UncontrolledTooltip } from 'reactstrap';
 import i18n, { packageNS } from '../i18n';
+import { ReactstrapInputGroup } from './FormInputs';
+
+
 
 
 class EUI64HEXMask extends Component {

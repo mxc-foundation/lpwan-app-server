@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { Row, Col, Table, CustomInput } from "reactstrap";
-
-import i18n, { packageNS } from "../../i18n";
+import { Col, CustomInput, Row, Table } from "reactstrap";
 import EditableTextInput from "../../components/EditableTextInput";
+import i18n, { packageNS } from "../../i18n";
+
 
 class GatewayFormLBT extends Component {
   constructor(props) {

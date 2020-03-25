@@ -1,14 +1,14 @@
-import React, { Component } from "react";
-
-import { Row, Col, Card, CardTitle, CardBody } from 'reactstrap';
-
 import moment from "moment";
-import { Map, Marker } from 'react-leaflet';
+import React, { Component } from "react";
 import { Line } from "react-chartjs-2";
-
-import i18n, { packageNS } from '../../i18n';
+import { Map, Marker } from 'react-leaflet';
+import { Card, CardBody, CardTitle, Col, Row } from 'reactstrap';
 import MapTileLayer from "../../components/MapTileLayer";
+import i18n, { packageNS } from '../../i18n';
 import GatewayStore from "../../stores/GatewayStore";
+
+
+
 
 
 class GatewayDetails extends Component {

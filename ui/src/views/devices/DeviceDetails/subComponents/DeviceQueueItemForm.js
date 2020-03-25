@@ -1,19 +1,19 @@
-import React from "react";
-
-import { withStyles } from "@material-ui/core/styles";
-import { TabContent, TabPane, Nav, NavItem, NavLink, Card, Button, CardTitle, CardText, Row, Col } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import classnames from 'classnames';
-
 import FormHelperText from "@material-ui/core/FormHelperText";
-
-import {Controlled as CodeMirror} from "react-codemirror2";
+import { withStyles } from "@material-ui/core/styles";
+import classnames from 'classnames';
 import "codemirror/mode/javascript/javascript";
-
-import i18n, { packageNS } from '../../../../i18n';
+import { Field, Form, Formik } from 'formik';
+import React from "react";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import { Button, Card, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
+import * as Yup from 'yup';
 import FormComponent from "../../../../classes/FormComponent";
-import { ReactstrapInput, ReactstrapCheckbox } from '../../../../components/FormInputs';
+import { ReactstrapCheckbox, ReactstrapInput } from '../../../../components/FormInputs';
+import i18n, { packageNS } from '../../../../i18n';
+
+
+
+
 
 const styles = {
   codeMirror: {

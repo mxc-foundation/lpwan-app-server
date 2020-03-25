@@ -1,25 +1,23 @@
-import React, { Component } from "react";
-import { withRouter, Route, Switch, Link } from "react-router-dom";
-
-import BrandSelectModal from "./BrandSelectModal";
-import moment from "moment";
-import { Bar } from "react-chartjs-2";
-import { Map, Marker, Popup } from 'react-leaflet';
-import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
 import "leaflet.awesome-markers";
-import { Row, Col, Card, CardBody } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
+import moment from "moment";
+import React, { Component } from "react";
+import { Map, Marker, Popup } from 'react-leaflet';
+import MarkerClusterGroup from "react-leaflet-markercluster";
+import { Link, Route, Switch, withRouter } from "react-router-dom";
+import { Card, Col, Row } from 'reactstrap';
+import AdvancedTable from "../../components/AdvancedTable";
+import GatewayAdmin from "../../components/GatewayAdmin";
+import Loader from "../../components/Loader";
+import MapTileLayer from "../../components/MapTileLayer";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-import OrgBreadCumb from '../../components/OrgBreadcrumb';
-import AdvancedTable from "../../components/AdvancedTable";
-import Loader from "../../components/Loader";
-import GatewayAdmin from "../../components/GatewayAdmin";
+import i18n, { packageNS } from '../../i18n';
 import GatewayStore from "../../stores/GatewayStore";
-import MapTileLayer from "../../components/MapTileLayer";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
 
 
 const GatewayActivityColumn = (cell, row, index, extraData) => {
@@ -101,10 +99,10 @@ class ListGatewaysTable extends Component {
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
     // TODO - how can I pass search query to server?
     this.getPage(sizePerPage, offset);
   }
@@ -303,7 +301,7 @@ class ListGateways extends Component {
   }
 
   render() {
-    const { classes } = this.props;
+    
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (<React.Fragment>

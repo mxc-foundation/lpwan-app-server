@@ -74,10 +74,5 @@ const getLBTConfigStatus = config => {
   return obj ? obj["lbt_cfg"]["enable"] : null;
 };
 
-export {
-  getChannels,
-  getLBTChannels,
-  getChannelsWithFrequency,
-  getAntennaGain,
-  getLBTConfigStatus
-};
+export { getChannels, getLBTChannels, getChannelsWithFrequency, getAntennaGain, getLBTConfigStatus };
+

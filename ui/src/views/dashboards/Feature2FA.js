@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import { Button, Modal, ModalHeader, ModalBody, CustomInput } from 'reactstrap';
 import classNames from "classnames";
-
+import React, { Component } from "react";
+import { Button, CustomInput, Modal, ModalBody, ModalHeader } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import MneMonicPhrase from '../users/MneMonicPhrase';
 import MneMonicPhraseConfirm from '../users/MneMonicPhraseConfirm';
+
 
 
 /**

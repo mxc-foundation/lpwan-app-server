@@ -1,12 +1,12 @@
 import React, { Component } from "react";
-import Select, {components} from "react-select";
 import { withStyles } from "@material-ui/core/styles";
 import classNames from "classnames";
+import Select, { components } from "react-select";
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from "../i18n";
 import SessionStore from "../stores/SessionStore";
-import FlagIcon from "./FlagIcon";
-import DropdownMenuLanguageStyle from "./DropdownMenuLanguageStyle";
 import DropdownMenuLanguageMobileStyle from "./DropdownMenuLanguageMobileStyle";
+import DropdownMenuLanguageStyle from "./DropdownMenuLanguageStyle";
+import FlagIcon from "./FlagIcon";
 
 const styles = {
   languageWrapper: {

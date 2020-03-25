@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { withRouter, Redirect } from "react-router-dom";
-
+import { Redirect, withRouter } from "react-router-dom";
 import SessionStore from "../stores/SessionStore";
+
 
 class HomeComponent extends Component {
     constructor(props) {

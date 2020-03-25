@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import i18n, { packageNS } from '../../i18n';
-import { DEFAULT, WALLET, SETTING, BACK_TO_CONTROL } from '../../util/Data';
+import { BACK_TO_CONTROL, DEFAULT, SETTING, WALLET } from '../../util/Data';
 import DropdownMenu2 from '../DropdownMenu';
+
 
 const SideNavOrganizationsContent = (props) => {
     return <React.Fragment>

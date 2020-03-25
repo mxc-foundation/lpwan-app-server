@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
-import Loader from "../../components/Loader";
 import ServiceProfileForm from "./ServiceProfileForm";
+
 
 
 class UpdateServiceProfile extends Component {

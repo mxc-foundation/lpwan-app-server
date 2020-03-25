@@ -1,17 +1,15 @@
-import React, { Component } from "react";
-import { Button, FormGroup, Card } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-
-import i18n, { packageNS } from '../../i18n';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from "react";
+import { Button, Card, FormGroup } from 'reactstrap';
+import * as Yup from 'yup';
 import Admin from '../../components/Admin';
 import { ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
-import defaultProfilePic from '../../assets/images/users/profile-icon.png';
-import UserProfilePicFile from './UserProfilePicFile';
+import i18n, { packageNS } from '../../i18n';
+
+
 
 class UserForm extends Component {
   constructor(props) {

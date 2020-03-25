@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
 import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
-import UserForm from "./UserForm";
-import User2FA from "./User2FA";
 import PasswordReset from "./PasswordReset";
+import User2FA from "./User2FA";
+import UserForm from "./UserForm";
+
 
 
 class UpdateUser extends Component {

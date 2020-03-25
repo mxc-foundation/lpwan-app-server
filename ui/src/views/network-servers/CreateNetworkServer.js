@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
 import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
-
+import Loader from "../../components/Loader";
+import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
-import TitleBar from "../../components/TitleBar";
-import Loader from "../../components/Loader";
 import NetworkServerForm from "./NetworkServerForm";
+
 
 
 class CreateNetworkServer extends Component {

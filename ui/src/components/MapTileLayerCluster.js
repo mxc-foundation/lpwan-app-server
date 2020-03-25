@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
-
-import { MAP_LAYER,GATEWAY_ICON } from '../util/Data'
-import GatewayStore from '../stores/GatewayStore';
 import L from 'leaflet';
+import 'leaflet.markercluster/dist/leaflet.markercluster.js';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet/dist/leaflet.css';
 import styled from 'styled-components';
-import 'leaflet.markercluster/dist/MarkerCluster.css'
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-import 'leaflet.markercluster/dist/leaflet.markercluster.js'
-import { withRouter } from "react-router-dom";
+import GatewayStore from '../stores/GatewayStore';
+import { GATEWAY_ICON, MAP_LAYER } from '../util/Data';
+
 
 const Wrapper = styled.div`
     width: ${props => props.width};

@@ -1,23 +1,21 @@
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+import Grid from '@material-ui/core/Grid';
+import { withStyles } from "@material-ui/core/styles";
+import classNames from "classnames";
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { Button } from 'reactstrap';
-import { Formik, Form, Field, FieldArray } from 'formik';
-import { ReactstrapInput } from '../../components/FormInputs';
 import * as Yup from 'yup';
-import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import { withStyles } from "@material-ui/core/styles";
-import classNames from "classnames";
-
-import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
-//import Form from "../../components/Form";
 import FormComponent from "../../classes/FormComponent";
+import DropdownMenuLanguage from "../../components/DropdownMenuLanguage";
+import { ReactstrapInput } from '../../components/FormInputs';
+import i18n, { packageNS } from '../../i18n';
 import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
-import i18n, { packageNS } from '../../i18n';
+
 
 
 const styles = {

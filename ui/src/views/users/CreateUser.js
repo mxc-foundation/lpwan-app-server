@@ -1,16 +1,16 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-
-import i18n, { packageNS } from '../../i18n';
+import { withStyles } from "@material-ui/core/styles";
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import TitleBar from "../../components/TitleBar";
-import UserForm from "./UserForm";
+import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
-
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import UserForm from "./UserForm";
+
+
+
 
 const localStyles = {};
 

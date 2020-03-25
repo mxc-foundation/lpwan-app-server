@@ -1,9 +1,9 @@
 import React, { Component } from "react";
-import { Button, Row, Col, Card, CardBody, Modal, ModalHeader, ModalBody, CustomInput } from 'reactstrap';
-
+import { Button, Card, CardBody, Col, CustomInput, Modal, ModalBody, ModalHeader, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import Google2FA from './Google2FA';
 import MneMonicPhraseConfirm from './MneMonicPhraseConfirm';
+
 
 
 class User2FA extends Component {

@@ -1,16 +1,15 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Button, Card, CardBody,
-  CardSubtitle, CardTitle, Col, Container, Row, Spinner } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
+import { Breadcrumb, BreadcrumbItem, Card, Col, Row } from 'reactstrap';
+import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-
-import AdvancedTable from "../../components/AdvancedTable";
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
 
 
 const NetworkServerColumn = (cell, row, index, extraData) => {
@@ -52,10 +51,10 @@ class ListNetworkServers extends Component {
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
 
     this.getPage(sizePerPage, offset);
   }

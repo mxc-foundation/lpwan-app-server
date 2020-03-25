@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import i18n, { packageNS } from '../../i18n';
-import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Card, CardBody, Row, Col } from 'reactstrap';
-import logo from '../../assets/images/MATCHX-SUPERNODE2.png';
+import React, { useState } from 'react';
+import { withRouter } from "react-router-dom";
+import { Card, CardBody, Col, Modal, ModalBody, ModalHeader, Row } from 'reactstrap';
 import QRCodeReader from '../../components/QRCodeReader';
+import i18n, { packageNS } from '../../i18n';
 
 const styles = {
     center: {
@@ -19,10 +18,10 @@ const styles = {
   };
 
 const QReaderModal = (props) => {
-    const {
+    /* const {
         buttonLabel,
         className
-    } = props;
+    } = props; */
 
     const [modal, setModal] = useState(props.click);
 

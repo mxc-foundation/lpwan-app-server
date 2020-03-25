@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Select from 'react-select';
-import { DV_MODE_OPTION, DV_FREE_GATEWAYS_LIMITED } from "../../util/Data"
+import { DV_FREE_GATEWAYS_LIMITED } from "../../util/Data";
 
 const MXC_TURQUOISE_RGB_COLOR = "#00FFD950";
 

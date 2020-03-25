@@ -1,19 +1,14 @@
-import React, { Component } from "react";
-
 import { withStyles } from '@material-ui/core/styles';
-import FormControlOrig from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
-
-
-import { Button, Form, FormGroup, Label, Input, FormText, Row, Col } from 'reactstrap';
-import i18n, { packageNS } from '../../i18n';
+import React, { Component } from "react";
+import { Button, Col, Form, FormGroup, FormText, Input, Label } from 'reactstrap';
 import FormComponent from "../../classes/FormComponent";
-import FormSubmit from "../../components/Form";
-import FormControl from "../../components/FormControl";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
-
 import theme from "../../theme";
+
+
+
+
 
 
 const styles = {

@@ -1,13 +1,13 @@
 import React, { Component } from "react";
 import AdvancedTable from "../../../components/AdvancedTable";
 import Loader from "../../../components/Loader";
-
 import i18n, { packageNS } from '../../../i18n';
-import { MAX_DATA_LIMIT } from '../../../util/pagination';
 import HistoryStore from "../../../stores/HistoryStore";
-
-import { ETHER } from "../../../util/CoinType"
+import { ETHER } from "../../../util/CoinType";
 import { SUPER_ADMIN } from "../../../util/M2mUtil";
+import { MAX_DATA_LIMIT } from '../../../util/pagination';
+
+
 
 const CreatedAtColumn = (cell, row, index, extraData) => {
   return row.createdAt.substring(0, 10);

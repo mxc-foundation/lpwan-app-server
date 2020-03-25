@@ -1,28 +1,24 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-
-import { Button } from "reactstrap";
-import Grid from "@material-ui/core/Grid";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-// import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableRow from "@material-ui/core/TableRow";
 import moment from "moment";
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "reactstrap";
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
-import TableCellLink from "../../components/TableCellLink";
-import DataTable from "../../components/DataTable";
-
+import i18n, { packageNS } from '../../i18n';
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
+
+
 
 const FUOTADeploymentDeviceNameColumn = (cell, row, index, extraData) => {
   const currentOrgID = extraData['currentOrgID'];
@@ -107,10 +103,10 @@ class FUOTADeploymentDevices extends Component {
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
 
     this.getPage(sizePerPage, offset);
   }

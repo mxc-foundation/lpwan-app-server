@@ -1,24 +1,24 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, NavLink } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-
+import { withStyles } from "@material-ui/core/styles";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-
+import TableCell from "@material-ui/core/TableCell";
+import TableRow from "@material-ui/core/TableRow";
 import moment from "moment";
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
+import React, { Component } from "react";
+import { Link } from "react-router-dom";
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader, NavLink } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
-import Loader from "../../components/Loader";
 import DeviceAdmin from "../../components/DeviceAdmin";
+import Loader from "../../components/Loader";
+import i18n, { packageNS } from '../../i18n';
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
 import theme from "../../theme";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
+
+
 
 
 const styles = {
@@ -87,10 +87,10 @@ class ListFUOTADeploymentsForDevice extends Component {
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
 
     this.getPage(sizePerPage, offset);
   }

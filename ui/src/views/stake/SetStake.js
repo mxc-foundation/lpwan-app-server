@@ -1,27 +1,20 @@
+import { withStyles } from "@material-ui/core/styles";
 import React from "react";
 import { withRouter } from "react-router-dom";
-
-import { Row, Col, Card, CardBody, CardFooter } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../i18n';
+import { Card, CardBody, CardFooter, Col, Row } from 'reactstrap';
 import FormComponent from "../../classes/FormComponent";
-import TitleBar from "../../components/TitleBar";
-
 import ExtLink from "../../components/ExtLink";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-import Typography from '@material-ui/core/Typography';
-import StakeForm from "./StakeForm";
-import StakeStore from "../../stores/StakeStore";
-
-//import Modal from "../common/Modal";
-import ModalTimer from "../common/ModalTimer";
-//import Button from "@material-ui/core/Button";
-import Spinner from "../../components/ScaleLoader";
-import { EXT_URL_STAKE } from "../../util/Data"
-import InfoCard from "../topup/InfoCard";
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
+import { EXT_URL_STAKE } from "../../util/Data";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import StakeForm from "./StakeForm";
 import StakeHistory from "./StakeHistory";
+
+
+
+
 
 const localStyles = {};
 
@@ -70,7 +63,6 @@ class SetStake extends FormComponent {
   }
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (

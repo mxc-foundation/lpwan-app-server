@@ -1,10 +1,9 @@
 import React, { Component } from "react";
-
 import { withStyles } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
 import moment from "moment";
 import SessionStore from "../stores/SessionStore";
 import theme from "../theme";
+
 
 const styles = {
   footer: {

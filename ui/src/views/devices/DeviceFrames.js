@@ -1,33 +1,18 @@
-import React, { Component } from "react";
-
-import { Alert, Button, Modal, ModalHeader, ModalBody, ModalFooter, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import Avatar from "@material-ui/core/Avatar";
-import Chip from "@material-ui/core/Chip";
-import Grid from "@material-ui/core/Grid";
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-
-import Play from "mdi-material-ui/Play";
-import Pause from "mdi-material-ui/Pause";
-import Download from "mdi-material-ui/Download";
-import Delete from "mdi-material-ui/Delete";
-import HelpCircleOutline from "mdi-material-ui/HelpCircleOutline";
-import AlertCircleOutline from "mdi-material-ui/AlertCircleOutline";
-
 import fileDownload from "js-file-download";
-
-import i18n, { packageNS } from '../../i18n';
+import React, { Component } from "react";
+import { Alert, Button, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row } from 'reactstrap';
 import mockDeviceFrame from '../../api/data/mockDeviceFrame';
-import isDev from '../../util/isDev';
-import LoRaWANFrameLog from "../../components/LoRaWANFrameLog";
-import DeviceStore from "../../stores/DeviceStore";
 import Loader from "../../components/Loader";
+import LoRaWANFrameLog from "../../components/LoRaWANFrameLog";
+import i18n, { packageNS } from '../../i18n';
+import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
+import isDev from '../../util/isDev';
+
+
+
+
 
 
 const styles = {

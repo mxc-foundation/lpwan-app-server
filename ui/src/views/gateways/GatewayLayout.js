@@ -1,20 +1,20 @@
-import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
 import classNames from "classnames";
-import { Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
+import React, { Component } from "react";
+import { Link, Route, Switch, withRouter } from "react-router-dom";
+import { Card, CardBody, Col, Nav, NavItem, Row } from 'reactstrap';
+import GatewayAdmin from "../../components/GatewayAdmin";
+import Modal from "../../components/Modal";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-import OrgBreadCumb from '../../components/OrgBreadcrumb';
-import Modal from "../../components/Modal";
-import GatewayAdmin from "../../components/GatewayAdmin";
+import i18n, { packageNS } from '../../i18n';
 import GatewayStore from "../../stores/GatewayStore";
 import SessionStore from "../../stores/SessionStore";
 import GatewayDetails from "./GatewayDetails";
-import UpdateGateway from "./UpdateGateway";
 import GatewayDiscovery from "./GatewayDiscovery";
 import GatewayFrames from "./GatewayFrames";
+import UpdateGateway from "./UpdateGateway";
+
 
 
 class GatewayLayout extends Component {

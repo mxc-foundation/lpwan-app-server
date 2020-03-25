@@ -1,23 +1,21 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import { Breadcrumb, BreadcrumbItem, Button, Card, Container, Modal, ModalHeader, ModalBody, ModalFooter, NavLink, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Button, Modal, ModalBody, ModalFooter, ModalHeader, NavLink } from 'reactstrap';
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-import TitleBarTitle from "../../components/TitleBarTitle";
-import Loader from "../../components/Loader";
-
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import ApplicationStore from "../../stores/ApplicationStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceStore from "../../stores/DeviceStore";
+import OrganizationStore from "../../stores/OrganizationStore";
+import breadcrumbStyles from "../common/BreadcrumbStyles";
 import DeviceForm from "./DeviceForm";
 
-import OrganizationStore from "../../stores/OrganizationStore";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
+
 
 const localStyles = {};
 

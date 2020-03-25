@@ -1,22 +1,21 @@
-import React, { Component } from "react";
-
-import { Collapse, Button } from 'reactstrap';
-import Grid from '@material-ui/core/Grid';
 import Card from "@material-ui/core/Card";
-import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
+import Grid from '@material-ui/core/Grid';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import Typography from "@material-ui/core/Typography";
-
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-
+import TableCell from "@material-ui/core/TableCell";
+import TableRow from "@material-ui/core/TableRow";
+import Typography from "@material-ui/core/Typography";
 import moment from "moment";
-
+import React, { Component } from "react";
+import { Button, Collapse } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
+
+
+
+
 
 
 class FUOTADeploymentDetails extends Component {

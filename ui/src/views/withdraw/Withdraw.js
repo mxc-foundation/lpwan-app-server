@@ -1,18 +1,18 @@
-import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Row, Col, Card, Button, Breadcrumb, BreadcrumbItem, FormGroup, Label, Input } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-import localStyles from "./WithdrawStyle"
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Card, Col, Row } from 'reactstrap';
+import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from "../../i18n";
-import WithdrawHistory from "./WithdrawHistory";
-import WithdrawForm from "./WithdrawForm";
-
-
+import MoneyStore from "../../stores/MoneyStore";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
 import Modal from './Modal';
-import TitleBar from "../../components/TitleBar";
-import MoneyStore from "../../stores/MoneyStore";
+import WithdrawForm from "./WithdrawForm";
+import WithdrawHistory from "./WithdrawHistory";
+import localStyles from "./WithdrawStyle";
+
+
+
 
 const styles = {
   ...breadcrumbStyles,

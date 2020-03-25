@@ -1,6 +1,6 @@
 import React, { Component } from "react";
+import { Col, Row } from 'reactstrap';
 
-import { Row, Col } from 'reactstrap';
 
 
 class TitleBar extends Component {

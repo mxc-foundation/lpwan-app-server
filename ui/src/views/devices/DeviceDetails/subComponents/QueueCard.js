@@ -1,18 +1,18 @@
-import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-import { Collapse, Button, ButtonGroup } from 'reactstrap';
-
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
-
-import Refresh from "mdi-material-ui/Refresh";
 import Delete from "mdi-material-ui/Delete";
-
-import i18n, { packageNS } from '../../../../i18n';
-import { MAX_DATA_LIMIT } from '../../../../util/pagination';
+import Refresh from "mdi-material-ui/Refresh";
+import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
+import { Button, ButtonGroup, Collapse } from 'reactstrap';
 import AdvancedTable from "../../../../components/AdvancedTable";
 import Loader from "../../../../components/Loader";
+import i18n, { packageNS } from '../../../../i18n';
 import DeviceQueueStore from "../../../../stores/DeviceQueueStore";
+import { MAX_DATA_LIMIT } from '../../../../util/pagination';
+
+
+
 
 const CURRENT_CARD = "queueCard";
 
@@ -82,10 +82,10 @@ class QueueCard extends Component {
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
     // TODO - how can I pass search query to server?
     this.getPage(sizePerPage, offset);
   }

@@ -1,9 +1,9 @@
 import React from 'react';
-import { Row, Col, Card, CardHeader, CardFooter, CardBody, CardText } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBarTitle from "../../components/TitleBarTitle";
 import { Link } from "react-router-dom";
+import { Card, CardBody, CardFooter, CardHeader, CardText } from 'reactstrap';
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
+
 
 
 export default function MediaCard(props) {

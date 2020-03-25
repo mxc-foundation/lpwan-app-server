@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Row, Col, Button } from 'reactstrap';
 import classNames from "classnames";
-
+import React, { useState } from "react";
+import { Button, Col, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
+
 
 
 const Phrase = ({ phrase, isSelected, select }) => {
