@@ -41,7 +41,7 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 		Boundary: "----=_Part_" + messageID,
 		Link:     link,
 		Logo:     logo,
-		Operator: "your",
+		Operator: "MXC",
 		PrimaryColor: "#71B6F9",
 		SecondaryColor: "#10c469",
 	}); err != nil {
