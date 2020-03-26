@@ -24,10 +24,14 @@ class NetworkServerLayout extends Component {
   }
 
   componentDidMount() {
-    NetworkServerStore.get(this.props.match.params.networkServerID, (resp) => {
-      this.setState({
-        networkServer: resp,
-      });
+    this.loadData();
+  }
+
+  loadData = async () => {
+    let networkServer = await NetworkServerStore.get(this.props.match.params.networkServerID);
+    
+    this.setState({
+      networkServer
     });
   }
 
