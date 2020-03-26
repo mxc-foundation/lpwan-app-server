@@ -77,18 +77,19 @@ class NetworkServerStore extends EventEmitter {
     });
   }
 
-  delete(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.NetworkServerService.Delete({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async delete(id) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.NetworkServerService.Delete({
+          id
+        });
+
+        resp = await checkStatus(resp);
         this.notify("deleted");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
   
   list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {

@@ -35,12 +35,12 @@ class NetworkServerLayout extends Component {
     });
   }
 
-  deleteNetworkServer() {
-    NetworkServerStore.delete(this.props.match.params.networkServerID, () => {
-      this.props.history.push("/network-servers");
-    });
+  deleteNetworkServer = async () => {
+    await NetworkServerStore.delete(this.props.match.params.networkServerID);
+    this.props.history.push("/network-servers");
+    
     this.setState({ nsDialog: false });
-  }
+  } 
 
   openConfirmModal = () => {
     this.setState({
