@@ -13,26 +13,25 @@ class NetworkServerStore extends EventEmitter {
     super();
     this.swagger = new Swagger("/swagger/networkServer.swagger.json", sessionStore.getClientOpts());
   }
-
-  create(networkServer, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.NetworkServerService.Create({
-        body: {
-          networkServer: networkServer,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  
+  async create(networkServer) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.NetworkServerService.Create({
+          "networkServer.id": networkServer.id,
+          body: {
+            networkServer: networkServer,
+          },
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("created");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
-
+ 
   async get(id) {
     try {
         const client = await this.swagger.then((client) => client);
