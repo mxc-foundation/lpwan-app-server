@@ -34,11 +34,11 @@ class OrganizationLayout extends Component {
     this.loadData();
   }
 
-  loadData() {
-    OrganizationStore.get(this.props.match.params.organizationID, resp => {
-      this.setState({
-        organization: resp,
-      });
+  loadData = async () => {
+    let organization = await OrganizationStore.get(this.props.match.params.organizationID);
+    
+    this.setState({
+      organization
     });
   }
 
