@@ -59,7 +59,7 @@ class NetworkServerStore extends EventEmitter {
   
         resp = await checkStatus(resp);
         this.notify("updated");
-        console.log('resp store:', resp);
+        
         return resp.obj;
       } catch (error) {
         errorHandler(error);
@@ -90,8 +90,25 @@ class NetworkServerStore extends EventEmitter {
         errorHandler(error);
     }
   }
-  
-  list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
+
+  async list(organizationID, limit, offset) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.NetworkServerService.List({
+          organizationID,
+          limit,
+          offset,
+        });
+        
+        resp = await checkStatus(resp);
+        console.log('resp list2:', resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  /* list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
     this.swagger.then((client) => {
       client.apis.NetworkServerService.List({
         organizationID: organizationID,
@@ -107,7 +124,7 @@ class NetworkServerStore extends EventEmitter {
         if (errorCallbackFunc) errorCallbackFunc(error);
       });
     });
-  }
+  } */
 }
 
 const networkServerStore = new NetworkServerStore();
