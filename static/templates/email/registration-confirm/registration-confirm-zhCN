@@ -1,4 +1,4 @@
-From: {{ .Operator }} 超级节点 <{{ .From }}>
+From: {{ .Operator }} 超级节點 <{{ .From }}>
 To: {{ .To }}
 Subject: 请确认您正在注册的 {{ .Operator }} 超级节点
 Message-Id: <{{ .MsgID }}>
