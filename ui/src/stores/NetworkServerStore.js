@@ -47,24 +47,23 @@ class NetworkServerStore extends EventEmitter {
     }
   }
 
-  update(networkServer, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.NetworkServerService.Update({
-        "networkServer.id": networkServer.id,
+  async update(networkServer) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.NetworkServerService.Update({
+          "networkServer.id": networkServer.id,
         body: {
-          networkServer: networkServer,
+          networkServer,
         },
-      })
-      .then(checkStatus)
-      .then(resp => {
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+        console.log('resp store:', resp);
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
   notify(action) {
