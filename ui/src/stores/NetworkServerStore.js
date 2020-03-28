@@ -100,7 +100,6 @@ class NetworkServerStore extends EventEmitter {
         });
         
         resp = await checkStatus(resp);
-        console.log('resp list2:', resp);
         return resp.obj;
       } catch (error) {
         errorHandler(error);

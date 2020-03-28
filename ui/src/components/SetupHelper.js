@@ -112,18 +112,17 @@ class SetupHelper extends Component {
     });
   }
 
-  testNetworkServer() {
+  testNetworkServer = async () => {
     if (!!localStorage.getItem("nsDialogDismiss") || !SessionStore.isAdmin()) {
       return;
     }
 
-    NetworkServerStore.list(0, 0, 0, resp => {
-      if (resp.totalCount === 0) {
-        this.setState({
-          nsDialog: true,
-        });
-      }
-    });
+    const res = await NetworkServerStore.list(0, 10, 0);
+    if (res.totalCount === 0) {
+      this.setState({
+        nsDialog: true,
+      });
+    }
   }
 
   toggleDialog(name) {
