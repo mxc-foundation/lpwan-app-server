@@ -24,13 +24,17 @@ class CreateServiceProfile extends Component {
   }
 
   componentDidMount() {
-    NetworkServerStore.list(0, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          nsDialog: true,
-        });
-      }
-    });
+    this.loadData();
+  }
+
+  loadData = async () => {
+    const res = await NetworkServerStore.list(0, 10, 0);
+    
+    if (res.totalCount === "0") {
+      this.setState({
+        nsDialog: true,
+      });
+    }
   }
 
   closeDialog() {

@@ -490,18 +490,6 @@ class App extends Component {
     let Layout = NonAuthLayout;
 
     if (user !== null) {
-      /* sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
-      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>; 
-      topNav = (
-        <TopNav
-          drawerOpen={this.state.drawerOpen}
-          language={language}
-          onChangeLanguage={this.onChangeLanguage}
-          organizationId={this.state.organizationId}
-          setDrawerOpen={this.setDrawerOpen}
-          user={this.state.user}
-        /> 
-        ); */
       topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} isMobile={isMobile} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
       sideNav = <Sidebar isCondensed={isCondensed} currentSidebarId={currentSidebarId} switchToSidebarId={this.switchToSidebarId} {...this.props} />;
 

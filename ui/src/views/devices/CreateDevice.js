@@ -59,11 +59,14 @@ class CreateDevice extends Component {
       });
     }
 
-    OrganizationStore.get(currentOrgID, resp => {
-      this.setState({
-        organization: resp.organization,
-        loading: false
-      });
+    this.loadOrganization(currentOrgID);
+  }
+
+  loadOrganization = async (id) => {
+    let resp = await OrganizationStore.get(id);  
+    this.setState({
+      organization: resp.organization,
+      loading: false
     });
   }
 
