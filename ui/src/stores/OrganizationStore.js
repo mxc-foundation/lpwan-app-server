@@ -83,19 +83,20 @@ class OrganizationStore extends EventEmitter {
     });
   }
 
-  list(search, limit, offset, callbackFunc) {
-    this.swagger.then((client) => {
-      client.apis.OrganizationService.List({
-        search: search,
-        limit: limit,
-        offset: offset,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+  async list(search, limit, offset) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.List({
+          search,
+          limit,
+          offset,
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   addUser(organizationID, user, callbackFunc, errorCallbackFunc) {
