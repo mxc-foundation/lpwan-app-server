@@ -147,11 +147,10 @@ class Sidebar extends Component {
         callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
       }
     
-      getOrganizationOptions(search, callbackFunc) {
-        OrganizationStore.list(search, 10, 0, resp => {
-          const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
-          callbackFunc(options);
-        });
+      getOrganizationOptions = async (search, callbackFunc) => {
+        const resp = await OrganizationStore.list(search, 10, 0);
+        const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
+        callbackFunc(options);
       }
     
     /**
