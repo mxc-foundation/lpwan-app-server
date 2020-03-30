@@ -47,25 +47,24 @@ class OrganizationStore extends EventEmitter {
     }
   }
 
-  update(organization, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.Update({
-        "organization.id": organization.id,
+  async update(organization) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.Update({
+          "organization.id": organization.id,
         body: {
-          organization: organization,
+          organization,
         },
-      })
-      .then(checkStatus)
-      .then(resp => {
+        });
+  
+        resp = await checkStatus(resp);
         this.emit("change", organization);
         this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+        
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
   delete(id, callbackFunc) {
