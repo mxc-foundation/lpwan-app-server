@@ -132,18 +132,20 @@ class OrganizationStore extends EventEmitter {
     });
   }
 
-  deleteUser(organizationID, userID, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.DeleteUser({
-        organizationID: organizationID,
-        userID: userID,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+  async deleteUser(organizationID, userID) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.DeleteUser({
+          organizationID,
+          userID, 
+        });
+
+        resp = await checkStatus(resp);
+        
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   updateUser(organizationUser, callbackFunc) {
