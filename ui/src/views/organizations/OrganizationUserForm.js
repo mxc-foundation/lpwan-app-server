@@ -85,6 +85,7 @@ class OrganizationUserForm extends Component {
                   helpText={i18n.t(`${packageNS}:tr000138`)}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
+                  readOnly={this.props.update}
                   inputProps={{
                     clearable: true,
                     cache: false,
