@@ -44,10 +44,9 @@ class OrganizationUserLayout extends Component {
     });
   }
 
-  deleteOrganizationUser() {
-    OrganizationStore.deleteUser(this.props.match.params.organizationID, this.props.match.params.userID, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
-    });
+  deleteOrganizationUser = async () => {
+    const res = await OrganizationStore.deleteUser(this.props.match.params.organizationID, this.props.match.params.userID);
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
   }
 
   gotoUser = () => {
