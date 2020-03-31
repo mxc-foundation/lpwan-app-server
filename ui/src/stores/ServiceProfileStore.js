@@ -14,23 +14,21 @@ class ServiceProfileStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/serviceProfile.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(serviceProfile, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Create({
-        body: {
-          serviceProfile: serviceProfile,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async create(serviceProfile) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Create({
+          body: {
+            serviceProfile,
+          },
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("created");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
   get(id, callbackFunc) {
