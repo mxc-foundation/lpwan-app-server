@@ -39,14 +39,6 @@ import SideNavWalletContent from './SideNavWalletContent';
     hasDivider: true
 }] */
 
-function loadServerVersion() {
-    return new Promise((resolve, reject) => {
-        ServerInfoStore.getAppserverVersion(data => {
-            resolve(data);
-        });
-    });
-}
-
 class Sidebar extends Component {
     constructor(props) {
         super(props);
@@ -67,7 +59,7 @@ class Sidebar extends Component {
     loadData = async () => {
         try {
           const organizationIDs = SessionStore.getOrganizations();
-           var data = await loadServerVersion();
+          var data = await ServerInfoStore.getAppserverVersion();
           const serverInfo = JSON.parse(data);
           
           this.setState({
