@@ -25,13 +25,12 @@ class ServiceProfileLayout extends Component {
     this.setIsAdmin = this.setIsAdmin.bind(this);
   }
 
-  componentDidMount() {
-    ServiceProfileStore.get(this.props.match.params.serviceProfileID, resp => {
-      this.setState({
-        serviceProfile: resp,
-      });
+  componentDidMount = async () => {
+    const resp = await ServiceProfileStore.get(this.props.match.params.serviceProfileID);
+    this.setState({
+      serviceProfile: resp,
     });
-
+    
     SessionStore.on("change", this.setIsAdmin);
     this.setIsAdmin();
   }
