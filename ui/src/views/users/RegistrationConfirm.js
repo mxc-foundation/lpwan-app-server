@@ -205,7 +205,7 @@ class RegistrationConfirm extends Component {
         this.props.onChangeLanguage(newLanguage);
     }
 
-    onSubmit(data) {
+    onSubmit = async (data) => {
         //console.log('data', data);
         if (data.password === data.passwordConfirmation) {
             this.setState({
@@ -219,11 +219,11 @@ class RegistrationConfirm extends Component {
                 organizationDisplayName: data.organizationDisplayName,
             }
 
-            SessionStore.finishRegistration(request, (responseData) => {
-                SessionStore.logout(() => {
-                    this.props.history.push("/logout");
-                });
-            })
+            const resp = await SessionStore.finishRegistration(request);
+            SessionStore.logout(() => {
+                this.props.history.push("/logout");
+            });
+            
         } else {
             this.setState({
                 isPwdMatch: false
