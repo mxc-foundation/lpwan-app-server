@@ -264,20 +264,21 @@ class SessionStore extends EventEmitter {
     });
   }
 
-  confirmRegistration(securityToken, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.ConfirmRegistration({
-        body: {
-          token: securityToken,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async confirmRegistration(securityToken) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.InternalService.ConfirmRegistration({
+          body: {
+            token: securityToken,
+          },
+        });
+    
+        resp = await checkStatus(resp);
         this.setToken(resp.obj.jwt);
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   finishRegistration(data, callbackFunc) {
