@@ -186,36 +186,39 @@ class SessionStore extends EventEmitter {
     }
   }
 
-  fetchProfile(callBackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.Profile({})
-        .then(checkStatus)
-        .then(resp => {
-          this.user = resp.obj.user;
-          this.setUser(this.user);
+  async fetchProfile(){
+    try {
+      const client = await this.swagger;
+      let resp = await client.apis.InternalService.Profile();
 
-          if(resp.obj.organizations !== undefined) {
-            this.organizations = resp.obj.organizations;
-            this.setOrganizations(this.organizations);
-          }
+      resp = await checkStatus(resp);
 
-          if(this.organizations.length > 0){
-            this.setOrganizationID(this.organizations[0].organizationID);  
-          }
+      this.user = resp.obj.user;
+      this.setUser(this.user);
 
-          this.getBranding((resp)=>{
-            this.setLogoPath(resp.logoPath);
-          });
+      if(resp.obj.organizations !== undefined) {
+        this.organizations = resp.obj.organizations;
+        this.setOrganizations(this.organizations);
+      }
 
-          if(resp.obj.settings !== undefined) {
-            this.settings = resp.obj.settings;
-          }
+      if(this.organizations.length > 0){
+        this.setOrganizationID(this.organizations[0].organizationID);  
+      }
 
-          this.emit("change");
-          callBackFunc(resp);
-        })
-        .catch(errorHandler);
-    });
+      this.getBranding((resp)=>{
+        this.setLogoPath(resp.logoPath);
+      });
+
+      if(resp.obj.settings !== undefined) {
+        this.settings = resp.obj.settings;
+      }
+
+      this.emit("change");
+          
+      return resp;
+    } catch (error) {
+      errorHandler(error);
+    }
   }
 
   globalSearch(search, limit, offset, callbackFunc) {
