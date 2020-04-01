@@ -13,15 +13,16 @@ class ServerInfoStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/serverInfo.swagger.json", sessionStore.getClientOpts());
   }
 
-  getAppserverVersion(callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServerInfoService.GetAppserverVersion()
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.data);
-      })
-      .catch(errorHandler);
-    });
+  async getAppserverVersion() {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServerInfoService.GetAppserverVersion();
+        
+        resp = await checkStatus(resp);
+        return resp.data;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {
