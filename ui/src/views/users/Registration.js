@@ -124,7 +124,7 @@ class Registration extends Component {
     }
   }
 
-  onSubmit = async (user) => {
+  onSubmit(user) {
     // if (!user.isVerified) {
     //   alert(i18n.t(`${packageNS}:tr000021`));
     //   return false;
@@ -138,9 +138,10 @@ class Registration extends Component {
 
     if (isEmail(user.username)) {
       this.setState({ loading: true });
-      const resp = await SessionStore.register(user);
-      this.setState({ loading: false });
-      this.props.history.push("/");
+      SessionStore.register(user, () => {
+        this.setState({ loading: false });
+        this.props.history.push("/");
+      });
     } else {
       alert(i18n.t(`${packageNS}:tr000024`));
     }
