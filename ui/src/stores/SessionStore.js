@@ -247,21 +247,22 @@ class SessionStore extends EventEmitter {
     });
   }
   
-  register(data, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.RegisterUser({
-        body: {
-          email: data.username,
-          language: data.language
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async register(data) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.InternalService.RegisterUser({
+          body: {
+            email: data.username,
+            language: data.language
+          },
+        });
+
+        resp = await checkStatus(resp);
         this.notifyActivation();
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   confirmRegistration(securityToken, callbackFunc) {
