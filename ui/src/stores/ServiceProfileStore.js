@@ -31,17 +31,19 @@ class ServiceProfileStore extends EventEmitter {
     }
   }
 
-  get(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Get({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+  async get(id) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Get({
+          id,
+        });
+  
+        resp = await checkStatus(resp);
+        
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   update(serviceProfile, callbackFunc, errorCallbackFunc) {
