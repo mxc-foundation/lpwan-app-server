@@ -46,24 +46,22 @@ class ServiceProfileStore extends EventEmitter {
     }
   }
 
-  update(serviceProfile, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Update({
-        "serviceProfile.id": serviceProfile.id,
-        body: {
-          serviceProfile: serviceProfile,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async update(serviceProfile) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Update({
+          "serviceProfile.id": serviceProfile.id,
+          body: {
+            serviceProfile: serviceProfile,
+          },
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
   async delete(id) {
