@@ -80,22 +80,21 @@ class ServiceProfileStore extends EventEmitter {
     }
   }
 
-  list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
-    return this.swagger.then(client => {
-      client.apis.ServiceProfileService.List({
-        organizationID: organizationID,
-        limit: limit,
-        offset: offset,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc && callbackFunc(resp.obj);
-      })
-      .catch(error => {
+  async list(organizationID, limit, offset) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.List({
+          organizationID,
+          limit,
+          offset,
+        });
+
+        resp = await checkStatus(resp);
+
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
   notify(action) {

@@ -39,11 +39,11 @@ class MulticastGroupForm extends FormComponent {
     callbackFunc(options);
   }
 
-  getServiceProfileOptions(search, callbackFunc) {
-    ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0, resp => {
-      const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
-      callbackFunc(options);
-    });
+
+  getServiceProfileOptions = async (search, callbackFunc) => {
+    const resp = await ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0);
+    const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
+    callbackFunc(options);
   }
 
   getRandomKey(len) {

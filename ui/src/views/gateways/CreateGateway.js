@@ -24,22 +24,16 @@ class CreateGateway extends Component {
     };
   }
 
-  componentDidMount() {
-    ServiceProfileStore.list(
-      this.props.match.params.organizationID,
-      0,
-      0,
-      resp => {
-        const state = {
-          loading: false
-        };
-        if (resp.totalCount === "0") {
-          state.spDialog = true;
-        }
+  componentDidMount = async () => {
+    const resp = await ServiceProfileStore.list(this.props.match.params.organizationID, 10, 0);
+    const state = {
+      loading: false
+    };
+    if (resp.totalCount === "0") {
+      state.spDialog = true;
+    }
 
-        this.setState(state);
-      }
-    );
+    this.setState(state);
   }
 
   closeDialog = () => {
