@@ -51,10 +51,9 @@ class ServiceProfileLayout extends Component {
     });
   }
 
-  deleteServiceProfile() {
-    ServiceProfileStore.delete(this.props.match.params.serviceProfileID, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    });
+  deleteServiceProfile = async () => {
+    const res = await ServiceProfileStore.delete(this.props.match.params.serviceProfileID);
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
   }
 
   openModal = () => {

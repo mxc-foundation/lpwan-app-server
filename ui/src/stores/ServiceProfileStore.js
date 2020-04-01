@@ -66,18 +66,20 @@ class ServiceProfileStore extends EventEmitter {
     });
   }
 
-  delete(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Delete({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async delete(id) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Delete({
+          id
+        });
+
+        resp = await checkStatus(resp);
         this.notify(i18n.t(`${packageNS}:tr000326`));
-        callbackFunc(resp.ojb);
-      })
-      .catch(errorHandler);
-    });
+
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
