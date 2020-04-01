@@ -40,24 +40,23 @@ class RegistrationConfirmForm extends FormComponent {
 
         this.state = {}
     }
-    componentDidMount() {
-        SessionStore.confirmRegistration(this.props.securityToken, (resp) => {
-            if (resp) {
-                const object = this.state;
-                object.object = resp;
-                object.isTokenValid = true;
-                this.setState({
-                    object
-                })
-                SessionStore.setToken(resp.jwt)
-            } else {
-                const object = this.state;
-                object.isTokenValid = false;
-                this.setState({
-                    object
-                })
-            }
-        })
+    componentDidMount = async () => {
+        const resp = await SessionStore.confirmRegistration(this.props.securityToken);
+        if (resp) {
+            const object = this.state;
+            object.object = resp;
+            object.isTokenValid = true;
+            this.setState({
+                object
+            })
+            SessionStore.setToken(resp.jwt)
+        } else {
+            const object = this.state;
+            object.isTokenValid = false;
+            this.setState({
+                object
+            })
+        }
     }
 
     render() {
