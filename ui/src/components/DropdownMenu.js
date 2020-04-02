@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import AsyncSelect from "react-select/async";
 //import ProfileStore from '../stores/ProfileStore'
 import SessionStore from "../stores/SessionStore";
+import OrganizationStore from "../stores/OrganizationStore";
 import { SUPER_ADMIN } from "../util/M2mUtil";
 
 /* const customStyles = {
@@ -49,6 +50,7 @@ import { SUPER_ADMIN } from "../util/M2mUtil";
 }; */
 
 const getOrgList = organizations => {
+  console.log('organizations', organizations);
   let organizationList = null;
   if (organizations) {
     organizationList = organizations
@@ -59,7 +61,7 @@ const getOrgList = organizations => {
         return true;
       })
       .map((o, i) => {
-        return { label: o.organizationName, value: o.organizationID };
+        return { label: o.name, value: o.id };
       });
   }
 
@@ -68,9 +70,12 @@ const getOrgList = organizations => {
 
 const promiseOptions = () =>
   new Promise((resolve, reject) => {
-    SessionStore.fetchProfile(resp => {
+    /* SessionStore.fetchProfile(resp => {
       resolve(getOrgList(resp.body.organizations));
-    });
+    }); */
+    OrganizationStore.list("", 9999, 0, (res) => {
+      resolve(getOrgList(res.result));
+    }, error => { this.setState({ loading: false }) });
   });
 
 export default class WithPromises extends Component {
