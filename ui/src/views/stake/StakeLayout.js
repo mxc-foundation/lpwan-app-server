@@ -51,9 +51,10 @@ class StakeLayout extends Component {
   }
 
   loadData = async () => {
-    StakeStore.getStakingHistory(this.props.match.params.organizationID, 0, 1, data => {
-      let amount = 0;
-      let isFirst = true;
+    const data = await StakeStore.getStakingHistory(this.props.match.params.organizationID, 0, 1);
+    let amount = 0;
+    let isFirst = true;
+    if(data !== undefined){
       if( data.stakingHist.length > 0){
         this.props.history.push(`/stake/${this.props.match.params.organizationID}/set-stake`);
       }
@@ -61,7 +62,7 @@ class StakeLayout extends Component {
         amount,
         isFirst
       })
-    });
+    }
   }
 
   componentDidMount() {
