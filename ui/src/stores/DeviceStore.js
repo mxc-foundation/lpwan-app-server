@@ -127,7 +127,7 @@ class DeviceStore extends EventEmitter {
     });
 
   }
-
+//please fix this
   delete(id, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Delete({
