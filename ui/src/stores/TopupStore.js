@@ -15,7 +15,6 @@ class TopupStore extends EventEmitter {
   }
 
   async getTopUpDestination(orgId) {
-    console.log( 'getTopUpDestination',  orgId);
     try {
         const client = await this.swagger;
         let resp = await client.apis.TopUpService.GetTopUpDestination({
