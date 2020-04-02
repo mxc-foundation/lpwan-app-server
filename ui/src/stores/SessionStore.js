@@ -281,26 +281,27 @@ class SessionStore extends EventEmitter {
     }
   }
 
-  finishRegistration(data, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.FinishRegistration({
-        body: {
-          userId: data.userId,
-          password: data.password,
-          organizationName: data.organizationName,
-          organizationDisplayName: data.organizationDisplayName,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async finishRegistration(data) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.InternalService.FinishRegistration({
+          body: {
+            userId: data.userId,
+            password: data.password,
+            organizationName: data.organizationName,
+            organizationDisplayName: data.organizationDisplayName,
+          },
+        });
+    
+        resp = await checkStatus(resp);
         localStorage.clear();
         this.user = null;
         this.organizations = [];
         this.settings = {};
         history.push("/login");
-      })
-      
-    });
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   getVerifyingGoogleRecaptcha(req, callBackFunc) {
