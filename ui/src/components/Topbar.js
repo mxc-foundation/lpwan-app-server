@@ -14,11 +14,7 @@ import logo from '../assets/images/MATCHX-SUPERNODE2.png'; */
 
 function getWalletBalance(orgId, userId) {
   if (SessionStore.isAdmin()) {
-    /* return new Promise((resolve, reject) => {
-      TopupStore.getIncome('0', resp => {
-        return resolve(resp);
-      });
-    }); */
+    
   } else {
     return new Promise((resolve, reject) => {
       WalletStore.getWalletBalance(orgId, userId, resp => {
