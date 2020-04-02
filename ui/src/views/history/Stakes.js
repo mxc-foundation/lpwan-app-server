@@ -87,13 +87,12 @@ class Stakes extends Component {
   getPage = (limit, offset) => {
     limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
-    StakeStore.getStakingHistory(this.props.organizationID, offset, limit, res => {
-      const object = this.state;
-      object.totalSize = res.count;
-      object.data = res.stakingHist;
-      object.loading = false;
-      this.setState({object});
-    });
+    const res = await StakeStore.getStakingHistory(this.props.organizationID, limit=10, offset=0);
+    const object = this.state;
+    object.totalSize = res.count;
+    object.data = res.stakingHist;
+    object.loading = false;
+    this.setState({object});
   }
 
   componentDidMount() {
