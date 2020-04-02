@@ -7,7 +7,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-
+"fmt"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -97,17 +97,19 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-
+fmt.Println("chochoc isAdmin", isAdmin);
 	var count int
 	var orgs []storage.Organization
 
 	if isAdmin {
+		fmt.Println("chochoc isAdmin true");
 		count, err = storage.GetOrganizationCount(ctx, storage.DB(), req.Search)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 
 		orgs, err = storage.GetOrganizations(ctx, storage.DB(), int(req.Limit), int(req.Offset), req.Search)
+		fmt.Println("chochoc isAdmin orgs", orgs);
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
