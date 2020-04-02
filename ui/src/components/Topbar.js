@@ -13,19 +13,11 @@ import ProfileDropdown from './ProfileDropdown';
 import logo from '../assets/images/MATCHX-SUPERNODE2.png'; */
 
 function getWalletBalance(orgId, userId) {
-  if (SessionStore.isAdmin()) {
-    /* return new Promise((resolve, reject) => {
-      TopupStore.getIncome('0', resp => {
-        return resolve(resp);
-      });
-    }); */
-  } else {
-    return new Promise((resolve, reject) => {
-      WalletStore.getWalletBalance(orgId, userId, resp => {
-        return resolve(resp);
-      });
+  return new Promise((resolve, reject) => {
+    WalletStore.getWalletBalance(orgId, userId, resp => {
+      return resolve(resp);
     });
-  }
+  });
 }
 
 class Topbar extends Component {
@@ -58,14 +50,14 @@ class Topbar extends Component {
       let orgid = await SessionStore.getOrganizationID();
       let user = await SessionStore.getUser();
       //console.log('user', user.id);
-      
+
       let result = await getWalletBalance(orgid, user.id);
 
       let balance = 0;
-      if(result !== undefined){
+      if (result !== undefined) {
         balance = result.balance;
       }
-      
+
       this.setState({ balance });
 
     } catch (error) {
@@ -132,13 +124,13 @@ class Topbar extends Component {
                 </div>
               </form> */}
               </li>
-              
-                <li className="dropdown notification-list isDesk">
-                  <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
-                    <i className="mdi mdi-wallet-outline"></i>
-                    <span> {balanceEl}</span>
-                  </button>
-                </li>
+
+              <li className="dropdown notification-list isDesk">
+                <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
+                  <i className="mdi mdi-wallet-outline"></i>
+                  <span> {balanceEl}</span>
+                </button>
+              </li>
 
               <li className="dropdown notification-list isMobile">
                 <button className="btn btn-link nav-link right-bar-toggle waves-effect waves-light" onClick={this.props.rightSidebarToggle}>
@@ -180,9 +172,9 @@ class Topbar extends Component {
               </li>
             </ul>
           </div>
-          
+
           <div className="navbar-custom-subbar">
-              <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>              
+            <Badge color="primary"><i className="mdi mdi-wallet-outline"></i>{balanceEl}</Badge>
           </div>
         </div>
       </React.Fragment >
