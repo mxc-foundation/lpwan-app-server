@@ -14,20 +14,18 @@ class TopupStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/topup.swagger.json", sessionStore.getClientOpts());
   }
 
-  getTopUpDestination(orgId, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.TopUpService.GetTopUpDestination({
-        orgId
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(error => {
+  async getTopUpDestination(orgId) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.TopUpService.GetTopUpDestination({
+          orgId
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.body;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
   getTopUpHistory(orgId, offset, limit, callbackFunc) {
