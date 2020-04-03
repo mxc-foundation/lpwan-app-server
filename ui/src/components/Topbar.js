@@ -13,11 +13,15 @@ import ProfileDropdown from './ProfileDropdown';
 import logo from '../assets/images/MATCHX-SUPERNODE2.png'; */
 
 function getWalletBalance(orgId, userId) {
-  return new Promise((resolve, reject) => {
-    WalletStore.getWalletBalance(orgId, userId, resp => {
-      return resolve(resp);
+  if (SessionStore.isAdmin()) {
+
+  } else {
+    return new Promise((resolve, reject) => {
+      WalletStore.getWalletBalance(orgId, userId, resp => {
+        return resolve(resp);
+      });
     });
-  });
+  }
 }
 
 class Topbar extends Component {
