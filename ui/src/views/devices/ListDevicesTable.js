@@ -203,7 +203,7 @@ class ListDevicesTable extends Component {
       organizationID: this.props.organizationID,
       search: "",
     };
-
+    
     DeviceStore.list(filters, (res) => {
       // Since this page is only shown when an Application ID is in the URL parameters
       // we need to filter so we only list devices that are part of the current Application
