@@ -19,33 +19,29 @@ class TopupStore extends EventEmitter {
       client.apis.TopUpService.GetTopUpDestination({
         orgId
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(error => {
-        errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.body);
+        })
+        .catch(error => {
+          errorHandler(error);
+          if (errorCallbackFunc) errorCallbackFunc(error);
+        });
     });
   }
 
   getTopUpHistory = async (orgId, offset, limit) => {
-    //try {
-        const client = await this.swagger;
-        let resp = await client.apis.TopUpService.GetTopUpHistory({
-          orgId,
-          offset,
-          limit
-        });
-        
-        resp = await checkStatus(resp);
-        return resp.body;
-      /* } catch (error) {
-        errorHandler(error);
-    } */
+    const client = await this.swagger;
+    let resp = await client.apis.TopUpService.GetTopUpHistory({
+      orgId,
+      offset,
+      limit
+    });
+
+    resp = await checkStatus(resp);
+    return resp.body;
   }
-  
+
   notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
