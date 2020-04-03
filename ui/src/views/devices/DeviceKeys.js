@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import AESKeyField from "../../components/FormikAESKeyField";
 import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
+import DeviceProfileStore from "../../stores/DeviceProfileStore";
 import DeviceStore from "../../stores/DeviceStore";
 
 
@@ -22,7 +23,7 @@ class DeviceKeys extends Component {
 
   componentDidMount() {
     const { match } = this.props;
-
+    
     DeviceStore.getKeys(match.params.devEUI, resp => {
       if (resp === null) {
         this.setState({
@@ -78,8 +79,10 @@ class DeviceKeys extends Component {
       })
     }
 
-    if (this.props.deviceProfile.macVersion.startsWith("1.1")) {
-      fieldsSchema['object.deviceKeys.genAppKey'] = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
+    if(this.props.deviceProfile !== undefined){
+      if (this.props.deviceProfile.macVersion.startsWith("1.1")) {
+        fieldsSchema['object.deviceKeys.genAppKey'] = Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`));
+      }
     }
 
     return Yup.object().shape(fieldsSchema);
@@ -87,7 +90,16 @@ class DeviceKeys extends Component {
 
   render() {
     const { loading, object } = this.state;
-    const { deviceProfile } = this.props;
+    let deviceProfile = {};
+    let macVersion_10 = false;
+    let macVersion_11 = false;
+
+    if(this.props.deviceProfile !== undefined){
+      deviceProfile = this.props.deviceProfile;
+      macVersion_10 = deviceProfile.macVersion.startsWith("1.0");
+      macVersion_11 = deviceProfile.macVersion.startsWith("1.1");
+    }
+    
 
     if (object === undefined) {
       return <React.Fragment>{loading && <Loader light />}</React.Fragment>
@@ -140,11 +152,11 @@ class DeviceKeys extends Component {
               } = props;
               return (
                 <Form style={{ padding: "0px", backgroundColor: "#fff" }} onSubmit={handleSubmit} noValidate>
-                  {object && (deviceProfile.macVersion.startsWith("1.0") || deviceProfile.macVersion.startsWith("1.1")) && (
+                  {object && (macVersion_10 || macVersion_11) && (
                     <>
                       <span style={{ display: 'block', fontSize: "16px", fontWeight: "700" }}>
-                        { deviceProfile.macVersion.startsWith("1.0") ? "LPWAN 1.0 Device Keys" : "" }
-                        { deviceProfile.macVersion.startsWith("1.1") ? "LPWAN 1.1 Device Keys" : "" }
+                        { macVersion_10 ? "LPWAN 1.0 Device Keys" : "" }
+                        { macVersion_11 ? "LPWAN 1.1 Device Keys" : "" }
                       </span>
                       <label htmlFor="object.deviceKeys.nwkKey" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
                         {i18n.t(`${packageNS}:tr000388`)}
@@ -179,7 +191,7 @@ class DeviceKeys extends Component {
                     </>
                   )}
 
-                  {object && deviceProfile.macVersion.startsWith("1.0") && (
+                  {object && macVersion_10 && (
                     <>
                       <label htmlFor="object.deviceKeys.genAppKey" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
                         {i18n.t(`${packageNS}:tr000389`)}
@@ -194,7 +206,7 @@ class DeviceKeys extends Component {
                       />
                     </>
                   )}
-                  {object && deviceProfile.macVersion.startsWith("1.1") && (
+                  {object && macVersion_11 && (
                     <>
                       <label htmlFor="object.deviceKeys.appKey" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
                         {i18n.t(`${packageNS}:tr000387`)}
