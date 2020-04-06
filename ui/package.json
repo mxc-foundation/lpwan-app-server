@@ -67,7 +67,7 @@
     "analyze": "source-map-explorer build/static/js/main.*",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
+    "test": "jest --env=node",
     "eject": "react-scripts eject"
   },
   "proxy": "http://localhost:8080/",

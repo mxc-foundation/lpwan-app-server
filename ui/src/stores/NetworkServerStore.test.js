@@ -2,7 +2,9 @@
 import networkServerStore from './NetworkServerStore';
 import SessionStore from './SessionStore';
 
+
 beforeAll(async (done) => {
+
     await SessionStore.login({
         username: 'admin',
         password: 'admin',
