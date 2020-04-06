@@ -144,12 +144,10 @@ class DeviceStore extends EventEmitter {
   }
 
   list(filters, callbackFunc) {
-    console.log('device list filters:', filters);
     this.swagger.then(client => {
       client.apis.DeviceService.List(filters)
       .then(checkStatus)
       .then(resp => {
-        console.log('device list:', resp);
         callbackFunc(resp.obj);
       })
       .catch(errorHandler);
