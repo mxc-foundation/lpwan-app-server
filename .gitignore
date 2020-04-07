@@ -5,6 +5,7 @@
 *.log
 # config files
 /*.toml
+/configuration
 # coverage file
 /coverage.out
 # builds
