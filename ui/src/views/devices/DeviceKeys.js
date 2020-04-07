@@ -23,7 +23,7 @@ class DeviceKeys extends Component {
 
   componentDidMount() {
     const { match } = this.props;
-    
+
     DeviceStore.getKeys(match.params.devEUI, resp => {
       if (resp === null) {
         this.setState({
@@ -93,7 +93,12 @@ class DeviceKeys extends Component {
     let deviceProfile = {};
     let macVersion_10 = false;
     let macVersion_11 = false;
-
+    let devEUI = '';
+    console.log('object', object);
+    if(this.props.match.params.devEUI !== undefined){
+      devEUI = this.props.match.params.devEUI;
+    }
+    
     if(this.props.deviceProfile !== undefined){
       deviceProfile = this.props.deviceProfile;
       macVersion_10 = deviceProfile.macVersion.startsWith("1.0");
@@ -110,10 +115,10 @@ class DeviceKeys extends Component {
         <Formik
           enableReinitialize
           initialValues={
-            {
+            {devEUI: this.props.match.params.devEUI,
               object: {
                 deviceKeys: {
-                  devEUI: object.deviceKeys.devEUI || undefined,
+                  devEUI: this.props.match.params.devEUI || '',
                   nwkKey: object.deviceKeys.nwkKey || undefined,
                   genAppKey: object.deviceKeys.genAppKey || undefined,
                   appKey: object.deviceKeys.appKey || undefined,
@@ -237,26 +242,26 @@ class DeviceKeys extends Component {
                   )}
 
                   <>
-                    <label htmlFor="object.deviceKeys.devEUI" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                    <label htmlFor="devEUI" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
                       {i18n.t(`${packageNS}:tr000371`)}
                     </label>
-                    &nbsp;&nbsp;{object.deviceKeys.devEUI}
+                    &nbsp;&nbsp;{devEUI}
 
                     <input
                       type="hidden"
                       id="devEUI"
                       disabled
-                      name="object.deviceKeys.devEUI"
-                      value={object.deviceKeys.devEUI || ""}
+                      name="devEUI"
+                      value={devEUI || ""}
                     />
                     {
-                      errors.object && errors.object.deviceKeys.devEUI
+                      errors.object && errors.devEUI
                         ? (
                           <div
                             className="invalid-feedback"
                             style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                           >
-                            {errors.object.deviceKeys.devEUI}
+                            {errors.devEUI}
                           </div>
                         ) : null
                     }
