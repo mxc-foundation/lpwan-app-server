@@ -63,15 +63,16 @@ class RegistrationForm extends Component {
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                 />
+
                 <FormGroup className="mt-2">
-                  <ReCAPTCHA
+                  {!this.state.bypassCaptcha && <ReCAPTCHA
                     sitekey={process.env.REACT_APP_PUBLIC_KEY}
                     onChange={this.onReCapChange}
-                  />
+                  />}
                 </FormGroup>
 
                 <div className="mt-1">
-                  <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000020`)}</Button>
+                  <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000020`)}</Button>
                   <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
                 </div>
               </Form>
@@ -125,10 +126,14 @@ class Registration extends Component {
   }
 
   onSubmit(user) {
-    // if (!user.isVerified) {
-    //   alert(i18n.t(`${packageNS}:tr000021`));
-    //   return false;
-    // }
+    if (this.state.bypassCaptcha) {
+      user.isVerified = true;
+    }
+
+    if (!user.isVerified) {
+      alert(i18n.t(`${packageNS}:tr000021`));
+      return false;
+    }
 
     if (SessionStore.getLanguage() && SessionStore.getLanguage().id) {
       user.language = SessionStore.getLanguage().id;

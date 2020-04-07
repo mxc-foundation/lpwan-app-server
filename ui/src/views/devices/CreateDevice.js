@@ -133,10 +133,10 @@ class CreateDevice extends Component {
           </ModalHeader>
           <ModalBody id="help-dialog-description">
             <p>
-              You can create an application for your device to belong to.
+            {i18n.t(`${packageNS}:tr000559`)}
             </p>
             <p>
-              Would you like to create an application?
+            {i18n.t(`${packageNS}:tr000560`)}
             </p>
           </ModalBody>
           <ModalFooter>
