@@ -13,9 +13,7 @@ import i18n, { packageNS } from '../../i18n';
 import SessionStore from "../../stores/SessionStore";
 
 
-
-
-//const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
+const VERIFY_ERROR_MESSAGE = i18n.t(`${packageNS}:tr000021`);
 
 const loginSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
@@ -97,15 +95,16 @@ class LoginForm extends Component {
                 component={ReactstrapPasswordInput}
                 onBlur={handleBlur}
               />
-               <FormGroup className="mt-2 small">
-                <ReCAPTCHA
+
+              <FormGroup className="mt-2 small">
+                { !this.state.bypassCaptcha && <ReCAPTCHA
                   sitekey={process.env.REACT_APP_PUBLIC_KEY}
                   onChange={this.onReCapChange}
-                />
+                />}
               </FormGroup>
 
               <div className="mt-1">
-                <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000011`)}</Button>
+                <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000011`)}</Button>
                 <Link to={`/registration`} className="btn btn-outline-primary btn-block mt-2">{i18n.t(`${packageNS}:tr000020`)}</Link>
                 {/* <Link to={`/password-recovery`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000009`)}</Link> */}
               </div>
@@ -191,11 +190,15 @@ class Login extends Component {
   }
 
   onSubmit(login) {
-    // if (login.hasOwnProperty('isVerified')) {
-    //   if (!login.isVerified) {
-    //     alert(VERIFY_ERROR_MESSAGE);
-    //     return false;
-    //   }
+    if (this.state.bypassCaptcha) {
+      login.isVerified = true;
+    }
+
+    if (login.hasOwnProperty('isVerified')) {
+      if (!login.isVerified) {
+        alert(VERIFY_ERROR_MESSAGE);
+        return false;
+      }
 
       SessionStore.login(login, () => {
         this.setState({ loading: false });
@@ -209,10 +212,10 @@ class Login extends Component {
           this.props.history.push("/");
         }
       });
-    // } else {
-    //   alert(VERIFY_ERROR_MESSAGE);
-    //   return false;
-    // }
+    } else {
+      alert(VERIFY_ERROR_MESSAGE);
+      return false;
+    }
   }
 
   onClick = () => {
