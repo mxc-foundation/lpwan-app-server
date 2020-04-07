@@ -94,7 +94,7 @@ class DeviceKeys extends Component {
     let macVersion_10 = false;
     let macVersion_11 = false;
     let devEUI = '';
-    console.log('object', object);
+    
     if(this.props.match.params.devEUI !== undefined){
       devEUI = this.props.match.params.devEUI;
     }
