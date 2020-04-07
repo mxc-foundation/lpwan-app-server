@@ -124,6 +124,11 @@ class DeviceActivation extends Component {
   render() {
     const { loading, object } = this.state;
     const { deviceProfile } = this.props;
+    
+    let devEUI = '';
+    if(this.props.match.params.devEUI !== undefined){
+      devEUI = this.props.match.params.devEUI;
+    }
 
     if (object === undefined) {
       return <React.Fragment>{loading && <Loader light />}</React.Fragment>
