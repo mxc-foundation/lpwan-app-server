@@ -134,6 +134,10 @@ type Config struct {
 			LogoPath     string `mapstructure:"logo_path"`
 		} `mapstructure:"branding"`
 
+		MiningSetUp struct {
+			Mining       bool `mapstructure:"mining"`
+		} `mapstructure:"mining_setup"`
+
 	} `mapstructure:"application_server"`
 
 	RegistrationServer struct {
