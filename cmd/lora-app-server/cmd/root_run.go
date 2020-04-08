@@ -55,6 +55,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFUOTA,
 		setupAPI,
 		setupMetrics,
+		setupMining,
 	}
 
 	for _, t := range tasks {
