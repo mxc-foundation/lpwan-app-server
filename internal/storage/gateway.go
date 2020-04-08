@@ -681,6 +681,21 @@ func DeleteAllGatewaysForOrganizationID(ctx context.Context, db sqlx.Ext, organi
 	return nil
 }
 
+// GetAllGatewayMacList get a list of all gateway mac
+func GetAllGatewayMacList(ctx context.Context, db sqlx.Ext) ([]string, error) {
+	var gwMacList []string
+	var list []lorawan.EUI64
+	err := sqlx.Select(db, &list, `select mac from gateway order by created_at desc`)
+	if err != nil {
+		return nil, errors.Wrap(err, "select error")
+	}
+
+	for _, gwMac := range list {
+		gwMacList = append(gwMacList, gwMac.String())
+	}
+	return gwMacList, nil
+}
+
 // GetGatewayPingRXForPingID returns the received gateway pings for the given
 // ping ID.
 func GetGatewayPingRXForPingID(ctx context.Context, db sqlx.Queryer, pingID int64) ([]GatewayPingRX, error) {

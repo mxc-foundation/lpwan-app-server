@@ -128,8 +128,12 @@ func (a *AppServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty
 
 // GetGatewayMacList defines the response of the Gateway MAC list
 func (a *AppServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
+	gwMacList, err := storage.GetAllGatewayMacList(ctx, storage.DB())
+	if err != nil {
+		return &api.GetGatewayMacListResponse{}, status.Errorf(codes.DataLoss, err.Error())
+	}
 
-	return &api.GetGatewayMacListResponse{}, nil
+	return &api.GetGatewayMacListResponse{GatewayMac: gwMacList}, nil
 }
 
 // GetDeviceByDevEui defines the request and response of the Device DevEui
