@@ -29,6 +29,12 @@ service WalletService {
     		get: "/api/wallet/{org_id}/downlink_price"
     	};
     }
+
+    rpc GetWalletMiningIncome(GetWalletMiningIncomeRequest) returns (GetWalletMiningIncomeResponse) {
+        option(google.api.http) = {
+			get: "/api/wallet/mining_income"
+		};
+    }
 }
 
 message GetWalletBalanceRequest {
@@ -38,6 +44,16 @@ message GetWalletBalanceRequest {
 
 message GetWalletBalanceResponse {
     double balance = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message GetWalletMiningIncomeRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+}
+
+message GetWalletMiningIncomeResponse {
+    double mining_income = 1;
     ProfileResponse user_profile = 2;
 }
 

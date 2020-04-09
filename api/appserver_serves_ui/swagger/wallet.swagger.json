@@ -4,6 +4,10 @@
     "title": "wallet.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -19,6 +23,38 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetWalletBalanceResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mining_income": {
+      "get": {
+        "operationId": "GetWalletMiningIncome",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWalletMiningIncomeResponse"
             }
           }
         },
@@ -182,6 +218,18 @@
       "type": "object",
       "properties": {
         "balance": {
+          "type": "number",
+          "format": "double"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
+        }
+      }
+    },
+    "appserver_serves_uiGetWalletMiningIncomeResponse": {
+      "type": "object",
+      "properties": {
+        "miningIncome": {
           "type": "number",
           "format": "double"
         },

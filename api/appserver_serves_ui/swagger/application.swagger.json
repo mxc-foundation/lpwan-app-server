@@ -4,6 +4,10 @@
     "title": "application.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -121,7 +125,7 @@
         ]
       }
     },
-    "/api/applications/{applicationID}/integrations": {
+    "/api/applications/{applicationId}/integrations": {
       "get": {
         "summary": "ListIntegrations lists all configured integrations.",
         "operationId": "ListIntegrations",
@@ -135,7 +139,7 @@
         },
         "parameters": [
           {
-            "name": "applicationID",
+            "name": "applicationId",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -148,7 +152,7 @@
         ]
       }
     },
-    "/api/applications/{applicationID}/integrations/http": {
+    "/api/applications/{applicationId}/integrations/http": {
       "get": {
         "summary": "GetHTTPIntegration returns the HTTP application-integration.",
         "operationId": "GetHTTPIntegration",
@@ -162,7 +166,7 @@
         },
         "parameters": [
           {
-            "name": "applicationID",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -187,7 +191,7 @@
         },
         "parameters": [
           {
-            "name": "applicationID",
+            "name": "applicationId",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -200,7 +204,7 @@
         ]
       }
     },
-    "/api/applications/{applicationID}/integrations/influxdb": {
+    "/api/applications/{applicationId}/integrations/influxdb": {
       "get": {
         "summary": "GetInfluxDBIntegration returns the InfluxDB application-integration.",
         "operationId": "GetInfluxDBIntegration",
@@ -214,7 +218,7 @@
         },
         "parameters": [
           {
-            "name": "applicationID",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -239,7 +243,7 @@
         },
         "parameters": [
           {
-            "name": "applicationID",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -252,7 +256,7 @@
         ]
       }
     },
-    "/api/applications/{applicationID}/integrations/thingsboard": {
+    "/api/applications/{applicationId}/integrations/thingsboard": {
       "get": {
         "summary": "GetThingsBoardIntegration returns the ThingsBoard application-integration.",
         "operationId": "GetThingsBoardIntegration",
@@ -266,7 +270,7 @@
         },
         "parameters": [
           {
-            "name": "applicationID",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -291,7 +295,7 @@
         },
         "parameters": [
           {
-            "name": "applicationID",
+            "name": "applicationId",
             "description": "Application ID.",
             "in": "path",
             "required": true,
