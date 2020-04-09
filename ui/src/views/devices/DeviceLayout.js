@@ -184,7 +184,7 @@ class DeviceLayout extends Component {
           {children}
           <Switch>
             <Route exact path={`${urlPrefixDeviceNoApp}/edit`} render={props => <UpdateDevice device={device.device} admin={admin} {...props} />} />
-            <Route exact path={`${urlPrefixDeviceNoApp}/keys`} render={props => <DeviceKeys device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
+            <Route exact path={`${urlPrefixDeviceNoApp}/keys`} render={props => <DeviceKeys devEUI={this.props.match.params.devEUI} device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
             <Route exact path={`${urlPrefixDeviceNoApp}/activation`} render={props => <DeviceActivation device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
             <Route exact path={`${urlPrefixDeviceNoApp}/data`} render={props => <DeviceData device={device.device} admin={admin} {...props} />} />
             <Route exact path={`${urlPrefixDeviceNoApp}/frames`} render={props => <DeviceFrames device={device.device} admin={admin} {...props} />} />

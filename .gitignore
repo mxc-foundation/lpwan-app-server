@@ -4,7 +4,8 @@
 # logs
 *.log
 # config files
-/*.toml
+*.toml
+/configuration
 # coverage file
 /coverage.out
 # builds

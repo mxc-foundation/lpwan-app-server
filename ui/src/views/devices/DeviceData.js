@@ -9,13 +9,13 @@ import ChevronDown from "mdi-material-ui/ChevronDown";
 import moment from "moment";
 import React, { Component } from "react";
 import { Alert, Button, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row } from 'reactstrap';
-import mockDeviceData from '../../api/data/mockDeviceData';
+//import mockDeviceData from '../../api/data/mockDeviceData';
 import JSONTree from "../../components/JSONTree";
 import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
-import isDev from '../../util/isDev';
+//import isDev from '../../util/isDev';
 
 
 
@@ -78,7 +78,7 @@ class DeviceData extends Component {
     this.state = {
       paused: false,
       connected: false,
-      data: isDev ? mockDeviceData : [],
+      data: [], //data: isDev ? mockDeviceData : [],
       dialogOpen: false,
     };
   }
