@@ -9,8 +9,8 @@ import (
 	"text/template"
 
 	"encoding/base32"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -40,11 +40,20 @@ var (
 
 // Setup configures the package.
 func Setup(c config.Config) error {
-	senderID = c.SMTP.Email
-	password = c.SMTP.Password
-	smtpServer = c.SMTP.Host
-	smtpPort = c.SMTP.Port
 	host = os.Getenv("APPSERVER")
+	serverRegion := os.Getenv("SERVER_REGION")
+	if serverRegion == pb.ServerRegion_name[int32(pb.ServerRegion_RESTRICTED)] {
+		senderID = c.SMTP.Restricted.Email
+		password = c.SMTP.Restricted.Password
+		smtpServer = c.SMTP.Restricted.Host
+		smtpPort = c.SMTP.Restricted.Port
+
+	} else {
+		senderID = c.SMTP.Average.Email
+		password = c.SMTP.Average.Password
+		smtpServer = c.SMTP.Average.Host
+		smtpPort = c.SMTP.Average.Port
+	}
 
 	base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
