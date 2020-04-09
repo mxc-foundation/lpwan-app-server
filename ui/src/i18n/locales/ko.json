@@ -794,7 +794,8 @@
       "submit": "완료",
       "cancel": "취소",
       "comment": "주석",
-      "done": "완료"
+      "done": "완료",
+      "contour_payments": "컨투어 결제"
     },
     "system_settings": {
       "system_settings": "수수료"

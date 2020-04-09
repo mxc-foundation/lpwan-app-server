@@ -794,7 +794,8 @@
       "submit": "送信",
       "cancel": "キャンセル",
       "comment": "コメント",
-      "done": "完了"
+      "done": "完了",
+      "contour_payments": "輪郭の支払い"
     },
     "system_settings": {
       "system_settings": "システム手数料"

@@ -794,7 +794,8 @@
       "submit": "完成了",
       "cancel": "取消",
       "comment": "评论",
-      "done": "完成"
+      "done": "完成",
+      "contour_payments": "轮廓付款"
     },
     "system_settings": {
       "system_settings": "系统设定"

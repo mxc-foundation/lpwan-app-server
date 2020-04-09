@@ -794,7 +794,8 @@
       "submit": "Submit",
       "cancel": "Cancel",
       "comment": "Comment",
-      "done": "Done"
+      "done": "Done",
+      "contour_payments": "Contour Payments"
     },
     "system_settings": {
       "system_settings": "System Fees"

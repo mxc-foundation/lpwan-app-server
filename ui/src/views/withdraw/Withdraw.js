@@ -87,7 +87,7 @@ class Withdraw extends Component {
                 {i18n.t(`${packageNS}:tr000049`)}
               </Link>
             </BreadcrumbItem>
-            <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:tr000084`)}</BreadcrumbItem>
+            <BreadcrumbItem className={classes.breadcrumbItem}>{i18n.t(`${packageNS}:menu.common.contour_payments`)}</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.withdraw.withdraw`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
