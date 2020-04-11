@@ -67,7 +67,7 @@
     "analyze": "source-map-explorer build/static/js/main.*",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "jest --env=node",
+    "test": "jest",
     "eject": "react-scripts eject"
   },
   "proxy": "http://localhost:8080/",
@@ -79,6 +79,7 @@
   ],
   "devDependencies": {
     "enzyme": "^3.11.0",
-    "enzyme-adapter-react-16": "^1.15.2"
+    "enzyme-adapter-react-16": "^1.15.2",
+    "jest": "^25.3.0"
   }
 }

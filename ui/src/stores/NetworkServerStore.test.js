@@ -2,6 +2,9 @@
 import networkServerStore from './NetworkServerStore';
 import SessionStore from './SessionStore';
 
+jest.mock('history',  () =>  ({
+  createHashHistory: jest.fn() 
+}))
 
 beforeAll(async (done) => {
 
@@ -12,6 +15,7 @@ beforeAll(async (done) => {
     });
     done();
 });
+
 
 describe('NetworkServerStore', () => {
     

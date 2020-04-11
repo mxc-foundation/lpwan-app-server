@@ -23,7 +23,7 @@ class SessionStore extends EventEmitter {
       if (token) {// !== null && !history.location.pathname.includes('/registration-confirm/')) {
         this.fetchProfile(() => {});
       }
-    });
+    }).catch(error => console.log(error));
   }
 
   getClientOpts() {
