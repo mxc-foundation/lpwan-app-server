@@ -9,6 +9,7 @@ import { ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import SessionStore from "../../stores/SessionStore";
+import ServerInfoStore from "../../stores/ServerInfoStore";
 
 
 
@@ -16,7 +17,7 @@ const regSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
 })
 
-class RegistrationForm extends Component {
+class RegistrationFormAverage extends Component {
   constructor(props) {
     super(props);
 
@@ -63,15 +64,16 @@ class RegistrationForm extends Component {
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                 />
+
                 <FormGroup className="mt-2">
-                  <ReCAPTCHA
+                  {!this.state.bypassCaptcha && <ReCAPTCHA
                     sitekey={process.env.REACT_APP_PUBLIC_KEY}
                     onChange={this.onReCapChange}
-                  />
+                  />}
                 </FormGroup>
 
                 <div className="mt-1">
-                  <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000020`)}</Button>
+                  <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000020`)}</Button>
                   <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
                 </div>
               </Form>
@@ -82,9 +84,77 @@ class RegistrationForm extends Component {
   }
 }
 
+class RegistrationFormRestricted extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      object: this.props.object || { username: "" },
+      isVerified: false,
+      bypassCaptcha: this.props.bypassCaptcha
+    }
+  }
+
+  onReCapChange = (value) => {
+    const req = {
+      secret: process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.setState({ isVerified: resp.success });
+    });
+  }
+
+  render() {
+
+    return (
+        <React.Fragment>
+          <Formik
+              initialValues={this.state.object}
+              validationSchema={regSchema}
+              onSubmit={(values) => {
+                const castValues = regSchema.cast(values);
+                this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
+              }}>
+            {({
+                handleSubmit,
+                handleBlur
+              }) => (
+                <Form onSubmit={handleSubmit} noValidate>
+                  <Field
+                      type="text"
+                      label={i18n.t(`${packageNS}:tr000003`)}
+                      name="username"
+                      id="username"
+                      component={ReactstrapInput}
+                      onBlur={handleBlur}
+                  />
+
+                  <div className="mt-1">
+                    <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000020`)}</Button>
+                    <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
+                  </div>
+                </Form>
+            )}
+          </Formik>
+        </React.Fragment>
+    );
+  }
+}
+
 function GetBranding() {
   return new Promise((resolve, reject) => {
     SessionStore.getBranding(resp => {
+      return resolve(resp);
+    });
+  });
+}
+
+function LoadServerRegion() {
+  return new Promise((resolve, reject) => {
+    ServerInfoStore.getServerRegion(resp => {
       return resolve(resp);
     });
   });
@@ -101,7 +171,8 @@ class Registration extends Component {
 
     this.state = {
       isVerified: false,
-      bypassCaptcha: bypassCaptcha
+      bypassCaptcha: bypassCaptcha,
+      serverRegion : ""
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -114,9 +185,11 @@ class Registration extends Component {
   loadData = async () => {
     try {
       let result = await GetBranding();
+      let serverRegion = await LoadServerRegion();
 
       this.setState({
-        logoPath: result.logoPath
+        logoPath: result.logoPath,
+        serverRegion: serverRegion.serverRegion
       });
     } catch (error) {
       console.error(error);
@@ -125,10 +198,17 @@ class Registration extends Component {
   }
 
   onSubmit(user) {
-    // if (!user.isVerified) {
-    //   alert(i18n.t(`${packageNS}:tr000021`));
-    //   return false;
-    // }
+    if (this.state.serverRegion === "NOT_DEFINED" || this.state.serverRegion === "AVERAGE") {
+      if (this.state.bypassCaptcha) {
+        user.isVerified = true;
+      }
+
+      if (!user.isVerified) {
+        alert(i18n.t(`${packageNS}:tr000021`));
+        return false;
+      }
+
+    }
 
     if (SessionStore.getLanguage() && SessionStore.getLanguage().id) {
       user.language = SessionStore.getLanguage().id;
@@ -167,10 +247,20 @@ class Registration extends Component {
 
                   <div className="position-relative">
                     {this.state.loading && <Loader />}
-                    <RegistrationForm
-                      onSubmit={this.onSubmit}
-                      bypassCaptcha={this.state.bypassCaptcha}
-                    />
+                    {this.state.serverRegion === "NOT_DEFINED" || this.state.serverRegion === "AVERAGE" &&
+                      <RegistrationFormAverage
+                          onSubmit={this.onSubmit}
+                          bypassCaptcha={this.state.bypassCaptcha}
+                      />
+                    }
+
+                    {this.state.serverRegion === "RESTRICTED" &&
+                      <RegistrationFormRestricted
+                          onSubmit={this.onSubmit}
+                          bypassCaptcha={this.state.bypassCaptcha}
+                      />
+                    }
+
                   </div>
                 </CardBody>
               </Card>

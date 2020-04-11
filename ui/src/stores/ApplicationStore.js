@@ -97,7 +97,7 @@ class ApplicationStore extends EventEmitter {
       client.apis.ApplicationService.ListIntegrations({
         limit: limit,
         offset: offset,
-        applicationId: applicationID,
+        applicationID: applicationID,
         organizationID: organizationID,
         search: search,
       })
