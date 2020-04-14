@@ -1,44 +1,47 @@
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import React from 'react';
+import React, { useState } from 'react';
+import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 
-export default function ConfirmDialog(props) {
-  const { open, onClose, title, description } = props
+const CommonModal = (props) => {
 
-  const agree = () => {
-    const { data, onSubmit } = props;
+    const {
+        className,
+        closeModal,
+        showCloseButton = true,
+        showConfirmButton = true,
+        show = true,
+    } = props;
 
-    onSubmit(data);
+    const [modal, setModal] = useState(show);
 
-    if (onClose) onClose();
-  }
-
-  return (
-      <Dialog
-        open={open}
-        onClose={onClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {description}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} color="primary.main" autoFocus>
-            {i18n.t(`${packageNS}:menu.withdraw.cancel`)}
-          </Button>
-          <Button onClick={agree} color="primary.main">
-            {i18n.t(`${packageNS}:menu.withdraw.proceed`)}
-          </Button>
-        </DialogActions>
-      </Dialog>
-  );
+    const toggle = () => {
+        setModal(!modal);
+        if (closeModal)
+            closeModal();
+        props.callback();
+    }
+    
+    const proc = () => {
+        setModal(!modal);
+        if (closeModal)
+            closeModal();
+        props.callback();
+    }
+    
+    return (
+        <div>
+            {/* {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>} */}
+            <Modal isOpen={modal} toggle={toggle} className={className} centered={true}>
+                {props.title ? <ModalHeader toggle={toggle}>{props.title}</ModalHeader>: null}
+                <ModalBody>
+                    {props.context}
+                </ModalBody>
+                <ModalFooter>
+                    {showCloseButton && <Button color="secondary" onClick={toggle}>{props.left !== undefined ? props.left : i18n.t(`${packageNS}:tr000430`)}</Button>}{' '}
+                </ModalFooter>
+            </Modal>
+        </div>
+    );
 }
+
+export default CommonModal;

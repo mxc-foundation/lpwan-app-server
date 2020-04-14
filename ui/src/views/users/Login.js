@@ -259,7 +259,7 @@ class Login extends Component {
   loadData = async () => {
     try {
       let result = await GetBranding();
-      let serverRegion = await LoadServerRegion();
+      const serverRegion = await ServerInfoStore.getServerRegion();
 
       this.setState({
         registration: result.registration,
