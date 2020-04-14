@@ -27,7 +27,6 @@ func NewMiningServerAPI(validator auth.Validator) *MiningServerAPI {
 // Mining defines the request to give m2m the gateway list that should receive the mining tokens
 func (s *MiningServerAPI) Mining(ctx context.Context, req *api.MiningRequest) (*empty.Empty, error) {
 
-
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
