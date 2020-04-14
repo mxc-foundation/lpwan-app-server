@@ -813,11 +813,11 @@ var fileDescriptor_b0dd7acb611886fa = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // WithdrawServiceClient is the client API for WithdrawService service.
 //
@@ -835,10 +835,10 @@ type WithdrawServiceClient interface {
 }
 
 type withdrawServiceClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewWithdrawServiceClient(cc grpc.ClientConnInterface) WithdrawServiceClient {
+func NewWithdrawServiceClient(cc *grpc.ClientConn) WithdrawServiceClient {
 	return &withdrawServiceClient{cc}
 }
 
