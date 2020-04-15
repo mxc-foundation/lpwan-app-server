@@ -255,6 +255,54 @@ func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 	return nil
 }
 
+// UpdateFirstHeartbeat updates the first heartbeat by mac
+func UpdateFirstHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64, time int64) error {
+	res, err := db.Exec(`
+		update gateway
+			set first_heartbeat = $1
+		where
+			mac = $2`,
+		time,
+		mac,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update first heartbeat error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+
+	return nil
+}
+
+// UpdateLastHeartbeat updates the last heartbeat by mac
+func UpdateLastHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64, time int64) error {
+	res, err := db.Exec(`
+		update gateway
+			set last_heartbeat = $1
+		where
+			mac = $2`,
+		time,
+		mac,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update last heartbeat error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+
+	return nil
+}
+
 // DeleteGateway deletes the gateway matching the given MAC.
 func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 	n, err := GetNetworkServerForGatewayMAC(ctx, db, mac)
@@ -385,6 +433,58 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search
 		return nil, errors.Wrap(err, "select error")
 	}
 	return gws, nil
+}
+
+// GetFirstHeartbeat returns the first heartbeat
+func GetFirstHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (int64, error) {
+	var firstHeartbeat int64
+	err := sqlx.Select(db, &firstHeartbeat, `
+		select 
+			first_heartbeat
+		from gateway
+		where mac = $1`,
+		mac,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "select error")
+	}
+
+	return firstHeartbeat, nil
+}
+
+// GetLastHeartbeat returns the last heartbeat
+func GetLastHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (int64, error) {
+	var lastHeartbeat int64
+
+	err := sqlx.Select(db, &lastHeartbeat, `
+		select 
+			last_heartbeat
+		from gateway
+		where mac = $1`,
+		mac,
+	)
+	if err != nil {
+		return 0, errors.Wrap(err, "select error")
+	}
+
+	return lastHeartbeat, nil
+}
+
+func GetGatewayMiningList(ctx context.Context, db sqlx.Queryer, time int64) ([]lorawan.EUI64, error) {
+	var macs []lorawan.EUI64
+
+	err := sqlx.Select(db, &macs, `
+		select 
+			mac
+		from gateway
+		where $1 - first_heartbeat > 82800`,
+		time,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "select error")
+	}
+
+	return macs, nil
 }
 
 // GetGatewaysLoc returns a slice of gateways locations.

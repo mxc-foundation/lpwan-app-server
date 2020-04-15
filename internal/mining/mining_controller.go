@@ -1,14 +1,21 @@
 package mining
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/brocaar/lorawan"
+	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	log "github.com/sirupsen/logrus"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/robfig/cron"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
 
 type CMC struct {
@@ -32,7 +39,7 @@ type Data struct {
 	Amount      int    `json:"amount"`
 	LastUpdated string `json:"last_updated"`
 	Quote       struct {
-		MXC struct{
+		MXC struct {
 			Price      float64 `json:"price"`
 			LastUpdate string  `json:"last_update"`
 		}
@@ -46,7 +53,7 @@ func Setup(conf config.Config) error {
 	err := c.AddFunc("0 0 3 * * ?", func() {
 		log.Info("Start token mining")
 		go func() {
-			err := tokenMining(conf)
+			err := tokenMining(context.Background(), conf)
 			if err != nil {
 				log.WithError(err).Error("tokenMining Error")
 			}
@@ -63,7 +70,7 @@ func Setup(conf config.Config) error {
 
 func getUSDprice(conf config.Config) float64 {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET","https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
+	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
 	if err != nil {
 		log.WithError(err).Error("CMC client error")
 		os.Exit(1)
@@ -95,17 +102,59 @@ func getUSDprice(conf config.Config) float64 {
 	return cmc.Data.Quote.MXC.Price
 }
 
-func tokenMining(conf config.Config) error {
-	//t := time.Now()
-	//first date of month 00:00:00
-	//startTime := time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.Local)
-	//last date of month 23:59:59
-	//endTime := startTime.AddDate(0, 1, 0).Add(time.Second * -1)
-	
+func tokenMining(ctx context.Context, conf config.Config) error {
+	current_time := time.Now().Unix()
 
-	//ToDo:
-	// if current_heartbeat - last_heartbeat > xxx (for example three heartbeats), then first_heartbeat = current_heartbeat && last_heartbeat = current_heartbeat
-	// if last_heartbeat - first_heartbeat >= 24hrs && endTime - first_heartbeat >= 24 hrs { give the tokens }
+	mining_gws, err := storage.GetGatewayMiningList(ctx, storage.DB(), current_time)
+	if err != nil {
+		if err == storage.ErrDoesNotExist {
+			log.Info("No gateway online longer than 24 hours")
+			return nil
+		}
+
+		log.WithError(err).Error("Cannot get mining gateway list from DB.")
+		return err
+	}
+
+	// usd between 10 - 12
+	rand.Seed(time.Now().UnixNano())
+	min := 10
+	max := 12
+	randNum := float64(rand.Intn(max-min+1) + min)
+	mxc_price := getUSDprice(conf)
+	// amount = 1 MXC:USD * rand amount / amount of gateways
+	amount := mxc_price * randNum / float64(len(mining_gws))
+
+	var macs []string
+
+	// update the first heartbeat = current_time
+	for _, v := range mining_gws {
+		err := storage.UpdateFirstHeartbeat(ctx, storage.DB(), v, current_time)
+		if err != nil {
+			log.WithError(err).Error("tokenMining/update first heartbeat error")
+		}
+		mac := lorawan.EUI64.String(v)
+		macs = append(macs, mac)
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error("create m2mClient for mining error")
+		return err
+	}
+
+	miningClient := api.NewMiningServiceClient(m2mClient)
+
+	_, err = miningClient.Mining(ctx, &api.MiningRequest{
+		GatewayMac: macs,
+		MiningRevenue: amount,
+		MxcPrice: mxc_price,
+	})
+	if err != nil {
+		log.WithError(err).Error("Mining API request error")
+		return err
+	}
 
 	return nil
 }
