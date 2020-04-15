@@ -114,6 +114,9 @@ import Dashboard from "./views/dashboards/";
 // home
 import HomeComponent from './views/Home';
 
+//2fa
+import VerificationWith2FA from './views/common/VerificationWith2FA';
+
 //Temp banner
 import { initJWTTimer } from "./util/JWTUti";
 
@@ -218,6 +221,7 @@ class LoggedInRoutes extends Component {
         <Route exact path="/logout" component={Logout} />
 
         <Route exact path="/dashboard" component={Dashboard} />
+        <Route exact path="/VerificationWith2FA" component={VerificationWith2FA} />
 
         <Route exact path="/users" component={ListUsers} />
         <Route exact path="/users/create" component={CreateUser} />

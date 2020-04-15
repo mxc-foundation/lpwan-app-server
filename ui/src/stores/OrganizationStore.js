@@ -120,8 +120,8 @@ class OrganizationStore extends EventEmitter {
   getUser(organizationID, userID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.GetUser({
-        organizationID: organizationID,
-        userID: userID,
+        organizationId: organizationID,
+        userId: userID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -165,7 +165,7 @@ class OrganizationStore extends EventEmitter {
   listUsers(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.OrganizationService.ListUsers({
-        organizationID: organizationID,
+        organizationId: organizationID,
         limit: limit,
         offset: offset,
       })
