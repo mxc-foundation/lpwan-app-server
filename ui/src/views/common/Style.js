@@ -2,10 +2,11 @@ import theme from "../../theme";
 
 const Styles = {
   num: {
-    width: 80,
-    height: 80,
-    margin: 20,
-    borderRadius: 5
+    width: '7vw',
+    height: '7vw',
+    margin: '2%',
+    borderRadius: 5,
+    fontSize: '7vw'
   },
   numLayout: {
     display: 'flex',

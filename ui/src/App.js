@@ -46,6 +46,7 @@ import Login from "./views/users/Login";
 import Logout from "./views/users/Logout";
 import Registration from "./views/users/Registration";
 import RegistrationConfirm from "./views/users/RegistrationConfirm";
+import RegistrationConfirmSteptwo from "./views/users/RegistrationConfirmSteptwo";
 
 import ListUsers from "./views/users/ListUsers";
 import CreateUser from "./views/users/CreateUser";
@@ -221,7 +222,7 @@ class LoggedInRoutes extends Component {
         <Route exact path="/logout" component={Logout} />
 
         <Route exact path="/dashboard" component={Dashboard} />
-        <Route exact path="/VerificationWith2FA" component={VerificationWith2FA} />
+        
 
         <Route exact path="/users" component={ListUsers} />
         <Route exact path="/users/create" component={CreateUser} />
@@ -544,6 +545,15 @@ class App extends Component {
                 <Route exact path="/registration-confirm/:securityToken"
                   render={props =>
                     <RegistrationConfirm {...props}
+                      language={language}
+                      onChangeLanguage={this.onChangeLanguage}
+                    />
+                  }
+                />
+                <Route exact path="/VerificationWith2FA" component={VerificationWith2FA} />
+                <Route exact path="/registration-confirm-steptwo/:securityToken"
+                  render={props =>
+                    <RegistrationConfirmSteptwo {...props}
                       language={language}
                       onChangeLanguage={this.onChangeLanguage}
                     />

@@ -2,7 +2,7 @@ import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { Link, withRouter } from "react-router-dom";
-import { Button, Card, CardBody, Col, Container, FormGroup, Row } from 'reactstrap';
+import { Button, Card, CardBody, Col, Container, CustomInput, FormGroup, Row, Modal, ModalBody, ModalHeader } from 'reactstrap';
 import { isEmail } from 'validator';
 import * as Yup from 'yup';
 import { ReactstrapInput } from '../../components/FormInputs';
@@ -11,7 +11,7 @@ import i18n, { packageNS } from '../../i18n';
 import SessionStore from "../../stores/SessionStore";
 import ServerInfoStore from "../../stores/ServerInfoStore";
 
-
+import Google2FA from './Google2FA';
 
 const regSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
@@ -24,6 +24,8 @@ class RegistrationFormAverage extends Component {
     this.state = {
       object: this.props.object || { username: "" },
       isVerified: false,
+      showSetup2FA: false,
+      twofa_enabled: false,
       bypassCaptcha: this.props.bypassCaptcha
     }
   }
@@ -40,10 +42,36 @@ class RegistrationFormAverage extends Component {
     });
   }
 
+  showSetup2FA = () => {
+    // TODO - API Call to fetch the initial code
+    this.setState({ showSetup2FA: true, auth_2fa_code: '12345678' });
+  }
+
+  confirm2fa = (confirmCode) => {
+    // TODO  - API call to confirm
+    this.setState({ showSetup2FA: false, twofa_enabled: true });
+  }
+
+  skip2fa = () => {
+    this.setState({ showSetup2FA: false });
+  }
+
+  confirmReset2fa = (confirmCode) => {
+    // TODO  - API call to confirm
+    // TODO - Fetch phrase - for now setting up dummy
+    const phrases = ["Simba", "Sweetie", "Ziggy", "Midnight", "Kiki", "Peanut", "Midday", "Buddy", "Bently", "Gray", "Rocky", "Madison", "Bella", "Baxter"];
+    this.setState({ showMnemonicPhraseConfirm: true, phrases: phrases });
+  }
+
+  skipReset2fa = () => {
+    this.setState({ showReset2FA: false, showMnemonicPhraseConfirm: false });
+  }
+
   render() {
 
     return (
       <React.Fragment>
+        
         <Formik
           initialValues={this.state.object}
           validationSchema={regSchema}
@@ -71,7 +99,6 @@ class RegistrationFormAverage extends Component {
                     onChange={this.onReCapChange}
                   />}
                 </FormGroup>
-
                 <div className="mt-1">
                   <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000020`)}</Button>
                   <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
