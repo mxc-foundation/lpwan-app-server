@@ -45,8 +45,8 @@ import OrganizationRedirect from "./views/organizations/OrganizationRedirect";
 import Login from "./views/users/Login";
 import Logout from "./views/users/Logout";
 import Registration from "./views/users/Registration";
-import RegistrationConfirm from "./views/users/RegistrationConfirm";
-import RegistrationConfirmSteptwo from "./views/users/RegistrationConfirmSteptwo";
+import RegistrationConfirm from "./views/users/RegistrationConfirm.js.bak";
+import RegistrationConfirmSteptwo from "./views/users/RegistrationConfirmSteptwo.js.bak";
 
 import ListUsers from "./views/users/ListUsers";
 import CreateUser from "./views/users/CreateUser";
