@@ -884,7 +884,7 @@
         "subtext": "今日收入",
         "description": "顯示今天的總提出通證"
       },
-      "topup": {
+      "mining_revenue": {
         "title": "充值",
         "subtext": "今日收入",
         "description": "顯示充值訊息"

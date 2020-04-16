@@ -884,7 +884,7 @@
         "subtext": "수익 흐름",
         "description": "오늘의 총 출금액 보기"
       },
-      "topup": {
+      "mining_revenue": {
         "title": "충전",
         "subtext": "수익 흐름",
         "description": "상세한 정보 보기"

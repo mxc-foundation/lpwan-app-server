@@ -180,9 +180,19 @@ class UserDashboard extends Component {
 
                         <Row>
                             {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 1).map((widget, idx) => {
-                                return <Col key={idx} className="mb-0">
-                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
-                                </Col>
+                                if (idx < 2) {
+                                    return <Col key={idx} className="mb-0">
+                                        <div className="position-relative">
+                                            <div className="card-coming-soon-2"></div>
+                                            <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                        </div>
+                                    </Col>
+                                } else {
+                                    return <Col key={idx} className="mb-0">
+                                        <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                    </Col>
+
+                                }
                             })}
                             <Col>
                                 <Row>

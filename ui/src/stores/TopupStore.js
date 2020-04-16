@@ -59,7 +59,23 @@ class TopupStore extends EventEmitter {
     });
   }
 
-  
+  async topupWidget() {
+    let res = {
+      total: 13000,
+      data: [
+          { "month": "Jun", "amount": 1000 },
+          { "month": "Jul", "amount": 2200 },
+          { "month": "Aug", "amount": 2420 },
+          { "month": "Sep", "amount": 3400 },
+          { "month": "Oct", "amount": 1550 },
+          { "month": "Nov", "amount": 1720 },
+          { "month": "Dec", "amount": 485 },
+      ]
+    }
+
+    return res
+  }
+
   notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
