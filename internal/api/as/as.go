@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/api/gw_appserver"
 	"math"
 	"net"
 	"time"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
+	gwapi "github.com/mxc-foundation/lpwan-app-server/api/gw_appserver"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
@@ -91,6 +93,8 @@ func Setup(conf config.Config) error {
 
 	appserver := grpc.NewServer(grpcOptsM2M...)
 	api.RegisterAppServerServiceServer(appserver, NewAppServerAPI())
+	gw_appserver.RegisterHeartbeatServiceServer(appserver, NewAppServerAPI())
+
 	appLn, err := net.Listen("tcp", conf.ApplicationServer.APIForM2M.Bind)
 	if err != nil {
 		return errors.Wrap(err, "start application-server api listener error")
@@ -1052,4 +1056,74 @@ func unwrapASKey(ke *common.KeyEnvelope) (lorawan.AES128Key, error) {
 	}
 
 	return key, fmt.Errorf("unknown kek label: %s", ke.KekLabel)
+}
+
+func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatRequest) (*empty.Empty, error) {
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayMac)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	current_heartbeat := time.Now().Unix()
+
+	last_heartbeat, err := storage.GetLastHeartbeat(ctx, storage.DB(), mac)
+	if err != nil {
+		log.WithError(err).Error("Cannot get last heartbeat from DB.")
+		return nil, err
+	}
+
+	// if the gateway is new gateway
+	if req.Model == "MX1901" || req.Model == "MX1902" || req.Model == "MX1903" {
+
+		// if last heartbeat is 0, update first, last heartbeat and model
+		if last_heartbeat == 0 {
+			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
+			if err != nil {
+				log.WithError(err).Error("Update last heartbeat error")
+				return nil, err
+			}
+
+			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
+			if err != nil {
+				log.WithError(err).Error("Update first heartbeat error")
+				return nil, err
+			}
+
+			err = storage.UpdateGatewayModel(ctx, storage.DB(), mac, req.Model)
+			if err != nil {
+				log.WithError(err).Error("Update gateway model error")
+				return nil, err
+			}
+		}
+
+		// if offline longer than 30 mins, last heartbeat and first heartbeat = current heartbeat
+		if current_heartbeat-last_heartbeat > 1800 {
+			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
+			if err != nil {
+				log.WithError(err).Error("Update last heartbeat error")
+				return &empty.Empty{}, err
+			}
+
+			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
+			if err != nil {
+				log.WithError(err).Error("Update first heartbeat error")
+				return &empty.Empty{}, err
+			}
+		}
+
+		err = storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
+		if err != nil {
+			log.WithError(err).Error("Update last heartbeat error")
+			return &empty.Empty{}, err
+		}
+	} else {
+		// old gateway
+		err := storage.UpdateGatewayModel(ctx, storage.DB(), mac, req.Model)
+		if err != nil {
+			log.WithError(err).Error("Update gateway model error")
+			return nil, err
+		}
+	}
+
+	return &empty.Empty{}, nil
 }
