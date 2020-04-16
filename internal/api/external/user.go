@@ -147,6 +147,19 @@ func (a *UserAPI) Get(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserR
 	return &resp, nil
 }
 
+// GetUserEmail returns true if user is not exist
+func (a *UserAPI) GetUserEmail(ctx context.Context, req *pb.GetUserEmailRequest) (*pb.GetUserEmailResponse, error) {
+	_, err := storage.GetUserByEmail(ctx, storage.DB(), req.UserEmail)
+	if err != nil {
+		if err == storage.ErrDoesNotExist {
+			return &pb.GetUserEmailResponse{Status:true}, nil
+		}
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	return &pb.GetUserEmailResponse{Status:false}, nil
+}
+
 // List lists the users.
 func (a *UserAPI) List(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUserResponse, error) {
 	if err := a.validator.Validate(ctx,

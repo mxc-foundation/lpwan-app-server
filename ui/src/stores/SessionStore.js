@@ -45,6 +45,14 @@ class SessionStore extends EventEmitter {
     return localStorage.getItem("jwt");
   }
 
+  setOTPToken(token) {
+    localStorage.setItem("otp", token);
+  }
+
+  getOTPToken() {
+    return localStorage.getItem("otp");
+  }
+
   setSupportedLanguages(languages) {
     localStorage.setItem("languages-supported", JSON.stringify(languages));
   }

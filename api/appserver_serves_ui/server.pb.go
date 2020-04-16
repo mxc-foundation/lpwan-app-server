@@ -90,11 +90,11 @@ var fileDescriptor_ad098daeda4239f7 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // M2MServerInfoServiceClient is the client API for M2MServerInfoService service.
 //
@@ -105,10 +105,10 @@ type M2MServerInfoServiceClient interface {
 }
 
 type m2MServerInfoServiceClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewM2MServerInfoServiceClient(cc grpc.ClientConnInterface) M2MServerInfoServiceClient {
+func NewM2MServerInfoServiceClient(cc *grpc.ClientConn) M2MServerInfoServiceClient {
 	return &m2MServerInfoServiceClient{cc}
 }
 
