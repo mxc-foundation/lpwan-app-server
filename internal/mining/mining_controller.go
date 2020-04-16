@@ -116,6 +116,10 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 		return err
 	}
 
+	if len(mining_gws) == 0 {
+		return nil
+	}
+
 	// usd between 10 - 12
 	rand.Seed(time.Now().UnixNano())
 	min := 10
@@ -137,23 +141,55 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 		macs = append(macs, mac)
 	}
 
+	miningSent := false
+	// if error, resend after one minute
+	for !miningSent {
+		err := sendMining(ctx, macs, mxc_price, amount)
+		if err != nil {
+			log.WithError(err).Error("send mining request to m2m error")
+			time.Sleep(60 *time.Second)
+			continue
+		}
+		miningSent = true
+	}
+
+	return nil
+}
+
+func sendMining(ctx context.Context, macs []string, mxc_price, amount float64) error {
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
 		log.WithError(err).Error("create m2mClient for mining error")
+
 		return err
 	}
 
 	miningClient := api.NewMiningServiceClient(m2mClient)
 
-	_, err = miningClient.Mining(ctx, &api.MiningRequest{
-		GatewayMac: macs,
+	resp, err := miningClient.Mining(ctx, &api.MiningRequest{
+		GatewayMac:    macs,
 		MiningRevenue: amount,
-		MxcPrice: mxc_price,
+		MxcPrice:      mxc_price,
 	})
 	if err != nil {
 		log.WithError(err).Error("Mining API request error")
 		return err
+	}
+
+	// if response == false, resend the request to m2m
+	for !resp.Status {
+		time.Sleep(60 * time.Second)
+		log.Println("Resend mining request.......")
+		resp, err = miningClient.Mining(ctx, &api.MiningRequest{
+			GatewayMac:    macs,
+			MiningRevenue: amount,
+			MxcPrice:      mxc_price,
+		})
+		if err != nil {
+			log.WithError(err).Error("Mining API request error")
+			return err
+		}
 	}
 
 	return nil

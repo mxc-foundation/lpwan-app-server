@@ -305,6 +305,29 @@ func UpdateLastHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64,
 	return nil
 }
 
+func UpdateGatewayModel(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, model string) error  {
+	res, err := db.Exec(`
+		update gateway
+			set model = $1
+		where
+			mac = $2`,
+		model,
+		mac,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update gateway model error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+
+	return nil
+}
+
 // DeleteGateway deletes the gateway matching the given MAC.
 func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 	n, err := GetNetworkServerForGatewayMAC(ctx, db, mac)
@@ -458,11 +481,12 @@ func GetFirstHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) 
 func GetLastHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (int64, error) {
 	var lastHeartbeat int64
 
-	err := sqlx.Select(db, &lastHeartbeat, `
+	err := sqlx.Get(db, &lastHeartbeat, `
 		select 
 			last_heartbeat
 		from gateway
-		where mac = $1`,
+		where mac = $1
+		limit 1`,
 		mac,
 	)
 	if err != nil {
