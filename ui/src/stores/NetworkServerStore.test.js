@@ -37,16 +37,43 @@ describe('NetworkServerStore', () => {
         done();
     });
 
-/* it('list', () => {
-    const id = 1;
-    const organizationID = 1;
-    const limit = 10;
-    const offset = 0;
-    networkServerStore.list(organizationID, limit, offset, callbackFunc, errorCallbackFunc
-        result => {
-            console.log(result.activeAccount);
-            expect(result.activeAccount).toBeDefined();
-        });
-}); */
+    it('list', async (done) => {
+        const id = 1;
+        const organizationID = 1;
+        const limit = 10;
+        const offset = 0;
+        
+        const result = await networkServerStore.list(organizationID, limit, offset);
+        
+        expect(result).toBeDefined();
+        done();
+    }); 
+
+    /* it('delete', async (done) => {
+        const id = '1';
+        
+        const result = await networkServerStore.delete(id);
+        
+        expect(result).toBeDefined();
+        done();
+    }); */
+
+    /* it('update', async (done) => {
+        const networkServer = {};
+        
+        const result = await networkServerStore.update(networkServer);
+        
+        expect(result).toBeDefined();
+        done();
+    });
+
+    it('create', async (done) => {
+        const networkServer = {};
+        
+        const result = await networkServerStore.create(networkServer) ;
+        
+        expect(result).toBeDefined();
+        done();
+    }); */
 
 });

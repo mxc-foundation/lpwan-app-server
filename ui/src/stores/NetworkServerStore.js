@@ -83,7 +83,7 @@ class NetworkServerStore extends EventEmitter {
         });
 
         resp = await checkStatus(resp);
-        this.notify("deleted");
+        //this.notify("deleted");
         return resp.obj;
       } catch (error) {
         errorHandler(error);
