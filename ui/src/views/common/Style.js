@@ -6,7 +6,8 @@ const Styles = {
     height: '7vw',
     margin: '2%',
     borderRadius: 5,
-    fontSize: '7vw'
+    fontSize: '7vw',
+    textAlign: 'center'
   },
   numLayout: {
     display: 'flex',

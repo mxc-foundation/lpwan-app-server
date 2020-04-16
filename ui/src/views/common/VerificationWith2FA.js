@@ -2,9 +2,10 @@ import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import NumberFormat from 'react-number-format';
 import { Link, withRouter } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Card, Col, Row, Container } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Card, Col, Row, Container, Alert } from 'reactstrap';
 import TitleBar from "../../components/TitleBar";
 import localStyles from "./Style";
+import SessionStore from "../../stores/SessionStore";
 import i18n, { packageNS } from "../../i18n";
 
 const styles = {
@@ -15,7 +16,8 @@ class VerificationWith2FA extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            isVerified: false
+            isVerified: false,
+            token:[0,0,0,0,0,0]
         }
     }
 
@@ -35,7 +37,21 @@ class VerificationWith2FA extends Component {
     }
 
     next = () => {
-        this.props.history.push(this.props.next);;
+        if(SessionStore.getOTPToken('otp') == this.state.token.join("")){
+            this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
+        }else{
+            this.state.isVerified = false;
+            let token = this.state.token;
+            token = [0,0,0,0,0,0];
+            this.setState({token});
+            //alert('Incorrect OTP code. Please, try again.');
+        }
+    }
+
+    handleChange = (e) => {
+        let token = this.state.token;
+        token[e.target.id] = e.target.value;
+        this.setState({token});
     }
 
     render() {
@@ -57,12 +73,12 @@ class VerificationWith2FA extends Component {
                             </div>
                         </Row>
                         <Row className={classes.numLayout}>
-                            <NumberFormat id="amount" format="#" className={classes.num} value={this.state.num_0} />
-                            <NumberFormat id="amount" format="#" className={classes.num} value={this.state.num_1} />
-                            <NumberFormat id="amount" format="#" className={classes.num} value={this.state.num_2} />
-                            <NumberFormat id="amount" format="#" className={classes.num} value={this.state.num_3} />
-                            <NumberFormat id="amount" format="#" className={classes.num} value={this.state.num_4} />
-                            <NumberFormat id="amount" format="#" className={classes.num} value={this.state.num_5} />
+                            <NumberFormat id="0" format="#" onChange={this.handleChange} className={classes.num} value={this.state.token['0']} />
+                            <NumberFormat id="1" format="#" onChange={this.handleChange} className={classes.num} value={this.state.token['1']} />
+                            <NumberFormat id="2" format="#" onChange={this.handleChange} className={classes.num} value={this.state.token['2']} />
+                            <NumberFormat id="3" format="#" onChange={this.handleChange} className={classes.num} value={this.state.token['3']} />
+                            <NumberFormat id="4" format="#" onChange={this.handleChange} className={classes.num} value={this.state.token['4']} />
+                            <NumberFormat id="5" format="#" onChange={this.handleChange} className={classes.num} value={this.state.token['5']} />
                         </Row>
                         <Row>
                             <div className="text-center" style={{ width: '100%' }}>

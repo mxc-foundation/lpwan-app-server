@@ -20,7 +20,6 @@ const regSchema = Yup.object().shape({
 class RegistrationFormAverage extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       object: this.props.object || { username: "" },
       isVerified: false,

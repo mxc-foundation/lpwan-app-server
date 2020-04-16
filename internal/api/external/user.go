@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"crypto/rand"
+	"io"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -22,7 +24,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	"github.com/gofrs/uuid"
+	//"github.com/gofrs/uuid"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	log "github.com/sirupsen/logrus"
@@ -474,6 +476,18 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 
 	return &out, nil
 }
+func OTPgen() string {
+	var table = [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
+	otp := make([]byte, 6)
+	n, err := io.ReadAtLeast(rand.Reader, otp, 6)
+	if n != 6 {
+		panic(err)
+	}
+	for i := 0; i < len(otp); i++ {
+		otp[i] = table[int(otp[i])%len(table)]
+	}
+	return string(otp)
+}
 
 // RegisterUser adds new user and sends activation email
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
@@ -491,12 +505,12 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		IsActive:   false,
 	}
 
-	u, err := uuid.NewV4()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, helpers.ErrToRPCError(err)
-	}
-	token := u.String()
+	u := OTPgen()
+	// if err != nil {
+	// 	log.WithError(err).Error(logInfo)
+	// 	return nil, helpers.ErrToRPCError(err)
+	// }
+	token := u
 
 	obj, err := storage.GetUserByUsername(ctx, storage.DB(), user.Username)
 	if err == storage.ErrDoesNotExist {

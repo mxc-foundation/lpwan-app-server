@@ -45,8 +45,8 @@ import OrganizationRedirect from "./views/organizations/OrganizationRedirect";
 import Login from "./views/users/Login";
 import Logout from "./views/users/Logout";
 import Registration from "./views/users/Registration";
-import RegistrationConfirm from "./views/users/RegistrationConfirm.js.bak";
-import RegistrationConfirmSteptwo from "./views/users/RegistrationConfirmSteptwo.js.bak";
+import RegistrationConfirm from "./views/users/RegistrationConfirm.js";
+import RegistrationConfirmSteptwo from "./views/users/RegistrationConfirmSteptwo.js";
 
 import ListUsers from "./views/users/ListUsers";
 import CreateUser from "./views/users/CreateUser";
@@ -175,6 +175,22 @@ class NotLoggedinRoute extends Component {
     return !user ?
       <Comp {...otherProps} /> :
       <Redirect to='/' />;
+  }
+  render() {
+    return (
+      <Route {...this.props}
+        render={this.route}
+      />
+    )
+  }
+}
+
+class NewRoute extends Component {
+  route = (props) => {
+    const { Comp, ...otherProps } = this.props;
+
+    SessionStore.setOTPToken(props.match.params.securityToken);
+    return <Redirect to='/registration-confirm' />;
   }
   render() {
     return (
@@ -542,14 +558,24 @@ class App extends Component {
                 <Route exact path="/registration" component={Registration} />
                 <Route exact path="/password-recovery" component={PasswordRecovery} />
                 <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
-                <Route exact path="/registration-confirm/:securityToken"
+                {/* <Route exact path="/registration-confirm/:securityToken"
                   render={props =>
                     <RegistrationConfirm {...props}
                       language={language}
                       onChangeLanguage={this.onChangeLanguage}
                     />
                   }
-                />
+                /> */}
+                <NewRoute exact path="/registration-confirm/:securityToken"
+                  Comp={RegistrationConfirm} 
+                  />
+                {/* <Route
+                  path="/registration-confirm/:securityToken"
+                  component={({ match }) => {
+                    return <Redirect to={{ path: '/registration-confirm', state: {...match.params}}} />;
+                  }}
+                /> */}
+                <Route exact path="/registration-confirm" component={RegistrationConfirm} />
                 <Route exact path="/VerificationWith2FA" component={VerificationWith2FA} />
                 <Route exact path="/registration-confirm-steptwo/:securityToken"
                   render={props =>
