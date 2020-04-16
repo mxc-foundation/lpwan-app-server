@@ -20,12 +20,10 @@ const regSchema = Yup.object().shape({
 class RegistrationFormAverage extends Component {
   constructor(props) {
     super(props);
-    let value = this.createOTP();
     this.state = {
       object: this.props.object || { username: "" },
       isVerified: false,
-      bypassCaptcha: this.props.bypassCaptcha,
-      OTP: value
+      bypassCaptcha: this.props.bypassCaptcha
     }
   }
 
@@ -39,11 +37,6 @@ class RegistrationFormAverage extends Component {
     SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
       this.setState({ isVerified: resp.success });
     });
-  }
-
-  createOTP = () => {
-    let value = Math.floor(100000 + Math.random() * 900000);
-    return value;
   }
 
   render() {
