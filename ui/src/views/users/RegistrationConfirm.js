@@ -26,8 +26,13 @@ class RegistrationConfirm extends Component {
     }
 
     render() {
+        let token = '';
+        if(this.props !== undefined){
+            token = this.props.match.params.securityToken;
+        }
+        
         return (
-            <VerificationWith2FA restart={`/registration`} next={`/registration-confirm-steptwo/${this.props.match.params.securityToken}`}/>
+            <VerificationWith2FA restart={`/registration`} next={`/registration-confirm-steptwo/${token}`}/>
         );
     }
 }
