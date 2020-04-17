@@ -65,6 +65,11 @@ Content-ID: html-body
                                     </td>
                                 </tr>
                                 <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
+                                    <td class=3D"content-block" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+										OTP Code: <span style=3D"color: red; font-weight: bold;" >{{ .Token }} </span>
+                                    </td>                          
+                                </tr>
+                                <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
                                     <td class=3D"content-block" itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                         <a href=3D"{{ .Link }}" class=3D"btn-primary" itemprop="url" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: {{ .SecondaryColor }}; margin: 0; border-color: {{ .SecondaryColor }}; border-style: solid; border-width: 8px 16px;">Confirm
                                             email address</a>

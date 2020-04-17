@@ -794,7 +794,8 @@
       "submit": "완료",
       "cancel": "취소",
       "comment": "주석",
-      "done": "완료"
+      "done": "완료",
+      "code_unmatch":"OTP code가 일치하지 않습니다. 다시 해주세요."
     },
     "system_settings": {
       "system_settings": "수수료"

@@ -93,17 +93,42 @@ class AdminDashboard extends Component {
                     ]
                 },
                 "topup": {
-                    "total": 200000,
+                    "total": 2595.280013219711,
                     "data": [
-                        { "month": "Jun", "amount": 92000 },
-                        { "month": "Jul", "amount": 220000 },
-                        { "month": "Aug", "amount": 242000 },
-                        { "month": "Sep", "amount": 34000 },
-                        { "month": "Oct", "amount": 155000 },
-                        { "month": "Nov", "amount": 172050 },
-                        { "month": "Dec", "amount": 48500 },
+                      {
+                        "month": "2020 April",
+                        "amount": 2545.280013219711
+                      },
+                      {
+                        "month": "2020 May",
+                        "amount": 2545.280013219711
+                      },
+                      {
+                        "month": "2020 Jun",
+                        "amount": 2545.280013219711
+                      },
+                      {
+                        "month": "2020 Jul",
+                        "amount": 2545.280013219711
+                      },
+                      {
+                        "month": "2020 Aug",
+                        "amount": 2545.280013219711
+                      },
+                      {
+                        "month": "2020 Sep",
+                        "amount": 2545.280013219711
+                      },
+                      {
+                        "month": "2020 Oct",
+                        "amount": 2545.280013219711
+                      },
+                      {
+                        "month": "2020 April",
+                        "amount": 2545.280013219711
+                      }
                     ]
-                },
+                  },
                 "supernodeAmount": {
                     "total": 545000,
                     "data": [
