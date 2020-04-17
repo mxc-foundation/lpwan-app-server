@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import NumberFormat from 'react-number-format';
 import { Link, withRouter } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Card, Col, Row, Container, Alert } from 'reactstrap';
+import Modal from "../common/Modal";
 import TitleBar from "../../components/TitleBar";
 import localStyles from "./Style";
 import SessionStore from "../../stores/SessionStore";
@@ -17,14 +18,13 @@ class VerificationWith2FA extends Component {
         super(props);
         this.state = {
             isVerified: false,
+            nsDialog: false,
             token:[0,0,0,0,0,0]
         }
     }
 
 
     componentDidMount() {
-        console.log('this.props',this.props);
-        console.log('username',SessionStore.getUsernameTemp());
         //this.loadData();
     }
 
@@ -43,9 +43,11 @@ class VerificationWith2FA extends Component {
             this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
         }else{
             this.state.isVerified = false;
-            let token = this.state.token;
-            token = [0,0,0,0,0,0];
-            this.setState({token});
+            let object = this.state;
+            object.token = [0,0,0,0,0,0];
+            object.isVerified = false;
+            object.nsDialog = true;
+            this.setState({object});
             //alert('Incorrect OTP code. Please, try again.');
         }
     }
@@ -56,14 +58,23 @@ class VerificationWith2FA extends Component {
         this.setState({token});
     }
 
+    close = () => {
+        let object = this.state;
+        object.nsDialog = false;
+        this.setState({object});
+    }
+
     render() {
         const { classes } = this.props;
 
         return (
             <React.Fragment>
-                <TitleBar>
-
-                </TitleBar>
+                {this.state.nsDialog && <Modal
+                    title={""}
+                    context={i18n.t(`${packageNS}:menu.common.code_unmatch`)}
+                    closeModal={() => this.setState({ nsDialog: false })}
+                    callback={this.close}
+                />}
                 <Container>
                     <Card className="card-box shadow-sm">
                         <Row>
