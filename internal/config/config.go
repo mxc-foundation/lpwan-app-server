@@ -135,10 +135,9 @@ type Config struct {
 		} `mapstructure:"branding"`
 
 		MiningSetUp struct {
-			Mining       bool `mapstructure:"mining"`
+			Mining bool   `mapstructure:"mining"`
 			CMCKey string `mapstructure:"cmc_key"`
 		} `mapstructure:"mining_setup"`
-
 	} `mapstructure:"application_server"`
 
 	RegistrationServer struct {

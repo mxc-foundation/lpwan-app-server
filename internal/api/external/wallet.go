@@ -105,6 +105,62 @@ func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.Ge
 	}, status.Error(codes.OK, "")
 }
 
+func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningInfoRequest) (*api.GetMiningInfoResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetMiningInfo org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
+
+	resp, err := walletClient.GetMiningInfo(ctx, &m2mServer.GetMiningInfoRequest{
+		UserId: req.UserId,
+		OrgId:  req.OrgId,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	/*miningInfo := &api.GetMiningInfoResponse{}
+	for _, v := range resp.MiningData {
+		miningInfo.MiningData = append(miningInfo.MiningData, v)
+	}*/
+
+	var miningData []*api.MiningData
+	for _, item := range resp.Data {
+		miningInfo := &api.MiningData{
+			Month: item.Month,
+			Amount: item.Amount,
+		}
+
+		miningData = append(miningData, miningInfo)
+	}
+
+	return &api.GetMiningInfoResponse{
+		Total: resp.Total,
+		Data: miningData,
+	}, status.Error(codes.OK, "")
+}
+
 // GetVmxcTxHistory gets virtual MXC transaction history
 func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxcTxHistoryRequest) (*api.GetVmxcTxHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetVmxcTxHistory org=" + strconv.FormatInt(req.OrgId, 10)
