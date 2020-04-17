@@ -146,7 +146,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	}*/
 
 	var miningData []*api.MiningData
-	for _, item := range resp.MiningData {
+	for _, item := range resp.Data {
 		miningInfo := &api.MiningData{
 			Month: item.Month,
 			Amount: item.Amount,
@@ -156,8 +156,8 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	}
 
 	return &api.GetMiningInfoResponse{
-		MiningIncome: resp.MiningIncome,
-		MiningData: miningData,
+		Total: resp.Total,
+		Data: miningData,
 	}, status.Error(codes.OK, "")
 }
 

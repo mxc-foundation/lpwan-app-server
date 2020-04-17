@@ -74,8 +74,8 @@ message GetMiningInfoRequest {
 }
 
 message GetMiningInfoResponse {
-    double mining_income = 1;
-    repeated MiningData mining_data = 2;
+    double total = 1;
+    repeated MiningData data = 2;
 }
 
 message GetVmxcTxHistoryRequest {

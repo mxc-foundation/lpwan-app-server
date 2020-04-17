@@ -231,11 +231,11 @@
     "appserver_serves_uiGetMiningInfoResponse": {
       "type": "object",
       "properties": {
-        "miningIncome": {
+        "total": {
           "type": "number",
           "format": "double"
         },
-        "miningData": {
+        "data": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/appserver_serves_uiMiningData"
