@@ -6,7 +6,7 @@ import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
 import AddWidget from './AddWidget';
 import { adminWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_MAP, WIDGET_TYPE_STAT } from './widgets/';
-import topupStore from "../../stores/TopupStore";
+import WalletStore from "../../stores/WalletStore";
 
 
 
@@ -74,7 +74,11 @@ class AdminDashboard extends Component {
             day.setDate(day.getDate() - idx);
             packetsData.push({ "day": day.getDate(), "packets": Math.floor(Math.random() * 120) + 10 })
         }
-        const topup = await  topupStore.topupWidget();
+
+        let userId = '5';
+        let orgId = '2';    
+
+        const topup = await  WalletStore.getWalletMiningIncome(userId, orgId);
         console.log('topupWidget', topup);
         this.setState({
             data: {
