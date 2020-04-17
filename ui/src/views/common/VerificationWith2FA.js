@@ -23,6 +23,8 @@ class VerificationWith2FA extends Component {
 
 
     componentDidMount() {
+        console.log('this.props',this.props);
+        console.log('username',SessionStore.getUsernameTemp());
         //this.loadData();
     }
 

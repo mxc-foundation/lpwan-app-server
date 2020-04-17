@@ -53,6 +53,14 @@ class SessionStore extends EventEmitter {
     return localStorage.getItem("otp");
   }
 
+  setUsernameTemp(username) {
+    localStorage.setItem("usernameTemp", username);
+  }
+
+  getUsernameTemp() {
+    return localStorage.getItem("usernameTemp");
+  }
+
   setSupportedLanguages(languages) {
     localStorage.setItem("languages-supported", JSON.stringify(languages));
   }
