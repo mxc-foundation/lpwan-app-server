@@ -70,7 +70,6 @@ class RegistrationFormAverage extends Component {
 
     return (
       <React.Fragment>
-        
         <Formik
           initialValues={this.state.object}
           validationSchema={regSchema}
@@ -136,36 +135,36 @@ class RegistrationFormRestricted extends Component {
   render() {
 
     return (
-        <React.Fragment>
-          <Formik
-              initialValues={this.state.object}
-              validationSchema={regSchema}
-              onSubmit={(values) => {
-                const castValues = regSchema.cast(values);
-                this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
-              }}>
-            {({
-                handleSubmit,
-                handleBlur
-              }) => (
-                <Form onSubmit={handleSubmit} noValidate>
-                  <Field
-                      type="text"
-                      label={i18n.t(`${packageNS}:tr000003`)}
-                      name="username"
-                      id="username"
-                      component={ReactstrapInput}
-                      onBlur={handleBlur}
-                  />
+      <React.Fragment>
+        <Formik
+          initialValues={this.state.object}
+          validationSchema={regSchema}
+          onSubmit={(values) => {
+            const castValues = regSchema.cast(values);
+            this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
+          }}>
+          {({
+            handleSubmit,
+            handleBlur
+          }) => (
+              <Form onSubmit={handleSubmit} noValidate>
+                <Field
+                  type="text"
+                  label={i18n.t(`${packageNS}:tr000003`)}
+                  name="username"
+                  id="username"
+                  component={ReactstrapInput}
+                  onBlur={handleBlur}
+                />
 
-                  <div className="mt-1">
-                    <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000020`)}</Button>
-                    <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
-                  </div>
-                </Form>
+                <div className="mt-1">
+                  <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000020`)}</Button>
+                  <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
+                </div>
+              </Form>
             )}
-          </Formik>
-        </React.Fragment>
+        </Formik>
+      </React.Fragment>
     );
   }
 }
@@ -215,7 +214,7 @@ class Registration extends Component {
 
       this.setState({
         logoPath: result.logoPath,
-        serverRegion: serverRegion.serverRegion
+        serverRegion: serverRegion.serverRegion.trim()
       });
     } catch (error) {
       console.error(error);
@@ -246,6 +245,7 @@ class Registration extends Component {
       this.setState({ loading: true });
       SessionStore.register(user, () => {
         this.setState({ loading: false });
+        SessionStore.setUsernameTemp(user.username);
         this.props.history.push("/");
       });
     } else {
@@ -273,18 +273,16 @@ class Registration extends Component {
 
                   <div className="position-relative">
                     {this.state.loading && <Loader />}
-                    {this.state.serverRegion === "NOT_DEFINED" || this.state.serverRegion === "AVERAGE" &&
-                      <RegistrationFormAverage
+                    {
+                      this.state.serverRegion === "RESTRICTED"
+                        ? <RegistrationFormRestricted
                           onSubmit={this.onSubmit}
                           bypassCaptcha={this.state.bypassCaptcha}
-                      />
-                    }
-
-                    {this.state.serverRegion === "RESTRICTED" &&
-                      <RegistrationFormRestricted
+                        />
+                        : <RegistrationFormAverage
                           onSubmit={this.onSubmit}
                           bypassCaptcha={this.state.bypassCaptcha}
-                      />
+                        />
                     }
 
                   </div>

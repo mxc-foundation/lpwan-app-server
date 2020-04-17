@@ -373,14 +373,17 @@ class Login extends Component {
                   <CardBody>
                     <div className="position-relative">
                       {this.state.loading && <Loader />}
-                      { this.state.serverRegion === "NOT_DEFINED" || this.state.serverRegion === "AVERAGE" && <LoginFormAverage
-                        onSubmit={this.onSubmit}
-                        bypassCaptcha={this.state.bypassCaptcha}
-                      />}
-                      { this.state.serverRegion === "RESTRICTED" && <LoginFormRestricted
+                      {
+                        this.state.serverRegion === "RESTRICTED"  
+                          ?<LoginFormRestricted
+                            onSubmit={this.onSubmit}
+                            bypassCaptcha={this.state.bypassCaptcha}
+                            />
+                          :<LoginFormAverage
                           onSubmit={this.onSubmit}
                           bypassCaptcha={this.state.bypassCaptcha}
-                      />}
+                        />  
+                      }
                     </div>
 
                     <Row className="align-items-center">
