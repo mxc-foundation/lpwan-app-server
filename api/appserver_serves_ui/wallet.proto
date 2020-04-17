@@ -6,33 +6,39 @@ import "google/api/annotations.proto";
 import "internal.proto";
 
 service WalletService {
-    rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
-        option(google.api.http) = {
+    rpc GetWalletBalance (GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
+        option (google.api.http) = {
 			get: "/api/wallet/balance"
 		};
     }
 
-    rpc GetVmxcTxHistory(GetVmxcTxHistoryRequest) returns (GetVmxcTxHistoryResponse){
-        option(google.api.http) = {
+    rpc GetVmxcTxHistory (GetVmxcTxHistoryRequest) returns (GetVmxcTxHistoryResponse) {
+        option (google.api.http) = {
 			get: "/api/wallet/{org_id}/tx-history"
 		};
     }
 
-    rpc GetWalletUsageHist(GetWalletUsageHistRequest) returns (GetWalletUsageHistResponse) {
-        option(google.api.http) = {
+    rpc GetWalletUsageHist (GetWalletUsageHistRequest) returns (GetWalletUsageHistResponse) {
+        option (google.api.http) = {
     		get: "/api/wallet/{org_id}/usage-history"
     	};
     }
 
     rpc GetDlPrice (GetDownLinkPriceRequest) returns (GetDownLinkPriceResponse) {
-        option(google.api.http) = {
+        option (google.api.http) = {
     		get: "/api/wallet/{org_id}/downlink_price"
     	};
     }
 
-    rpc GetWalletMiningIncome(GetWalletMiningIncomeRequest) returns (GetWalletMiningIncomeResponse) {
-        option(google.api.http) = {
+    rpc GetWalletMiningIncome (GetWalletMiningIncomeRequest) returns (GetWalletMiningIncomeResponse) {
+        option (google.api.http) = {
 			get: "/api/wallet/mining_income"
+		};
+    }
+
+    rpc GetMiningInfo (GetMiningInfoRequest) returns (GetMiningInfoResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mining_info"
 		};
     }
 }
@@ -55,6 +61,21 @@ message GetWalletMiningIncomeRequest {
 message GetWalletMiningIncomeResponse {
     double mining_income = 1;
     ProfileResponse user_profile = 2;
+}
+
+message MiningData {
+    string month = 1;
+    double amount = 2;
+}
+
+message GetMiningInfoRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+}
+
+message GetMiningInfoResponse {
+    double mining_income = 1;
+    repeated MiningData mining_data = 2;
 }
 
 message GetVmxcTxHistoryRequest {
