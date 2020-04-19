@@ -49,6 +49,28 @@ describe('NetworkServerStore', () => {
         done();
     }); 
 
+    it('update', async (done) => {
+        const networkServer = {
+            caCert: "",
+            gatewayDiscoveryDR: undefined,
+            gatewayDiscoveryEnabled: false,
+            gatewayDiscoveryInterval: undefined,
+            gatewayDiscoveryTXFrequency: undefined,
+            id: "1",
+            name: "network-server2",
+            routingProfileCACert: "",
+            routingProfileTLSCert: "",
+            routingProfileTLSKey: "",
+            server: "network-server:8000",
+            tlsCert: "",
+            tlsKey: ""
+        };
+
+        const result = await networkServerStore.update(networkServer);
+        
+        expect(result).toBeDefined();
+        done();
+    });
     /* it('delete', async (done) => {
         const id = '1';
         
@@ -58,16 +80,7 @@ describe('NetworkServerStore', () => {
         done();
     }); */
 
-    /* it('update', async (done) => {
-        const networkServer = {};
-        
-        const result = await networkServerStore.update(networkServer);
-        
-        expect(result).toBeDefined();
-        done();
-    });
-
-    it('create', async (done) => {
+    /* it('create', async (done) => {
         const networkServer = {};
         
         const result = await networkServerStore.create(networkServer) ;
