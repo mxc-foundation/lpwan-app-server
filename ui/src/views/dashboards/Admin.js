@@ -7,13 +7,13 @@ import i18n, { packageNS } from '../../i18n';
 import AddWidget from './AddWidget';
 import { adminWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_MAP, WIDGET_TYPE_STAT } from './widgets/';
 import WalletStore from "../../stores/WalletStore";
-
+import SessionStore from "../../stores/SessionStore";
 
 
 
 class AdminDashboard extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
 
         this.state = {
             data: {},
@@ -75,11 +75,11 @@ class AdminDashboard extends Component {
             packetsData.push({ "day": day.getDate(), "packets": Math.floor(Math.random() * 120) + 10 })
         }
 
-        let userId = '5';
-        let orgId = '2';    
 
-        const topup = await  WalletStore.getWalletMiningIncome(userId, orgId);
-        console.log('topupWidget', topup);
+        const user = await SessionStore.getUser();
+        const orgId = await SessionStore.getOrganizationID();
+        const topup = await  WalletStore.getMiningInfo(user.id, orgId);
+
         this.setState({
             data: {
                 "tickets": {

@@ -43,7 +43,23 @@ class WalletStore extends EventEmitter {
   async getWalletMiningIncome(userId, orgId) {
     try {
         const client = await this.swagger;
-        let resp = await client.apis.StakingService.GetWalletMiningIncome({
+        let resp = await client.apis.WalletService.GetWalletMiningIncome({
+            userId,
+            orgId
+        });
+    
+        resp = await checkStatus(resp);
+        console.log('getMining', resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async getMiningInfo(userId, orgId) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.WalletService.GetMiningInfo({
             userId,
             orgId
         });
