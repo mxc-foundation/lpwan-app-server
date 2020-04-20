@@ -46,15 +46,15 @@ class ListServiceProfiles extends Component {
   /**
    * Fetches data from server
    */
-  getPage = (organizationID, limit, offset) => {
+  getPage = async (organizationID, limit, offset) => {
     this.setState({ loading: true });
-    ServiceProfileStore.list(organizationID, limit, offset, (res) => {
-      const object = this.state;
-      object.totalSize = Number(res.totalCount);
-      object.data = res.result;
-      object.loading = false;
-      this.setState({ object });
-    }, error => { this.setState({ loading: false }) });
+
+    const res = await ServiceProfileStore.list(organizationID, limit=10, offset=0);
+    const object = this.state;
+    object.totalSize = Number(res.totalCount);
+    object.data = res.result;
+    object.loading = false;
+    this.setState({ object });
   }
 
   serviceProfileColumn = (cell, row, index, extraData) => {

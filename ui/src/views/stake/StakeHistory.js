@@ -41,20 +41,26 @@ class StakeHistory extends Component {
     /**
      * Fetches data from server
      */
-    getPage = (limit, offset) => {
+    getPage = async (limit, offset) => {
         limit = MAX_DATA_LIMIT;
         
         this.setState({ loading: true });
         
         const orgId = this.props.match.params.organizationID;
         
-        StakeStore.getStakingHistory(orgId, offset, limit, (res) => {
-            const object = this.state;
+        const res = await StakeStore.getStakingHistory(orgId, offset, limit);
+        let object = {}
+        if(res !== undefined){
+            object = this.state;
             object.totalSize = Number(res.count);
             object.data = res.stakingHist;
             object.loading = false;
             this.setState({ object });
-        });
+        }else{
+            object = this.state;
+            object.loading = false;
+            this.setState({ object });
+        }
     }
 
     componentDidMount() {

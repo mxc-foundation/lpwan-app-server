@@ -62,21 +62,19 @@ class ListNetworkServers extends Component {
   /**
    * Fetches data from server
    */
-  getPage = (limit, offset) => {
-    limit = MAX_DATA_LIMIT;
+  getPage = async (limit, offset) => {
+    console.log('limit, offset', limit, offset);
     const defaultOrgId = 0;
-    this.setState({ loading: true });
-    NetworkServerStore.list(defaultOrgId, limit, offset, (res) => {
-      const object = this.state;
-      object.totalSize = Number(res.totalCount);
-      object.data = res.result;
-      object.loading = false;
-      this.setState({object});
-    }, error => { this.setState({ loading: false }) });
+    const res = await NetworkServerStore.list(defaultOrgId, limit=10, offset=0);
+    const object = this.state;
+    object.totalSize = Number(res.totalCount);
+    object.data = res.result;
+    object.loading = false;
+    this.setState({ object });
   }
 
   componentDidMount() {
-    this.getPage(MAX_DATA_LIMIT);
+    this.getPage();
   }
 
   render() {
