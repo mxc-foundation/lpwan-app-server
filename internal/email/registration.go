@@ -32,13 +32,14 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 
 	var msg bytes.Buffer
 	if err := mailTemplate.Execute(&msg, struct {
-		From, To, Host, MsgID, Boundary, Link, Logo, Operator, PrimaryColor, SecondaryColor string
+		From, To, Host, MsgID, Boundary, Token, Link, Logo, Operator, PrimaryColor, SecondaryColor string
 	}{
 		From:     senderID,
 		To:       user,
 		Host:     host,
 		MsgID:    messageID + "@" + host,
 		Boundary: "----=_Part_" + messageID,
+		Token:    token,
 		Link:     link,
 		Logo:     logo,
 		Operator: "MXC",
