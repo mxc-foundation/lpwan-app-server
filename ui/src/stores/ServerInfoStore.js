@@ -26,7 +26,7 @@ class ServerInfoStore extends EventEmitter {
 
   getServerRegion(callbackFunc) {
     this.swagger.then(client => {
-      client.apis.ServerInfoService.GetServerRegion({})
+      client.apis.ServerInfoService.GetServerRegion()
           .then(checkStatus)
           .then(resp => {
             callbackFunc(resp.obj);

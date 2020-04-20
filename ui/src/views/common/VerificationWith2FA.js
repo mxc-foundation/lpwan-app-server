@@ -7,6 +7,7 @@ import TitleBar from "../../components/TitleBar";
 import localStyles from "./Style";
 import SessionStore from "../../stores/SessionStore";
 import i18n, { packageNS } from "../../i18n";
+import Modal from "../common/Modal";
 
 const styles = {
     ...localStyles
@@ -17,7 +18,8 @@ class VerificationWith2FA extends Component {
         super(props);
         this.state = {
             isVerified: false,
-            token:[0,0,0,0,0,0]
+            modalOpen: false,
+            token:[]
         }
     }
 
@@ -43,9 +45,10 @@ class VerificationWith2FA extends Component {
             this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
         }else{
             this.state.isVerified = false;
-            let token = this.state.token;
-            token = [0,0,0,0,0,0];
-            this.setState({token});
+            let object = this.state;
+            object.token = [];
+            object.modalOpen = true;
+            this.setState({object});
             //alert('Incorrect OTP code. Please, try again.');
         }
     }
@@ -56,11 +59,23 @@ class VerificationWith2FA extends Component {
         this.setState({token});
     }
 
+    closeModal = () => {
+        let object = this.state;
+        object.modalOpen = false;
+        this.setState({object});
+    }
+
     render() {
         const { classes } = this.props;
 
         return (
             <React.Fragment>
+                {this.state.modalOpen && <Modal
+                    title={i18n.t(`${packageNS}:menu.topup.notice`)}
+                    context={"unmatched"}
+                    //closeModal={() => this.closeInfoModal()}
+                    callback={this.closeModal}
+                    />}
                 <TitleBar>
 
                 </TitleBar>
