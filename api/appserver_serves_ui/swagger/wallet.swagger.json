@@ -231,7 +231,7 @@
     "appserver_serves_uiGetMiningInfoResponse": {
       "type": "object",
       "properties": {
-        "total": {
+        "todayRev": {
           "type": "number",
           "format": "double"
         },
