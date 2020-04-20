@@ -18,14 +18,14 @@ class CreateNetworkServer extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  onSubmit(networkServer) {
+  onSubmit = async (networkServer) => {
     this.setState({ loading: true });
-    NetworkServerStore.create(networkServer, resp => {
-      this.setState({ loading: false });
-      this.props.history.push("/network-servers");
-    }, error => { this.setState({ loading: false }) });
+    let res = await NetworkServerStore.create(networkServer);
+  
+    this.props.history.push("/network-servers");
+    this.setState({ loading: false })
   }
-
+ 
   render() {
     return (
       <React.Fragment>

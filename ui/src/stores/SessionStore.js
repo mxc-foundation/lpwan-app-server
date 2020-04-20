@@ -23,7 +23,7 @@ class SessionStore extends EventEmitter {
       if (token) {// !== null && !history.location.pathname.includes('/registration-confirm/')) {
         this.fetchProfile(() => {});
       }
-    });
+    }).catch(error => console.log(error));
   }
 
   getClientOpts() {
@@ -31,6 +31,11 @@ class SessionStore extends EventEmitter {
       requestInterceptor: (req) => {
         if (this.getToken() !== null) {
           req.headers["Grpc-Metadata-Authorization"] = "Bearer " + this.getToken();
+        }
+        if (typeof process !== 'undefined' && eval("process.title.endsWith('node')")) {
+          // TODO: fix this to use proper testing setup
+          // this is running on node -> prefix relative path with actual API server domain
+          req.url = 'http://localhost:8080' + req.url;
         }
         return req;
       },
@@ -167,8 +172,8 @@ class SessionStore extends EventEmitter {
   }
 
   login(login, callBackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.Login({body: login})
+    return this.swagger.then(client => {
+      return client.apis.InternalService.Login({body: login})
         .then(checkStatus)
         .then(resp => {
           this.setToken(resp.obj.jwt);
