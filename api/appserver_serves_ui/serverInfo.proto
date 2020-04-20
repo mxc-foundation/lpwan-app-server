@@ -12,8 +12,24 @@ service ServerInfoService {
             get: "/api/server-info/appserver-version"
         };
     };
+
+    rpc GetServerRegion(google.protobuf.Empty) returns (GetServerRegionResponse) {
+        option(google.api.http) = {
+            get: "/api/server-info/server-region"
+        };
+    };
 }
 
 message GetAppserverVersionResponse {
     string version = 1;
+}
+
+enum ServerRegion {
+    NOT_DEFINED = 0;
+    AVERAGE = 1;
+    RESTRICTED = 2;
+}
+
+message GetServerRegionResponse {
+    string server_region = 1;
 }
