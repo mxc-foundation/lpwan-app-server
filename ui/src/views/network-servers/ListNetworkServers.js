@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Card, Col, Row } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Card, Col, Row, Alert } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
@@ -66,6 +66,11 @@ class ListNetworkServers extends Component {
     console.log('limit, offset', limit, offset);
     const defaultOrgId = 0;
     const res = await NetworkServerStore.list(defaultOrgId, limit=10, offset=0);
+    if (!res) {
+      // do nothing, if `list` failed
+      this.setState({ errorMessage: 'could not `getPage`' });
+      return;
+    }
     const object = this.state;
     object.totalSize = Number(res.totalCount);
     object.data = res.result;
@@ -78,6 +83,7 @@ class ListNetworkServers extends Component {
   }
 
   render() {
+    const { errorMessage } = this.state;
 
     return(
       <React.Fragment>
@@ -98,6 +104,7 @@ class ListNetworkServers extends Component {
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000040`)}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
+        {errorMessage && <Alert style="danger">{errorMessage}</Alert> }
         <Row>
           <Col>
             <Card className="card-box shadow-sm">

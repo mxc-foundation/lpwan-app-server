@@ -16,7 +16,7 @@ class NetworkServerStore extends EventEmitter {
   
   async create(networkServer) {
     try {
-        const client = await this.swagger.then((client) => client);
+        const client = await this.swagger;
         let resp = await client.apis.NetworkServerService.Create({
           "networkServer.id": networkServer.id,
           body: {
@@ -77,13 +77,13 @@ class NetworkServerStore extends EventEmitter {
 
   async delete(id) {
     try {
-        const client = await this.swagger.then((client) => client);
+        const client = await this.swagger;
         let resp = await client.apis.NetworkServerService.Delete({
           id
         });
 
         resp = await checkStatus(resp);
-        this.notify("deleted");
+        //this.notify("deleted");
         return resp.obj;
       } catch (error) {
         errorHandler(error);
@@ -92,7 +92,7 @@ class NetworkServerStore extends EventEmitter {
 
   async list(organizationID, limit, offset) {
     try {
-        const client = await this.swagger.then((client) => client);
+        const client = await this.swagger;
         let resp = await client.apis.NetworkServerService.List({
           organizationID,
           limit,
@@ -103,6 +103,7 @@ class NetworkServerStore extends EventEmitter {
         return resp.obj;
       } catch (error) {
         errorHandler(error);
+        return undefined;
     }
   }
   
