@@ -1,17 +1,16 @@
 import React from 'react';
-import { mount, configure } from 'enzyme';
-import { MemoryRouter } from 'react-router-dom'
+import { shallow } from 'enzyme';
 import ListNetworkServers from './ListNetworkServers';
-import Adapter from 'enzyme-adapter-react-16';
 
-
-configure({ adapter: new Adapter() })
+jest.mock('history',  () =>  ({
+  createHashHistory: jest.fn(),
+  createMemoryHistory: jest.fn(),
+}))
 
 it('ListNetworkServer list', () => {
-  const wrapper = mount(
-    <MemoryRouter>
-      <ListNetworkServers ></ListNetworkServers>
-    </MemoryRouter>
+
+  const wrapper = shallow(
+    <ListNetworkServers />
   );
   expect(wrapper).toMatchSnapshot();
 });

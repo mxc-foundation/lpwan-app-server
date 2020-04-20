@@ -52,12 +52,7 @@ class DeviceLayout extends Component {
       });
     }
 
-    OrganizationStore.get(currentOrgID, resp => {
-      this.setState({
-        organization: resp.organization,
-        loading: false
-      });
-    });
+    this.loadOrganization(currentOrgID);
 
     DeviceStore.on("update", this.getDevice);
     SessionStore.on("change", this.setIsAdmin);
@@ -65,6 +60,14 @@ class DeviceLayout extends Component {
     this.getMainTabDeviceIndexFromLocation();
     this.setIsAdmin();
     this.getDevice();
+  }
+
+  loadOrganization = async (id) => {
+    let resp = await OrganizationStore.get(id);  
+    this.setState({
+      organization: resp.organization,
+      loading: false
+    });
   }
 
   componentWillUnmount() {

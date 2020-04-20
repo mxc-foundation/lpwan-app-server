@@ -87,12 +87,9 @@ class Sidebar extends Component {
     componentDidMount = () => {
         this.initMenu();
         this.loadData();
-        SessionStore.on("organization.change", () => {
-            OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
-              this.setState({
-                organization: resp.organization,
-              });
-            });
+        SessionStore.on("organization.change", async () => {
+            let organization = await OrganizationStore.get(SessionStore.getOrganizationID());
+            this.setState({ organization: organization.organization });
           });
       
           OrganizationStore.on("create", () => {
@@ -145,10 +142,9 @@ class Sidebar extends Component {
         }
       }
     
-      getOrganizationOption(id, callbackFunc) {
-        OrganizationStore.get(id, resp => {
-          callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
-        });
+      getOrganizationOption = async (id, callbackFunc) =>  {
+        let resp = await OrganizationStore.get(id);
+        callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
       }
     
       getOrganizationOptions(search, callbackFunc) {
@@ -158,18 +154,6 @@ class Sidebar extends Component {
         });
       }
     
-      /* handlingExtLink = () => {
-        const resp = SessionStore.getProfile();
-        resp.then((res) => {
-          let orgId = SessionStore.getOrganizationID();
-          const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
-    
-          OrganizationStore.get(orgId, resp => {
-            openM2M(resp.organization, isBelongToOrg, '/modify-account');
-          });
-        })
-      } */
-
     /**
      * Bind event
      */
