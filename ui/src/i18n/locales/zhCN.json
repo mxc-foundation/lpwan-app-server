@@ -939,6 +939,8 @@
       "email": "电子邮箱地址",
       "password": "密码",
       "password_hint": "(单词必须包含至少 8 个字符，一个数字，一个符号，一个字母。)",
+      "user_validation": "不是电子邮件格式，或者用户已经存在。",
+      "orgname_hint": "允许的字母，数字，破折号和下划线",
       "password_match_error": "密码必须包含至少 8 个字符或更多，一个数字，一个符号和一个字母。",
       "confirm_password": "确认密码",
       "confirm_password_match_error": "密码和确认密码必须相同。",

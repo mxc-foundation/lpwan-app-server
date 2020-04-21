@@ -939,6 +939,8 @@
       "email": "Eメールアドレス",
       "password": "パスワード",
       "password_hint": "(最小8文字、少なくとも1つの文字、1つの数字、1つの特殊文字)",
+      "user_validation": "メール形式ではないか、ユーザーが既に存在します。",
+      "orgname_hint": "文字、数字、「 - 」と「_」のみが許可されます。",
       "password_match_error": "最小8文字、少なくとも1つの文字、1つの数字、1つの特殊文字",
       "confirm_password": "パスワードの確認",
       "confirm_password_match_error": "パスワードと確認パスワードは同じでなければなりません",

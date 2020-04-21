@@ -939,6 +939,8 @@
       "email": "Email Address",
       "password": "Passwort",
       "password_hint": "(Minimum eight characters, at least one letter, one number and one special character)",
+      "user_validation": "not email format or the user already exist ",
+      "orgname_hint": "Only allow letters, numbers, dash, and underbar",
       "password_match_error": "Minimum eight characters, at least one letter, one number and one special character",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",

@@ -120,6 +120,21 @@ class UserStore extends EventEmitter {
     }
   }
 
+  async getUserEmail(userEmail) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.UserService.GetUserEmail({
+          userEmail
+      });
+   
+        resp = await checkStatus(resp);
+       
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
   notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",
