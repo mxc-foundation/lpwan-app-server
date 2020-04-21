@@ -50,7 +50,7 @@ class VerificationWith2FA extends Component {
 
         if (res !== undefined) {
             if (res.otpCode == this.state.token) {
-                this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
+                this.props.history.push(`/registration-confirm-steptwo/${this.state.token}`);
             } else {
                 this.state.isVerified = false;
                 let object = this.state;
