@@ -156,7 +156,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	}
 
 	return &api.GetMiningInfoResponse{
-		Total: resp.Total,
+		TodayRev: resp.TodayRev,
 		Data: miningData,
 	}, status.Error(codes.OK, "")
 }
