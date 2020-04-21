@@ -3,11 +3,12 @@ import React, { Component } from "react";
 import NumberFormat from 'react-number-format';
 import { Link, withRouter } from "react-router-dom";
 import { Breadcrumb, BreadcrumbItem, Card, Col, Row, Container, Alert } from 'reactstrap';
+import Modal from "../common/Modal";
 import TitleBar from "../../components/TitleBar";
 import localStyles from "./Style";
 import SessionStore from "../../stores/SessionStore";
+import UserStore from "../../stores/UserStore";
 import i18n, { packageNS } from "../../i18n";
-import Modal from "../common/Modal";
 
 const styles = {
     ...localStyles
@@ -25,9 +26,11 @@ class VerificationWith2FA extends Component {
 
 
     componentDidMount() {
-        console.log('this.props',this.props);
-        console.log('username',SessionStore.getUsernameTemp());
-        //this.loadData();
+        this.loadData();
+    }
+
+    loadData = async () => {
+        const res = await UserStore.getOTPToken();
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -73,7 +76,6 @@ class VerificationWith2FA extends Component {
                 {this.state.modalOpen && <Modal
                     title={i18n.t(`${packageNS}:menu.topup.notice`)}
                     context={"unmatched"}
-                    //closeModal={() => this.closeInfoModal()}
                     callback={this.closeModal}
                     />}
                 <TitleBar>

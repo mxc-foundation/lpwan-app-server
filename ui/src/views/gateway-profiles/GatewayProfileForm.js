@@ -215,16 +215,19 @@ class GatewayProfileForm extends FormComponent {
         });
     }
 
-    getNetworkServerOptions() {
-        NetworkServerStore.list(0, 999, 0, resp => {
-            const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
-            let object = this.state.object;
+    getNetworkServerOptions = async () => {
+        const res = await NetworkServerStore.list(0, 10, 0);
+        const options = res.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
+
+        let object = this.state.object;
+
+        if (object !== undefined) {
             object.options = options;
 
             this.setState({
                 object
             })
-        });
+        }
     }
 
     render() {
@@ -233,11 +236,11 @@ class GatewayProfileForm extends FormComponent {
         }
 
         let extraChannels = [];
-        
+
         //if(this.state.object !== undefined){
-            if (this.state.object.extraChannels !== undefined) {
-                extraChannels = this.state.object.extraChannels.map((ec, i) => <ExtraChannel key={i} channel={ec} i={i} onDelete={() => this.deleteExtraChannel(i)} onChange={ec => this.updateExtraChannel(i, ec)} />);
-            }
+        if (this.state.object.extraChannels !== undefined) {
+            extraChannels = this.state.object.extraChannels.map((ec, i) => <ExtraChannel key={i} channel={ec} i={i} onDelete={() => this.deleteExtraChannel(i)} onChange={ec => this.updateExtraChannel(i, ec)} />);
+        }
         //}
 
         return (

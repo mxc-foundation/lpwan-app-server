@@ -794,7 +794,8 @@
       "submit": "送信",
       "cancel": "キャンセル",
       "comment": "コメント",
-      "done": "完了"
+      "done": "完了",
+      "code_unmatch":"OTPコードが正しくありません。もう一度やり直してください。"
     },
     "system_settings": {
       "system_settings": "システム手数料"

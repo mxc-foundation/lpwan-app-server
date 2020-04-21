@@ -18,7 +18,7 @@ const CommonModal = (props) => {
         setModal(!modal);
         if (closeModal)
             closeModal();
-        props.callback();
+        props.callback();    
     }
     
     const proc = () => {
@@ -37,7 +37,7 @@ const CommonModal = (props) => {
                     {props.context}
                 </ModalBody>
                 <ModalFooter>
-                    {showCloseButton && <Button color="secondary" onClick={toggle}>{props.left !== undefined ? props.left : i18n.t(`${packageNS}:tr000424`)}</Button>}
+                    {showCloseButton && <Button color="secondary" onClick={toggle}>{props.left !== undefined ? props.left : i18n.t(`${packageNS}:tr000430`)}</Button>}{' '}
                 </ModalFooter>
             </Modal>
         </div>

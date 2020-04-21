@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"crypto/rand"
 	"io"
+	"strconv"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -544,6 +545,21 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 	}
 
 	return &empty.Empty{}, nil
+}
+
+func (a *UserAPI) GetOTPCode(ctx context.Context, req *pb.GetOTPCodeRequest) (*pb.GetOTPCodeResponse, error) {
+	otp, err := storage.GetTokenByUsername(ctx, storage.DB(),req.UserEmail)
+	if err != nil {
+		return nil, err
+	}
+
+	intOtp, err := strconv.Atoi(otp)
+	if err != nil {
+		log.WithError(err).Error("Convert intOtp error")
+		return nil, err
+	}
+
+	return &pb.GetOTPCodeResponse{OtpCode: int64(intOtp)}, nil
 }
 
 // ConfirmRegistration checks provided security token and activates user

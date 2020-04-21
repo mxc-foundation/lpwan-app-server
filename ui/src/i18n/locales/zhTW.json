@@ -794,7 +794,8 @@
       "submit": "完成",
       "cancel": "取消",
       "comment": "評論",
-      "done": "完成"
+      "done": "完成",
+      "code_unmatch":"incorrect OTP code. please, try it again."
     },
     "system_settings": {
       "system_settings": "系統設定"

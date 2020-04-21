@@ -24,15 +24,16 @@ class ServerInfoStore extends EventEmitter {
     });
   }
 
-  getServerRegion(callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServerInfoService.GetServerRegion()
-          .then(checkStatus)
-          .then(resp => {
-            callbackFunc(resp.obj);
-          })
-          .catch(errorHandler);
-    });
+  async getServerRegion() {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.ServerInfoService.GetServerRegion();
+    
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

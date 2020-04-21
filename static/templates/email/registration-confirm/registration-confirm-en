@@ -51,7 +51,6 @@ Content-ID: html-body
                                         <a href=3D"#" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
                                     </td>
                                 </tr>
-            
                                 <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
                                     <td class=3D"content-block" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                                         Enter the 6 digit code below on the SN website to complete registration: <b style=3D"box-sizing: border-box;font-weight: bolder;"> {{ .Token }} </b>
