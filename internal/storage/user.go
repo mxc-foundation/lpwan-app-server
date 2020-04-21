@@ -566,17 +566,18 @@ func GetUserByToken(db sqlx.Queryer, token string) (User, error) {
 }
 
 // GetTokenByUsername ...
-func GetTokenByUsername(db sqlx.Queryer, username string) (User, error) {
-	var user User
-	err := sqlx.Get(db, &user, "select security_token from \"user\" where username = $1", username)
+func GetTokenByUsername(ctx context.Context, db sqlx.Queryer, username string) (string, error) {
+	//var user User
+	var otp string
+	err := sqlx.Get(db, &otp, "select security_token from \"user\" where username = $1", username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, ErrDoesNotExist
+			return otp, ErrDoesNotExist
 		}
-		return user, errors.Wrap(err, "select error")
+		return otp, errors.Wrap(err, "select error")
 	}
 
-	return user, nil
+	return otp, nil
 }
 
 // FinishRegistration ...
