@@ -149,6 +149,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 // GetWithdraw sends the requests to cobo directly
 func (s *WithdrawServerAPI) GetWithdraw (ctx context.Context, req *api.GetWithdrawRequest) (*api.GetWithdrawResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
+
 	// verify if user is global admin
 	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
 	if err != nil {
@@ -161,11 +162,31 @@ func (s *WithdrawServerAPI) GetWithdraw (ctx context.Context, req *api.GetWithdr
 			log.WithError(err).Error(logInfo)
 			return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
-	} else {
-		return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
-	return &api.GetWithdrawResponse{Status: true}, nil
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWithdrawResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
+
+	resp, err := withdrawClient.GetWithdraw(ctx, &m2mServer.GetWithdrawRequest{
+		OrgId:            req.OrgId,
+		Amount:           req.Amount,
+		EthAddress:       req.EthAddress,
+		AvailableBalance: req.AvailableBalance,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWithdrawResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &api.GetWithdrawResponse{
+		Status: resp.Status,
+	}, status.Error(codes.OK, "")
 }
 
 // WithdrawReq defines request for withdraw
@@ -184,8 +205,6 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 			log.WithError(err).Error(logInfo)
 			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
-	} else {
-		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
