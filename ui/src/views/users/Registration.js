@@ -10,7 +10,7 @@ import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import SessionStore from "../../stores/SessionStore";
 import ServerInfoStore from "../../stores/ServerInfoStore";
-
+import UserStore from "../../stores/UserStore";
 import Google2FA from './Google2FA';
 
 const regSchema = Yup.object().shape({
@@ -25,6 +25,7 @@ class RegistrationFormAverage extends Component {
       isVerified: false,
       showSetup2FA: false,
       twofa_enabled: false,
+      isVerifiedDuplicate: null,
       bypassCaptcha: this.props.bypassCaptcha
     }
   }
@@ -39,6 +40,33 @@ class RegistrationFormAverage extends Component {
     SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
       this.setState({ isVerified: resp.success });
     });
+  }
+
+  verificationUser = async (userName) => {
+    
+    if (userName === '') {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    if (!isEmail(userName)) {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    const resp = await UserStore.getUserEmail(userName);
+    if(resp !== undefined){
+      if(resp.status){
+        this.setState({isVerifiedDuplicate:true});
+        return true;
+      }else{
+        this.setState({isVerifiedDuplicate:false});
+        return false;
+      }
+    }else{
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
   }
 
   showSetup2FA = () => {
@@ -67,19 +95,28 @@ class RegistrationFormAverage extends Component {
   }
 
   render() {
+    let fieldsSchema = {
+      username: Yup.string().trim().test('testname', i18n.t(`${packageNS}:menu.registration.user_validation`), this.verificationUser
+      ).required(i18n.t(`${packageNS}:tr000431`)),
+    }
+
+    const formSchema = Yup.object().shape(fieldsSchema);
 
     return (
       <React.Fragment>
         <Formik
           initialValues={this.state.object}
-          validationSchema={regSchema}
+          validationSchema={formSchema}
           onSubmit={(values) => {
-            const castValues = regSchema.cast(values);
-            this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
+            const castValues = formSchema.cast(values);
+            const isVerified = this.state.isVerified;
+            const isVerifiedDuplicate = this.state.isVerifiedDuplicate;
+            this.props.onSubmit({ isVerified, isVerifiedDuplicate, ...castValues })
           }}>
           {({
             handleSubmit,
-            handleBlur
+            handleBlur,
+            values,
           }) => (
               <Form onSubmit={handleSubmit} noValidate>
                 <Field
@@ -87,6 +124,7 @@ class RegistrationFormAverage extends Component {
                   label={i18n.t(`${packageNS}:tr000003`)}
                   name="username"
                   id="username"
+                  value={values.username}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                 />
@@ -210,7 +248,7 @@ class Registration extends Component {
   loadData = async () => {
     try {
       let result = await GetBranding();
-      let serverRegion = await LoadServerRegion();
+      let serverRegion = await ServerInfoStore.getServerRegion();
 
       this.setState({
         logoPath: result.logoPath,
@@ -222,7 +260,7 @@ class Registration extends Component {
     }
   }
 
-  onSubmit(user) {
+  onSubmit = (user) => {
     if (this.state.serverRegion === "NOT_DEFINED" || this.state.serverRegion === "AVERAGE") {
       if (this.state.bypassCaptcha) {
         user.isVerified = true;
@@ -233,6 +271,10 @@ class Registration extends Component {
         return false;
       }
 
+    }
+
+    if (!user.isVerifiedDuplicate) {
+      return false;
     }
 
     if (SessionStore.getLanguage() && SessionStore.getLanguage().id) {

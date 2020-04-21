@@ -51,7 +51,6 @@ class VerificationWith2FA extends Component {
             }else{
                 this.state.isVerified = false;
                 let object = this.state;
-                object.token = [];
                 object.modalOpen = true;
                 this.setState({object});
             } 

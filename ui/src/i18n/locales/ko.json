@@ -939,6 +939,8 @@
       "email": "이메일",
       "password": "비밀번호",
       "password_hint": "(최소 8글자, 하나의 숫자와 특수 문자를 포함하여야 합니다.)",
+      "user_validation": "이멜 포맷이 아니거나 이미 존재하는 유저입니다.",
+      "orgname_hint": "문자, 숫자, '-' 와 '_'만 허용됩니다.",
       "password_match_error": "최소 8글자, 하나의 숫자와 특수 문자를 포함하여야 합니다.",
       "confirm_password": "승인",
       "confirm_password_match_error": "패스워드와 확인 패스워드가 일치하지 않습니다.",

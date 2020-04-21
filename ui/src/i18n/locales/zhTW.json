@@ -939,6 +939,8 @@
       "email": "電子信箱地址",
       "password": "密碼",
       "password_hint": "(單詞必須包含至少 8 個字符，一個數字，一個符號，一個字母。)",
+      "user_validation": "不是電子郵件格式，或者用戶已經存在。",
+      "orgname_hint": "允許的字母，數字，破折號和下劃線",
       "password_match_error": "單詞必須包含至少 8 個字符，一個數字，一個符號，一個字母。",
       "confirm_password": "確認您的密碼",
       "confirm_password_match_error": "密碼和確認密碼必須相同。",
