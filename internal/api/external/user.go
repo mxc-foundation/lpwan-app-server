@@ -1,17 +1,9 @@
 package external
 
 import (
-	"os"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"google.golang.org/grpc/status"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"crypto/rand"
-	"io"
-	"strconv"
-
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -19,6 +11,12 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
@@ -553,13 +551,7 @@ func (a *UserAPI) GetOTPCode(ctx context.Context, req *pb.GetOTPCodeRequest) (*p
 		return nil, err
 	}
 
-	intOtp, err := strconv.Atoi(otp)
-	if err != nil {
-		log.WithError(err).Error("Convert intOtp error")
-		return nil, err
-	}
-
-	return &pb.GetOTPCodeResponse{OtpCode: int64(intOtp)}, nil
+	return &pb.GetOTPCodeResponse{OtpCode: otp}, nil
 }
 
 // ConfirmRegistration checks provided security token and activates user

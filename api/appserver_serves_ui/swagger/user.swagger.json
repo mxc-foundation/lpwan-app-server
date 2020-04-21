@@ -288,8 +288,7 @@
       "type": "object",
       "properties": {
         "otpCode": {
-          "type": "string",
-          "format": "int64"
+          "type": "string"
         }
       }
     },

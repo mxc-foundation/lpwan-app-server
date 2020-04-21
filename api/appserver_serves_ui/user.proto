@@ -212,5 +212,5 @@ message GetOTPCodeRequest {
 }
 
 message GetOTPCodeResponse {
-    int64 otp_code = 1;
+    string otp_code = 1;
 }
