@@ -9,6 +9,14 @@ const Styles = {
     fontSize: '7vw',
     textAlign: 'center'
   },
+  numberFormat: {
+    width: '20px',
+    height: '20px',
+    margin: '2%',
+    borderRadius: 5,
+    fontSize: '7vw',
+    textAlign: 'center'
+  },
   numLayout: {
     display: 'flex',
     justifyContent: 'between'
