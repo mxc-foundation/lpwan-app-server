@@ -103,7 +103,7 @@ class VerificationWith2FA extends Component {
             <React.Fragment>
                 {this.state.modalOpen && <Modal
                     title={i18n.t(`${packageNS}:menu.topup.notice`)}
-                    context={"unmatched"}
+                    context={i18n.t(`${packageNS}:menu.registration.otp_unmatched`)}
                     callback={this.closeModal}
                 />}
                 <TitleBar>
