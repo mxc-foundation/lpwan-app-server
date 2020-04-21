@@ -26,11 +26,10 @@ class VerificationWith2FA extends Component {
 
 
     componentDidMount() {
-        this.loadData();
+        //this.loadData();
     }
 
     loadData = async () => {
-        const res = await UserStore.getOTPToken();
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -43,16 +42,21 @@ class VerificationWith2FA extends Component {
         this.props.history.push(this.props.restart);
     }
 
-    next = () => {
-        if(SessionStore.getOTPToken('otp') == this.state.token.join("")){
-            this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
+    next = async () => {
+        const username = await SessionStore.getUsernameTemp();
+        const res = await UserStore.getOTPCode(username);
+        if(res !== undefined){
+            if(res.otpCode == this.state.token.join("")){
+                this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
+            }else{
+                this.state.isVerified = false;
+                let object = this.state;
+                object.token = [];
+                object.modalOpen = true;
+                this.setState({object});
+            } 
         }else{
-            this.state.isVerified = false;
-            let object = this.state;
-            object.token = [];
-            object.modalOpen = true;
-            this.setState({object});
-            //alert('Incorrect OTP code. Please, try again.');
+            alert('OTPcode is undefined!');
         }
     }
 
