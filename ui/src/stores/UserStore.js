@@ -106,6 +106,20 @@ class UserStore extends EventEmitter {
     });
   }
 
+  getOTPCode = async (userEmail) => {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.UserService.GetOTPCode({
+          userEmail
+      });
+    
+        resp = await checkStatus(resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
   notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",

@@ -7,6 +7,7 @@ import Modal from "../common/Modal";
 import TitleBar from "../../components/TitleBar";
 import localStyles from "./Style";
 import SessionStore from "../../stores/SessionStore";
+import UserStore from "../../stores/UserStore";
 import i18n, { packageNS } from "../../i18n";
 
 const styles = {
@@ -18,14 +19,17 @@ class VerificationWith2FA extends Component {
         super(props);
         this.state = {
             isVerified: false,
-            nsDialog: false,
-            token:[0,0,0,0,0,0]
+            modalOpen: false,
+            token:[]
         }
     }
 
 
     componentDidMount() {
         //this.loadData();
+    }
+
+    loadData = async () => {
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -38,17 +42,21 @@ class VerificationWith2FA extends Component {
         this.props.history.push(this.props.restart);
     }
 
-    next = () => {
-        if(SessionStore.getOTPToken('otp') == this.state.token.join("")){
-            this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
+    next = async () => {
+        const username = await SessionStore.getUsernameTemp();
+        const res = await UserStore.getOTPCode(username);
+        if(res !== undefined){
+            if(res.otpCode == this.state.token.join("")){
+                this.props.history.push(`/registration-confirm-steptwo/${this.state.token.join("")}`);
+            }else{
+                this.state.isVerified = false;
+                let object = this.state;
+                object.token = [];
+                object.modalOpen = true;
+                this.setState({object});
+            } 
         }else{
-            this.state.isVerified = false;
-            let object = this.state;
-            object.token = [0,0,0,0,0,0];
-            object.isVerified = false;
-            object.nsDialog = true;
-            this.setState({object});
-            //alert('Incorrect OTP code. Please, try again.');
+            alert('OTPcode is undefined!');
         }
     }
 
@@ -58,9 +66,9 @@ class VerificationWith2FA extends Component {
         this.setState({token});
     }
 
-    close = () => {
+    closeModal = () => {
         let object = this.state;
-        object.nsDialog = false;
+        object.modalOpen = false;
         this.setState({object});
     }
 
@@ -69,12 +77,14 @@ class VerificationWith2FA extends Component {
 
         return (
             <React.Fragment>
-                {this.state.nsDialog && <Modal
-                    title={""}
-                    context={i18n.t(`${packageNS}:menu.common.code_unmatch`)}
-                    closeModal={() => this.setState({ nsDialog: false })}
-                    callback={this.close}
-                />}
+                {this.state.modalOpen && <Modal
+                    title={i18n.t(`${packageNS}:menu.topup.notice`)}
+                    context={"unmatched"}
+                    callback={this.closeModal}
+                    />}
+                <TitleBar>
+
+                </TitleBar>
                 <Container>
                     <Card className="card-box shadow-sm">
                         <Row>

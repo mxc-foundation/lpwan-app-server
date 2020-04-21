@@ -246,7 +246,7 @@ class Registration extends Component {
       SessionStore.register(user, () => {
         this.setState({ loading: false });
         SessionStore.setUsernameTemp(user.username);
-        this.props.history.push("/");
+        this.props.history.push("/registration-confirm/");
       });
     } else {
       alert(i18n.t(`${packageNS}:tr000024`));
