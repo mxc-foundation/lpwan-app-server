@@ -274,6 +274,19 @@ func GetUserByUsername(ctx context.Context, db sqlx.Queryer, username string) (U
 	return user, nil
 }
 
+func GetUserByEmail(ctx context.Context, db sqlx.Queryer, email string) (User, error)  {
+	var user User
+	err := sqlx.Get(db, &user, "select "+externalUserFields+" from \"user\" where username = $1", email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, ErrDoesNotExist
+		}
+		return user, errors.Wrap(err, "select error")
+	}
+
+	return user, nil
+}
+
 // GetUserCount returns the total number of users.
 func GetUserCount(ctx context.Context, db sqlx.Queryer, search string) (int32, error) {
 	var count int32

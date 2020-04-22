@@ -31,6 +31,22 @@
           "ServerInfoService"
         ]
       }
+    },
+    "/api/server-info/server-region": {
+      "get": {
+        "operationId": "GetServerRegion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetServerRegionResponse"
+            }
+          }
+        },
+        "tags": [
+          "ServerInfoService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -38,6 +54,14 @@
       "type": "object",
       "properties": {
         "version": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetServerRegionResponse": {
+      "type": "object",
+      "properties": {
+        "serverRegion": {
           "type": "string"
         }
       }
