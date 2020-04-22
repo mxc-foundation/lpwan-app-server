@@ -44,7 +44,7 @@ type Data struct {
 			LastUpdate string  `json:"last_update"`
 		}
 		USD struct {
-			Price      float64 `json:"price"`
+			Price      string `json:"price"`
 			LastUpdate string  `json:"last_update"`
 		}
 	}
@@ -138,7 +138,7 @@ func GetMXCprice(conf config.Config, amount string) (price string, err error) {
 		log.Println("JSON unmarshal error: ", err)
 	}
 
-	return cmc.Data.Quote.MXC.Price
+	return cmc.Data.Quote.USD.Price, nil
 }
 
 func tokenMining(ctx context.Context, conf config.Config) error {
