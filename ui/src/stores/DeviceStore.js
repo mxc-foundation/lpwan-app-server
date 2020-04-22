@@ -100,7 +100,7 @@ class DeviceStore extends EventEmitter {
   get(id, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Get({
-        devEUI: id,
+        devEui: id,
       })
       .then(checkStatus)
       .then(resp => {
