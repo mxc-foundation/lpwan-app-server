@@ -41,6 +41,12 @@ service WalletService {
 			get: "/api/wallet/mining_info"
 		};
     }
+
+    rpc GetMXCprice (GetMXCpriceRequest) returns (GetMXCpriceResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mxc_price"
+		};
+    }
 }
 
 message GetWalletBalanceRequest {
@@ -135,4 +141,14 @@ message GetDownLinkPriceRequest {
 message GetDownLinkPriceResponse {
     double down_link_price = 1;
     ProfileResponse user_profile = 2;
+}
+
+message GetMXCpriceRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+    string mxc_price = 3;
+}
+
+message GetMXCpriceResponse {
+    string mxc_price = 1;
 }

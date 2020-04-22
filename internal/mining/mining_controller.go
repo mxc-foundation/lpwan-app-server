@@ -43,6 +43,10 @@ type Data struct {
 			Price      float64 `json:"price"`
 			LastUpdate string  `json:"last_update"`
 		}
+		USD struct {
+			Price      string `json:"price"`
+			LastUpdate string  `json:"last_update"`
+		}
 	}
 }
 
@@ -67,7 +71,7 @@ func Setup(conf config.Config) error {
 
 	return nil
 }
-
+// getUSDprice returns 1 USD price in MXC
 func getUSDprice(conf config.Config) float64 {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
@@ -100,6 +104,41 @@ func getUSDprice(conf config.Config) float64 {
 	}
 
 	return cmc.Data.Quote.MXC.Price
+}
+
+// getMXCprice returns amount of MXC in USD
+func GetMXCprice(conf config.Config, amount string) (price string, err error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
+	if err != nil {
+		log.WithError(err).Error("CMC client error")
+		os.Exit(1)
+	}
+
+	q := url.Values{}
+	//q.Add("id", "2")
+	q.Add("symbol", "MXC")
+	q.Add("amount", amount)
+	q.Add("convert", "USD")
+
+	req.Header.Set("Accepts", "application/json")
+	req.Header.Add("X-CMC_PRO_API_KEY", conf.ApplicationServer.MiningSetUp.CMCKey)
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.WithError(err).Error("CMC request error")
+		os.Exit(1)
+	}
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	var cmc CMC
+	err = json.Unmarshal(respBody, &cmc)
+	if err != nil {
+		log.Println("JSON unmarshal error: ", err)
+	}
+
+	return cmc.Data.Quote.USD.Price, nil
 }
 
 func tokenMining(ctx context.Context, conf config.Config) error {
@@ -147,7 +186,7 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 		err := sendMining(ctx, macs, mxc_price, amount)
 		if err != nil {
 			log.WithError(err).Error("send mining request to m2m error")
-			time.Sleep(60 *time.Second)
+			time.Sleep(60 * time.Second)
 			continue
 		}
 		miningSent = true
