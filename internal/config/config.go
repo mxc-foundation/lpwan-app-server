@@ -35,10 +35,20 @@ type Config struct {
 	}
 
 	SMTP struct {
-		Email    string `mapstructure:"email"`
-		Password string `mapstructure:"password"`
-		Host     string `mapstructure:"host"`
-		Port     string `mapstructure:"port"`
+		Average struct{
+			Email    string `mapstructure:"email"`
+			Password string `mapstructure:"password"`
+			Host     string `mapstructure:"host"`
+			Port     string `mapstructure:"port"`
+		} `mapstructure:"average"`
+
+		Restricted struct{
+			Email    string `mapstructure:"email"`
+			Password string `mapstructure:"password"`
+			Host     string `mapstructure:"host"`
+			Port     string `mapstructure:"port"`
+		} `mapstructure:"restricted"`
+
 	} `mapstructure:"smtp"`
 
 	M2MServer struct {

@@ -80,7 +80,7 @@ message GetMiningInfoRequest {
 }
 
 message GetMiningInfoResponse {
-    double total = 1;
+    double todayRev = 1;
     repeated MiningData data = 2;
 }
 

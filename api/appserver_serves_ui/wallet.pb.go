@@ -308,7 +308,7 @@ func (m *GetMiningInfoRequest) GetOrgId() int64 {
 }
 
 type GetMiningInfoResponse struct {
-	Total                float64       `protobuf:"fixed64,1,opt,name=total,proto3" json:"total,omitempty"`
+	TodayRev             float64       `protobuf:"fixed64,1,opt,name=todayRev,proto3" json:"todayRev,omitempty"`
 	Data                 []*MiningData `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
 	XXX_unrecognized     []byte        `json:"-"`
@@ -340,9 +340,9 @@ func (m *GetMiningInfoResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetMiningInfoResponse proto.InternalMessageInfo
 
-func (m *GetMiningInfoResponse) GetTotal() float64 {
+func (m *GetMiningInfoResponse) GetTodayRev() float64 {
 	if m != nil {
-		return m.Total
+		return m.TodayRev
 	}
 	return 0
 }

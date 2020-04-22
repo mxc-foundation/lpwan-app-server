@@ -104,7 +104,7 @@ class DeviceFrames extends Component {
   }
 
   onFrame = (frame) => {
-    let _frame = isDev ? mockDeviceFrame : frame;
+    let _frame = frame;
 
     if (this.state.paused) {
       return;
