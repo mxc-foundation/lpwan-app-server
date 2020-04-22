@@ -59,7 +59,6 @@ class TopupStore extends EventEmitter {
     });
   }
 
-  
   notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",

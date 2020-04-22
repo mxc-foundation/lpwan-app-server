@@ -27,15 +27,8 @@ class Dashboard extends Component {
         const user = SessionStore.getUser();
 
         return (<React.Fragment>
-            <div className="position-relative">
-                <div className="card-coming-soon-2">
-                    <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>
-                </div>
-                <div style={{padding: 30 }}>
+            <div style={{ padding: 30 }}>
                 {user.isAdmin ? <AdminDashboard user={user} /> : <UserDashboard user={user} />}
-                </div>
-                {/* in order to disable popup - simple comment following line */}
-                {this.state.show2FaFeature ? <Feature2FA /> : null}
             </div>
         </React.Fragment>
         );
