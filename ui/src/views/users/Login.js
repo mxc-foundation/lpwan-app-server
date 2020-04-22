@@ -217,14 +217,6 @@ function GetBranding() {
   });
 }
 
-function LoadServerRegion() {
-  return new Promise((resolve, reject) => {
-    ServerInfoStore.getServerRegion(resp => {
-      return resolve(resp);
-    });
-  });
-}
-
 class Login extends Component {
   constructor() {
     super();
@@ -259,7 +251,7 @@ class Login extends Component {
   loadData = async () => {
     try {
       let result = await GetBranding();
-      let serverRegion = await LoadServerRegion();
+      let serverRegion = await ServerInfoStore.getServerRegion();
 
       this.setState({
         registration: result.registration,
