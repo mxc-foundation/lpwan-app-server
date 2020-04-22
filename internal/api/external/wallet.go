@@ -2,6 +2,7 @@ package external
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"strconv"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
@@ -319,4 +320,30 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 	return &api.GetDownLinkPriceResponse{
 		DownLinkPrice: resp.DownLinkPrice,
 	}, status.Error(codes.OK, "")
+}
+
+func (s *WalletServerAPI) GetMXCprice (ctx context.Context, req *api.GetMXCpriceRequest) (*api.GetMXCpriceResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetMXCprice org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetMXCpriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	price, err := mining.GetMXCprice(config.C, req.MxcPrice)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to get price from CMC")
+	}
+
+	return &api.GetMXCpriceResponse{MxcPrice: price}, nil
 }
