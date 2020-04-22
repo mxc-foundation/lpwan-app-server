@@ -4,6 +4,10 @@
     "title": "organization.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -165,7 +169,7 @@
         ]
       }
     },
-    "/api/organizations/{organizationID}/users": {
+    "/api/organizations/{organizationId}/users": {
       "get": {
         "summary": "Get organization's user list.",
         "operationId": "ListUsers",
@@ -179,7 +183,7 @@
         },
         "parameters": [
           {
-            "name": "organizationID",
+            "name": "organizationId",
             "description": "Organization ID.",
             "in": "path",
             "required": true,
@@ -208,7 +212,7 @@
         ]
       }
     },
-    "/api/organizations/{organizationID}/users/{userID}": {
+    "/api/organizations/{organizationId}/users/{userId}": {
       "get": {
         "summary": "Get data for a particular organization user.",
         "operationId": "GetUser",
@@ -222,7 +226,7 @@
         },
         "parameters": [
           {
-            "name": "organizationID",
+            "name": "organizationId",
             "description": "Organization ID.",
             "in": "path",
             "required": true,
@@ -230,7 +234,7 @@
             "format": "int64"
           },
           {
-            "name": "userID",
+            "name": "userId",
             "description": "User ID.",
             "in": "path",
             "required": true,
@@ -255,7 +259,7 @@
         },
         "parameters": [
           {
-            "name": "organizationID",
+            "name": "organizationId",
             "description": "Organization ID.",
             "in": "path",
             "required": true,
@@ -263,7 +267,7 @@
             "format": "int64"
           },
           {
-            "name": "userID",
+            "name": "userId",
             "description": "User ID.",
             "in": "path",
             "required": true,

@@ -24,19 +24,23 @@ class NetworkServerLayout extends Component {
   }
 
   componentDidMount() {
-    NetworkServerStore.get(this.props.match.params.networkServerID, (resp) => {
-      this.setState({
-        networkServer: resp,
-      });
+    this.loadData();
+  }
+
+  loadData = async () => {
+    let networkServer = await NetworkServerStore.get(this.props.match.params.networkServerID);
+    
+    this.setState({
+      networkServer
     });
   }
 
-  deleteNetworkServer() {
-    NetworkServerStore.delete(this.props.match.params.networkServerID, () => {
-      this.props.history.push("/network-servers");
-    });
+  deleteNetworkServer = async () => {
+    await NetworkServerStore.delete(this.props.match.params.networkServerID);
+    this.props.history.push("/network-servers");
+    
     this.setState({ nsDialog: false });
-  }
+  } 
 
   openConfirmModal = () => {
     this.setState({

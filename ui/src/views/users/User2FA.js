@@ -3,6 +3,8 @@ import { Button, Card, CardBody, Col, CustomInput, Modal, ModalBody, ModalHeader
 import i18n, { packageNS } from '../../i18n';
 import Google2FA from './Google2FA';
 import MneMonicPhraseConfirm from './MneMonicPhraseConfirm';
+import speakeasy from 'speakeasy';
+import qrcode from "qrcode.react";
 
 
 
@@ -28,7 +30,10 @@ class User2FA extends Component {
 
   showSetup2FA() {
     // TODO - API Call to fetch the initial code
-    this.setState({ showSetup2FA: true, auth_2fa_code: '12345678' });
+    var secret = speakeasy.generateSecret({ length: 20 });
+    console.log(secret.base32); //save to user db
+    // <QRCode value=secret.otpauth_url />, mountNode
+    this.setState({ showSetup2FA: true, auth_2fa_code: secret });
   }
 
   confirm2fa(confirmCode) {
@@ -96,6 +101,7 @@ class User2FA extends Component {
               <Modal isOpen={this.state.showSetup2FA} toggle={this.skip2fa} centered={true}>
                 <ModalHeader toggle={this.skip2fa}>{i18n.t(`${packageNS}:menu.profile_2fa.google.2fa_title`)}</ModalHeader>
                 <ModalBody>
+                  <img src={this.state.qr} />
                   <Google2FA
                     title={i18n.t(`${packageNS}:menu.profile_2fa.google.2fa_instruction`)}
                     titleClass="font-weight-normal"

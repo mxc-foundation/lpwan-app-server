@@ -23,7 +23,7 @@ class SessionStore extends EventEmitter {
       if (token) {// !== null && !history.location.pathname.includes('/registration-confirm/')) {
         this.fetchProfile(() => {});
       }
-    });
+    }).catch(error => console.log(error));
   }
 
   getClientOpts() {
@@ -31,6 +31,11 @@ class SessionStore extends EventEmitter {
       requestInterceptor: (req) => {
         if (this.getToken() !== null) {
           req.headers["Grpc-Metadata-Authorization"] = "Bearer " + this.getToken();
+        }
+        if (typeof process !== 'undefined' && eval("process.title.endsWith('node')")) {
+          // TODO: fix this to use proper testing setup
+          // this is running on node -> prefix relative path with actual API server domain
+          req.url = 'http://localhost:8080' + req.url;
         }
         return req;
       },
@@ -43,6 +48,22 @@ class SessionStore extends EventEmitter {
 
   getToken() {
     return localStorage.getItem("jwt");
+  }
+
+  setOTPToken(token) {
+    localStorage.setItem("otp", token);
+  }
+
+  getOTPToken() {
+    return localStorage.getItem("otp");
+  }
+
+  setUsernameTemp(username) {
+    localStorage.setItem("usernameTemp", username);
+  }
+
+  getUsernameTemp() {
+    return localStorage.getItem("usernameTemp");
   }
 
   setSupportedLanguages(languages) {
@@ -151,8 +172,8 @@ class SessionStore extends EventEmitter {
   }
 
   login(login, callBackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.Login({body: login})
+    return this.swagger.then(client => {
+      return client.apis.InternalService.Login({body: login})
         .then(checkStatus)
         .then(resp => {
           this.setToken(resp.obj.jwt);
@@ -186,36 +207,39 @@ class SessionStore extends EventEmitter {
     }
   }
 
-  fetchProfile(callBackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.Profile({})
-        .then(checkStatus)
-        .then(resp => {
-          this.user = resp.obj.user;
-          this.setUser(this.user);
+  async fetchProfile(){
+    try {
+      const client = await this.swagger;
+      let resp = await client.apis.InternalService.Profile();
 
-          if(resp.obj.organizations !== undefined) {
-            this.organizations = resp.obj.organizations;
-            this.setOrganizations(this.organizations);
-          }
+      resp = await checkStatus(resp);
 
-          if(this.organizations.length > 0){
-            this.setOrganizationID(this.organizations[0].organizationID);  
-          }
+      this.user = resp.obj.user;
+      this.setUser(this.user);
 
-          this.getBranding((resp)=>{
-            this.setLogoPath(resp.logoPath);
-          });
+      if(resp.obj.organizations !== undefined) {
+        this.organizations = resp.obj.organizations;
+        this.setOrganizations(this.organizations);
+      }
 
-          if(resp.obj.settings !== undefined) {
-            this.settings = resp.obj.settings;
-          }
+      if(this.organizations.length > 0){
+        this.setOrganizationID(this.organizations[0].organizationID);  
+      }
 
-          this.emit("change");
-          callBackFunc(resp);
-        })
-        .catch(errorHandler);
-    });
+      this.getBranding((resp)=>{
+        this.setLogoPath(resp.logoPath);
+      });
+
+      if(resp.obj.settings !== undefined) {
+        this.settings = resp.obj.settings;
+      }
+
+      this.emit("change");
+          
+      return resp;
+    } catch (error) {
+      errorHandler(error);
+    }
   }
 
   globalSearch(search, limit, offset, callbackFunc) {
@@ -261,42 +285,44 @@ class SessionStore extends EventEmitter {
     });
   }
 
-  confirmRegistration(securityToken, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.ConfirmRegistration({
-        body: {
-          token: securityToken,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async confirmRegistration(securityToken) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.InternalService.ConfirmRegistration({
+          body: {
+            token: securityToken,
+          },
+        });
+    
+        resp = await checkStatus(resp);
         this.setToken(resp.obj.jwt);
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  finishRegistration(data, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.InternalService.FinishRegistration({
-        body: {
-          userId: data.userId,
-          password: data.password,
-          organizationName: data.organizationName,
-          organizationDisplayName: data.organizationDisplayName,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async finishRegistration(data) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.InternalService.FinishRegistration({
+          body: {
+            userId: data.userId,
+            password: data.password,
+            organizationName: data.organizationName,
+            organizationDisplayName: data.organizationDisplayName,
+          },
+        });
+    
+        resp = await checkStatus(resp);
         localStorage.clear();
         this.user = null;
         this.organizations = [];
         this.settings = {};
         history.push("/login");
-      })
-      
-    });
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   getVerifyingGoogleRecaptcha(req, callBackFunc) {

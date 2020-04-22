@@ -794,7 +794,8 @@
       "submit": "完成了",
       "cancel": "取消",
       "comment": "评论",
-      "done": "完成"
+      "done": "完成",
+      "code_unmatch":"incorrect OTP code. please, try it again."
     },
     "system_settings": {
       "system_settings": "系统设定"
@@ -938,6 +939,13 @@
       "email": "电子邮箱地址",
       "password": "密码",
       "password_hint": "(单词必须包含至少 8 个字符，一个数字，一个符号，一个字母。)",
+      "user_validation": "不是电子邮件格式，或者用户已经存在。",
+      "orgname_hint": "允许的字母，数字，破折号和下划线",
+      "enter_pw": "输入一次性密码",
+      "notice_sent_email": "我们已经向您发送了一封电子邮件。",
+      "notice_check_spam": "如果没有收到，请检出您的垃圾邮件文件夹。",
+      "restart": "重新启动",
+      "otp_unmatched": "OTP代码不匹配。",
       "password_match_error": "密码必须包含至少 8 个字符或更多，一个数字，一个符号和一个字母。",
       "confirm_password": "确认密码",
       "confirm_password_match_error": "密码和确认密码必须相同。",

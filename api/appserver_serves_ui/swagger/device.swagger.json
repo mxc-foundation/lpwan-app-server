@@ -4,6 +4,10 @@
     "title": "device.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -100,7 +104,7 @@
         ]
       }
     },
-    "/api/devices/{devEUI}": {
+    "/api/devices/{devEui}": {
       "get": {
         "summary": "Get returns the device matching the given DevEUI.",
         "operationId": "Get",
@@ -114,7 +118,7 @@
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -138,7 +142,7 @@
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -150,7 +154,7 @@
         ]
       }
     },
-    "/api/devices/{devEUI}/activation": {
+    "/api/devices/{devEui}/activation": {
       "get": {
         "summary": "GetActivation returns the current activation details of the device (OTAA and ABP).",
         "operationId": "GetActivation",
@@ -164,7 +168,7 @@
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -188,7 +192,7 @@
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -200,7 +204,7 @@
         ]
       }
     },
-    "/api/devices/{devEUI}/events": {
+    "/api/devices/{devEui}/events": {
       "get": {
         "summary": "StreamEventLogs stream the device events (uplink payloads, ACKs, joins, errors).\n  * This endpoint is intended for debugging only.\n  * This endpoint does not work from a web-browser.",
         "operationId": "StreamEventLogs",
@@ -208,22 +212,13 @@
           "200": {
             "description": "A successful response.(streaming responses)",
             "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/appserver_serves_uiStreamDeviceEventLogsResponse"
-                },
-                "error": {
-                  "$ref": "#/definitions/runtimeStreamError"
-                }
-              },
-              "title": "Stream result of appserver_serves_uiStreamDeviceEventLogsResponse"
+              "$ref": "#/x-stream-definitions/appserver_serves_uiStreamDeviceEventLogsResponse"
             }
           }
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -235,7 +230,7 @@
         ]
       }
     },
-    "/api/devices/{devEUI}/frames": {
+    "/api/devices/{devEui}/frames": {
       "get": {
         "summary": "StreamFrameLogs streams the uplink and downlink frame-logs for the given DevEUI.\n  * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.\n  * This endpoint does not work from a web-browser.",
         "operationId": "StreamFrameLogs",
@@ -243,22 +238,13 @@
           "200": {
             "description": "A successful response.(streaming responses)",
             "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/appserver_serves_uiStreamDeviceFrameLogsResponse"
-                },
-                "error": {
-                  "$ref": "#/definitions/runtimeStreamError"
-                }
-              },
-              "title": "Stream result of appserver_serves_uiStreamDeviceFrameLogsResponse"
+              "$ref": "#/x-stream-definitions/appserver_serves_uiStreamDeviceFrameLogsResponse"
             }
           }
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -270,7 +256,7 @@
         ]
       }
     },
-    "/api/devices/{devEUI}/getRandomDevAddr": {
+    "/api/devices/{devEui}/getRandomDevAddr": {
       "post": {
         "summary": "GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.",
         "operationId": "GetRandomDevAddr",
@@ -284,7 +270,7 @@
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -296,7 +282,7 @@
         ]
       }
     },
-    "/api/devices/{devEUI}/keys": {
+    "/api/devices/{devEui}/keys": {
       "get": {
         "summary": "GetKeys returns the device-keys for the given DevEUI.",
         "operationId": "GetKeys",
@@ -310,7 +296,7 @@
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -334,7 +320,7 @@
         },
         "parameters": [
           {
-            "name": "devEUI",
+            "name": "devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -1190,6 +1176,32 @@
           }
         }
       }
+    }
+  },
+  "x-stream-definitions": {
+    "appserver_serves_uiStreamDeviceEventLogsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/appserver_serves_uiStreamDeviceEventLogsResponse"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of appserver_serves_uiStreamDeviceEventLogsResponse"
+    },
+    "appserver_serves_uiStreamDeviceFrameLogsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/appserver_serves_uiStreamDeviceFrameLogsResponse"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of appserver_serves_uiStreamDeviceFrameLogsResponse"
     }
   }
 }

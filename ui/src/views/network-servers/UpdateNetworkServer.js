@@ -17,11 +17,12 @@ class UpdateNetworkServer extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  onSubmit(networkServer) {
+ onSubmit = async (networkServer) => {
     this.setState({ loading: true });
-    NetworkServerStore.update(networkServer, resp => {
-      this.props.history.push("/network-servers");
-    }, error => { this.setState({ loading: false }) });
+    let res = await NetworkServerStore.update(networkServer);
+  
+    this.props.history.push("/network-servers");
+    this.setState({ loading: false })
   }
 
   render() {

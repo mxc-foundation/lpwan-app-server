@@ -30,16 +30,15 @@ class CreateDeviceProfile extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount = async () => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    ServiceProfileStore.list(currentOrgID, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          spDialog: true,
-        });
-      }
-    });
+    const resp = await ServiceProfileStore.list(currentOrgID, 10, 0);
+    if (resp.totalCount === "0") {
+      this.setState({
+        spDialog: true,
+      });
+    }
   }
 
   toggleSpDialog = () => {

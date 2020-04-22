@@ -217,14 +217,6 @@ function GetBranding() {
   });
 }
 
-function LoadServerRegion() {
-  return new Promise((resolve, reject) => {
-    ServerInfoStore.getServerRegion(resp => {
-      return resolve(resp);
-    });
-  });
-}
-
 class Login extends Component {
   constructor() {
     super();
@@ -259,7 +251,7 @@ class Login extends Component {
   loadData = async () => {
     try {
       let result = await GetBranding();
-      let serverRegion = await LoadServerRegion();
+      let serverRegion = await ServerInfoStore.getServerRegion();
 
       this.setState({
         registration: result.registration,
@@ -373,14 +365,17 @@ class Login extends Component {
                   <CardBody>
                     <div className="position-relative">
                       {this.state.loading && <Loader />}
-                      { this.state.serverRegion === "NOT_DEFINED" || this.state.serverRegion === "AVERAGE" && <LoginFormAverage
-                        onSubmit={this.onSubmit}
-                        bypassCaptcha={this.state.bypassCaptcha}
-                      />}
-                      { this.state.serverRegion === "RESTRICTED" && <LoginFormRestricted
+                      {
+                        this.state.serverRegion === "RESTRICTED"  
+                          ?<LoginFormRestricted
+                            onSubmit={this.onSubmit}
+                            bypassCaptcha={this.state.bypassCaptcha}
+                            />
+                          :<LoginFormAverage
                           onSubmit={this.onSubmit}
                           bypassCaptcha={this.state.bypassCaptcha}
-                      />}
+                        />  
+                      }
                     </div>
 
                     <Row className="align-items-center">
