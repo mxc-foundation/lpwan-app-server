@@ -58,7 +58,7 @@ class SetupHelper extends Component {
     });
   }
 
-  testServiceProfile(callbackFunc) {
+  testServiceProfile = async (callbackFunc) => {
     if (SessionStore.getOrganizationID === null) {
       callbackFunc();
       return;
@@ -74,15 +74,14 @@ class SetupHelper extends Component {
       return;
     }
 
-    ServiceProfileStore.list(SessionStore.getOrganizationID(), 0, 0, resp => {
-      if (resp.totalCount === "0" && !(this.state.nsDialog || this.state.dpDialog)) {
-        this.setState({
-          spDialog: true,
-        });
-      } else {
-        callbackFunc();
-      }
-    });
+    const resp = await OrganizationStore.list(SessionStore.getOrganizationID(), 1, 0);
+    if (resp.totalCount === "0" && !(this.state.nsDialog || this.state.dpDialog)) {
+      this.setState({
+        spDialog: true,
+      });
+    } else {
+      callbackFunc();
+    }
   }
 
   testDeviceProfile(callbackFunc) {

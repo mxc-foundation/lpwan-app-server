@@ -4,8 +4,7 @@ import { Button, Col, Input, Row } from 'reactstrap';
 import i18n, { packageNS } from '../../i18n';
 
 
-
-const Google2FA = ({ title, code, confirm, skip, titleClass = "" }) => {
+const Google = ({ title, code, confirm, skip, titleClass = "" }) => {
     const [confirmCode, setconfirmCode] = useState("");
 
     return <React.Fragment>
@@ -30,4 +29,4 @@ const Google2FA = ({ title, code, confirm, skip, titleClass = "" }) => {
     </React.Fragment>
 }
 
-export default Google2FA;
+export default Google;

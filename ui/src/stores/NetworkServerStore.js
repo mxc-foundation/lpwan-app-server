@@ -106,24 +106,7 @@ class NetworkServerStore extends EventEmitter {
         return undefined;
     }
   }
-
-  /* list(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
-    this.swagger.then((client) => {
-      client.apis.NetworkServerService.List({
-        organizationID: organizationID,
-        limit: limit,
-        offset: offset,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
-        errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
-  } */
+  
 }
 
 const networkServerStore = new NetworkServerStore();

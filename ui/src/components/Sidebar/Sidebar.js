@@ -39,14 +39,6 @@ import SideNavWalletContent from './SideNavWalletContent';
     hasDivider: true
 }] */
 
-function loadServerVersion() {
-    return new Promise((resolve, reject) => {
-        ServerInfoStore.getAppserverVersion(data => {
-            resolve(data);
-        });
-    });
-}
-
 class Sidebar extends Component {
     constructor(props) {
         super(props);
@@ -67,7 +59,7 @@ class Sidebar extends Component {
     loadData = async () => {
         try {
           const organizationIDs = SessionStore.getOrganizations();
-           var data = await loadServerVersion();
+          var data = await ServerInfoStore.getAppserverVersion();
           const serverInfo = JSON.parse(data);
           
           this.setState({
@@ -147,11 +139,10 @@ class Sidebar extends Component {
         callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
       }
     
-      getOrganizationOptions(search, callbackFunc) {
-        OrganizationStore.list(search, 10, 0, resp => {
-          const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
-          callbackFunc(options);
-        });
+      getOrganizationOptions = async (search, callbackFunc) => {
+        const resp = await OrganizationStore.list(search, 10, 0);
+        const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
+        callbackFunc(options);
       }
     
     /**
