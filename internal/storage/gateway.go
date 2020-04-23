@@ -141,8 +141,10 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 			latitude,
 			longitude,
 			altitude,
-		    model
-		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+		    model,
+		    first_heartbeat,
+		    last_heartbeat
+		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
 		gw.MAC[:],
 		gw.CreatedAt,
 		gw.UpdatedAt,
@@ -160,6 +162,8 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 		gw.Longitude,
 		gw.Altitude,
 		"",
+		gw.FirstHeartbeat,
+		gw.LastHeartbeat,
 	)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
