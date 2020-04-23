@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"os"
 	"os/signal"
 	"syscall"
@@ -54,6 +55,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFUOTA,
 		setupAPI,
 		setupMetrics,
+		setupMining,
 	}
 
 	for _, t := range tasks {
@@ -224,6 +226,18 @@ func setupFUOTA() error {
 func setupMetrics() error {
 	if err := metrics.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup metrics error")
+	}
+	return nil
+}
+
+func setupMining() error {
+	if config.C.ApplicationServer.MiningSetUp.Mining == false {
+		log.Info("Stop mining function")
+		return nil
+	}
+
+	if err := mining.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup service mining error")
 	}
 	return nil
 }

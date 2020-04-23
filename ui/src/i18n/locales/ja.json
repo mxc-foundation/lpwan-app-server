@@ -881,14 +881,14 @@
         "description": "チケットの履歴を表示"
       },
       "withdrawal": {
-        "title": "Withdrawal",
-        "subtext": "Revenue today",
-        "description": "Shows today's total withdrawal"
-      },
-      "topup": {
-        "title": "Topup",
+        "title": "撤回",
         "subtext": "今日の収益",
-        "description": "今日の総引き出し額を表示"
+        "description": "今日の総出金を示しています"
+      },
+      "mining_revenue": {
+        "title": "マイニング収益",
+        "subtext": "今日の収益",
+        "description": "鉱業収入情報を表示します"
       },
       "mxcAmountChart": {
         "title": "スーパーノードのMXCの合計量",
