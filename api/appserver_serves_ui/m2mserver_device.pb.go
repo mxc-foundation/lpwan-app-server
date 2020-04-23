@@ -637,11 +637,11 @@ var fileDescriptor_d8cd7858e525a121 = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConn
+var _ grpc.ClientConnInterface
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion4
+const _ = grpc.SupportPackageIsVersion6
 
 // DSDeviceServiceClient is the client API for DSDeviceService service.
 //
@@ -654,10 +654,10 @@ type DSDeviceServiceClient interface {
 }
 
 type dSDeviceServiceClient struct {
-	cc *grpc.ClientConn
+	cc grpc.ClientConnInterface
 }
 
-func NewDSDeviceServiceClient(cc *grpc.ClientConn) DSDeviceServiceClient {
+func NewDSDeviceServiceClient(cc grpc.ClientConnInterface) DSDeviceServiceClient {
 	return &dSDeviceServiceClient{cc}
 }
 
