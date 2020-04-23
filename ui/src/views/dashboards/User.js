@@ -76,7 +76,7 @@ class UserDashboard extends Component {
 
         const user = await SessionStore.getUser();
         const orgId = await SessionStore.getOrganizationID();
-        const topup = await  WalletStore.getMiningInfo(user.id, orgId);
+        //const topup = await  WalletStore.getMiningInfo(user.id, orgId);
 
         this.setState({
             data: {
@@ -185,7 +185,7 @@ class UserDashboard extends Component {
 
                         <Row>
                             {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 1).map((widget, idx) => {
-                                if (idx < 2) {
+                                if (idx < 3) { //edited 2020-04-23 MD-1240
                                     return <Col key={idx} className="mb-0">
                                         <div className="position-relative">
                                             <div className="card-coming-soon-2"></div>
