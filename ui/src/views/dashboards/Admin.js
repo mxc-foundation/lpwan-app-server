@@ -78,7 +78,7 @@ class AdminDashboard extends Component {
 
         const user = await SessionStore.getUser();
         const orgId = await SessionStore.getOrganizationID();
-        const topup = await  WalletStore.getMiningInfo(user.id, orgId);
+        //const topup = await  WalletStore.getMiningInfo(user.id, orgId);
 
         this.setState({
             data: {
@@ -99,7 +99,18 @@ class AdminDashboard extends Component {
                         { "day": "S", "amount": 47500 },
                     ]
                 },
-                topup,
+                "topup": {
+                    "total": 200000,
+                    "data": [
+                        { "month": "Jun", "amount": 92000 },
+                        { "month": "Jul", "amount": 220000 },
+                        { "month": "Aug", "amount": 242000 },
+                        { "month": "Sep", "amount": 34000 },
+                        { "month": "Oct", "amount": 155000 },
+                        { "month": "Nov", "amount": 172050 },
+                        { "month": "Dec", "amount": 48500 },
+                    ]
+                },
                 "supernodeAmount": {
                     "total": 545000,
                     "data": [
@@ -207,7 +218,7 @@ class AdminDashboard extends Component {
 
                     <Row>
                         {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 3).map((widget, idx) => {
-                            if (idx < 2) {
+                            if (idx < 3) {//edited 2020-04-23 MD-1240
                                 return <Col key={idx} className="mb-0">
                                     <div className="position-relative">
                                         <div className="card-coming-soon-2"></div>
