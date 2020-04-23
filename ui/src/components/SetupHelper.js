@@ -58,7 +58,7 @@ class SetupHelper extends Component {
     });
   }
 
-  testServiceProfile(callbackFunc) {
+  testServiceProfile = async (callbackFunc) => {
     if (SessionStore.getOrganizationID === null) {
       callbackFunc();
       return;
@@ -74,15 +74,14 @@ class SetupHelper extends Component {
       return;
     }
 
-    ServiceProfileStore.list(SessionStore.getOrganizationID(), 0, 0, resp => {
-      if (resp.totalCount === "0" && !(this.state.nsDialog || this.state.dpDialog)) {
-        this.setState({
-          spDialog: true,
-        });
-      } else {
-        callbackFunc();
-      }
-    });
+    const resp = await OrganizationStore.list(SessionStore.getOrganizationID(), 1, 0);
+    if (resp.totalCount === "0" && !(this.state.nsDialog || this.state.dpDialog)) {
+      this.setState({
+        spDialog: true,
+      });
+    } else {
+      callbackFunc();
+    }
   }
 
   testDeviceProfile(callbackFunc) {
@@ -112,18 +111,17 @@ class SetupHelper extends Component {
     });
   }
 
-  testNetworkServer() {
+  testNetworkServer = async () => {
     if (!!localStorage.getItem("nsDialogDismiss") || !SessionStore.isAdmin()) {
       return;
     }
 
-    NetworkServerStore.list(0, 0, 0, resp => {
-      if (resp.totalCount === 0) {
-        this.setState({
-          nsDialog: true,
-        });
-      }
-    });
+    const res = await NetworkServerStore.list(0, 10, 0);
+    if (res.totalCount === 0) {
+      this.setState({
+        nsDialog: true,
+      });
+    }
   }
 
   toggleDialog(name) {

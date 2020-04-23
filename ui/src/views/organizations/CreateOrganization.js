@@ -19,12 +19,12 @@ class CreateOrganization extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  onSubmit(organization) {
+  onSubmit = async (organization) => {
     this.setState({ loading: true });
-    OrganizationStore.create(organization, resp => {
-      this.setState({ loading: false });
-      this.props.history.push("/organizations");
-    }, error => { this.setState({ loading: false }) });
+    let res = await OrganizationStore.create(organization);
+  
+    this.props.history.push("/organizations");
+    this.setState({ loading: false })
   }
 
   render() {

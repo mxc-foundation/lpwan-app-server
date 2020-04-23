@@ -72,14 +72,14 @@ const Steps = ({ completedSteps = [] }) => {
 }
 
 
-class Feature2FA extends Component {
+class Feature extends Component {
   constructor(props) {
     super(props);
     this.state = {
       showModal: true,
       showIntro: true,
       showMneMonicList: false,
-      showMneMonicListConfim: false,
+      showMneMonicListConfirm: false,
       showFinal: false,
       completedSteps: []
     };
@@ -93,16 +93,16 @@ class Feature2FA extends Component {
   showMnemonicList() {
     // TODO - Fetch phrase - for now setting up dummy
     const phrases = ["Simba", "Sweetie", "Ziggy", "Midnight", "Kiki", "Peanut", "Midday", "Buddy", "Bently", "Gray", "Rocky", "Madison", "Bella", "Baxter"];
-    this.setState({ showIntro: false, showMneMonicList: true, phrases: phrases, showMneMonicListConfim: false, completedSteps: [1] });
+    this.setState({ showIntro: false, showMneMonicList: true, phrases: phrases, showMneMonicListConfirm: false, completedSteps: [1] });
   }
 
   showMnemonicListConfirm() {
-    this.setState({ showIntro: false, showMneMonicList: false, showMneMonicListConfim: true, completedSteps: [1, 2] });
+    this.setState({ showIntro: false, showMneMonicList: false, showMneMonicListConfirm: true, completedSteps: [1, 2] });
   }
 
   showConfirmed() {
     // TODO - Make an api call to confirm order
-    this.setState({ showIntro: false, showMneMonicList: false, showMneMonicListConfim: false, showFinal: true, completedSteps: [1, 2, 3] });
+    this.setState({ showIntro: false, showMneMonicList: false, showMneMonicListConfirm: false, showFinal: true, completedSteps: [1, 2, 3] });
   }
 
   closeModal() {
@@ -125,7 +125,7 @@ class Feature2FA extends Component {
               phrase={this.state.phrases} showSkip={true} titleClass="h3"
               next={this.showMnemonicListConfirm} close={this.closeModal} /> : null}
 
-            {this.state.showMneMonicListConfim ? <MneMonicPhraseConfirm title={i18n.t(`${packageNS}:menu.dashboard_2fa.menmonic_step_2_title`)}
+            {this.state.showMneMonicListConfirm ? <MneMonicPhraseConfirm title={i18n.t(`${packageNS}:menu.dashboard_2fa.menmonic_step_2_title`)}
               phrase={this.state.phrases} showSkipButton={true} showBackButton={true} titleClass="h3"
               next={this.showConfirmed} back={this.showMnemonicList} skip={this.closeModal} /> : null}
 
@@ -138,4 +138,4 @@ class Feature2FA extends Component {
   }
 }
 
-export default Feature2FA;
+export default Feature;

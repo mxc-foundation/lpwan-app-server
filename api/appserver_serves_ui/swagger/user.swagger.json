@@ -106,6 +106,30 @@
         ]
       }
     },
+    "/api/users/otp/{userEmail}": {
+      "get": {
+        "operationId": "GetOTPCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetOTPCodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userEmail",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
     "/api/users/{id}": {
       "get": {
         "summary": "Get data for a particular user.",
@@ -257,6 +281,14 @@
           "type": "string",
           "format": "int64",
           "description": "User ID."
+        }
+      }
+    },
+    "appserver_serves_uiGetOTPCodeResponse": {
+      "type": "object",
+      "properties": {
+        "otpCode": {
+          "type": "string"
         }
       }
     },

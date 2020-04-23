@@ -76,19 +76,20 @@ class StakeStore extends EventEmitter {
     }
   }
 
-  getStakingHistory(orgId, offset, limit, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.StakingService.GetStakingHistory({
-        orgId,
-        offset,
-        limit
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
-    });
+  async getStakingHistory(orgId, offset, limit) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.StakingService.GetStakingHistory({
+          orgId,
+          offset,
+          limit
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

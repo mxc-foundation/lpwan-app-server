@@ -16,7 +16,6 @@ class ServiceProfileForm extends Component {
 
     this.state = {};
 
-    this.getNetworkServerOption = this.getNetworkServerOption.bind(this);
     this.getNetworkServerOptions = this.getNetworkServerOptions.bind(this);
   }
 
@@ -26,17 +25,10 @@ class ServiceProfileForm extends Component {
     });
   }
 
-  getNetworkServerOption(id, callbackFunc) {
-    NetworkServerStore.get(id, resp => {
-      callbackFunc({ label: resp.networkServer.name, value: resp.networkServer.id });
-    });
-  }
-
-  getNetworkServerOptions(search, callbackFunc) {
-    NetworkServerStore.list(0, 999, 0, resp => {
-      const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
-      callbackFunc(options);
-    });
+  getNetworkServerOptions = async (search, callbackFunc) => {
+    const res = await NetworkServerStore.list(0, 10, 0);
+    const options = res.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
+    callbackFunc(options);
   }
 
 
