@@ -74,13 +74,13 @@ class TopupCrypto extends Component {
       
       const accounts = {};
       if(superNodeAccount !== undefined){
-        accounts.superNodeAccount = superNodeAccount;
+        accounts.superNodeAccount = superNodeAccount.activeAccount;
         //accounts.account = account;//edited 2020-04-02
   
   
         let object = this.state.object;
         object.accounts = {
-          superNodeAccount: superNodeAccount,
+          superNodeAccount: superNodeAccount.activeAccount,
           //account: account,//edited 2020-04-02
         }
   
