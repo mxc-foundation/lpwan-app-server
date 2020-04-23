@@ -6,7 +6,8 @@ import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
 import AddWidget from './AddWidget';
 import { userWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_MAP, WIDGET_TYPE_STAT } from './widgets/';
-
+import WalletStore from "../../stores/WalletStore";
+import SessionStore from "../../stores/SessionStore";
 
 
 
@@ -57,7 +58,7 @@ class UserDashboard extends Component {
         this.setState({ widgets });
     }
 
-    getData() {
+    getData = async () => {
         // TODO - call api to get the data
         this.setState({ loading: true });
         // mimiking the loading - should reverted later when we integrate api
@@ -72,6 +73,10 @@ class UserDashboard extends Component {
             day.setDate(day.getDate() - idx);
             packetsData.push({ "day": day.getDate(), "packets": Math.floor(Math.random() * 120) + 10 })
         }
+
+        const user = await SessionStore.getUser();
+        const orgId = await SessionStore.getOrganizationID();
+        //const topup = await  WalletStore.getMiningInfo(user.id, orgId);
 
         this.setState({
             data: {
@@ -180,9 +185,19 @@ class UserDashboard extends Component {
 
                         <Row>
                             {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 1).map((widget, idx) => {
-                                return <Col key={idx} className="mb-0">
-                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
-                                </Col>
+                                if (idx < 3) { //edited 2020-04-23 MD-1240
+                                    return <Col key={idx} className="mb-0">
+                                        <div className="position-relative">
+                                            <div className="card-coming-soon-2"></div>
+                                            <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                        </div>
+                                    </Col>
+                                } else {
+                                    return <Col key={idx} className="mb-0">
+                                        <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                    </Col>
+
+                                }
                             })}
                             <Col>
                                 <Row>

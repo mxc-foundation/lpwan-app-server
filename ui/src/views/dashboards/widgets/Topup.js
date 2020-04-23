@@ -80,7 +80,7 @@ const Topup = (props) => {
             <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
         </div>
 
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.topup.title`)}</h4>
+        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.mining_revenue.title`)}</h4>
         <p>&nbsp;</p>
 
         <div className="widget-chart mt-3">
@@ -92,7 +92,7 @@ const Topup = (props) => {
             <Row>
                 <Col className="text-right mb-0">
                     <h2 className="mb-1">{topup.total ? topup.total / 1000 : 0}k MXC</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.topup.subtext`)}</p>
+                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.mining_revenue.subtext`)}</p>
                 </Col>
             </Row>
         </div>

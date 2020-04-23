@@ -6,28 +6,46 @@ import "google/api/annotations.proto";
 import "internal.proto";
 
 service WalletService {
-    rpc GetWalletBalance(GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
-        option(google.api.http) = {
+    rpc GetWalletBalance (GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
+        option (google.api.http) = {
 			get: "/api/wallet/balance"
 		};
     }
 
-    rpc GetVmxcTxHistory(GetVmxcTxHistoryRequest) returns (GetVmxcTxHistoryResponse){
-        option(google.api.http) = {
+    rpc GetVmxcTxHistory (GetVmxcTxHistoryRequest) returns (GetVmxcTxHistoryResponse) {
+        option (google.api.http) = {
 			get: "/api/wallet/{org_id}/tx-history"
 		};
     }
 
-    rpc GetWalletUsageHist(GetWalletUsageHistRequest) returns (GetWalletUsageHistResponse) {
-        option(google.api.http) = {
+    rpc GetWalletUsageHist (GetWalletUsageHistRequest) returns (GetWalletUsageHistResponse) {
+        option (google.api.http) = {
     		get: "/api/wallet/{org_id}/usage-history"
     	};
     }
 
     rpc GetDlPrice (GetDownLinkPriceRequest) returns (GetDownLinkPriceResponse) {
-        option(google.api.http) = {
+        option (google.api.http) = {
     		get: "/api/wallet/{org_id}/downlink_price"
     	};
+    }
+
+    rpc GetWalletMiningIncome (GetWalletMiningIncomeRequest) returns (GetWalletMiningIncomeResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mining_income"
+		};
+    }
+
+    rpc GetMiningInfo (GetMiningInfoRequest) returns (GetMiningInfoResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mining_info"
+		};
+    }
+
+    rpc GetMXCprice (GetMXCpriceRequest) returns (GetMXCpriceResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mxc_price"
+		};
     }
 }
 
@@ -39,6 +57,31 @@ message GetWalletBalanceRequest {
 message GetWalletBalanceResponse {
     double balance = 1;
     ProfileResponse user_profile = 2;
+}
+
+message GetWalletMiningIncomeRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+}
+
+message GetWalletMiningIncomeResponse {
+    double mining_income = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message MiningData {
+    string month = 1;
+    double amount = 2;
+}
+
+message GetMiningInfoRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+}
+
+message GetMiningInfoResponse {
+    double todayRev = 1;
+    repeated MiningData data = 2;
 }
 
 message GetVmxcTxHistoryRequest {
@@ -98,4 +141,14 @@ message GetDownLinkPriceRequest {
 message GetDownLinkPriceResponse {
     double down_link_price = 1;
     ProfileResponse user_profile = 2;
+}
+
+message GetMXCpriceRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+    string mxc_price = 3;
+}
+
+message GetMXCpriceResponse {
+    string mxc_price = 1;
 }
