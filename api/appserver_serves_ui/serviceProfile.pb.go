@@ -535,11 +535,11 @@ var fileDescriptor_d9e9e4e25c67f7cd = []byte{
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
-var _ grpc.ClientConnInterface
+var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+const _ = grpc.SupportPackageIsVersion4
 
 // ServiceProfileServiceClient is the client API for ServiceProfileService service.
 //
@@ -558,10 +558,10 @@ type ServiceProfileServiceClient interface {
 }
 
 type serviceProfileServiceClient struct {
-	cc grpc.ClientConnInterface
+	cc *grpc.ClientConn
 }
 
-func NewServiceProfileServiceClient(cc grpc.ClientConnInterface) ServiceProfileServiceClient {
+func NewServiceProfileServiceClient(cc *grpc.ClientConn) ServiceProfileServiceClient {
 	return &serviceProfileServiceClient{cc}
 }
 

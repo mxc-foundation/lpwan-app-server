@@ -51,23 +51,19 @@ Content-ID: html-body
                                         <a href=3D"#" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
                                     </td>
                                 </tr>
-            
                                 <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
                                     <td class=3D"content-block" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                        Please confirm your email address by clicking the link below.
+                                        Enter the 6 digit code below on the SN website to complete registration: <b style=3D"box-sizing: border-box;font-weight: bolder;"> {{ .Token }} </b>
                                     </td>
                                 </tr>
-                                <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
-                                    <td class=3D"content-block" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-										You have created a new user access the {{ .Operator }} Supernode. Please click the link below to verify your email
-										address. If you are unable to click the link, copy and paste this URL
-										into your browser: {{ .Link }}
+                                <tr style=3D"box-sizing: border-box;page-break-inside: avoid;">
+                                    <td style=3D"text-align: center;box-sizing: border-box;">
+                                        <a href=3D"#" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
                                     </td>
                                 </tr>
-                                <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
-                                    <td class=3D"content-block" itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                                        <a href=3D"{{ .Link }}" class=3D"btn-primary" itemprop="url" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; color: #FFF; text-decoration: none; line-height: 2em; font-weight: bold; text-align: center; cursor: pointer; display: inline-block; border-radius: 5px; text-transform: capitalize; background-color: {{ .SecondaryColor }}; margin: 0; border-color: {{ .SecondaryColor }}; border-style: solid; border-width: 8px 16px;">Confirm
-                                            email address</a>
+                                <tr style=3D"box-sizing: border-box;page-break-inside: avoid;">
+                                    <td style=3D"text-align: center;box-sizing: border-box;">
+                                        <a href=3D"#" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
                                     </td>
                                 </tr>
                                 <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">

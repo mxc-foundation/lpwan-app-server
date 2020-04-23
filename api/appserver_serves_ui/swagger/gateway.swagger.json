@@ -4,6 +4,10 @@
     "title": "gateway.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -249,7 +253,7 @@
         ]
       }
     },
-    "/api/gateways/{gatewayID}/frames": {
+    "/api/gateways/{gatewayId}/frames": {
       "get": {
         "summary": "StreamFrameLogs streams the uplink and downlink frame-logs for the given gateway ID.\nNotes:\n  * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.\n  * This endpoint does not work from a web-browser.",
         "operationId": "StreamFrameLogs",
@@ -257,22 +261,13 @@
           "200": {
             "description": "A successful response.(streaming responses)",
             "schema": {
-              "type": "object",
-              "properties": {
-                "result": {
-                  "$ref": "#/definitions/appserver_serves_uiStreamGatewayFrameLogsResponse"
-                },
-                "error": {
-                  "$ref": "#/definitions/runtimeStreamError"
-                }
-              },
-              "title": "Stream result of appserver_serves_uiStreamGatewayFrameLogsResponse"
+              "$ref": "#/x-stream-definitions/appserver_serves_uiStreamGatewayFrameLogsResponse"
             }
           }
         },
         "parameters": [
           {
-            "name": "gatewayID",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -284,7 +279,7 @@
         ]
       }
     },
-    "/api/gateways/{gatewayID}/pings/last": {
+    "/api/gateways/{gatewayId}/pings/last": {
       "get": {
         "summary": "GetLastPing returns the last emitted ping and gateways receiving this ping.",
         "operationId": "GetLastPing",
@@ -298,7 +293,7 @@
         },
         "parameters": [
           {
-            "name": "gatewayID",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -310,7 +305,7 @@
         ]
       }
     },
-    "/api/gateways/{gatewayID}/stats": {
+    "/api/gateways/{gatewayId}/stats": {
       "get": {
         "summary": "GetStats lists the gateway stats given the query parameters.",
         "operationId": "GetStats",
@@ -324,7 +319,7 @@
         },
         "parameters": [
           {
-            "name": "gatewayID",
+            "name": "gatewayId",
             "description": "Gateway ID (HEX encoded).",
             "in": "path",
             "required": true,
@@ -1188,6 +1183,20 @@
           }
         }
       }
+    }
+  },
+  "x-stream-definitions": {
+    "appserver_serves_uiStreamGatewayFrameLogsResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/appserver_serves_uiStreamGatewayFrameLogsResponse"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of appserver_serves_uiStreamGatewayFrameLogsResponse"
     }
   }
 }

@@ -24,13 +24,17 @@ class CreateServiceProfile extends Component {
   }
 
   componentDidMount() {
-    NetworkServerStore.list(0, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          nsDialog: true,
-        });
-      }
-    });
+    this.loadData();
+  }
+
+  loadData = async () => {
+    const res = await NetworkServerStore.list(0, 10, 0);
+    
+    if (res.totalCount === "0") {
+      this.setState({
+        nsDialog: true,
+      });
+    }
   }
 
   closeDialog() {
@@ -39,15 +43,15 @@ class CreateServiceProfile extends Component {
     });
   }
 
-  onSubmit(serviceProfile) {
+  onSubmit = async (serviceProfile) => {
     let sp = serviceProfile;
     sp.organizationID = this.props.match.params.organizationID;
 
     this.setState({ loading: true });
-    ServiceProfileStore.create(sp, resp => {
-      this.setState({ loading: false });
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    }, error => { this.setState({ loading: false }) });
+    const res = await ServiceProfileStore.create(sp);
+    
+    this.setState({ loading: false });
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
   }
 
   render() {

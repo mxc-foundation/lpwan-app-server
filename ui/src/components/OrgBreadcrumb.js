@@ -17,8 +17,8 @@ class OrgBreadcrumb extends Component {
   componentDidMount() {
     this.getOrganization();
   }
-
-  getOrganization() {
+  
+  getOrganization = async () => {
     if (!this.state.currentOrg) {
       const orgId = this.props.organizationID;
       const orgs = SessionStorage.getOrganizations();
@@ -27,9 +27,8 @@ class OrgBreadcrumb extends Component {
         org = orgs.find(o => o.organizationID === orgId);
 
         if (!org) {
-          OrganizationStore.get(orgId, (res) => {
-            this.setState({ currentOrg: res.organization });
-          });
+          let organization = await OrganizationStore.get(orgId);
+          this.setState({ currentOrg: organization.organization });
         } else {
           this.setState({ currentOrg: org });
         }

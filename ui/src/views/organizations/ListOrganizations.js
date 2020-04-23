@@ -87,16 +87,16 @@ class ListOrganizations extends Component {
     this.getPage(sizePerPage, offset);
   };
 
-  getPage(limit, offset) {
+  getPage = async (limit, offset) => {
     limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
-    OrganizationStore.list("", limit, offset, (res) => {
-      const object = this.state;
-      object.totalSize = Number(res.totalCount);
-      object.data = res.result;
-      object.loading = false;
-      this.setState({ object });
-    }, error => { this.setState({ loading: false }) });
+
+    const res = await OrganizationStore.list("", limit=10, offset=0);
+    const object = this.state;
+    object.totalSize = Number(res.totalCount);
+    object.data = res.result;
+    object.loading = false;
+    this.setState({ object });
   }
 
   componentDidMount() {
