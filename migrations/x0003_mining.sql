@@ -1,6 +1,6 @@
 -- +migrate Up
 alter table gateway
-    add column model varchar(32),
+    add column model varchar(32) default '',
     add column first_heartbeat int not null default 0,
     add column last_heartbeat int not null default 0;
 
