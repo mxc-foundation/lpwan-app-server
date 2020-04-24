@@ -188,7 +188,6 @@ class UserDashboard extends Component {
                                 if (idx < 3) { //edited 2020-04-23 MD-1240
                                     return <Col key={idx} className="mb-0">
                                         <div className="position-relative">
-                                            <div className="card-coming-soon-2"></div>
                                             <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                         </div>
                                     </Col>

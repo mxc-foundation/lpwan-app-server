@@ -166,11 +166,11 @@ class OrganizationStore extends EventEmitter {
     }
   }
 
-  async listUsers(organizationId, limit, offset) {
+  async listUsers(organizationID, limit, offset) {
     try {
         const client = await this.swagger;
         let resp = await client.apis.OrganizationService.ListUsers({
-          organizationId,
+          organizationID,
           limit,
           offset,
         });
