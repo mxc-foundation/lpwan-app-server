@@ -885,10 +885,10 @@
         "subtext": "Revenue today",
         "description": "Shows today's total withdrawal"
       },
-      "topup": {
-        "title": "Topup",
+      "mining_revenue": {
+        "title": "Mining Revenue",
         "subtext": "Revenue today",
-        "description": "Shows topup information"
+        "description": "Shows Mining Revenue information"
       },
       "mxcAmountChart": {
         "title": "Total amounts of MXC in Supernode",
