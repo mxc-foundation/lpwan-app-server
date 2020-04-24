@@ -43,6 +43,108 @@
         ]
       }
     },
+    "/api/wallet/mining_income": {
+      "get": {
+        "operationId": "GetWalletMiningIncome",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWalletMiningIncomeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mining_info": {
+      "get": {
+        "operationId": "GetMiningInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetMiningInfoResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
+    "/api/wallet/mxc_price": {
+      "get": {
+        "operationId": "GetMXCprice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetMXCpriceResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "mxcPrice",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/{orgId}/downlink_price": {
       "get": {
         "operationId": "GetDlPrice",
@@ -160,6 +262,29 @@
         }
       }
     },
+    "appserver_serves_uiGetMXCpriceResponse": {
+      "type": "object",
+      "properties": {
+        "mxcPrice": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetMiningInfoResponse": {
+      "type": "object",
+      "properties": {
+        "todayRev": {
+          "type": "number",
+          "format": "double"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiMiningData"
+          }
+        }
+      }
+    },
     "appserver_serves_uiGetVmxcTxHistoryResponse": {
       "type": "object",
       "properties": {
@@ -182,6 +307,18 @@
       "type": "object",
       "properties": {
         "balance": {
+          "type": "number",
+          "format": "double"
+        },
+        "userProfile": {
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
+        }
+      }
+    },
+    "appserver_serves_uiGetWalletMiningIncomeResponse": {
+      "type": "object",
+      "properties": {
+        "miningIncome": {
           "type": "number",
           "format": "double"
         },
@@ -261,6 +398,18 @@
         "count": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiMiningData": {
+      "type": "object",
+      "properties": {
+        "month": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
         }
       }
     },

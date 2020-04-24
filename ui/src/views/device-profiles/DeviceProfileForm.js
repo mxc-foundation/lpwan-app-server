@@ -41,14 +41,13 @@ class DeviceProfileForm extends Component {
     };
   }
 
-  getNetworkServerOptions = (search, callbackFunc) => {
-    NetworkServerStore.list(this.props.match.params.organizationID, 999, 0, resp => {
-      const options = resp.result.map((ns, i) => {return {label: ns.name, value: ns.id}});
-      this.setState({
-        loading: false
-      });
-      callbackFunc(options);
+  getNetworkServerOptions = async (search, callbackFunc) => {
+    const res = await NetworkServerStore.list(this.props.match.params.organizationID, 10, 0);
+    const options = res.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
+    this.setState({
+      loading: false
     });
+    callbackFunc(options);
   }
 
   getMACVersionOptions = (search, callbackFunc) => {
