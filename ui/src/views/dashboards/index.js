@@ -28,7 +28,9 @@ class Dashboard extends Component {
 
         return (<React.Fragment>
             <div className="position-relative">
-                <div className="card-coming-soon-2"></div>
+                <div className="card-coming-soon-2">
+                    <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>
+                </div>
                 <div style={{ padding: 30 }}>
                     {user.isAdmin ? <AdminDashboard user={user} /> : <UserDashboard user={user} />}
                 </div>

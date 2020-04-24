@@ -221,7 +221,6 @@ class AdminDashboard extends Component {
                             if (idx < 3) {//edited 2020-04-23 MD-1240
                                 return <Col key={idx} className="mb-0">
                                     <div className="position-relative">
-                                        <div className="card-coming-soon-2"></div>
                                         <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                     </div>
                                 </Col>
@@ -234,9 +233,6 @@ class AdminDashboard extends Component {
                         })}
                     </Row>
                     <div className="position-relative">
-                        <div className="card-coming-soon-2">
-                            <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>
-                        </div>
                         <Row>
                             {this.getWidgets(WIDGET_TYPE_STAT, 0, 5).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
