@@ -79,7 +79,7 @@ class ListOrganizationUsers extends Component {
     this.setState({ loading: true });
     
     const res = await OrganizationStore.listUsers(this.props.match.params.organizationID, limit=10, offset=0);
-    
+console.log(res);    
     const object = this.state;
     object.totalSize = Number(res.totalCount);
     object.data = res.result;
