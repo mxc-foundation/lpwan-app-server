@@ -100,7 +100,7 @@ class DeviceStore extends EventEmitter {
   get(id, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Get({
-        devEui: id,
+        devEUI: id,
       })
       .then(checkStatus)
       .then(resp => {
@@ -132,7 +132,7 @@ class DeviceStore extends EventEmitter {
   delete(id, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Delete({
-        devEui: id,
+        devEUI: id,
       })
       .then(checkStatus)
       .then(resp => {
@@ -154,10 +154,10 @@ class DeviceStore extends EventEmitter {
     });
   }
 
-  getKeys(devEui, callbackFunc) {
+  getKeys(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.GetKeys({
-        devEui,
+        devEUI,
       })
       .then(checkStatus)
       .then(resp => {
@@ -201,10 +201,10 @@ class DeviceStore extends EventEmitter {
     });
   }
 
-  getActivation(devEui, callbackFunc) {
+  getActivation(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.GetActivation({
-        devEui,
+        devEUI,
       })
       .then(checkStatus)
       .then(resp => {
@@ -237,10 +237,10 @@ class DeviceStore extends EventEmitter {
     });
   }
 
-  getRandomDevAddr(devEui, callbackFunc) {
+  getRandomDevAddr(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.GetRandomDevAddr({
-        devEui,
+        devEUI,
       })
       .then(checkStatus)
       .then(resp => {

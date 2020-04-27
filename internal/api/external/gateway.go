@@ -123,7 +123,7 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 			Latitude:        req.Gateway.Location.Latitude,
 			Longitude:       req.Gateway.Location.Longitude,
 			Altitude:        req.Gateway.Location.Altitude,
-			Model: "",
+			Model: "null",
 			FirstHeartbeat: 0,
 			LastHeartbeat: 0,
 		})

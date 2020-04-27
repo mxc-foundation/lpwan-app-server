@@ -154,7 +154,35 @@ class RegistrationFormRestricted extends Component {
     this.state = {
       object: this.props.object || { username: "" },
       isVerified: false,
+      isVerifiedDuplicate: null,
       bypassCaptcha: this.props.bypassCaptcha
+    }
+  }
+
+  verificationUser = async (userName) => {
+    
+    if (userName === '') {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    if (!isEmail(userName)) {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    const resp = await UserStore.getUserEmail(userName);
+    if(resp !== undefined){
+      if(resp.status){
+        this.setState({isVerifiedDuplicate:true});
+        return true;
+      }else{
+        this.setState({isVerifiedDuplicate:false});
+        return false;
+      }
+    }else{
+      this.setState({isVerifiedDuplicate:false});
+      return false;
     }
   }
 
@@ -171,15 +199,23 @@ class RegistrationFormRestricted extends Component {
   }
 
   render() {
+    let fieldsSchema = {
+      username: Yup.string().trim().test('testname', i18n.t(`${packageNS}:menu.registration.user_validation`), this.verificationUser
+      ).required(i18n.t(`${packageNS}:tr000431`)),
+    }
+
+    const formSchema = Yup.object().shape(fieldsSchema);
 
     return (
       <React.Fragment>
         <Formik
           initialValues={this.state.object}
-          validationSchema={regSchema}
+          validationSchema={formSchema}
           onSubmit={(values) => {
             const castValues = regSchema.cast(values);
-            this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
+            const isVerified = this.state.isVerified;
+            const isVerifiedDuplicate = this.state.isVerifiedDuplicate;
+            this.props.onSubmit({ isVerified, isVerifiedDuplicate, ...castValues })
           }}>
           {({
             handleSubmit,
@@ -271,8 +307,14 @@ class Registration extends Component {
         return false;
       }
 
+    }else{
+      if (this.state.bypassCaptcha) {
+        user.isVerified = true;
+      }
     }
 
+    
+    
     if (!user.isVerifiedDuplicate) {
       return false;
     }
@@ -296,6 +338,9 @@ class Registration extends Component {
   }
 
   render() {
+    if(!this.state.serverRegion){
+      return <div></div>;
+    }
     return (<React.Fragment>
       <div className="account-pages mt-5 mb-5">
         <Container>

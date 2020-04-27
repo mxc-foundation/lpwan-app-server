@@ -161,7 +161,7 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 		gw.Latitude,
 		gw.Longitude,
 		gw.Altitude,
-		"",
+		gw.Model,
 		gw.FirstHeartbeat,
 		gw.LastHeartbeat,
 	)
