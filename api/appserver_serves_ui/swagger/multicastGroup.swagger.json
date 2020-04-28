@@ -4,10 +4,6 @@
     "title": "multicastGroup.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
@@ -188,7 +184,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicastGroupId}/devices": {
+    "/api/multicast-groups/{multicastGroupID}/devices": {
       "post": {
         "summary": "AddDevice adds the given device to the multicast-group.",
         "operationId": "AddDevice",
@@ -202,7 +198,7 @@
         },
         "parameters": [
           {
-            "name": "multicastGroupId",
+            "name": "multicastGroupID",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
@@ -222,7 +218,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicastGroupId}/devices/{devEui}": {
+    "/api/multicast-groups/{multicastGroupID}/devices/{devEUI}": {
       "delete": {
         "summary": "RemoveDevice removes the given device from the multicast-group.",
         "operationId": "RemoveDevice",
@@ -236,14 +232,14 @@
         },
         "parameters": [
           {
-            "name": "multicastGroupId",
+            "name": "multicastGroupID",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "devEui",
+            "name": "devEUI",
             "description": "Device EUI (HEX encoded string).",
             "in": "path",
             "required": true,
@@ -255,7 +251,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicastGroupId}/queue": {
+    "/api/multicast-groups/{multicastGroupID}/queue": {
       "get": {
         "summary": "ListQueue lists the items in the multicast-group queue.",
         "operationId": "ListQueue",
@@ -269,7 +265,7 @@
         },
         "parameters": [
           {
-            "name": "multicastGroupId",
+            "name": "multicastGroupID",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
@@ -293,7 +289,7 @@
         },
         "parameters": [
           {
-            "name": "multicastGroupId",
+            "name": "multicastGroupID",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,

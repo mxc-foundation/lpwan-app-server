@@ -14,170 +14,172 @@ class OrganizationStore extends EventEmitter {
   }
 
   
-  create(organization, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.Create({
-        body: {
-          organization: organization,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async create(organization) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.OrganizationService.Create({
+          body: {
+            organization: organization,
+          },
+        });
+  
+        resp = await checkStatus(resp);
         this.emit("create", organization);
         this.notify("created");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+        
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
-  get(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.Get({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+  async get(id) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.OrganizationService.Get({
+          id
+        });
+    
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  update(organization, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.Update({
-        "organization.id": organization.id,
+  async update(organization) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.Update({
+          "organization.id": organization.id,
         body: {
-          organization: organization,
+          organization,
         },
-      })
-      .then(checkStatus)
-      .then(resp => {
+        });
+  
+        resp = await checkStatus(resp);
         this.emit("change", organization);
         this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+        
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
-  delete(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.Delete({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async delete(id) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.Delete({
+          id
+        });
+
+        resp = await checkStatus(resp);
         this.emit("delete", id);
         this.notify("deleted");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-  list(search, limit, offset, callbackFunc) {
-    this.swagger.then((client) => {
-      client.apis.OrganizationService.List({
-        search: search,
-        limit: limit,
-        offset: offset,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-  addUser(organizationID, user, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.AddUser({
-        "organizationUser.organizationId": organizationID,
-        body: {
-          organizationUser: user,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch((error) => {
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
-  getUser(organizationID, userID, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.GetUser({
-        organizationID: organizationID,
-        userID: userID,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-  deleteUser(organizationID, userID, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.DeleteUser({
-        organizationID: organizationID,
-        userID: userID,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-  updateUser(organizationUser, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.UpdateUser({
-        "organizationUser.organizationId": organizationUser.organizationID,
-        "organizationUser.userId": organizationUser.userID,
-        body: {
-          organizationUser: organizationUser,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-  listUsers(organizationID, limit, offset, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.OrganizationService.ListUsers({
-        organizationID: organizationID,
-        limit: limit,
-        offset: offset,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+  async list(search, limit, offset) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.List({
+          search,
+          limit,
+          offset,
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
+  }
+
+  async addUser(organizationID, user) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.AddUser({
+          "organizationUser.organizationId": organizationID,
+          body: {
+            organizationUser: user,
+          },
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async getUser(organizationID, userID) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.GetUser({
+          organizationID,
+          userID,
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async deleteUser(organizationID, userID) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.DeleteUser({
+          organizationID,
+          userID, 
+        });
+
+        resp = await checkStatus(resp);
+        
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async updateUser(organizationUser) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.UpdateUser({
+          "organizationUser.organizationId": organizationUser.organizationID,
+          "organizationUser.userId": organizationUser.userID,
+          body: {
+            organizationUser: organizationUser,
+          },
+        });
+  
+        resp = await checkStatus(resp);
+        
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async listUsers(organizationID, limit, offset) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.ListUsers({
+          organizationID,
+          limit,
+          offset,
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

@@ -20,7 +20,7 @@ export function errorHandler(error) {
       },
     });
   } else {
-    console.error('Stores errorHandler error', error.response);
+    //console.error('Stores errorHandler error', error.response);
     if (error.response.obj && error.response.obj.code === 16) {
       // TODO: handle this error properly. do NOT route or logout here (since it can cause logout bugs)!
       setTimeout(() => {

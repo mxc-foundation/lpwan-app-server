@@ -58,7 +58,7 @@ const getColumns = (organizationId, stats) => (
     text: i18n.t(`${packageNS}:tr000074`),
     sort: false,
   }, {
-    dataField: 'lastSeenAt',
+    dataField: 'Activity',
     text: i18n.t(`${packageNS}:tr000075`),
     formatter: GatewayActivityColumn,
     formatExtraData: { stats },

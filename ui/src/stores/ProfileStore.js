@@ -15,18 +15,18 @@ class ProfileStore extends EventEmitter {
     this.profileSwagger = new Swagger("/swagger/profile.swagger.json", sessionStore.getClientOpts());
   }
 
-  getUserOrganizationList(orgId, callbackFunc) {
-    this.profileSwagger.then(client => {
-      client.apis.InternalService.GetUserOrganizationList({
-        orgId
-      })
-      .then(checkStatus)
-      .then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
-    });
+  async getUserOrganizationList(orgId) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.GetUserOrganizationList({
+          orgId
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

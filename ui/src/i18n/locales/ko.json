@@ -795,7 +795,8 @@
       "submit": "완료",
       "cancel": "취소",
       "comment": "주석",
-      "done": "완료"
+      "done": "완료",
+      "code_unmatch":"OTP code가 일치하지 않습니다. 다시 해주세요."
     },
     "system_settings": {
       "system_settings": "수수료"
@@ -885,7 +886,7 @@
         "subtext": "수익 흐름",
         "description": "오늘의 총 출금액 보기"
       },
-      "topup": {
+      "mining_revenue": {
         "title": "충전",
         "subtext": "수익 흐름",
         "description": "상세한 정보 보기"
@@ -939,6 +940,13 @@
       "email": "이메일",
       "password": "비밀번호",
       "password_hint": "(최소 8글자, 하나의 숫자와 특수 문자를 포함하여야 합니다.)",
+      "user_validation": "이멜 포맷이 아니거나 이미 존재하는 유저입니다.",
+      "orgname_hint": "문자, 숫자, '-' 와 '_'만 허용됩니다.",
+      "enter_pw": "일회성 암호를 입력해주세요.",
+      "notice_sent_email": "이멜을 보냈습니다.",
+      "notice_check_spam": "이메일을 받지 못하셨다면 스팸 폴더를 확인 해보세요.",
+      "restart": "다시 시작",
+      "otp_unmatched": "OTP 코드가 일치 하지 않습니다.",
       "password_match_error": "최소 8글자, 하나의 숫자와 특수 문자를 포함하여야 합니다.",
       "confirm_password": "승인",
       "confirm_password_match_error": "패스워드와 확인 패스워드가 일치하지 않습니다.",

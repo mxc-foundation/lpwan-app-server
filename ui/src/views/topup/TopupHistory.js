@@ -63,20 +63,15 @@ class TopupHistory extends Component {
   };
 
 
-  getPage(limit, offset) {
+  getPage = async (limit, offset) => {
     this.setState({ loading: true });
-    TopupStore.getTopUpHistory(this.props.organizationID, offset, limit, res => {
-      const object = this.state;
+    const res = await TopupStore.getTopUpHistory(this.props.organizationID, offset, limit);
+    const object = this.state;
 
-      object.totalSize = Number(res.count);
-      object.data = res.topupHistory;
-      object.loading = false;
-      this.setState({ object });
-
-      console.log(this.state);
-    }, error => {
-      this.setState({ loading: false });
-    });
+    object.totalSize = Number(res.count);
+    object.data = res.topupHistory;
+    object.loading = false;
+    this.setState({ object });
   }
 
   render() {

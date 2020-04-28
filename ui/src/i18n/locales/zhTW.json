@@ -795,7 +795,8 @@
       "submit": "完成",
       "cancel": "取消",
       "comment": "評論",
-      "done": "完成"
+      "done": "完成",
+      "code_unmatch":"incorrect OTP code. please, try it again."
     },
     "system_settings": {
       "system_settings": "系統設定"
@@ -885,7 +886,7 @@
         "subtext": "今日收入",
         "description": "顯示今天的總提出通證"
       },
-      "topup": {
+      "mining_revenue": {
         "title": "充值",
         "subtext": "今日收入",
         "description": "顯示充值訊息"
@@ -939,6 +940,13 @@
       "email": "電子信箱地址",
       "password": "密碼",
       "password_hint": "(單詞必須包含至少 8 個字符，一個數字，一個符號，一個字母。)",
+      "user_validation": "不是電子郵件格式，或者用戶已經存在。",
+      "orgname_hint": "允許的字母，數字，破折號和下劃線",
+      "enter_pw": "輸入一次性密碼",
+      "notice_sent_email": "我們已經向您發送了一封電子郵件。",
+      "notice_check_spam": "如果沒有收到，請檢出您的垃圾郵件文件夾。",
+      "restart": "重新啟動",
+      "otp_unmatched": "OTP代碼不匹配。",
       "password_match_error": "單詞必須包含至少 8 個字符，一個數字，一個符號，一個字母。",
       "confirm_password": "確認您的密碼",
       "confirm_password_match_error": "密碼和確認密碼必須相同。",

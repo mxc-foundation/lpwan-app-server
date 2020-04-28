@@ -795,7 +795,8 @@
       "submit": "Submit",
       "cancel": "Cancel",
       "comment": "Comment",
-      "done": "Done"
+      "done": "Done",
+      "code_unmatch":"incorrect OTP code. please, try it again."
     },
     "system_settings": {
       "system_settings": "System Fees"
@@ -885,10 +886,10 @@
         "subtext": "Revenue today",
         "description": "Shows today's total withdrawal"
       },
-      "topup": {
-        "title": "Topup",
+      "mining_revenue": {
+        "title": "Mining Revenue",
         "subtext": "Revenue today",
-        "description": "Shows topup information"
+        "description": "Shows Mining Revenue information"
       },
       "mxcAmountChart": {
         "title": "Total amounts of MXC in Supernode",
@@ -939,6 +940,13 @@
       "email": "Email Address",
       "password": "Password",
       "password_hint": "(Minimum eight characters, at least one letter, one number and one special character)",
+      "user_validation": "not email format or the user already exist ",
+      "orgname_hint": "Only allow letters, numbers, dash, and underbar",
+      "enter_pw": "Enter the one-time password",
+      "notice_sent_email": "We've sent an E-mail to you.",
+      "notice_check_spam": "If you didn't receive it, please checkout your spam folder.",
+      "restart": "Restart",
+      "otp_unmatched": "OTP code is unmatched.",
       "password_match_error": "Minimum eight characters, at least one letter, one number and one special character",
       "confirm_password": "Confirm Your Password",
       "confirm_password_match_error": "Password and confirm password must be same",

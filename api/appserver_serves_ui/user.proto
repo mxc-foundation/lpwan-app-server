@@ -58,6 +58,12 @@ service UserService {
         	get: "/api/users/email/{user_email}"
         };
     }
+
+    rpc GetOTPCode (GetOTPCodeRequest) returns (GetOTPCodeResponse) {
+        option (google.api.http) = {
+        	get: "/api/users/otp/{user_email}"
+        };
+    }
 }
 
 message User {
@@ -199,4 +205,12 @@ message GetUserEmailRequest {
 
 message GetUserEmailResponse {
     bool status = 1;
+}
+
+message GetOTPCodeRequest {
+    string user_email = 1;
+}
+
+message GetOTPCodeResponse {
+    string otp_code = 1;
 }
