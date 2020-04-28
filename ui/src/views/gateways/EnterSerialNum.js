@@ -63,7 +63,7 @@ class EnterSerialNum extends Component {
         object.loading = true;
         object.stage = 1;
         this.setState({ object });
-
+        console.log('serial', serial);
         if (serial.serial.length === 0) {
             return false;
         }
@@ -102,14 +102,32 @@ class EnterSerialNum extends Component {
             QRCodeArray = data.split(",");
         }
 
+        /* 0: "S/N: M2XXXXXXXXX"
+        1: " ID: MX1903"
+        2: " 1.0"
+        3: " 1320"
+        4: " MAC: 70:B3:D5:00:00:00" */
+
+
         let modalOpen = false;
         if (QRCodeArray.length > 0) {
             const json = JSON.stringify(QRCodeArray);
 
-            const serial = QRCodeArray[0].split(':')[1];
-            const time = QRCodeArray[1].split(':')[1];
-            const model = QRCodeArray[2].split(':')[1].trim();
-            const version = QRCodeArray[3].split(':')[1];
+            const serial = QRCodeArray[0].split(':')[1].trim();
+            let time = '';
+            let model = '';
+            let version = ''; 
+            let mac = ''; 
+            if (serial.substring(0, 2).trim() !== 'M2X') {
+                model = QRCodeArray[1].split(':')[1].trim();
+                version = QRCodeArray[2].trim();
+                time = QRCodeArray[3].trim(); 
+                mac = QRCodeArray[4].substring(5, QRCodeArray[4].length).trim(); 
+            } else {
+                time = QRCodeArray[1].split(':')[1];
+                model = QRCodeArray[2].split(':')[1].trim();
+                version = QRCodeArray[3].split(':')[1]; 
+            }
 
             if(this.state.serverRegion === 'RESTRICTED' ){
                 if(model !== 'MX1903'){
@@ -130,6 +148,9 @@ class EnterSerialNum extends Component {
             object.object.time = isRegionCorrect?time:'';
             object.object.model = isRegionCorrect?model:'';
             object.object.version = isRegionCorrect?version:'';
+            if (serial.substring(0, 2).trim() !== 'M2X') {
+                object.object.mac = isRegionCorrect?mac:'';
+            }
             this.setState({ object });
         }
     }
