@@ -43,6 +43,7 @@ service WithdrawService {
 		};
     }
 
+    // show the pending withdrawal list on the supernode
     rpc GetWithdrawRequestList (GetWithdrawRequestListRequest) returns (GetWithdrawRequestListResponse) {
         option (google.api.http) = {
 			get: "/api/withdraw/requests"
@@ -54,6 +55,13 @@ service WithdrawService {
         option (google.api.http) = {
 			post: "/api/withdraw/req"
 			body: "*"
+		};
+    }
+
+    // get withdrawal history monthly
+    rpc GetWithdrawMonthly (GetWithdrawMonthlyRequest) returns (GetWithdrawMonthlyResponse) {
+        option (google.api.http) = {
+			get: "/api/withdraw/monthly"
 		};
     }
 }
@@ -146,4 +154,18 @@ message GetWithdrawRequest {
 
 message GetWithdrawResponse {
     bool status = 1;
+}
+
+message MonthlyData {
+    string month = 1;
+    double amount = 2;
+}
+
+message GetWithdrawMonthlyRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+}
+
+message GetWithdrawMonthlyResponse {
+    repeated MonthlyData monthly_data = 1;
 }

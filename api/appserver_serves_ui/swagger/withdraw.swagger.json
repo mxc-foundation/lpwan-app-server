@@ -178,6 +178,39 @@
         ]
       }
     },
+    "/api/withdraw/monthly": {
+      "get": {
+        "summary": "get withdrawal history monthly",
+        "operationId": "GetWithdrawMonthly",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawMonthlyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
     "/api/withdraw/req": {
       "post": {
         "summary": "after user clicks withdraw, send withdraw request to cobo directly",
@@ -207,6 +240,7 @@
     },
     "/api/withdraw/requests": {
       "get": {
+        "summary": "show the pending withdrawal list on the supernode",
         "operationId": "GetWithdrawRequestList",
         "responses": {
           "200": {
@@ -293,6 +327,17 @@
         }
       }
     },
+    "appserver_serves_uiGetWithdrawMonthlyResponse": {
+      "type": "object",
+      "properties": {
+        "monthlyData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiMonthlyData"
+          }
+        }
+      }
+    },
     "appserver_serves_uiGetWithdrawRequest": {
       "type": "object",
       "properties": {
@@ -366,6 +411,18 @@
         "TETH"
       ],
       "default": "ETH"
+    },
+    "appserver_serves_uiMonthlyData": {
+      "type": "object",
+      "properties": {
+        "month": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        }
+      }
     },
     "appserver_serves_uiWithdrawHistory": {
       "type": "object",
