@@ -3,6 +3,7 @@ package mining
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/brocaar/lorawan"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -45,7 +46,7 @@ type Data struct {
 		}
 		USD struct {
 			Price      string `json:"price"`
-			LastUpdate string  `json:"last_update"`
+			LastUpdate string `json:"last_update"`
 		}
 	}
 }
@@ -71,8 +72,9 @@ func Setup(conf config.Config) error {
 
 	return nil
 }
+
 // getUSDprice returns 1 USD price in MXC
-func getUSDprice(conf config.Config) float64 {
+func getUSDprice(conf config.Config) (float64, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
 	if err != nil {
@@ -95,15 +97,22 @@ func getUSDprice(conf config.Config) float64 {
 		log.WithError(err).Error("CMC request error")
 		os.Exit(1)
 	}
-	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	var cmc CMC
-	err = json.Unmarshal(respBody, &cmc)
-	if err != nil {
-		log.Println("JSON unmarshal error: ", err)
+	if resp.Status == "200 OK" {
+
+		respBody, _ := ioutil.ReadAll(resp.Body)
+
+		var cmc CMC
+		err = json.Unmarshal(respBody, &cmc)
+		if err != nil {
+			log.Println("JSON unmarshal error: ", err)
+		}
+
+		return cmc.Data.Quote.MXC.Price, nil
 	}
 
-	return cmc.Data.Quote.MXC.Price
+	err = errors.New("getUSDprice/Get USD price from cmc error")
+	return 0, err
 }
 
 // getMXCprice returns amount of MXC in USD
@@ -130,15 +139,21 @@ func GetMXCprice(conf config.Config, amount string) (price string, err error) {
 		log.WithError(err).Error("CMC request error")
 		os.Exit(1)
 	}
-	respBody, _ := ioutil.ReadAll(resp.Body)
 
-	var cmc CMC
-	err = json.Unmarshal(respBody, &cmc)
-	if err != nil {
-		log.Println("JSON unmarshal error: ", err)
+	if resp.Status == "200 OK" {
+		respBody, _ := ioutil.ReadAll(resp.Body)
+
+		var cmc CMC
+		err = json.Unmarshal(respBody, &cmc)
+		if err != nil {
+			log.Println("JSON unmarshal error: ", err)
+		}
+
+		return cmc.Data.Quote.USD.Price, nil
 	}
 
-	return cmc.Data.Quote.USD.Price, nil
+	err = errors.New("GetMXCprice/Unable to get the MXC price from cmc")
+	return "", err
 }
 
 func tokenMining(ctx context.Context, conf config.Config) error {
@@ -164,7 +179,12 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 	min := 10
 	max := 12
 	randNum := float64(rand.Intn(max-min+1) + min)
-	mxc_price := getUSDprice(conf)
+	mxc_price, err := getUSDprice(conf)
+	if err != nil {
+		log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
+		return err
+	}
+
 	// amount = 1 MXC:USD * rand amount / amount of gateways
 	amount := mxc_price * randNum / float64(len(mining_gws))
 
