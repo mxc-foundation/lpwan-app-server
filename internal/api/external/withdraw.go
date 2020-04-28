@@ -325,3 +325,49 @@ func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api
 		WithdrawRequest: withdrawRequestList,
 	}, status.Error(codes.OK, "")
 }
+
+func (s *WithdrawServerAPI) GetWithdrawMonthly(ctx context.Context, req *api.GetWithdrawMonthlyRequest) (*api.GetWithdrawMonthlyResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetWithdrawMonthly"
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
+
+	resp, err := withdrawClient.GetWithdrawMonthly (ctx, &m2mServer.GetWithdrawMonthlyRequest{
+		UserId: req.UserId,
+		OrgId:  req.OrgId,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	var withdrawData []*api.MonthlyData
+	for _, item := range resp.MonthlyData {
+		monthlyWithdraw := &api.MonthlyData{
+			Month: item.Month,
+			Amount: item.Amount,
+		}
+
+		withdrawData = append(withdrawData, monthlyWithdraw)
+	}
+
+	return &api.GetWithdrawMonthlyResponse{
+		MonthlyData: withdrawData,
+	}, status.Error(codes.OK, "")
+}
