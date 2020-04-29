@@ -4,10 +4,6 @@
     "title": "m2mserver_device.proto",
     "version": "version not set"
   },
-  "schemes": [
-    "http",
-    "https"
-  ],
   "consumes": [
     "application/json"
   ],
