@@ -4,6 +4,10 @@
     "title": "withdraw.proto",
     "version": "version not set"
   },
+  "schemes": [
+    "http",
+    "https"
+  ],
   "consumes": [
     "application/json"
   ],
@@ -174,8 +178,69 @@
         ]
       }
     },
+    "/api/withdraw/monthly": {
+      "get": {
+        "summary": "get withdrawal history monthly",
+        "operationId": "GetWithdrawMonthly",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawMonthlyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/req": {
+      "post": {
+        "summary": "after user clicks withdraw, send withdraw request to cobo directly",
+        "operationId": "GetWithdraw",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
     "/api/withdraw/requests": {
       "get": {
+        "summary": "show the pending withdrawal list on the supernode",
         "operationId": "GetWithdrawRequestList",
         "responses": {
           "200": {
@@ -262,6 +327,37 @@
         }
       }
     },
+    "appserver_serves_uiGetWithdrawMonthlyResponse": {
+      "type": "object",
+      "properties": {
+        "monthlyData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiMonthlyData"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "ethAddress": {
+          "type": "string"
+        },
+        "availableBalance": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "appserver_serves_uiGetWithdrawRequestListResponse": {
       "type": "object",
       "properties": {
@@ -274,6 +370,15 @@
           "items": {
             "$ref": "#/definitions/appserver_serves_uiWithdrawRequest"
           }
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -306,6 +411,18 @@
         "TETH"
       ],
       "default": "ETH"
+    },
+    "appserver_serves_uiMonthlyData": {
+      "type": "object",
+      "properties": {
+        "month": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number",
+          "format": "double"
+        }
+      }
     },
     "appserver_serves_uiWithdrawHistory": {
       "type": "object",
