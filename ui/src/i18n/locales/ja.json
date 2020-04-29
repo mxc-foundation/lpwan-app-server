@@ -683,7 +683,8 @@
       "enter_your_gateway_serial_number": "ゲートウェイのシリアルナンバーを入力してください",
       "were_searching_with_your_gateway_please_wait": "ゲートウェイを検索しています。しばらくお待ちください。",
       "qr_code_scan": "QR Code Scan",
-      "reset_lora_config": "リセット Lora 構成"
+      "reset_lora_config": "リセット Lora 構成",
+      "restricted_region": "その地域で使用できないデバイスです。"
     },
     "staking": {
       "staking": "ステーキング",

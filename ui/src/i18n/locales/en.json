@@ -683,7 +683,8 @@
       "enter_your_gateway_serial_number": "Enter Your Gateway Serial Number",
       "were_searching_with_your_gateway_please_wait": "We're Searching with your Gateway, please wait...",
       "qr_code_scan": "QR Code Scan",
-      "reset_lora_config": "Reset Lora Config"
+      "reset_lora_config": "Reset Lora Config",
+      "restricted_region": "device not designed for this region"
     },
     "staking": {
       "staking": "Staking",

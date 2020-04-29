@@ -1,16 +1,19 @@
-import { withStyles } from "@material-ui/core/styles";
-import { Field, Form, Formik } from 'formik';
-import React, { Component } from "react";
-import { Link, withRouter } from 'react-router-dom';
-import { Button, Card, CardBody, CardHeader, Col, Row } from 'reactstrap';
+import React, { Component, useState } from "react";
+import { withRouter, Link } from 'react-router-dom';
+
+import { Button, Card, CardBody, Row, Col, CardHeader, Alert } from 'reactstrap';
+import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import logo from '../../assets/images/MATCHX-SUPERNODE2.png';
 import { ReactstrapInput } from '../../components/FormInputs';
-import Spinner from "../../components/ScaleLoader";
+import Tooltips from "./Tooltips";
+import { withStyles } from "@material-ui/core/styles";
 import i18n, { packageNS } from '../../i18n';
+import Spinner from "../../components/ScaleLoader";
+import logo from '../../assets/images/MATCHX-SUPERNODE2.png';
 import GatewayStore from "../../stores/GatewayStore";
 import QReaderModal from './QReaderModal';
-
+import ServerInfoStore from "../../stores/ServerInfoStore";
+import Modal from "../common/Modal";
 
 const styles = {
     center: {
@@ -30,12 +33,30 @@ class EnterSerialNum extends Component {
             stage: 0,
             openQR: false,
             loading: false,
+            modalOpen: false,
+            isRegionCorrect: true,
             object: {
                 serial: ''
             }
         };
     }
 
+    componentDidMount() {
+        this.loadData();
+      }
+    
+    loadData = async () => {
+        try {
+            const res = await ServerInfoStore.getServerRegion();
+            
+            this.setState({
+            serverRegion: res.serverRegion
+            });
+        } catch (error) {
+            console.error(error);
+            this.setState({ error });
+        }
+    }
 
     onSubmit = (serial) => {
         const object = this.state;
@@ -43,12 +64,11 @@ class EnterSerialNum extends Component {
         object.stage = 1;
         this.setState({ object });
         console.log('serial', serial);
-
         if (serial.serial.length === 0) {
             return false;
         }
 
-        if (serial.serial.substring(0, 2) !== 'MX') {
+        if (serial.serial.substring(0, 2).trim() !== 'MX' || serial.serial.substring(0, 2).trim() !== 'M2X') {
             this.props.history.push(
                 `/organizations/${this.props.match.params.organizationID}/gateways/create`
             );
@@ -57,7 +77,6 @@ class EnterSerialNum extends Component {
             gateway.organizationId = this.props.match.params.organizationID;
             gateway.sn = serial
             GatewayStore.register(gateway, resp => {
-                console.log('resp', resp);
                 this.props.history.push(
                     `/organizations/${this.props.match.params.organizationID}/gateways`
                 );
@@ -72,35 +91,78 @@ class EnterSerialNum extends Component {
     }
 
     readQR = (data) => {
+        let isRegionCorrect = true;
         let QRCodeArray = '';
 
         if (typeof data === 'object') {
             return;
         }
+        //data = "S/N: M2XO7FQOYGD, time: 3235, ID: MX1903, version: 1.0, MAC: 70:B3:D5:1C:B0:00}";
         if (data) {
             QRCodeArray = data.split(",");
         }
 
-        if (QRCodeArray.lenght > 0) {
+        /* 0: "S/N: M2XXXXXXXXX"
+        1: " ID: MX1903"
+        2: " 1.0"
+        3: " 1320"
+        4: " MAC: 70:B3:D5:00:00:00" */
+
+
+        let modalOpen = false;
+        if (QRCodeArray.length > 0) {
             const json = JSON.stringify(QRCodeArray);
 
-            const serial = QRCodeArray[0].split(':')[1];
-            const time = QRCodeArray[1].split(':')[1];
-            const model = QRCodeArray[2].split(':')[1];
-            const version = QRCodeArray[3].split(':')[1];
+            const serial = QRCodeArray[0].split(':')[1].trim();
+            let time = '';
+            let model = '';
+            let version = ''; 
+            let mac = ''; 
+            if (serial.substring(0, 2).trim() !== 'M2X') {
+                model = QRCodeArray[1].split(':')[1].trim();
+                version = QRCodeArray[2].trim();
+                time = QRCodeArray[3].trim(); 
+                mac = QRCodeArray[4].substring(5, QRCodeArray[4].length).trim(); 
+            } else {
+                time = QRCodeArray[1].split(':')[1];
+                model = QRCodeArray[2].split(':')[1].trim();
+                version = QRCodeArray[3].split(':')[1]; 
+            }
+
+            if(this.state.serverRegion === 'RESTRICTED' ){
+                if(model !== 'MX1903'){
+                    isRegionCorrect = false;
+                    modalOpen = true;
+                }
+            }else{
+                if(model === 'MX1903'){
+                    isRegionCorrect = false;
+                    modalOpen = true;
+                }
+            }
 
             const object = this.state;
-            object.object.serial = serial;
-            object.object.time = time;
-            object.object.model = model;
-            object.object.version = version;
+            object.isRegionCorrect = isRegionCorrect;
+            object.modalOpen = modalOpen;
+            object.object.serial = isRegionCorrect?serial:'';
+            object.object.time = isRegionCorrect?time:'';
+            object.object.model = isRegionCorrect?model:'';
+            object.object.version = isRegionCorrect?version:'';
+            if (serial.substring(0, 2).trim() !== 'M2X') {
+                object.object.mac = isRegionCorrect?mac:'';
+            }
             this.setState({ object });
         }
     }
 
+    close = () => {
+        const object = this.state;
+        object.modalOpen = false;
+        this.setState({object});
+    }
+
     render() {
         const { classes } = this.props;
-
         const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
         let fieldsSchema = {
@@ -120,6 +182,12 @@ class EnterSerialNum extends Component {
             {this.state.openQR && <QReaderModal
                 buttonLabel={i18n.t(`${packageNS}:tr000277`)}
                 callback={this.handleLink} />}
+            {this.state.modalOpen && <Modal
+                buttonLabel={i18n.t(`${packageNS}:tr000277`)}
+                title={i18n.t(`${packageNS}:menu.topup.notice`)}
+                context={i18n.t(`${packageNS}:menu.gateways.restricted_region`)}
+                callback={this.close} />}
+
             <Card>
                 <Col xs={12}>
                     <Card className={classes.center} >
@@ -166,7 +234,7 @@ class EnterSerialNum extends Component {
                                             </div>
                                             <Row>
                                                 <Col className={classes.between}>
-                                                    <Link to={`/organizations/${currentOrgID}/gateways/brand`}><Button color="secondary" onClick={this.back}>{i18n.t(`${packageNS}:menu.common.back`)}</Button></Link>
+                                                    <Link to={`/organizations/${currentOrgID}/gateways`}><Button color="secondary" onClick={this.back}>{i18n.t(`${packageNS}:menu.common.back`)}</Button></Link>
                                                     <Button type="submit" color="secondary" className="btn" >{i18n.t(`${packageNS}:menu.common.submit`)}</Button>
                                                 </Col>
                                             </Row>
