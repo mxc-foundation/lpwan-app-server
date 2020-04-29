@@ -23,6 +23,7 @@ react_test_frontend:
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
 
@@ -42,10 +43,11 @@ syntax_test_backend:
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
 
-security_test_backend:
+.security_test_backend:
   image: golang:1.12-alpine
   stage: test
   environment:
@@ -61,6 +63,7 @@ security_test_backend:
     - develop
     - buildserver
     - /crowdin/
+    - /l10n_buildserver/
   tags:
     - kubernetes
     
@@ -74,17 +77,34 @@ variables:
 
 build_image: # this needs changing to native build to speed up 2-3 times
   stage: build
+  image: docker:19.03.0
+  before_script: 
+    - apk add --no-cache ca-certificates make git bash
+  services:
+    - docker:19.03.0-dind
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
   except:
     - /crowdin/
+    - /l10n_buildserver/
   tags:
-    - buildserver-native
+    - kubernetes
 
 release_image_gitlab:
   stage: release-private
+  image: docker:19.03.0
+  before_script: 
+    - apk add --no-cache ca-certificates make git bash
+  services:
+    - docker:19.03.0-dind
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - export VERSION=$(git describe --tags|sed -e "s/^v//")
@@ -96,10 +116,18 @@ release_image_gitlab:
     - develop # but we keep this enabled too
     - buildserver # and this to build image for buildserver deploy for QA
   tags:
-    - buildserver-native
+    - kubernetes
 
 release_image_dockerhub:
   stage: release-public
+  image: docker:19.03.0
+  before_script: 
+    - apk add --no-cache ca-certificates make git bash
+  services:
+    - docker:19.03.0-dind
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - export VERSION=$(git describe --tags|sed -e "s/^v//")
@@ -111,7 +139,7 @@ release_image_dockerhub:
     - tags
     - master
   tags:
-    - buildserver-native
+    - kubernetes
 
 .deploy_to_staging: #this needs migrating here from lpwan-server-docker project!!!
   stage: deploy

@@ -1,12 +1,10 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import { checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
-import MockWalletStoreApi from '../api/mockWalletStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class WalletStore extends EventEmitter {
@@ -16,14 +14,8 @@ class WalletStore extends EventEmitter {
   }
 
   getDlPrice(orgId, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockWalletStoreApi.getDlPrice(orgId)))();
-      return;
-    } */
-
     this.swagger.then(client => {
-      client.apis.ProxyRequest.GetDlPrice({
+      client.apis.WalletService.GetDlPrice({
         orgId,
       })
         .then(checkStatus)
@@ -34,10 +26,11 @@ class WalletStore extends EventEmitter {
     });
   }
 
-  getWalletBalance(orgId, callbackFunc) {
+  getWalletBalance(orgId, userId, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WalletService.GetWalletBalance({
-        orgId,
+        userId,
+        orgId
       })
         .then(checkStatus)
         .then(resp => {
@@ -45,6 +38,38 @@ class WalletStore extends EventEmitter {
         })
         .catch(errorHandler);
     });
+  }
+
+  async getWalletMiningIncome(userId, orgId) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.WalletService.GetWalletMiningIncome({
+            userId,
+            orgId
+        });
+    
+        resp = await checkStatus(resp);
+        console.log('getMining', resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async getMiningInfo(userId, orgId) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.WalletService.GetMiningInfo({
+            userId,
+            orgId
+        });
+    
+        resp = await checkStatus(resp);
+        console.log('getMining', resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

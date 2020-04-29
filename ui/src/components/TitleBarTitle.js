@@ -1,6 +1,6 @@
+import classNames from "classnames";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import classNames from "classnames";
 
 
 class TitleBarTitle extends Component {

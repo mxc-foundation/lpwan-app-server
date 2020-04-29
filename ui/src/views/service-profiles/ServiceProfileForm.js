@@ -1,13 +1,13 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-
-import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
-import { Formik, Form, Field, FieldArray } from 'formik';
+import { Button, Col, Row } from 'reactstrap';
 import * as Yup from 'yup';
-
-import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
-import i18n, { packageNS } from '../../i18n';
 import Admin from '../../components/Admin';
+import { AsyncAutoComplete, ReactstrapCheckbox, ReactstrapInput } from '../../components/FormInputs';
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
+
+
 
 
 class ServiceProfileForm extends Component {
@@ -16,7 +16,6 @@ class ServiceProfileForm extends Component {
 
     this.state = {};
 
-    this.getNetworkServerOption = this.getNetworkServerOption.bind(this);
     this.getNetworkServerOptions = this.getNetworkServerOptions.bind(this);
   }
 
@@ -26,17 +25,10 @@ class ServiceProfileForm extends Component {
     });
   }
 
-  getNetworkServerOption(id, callbackFunc) {
-    NetworkServerStore.get(id, resp => {
-      callbackFunc({ label: resp.networkServer.name, value: resp.networkServer.id });
-    });
-  }
-
-  getNetworkServerOptions(search, callbackFunc) {
-    NetworkServerStore.list(0, 999, 0, resp => {
-      const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
-      callbackFunc(options);
-    });
+  getNetworkServerOptions = async (search, callbackFunc) => {
+    const res = await NetworkServerStore.list(0, 10, 0);
+    const options = res.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
+    callbackFunc(options);
   }
 
 
@@ -53,9 +45,9 @@ class ServiceProfileForm extends Component {
       id: Yup.string(),
       addGWMetaData: Yup.bool(),
       nwkGeoLoc: Yup.bool(),
-      devStatusReqFreq: Yup.number().moreThan(-1),
-      drMin: Yup.number().moreThan(-1),
-      drMax: Yup.number().moreThan(-1)
+      devStatusReqFreq: Yup.number().moreThan(-1, i18n.t(`${packageNS}:menu.messages.min`)),
+      drMin: Yup.number().moreThan(-1, i18n.t(`${packageNS}:menu.messages.min`)),
+      drMax: Yup.number().moreThan(-1, i18n.t(`${packageNS}:menu.messages.min`))
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);

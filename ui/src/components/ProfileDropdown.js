@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { Dropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap';
-import i18n, { packageNS } from '../i18n';
+import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap';
 import defaultProfilePic from '../assets/images/users/profile-icon.png';
+import i18n, { packageNS } from '../i18n';
 
 class ProfileDropdown extends Component {
     constructor(props) {

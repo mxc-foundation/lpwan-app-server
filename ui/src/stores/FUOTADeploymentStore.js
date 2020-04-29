@@ -1,12 +1,10 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
-import MockFUOTADeploymentStoreApi from '../api/mockFUOTADeploymentStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class FUOTADeploymentStore extends EventEmitter {
@@ -34,12 +32,6 @@ class FUOTADeploymentStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockFUOTADeploymentStoreApi.get()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.Get({
         id: id,
@@ -53,12 +45,6 @@ class FUOTADeploymentStore extends EventEmitter {
   }
 
   list(filters, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockFUOTADeploymentStoreApi.list()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.List(filters)
         .then(checkStatus)
@@ -70,12 +56,6 @@ class FUOTADeploymentStore extends EventEmitter {
   }
 
   listDeploymentDevices(filters, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockFUOTADeploymentStoreApi.listDeploymentDevices()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.ListDeploymentDevices(filters)
         .then(checkStatus)
@@ -87,12 +67,6 @@ class FUOTADeploymentStore extends EventEmitter {
   }
 
   getDeploymentDevice(fuotaDeploymentID, devEUI, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockFUOTADeploymentStoreApi.getDeploymentDevice()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.FUOTADeploymentService.GetDeploymentDevice({
         fuotaDeploymentId: fuotaDeploymentID,

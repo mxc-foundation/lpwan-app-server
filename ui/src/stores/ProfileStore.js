@@ -1,12 +1,12 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
-import updateOrganizations from "./SetUserProfile";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+import updateOrganizations from "./SetUserProfile";
+
+
 
 
 class ProfileStore extends EventEmitter {
@@ -15,18 +15,18 @@ class ProfileStore extends EventEmitter {
     this.profileSwagger = new Swagger("/swagger/profile.swagger.json", sessionStore.getClientOpts());
   }
 
-  getUserOrganizationList(orgId, callbackFunc) {
-    this.profileSwagger.then(client => {
-      client.apis.InternalService.GetUserOrganizationList({
-        orgId
-      })
-      .then(checkStatus)
-      .then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
-    });
+  async getUserOrganizationList(orgId) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.OrganizationService.GetUserOrganizationList({
+          orgId
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

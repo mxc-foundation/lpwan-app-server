@@ -1,11 +1,11 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-
+import { Button } from 'reactstrap';
+import * as Yup from 'yup';
+import { ReactstrapCheckbox, ReactstrapInput } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
 
-import { Button, FormGroup, Label, Input, FormText } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
-import { ReactstrapInput, ReactstrapCheckbox } from '../../components/FormInputs';
+
 
 class NonAdminChoices extends Component {
   render() {
@@ -85,6 +85,7 @@ class OrganizationUserForm extends Component {
                   helpText={i18n.t(`${packageNS}:tr000138`)}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
+                  readOnly={this.props.update}
                   inputProps={{
                     clearable: true,
                     cache: false,

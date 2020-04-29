@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import i18n, { packageNS } from '../../i18n';
 import { DEFAULT } from '../../util/Data';
 import DropdownMenu2 from '../DropdownMenu';
+
 
 const SideNavSettingContent = (props) => {
   return <React.Fragment>
@@ -34,12 +34,12 @@ const SideNavSettingContent = (props) => {
                     ) : null
                 }
 
-                <li>
+                {/* <li>
                     <Link to={`/modify-account/${props.orgId}`} className="waves-effect side-nav-link-ref">
                         <i className="mdi mdi-ethereum"></i>
                         <span> {i18n.t(`${packageNS}:menu.eth_account.eth_account`)} </span>
                     </Link>
-                </li>  
+                </li> */}  
           </ul>
       </div>
       <div className="clearfix"></div>

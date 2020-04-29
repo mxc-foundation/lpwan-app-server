@@ -1,25 +1,23 @@
 import React, { Component } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import { UncontrolledDropdown, DropdownMenu, DropdownItem, DropdownToggle } from 'reactstrap';
-
+import MetisMenu from 'metismenujs/dist/metismenujs';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 import 'react-perfect-scrollbar/dist/css/styles.css';
-import MetisMenu from 'metismenujs/dist/metismenujs';
-
+import { withRouter } from 'react-router-dom';
 import OrganizationStore from '../../stores/OrganizationStore';
 import ServerInfoStore from '../../stores/ServerInfoStore';
 import SessionStore from '../../stores/SessionStore';
-import UserStore from '../../stores/UserStore';
-import { SUPERNODE_WALLET, SUPERNODE_SETTING, DEFAULT, WALLET, SETTING, ORGANIZATIONS } from '../../util/Data';
-
+import { DEFAULT, ORGANIZATIONS, SETTING, SUPERNODE_SETTING, SUPERNODE_WALLET, WALLET } from '../../util/Data';
 import SideNavContent from './SideNavContent';
+import SideNavOrganizationsContent from './SideNavOrganizationsContent';
 import SideNavSettingContent from './SideNavSettingContent';
 import SideNavSupernodeSettingContent from './SideNavSupernodeSettingContent';
 import SideNavSupernodeWalletContent from './SideNavSupernodeWalletContent';
 import SideNavWalletContent from './SideNavWalletContent';
-import SideNavOrganizationsContent from './SideNavOrganizationsContent';
 
-const ProfileMenus = [{
+
+
+
+/* const ProfileMenus = [{
     label: 'My Account',
     icon: 'fe-user',
     redirectTo: "/",
@@ -39,15 +37,7 @@ const ProfileMenus = [{
     icon: 'fe-log-out',
     redirectTo: "/logout",
     hasDivider: true
-}]
-
-function loadServerVersion() {
-    return new Promise((resolve, reject) => {
-        ServerInfoStore.getAppserverVersion(data => {
-            resolve(data);
-        });
-    });
-}
+}] */
 
 class Sidebar extends Component {
     constructor(props) {
@@ -69,7 +59,7 @@ class Sidebar extends Component {
     loadData = async () => {
         try {
           const organizationIDs = SessionStore.getOrganizations();
-           var data = await loadServerVersion();
+          var data = await ServerInfoStore.getAppserverVersion();
           const serverInfo = JSON.parse(data);
           
           this.setState({
@@ -89,12 +79,9 @@ class Sidebar extends Component {
     componentDidMount = () => {
         this.initMenu();
         this.loadData();
-        SessionStore.on("organization.change", () => {
-            OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
-              this.setState({
-                organization: resp.organization,
-              });
-            });
+        SessionStore.on("organization.change", async () => {
+            let organization = await OrganizationStore.get(SessionStore.getOrganizationID());
+            this.setState({ organization: organization.organization });
           });
       
           OrganizationStore.on("create", () => {
@@ -147,31 +134,17 @@ class Sidebar extends Component {
         }
       }
     
-      getOrganizationOption(id, callbackFunc) {
-        OrganizationStore.get(id, resp => {
-          callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
-        });
+      getOrganizationOption = async (id, callbackFunc) =>  {
+        let resp = await OrganizationStore.get(id);
+        callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
       }
     
-      getOrganizationOptions(search, callbackFunc) {
-        OrganizationStore.list(search, 10, 0, resp => {
-          const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
-          callbackFunc(options);
-        });
+      getOrganizationOptions = async (search, callbackFunc) => {
+        const resp = await OrganizationStore.list(search, 10, 0);
+        const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
+        callbackFunc(options);
       }
     
-      /* handlingExtLink = () => {
-        const resp = SessionStore.getProfile();
-        resp.then((res) => {
-          let orgId = SessionStore.getOrganizationID();
-          const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
-    
-          OrganizationStore.get(orgId, resp => {
-            openM2M(resp.organization, isBelongToOrg, '/modify-account');
-          });
-        })
-      } */
-
     /**
      * Bind event
      */
@@ -200,7 +173,7 @@ class Sidebar extends Component {
         }
 
         // on route change - switch to default
-        const innerExcludePaths = ['/history/', '/topup/', '/control-panel/history', '/control-panel/system-settings', '/control-panel/modify-account'];
+        const innerExcludePaths = ['/history/', '/topup/', '/withdraw/', '/control-panel/history', '/control-panel/withdraw', '/control-panel/system-settings'];
         
         if (this.props.location !== prevProps.location && ([SUPERNODE_WALLET, WALLET, SUPERNODE_SETTING, SETTING].indexOf(prevProps.currentSidebarId) !== -1)) {
           if (this.props.location) {

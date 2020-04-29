@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import { checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class HistoryStore extends EventEmitter {
@@ -17,22 +17,6 @@ class HistoryStore extends EventEmitter {
     this.moneySwagger = new Swagger("/swagger/ext_account.swagger.json", sessionStore.getClientOpts());
   }
 
-  getTopUpHistory(orgId, offset, limit, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.TopUpService.GetTopUpHistory({
-        orgId,
-        offset,
-        limit
-      })
-        .then(checkStatus)
-        //.then(updateOrganizations)
-        .then(resp => {
-          callbackFunc(resp.body);
-        })
-        .catch(errorHandler);
-    });
-  }
-
   getWithdrawHistory(moneyAbbr, orgId, limit, offset, callbackFunc) {
     this.withdrawSwagger.then((client) => {
       client.apis.WithdrawService.GetWithdrawHistory({
@@ -42,7 +26,6 @@ class HistoryStore extends EventEmitter {
         offset,
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.obj);
         })
@@ -58,7 +41,6 @@ class HistoryStore extends EventEmitter {
         offset,
       })
         .then(checkStatus)
-        //.then(updateOrganizations)
         .then(resp => {
           callbackFunc(resp.obj);
         })
@@ -66,7 +48,7 @@ class HistoryStore extends EventEmitter {
     });
   }
 
-  getChangeMoneyAccountHistory(moneyAbbr, orgId, limit, offset, callbackFunc) {
+  getChangeMoneyAccountHistory(moneyAbbr, orgId, limit, offset, callbackFunc, errorCallbackFunc) {
     this.moneySwagger.then((client) => {
       client.apis.MoneyService.GetChangeMoneyAccountHistory({
         moneyAbbr,
@@ -78,7 +60,10 @@ class HistoryStore extends EventEmitter {
         .then(resp => {
           callbackFunc(resp.obj);
         })
-        .catch(errorHandler);
+        .catch(error => {
+          errorHandler(error);
+          if (errorCallbackFunc) errorCallbackFunc(error);
+        });
     });
   }
 

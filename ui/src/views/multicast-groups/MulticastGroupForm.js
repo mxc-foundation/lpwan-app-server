@@ -1,19 +1,19 @@
-import React from "react";
-
+import FormControl from "@material-ui/core/FormControl";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import FormLabel from "@material-ui/core/FormLabel";
 import { withStyles } from "@material-ui/core/styles";
 import TextField from '@material-ui/core/TextField';
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
-
-import i18n, { packageNS } from '../../i18n';
+import React from "react";
 import FormComponent from "../../classes/FormComponent";
 import AESKeyField from "../../components/AESKeyField";
+import AutocompleteSelect from "../../components/AutocompleteSelect";
 import DevAddrField from "../../components/DevAddrField";
 import Form from "../../components/Form";
-import AutocompleteSelect from "../../components/AutocompleteSelect";
+import i18n, { packageNS } from '../../i18n';
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import theme from "../../theme";
+
+
 
 
 const styles = {
@@ -33,17 +33,17 @@ class MulticastGroupForm extends FormComponent {
     this.getServiceProfileOptions = this.getServiceProfileOptions.bind(this);
   }
 
-  getServiceProfileOption(id, callbackFunc) {
-    ServiceProfileStore.get(id, resp => {
-      callbackFunc({label: resp.serviceProfile.name, value: resp.serviceProfile.id});
-    });
+  getServiceProfileOption = async (id, callbackFunc) => {
+    const resp = await ServiceProfileStore.get(id);
+    const options = resp.result.map((o, i) => {return {label: resp.serviceProfile.name, value: resp.serviceProfile.id}});
+    callbackFunc(options);
   }
 
-  getServiceProfileOptions(search, callbackFunc) {
-    ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0, resp => {
-      const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
-      callbackFunc(options);
-    });
+
+  getServiceProfileOptions = async (search, callbackFunc) => {
+    const resp = await ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0);
+    const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
+    callbackFunc(options);
   }
 
   getRandomKey(len) {

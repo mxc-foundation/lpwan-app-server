@@ -1,22 +1,17 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
-import {
-  Row,
-  Col,
-  Card,
-  CardBody
-} from "reactstrap";
-
-import i18n, { packageNS } from "../../i18n";
-import TitleBar from "../../components/TitleBar";
+import { Card, CardBody, Col, Row } from "reactstrap";
 import Loader from "../../components/Loader";
 import CommonModal from "../../components/Modal";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-
-import GatewayForm from "./GatewayForm";
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from "../../i18n";
 import GatewayStore from "../../stores/GatewayStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
+import GatewayForm from "./GatewayForm";
+
+
+
 
 
 class CreateGateway extends Component {
@@ -29,22 +24,16 @@ class CreateGateway extends Component {
     };
   }
 
-  componentDidMount() {
-    ServiceProfileStore.list(
-      this.props.match.params.organizationID,
-      0,
-      0,
-      resp => {
-        const state = {
-          loading: false
-        };
-        if (resp.totalCount === "0") {
-          state.spDialog = true;
-        }
+  componentDidMount = async () => {
+    const resp = await ServiceProfileStore.list(this.props.match.params.organizationID, 10, 0);
+    const state = {
+      loading: false
+    };
+    if (resp.totalCount === "0") {
+      state.spDialog = true;
+    }
 
-        this.setState(state);
-      }
-    );
+    this.setState(state);
   }
 
   closeDialog = () => {

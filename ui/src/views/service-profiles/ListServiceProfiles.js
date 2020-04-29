@@ -1,17 +1,18 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Row, Col, Card } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import TitleBar from "../../components/TitleBar";
-import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import { Link, withRouter } from "react-router-dom";
+import { Card, Col, Row } from 'reactstrap';
 import Admin from '../../components/Admin';
 import AdvancedTable from "../../components/AdvancedTable";
+import Loader from "../../components/Loader";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-
+import i18n, { packageNS } from '../../i18n';
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
+
 
 
 class ListServiceProfiles extends Component {
@@ -23,6 +24,7 @@ class ListServiceProfiles extends Component {
     this.serviceProfileColumn = this.serviceProfileColumn.bind(this)
     this.state = {
       data: [],
+      loading: false,
       columns: [{
         dataField: 'name',
         text: i18n.t(`${packageNS}:tr000042`),
@@ -44,14 +46,15 @@ class ListServiceProfiles extends Component {
   /**
    * Fetches data from server
    */
-  getPage = (organizationID, limit, offset) => {
-    ServiceProfileStore.list(organizationID, limit, offset, (res) => {
-      const object = this.state;
-      object.totalSize = Number(res.totalCount);
-      object.data = res.result;
-      object.loading = false;
-      this.setState({ object });
-    });
+  getPage = async (organizationID, limit, offset) => {
+    this.setState({ loading: true });
+
+    const res = await ServiceProfileStore.list(organizationID, limit=10, offset=0);
+    const object = this.state;
+    object.totalSize = Number(res.totalCount);
+    object.data = res.result;
+    object.loading = false;
+    this.setState({ object });
   }
 
   serviceProfileColumn = (cell, row, index, extraData) => {
@@ -87,6 +90,7 @@ class ListServiceProfiles extends Component {
         <Row>
           <Col>
             <Card className="card-box shadow-sm">
+            {this.state.loading && <Loader />}
               <AdvancedTable data={this.state.data} columns={this.state.columns} keyField="id" totalSize={this.state.totalSize} onTableChange={this.handleTableChange}></AdvancedTable>
             </Card>
           </Col>

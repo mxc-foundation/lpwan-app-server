@@ -1,13 +1,13 @@
+import L from 'leaflet';
 import React, { Component } from "react";
 import ReactDOM from 'react-dom';
-
-import { Row, Col, Card, CardBody } from 'reactstrap';
-import L from 'leaflet';
-import { Map, Marker, Polyline, Popup, MapControl, withLeaflet } from 'react-leaflet';
-
-import i18n, { packageNS } from '../../i18n';
+import { Map, MapControl, Marker, Polyline, Popup, withLeaflet } from 'react-leaflet';
+import { Card, CardBody, Col, Row } from 'reactstrap';
 import MapTileLayer from "../../components/MapTileLayer";
+import i18n, { packageNS } from '../../i18n';
 import GatewayStore from "../../stores/GatewayStore";
+
+
 
 
 class GatewayDiscovery extends Component {

@@ -1,19 +1,19 @@
-import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
-
 import { withStyles } from "@material-ui/core/styles";
 import Typograhy from "@material-ui/core/Typography";
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import { Button } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-
-import i18n, { packageNS } from '../../i18n';
 import AESKeyField from "../../components/FormikAESKeyField";
 import DevAddrField from "../../components/FormikDevAddrField";
-import Loader from "../../components/Loader";
 import { ReactstrapInput } from '../../components/FormInputs';
+import Loader from "../../components/Loader";
+import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
+
+
 
 
 const styles = {
@@ -124,6 +124,11 @@ class DeviceActivation extends Component {
   render() {
     const { loading, object } = this.state;
     const { deviceProfile } = this.props;
+    
+    let devEUI = '';
+    if(this.props.match.params.devEUI !== undefined){
+      devEUI = this.props.match.params.devEUI;
+    }
 
     if (object === undefined) {
       return <React.Fragment>{loading && <Loader light />}</React.Fragment>
@@ -147,6 +152,7 @@ class DeviceActivation extends Component {
           enableReinitialize
           initialValues={
             {
+              devEUI: this.props.match.params.devEUI,
               object: {
                 deviceActivation: {
                   devEUI: object.deviceActivation.devEUI || undefined,
@@ -470,26 +476,26 @@ class DeviceActivation extends Component {
                   }
 
                   <>
-                    <label htmlFor="object.deviceActivation.devEUI" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
+                    <label htmlFor="devEUI" style={{ display: 'block', fontWeight: "700", marginTop: 16 }}>
                       {i18n.t(`${packageNS}:tr000371`)}
                     </label>
-                    &nbsp;&nbsp;{object.deviceActivation.devEUI}
+                    &nbsp;&nbsp;{devEUI}
 
                     <input
                       type="hidden"
                       id="devEUI"
                       disabled
-                      name="object.deviceActivation.devEUI"
-                      value={object.deviceActivation.devEUI || ""}
+                      name="devEUI"
+                      value={object.devEUI || ""}
                     />
                     {
-                      errors.object && errors.object.deviceActivation.devEUI
+                      errors.object && errors.devEUI
                         ? (
                           <div
                             className="invalid-feedback"
                             style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
                           >
-                            {errors.object.deviceActivation.devEUI}
+                            {errors.devEUI}
                           </div>
                         ) : null
                     }

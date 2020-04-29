@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class WithdrawStore extends EventEmitter {
@@ -14,16 +14,14 @@ class WithdrawStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/withdraw.swagger.json", sessionStore.getClientOpts());
   }
 
-  getWithdrawFee(moneyAbbr, orgId, callbackFunc) {
+  getWithdrawFee(moneyAbbr, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WithdrawService.GetWithdrawFee({
-        moneyAbbr,
-        orgId
+        moneyAbbr
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
-        callbackFunc(resp.obj);
+        callbackFunc(resp.body);
       })
       .catch(errorHandler);
     });
@@ -37,7 +35,6 @@ class WithdrawStore extends EventEmitter {
         body
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.obj);
       })
@@ -45,19 +42,69 @@ class WithdrawStore extends EventEmitter {
     });
   }
 
-  WithdrawReq(apiWithdrawReqRequest, callbackFunc) {
+  getWithdrawRequestList(limit, offset, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.WithdrawService.GetWithdrawRequestList({
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  getWithdrawHistory(moneyAbbr, orgId, limit, offset, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.WithdrawService.GetWithdrawHistory({
+        moneyAbbr,
+        orgId,
+        offset,
+        limit
+      })
+      .then(checkStatus)
+      .then(resp => {
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  withdrawReq(req, callbackFunc) {
     this.swagger.then(client => {
       client.apis.WithdrawService.WithdrawReq({
-        "orgId": apiWithdrawReqRequest.orgId,
-        "moneyAbbr": apiWithdrawReqRequest.moneyAbbr,
+        "moneyAbbr": req.moneyAbbr,
         body: {
-          amount: apiWithdrawReqRequest.amount,
-          moneyAbbr: apiWithdrawReqRequest.moneyAbbr,
-          orgId: apiWithdrawReqRequest.orgId
+          orgId: req.orgId,
+          moneyAbbr: req.moneyAbbr,
+          amount: req.amount,
+          ethAddress: req.ethAddress,
+          availableBalance: req.availableBalance
         },
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
+      .then(resp => {
+        this.notify("updated");
+        this.emit("withdraw");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
+  confirmWithdraw(req, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.WithdrawService.ConfirmWithdraw({
+        body: {
+          orgId: req.orgId,
+          confirmStatus:req.confirmStatus,
+          denyComment: req.denyComment,
+          withdrawId: req.withdrawId
+        },
+      })
+      .then(checkStatus)
       .then(resp => {
         this.notify("updated");
         this.emit("withdraw");

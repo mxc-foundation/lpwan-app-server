@@ -1,34 +1,26 @@
-import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
-
-import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import Delete from "mdi-material-ui/Delete";
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
-
+import { withStyles } from "@material-ui/core/styles";
+import React, { Component } from "react";
+import { Route, Switch, withRouter } from "react-router-dom";
 import ApplicationStore from "../../stores/ApplicationStore";
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
-import SessionStore from "../../stores/SessionStore";
-import DeviceAdmin from "../../components/DeviceAdmin";
 import DeviceStore from "../../stores/DeviceStore";
 import OrganizationStore from "../../stores/OrganizationStore";
-import UpdateDevice from "./UpdateDevice";
-import DeviceKeys from "./DeviceKeys";
-import DeviceActivation from "./DeviceActivation"
-import DeviceData from "./DeviceData";
-import DeviceFrames from "./DeviceFrames";
-import ListFUOTADeploymentsForDevice from "../../views/fuota/ListFUOTADeploymentsForDevice";
-import DeviceDetailsDevicesTabs from "../../views/applications/DeviceDetailsDevicesTabs";
-import DeviceDetails from "./DeviceDetails";
-
+import SessionStore from "../../stores/SessionStore";
 import theme from "../../theme";
+import DeviceDetailsDevicesTabs from "../../views/applications/DeviceDetailsDevicesTabs";
+import ListFUOTADeploymentsForDevice from "../../views/fuota/ListFUOTADeploymentsForDevice";
+import DeviceActivation from "./DeviceActivation";
+import DeviceData from "./DeviceData";
+import DeviceDetails from "./DeviceDetails";
+import DeviceFrames from "./DeviceFrames";
+import DeviceKeys from "./DeviceKeys";
+import UpdateDevice from "./UpdateDevice";
+
+
+
+
+
 
 
 const styles = {
@@ -60,12 +52,7 @@ class DeviceLayout extends Component {
       });
     }
 
-    OrganizationStore.get(currentOrgID, resp => {
-      this.setState({
-        organization: resp.organization,
-        loading: false
-      });
-    });
+    this.loadOrganization(currentOrgID);
 
     DeviceStore.on("update", this.getDevice);
     SessionStore.on("change", this.setIsAdmin);
@@ -73,6 +60,14 @@ class DeviceLayout extends Component {
     this.getMainTabDeviceIndexFromLocation();
     this.setIsAdmin();
     this.getDevice();
+  }
+
+  loadOrganization = async (id) => {
+    let resp = await OrganizationStore.get(id);  
+    this.setState({
+      organization: resp.organization,
+      loading: false
+    });
   }
 
   componentWillUnmount() {
@@ -189,7 +184,7 @@ class DeviceLayout extends Component {
           {children}
           <Switch>
             <Route exact path={`${urlPrefixDeviceNoApp}/edit`} render={props => <UpdateDevice device={device.device} admin={admin} {...props} />} />
-            <Route exact path={`${urlPrefixDeviceNoApp}/keys`} render={props => <DeviceKeys device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
+            <Route exact path={`${urlPrefixDeviceNoApp}/keys`} render={props => <DeviceKeys devEUI={this.props.match.params.devEUI} device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
             <Route exact path={`${urlPrefixDeviceNoApp}/activation`} render={props => <DeviceActivation device={device.device} admin={admin} deviceProfile={deviceProfile && deviceProfile.deviceProfile} {...props} />} />
             <Route exact path={`${urlPrefixDeviceNoApp}/data`} render={props => <DeviceData device={device.device} admin={admin} {...props} />} />
             <Route exact path={`${urlPrefixDeviceNoApp}/frames`} render={props => <DeviceFrames device={device.device} admin={admin} {...props} />} />

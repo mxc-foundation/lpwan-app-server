@@ -1,11 +1,12 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
-import Grid from '@material-ui/core/Grid';
-
 import i18n, { packageNS } from '../../i18n';
 import UserStore from "../../stores/UserStore";
+import PasswordReset from "./PasswordReset";
+import User2FA from "./User2FA";
 import UserForm from "./UserForm";
+
+
 
 class UpdateUser extends Component {
   onSubmit = (user) => {
@@ -17,7 +18,7 @@ class UpdateUser extends Component {
   render() {
     const { loading, user } = this.props;
 
-    return (
+    return (<React.Fragment>
       <UserForm
         submitLabel={i18n.t(`${packageNS}:tr000066`)}
         loading={loading}
@@ -25,6 +26,16 @@ class UpdateUser extends Component {
         onSubmit={this.onSubmit}
         update={true}
       />
+
+      <User2FA loading={loading}
+        object={user}
+        update={true} />
+
+      <PasswordReset loading={loading}
+        object={user}
+        update={true} />
+
+      </React.Fragment>
     );
   }
 }

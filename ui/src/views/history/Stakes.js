@@ -1,12 +1,12 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
-
 import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
 import StakeStore from "../../stores/StakeStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
 
 const StartColumn = (cell, row, index, extraData) => {
   return row.start.substring(0, 10);
@@ -84,16 +84,20 @@ class Stakes extends Component {
   /**
    * Fetches data from server
    */
-  getPage = (limit, offset) => {
+  getPage = async (limit, offset) => {
     limit = MAX_DATA_LIMIT;
     this.setState({ loading: true });
-    StakeStore.getStakingHistory(this.props.organizationID, offset, limit, res => {
-      const object = this.state;
+    const res = await StakeStore.getStakingHistory(this.props.organizationID, limit=10, offset=0);
+    let object = {};
+    if(res !== undefined){
+      object = this.state;
       object.totalSize = res.count;
       object.data = res.stakingHist;
       object.loading = false;
       this.setState({object});
-    });
+    }else{
+      
+    }
   }
 
   componentDidMount() {

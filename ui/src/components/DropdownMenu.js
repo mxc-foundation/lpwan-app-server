@@ -4,7 +4,7 @@ import AsyncSelect from "react-select/async";
 import SessionStore from "../stores/SessionStore";
 import { SUPER_ADMIN } from "../util/M2mUtil";
 
-const customStyles = {
+/* const customStyles = {
   control: (base, state) => ({
     ...base,
     margin: 5,
@@ -46,7 +46,7 @@ const customStyles = {
     overflow: "hidden",
     textOverflow: "ellipsis"
   })
-};
+}; */
 
 const getOrgList = organizations => {
   let organizationList = null;
@@ -66,12 +66,11 @@ const getOrgList = organizations => {
   return organizationList;
 };
 
-const promiseOptions = () =>
-  new Promise((resolve, reject) => {
-    SessionStore.fetchProfile(resp => {
-      resolve(getOrgList(resp.body.organizations));
-    });
-  });
+const promiseOptions = async () =>{
+  let resp = await SessionStore.fetchProfile();
+  const options = getOrgList(resp.body.organizations);
+  return options;
+}
 
 export default class WithPromises extends Component {
   constructor() {
@@ -83,12 +82,14 @@ export default class WithPromises extends Component {
     };
   }
 
-  componentDidMount() {
-    promiseOptions().then(options => {
-      this.setState({
-        options,
-        dOptions: { label: options[0].label, value: options[0].value }
-      });
+  componentDidMount = async () => {
+    
+    let resp = await SessionStore.fetchProfile();
+    const options = getOrgList(resp.body.organizations);
+    const dOptions = { label: options[0].label, value: options[0].value };
+    this.setState({
+      options,
+      dOptions
     });
   }
 

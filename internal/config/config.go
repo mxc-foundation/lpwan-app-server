@@ -10,7 +10,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
 )
 
-// AppserverVersion defines the AppserverVersion
 var AppserverVersion string
 
 // Config defines the configuration structure.
@@ -36,10 +35,20 @@ type Config struct {
 	}
 
 	SMTP struct {
-		Email    string `mapstructure:"email"`
-		Password string `mapstructure:"password"`
-		Host     string `mapstructure:"host"`
-		Port     string `mapstructure:"port"`
+		Average struct{
+			Email    string `mapstructure:"email"`
+			Password string `mapstructure:"password"`
+			Host     string `mapstructure:"host"`
+			Port     string `mapstructure:"port"`
+		} `mapstructure:"average"`
+
+		Restricted struct{
+			Email    string `mapstructure:"email"`
+			Password string `mapstructure:"password"`
+			Host     string `mapstructure:"host"`
+			Port     string `mapstructure:"port"`
+		} `mapstructure:"restricted"`
+
 	} `mapstructure:"smtp"`
 
 	M2MServer struct {
@@ -60,6 +69,13 @@ type Config struct {
 		HostServer string `mapstructure:"host_server"`
 		Secret     string `mapstructure:"secret"`
 	} `mapstructure:"recaptcha"`
+
+	AliyunRecaptcha struct {
+		AppKey       string `mapstructure:"app_key"`
+		Scene        string `mapstructure:"scene"`
+		AccessKey    string `mapstructure:"acc_key"`
+		AccSecretKey string `mapstructure:"acc_secret_key"`
+	} `mapstructure:"aliyunrecaptcha"`
 
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
@@ -127,6 +143,11 @@ type Config struct {
 			Registration string `mapstructure:"registration"`
 			LogoPath     string `mapstructure:"logo_path"`
 		} `mapstructure:"branding"`
+
+		MiningSetUp struct {
+			Mining bool   `mapstructure:"mining"`
+			CMCKey string `mapstructure:"cmc_key"`
+		} `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
 
 	RegistrationServer struct {

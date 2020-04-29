@@ -1,26 +1,20 @@
+import { withStyles } from "@material-ui/core/styles";
 import React from "react";
 import { withRouter } from "react-router-dom";
-
-import { Row, Col, Card, CardBody, CardFooter } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../i18n';
+import { Card, CardBody, CardFooter, Col, Row } from 'reactstrap';
 import FormComponent from "../../classes/FormComponent";
-import TitleBar from "../../components/TitleBar";
-
 import ExtLink from "../../components/ExtLink";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-import Typography from '@material-ui/core/Typography';
-import StakeForm from "./StakeForm";
-import StakeStore from "../../stores/StakeStore";
-
-//import Modal from "../common/Modal";
-import ModalTimer from "../common/ModalTimer";
-//import Button from "@material-ui/core/Button";
-import Spinner from "../../components/ScaleLoader";
-import { EXT_URL_STAKE } from "../../util/Data"
-import InfoCard from "../topup/InfoCard";
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
+import { EXT_URL_STAKE } from "../../util/Data";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import StakeForm from "./StakeForm";
+import StakeHistory from "./StakeHistory";
+
+
+
+
 
 const localStyles = {};
 
@@ -69,15 +63,7 @@ class SetStake extends FormComponent {
   }
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-
-    let path = null;
-    if (currentOrgID === process.env.REACT_APP_SUPER_ADMIN_LPWAN) {
-      path = '/control-panel/modify-account/';
-    } else {
-      path = `/modify-account/${currentOrgID}`;
-    }
 
     return (
       <>
@@ -99,7 +85,7 @@ class SetStake extends FormComponent {
             </Card>
           </Col>
         </Row>
-        <Row xs="1" lg="2">
+        <Row xs="1" lg="1">
           <Col>
             <Card>
               <CardBody>
@@ -107,7 +93,16 @@ class SetStake extends FormComponent {
               </CardBody>
             </Card>
           </Col>
-          <Col><InfoCard path={path} /></Col>
+          {/* <Col><InfoCard path={path} /></Col> */}
+        </Row>
+        <Row xs="1" lg="1">
+          <Col>
+            <Card>
+              <CardBody>
+                <StakeHistory />
+              </CardBody>
+            </Card>
+          </Col>
         </Row>
       </>
     );

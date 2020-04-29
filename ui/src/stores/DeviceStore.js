@@ -1,13 +1,11 @@
 import { EventEmitter } from "events";
 import RobustWebSocket from "robust-websocket";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler, errorHandlerIgnoreNotFoundWithCallback } from "./helpers";
 import dispatcher from "../dispatcher";
-import MockDeviceStoreApi from '../api/mockDeviceStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler, errorHandlerIgnoreNotFoundWithCallback } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class DeviceStore extends EventEmitter {
@@ -28,20 +26,13 @@ class DeviceStore extends EventEmitter {
   }
 
   getDeviceList(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockDeviceStoreApi.getDeviceList()))();
-      return;
-    } */
-
     this.swaggerM2M.then(client => {
-      client.apis.DeviceService.GetDeviceList({
+      client.apis.DSDeviceService.GetDeviceList({
         orgId,
         offset,
         limit
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.body);
       })
@@ -53,10 +44,11 @@ class DeviceStore extends EventEmitter {
     });
   }
 
-  getDeviceHistory(orgId, offset, limit, callbackFunc) {    
+  getDeviceHistory(orgId, devId, offset, limit, callbackFunc) {    
     this.swaggerM2M.then(client => {
-      client.apis.DeviceService.GetDeviceHistory({
+      client.apis.DSDeviceService.GetDeviceHistory({
         orgId,
+        devId,
         offset,
         limit
       })
@@ -70,7 +62,7 @@ class DeviceStore extends EventEmitter {
 
   setDeviceMode(orgId, devId, devMode, callbackFunc) {
     this.swaggerM2M.then(client => {
-    client.apis.DeviceService.SetDeviceMode({
+    client.apis.DSDeviceService.SetDeviceMode({
       "orgId": orgId,
       "devId": devId,
       body: {
@@ -106,15 +98,9 @@ class DeviceStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockDeviceStoreApi.get()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.DeviceService.Get({
-        devEui: id,
+        devEUI: id,
       })
       .then(checkStatus)
       .then(resp => {
@@ -142,11 +128,11 @@ class DeviceStore extends EventEmitter {
     });
 
   }
-
+//please fix this
   delete(id, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Delete({
-        devEui: id,
+        devEUI: id,
       })
       .then(checkStatus)
       .then(resp => {
@@ -168,41 +154,10 @@ class DeviceStore extends EventEmitter {
     });
   }
 
-  // TODO - check if this is implemented in backend
-
-  // listLocations(callbackFunc) {
-  //   this.swagger.then(client => {
-  //     client.apis.DeviceService.ListLocations()
-  //     .then(checkStatus)
-  //     .then(resp => {
-  //       callbackFunc(resp.obj);
-  //     })
-  //     .catch(errorHandler);
-  //   });
-  // }
-
-  // TODO - check if this is implemented in backend
-
-  // getStats(devEUI, start, end, callbackFunc) {
-  //   this.swagger.then(client => {
-  //     client.apis.DeviceService.GetStats({
-  //       devEui: devEUI,
-  //       interval: "DAY",
-  //       startTimestamp: start,
-  //       endTimestamp: end,
-  //     })
-  //     .then(checkStatus)
-  //     .then(resp => {
-  //       callbackFunc(resp.obj);
-  //     })
-  //     .catch(errorHandler);
-  //   });
-  // }
-
   getKeys(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.GetKeys({
-        devEui: devEUI,
+        devEUI,
       })
       .then(checkStatus)
       .then(resp => {
@@ -247,15 +202,9 @@ class DeviceStore extends EventEmitter {
   }
 
   getActivation(devEUI, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockDeviceStoreApi.getDeviceActivation()))();
-      return;
-    } */
-
     this.swagger.then(client => {
       client.apis.DeviceService.GetActivation({
-        "devEui": devEUI,
+        devEUI,
       })
       .then(checkStatus)
       .then(resp => {
@@ -291,7 +240,7 @@ class DeviceStore extends EventEmitter {
   getRandomDevAddr(devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.GetRandomDevAddr({
-        devEui: devEUI,
+        devEUI,
       })
       .then(checkStatus)
       .then(resp => {
@@ -315,7 +264,6 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsDataStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -336,13 +284,11 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsDataStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", () => {
-      //console.log("error");
       this.wsDataStatus = "ERROR";
       this.emit("ws.status.change");
     });
@@ -364,7 +310,6 @@ class DeviceStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsFramesStatus = "CONNECTED";
       this.emit("ws.status.change");
     });
@@ -385,13 +330,11 @@ class DeviceStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsFramesStatus = null;
       this.emit("ws.status.change");
     });
 
     conn.addEventListener("error", (e) => {
-      //console.log("error", e);
       this.wsFramesStatus = "ERROR";
       this.emit("ws.status.change");
     });

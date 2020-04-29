@@ -1,10 +1,10 @@
 import React, { Component } from "react";
-import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import { Link } from 'react-router-dom';
-
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import i18n, { packageNS } from '../i18n';
-import SessionStorage from "../stores/SessionStore";
 import OrganizationStore from "../stores/OrganizationStore";
+import SessionStorage from "../stores/SessionStore";
+
 
 class OrgBreadcrumb extends Component {
   constructor(props) {
@@ -17,8 +17,8 @@ class OrgBreadcrumb extends Component {
   componentDidMount() {
     this.getOrganization();
   }
-
-  getOrganization() {
+  
+  getOrganization = async () => {
     if (!this.state.currentOrg) {
       const orgId = this.props.organizationID;
       const orgs = SessionStorage.getOrganizations();
@@ -27,9 +27,8 @@ class OrgBreadcrumb extends Component {
         org = orgs.find(o => o.organizationID === orgId);
 
         if (!org) {
-          OrganizationStore.get(orgId, (res) => {
-            this.setState({ currentOrg: res.organization });
-          });
+          let organization = await OrganizationStore.get(orgId);
+          this.setState({ currentOrg: organization.organization });
         } else {
           this.setState({ currentOrg: org });
         }

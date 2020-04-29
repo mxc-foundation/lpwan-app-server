@@ -1,29 +1,19 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import { Card } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-import Grid from '@material-ui/core/Grid';
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
-import DeviceAdmin from "../../components/DeviceAdmin";
+import { Card, Col, Row } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
+import DeviceAdmin from "../../components/DeviceAdmin";
 import Loader from "../../components/Loader";
+import TitleBar from "../../components/TitleBar";
+import TitleBarButton from "../../components/TitleBarButton";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
 import DeviceProfileStore from "../../stores/DeviceProfileStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import OrganizationDevices from "../devices/OrganizationDevices";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
 
-const localStyles = {};
 
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 const DeviceProfileNameColumn = (cell, row, index, extraData) => {
   const currentOrgID = extraData['currentOrgID'];
@@ -60,12 +50,12 @@ class ListDeviceProfiles extends Component {
    * Handles table changes including pagination, sorting, etc
    */
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
-    const offset = (page - 1) * sizePerPage ;
+    const offset = (page - 1) * sizePerPage;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
     // TODO - how can I pass search query to server?
     this.getPage(sizePerPage, offset);
   }
@@ -82,7 +72,7 @@ class ListDeviceProfiles extends Component {
       object.totalSize = Number(res.totalCount);
       object.data = res.result;
       object.loading = false;
-      this.setState({object});
+      this.setState({ object });
     });
   }
 
@@ -91,32 +81,33 @@ class ListDeviceProfiles extends Component {
   }
 
   render() {
-    const { classes } = this.props;
     // TODO - refactor this into a method or store in state on page load (apply to all components where this rushed approach used)
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    return(
-      <Grid container spacing={4}>
-        <OrganizationDevices
-          mainTabIndex={2}
-          organizationID={currentOrgID}
-        >
-          <TitleBar
-            buttons={
-              <DeviceAdmin organizationID={currentOrgID}>
-                <TitleBarButton
-                  key={1}
-                  label={i18n.t(`${packageNS}:tr000277`)}
-                  icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
-                  color="primary"
-                  to={`/organizations/${currentOrgID}/device-profiles/create`}
-                />,
+    return (<>
+
+      <OrganizationDevices
+        mainTabIndex={2}
+        organizationID={currentOrgID}
+      >
+        <TitleBar
+          buttons={
+            <DeviceAdmin organizationID={currentOrgID}>
+              <TitleBarButton
+                key={1}
+                label={i18n.t(`${packageNS}:tr000277`)}
+                icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
+                color="primary"
+                to={`/organizations/${currentOrgID}/device-profiles/create`}
+              />,
               </DeviceAdmin>
-            }
-          >
-            <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
-          </TitleBar>
-          <Grid item xs={12}>
+          }
+        >
+          <TitleBarTitle title={i18n.t(`${packageNS}:tr000070`)} />
+        </TitleBar>
+
+        <Row>
+          <Col>
             <Card className="card-box shadow-sm">
               {this.state.loading && <Loader />}
               <AdvancedTable
@@ -129,11 +120,12 @@ class ListDeviceProfiles extends Component {
                 searchEnabled={false}
               />
             </Card>
-          </Grid>
-        </OrganizationDevices>
-      </Grid>
+          </Col>
+        </Row>
+      </OrganizationDevices>
+    </>
     );
   }
 }
 
-export default withStyles(styles)(ListDeviceProfiles);
+export default ListDeviceProfiles;

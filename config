@@ -2,3 +2,5 @@ SUPERNODE_MODE=development
 REMOTE_SERVER_NAME=lora.test.cloud.mxc.org
 APPSERVER=http://localhost:8080
 MXPROTOCOL_SERVER=http://localhost:4000
+POSTGRES_PASSWORD=postgres
+SERVER_REGION=RESTRICTED

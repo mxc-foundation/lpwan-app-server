@@ -1,28 +1,34 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import ServiceProfileForm from "./ServiceProfileForm";
 
 
+
 class UpdateServiceProfile extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      loading: false
+    };
 
     this.onSubmit = this.onSubmit.bind(this);
 
   }
 
-  onSubmit(serviceProfile) {
-    ServiceProfileStore.update(serviceProfile, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    });
+  onSubmit = async (serviceProfile) => {
+    this.setState({ loading: true });
+    const res = await ServiceProfileStore.update(serviceProfile);
+    this.setState({ loading: false });
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
   }
 
   render() {
     return (<div className="position-relative">
+      
+      {this.state.loading && <Loader />}
       <ServiceProfileForm
         submitLabel={i18n.t(`${packageNS}:tr000066`)}
         object={this.props.serviceProfile}

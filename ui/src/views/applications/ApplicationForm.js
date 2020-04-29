@@ -1,18 +1,18 @@
-import React from "react";
-
 import { withStyles } from "@material-ui/core/styles";
 import Typography from '@material-ui/core/Typography';
-
-import {Controlled as CodeMirror} from "react-codemirror2";
 import "codemirror/mode/javascript/javascript";
-
-import { Button, Label, FormText } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
+import React from "react";
+import { Controlled as CodeMirror } from "react-codemirror2";
+import { Button, FormText, Label } from 'reactstrap';
 import * as Yup from 'yup';
-import { ReactstrapInput, AsyncAutoComplete } from '../../components/FormInputs';
 import FormComponent from "../../classes/FormComponent";
-import ServiceProfileStore from "../../stores/ServiceProfileStore";
+import { AsyncAutoComplete, ReactstrapInput } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
+import ServiceProfileStore from "../../stores/ServiceProfileStore";
+
+
+
 
 const styles = {
   codeMirror: {
@@ -21,17 +21,17 @@ const styles = {
 };
 
 class ApplicationForm extends FormComponent {
-  getServiceProfileOption = (id, callbackFunc) => {
-    ServiceProfileStore.get(id, resp => {
-      callbackFunc({label: resp.serviceProfile.name, value: resp.serviceProfile.id});
-    });
+
+  getServiceProfileOption = async (id, callbackFunc) => {
+    const resp = await ServiceProfileStore.get(id);
+    const options = resp.result.map((o, i) => {return {label: resp.serviceProfile.name, value: resp.serviceProfile.id}});
+    callbackFunc(options);
   }
 
-  getServiceProfileOptions = (search, callbackFunc) => {
-    ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0, resp => {
-      const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
-      callbackFunc(options);
-    });
+  getServiceProfileOptions = async (search, callbackFunc) => {
+    const resp = await ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0);
+    const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
+    callbackFunc(options);
   }
 
   getPayloadCodecOptions = (search, callbackFunc) => {

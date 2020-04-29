@@ -1,300 +1,65 @@
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Doughnut, Bar, defaults as ChartJsDefaults } from "react-chartjs-2";
-import { Breadcrumb, BreadcrumbItem, Row, Col, UncontrolledButtonDropdown, DropdownMenu, DropdownItem, DropdownToggle, Progress } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-
-import TitleBar from "../../components/TitleBar";
+import { withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Button, Col, Row } from 'reactstrap';
 import Loader from "../../components/Loader";
-import StatWidget from "./StatWidget";
-import MXCAmountChart from "./MXCAmountChart";
-import StakingAmountChart from "./StakingAmountChart";
-import EarnedAmountChart from "./EarnedAmountChart";
-import DataPacketChart from "./DataPacketChart";
-import DataMap from "./DataMap";
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
+import AddWidget from './AddWidget';
+import { adminWidgetCatalog, WIDGET_TYPE_GRAPH, WIDGET_TYPE_MAP, WIDGET_TYPE_STAT } from './widgets/';
+import WalletStore from "../../stores/WalletStore";
+import SessionStore from "../../stores/SessionStore";
 
-
-// default
-ChartJsDefaults.global.defaultFontColor = 'rgba(0, 0, 0, 0.65)';
-ChartJsDefaults.global.defaultFontSize = 12;
-ChartJsDefaults.global.defaultFontFamily = 'Karla, Microsoft YaHei';
-
-
-/**
- * Tickets
- * @param {*} param0 
- */
-const Tickets = (props) => {
-    const data = props.data || {};
-    const donutOpts = {
-        maintainAspectRatio: false,
-        cutoutPercentage: 80,
-        legend: {
-            display: false
-        }
-    };
-
-    const chartData = {
-        labels: [i18n.t(`${packageNS}:menu.dashboard.tickets.approved`), i18n.t(`${packageNS}:menu.dashboard.tickets.pending`)],
-        datasets: [{
-            data: [data.approved, data.pending],
-            backgroundColor: ['#10c469', '#ff5b5b'],
-            hoverBackgroundColor: ['#10c469', '#ff5b5b']
-        }]
-    };
-
-    const approvedPer = (data && data.approved ? (data.approved / data.total) * 100 : 0).toFixed(2);
-    const pendingPer = (data && data.pending ? (data.pending / data.total) * 100 : 0).toFixed(2);
-
-
-    return <div className="card-box">
-        <div className="float-right">
-            <Link className="text-muted" to='#'>{i18n.t(`${packageNS}:menu.dashboard.tickets.view_history`)}</Link>
-        </div>
-
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.tickets.title`)}</h4>
-
-        <div className="widget-chart mt-3">
-            <Row>
-                <Col lg={6}>
-                    <Doughnut data={chartData} options={donutOpts} height={160} />
-                </Col>
-                <Col lg={6} className="">
-                    <div className="pl-2">
-                        <label className="mb-1">{i18n.t(`${packageNS}:menu.dashboard.tickets.approved`)}</label>
-                        <Row className="align-items-center no-gutters">
-                            <Col lg={7}>
-                                <Progress value={approvedPer} color="success" className="mt-0" />
-                            </Col>
-                            <Col lg={2}><span className="pl-2">{approvedPer}%</span></Col>
-                        </Row>
-                        <hr />
-                        <label className="mb-1">{i18n.t(`${packageNS}:menu.dashboard.tickets.pending`)}</label>
-                        <Row className="align-items-center no-gutters">
-                            <Col lg={7}>
-                                <Progress value={pendingPer} color="danger" className="mt-0" />
-                            </Col>
-                            <Col lg={2}><span className="pl-2">{pendingPer}%</span></Col>
-                        </Row>
-                    </div>
-                </Col>
-            </Row>
-            <Row>
-                <Col className="text-right mb-0">
-                    <h2 className="mb-1">{data.total}</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.tickets.subtext`)}</p>
-                </Col>
-            </Row>
-        </div>
-    </div>;
-}
-
-/**
- * Chart Actions
- */
-const ChartActions = () => {
-    return <UncontrolledButtonDropdown>
-        <DropdownToggle className="arrow-none card-drop p-0" color="link"><i className="mdi mdi-dots-vertical"></i> </DropdownToggle>
-        <DropdownMenu right>
-            <DropdownItem>Week</DropdownItem>
-            <DropdownItem>Month</DropdownItem>
-        </DropdownMenu>
-    </UncontrolledButtonDropdown>
-}
-
-
-/**
- * Withdrawal
- * @param {*} props 
- */
-const Withdrawal = (props) => {
-    const withdrawal = props.data || {};
-    const barOpts = {
-        maintainAspectRatio: false,
-        legend: {
-            display: false
-        },
-        tooltips: {
-            callbacks: {
-                label: function (tooltipItems, data) {
-                    return tooltipItems.yLabel / 1000 + 'k';
-                }
-            }
-        },
-        scales: {
-            yAxes: [{
-                gridLines: {
-                    color: "#ebeff2"
-                },
-                stacked: false,
-                ticks: {
-                    callback: function (label, index, labels) {
-                        return label / 1000 + 'k';
-                    }
-                },
-            }],
-            xAxes: [{
-                stacked: false,
-                gridLines: {
-                    display: false,
-                    zeroLineColor: '#ebeff2'
-                },
-                zeroLineColor: '#ebeff2'
-            }]
-        }
-    };
-
-    let labels = [];
-    let series = [];
-    let colors = [];
-    let hoverColors = [];
-    for (const v of (withdrawal.data || [])) {
-        labels.push(v.day);
-        series.push(v.amount);
-        hoverColors.push('#ff5b5b');
-        colors.push('rgba(255,91,91,0.65)');
-    }
-
-    const chartData = {
-        labels: labels,
-        datasets: [{
-            label: i18n.t(`${packageNS}:menu.dashboard.withdrawal.title`),
-            data: series,
-            backgroundColor: colors,
-            hoverBackgroundColor: hoverColors,
-            barPercentage: 0.65,
-            categoryPercentage: 0.5,
-        }]
-    };
-
-
-    return <div className="card-box">
-        <div className="float-right">
-            <ChartActions />
-        </div>
-
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.withdrawal.title`)}</h4>
-
-        <div className="widget-chart mt-3">
-            <Row>
-                <Col className="mb-0">
-                    <Bar data={chartData} options={barOpts} height={160} />
-                </Col>
-            </Row>
-            <Row>
-                <Col className="text-right mb-0">
-                    <h2 className="mb-1">{withdrawal.total ? withdrawal.total / 1000 : 0}k MXC</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.withdrawal.subtext`)}</p>
-                </Col>
-            </Row>
-        </div>
-    </div>;
-}
-
-
-/**
- * Topup
- * @param {*} props 
- */
-const Topup = (props) => {
-    const topup = props.data || {};
-    const barOpts = {
-        maintainAspectRatio: false,
-        legend: {
-            display: false
-        },
-        tooltips: {
-            callbacks: {
-                label: function (tooltipItems, data) {
-                    return tooltipItems.yLabel / 1000 + 'k';
-                }
-            }
-        },
-        scales: {
-            yAxes: [{
-                gridLines: {
-                    color: "#ebeff2"
-                },
-                stacked: false,
-                ticks: {
-                    callback: function (label, index, labels) {
-                        return label / 1000 + 'k';
-                    }
-                },
-            }],
-            xAxes: [{
-                stacked: false,
-                gridLines: {
-                    display: false,
-                    zeroLineColor: '#ebeff2'
-                },
-                zeroLineColor: '#ebeff2'
-            }]
-        }
-    };
-
-    let labels = [];
-    let series = [];
-    let colors = [];
-    let hoverColors = [];
-    for (const v of (topup.data || [])) {
-        labels.push(v.month);
-        series.push(v.amount);
-        hoverColors.push('#10c469');
-        colors.push('rgba(16,196,105,0.5)');
-    }
-
-    const chartData = {
-        labels: labels,
-        datasets: [{
-            label: i18n.t(`${packageNS}:menu.dashboard.topup.title`),
-            data: series,
-            backgroundColor: colors,
-            hoverBackgroundColor: hoverColors,
-            barPercentage: 0.65,
-            categoryPercentage: 0.5,
-        }]
-    };
-
-
-    return <div className="card-box">
-        <div className="float-right">
-            <ChartActions />
-        </div>
-
-        <h4 className="header-title mt-0">{i18n.t(`${packageNS}:menu.dashboard.topup.title`)}</h4>
-
-        <div className="widget-chart mt-3">
-            <Row>
-                <Col className="mb-0">
-                    <Bar data={chartData} options={barOpts} height={160} />
-                </Col>
-            </Row>
-            <Row>
-                <Col className="text-right mb-0">
-                    <h2 className="mb-1">{topup.total ? topup.total / 1000 : 0}k MXC</h2>
-                    <p className="mb-0">{i18n.t(`${packageNS}:menu.dashboard.topup.subtext`)}</p>
-                </Col>
-            </Row>
-        </div>
-    </div>;
-}
 
 
 class AdminDashboard extends Component {
-    constructor() {
-        super();
-
+    constructor(props) {
+        super(props);
 
         this.state = {
             data: {},
-            loading: false
-        };
+            loading: false,
+            openAddWidget: false,
+            widgets: []
+        }
+
+        this.openAddWidget = this.openAddWidget.bind(this);
+        this.closeAddWidget = this.closeAddWidget.bind(this);
+        this.onAddWidget = this.onAddWidget.bind(this);
+        this.onDeletewidget = this.onDeletewidget.bind(this);
+        this.getData = this.getData.bind(this);
+    }
+
+    openAddWidget() {
+        this.setState({ openAddWidget: true });
+    }
+
+    closeAddWidget() {
+        this.setState({ openAddWidget: false });
+    }
+
+    onAddWidget(widget) {
+        let widgets = [...this.state.widgets];
+        widgets.push(widget);
+        this.setState({ widgets: widgets, openAddWidget: false });
+        this.getData();
+    }
+
+    onDeletewidget(widget) {
+        let widgets = [...this.state.widgets];
+        widgets = widgets.filter(w => w.name !== widget.name);
+        this.setState({ widgets: widgets });
     }
 
     componentDidMount() {
+        this.getData();
+
+        // showing dummy widgets on load - remove this when API is available
+        let widgets = [...adminWidgetCatalog];
+        this.setState({ widgets });
+        console.log('this.state', widgets);
+    }
+
+    getData = async () => {
         // TODO - call api to get the data
         this.setState({ loading: true });
         // mimiking the loading - should reverted later when we integrate api
@@ -309,6 +74,11 @@ class AdminDashboard extends Component {
             day.setDate(day.getDate() - idx);
             packetsData.push({ "day": day.getDate(), "packets": Math.floor(Math.random() * 120) + 10 })
         }
+
+
+        const user = await SessionStore.getUser();
+        const orgId = await SessionStore.getOrganizationID();
+        //const topup = await  WalletStore.getMiningInfo(user.id, orgId);
 
         this.setState({
             data: {
@@ -401,108 +171,114 @@ class AdminDashboard extends Component {
                 "totalGateways": 90,
                 "totalDevices": 260,
                 "totalApplications": 260,
+                "dataMap": [51, 13]
             }
-        })
+        });
     }
 
+    /**
+     * Gets the widgets by type
+     * @param {*} type 
+     * @param {*} startIdx 
+     * @param {*} size 
+     */
+    getWidgets(type, startIdx, size) {
+        let typeWiseWidgets = [];
+        for (const widget of this.state.widgets) {
+            if (widget['type'] === type)
+                typeWiseWidgets.push({ meta: widget, component: widget.component, data: this.state.data[widget.name] });
+        }
+        return typeWiseWidgets.slice(startIdx, startIdx + size) || [];
+    }
 
     render() {
-
         return (<React.Fragment>
 
-            <TitleBar buttons={[]}>
+
+
+
+
+
+
+            <TitleBar buttons={[
+                <Button color="primary" onClick={this.openAddWidget}><i className="mdi mdi-plus"></i></Button>
+            ]}>
                 <Breadcrumb>
                     <BreadcrumbItem active>{i18n.t(`${packageNS}:menu.dashboard.title`)}</BreadcrumbItem>
                 </Breadcrumb>
             </TitleBar>
 
+            {this.state.openAddWidget ? <AddWidget availableWidgets={adminWidgetCatalog} closeModal={this.closeAddWidget}
+                addWidget={this.onAddWidget} addedWidgets={this.state.widgets} /> : null}
+
             <Row>
                 <Col>
+
+                    {this.state.loading ? <Loader /> : null}
+
+                    <Row>
+                        {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 3).map((widget, idx) => {
+                            if (idx < 3) {//edited 2020-04-23 MD-1240
+                                return <Col key={idx} className="mb-0">
+                                    <div className="position-relative">
+                                        <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                    </div>
+                                </Col>
+                            } else {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+
+                            }
+                        })}
+                    </Row>
                     <div className="position-relative">
-                        {this.state.loading ? <Loader /> : null}
-
                         <Row>
-                            <Col lg={4}>
-                                <Tickets data={this.state.data.tickets} />
-                            </Col>
-                            <Col lg={4}>
-                                <Withdrawal data={this.state.data.withdrawal} />
-                            </Col>
-                            <Col lg={4}>
-                                <Topup data={this.state.data.topup} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_STAT, 0, 5).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalUsers`)}
-                                    value={this.state.data.totalUsers} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalOrgs`)}
-                                    value={this.state.data.totalOrganizations} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalGateways`)}
-                                    value={this.state.data.totalGateways} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalDevices`)}
-                                    value={this.state.data.totalDevices} formatNum={true}></StatWidget>
-                            </Col>
-                            <Col className="mb-0">
-                                <StatWidget label={i18n.t(`${packageNS}:menu.dashboard.totalApps`)}
-                                    value={this.state.data.totalApplications} formatNum={true}></StatWidget>
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 3, 3).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col lg={4} className="mb-0">
-                                <MXCAmountChart data={this.state.data.supernodeAmount} />
-                            </Col>
-                            <Col lg={4} className="mb-0">
-                                <StakingAmountChart data={this.state.data.stakingAmount} />
-                            </Col>
-                            <Col lg={4} className="mb-0">
-                                <EarnedAmountChart data={this.state.data.earnedAmount} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 6, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsReceived} color="#10c469"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.title`)}
-                                    subTitle={i18n.t(`${packageNS}:menu.dashboard.packetsReceivedChart.subTitle`)}
-                                    subTitleClass="text-success" labelField="day" />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 7, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsSent} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.title`)}
-                                    subTitle={i18n.t(`${packageNS}:menu.dashboard.packetsSentChart.subTitle`)}
-                                    subTitleClass="text-primary" labelField="day" />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_MAP, 0, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
 
                         <Row>
-                            <Col className="mb-0">
-                                <DataMap position={[51, 13]} />
-                            </Col>
-                        </Row>
-
-                        <Row>
-                            <Col lg={6} className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsByChannel} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsByChannel.title`)}
-                                    labelField="channel" showYAxis={true} />
-                            </Col>
-                            <Col lg={6} className="mb-0">
-                                <DataPacketChart data={this.state.data.packetsBySpreadFactor} color="#71b6f9"
-                                    title={i18n.t(`${packageNS}:menu.dashboard.packetsBySpreadFactor.title`)}
-                                    labelField="spreadFactor" showYAxis={true} />
-                            </Col>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 8, 2).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
                         </Row>
                     </div>
                 </Col>

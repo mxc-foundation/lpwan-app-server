@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apex/log"
-	api "github.com/mxc-foundation/lpwan-app-server/api/ps"
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"google.golang.org/grpc/status"
@@ -24,7 +24,7 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/lorawan"
-	pb "github.com/mxc-foundation/lpwan-app-server/api"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
@@ -123,6 +123,9 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 			Latitude:        req.Gateway.Location.Latitude,
 			Longitude:       req.Gateway.Location.Longitude,
 			Altitude:        req.Gateway.Location.Altitude,
+			Model: "null",
+			FirstHeartbeat: 0,
+			LastHeartbeat: 0,
 		})
 		if err != nil {
 			return helpers.ErrToRPCError(err)
@@ -306,6 +309,7 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
+
 		gws, err = storage.GetGatewaysForOrganizationID(ctx, storage.DB(), req.OrganizationId, int(req.Limit), int(req.Offset), req.Search)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
@@ -991,7 +995,7 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 
 	// send the req to provision server
 	provReq := api.GetRootPWDRequest{
-		Sn:            req.Sn,
+		Sn: req.Sn,
 	}
 
 	provConf := config.C.ProvisionServer

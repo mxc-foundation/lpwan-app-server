@@ -1,26 +1,16 @@
 import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../i18n';
+import { Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Card, CardBody, Col, Row, Alert } from 'reactstrap';
+import Admin from "../../components/Admin";
+import Modal from "../../components/Modal";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-
+import i18n, { packageNS } from '../../i18n';
 import OrganizationStore from "../../stores/OrganizationStore";
 import UpdateOrganization from "./UpdateOrganization";
-import Admin from "../../components/Admin";
-import UpdateServiceProfile from "../service-profiles/UpdateServiceProfile";
-import Modal from "../../components/Modal";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
 
-const localStyles = {};
 
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class OrganizationLayout extends Component {
   constructor() {
@@ -44,18 +34,17 @@ class OrganizationLayout extends Component {
     this.loadData();
   }
 
-  loadData() {
-    OrganizationStore.get(this.props.match.params.organizationID, resp => {
-      this.setState({
-        organization: resp,
-      });
+  loadData = async () => {
+    let organization = await OrganizationStore.get(this.props.match.params.organizationID);
+    
+    this.setState({
+      organization
     });
   }
 
-  deleteOrganization() {
-    OrganizationStore.delete(this.props.match.params.organizationID, () => {
-      this.props.history.push("/organizations");
-    });
+  deleteOrganization = async () => {
+    await OrganizationStore.delete(this.props.match.params.organizationID);
+    this.props.history.push("/organizations");
   }
 
   openModal = () => {
@@ -65,13 +54,19 @@ class OrganizationLayout extends Component {
   };
 
   render() {
-    const { classes } = this.props;
+    let currentOrgName = this.state.organization ? this.state.organization.organization.name : "";
+    let currentOrgFullName = null;
+    if (currentOrgName.length > 5) {
+      currentOrgFullName = currentOrgName;
+      currentOrgName = currentOrgName.slice(0, 5) + "...";
+    }
 
     return (
       this.state.organization ? <React.Fragment>
         {this.state.nsDialog && <Modal
           title={""}
           context={i18n.t(`${packageNS}:lpwan.organizations.delete_organization`)}
+          closeModal={() => this.setState({ nsDialog: false })}
           callback={this.deleteOrganization} />}
         <TitleBar
             buttons={
@@ -86,13 +81,11 @@ class OrganizationLayout extends Component {
               </Admin>
             }
         >
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
-            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
-              `/organizations`}>{i18n.t(`${packageNS}:tr000049`)
-            }</Link></BreadcrumbItem>
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
+            <BreadcrumbItem><Link to={`/organizations`}>{i18n.t(`${packageNS}:tr000049`)}</Link></BreadcrumbItem>
+            <BreadcrumbItem title={currentOrgFullName}>{currentOrgName}</BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
-            <BreadcrumbItem active>{this.state.organization.organization.name}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
 
@@ -111,4 +104,4 @@ class OrganizationLayout extends Component {
 }
 
 
-export default withStyles(styles)(withRouter(OrganizationLayout));
+export default withRouter(OrganizationLayout);

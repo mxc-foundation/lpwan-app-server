@@ -1,25 +1,25 @@
-import React, { Component } from "react";
-
-import { Alert, Button, Modal, ModalHeader, ModalBody, ModalFooter, Row, Col } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import Grid from "@material-ui/core/Grid";
+import { withStyles } from "@material-ui/core/styles";
 import Typography from '@material-ui/core/Typography';
-
-import ChevronDown from "mdi-material-ui/ChevronDown";
-
-import moment from "moment";
 import fileDownload from "js-file-download";
-
+import ChevronDown from "mdi-material-ui/ChevronDown";
+import moment from "moment";
+import React, { Component } from "react";
+import { Alert, Button, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row } from 'reactstrap';
+//import mockDeviceData from '../../api/data/mockDeviceData';
+import JSONTree from "../../components/JSONTree";
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
-import mockDeviceData from '../../api/data/mockDeviceData';
-import isDev from '../../util/isDev';
 import DeviceStore from "../../stores/DeviceStore";
 import theme from "../../theme";
-import Loader from "../../components/Loader";
-import JSONTree from "../../components/JSONTree";
+//import isDev from '../../util/isDev';
+
+
+
+
 
 
 const styles = {
@@ -78,7 +78,7 @@ class DeviceData extends Component {
     this.state = {
       paused: false,
       connected: false,
-      data: isDev ? mockDeviceData : [],
+      data: [], //data: isDev ? mockDeviceData : [],
       dialogOpen: false,
     };
   }

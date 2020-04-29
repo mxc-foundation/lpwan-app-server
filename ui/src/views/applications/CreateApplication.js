@@ -1,18 +1,17 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import { Breadcrumb, BreadcrumbItem, Button, Card, Container, Modal, ModalHeader, ModalBody, ModalFooter, NavLink, Row, Col } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../i18n';
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
+import { Breadcrumb, BreadcrumbItem, Button, Card, Col, Container, Modal, ModalBody, ModalFooter, ModalHeader, NavLink, Row } from 'reactstrap';
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-
-import ApplicationForm from "./ApplicationForm";
+import i18n, { packageNS } from '../../i18n';
 import ApplicationStore from "../../stores/ApplicationStore";
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
-
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import ApplicationForm from "./ApplicationForm";
+
+
+
+
 
 const localStyles = {};
 
@@ -29,16 +28,15 @@ class CreateApplication extends Component {
     };
   }
 
-  componentDidMount() {
+  componentDidMount = async() => {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
-    ServiceProfileStore.list(currentOrgID, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          spDialog: true,
-        });
-      }
-    });
+    const resp = await ServiceProfileStore.list(currentOrgID, 10, 0);
+    if (resp.totalCount === "0") {
+      this.setState({
+        spDialog: true,
+      });
+    }
   }
 
   toggleDialog = () => {

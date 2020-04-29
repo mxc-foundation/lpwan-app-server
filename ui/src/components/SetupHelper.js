@@ -1,18 +1,18 @@
 import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
-
+import Button from "@material-ui/core/Button";
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Button from "@material-ui/core/Button";
-
+import { Link, withRouter } from "react-router-dom";
 import i18n, { packageNS } from '../i18n';
-import SessionStore from "../stores/SessionStore";
+import DeviceProfileStore from "../stores/DeviceProfileStore";
 import NetworkServerStore from "../stores/NetworkServerStore";
 import ServiceProfileStore from "../stores/ServiceProfileStore";
-import DeviceProfileStore from "../stores/DeviceProfileStore";
+import SessionStore from "../stores/SessionStore";
+
+
 
 
 class SetupHelper extends Component {
@@ -58,7 +58,7 @@ class SetupHelper extends Component {
     });
   }
 
-  testServiceProfile(callbackFunc) {
+  testServiceProfile = async (callbackFunc) => {
     if (SessionStore.getOrganizationID === null) {
       callbackFunc();
       return;
@@ -74,15 +74,14 @@ class SetupHelper extends Component {
       return;
     }
 
-    ServiceProfileStore.list(SessionStore.getOrganizationID(), 0, 0, resp => {
-      if (resp.totalCount === "0" && !(this.state.nsDialog || this.state.dpDialog)) {
-        this.setState({
-          spDialog: true,
-        });
-      } else {
-        callbackFunc();
-      }
-    });
+    const resp = await OrganizationStore.list(SessionStore.getOrganizationID(), 1, 0);
+    if (resp.totalCount === "0" && !(this.state.nsDialog || this.state.dpDialog)) {
+      this.setState({
+        spDialog: true,
+      });
+    } else {
+      callbackFunc();
+    }
   }
 
   testDeviceProfile(callbackFunc) {
@@ -112,18 +111,17 @@ class SetupHelper extends Component {
     });
   }
 
-  testNetworkServer() {
+  testNetworkServer = async () => {
     if (!!localStorage.getItem("nsDialogDismiss") || !SessionStore.isAdmin()) {
       return;
     }
 
-    NetworkServerStore.list(0, 0, 0, resp => {
-      if (resp.totalCount === 0) {
-        this.setState({
-          nsDialog: true,
-        });
-      }
-    });
+    const res = await NetworkServerStore.list(0, 10, 0);
+    if (res.totalCount === 0) {
+      this.setState({
+        nsDialog: true,
+      });
+    }
   }
 
   toggleDialog(name) {

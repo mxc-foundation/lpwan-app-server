@@ -1,14 +1,14 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-
 import moment from "moment";
+import React, { Component } from "react";
 import { Bar } from "react-chartjs-2";
-
-import i18n, { packageNS } from "../../i18n";
-import { MAX_DATA_LIMIT } from '../../util/pagination';
+import { Link } from "react-router-dom";
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
+import i18n, { packageNS } from "../../i18n";
 import DeviceStore from "../../stores/DeviceStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
+
+
 
 const OPTIONS_CONFIG = {
   elements: {
@@ -181,10 +181,10 @@ class ListDevicesTable extends Component {
   handleTableChange = (type, { page, sizePerPage, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
     // TODO - how can I pass search query to server?
     this.getPage(sizePerPage, offset);
   }
@@ -203,7 +203,7 @@ class ListDevicesTable extends Component {
       organizationID: this.props.organizationID,
       search: "",
     };
-
+    
     DeviceStore.list(filters, (res) => {
       // Since this page is only shown when an Application ID is in the URL parameters
       // we need to filter so we only list devices that are part of the current Application

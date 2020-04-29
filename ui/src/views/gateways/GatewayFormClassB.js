@@ -1,8 +1,8 @@
 import React, { Component } from "react";
-import { Row, Col, Table } from "reactstrap";
-
-import i18n, { packageNS } from "../../i18n";
+import { Col, Row, Table } from "reactstrap";
 import EditableTextInput from "../../components/EditableTextInput";
+import i18n, { packageNS } from "../../i18n";
+
 
 class GatewayFormClassB extends Component {
   constructor(props) {

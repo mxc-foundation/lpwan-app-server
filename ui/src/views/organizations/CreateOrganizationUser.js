@@ -1,18 +1,18 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
 import classNames from 'classnames';
-import { Nav, NavItem, Row, Col, Card, CardBody, Button } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
+import { Button, Card, CardBody, Col, Nav, NavItem, Row } from 'reactstrap';
 import * as Yup from 'yup';
-
-import TitleBar from "../../components/TitleBar";
+import { AsyncAutoComplete, ReactstrapCheckbox, ReactstrapInput, ReactstrapPasswordInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
-import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete, ReactstrapPasswordInput } from '../../components/FormInputs';
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-import UserStore from "../../stores/UserStore";
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import OrganizationStore from "../../stores/OrganizationStore";
 import SessionStore from "../../stores/SessionStore";
-import i18n, { packageNS } from '../../i18n';
+import UserStore from "../../stores/UserStore";
+
 
 
 class AssignUserForm extends Component {
@@ -448,14 +448,11 @@ class CreateOrganizationUser extends Component {
     });
   }
 
-  onAssignUser(user) {
+  onAssignUser = async (user) => {
     this.setState({loading: true});
-    OrganizationStore.addUser(this.props.match.params.organizationID, user, resp => {
-      this.setState({loading: false});
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
-    }, error => {
-      this.setState({loading: false});
-    });
+    const res = await OrganizationStore.addUser(this.props.match.params.organizationID, user);
+    this.setState({loading: false});
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
   };
 
   onCreateUser(user) {

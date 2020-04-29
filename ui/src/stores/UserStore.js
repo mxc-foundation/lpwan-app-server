@@ -1,13 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
 import i18n, { packageNS } from '../i18n';
-import MockUserStoreApi from '../api/mockUserStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 class UserStore extends EventEmitter {
   constructor() {
@@ -33,12 +31,6 @@ class UserStore extends EventEmitter {
   }
 
   get(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    // if (isDev) {
-    //   (async () => callbackFunc(await MockUserStoreApi.get()))();
-    //   return;
-    // }
-
     this.swagger.then(client => {
       client.apis.UserService.Get({
         id: id,
@@ -112,6 +104,35 @@ class UserStore extends EventEmitter {
       })
       .catch(errorHandler);
     });
+  }
+
+  getOTPCode = async (userEmail) => {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.UserService.GetOTPCode({
+          userEmail
+      });
+    
+        resp = await checkStatus(resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async getUserEmail(userEmail) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.UserService.GetUserEmail({
+          userEmail
+      });
+   
+        resp = await checkStatus(resp);
+       
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

@@ -1,12 +1,12 @@
+import { withStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import classNames from "classnames";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import classNames from "classnames";
-
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
-
 import theme from "../theme";
+
+
+
 
 const styles = {
   title: {

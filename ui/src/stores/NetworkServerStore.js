@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class NetworkServerStore extends EventEmitter {
@@ -13,51 +13,56 @@ class NetworkServerStore extends EventEmitter {
     super();
     this.swagger = new Swagger("/swagger/networkServer.swagger.json", sessionStore.getClientOpts());
   }
-
-  create(networkServer, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.NetworkServerService.Create({
-        body: {
-          networkServer: networkServer,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  
+  async create(networkServer) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.NetworkServerService.Create({
+          "networkServer.id": networkServer.id,
+          body: {
+            networkServer: networkServer,
+          },
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("created");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+ 
+  async get(id) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.NetworkServerService.Get({
+          id
+        });
+    
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  get(id, callbackFunc) {
-    this.swagger.then((client) => {
-      client.apis.NetworkServerService.Get({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-  update(networkServer, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.NetworkServerService.Update({
-        "networkServer.id": networkServer.id,
+  async update(networkServer) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.NetworkServerService.Update({
+          "networkServer.id": networkServer.id,
         body: {
-          networkServer: networkServer,
+          networkServer,
         },
-      })
-      .then(checkStatus)
-      .then(resp => {
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {
@@ -70,34 +75,38 @@ class NetworkServerStore extends EventEmitter {
     });
   }
 
-  delete(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.NetworkServerService.Delete({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        this.notify("deleted");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+  async delete(id) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.NetworkServerService.Delete({
+          id
+        });
+
+        resp = await checkStatus(resp);
+        //this.notify("deleted");
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async list(organizationID, limit, offset) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.NetworkServerService.List({
+          organizationID,
+          limit,
+          offset,
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+        return undefined;
+    }
   }
   
-  list(organizationID, limit, offset, callbackFunc) {
-    this.swagger.then((client) => {
-      client.apis.NetworkServerService.List({
-        organizationID: organizationID,
-        limit: limit,
-        offset: offset,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
-  }
 }
 
 const networkServerStore = new NetworkServerStore();

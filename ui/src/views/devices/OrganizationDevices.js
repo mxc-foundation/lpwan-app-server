@@ -1,20 +1,20 @@
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import { Container, Row, Col, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import theme from "../../theme";
-import i18n, { packageNS } from "../../i18n";
-import TitleBar from "../../components/TitleBar";
-import TitleBarButton from "../../components/TitleBarButton";
-import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import { Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import DeviceAdmin from "../../components/DeviceAdmin";
 import Loader from "../../components/Loader";
-
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
+import TitleBar from "../../components/TitleBar";
+import TitleBarButton from "../../components/TitleBarButton";
+import i18n, { packageNS } from "../../i18n";
 import OrganizationStore from "../../stores/OrganizationStore";
-
+import theme from "../../theme";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
+
+
 
 const localStyles = {
   tabs: {
@@ -61,11 +61,14 @@ class OrganizationDevices extends Component {
       });
     }
 
-    OrganizationStore.get(currentOrgID, resp => {
-      this.setState({
-        organization: resp.organization,
-        loading: false
-      });
+    this.loadOrganization(currentOrgID);
+  }
+
+  loadOrganization = async (id) => {
+    let resp = await OrganizationStore.get(id);  
+    this.setState({
+      organization: resp.organization,
+      loading: false
     });
   }
 

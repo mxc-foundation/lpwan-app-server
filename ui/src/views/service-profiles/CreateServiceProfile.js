@@ -1,15 +1,16 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
-import { Row, Col, Card, CardBody } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
+import { Card, CardBody, Col, Row } from 'reactstrap';
+import Loader from "../../components/Loader";
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
-
-import ServiceProfileForm from "./ServiceProfileForm";
-import ServiceProfileStore from "../../stores/ServiceProfileStore";
+import TitleBar from "../../components/TitleBar";
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
+import ServiceProfileStore from "../../stores/ServiceProfileStore";
+import ServiceProfileForm from "./ServiceProfileForm";
+
+
+
 
 
 class CreateServiceProfile extends Component {
@@ -23,13 +24,17 @@ class CreateServiceProfile extends Component {
   }
 
   componentDidMount() {
-    NetworkServerStore.list(0, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          nsDialog: true,
-        });
-      }
-    });
+    this.loadData();
+  }
+
+  loadData = async () => {
+    const res = await NetworkServerStore.list(0, 10, 0);
+    
+    if (res.totalCount === "0") {
+      this.setState({
+        nsDialog: true,
+      });
+    }
   }
 
   closeDialog() {
@@ -38,13 +43,15 @@ class CreateServiceProfile extends Component {
     });
   }
 
-  onSubmit(serviceProfile) {
+  onSubmit = async (serviceProfile) => {
     let sp = serviceProfile;
     sp.organizationID = this.props.match.params.organizationID;
 
-    ServiceProfileStore.create(sp, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    });
+    this.setState({ loading: true });
+    const res = await ServiceProfileStore.create(sp);
+    
+    this.setState({ loading: false });
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
   }
 
   render() {
@@ -61,6 +68,8 @@ class CreateServiceProfile extends Component {
           <Col>
             <Card>
               <CardBody>
+              {this.state.loading && <Loader />}
+
                 <ServiceProfileForm
                   match={this.props.match}
                   submitLabel={i18n.t(`${packageNS}:tr000277`)}

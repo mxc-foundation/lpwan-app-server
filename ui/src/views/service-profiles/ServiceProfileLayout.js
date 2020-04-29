@@ -1,17 +1,17 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-import { Row, Col, Card, CardBody } from 'reactstrap';
-
-import i18n, { packageNS } from '../../i18n';
+import { Card, CardBody, Col, Row } from 'reactstrap';
+import Admin from "../../components/Admin";
+import Modal from "../../components/Modal";
+import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-
-import Admin from "../../components/Admin";
+import i18n, { packageNS } from '../../i18n';
 import ServiceProfileStore from "../../stores/ServiceProfileStore";
 import SessionStore from "../../stores/SessionStore";
 import UpdateServiceProfile from "./UpdateServiceProfile";
-import Modal from "../../components/Modal";
-import OrgBreadCumb from '../../components/OrgBreadcrumb';
+
+
 
 
 class ServiceProfileLayout extends Component {
@@ -25,13 +25,12 @@ class ServiceProfileLayout extends Component {
     this.setIsAdmin = this.setIsAdmin.bind(this);
   }
 
-  componentDidMount() {
-    ServiceProfileStore.get(this.props.match.params.serviceProfileID, resp => {
-      this.setState({
-        serviceProfile: resp,
-      });
+  componentDidMount = async () => {
+    const resp = await ServiceProfileStore.get(this.props.match.params.serviceProfileID);
+    this.setState({
+      serviceProfile: resp,
     });
-
+    
     SessionStore.on("change", this.setIsAdmin);
     this.setIsAdmin();
   }
@@ -52,10 +51,9 @@ class ServiceProfileLayout extends Component {
     });
   }
 
-  deleteServiceProfile() {
-    ServiceProfileStore.delete(this.props.match.params.serviceProfileID, resp => {
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    });
+  deleteServiceProfile = async () => {
+    const res = await ServiceProfileStore.delete(this.props.match.params.serviceProfileID);
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
   }
 
   openModal = () => {
@@ -65,15 +63,17 @@ class ServiceProfileLayout extends Component {
   };
 
   render() {
-    const { classes } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return (
       this.state.serviceProfile ? <React.Fragment>
+        
         {this.state.nsDialog && <Modal
           title={""}
           context={i18n.t(`${packageNS}:lpwan.service_profiles.delete_service_profile`)}
+          closeModal={() => this.setState({ nsDialog: false })}
           callback={this.deleteServiceProfile} />}
+
         <TitleBar
           buttons={
             <Admin>

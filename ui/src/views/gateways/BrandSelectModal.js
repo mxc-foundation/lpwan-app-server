@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import i18n, { packageNS } from '../../i18n';
-import { withRouter, Link } from "react-router-dom";
 import { withStyles } from "@material-ui/core/styles";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Card, CardBody, Row, Col } from 'reactstrap';
+import React, { useState } from 'react';
+import { Link, withRouter } from "react-router-dom";
+import { Button, Card, CardBody, Col, Modal, ModalBody, ModalFooter, ModalHeader, Row } from 'reactstrap';
 import logo from '../../assets/images/MATCHX-SUPERNODE2.png';
+import i18n, { packageNS } from '../../i18n';
 
 const styles = {
     center: {

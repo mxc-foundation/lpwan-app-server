@@ -1,6 +1,6 @@
 import { Component } from "react";
-
 import SessionStore from "../stores/SessionStore";
+
 
 
 class NonAdmin extends Component {

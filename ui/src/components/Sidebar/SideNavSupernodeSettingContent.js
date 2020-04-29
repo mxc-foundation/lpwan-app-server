@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import i18n, { packageNS } from '../../i18n';
-import { DEFAULT, BACK_TO_CONTROL } from '../../util/Data';
+import { BACK_TO_CONTROL, DEFAULT } from '../../util/Data';
 import Admin from '../Admin';
+
 
 const SideNavSupernodeSettingContent = (props) => {
     return <React.Fragment>
@@ -17,13 +17,6 @@ const SideNavSupernodeSettingContent = (props) => {
                             <span className="mdi mdi-arrow-left-bold"></span>
                             <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                             <span>{i18n.t(`${packageNS}:tr000450`)}</span>
-                        </Link>
-                    </li>
-
-                    <li>
-                        <Link to={`/control-panel/modify-account`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-ethereum"></i>
-                            <span> {i18n.t(`${packageNS}:menu.eth_account.eth_account`)} </span>
                         </Link>
                     </li>
 

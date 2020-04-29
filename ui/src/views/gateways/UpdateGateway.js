@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
+import Loader from "../../components/Loader";
 import i18n, { packageNS } from "../../i18n";
 import GatewayStore from "../../stores/GatewayStore";
-import Loader from "../../components/Loader";
 import GatewayForm from "./GatewayForm";
+
 
 class UpdateGateway extends Component {
   constructor() {

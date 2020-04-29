@@ -1,17 +1,16 @@
-import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
-import classNames from "classnames";
-import { Breadcrumb, BreadcrumbItem, Nav, NavItem, Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../../i18n';
+import classNames from "classnames";
+import React, { Component } from "react";
+import { Link, Route, Switch, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem, Card, CardBody, Col, Nav, NavItem, Row } from 'reactstrap';
 import TitleBar from "../../../components/TitleBar";
+import i18n, { packageNS } from '../../../i18n';
+import { SUPER_ADMIN } from "../../../util/M2mUtil";
+import breadcrumbStyles from "../../common/BreadcrumbStyles";
 import SuperNodeEthAccount from "./EthAccount";
 
-import topupStore from "../../../stores/TopupStore";
-import { SUPER_ADMIN } from "../../../util/M2mUtil";
 
-import breadcrumbStyles from "../../common/BreadcrumbStyles";
+
 
 const localStyles = {};
 
@@ -38,7 +37,6 @@ class SupernodeHistory extends Component {
     this.setState({loading:true});
     this.locationToTab();
     this.setState({loading:false});
-    this.getIncome();
   }
 
   componentDidUpdate(oldProps) {
@@ -47,12 +45,6 @@ class SupernodeHistory extends Component {
     }
 
     this.locationToTab();
-  }
-
-  getIncome(){
-    topupStore.getIncome(0, resp => {
-      this.setState({income:resp.amount});
-    });
   }
 
   onChangeTab(e, v) {

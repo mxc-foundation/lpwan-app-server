@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 class MoneyStore extends EventEmitter {
   constructor() {
@@ -13,18 +13,20 @@ class MoneyStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/ext_account.swagger.json", sessionStore.getClientOpts());
   }
 
-  getActiveMoneyAccount(moneyAbbr, orgId, callbackFunc) {
+  getActiveMoneyAccount(moneyAbbr, orgId, callbackFunc, errorCallbackFunc) {
     this.swagger.then(client => {
       client.apis.MoneyService.GetActiveMoneyAccount({
         moneyAbbr,
         orgId,
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.obj);
       })
-      .catch(errorHandler);
+      .catch(error => {
+        errorHandler(error);
+        if (errorCallbackFunc) errorCallbackFunc(error);
+      });
     });
   }
 
@@ -40,7 +42,6 @@ class MoneyStore extends EventEmitter {
         },
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         this.notify("updated");
         callbackFunc(resp.body);

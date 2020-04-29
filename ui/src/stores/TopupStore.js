@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class TopupStore extends EventEmitter {
@@ -14,69 +14,32 @@ class TopupStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/topup.swagger.json", sessionStore.getClientOpts());
   }
 
-  getTopUpDestination(moneyAbbr, orgId, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.TopUpService.GetTopUpDestination({
-        moneyAbbr,
-        orgId
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
-    });
+  async getTopUpDestination(orgId) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.TopUpService.GetTopUpDestination({
+          orgId
+        });
+        
+        resp = await checkStatus(resp);
+        return resp.body;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  getTopUpHistory(orgId, offset, limit, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.TopUpService.GetTopUpHistory({
-        orgId,
-        offset,
-        limit
-      })
-      .then(checkStatus)
-      //.then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
+  getTopUpHistory = async (orgId, offset, limit) => {
+    const client = await this.swagger;
+    let resp = await client.apis.TopUpService.GetTopUpHistory({
+      orgId,
+      offset,
+      limit
     });
+
+    resp = await checkStatus(resp);
+    return resp.body;
   }
 
-  getTransactionsHistory(orgId, offset, limit, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.TopUpService.GetTransactionsHistory({
-        orgId,
-        offset,
-        limit
-      })
-      .then(checkStatus)
-      //.then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-
-    getIncome(orgId, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.TopUpService.GetIncome({
-        orgId
-       
-      })
-      .then(checkStatus)
-      //.then(updateOrganizations)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
-    });
-  }
-
-  
   notify(action) {
     dispatcher.dispatch({
       type: "CREATE_NOTIFICATION",

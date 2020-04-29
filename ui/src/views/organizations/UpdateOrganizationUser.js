@@ -1,11 +1,11 @@
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
 import { Card, CardBody } from 'reactstrap';
-
 import i18n, { packageNS } from '../../i18n';
 import OrganizationStore from "../../stores/OrganizationStore";
 import OrganizationUserForm from "./OrganizationUserForm";
+
+
 
 
 class UpdateOrganizationUser extends Component {
@@ -14,10 +14,9 @@ class UpdateOrganizationUser extends Component {
     this.onSubmit = this.onSubmit.bind(this);
   }
 
-  onSubmit(organizationUser) {
-    OrganizationStore.updateUser(organizationUser, resp => {
-      this.props.history.push(`/organizations/${organizationUser.organizationID}/users`);
-    });
+  onSubmit = async (organizationUser) => {
+    const res = await OrganizationStore.updateUser(organizationUser);
+    this.props.history.push(`/organizations/${organizationUser.organizationID}/users`);
   }
 
   render() {
@@ -28,6 +27,7 @@ class UpdateOrganizationUser extends Component {
             <OrganizationUserForm
               submitLabel={i18n.t(`${packageNS}:tr000066`)}
               object={this.props.organizationUser}
+              update={true}
               onSubmit={this.onSubmit}
             />
           </CardBody>

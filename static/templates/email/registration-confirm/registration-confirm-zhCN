@@ -1,0 +1,87 @@
+From: {{ .Operator }} 超级节點 <{{ .From }}>
+To: {{ .To }}
+Subject: 请确认您正在注册的 {{ .Operator }} 超级节点
+Message-Id: <{{ .MsgID }}>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="{{ .Boundary }}"
+
+--{{ .Boundary }}
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: text-body
+
+您已经成功注册了一个超级节点账户。 请点击下面的链接来验证您的电子邮件
+地址。 如果您无法点击链接，复制并粘贴此链接
+到您的浏览器。
+
+{{ .Link }}
+
+--{{ .Boundary }}
+Content-Type: text/html;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: html-body
+
+<!DOCTYPE html>
+<html lang="zh" style=3D"box-sizing: border-box;font-family: sans-serif;line-height: 1.15;-webkit-text-size-adjust: 100%;-webkit-tap-highlight-color: transparent;">
+	<head style=3D"box-sizing: border-box;">
+	<title>{{ .Operator }} E-mail</title>
+	</head>
+
+    <body style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;-webkit-font-smoothing: antialiased;-webkit-text-size-adjust: none;width: 100% !important;height: 100%;line-height: 1.6em;background-color: #f6f6f6;margin: 0;font-weight: 400;color: #212529;text-align: left;min-width: 992px!important;" bgcolor="#f6f6f6">
+
+<table class=3D"body-wrap" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;width: 100%;background-color: #f6f6f6;margin: 0;border-collapse: collapse;" bgcolor="#f6f6f6">
+    <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
+        <td style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
+        <td class=3D"container" width="600" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;vertical-align: top;display: block !important;max-width: 600px !important;clear: both !important;margin: 0;width: 100%;padding-right: 15px;padding-left: 15px;margin-right: auto;margin-left: auto;min-width: 992px!important;" valign="top">
+            <div class=3D"content" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; max-width: 600px; display: block; margin: 0; padding: 20px;">
+                <table class=3D"main" width="100%" cellpadding="0" cellspacing="0" itemprop="action" itemscope itemtype="http://schema.org/ConfirmAction" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;border-radius: 3px;margin: 0;border: none;border-collapse: collapse;">
+                    
+                    <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
+                        <td class=3D"content-wrap" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; display: inline-block; font-size: 14px; vertical-align: top; margin: 0; padding: 30px;border: 3px solid {{ .PrimaryColor }};border-radius: 7px; background-color: #fff;" valign="top">
+                            <meta itemprop="name" content="Confirm Email" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;border-collapse: collapse;">
+                                <tr style=3D"box-sizing:border-box;page-break-inside:avoid; flex:display; content-justified: center;">
+                                    <td style=3D"text-align:center;box-sizing:border-box">
+                                        <img style=3D"font-family: Montserrat, Helvetica; width: 100px !important; margin: 15px;" class=3D"logo" src="3D&quot;"{{ .Logo }}" alt="logo" height="54">
+                                    </td>
+                                </tr>
+                                <tr style=3D"box-sizing: border-box;page-break-inside: avoid;">
+                                    <td style=3D"text-align: center;box-sizing: border-box;">
+                                        <a href="3D&quot;#&quot;" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
+                                    </td>
+                                </tr>
+            
+                                <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
+                                    <td class=3D"content-block" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                                        在SN网站上输入下面的6位数字代码以完成注册: <b style=3D"box-sizing: border-box;font-weight: bolder;"> {{ .Token }} </b>
+                                    </td>
+                                </tr>
+                                <tr style=3D"box-sizing: border-box;page-break-inside: avoid;">
+                                    <td style=3D"text-align: center;box-sizing: border-box;">
+                                        <a href=3D"#" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
+                                    </td>
+                                </tr>
+                                <tr style=3D"box-sizing: border-box;page-break-inside: avoid;">
+                                    <td style=3D"text-align: center;box-sizing: border-box;">
+                                        <a href=3D"#" style=3D"display: block;margin-bottom: 10px;box-sizing: border-box;color: #007bff;text-decoration: underline;background-color: transparent;"> <img src={.OperatorLogo} height="20" alt="logo" style=3D"box-sizing: border-box;vertical-align: middle;border-style: none;page-break-inside: avoid;"></a> <br style=3D"box-sizing: border-box;">
+                                    </td>
+                                </tr>
+                                <tr style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;box-sizing: border-box;font-size: 14px;margin: 0;page-break-inside: avoid;">
+                                    <td class=3D"content-block" style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 20px;" valign =top>
+                                        <b style=3D"box-sizing: border-box;font-weight: bolder;">{{ .Operator }} 超级节点</b><br> <a href=3D"https://www.mxc.org">- 由 MXC</a> 提供支持
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </td>
+        <td style=3D"font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0;" valign="top"></td>
+    </tr>
+</table>
+</body>
+</html>
+
+--{{ .Boundary }}--

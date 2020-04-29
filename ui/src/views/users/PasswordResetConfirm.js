@@ -1,25 +1,23 @@
-import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-import { isEmail } from 'validator';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
-import Divider from '@material-ui/core/Divider';
-
-import TitleBarTitle from "../../components/TitleBarTitle";
-import { withStyles } from "@material-ui/core/styles";
-//import ReCAPTCHA from "react-google-recaptcha";
-import { PASSWORD_RECOVERY_DESCRIPTION_002, PASSWORD_RECOVERY_ERROR_MINIMUM_LENGTH, PASSWORD_RECOVERY_ERROR_MISMATCH  } from "../../util/Messages";
-import Form from "../../components/Form";
-import FormComponent from "../../classes/FormComponent";
-import SessionStore from "../../stores/SessionStore";
 import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
+import Button from '@material-ui/core/Button';
+import Divider from '@material-ui/core/Divider';
+import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
-import Password from '../../components/TextfileForPassword'
-import theme from "../../theme";
+import { withStyles } from "@material-ui/core/styles";
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import FormComponent from "../../classes/FormComponent";
+import Form from "../../components/Form";
+import Password from '../../components/TextfileForPassword';
+import TitleBarTitle from "../../components/TitleBarTitle";
 import i18n, { packageNS } from '../../i18n';
+import SessionStore from "../../stores/SessionStore";
+import theme from "../../theme";
+//import ReCAPTCHA from "react-google-recaptcha";
+import { PASSWORD_RECOVERY_DESCRIPTION_002, PASSWORD_RECOVERY_ERROR_MINIMUM_LENGTH, PASSWORD_RECOVERY_ERROR_MISMATCH } from "../../util/Messages";
+
 
 const styles = {
   textField: {

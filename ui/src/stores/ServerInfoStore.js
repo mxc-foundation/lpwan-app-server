@@ -1,10 +1,10 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class ServerInfoStore extends EventEmitter {
@@ -13,15 +13,28 @@ class ServerInfoStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/serverInfo.swagger.json", sessionStore.getClientOpts());
   }
 
-  getAppserverVersion(callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServerInfoService.GetAppserverVersion()
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.data);
-      })
-      .catch(errorHandler);
-    });
+  async getAppserverVersion() {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServerInfoService.GetAppserverVersion();
+        
+        resp = await checkStatus(resp);
+        return resp.data;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async getServerRegion() {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.ServerInfoService.GetServerRegion();
+    
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

@@ -1,25 +1,23 @@
-import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-
-import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
 import { withStyles } from "@material-ui/core/styles";
 import Typography from '@material-ui/core/Typography';
-
-import Grid from "@material-ui/core/Grid";
-import TitleBar from "../../components/TitleBar";
-import WalletStore from "../../stores/WalletStore.js";
-import GatewayStore from "../../stores/GatewayStore.js";
-import Button from "@material-ui/core/Button";
-import StakeStore from "../../stores/StakeStore";
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
 import ExtLink from "../../components/ExtLink";
-
-//import WithdrawBalanceInfo from "./WithdrawBalanceInfo";
-
-import { EXT_URL_STAKE } from "../../util/Data"
+import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
-
-import localStyles from "./StakeStyle";
+import GatewayStore from "../../stores/GatewayStore.js";
+import StakeStore from "../../stores/StakeStore";
+import WalletStore from "../../stores/WalletStore.js";
+import { EXT_URL_STAKE } from "../../util/Data";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+import localStyles from "./StakeStyle";
+
+
+
+
 
 const styles = {
   ...breadcrumbStyles,
@@ -53,9 +51,10 @@ class StakeLayout extends Component {
   }
 
   loadData = async () => {
-    StakeStore.getStakingHistory(this.props.match.params.organizationID, 0, 1, data => {
-      let amount = 0;
-      let isFirst = true;
+    const data = await StakeStore.getStakingHistory(this.props.match.params.organizationID, 0, 1);
+    let amount = 0;
+    let isFirst = true;
+    if(data !== undefined){
       if( data.stakingHist.length > 0){
         this.props.history.push(`/stake/${this.props.match.params.organizationID}/set-stake`);
       }
@@ -63,7 +62,7 @@ class StakeLayout extends Component {
         amount,
         isFirst
       })
-    });
+    }
   }
 
   componentDidMount() {

@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-
-import { Field, connect } from 'formik';
-import { Button as RButton, UncontrolledTooltip } from 'reactstrap';
-import { ReactstrapInputGroup } from './FormInputs';
+import { connect, Field } from 'formik';
 import MaskedInput from "react-text-mask";
-
+import { Button as RButton, UncontrolledTooltip } from 'reactstrap';
 import i18n, { packageNS } from '../i18n';
+import { ReactstrapInputGroup } from './FormInputs';
+
+
 
 
 class AESKeyHEXMask extends Component {

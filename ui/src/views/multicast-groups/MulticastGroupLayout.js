@@ -1,24 +1,24 @@
-import React, { Component } from "react";
-import { Route, Switch, Link, withRouter } from "react-router-dom";
-
-import { withStyles } from "@material-ui/core/styles";
 import Grid from '@material-ui/core/Grid';
-import Tabs from '@material-ui/core/Tabs';
+import { withStyles } from "@material-ui/core/styles";
 import Tab from '@material-ui/core/Tab';
-
+import Tabs from '@material-ui/core/Tabs';
 import Delete from "mdi-material-ui/Delete";
-
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
+import React, { Component } from "react";
+import { Link, Route, Switch, withRouter } from "react-router-dom";
 import DeviceAdmin from "../../components/DeviceAdmin";
-
+import TitleBar from "../../components/TitleBar";
+import TitleBarButton from "../../components/TitleBarButton";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
 import MulticastGroupStore from "../../stores/MulticastGroupStore";
 import SessionStore from "../../stores/SessionStore";
-import UpdateMulticastGroup from "./UpdateMulticastGroup";
 import theme from "../../theme";
 import ListMulticastGroupDevices from "./ListMulticastGroupDevices";
+import UpdateMulticastGroup from "./UpdateMulticastGroup";
+
+
+
+
 
 
 const styles = {

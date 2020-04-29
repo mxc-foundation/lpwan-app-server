@@ -1,19 +1,18 @@
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-
-import { Breadcrumb, BreadcrumbItem, Container, Row, Col, Card, CardBody,
-  TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import theme from "../../theme";
-import i18n, { packageNS } from "../../i18n";
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
+import { Breadcrumb, BreadcrumbItem, Col, Container, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import DeviceAdmin from "../../components/DeviceAdmin";
-import Admin from "../../components/Admin";
-
+import DeviceProfileStore from "../../stores/DeviceProfileStore";
+import DeviceStore from "../../stores/DeviceStore";
+import TitleBar from "../../components/TitleBar";
+import TitleBarButton from "../../components/TitleBarButton";
+import i18n, { packageNS } from "../../i18n";
+import theme from "../../theme";
 import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
+
 
 const localStyles = {
   tabs: {
@@ -47,13 +46,28 @@ class DeviceDetailsDevicesTabs extends Component {
   }
 
   componentDidMount() {
-    const { mainTabDeviceIndex } = this.props;
+    const { mainTabDeviceIndex, device } = this.props;
 
     if (mainTabDeviceIndex) {
       this.setState({
         activeMainTabDeviceIndex: mainTabDeviceIndex
       });
     }
+    
+    DeviceStore.get(device.device.devEUI, resp => {
+      this.setState({
+        device: resp,
+      });
+
+      if (resp.device.deviceProfileID) {
+        DeviceProfileStore.get(resp.device.deviceProfileID, resp => {
+          this.setState({
+            deviceProfile: resp.deviceProfile,
+          });
+        });
+      }
+
+    });
   }
 
   toggleMainTabDeviceIndex = mainTabDeviceIndex => {
@@ -67,12 +81,12 @@ class DeviceDetailsDevicesTabs extends Component {
 
   render() {
     const { activeMainTabDeviceIndex } = this.state;
-    const { admin, application, children, classes, device, deviceProfile, deleteDevice, mainTabDeviceIndex, match, organization } = this.props;
+    const { admin, application, children, classes, device, deleteDevice, mainTabDeviceIndex, match, organization } = this.props;
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
     const isApplication = currentApplicationID && currentApplicationID !== "0" && application;
     const currentOrgName = organization && (organization.name || organization.displayName);
-
+    
     return(
       <Container fluid>
         <Row>
@@ -160,7 +174,7 @@ class DeviceDetailsDevicesTabs extends Component {
                 </NavLink>
               </NavItem>
               {/* Only available to admins and where the devices has an associated device profile that supports OTAA */}
-              {admin && deviceProfile && deviceProfile.deviceProfile.supportsJoin &&
+              {admin && this.state.deviceProfile && this.state.deviceProfile.supportsJoin &&
               <NavItem>
                 <NavLink
                   active={activeMainTabDeviceIndex === 2}

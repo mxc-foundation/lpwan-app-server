@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { Row, Col, Table, CustomInput } from "reactstrap";
-
+import { Col, CustomInput, Row, Table } from "reactstrap";
 import i18n, { packageNS } from "../../i18n";
+
 
 class GatewayFormMacChannels extends Component {
   constructor(props) {

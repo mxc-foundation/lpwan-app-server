@@ -99,11 +99,19 @@ idle_timeout="{{ .Redis.IdleTimeout }}"
 
 # SMTP settings
 #
+
 [smtp]
-email={{ .SMTP.Email }}
-password={{ .SMTP.Password }}
-host={{ .SMTP.Host }}
-port={{ .SMTP.Port }}
+[smtp.average]
+email={{ .SMTP.Average.Email }}
+password={{ .SMTP.Average.Password }}
+host={{ .SMTP.Average.Host }}
+port={{ .SMTP.Average.Port }}
+
+[smtp.restricted]
+email={{ .SMTP.Restricted.Email }}
+password={{ .SMTP.Restricted.Password }}
+host={{ .SMTP.Restricted.Host }}
+port={{ .SMTP.Restricted.Port }}
 
 [m2m_server]
 m2m_server={{ .M2MServer.M2MServer }}

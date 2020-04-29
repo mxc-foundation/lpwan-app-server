@@ -1,19 +1,19 @@
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
-
-import { Breadcrumb, BreadcrumbItem, Card, Container, Row, Col } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import i18n, { packageNS } from '../../i18n';
+import { Breadcrumb, BreadcrumbItem, Card, Col, Container, Row } from 'reactstrap';
 import TitleBar from "../../components/TitleBar";
-
-import OrganizationStore from "../../stores/OrganizationStore";
+import i18n, { packageNS } from '../../i18n';
 import ApplicationStore from "../../stores/ApplicationStore";
 import DeviceStore from "../../stores/DeviceStore";
 import FUOTADeploymentStore from "../../stores/FUOTADeploymentStore";
+import OrganizationStore from "../../stores/OrganizationStore";
+import breadcrumbStyles from "../common/BreadcrumbStyles";
 import FUOTADeploymentForm from "./FUOTADeploymentForm";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
+
+
+
 
 const localStyles = {};
 
@@ -50,10 +50,14 @@ class CreateFUOTADeploymentForDevice extends Component {
       });
     });
   
-    OrganizationStore.get(currentOrgID, resp => {
-      this.setState({
-        organization: resp.organization
-      });
+    this.loadOrganization(currentOrgID);
+  }
+
+  loadOrganization = async (id) => {
+    let resp = await OrganizationStore.get(id);  
+    this.setState({
+      organization: resp.organization,
+      loading: false
     });
   }
 

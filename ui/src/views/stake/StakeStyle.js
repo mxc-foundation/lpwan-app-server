@@ -100,6 +100,19 @@ const DeviceStyles = {
   },
   mxc: {
     fontWeight: 'bolder'
+  },
+  s_input: {
+    width: "100%",
+    height: "calc(1.5em + 0.9rem + 2px)",
+    padding: "0.45rem 0.9rem",
+    fontSize: "0.9rem",
+    fontWeight: "400",
+    lineHeight: "1.5",
+    color: "#6c757d",
+    backgroundColor: "#fff",
+    backgroundClip: "padding-box",
+    border: "1px solid #ced4da",
+    borderRadius: "0.2rem"
   }       
 };
   

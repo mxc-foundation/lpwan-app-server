@@ -1,13 +1,11 @@
 import { EventEmitter } from "events";
 import RobustWebSocket from "robust-websocket";
-
 import Swagger from "swagger-client";
-
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler, errorHandlerIgnoreNotFound } from "./helpers";
 import dispatcher from "../dispatcher";
-import MockGatewayStoreApi from '../api/mockGatewayStoreApi';
-import isDev from '../util/isDev';
+import { checkStatus, errorHandler, errorHandlerIgnoreNotFound } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class GatewayStore extends EventEmitter {
@@ -23,20 +21,13 @@ class GatewayStore extends EventEmitter {
   }
 
   getGatewayList(orgId, offset, limit, callbackFunc) {
-    // Run the following in development environment and early exit from function
-    /* if (isDev) {
-      (async () => callbackFunc(await MockGatewayStoreApi.getGatewayList(orgId)))();
-      return;
-    } */
-
     this.swaggerM2M.then(client => {
-      client.apis.GatewayService.GetGatewayList({
+      client.apis.GSGatewayService.GetGatewayList({
         orgId,
         offset,
         limit
       })
       .then(checkStatus)
-      //.then(updateOrganizations)
       .then(resp => {
         callbackFunc(resp.body);
       })
@@ -46,7 +37,7 @@ class GatewayStore extends EventEmitter {
 
   getGatewayProfile(gwId, callbackFunc) {
     this.swaggerM2M.then(client => {
-      client.apis.GatewayService.GetGatewayProfile({
+      client.apis.GSGatewayService.GetGatewayProfile({
         gwId,
       })
       .then(checkStatus)
@@ -59,7 +50,7 @@ class GatewayStore extends EventEmitter {
 
   getGatewayHistory(orgId, gwId, offset, limit, callbackFunc) {    
     this.swaggerM2M.then(client => {
-      client.apis.GatewayService.GetGatewayHistory({
+      client.apis.GSGatewayService.GetGatewayHistory({
         orgId,
         gwId,
         offset,
@@ -75,7 +66,7 @@ class GatewayStore extends EventEmitter {
 
   setGatewayMode(orgId, gwId, gwMode, callbackFunc) {
     this.swaggerM2M.then(client => {
-      client.apis.GatewayService.SetGatewayMode({
+      client.apis.GSGatewayService.SetGatewayMode({
         "orgId": orgId,
         "gwId": gwId,
         body: {
@@ -110,8 +101,24 @@ class GatewayStore extends EventEmitter {
     });
   }
 
+  register(gateway, callbackFunc) {
+    this.swagger.then(client => {
+      client.apis.GatewayService.Register({
+        body: {
+          organizationId: gateway.organizationId,
+          sn: gateway.sn
+        },
+      })
+      .then(checkStatus)
+      .then(resp => {
+        this.notify("registered");
+        callbackFunc(resp.obj);
+      })
+      .catch(errorHandler);
+    });
+  }
+
   get(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
     this.swagger.then(client => {
       client.apis.GatewayService.Get({
         id: id,
@@ -125,7 +132,6 @@ class GatewayStore extends EventEmitter {
   }
 
   getConfig(id, callbackFunc) {
-    // Run the following in development environment and early exit from function
     this.swagger.then(client => {
       client.apis.GatewayService.GetGwConfig({
         gatewayId: id,
@@ -224,7 +230,7 @@ class GatewayStore extends EventEmitter {
   getStats(gatewayID, start, end, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.GetStats({
-        gatewayId: gatewayID,
+        gatewayID: gatewayID,
         interval: "DAY",
         startTimestamp: start,
         endTimestamp: end,
@@ -240,7 +246,7 @@ class GatewayStore extends EventEmitter {
   getLastPing(gatewayID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.GetLastPing({
-        gatewayId: gatewayID,
+        gatewayID: gatewayID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -264,7 +270,6 @@ class GatewayStore extends EventEmitter {
     const conn = new RobustWebSocket(wsURL, ["Bearer", sessionStore.getToken()], {});
 
     conn.addEventListener("open", () => {
-      //console.log('connected to', wsURL);
       this.wsStatus = "CONNECTED";
       this.emit("ws.status.change");
       onOpen();
@@ -286,14 +291,12 @@ class GatewayStore extends EventEmitter {
     });
 
     conn.addEventListener("close", () => {
-      //console.log('closing', wsURL);
       this.wsStatus = null;
       this.emit("ws.status.change");
       onClose();
     });
 
     conn.addEventListener("error", () => {
-      //console.log("error");
       this.wsStatus = "ERROR";
       this.emit("ws.status.change");
     });
@@ -312,7 +315,6 @@ class GatewayStore extends EventEmitter {
   }
 
   getRootConfig(id, callbackFunc, errorCallbackFunc) {
-    // Run the following in development environment and early exit from function
     this.swagger.then(client => {
       client.apis.GatewayService.GetGwPwd({
         gatewayId: id,

@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
-
 import Swagger from "swagger-client";
-
-import i18n, { packageNS } from '../i18n';
-import sessionStore from "./SessionStore";
-import {checkStatus, errorHandler } from "./helpers";
 import dispatcher from "../dispatcher";
+import i18n, { packageNS } from '../i18n';
+import { checkStatus, errorHandler } from "./helpers";
+import sessionStore from "./SessionStore";
+
+
 
 
 class ServiceProfileStore extends EventEmitter {
@@ -14,79 +14,87 @@ class ServiceProfileStore extends EventEmitter {
     this.swagger = new Swagger("/swagger/serviceProfile.swagger.json", sessionStore.getClientOpts());
   }
 
-  create(serviceProfile, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Create({
-        body: {
-          serviceProfile: serviceProfile,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async create(serviceProfile) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Create({
+          body: {
+            serviceProfile,
+          },
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("created");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  get(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Get({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+  async get(id) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Get({
+          id,
+        });
+  
+        resp = await checkStatus(resp);
+        
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  update(serviceProfile, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Update({
-        "serviceProfile.id": serviceProfile.id,
-        body: {
-          serviceProfile: serviceProfile,
-        },
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async update(serviceProfile) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Update({
+          "serviceProfile.id": serviceProfile.id,
+          body: {
+            serviceProfile: serviceProfile,
+          },
+        });
+  
+        resp = await checkStatus(resp);
         this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  delete(id, callbackFunc) {
-    this.swagger.then(client => {
-      client.apis.ServiceProfileService.Delete({
-        id: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
+  async delete(id) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.Delete({
+          id
+        });
+
+        resp = await checkStatus(resp);
         this.notify(i18n.t(`${packageNS}:tr000326`));
-        callbackFunc(resp.ojb);
-      })
-      .catch(errorHandler);
-    });
+
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
-  list(organizationID, limit, offset, callbackFunc) {
-    return this.swagger.then(client => {
-      client.apis.ServiceProfileService.List({
-        organizationID: organizationID,
-        limit: limit,
-        offset: offset,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc && callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
-    });
+  async list(organizationID, limit, offset) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.ServiceProfileService.List({
+          organizationID,
+          limit,
+          offset,
+        });
+
+        resp = await checkStatus(resp);
+
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
   }
 
   notify(action) {

@@ -1,11 +1,11 @@
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
-
-import { withStyles } from "@material-ui/core/styles";
-
 import i18n, { packageNS } from '../../i18n';
 import DeviceStore from "../../stores/DeviceStore";
 import DeviceForm from "./DeviceForm";
+
+
 
 
 const styles = {

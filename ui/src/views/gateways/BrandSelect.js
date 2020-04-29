@@ -1,15 +1,12 @@
-import React, { Component } from "react";
-import { withRouter, Link } from 'react-router-dom';
-
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Card, CardBody, Row, Col } from 'reactstrap';
-
-import { withStyles } from "@material-ui/core/styles";
-import i18n, { packageNS } from '../../i18n';
-import TitleBar from "../../components/TitleBar";
-import Loader from "../../components/Loader";
-import CommonModal from '../../components/Modal';
-import logo from '../../assets/images/matchx.png';
 import { Divider } from "@material-ui/core";
+import { withStyles } from "@material-ui/core/styles";
+import React, { Component } from "react";
+import { Link, withRouter } from 'react-router-dom';
+import { Button, Card, CardBody, Col, Row } from 'reactstrap';
+import logo from '../../assets/images/matchx.png';
+import i18n, { packageNS } from '../../i18n';
+
+
 
 const styles = {
     center: {

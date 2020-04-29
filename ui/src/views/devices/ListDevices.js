@@ -1,17 +1,15 @@
-import React, { Component } from "react";
-import { Route, Switch, Link } from "react-router-dom";
-
-import { Row, Col, Card, CardBody } from 'reactstrap';
 import { withStyles } from "@material-ui/core/styles";
-
-import theme from "../../theme";
-import i18n, { packageNS } from "../../i18n";
-import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
-import TitleBarButton from "../../components/TitleBarButton";
+import React, { Component } from "react";
+import { Link, Route, Switch } from "react-router-dom";
 import DeviceAdmin from "../../components/DeviceAdmin";
-import ListDevicesTable from "./ListDevicesTable";
-import ListDevicesMap from "./ListDevicesTable";
+import TitleBar from "../../components/TitleBar";
+import TitleBarButton from "../../components/TitleBarButton";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from "../../i18n";
+import theme from "../../theme";
+import { default as ListDevicesMap, default as ListDevicesTable } from "./ListDevicesTable";
+
+
 
 
 const styles = {

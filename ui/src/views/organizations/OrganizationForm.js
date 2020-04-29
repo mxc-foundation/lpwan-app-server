@@ -1,13 +1,17 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-
-import { Row, Col, Button, FormGroup, Label, FormText, Card, CardBody } from 'reactstrap';
-import { Formik, Form, Field, FieldArray } from 'formik';
+import { Button, Col, Row } from 'reactstrap';
 import * as Yup from 'yup';
-
-import { ReactstrapInput, ReactstrapCheckbox, AsyncAutoComplete } from '../../components/FormInputs';
+import { ReactstrapCheckbox, ReactstrapInput } from '../../components/FormInputs';
 import i18n, { packageNS } from '../../i18n';
-import TitleBarTitle from "../../components/TitleBarTitle";
 
+
+
+
+const orgSchema = Yup.object().shape({
+  name: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
+  displayName: Yup.string().required(i18n.t(`${packageNS}:tr000431`)), 
+});
 
 
 class OrganizationForm extends Component {
@@ -15,15 +19,12 @@ class OrganizationForm extends Component {
     super(props);
 
     this.state = {
-      object: this.props.object || {},
+      object: this.props.object || {name: "", displayName: ""},
     };
   }
 
 
   render() {
-    if (this.state.object === undefined) {
-      return (<div></div>);
-    }
 
     return (<React.Fragment>
       <Row>
@@ -31,10 +32,12 @@ class OrganizationForm extends Component {
           <Formik
               enableReinitialize
               initialValues={this.state.object}
+              validationSchema={orgSchema}
               onSubmit={this.props.onSubmit}>
             {({
                 handleSubmit,
                 handleChange,
+                handleBlur,
               }) => (
                 <Form onSubmit={handleSubmit} noValidate>
                   <Field
@@ -44,6 +47,8 @@ class OrganizationForm extends Component {
                       id="name"
                       helpText={i18n.t(`${packageNS}:tr000062`)}
                       component={ReactstrapInput}
+                      onBlur={handleBlur}
+                      onChange={handleChange}
                       required
                   />
 
@@ -54,10 +59,12 @@ class OrganizationForm extends Component {
                       id="displayName"
                       helpText={i18n.t(`${packageNS}:tr000031`)}
                       component={ReactstrapInput}
+                      onBlur={handleBlur}
+                      onChange={handleChange}
                       required
                   />
 
-                  <TitleBarTitle title={i18n.t(`${packageNS}:tr000127`)} />
+                  <h4>{i18n.t(`${packageNS}:tr000127`)}</h4>
 
                   <Field
                       type="checkbox"

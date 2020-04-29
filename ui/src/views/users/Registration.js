@@ -1,28 +1,31 @@
+import { Field, Form, Formik } from 'formik';
 import React, { Component } from "react";
-import { withRouter, Link } from "react-router-dom";
-import { isEmail } from 'validator';
-
-import { Row, Col, Container, Card, CardBody, Button, FormGroup } from 'reactstrap';
-import { Formik, Form, Field } from 'formik';
-import * as Yup from 'yup';
 import ReCAPTCHA from "react-google-recaptcha";
-
+import { Link, withRouter } from "react-router-dom";
+import { Button, Card, CardBody, Col, Container, CustomInput, FormGroup, Row, Modal, ModalBody, ModalHeader } from 'reactstrap';
+import { isEmail } from 'validator';
+import * as Yup from 'yup';
 import { ReactstrapInput } from '../../components/FormInputs';
 import Loader from "../../components/Loader";
-import SessionStore from "../../stores/SessionStore";
 import i18n, { packageNS } from '../../i18n';
+import SessionStore from "../../stores/SessionStore";
+import ServerInfoStore from "../../stores/ServerInfoStore";
+import UserStore from "../../stores/UserStore";
+import Google2FA from './Google2FA';
 
 const regSchema = Yup.object().shape({
   username: Yup.string().trim().required(i18n.t(`${packageNS}:tr000431`)),
 })
 
-class RegistrationForm extends Component {
+class RegistrationFormAverage extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       object: this.props.object || { username: "" },
       isVerified: false,
+      showSetup2FA: false,
+      twofa_enabled: false,
+      isVerifiedDuplicate: null,
       bypassCaptcha: this.props.bypassCaptcha
     }
   }
@@ -39,16 +42,180 @@ class RegistrationForm extends Component {
     });
   }
 
+  verificationUser = async (userName) => {
+    
+    if (userName === '') {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    if (!isEmail(userName)) {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    const resp = await UserStore.getUserEmail(userName);
+    if(resp !== undefined){
+      if(resp.status){
+        this.setState({isVerifiedDuplicate:true});
+        return true;
+      }else{
+        this.setState({isVerifiedDuplicate:false});
+        return false;
+      }
+    }else{
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+  }
+
+  showSetup2FA = () => {
+    // TODO - API Call to fetch the initial code
+    this.setState({ showSetup2FA: true, auth_2fa_code: '12345678' });
+  }
+
+  confirm2fa = (confirmCode) => {
+    // TODO  - API call to confirm
+    this.setState({ showSetup2FA: false, twofa_enabled: true });
+  }
+
+  skip2fa = () => {
+    this.setState({ showSetup2FA: false });
+  }
+
+  confirmReset2fa = (confirmCode) => {
+    // TODO  - API call to confirm
+    // TODO - Fetch phrase - for now setting up dummy
+    const phrases = ["Simba", "Sweetie", "Ziggy", "Midnight", "Kiki", "Peanut", "Midday", "Buddy", "Bently", "Gray", "Rocky", "Madison", "Bella", "Baxter"];
+    this.setState({ showMnemonicPhraseConfirm: true, phrases: phrases });
+  }
+
+  skipReset2fa = () => {
+    this.setState({ showReset2FA: false, showMnemonicPhraseConfirm: false });
+  }
+
   render() {
+    let fieldsSchema = {
+      username: Yup.string().trim().test('testname', i18n.t(`${packageNS}:menu.registration.user_validation`), this.verificationUser
+      ).required(i18n.t(`${packageNS}:tr000431`)),
+    }
+
+    const formSchema = Yup.object().shape(fieldsSchema);
 
     return (
       <React.Fragment>
         <Formik
           initialValues={this.state.object}
-          validationSchema={regSchema}
+          validationSchema={formSchema}
+          onSubmit={(values) => {
+            const castValues = formSchema.cast(values);
+            const isVerified = this.state.isVerified;
+            const isVerifiedDuplicate = this.state.isVerifiedDuplicate;
+            this.props.onSubmit({ isVerified, isVerifiedDuplicate, ...castValues })
+          }}>
+          {({
+            handleSubmit,
+            handleBlur,
+            values,
+          }) => (
+              <Form onSubmit={handleSubmit} noValidate>
+                <Field
+                  type="text"
+                  label={i18n.t(`${packageNS}:tr000003`)}
+                  name="username"
+                  id="username"
+                  value={values.username}
+                  component={ReactstrapInput}
+                  onBlur={handleBlur}
+                />
+
+                <FormGroup className="mt-2">
+                  {!this.state.bypassCaptcha && <ReCAPTCHA
+                    sitekey={process.env.REACT_APP_PUBLIC_KEY}
+                    onChange={this.onReCapChange}
+                  />}
+                </FormGroup>
+                <div className="mt-1">
+                  <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000020`)}</Button>
+                  <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
+                </div>
+              </Form>
+            )}
+        </Formik>
+      </React.Fragment>
+    );
+  }
+}
+
+class RegistrationFormRestricted extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      object: this.props.object || { username: "" },
+      isVerified: false,
+      isVerifiedDuplicate: null,
+      bypassCaptcha: this.props.bypassCaptcha
+    }
+  }
+
+  verificationUser = async (userName) => {
+    
+    if (userName === '') {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    if (!isEmail(userName)) {
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+
+    const resp = await UserStore.getUserEmail(userName);
+    if(resp !== undefined){
+      if(resp.status){
+        this.setState({isVerifiedDuplicate:true});
+        return true;
+      }else{
+        this.setState({isVerifiedDuplicate:false});
+        return false;
+      }
+    }else{
+      this.setState({isVerifiedDuplicate:false});
+      return false;
+    }
+  }
+
+  onReCapChange = (value) => {
+    const req = {
+      secret: process.env.REACT_APP_PUBLIC_KEY,
+      response: value,
+      remoteip: window.location.origin
+    }
+
+    SessionStore.getVerifyingGoogleRecaptcha(req, resp => {
+      this.setState({ isVerified: resp.success });
+    });
+  }
+
+  render() {
+    let fieldsSchema = {
+      username: Yup.string().trim().test('testname', i18n.t(`${packageNS}:menu.registration.user_validation`), this.verificationUser
+      ).required(i18n.t(`${packageNS}:tr000431`)),
+    }
+
+    const formSchema = Yup.object().shape(fieldsSchema);
+
+    return (
+      <React.Fragment>
+        <Formik
+          initialValues={this.state.object}
+          validationSchema={formSchema}
           onSubmit={(values) => {
             const castValues = regSchema.cast(values);
-            this.props.onSubmit({ isVerified: this.state.isVerified, ...castValues })
+            const isVerified = this.state.isVerified;
+            const isVerifiedDuplicate = this.state.isVerifiedDuplicate;
+            this.props.onSubmit({ isVerified, isVerifiedDuplicate, ...castValues })
           }}>
           {({
             handleSubmit,
@@ -64,15 +231,8 @@ class RegistrationForm extends Component {
                   onBlur={handleBlur}
                 />
 
-                <FormGroup className="mt-2">
-                  {!this.state.bypassCaptcha && <ReCAPTCHA
-                    sitekey={process.env.REACT_APP_PUBLIC_KEY}
-                    onChange={this.onReCapChange}
-                  />}
-                </FormGroup>
-
                 <div className="mt-1">
-                  <Button type="submit" color="primary" className="btn-block" disabled={(!this.state.bypassCaptcha) && (!this.state.isVerified)}>{i18n.t(`${packageNS}:tr000011`)}</Button>
+                  <Button type="submit" color="primary" className="btn-block" >{i18n.t(`${packageNS}:tr000020`)}</Button>
                   <Link to={`/login`} className="btn btn-link btn-block text-muted mt-0">{i18n.t(`${packageNS}:tr000462`)}</Link>
                 </div>
               </Form>
@@ -91,18 +251,27 @@ function GetBranding() {
   });
 }
 
+function LoadServerRegion() {
+  return new Promise((resolve, reject) => {
+    ServerInfoStore.getServerRegion(resp => {
+      return resolve(resp);
+    });
+  });
+}
+
 class Registration extends Component {
   constructor() {
     super();
 
     let bypassCaptcha = false;
-    if (window.location.origin.includes("http://localhost")) {
+    if (window.location.origin.includes("https://lora.demo") || window.location.origin.includes("http://localhost")) {
       bypassCaptcha = true;
     }
 
     this.state = {
       isVerified: false,
-      bypassCaptcha: bypassCaptcha
+      bypassCaptcha: bypassCaptcha,
+      serverRegion : ""
     };
 
     this.onSubmit = this.onSubmit.bind(this);
@@ -115,9 +284,11 @@ class Registration extends Component {
   loadData = async () => {
     try {
       let result = await GetBranding();
+      let serverRegion = await ServerInfoStore.getServerRegion();
 
       this.setState({
-        logoPath: result.logoPath
+        logoPath: result.logoPath,
+        serverRegion: serverRegion.serverRegion.trim()
       });
     } catch (error) {
       console.error(error);
@@ -125,18 +296,31 @@ class Registration extends Component {
     }
   }
 
-  onSubmit(user) {
-    if (this.state.bypassCaptcha) {
-      user.isVerified = true;
+  onSubmit = (user) => {
+    if (this.state.serverRegion === "NOT_DEFINED" || this.state.serverRegion === "AVERAGE") {
+      if (this.state.bypassCaptcha) {
+        user.isVerified = true;
+      }
+
+      if (!user.isVerified) {
+        alert(i18n.t(`${packageNS}:tr000021`));
+        return false;
+      }
+
+    }else{
+      if (this.state.bypassCaptcha) {
+        user.isVerified = true;
+      }
     }
 
-    if (!user.isVerified) {
-      alert(i18n.t(`${packageNS}:tr000021`));
+    
+    
+    if (!user.isVerifiedDuplicate) {
       return false;
     }
 
     if (SessionStore.getLanguage() && SessionStore.getLanguage().id) {
-      user.language = SessionStore.getLanguage().id.toLowerCase();
+      user.language = SessionStore.getLanguage().id;
     } else {
       user.language = 'en';
     }
@@ -145,7 +329,8 @@ class Registration extends Component {
       this.setState({ loading: true });
       SessionStore.register(user, () => {
         this.setState({ loading: false });
-        this.props.history.push("/");
+        SessionStore.setUsernameTemp(user.username);
+        this.props.history.push("/registration-confirm/");
       });
     } else {
       alert(i18n.t(`${packageNS}:tr000024`));
@@ -153,6 +338,9 @@ class Registration extends Component {
   }
 
   render() {
+    if(!this.state.serverRegion){
+      return <div></div>;
+    }
     return (<React.Fragment>
       <div className="account-pages mt-5 mb-5">
         <Container>
@@ -172,10 +360,18 @@ class Registration extends Component {
 
                   <div className="position-relative">
                     {this.state.loading && <Loader />}
-                    <RegistrationForm
-                      onSubmit={this.onSubmit}
-                      bypassCaptcha={this.state.bypassCaptcha}
-                    />
+                    {
+                      this.state.serverRegion === "RESTRICTED"
+                        ? <RegistrationFormRestricted
+                          onSubmit={this.onSubmit}
+                          bypassCaptcha={this.state.bypassCaptcha}
+                        />
+                        : <RegistrationFormAverage
+                          onSubmit={this.onSubmit}
+                          bypassCaptcha={this.state.bypassCaptcha}
+                        />
+                    }
+
                   </div>
                 </CardBody>
               </Card>

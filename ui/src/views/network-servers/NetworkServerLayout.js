@@ -1,59 +1,60 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
-import { Breadcrumb, BreadcrumbItem, Card } from 'reactstrap';
-import { withStyles } from "@material-ui/core/styles";
-
-import Delete from "mdi-material-ui/Delete";
-
-import i18n, { packageNS } from '../../i18n';
+import { Breadcrumb, BreadcrumbItem } from 'reactstrap';
+import Modal from "../../components/Modal";
 import TitleBar from "../../components/TitleBar";
 import TitleBarButton from "../../components/TitleBarButton";
-
+import i18n, { packageNS } from '../../i18n';
 import NetworkServerStore from "../../stores/NetworkServerStore";
 import UpdateNetworkServer from "./UpdateNetworkServer";
 
-import breadcrumbStyles from "../common/BreadcrumbStyles";
 
-const localStyles = {};
 
-const styles = {
-  ...breadcrumbStyles,
-  ...localStyles
-};
 
 class NetworkServerLayout extends Component {
   constructor() {
     super();
 
-    this.state = {};
+    this.state = {
+      nsDialog: false,
+    };
 
     this.deleteNetworkServer = this.deleteNetworkServer.bind(this);
+    this.openConfirmModal = this.openConfirmModal.bind(this);
   }
 
   componentDidMount() {
-    NetworkServerStore.get(this.props.match.params.networkServerID, (resp) => {
-      this.setState({
-        networkServer: resp,
-      });
+    this.loadData();
+  }
+
+  loadData = async () => {
+    let networkServer = await NetworkServerStore.get(this.props.match.params.networkServerID);
+    
+    this.setState({
+      networkServer
     });
   }
 
-  deleteNetworkServer() {
-    if (window.confirm("Are you sure you want to delete this network-server?")) {
-      NetworkServerStore.delete(this.props.match.params.networkServerID, () => {
-        this.props.history.push("/network-servers");
-      });
-    }
-  }
+  deleteNetworkServer = async () => {
+    await NetworkServerStore.delete(this.props.match.params.networkServerID);
+    this.props.history.push("/network-servers");
+    
+    this.setState({ nsDialog: false });
+  } 
+
+  openConfirmModal = () => {
+    this.setState({
+      nsDialog: true,
+    });
+  };
 
   render() {
-    const { classes } = this.props;
 
     if (this.state.networkServer === undefined) {
-      return(<div></div>);
+      return (<div></div>);
     }
 
-    return(
+    return (
       <React.Fragment>
         <TitleBar
           buttons={[
@@ -62,19 +63,25 @@ class NetworkServerLayout extends Component {
               key={1}
               icon={<i className="mdi mdi-delete mr-1 align-middle"></i>}
               label={i18n.t(`${packageNS}:tr000061`)}
-              onClick={this.deleteNetworkServer}
+              onClick={this.openConfirmModal}
             />,
           ]}
         >
-          <Breadcrumb className={classes.breadcrumb}>
-            <BreadcrumbItem className={classes.breadcrumbItem}>Control Panel</BreadcrumbItem>
-            <BreadcrumbItem><Link className={classes.breadcrumbItemLink} to={
+          <Breadcrumb>
+            <BreadcrumbItem>{i18n.t(`${packageNS}:menu.control_panel`)}</BreadcrumbItem>
+            <BreadcrumbItem><Link to={
               `/network-servers`}>{i18n.t(`${packageNS}:tr000040`)
-            }</Link></BreadcrumbItem>
+              }</Link></BreadcrumbItem>
             <BreadcrumbItem active>{i18n.t(`${packageNS}:tr000066`)}</BreadcrumbItem>
             <BreadcrumbItem active>{this.state.networkServer.networkServer.id}</BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
+
+        {this.state.nsDialog && <Modal
+          title={""}
+          closeModal={() => this.setState({ nsDialog: false })}
+          context={i18n.t(`${packageNS}:lpwan.network_servers.delete_server`)}
+          callback={this.deleteNetworkServer} />}
 
         <UpdateNetworkServer networkServer={this.state.networkServer.networkServer} version={this.state.networkServer.version}
           region={this.state.networkServer.region} />
@@ -83,4 +90,4 @@ class NetworkServerLayout extends Component {
   }
 }
 
-export default withStyles(styles)(withRouter(NetworkServerLayout));
+export default withRouter(NetworkServerLayout);

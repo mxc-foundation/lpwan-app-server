@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 import i18n, { packageNS } from '../../i18n';
-import { DEFAULT, BACK_TO_CONTROL } from '../../util/Data';
+import { BACK_TO_CONTROL, DEFAULT } from '../../util/Data';
 import Admin from '../Admin';
+
 
 const SideNavSupernodeWalletContent = (props) => {
     return <React.Fragment>
@@ -20,19 +20,15 @@ const SideNavSupernodeWalletContent = (props) => {
                         </Link>
                     </li>
 
-                    {/* <li>
-                        <Link to={`/control-panel/withdraw/`} className="waves-effect side-nav-link-ref">
-                            <i className="ti-cloud-down"></i>
-                            <span> {i18n.t(`${packageNS}:menu.withdraw.withdraw`)} </span>
-                        </Link>
-                    </li> */}
-
                     <li>
-                        <Link to={`/control-panel/history/`} className="waves-effect side-nav-link-ref">
-                            <i className="mdi mdi-history"></i>
-                            <span> {i18n.t(`${packageNS}:menu.history.history`)} </span>
+                        <Link to={`/control-panel/withdraw/`} className="waves-effect side-nav-link-ref">
+                            {/* <i className="ti-cloud-down"></i>
+                            <span> {i18n.t(`${packageNS}:menu.withdraw.withdraw`)} </span> */}
+                            <i className="mdi mdi-hammer"></i>
+                            <span> {i18n.t(`${packageNS}:menu.dashboard.coming_soon`)} </span>
                         </Link>
                     </li>
+                    
                 </Admin>
             </ul>
         </div>

@@ -1,18 +1,17 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardBody, Row, Col } from 'reactstrap';
-import Grid from "@material-ui/core/Grid";
-
-import i18n, { packageNS } from '../../i18n';
-import { MAX_DATA_LIMIT } from '../../util/pagination';
+import { Card, CardBody, Col, Row } from 'reactstrap';
+import Admin from "../../components/Admin";
 import AdvancedTable from "../../components/AdvancedTable";
 import Loader from "../../components/Loader";
 import TitleBar from "../../components/TitleBar";
-import TitleBarTitle from "../../components/TitleBarTitle";
 import TitleBarButton from "../../components/TitleBarButton";
-import Admin from "../../components/Admin";
+import TitleBarTitle from "../../components/TitleBarTitle";
+import i18n, { packageNS } from '../../i18n';
 import ApplicationStore from "../../stores/ApplicationStore";
+import { MAX_DATA_LIMIT } from '../../util/pagination';
 import OrganizationDevices from "../devices/OrganizationDevices";
+
 
 const ApplicationNameColumn = (cell, row, index, extraData) => {
   const currentOrgID = extraData['currentOrgID'];
@@ -73,10 +72,10 @@ class ListApplications extends Component {
   handleTableChange = (type, { page, sizePerPage, filters, searchText, sortField, sortOrder, searchField }) => {
     const offset = (page - 1) * sizePerPage ;
 
-    let searchQuery = null;
+    /* let searchQuery = null;
     if (type === 'search' && searchText && searchText.length) {
       searchQuery = searchText;
-    }
+    } */
 
     this.getPage(sizePerPage, offset);
   }
@@ -106,7 +105,7 @@ class ListApplications extends Component {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
 
     return(
-      <Grid container spacing={4}>
+      <>
         <OrganizationDevices
           mainTabIndex={1}
           organizationID={currentOrgID}
@@ -144,7 +143,7 @@ class ListApplications extends Component {
             </Col>
           </Row>
         </OrganizationDevices>
-      </Grid>
+      </>
     );
   }
 }

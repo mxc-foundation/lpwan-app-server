@@ -1,18 +1,18 @@
 import React, { Component } from "react";
-
-import TextField from "@material-ui/core/TextField";
-import InputAdornment from '@material-ui/core/InputAdornment';
-import IconButton from '@material-ui/core/IconButton';
 import Button from "@material-ui/core/Button";
+import IconButton from '@material-ui/core/IconButton';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import TextField from "@material-ui/core/TextField";
 import Tooltip from '@material-ui/core/Tooltip';
-
 import Eye from "mdi-material-ui/Eye";
 import EyeOff from "mdi-material-ui/EyeOff";
 import Refresh from "mdi-material-ui/Refresh";
-
 import MaskedInput from "react-text-mask";
-
 import i18n, { packageNS } from '../i18n';
+
+
+
+
 
 
 class AESKeyHEXMask extends Component {

@@ -7,22 +7,22 @@
   "tr000006": "註冊",
   "tr000007": "登入",
   "tr000008": "MXC極域協議",
-  "tr000009": "忘記密碼",
+  "tr000009": "忘記密碼？",
   "tr000010": "您現在可以以演示用戶身份訪問",
   "tr000011": "登入",
   "tr000012": "找回密碼",
   "tr000013": "在下面輸入您的電子信箱，我們將向您發送密碼重置說明",
   "tr000014": "取消",
-  "tr000015": "請在下面輸入您的新密碼",
-  "tr000016": "密碼必須至少包含6個字符",
-  "tr000017": "密碼和確認不匹配",
-  "tr000018": "確認電子郵件已發送",
-  "tr000019": "註冊",
-  "tr000020": "註冊",
-  "tr000021": "你是人類嗎，請驗證自己",
+  "tr000015": "請在下面輸入您的新密碼。",
+  "tr000016": "密碼必須至少包含6個字符。",
+  "tr000017": "密碼和確認不匹配。",
+  "tr000018": "確認電子郵件已發送。",
+  "tr000019": "註冊。",
+  "tr000020": "註冊。",
+  "tr000021": "我不是機器人",
   "tr000022": "確認",
   "tr000023": "密碼重複",
-  "tr000024": "請輸入有效的電子郵件地址以供使用",
+  "tr000024": "請輸入有效的電子郵件地址。",
   "tr000025": "密碼不匹配",
   "tr000026": "請確認此連結到您的MXC極域協議超級節點的電子郵件",
   "tr000027": "歡迎來到您的超級節點存取權。",
@@ -30,7 +30,7 @@
   "tr000029": "確認註冊",
   "tr000030": "組織名稱",
   "tr000031": "組織顯示名稱",
-  "tr000032": "LoRa伺服器",
+  "tr000032": "LPWAN伺服器",
   "tr000033": "搜尋組織、申請、閘道器或設備",
   "tr000034": "更改密碼",
   "tr000035": "登出",
@@ -44,18 +44,18 @@
   "tr000043": "伺服器",
   "tr000044": "網路-伺服器",
   "tr000045": "之",
-  "tr000046": "SMB Gateway Profiles",
+  "tr000046": "智慧物聯競價閘道器資料",
   "tr000047": "網路-伺服器",
-  "tr000048": "Test SMB Gateway Profile",
+  "tr000048": "測試智慧物聯競價閘道器資料",
   "tr000049": "組織",
   "tr000050": "可以有閘道器",
-  "tr000051": "LPWAN 伺服器",
+  "tr000051": "LPWAN伺服器",
   "tr000052": "QA測試",
   "tr000053": "mxc極域",
   "tr000054": "每行頁數",
   "tr000055": "所有用戶",
   "tr000056": "用戶名",
-  "tr000057": "線上",
+  "tr000057": "在",
   "tr000058": "管理員",
   "tr000059": "lora伺服器",
   "tr000060": "組織 設定",
@@ -68,7 +68,7 @@
   "tr000067": "用戶組織",
   "tr000068": "用戶組織",
   "tr000069": "伺服器資料",
-  "tr000070": "SMB Device Profiles",
+  "tr000070": "智慧物聯競價設備資料",
   "tr000071": "資料一",
   "tr000072": "閘道器",
   "tr000073": "列表",
@@ -130,7 +130,7 @@
   "tr000129": "可選註釋",
   "tr000130": "可選註釋，例如手機號碼、地址、註解...",
   "tr000131": "允許",
-  "tr000132": "活躍",
+  "tr000132": "已啟用",
   "tr000133": "全球管理員",
   "tr000134": "組織已更新",
   "tr000135": "組織用戶/創建",
@@ -220,7 +220,7 @@
   "tr000221": "LSB",
   "tr000222": "切換輸入的字節順序。有些設備使用LSB。",
   "tr000223": "選擇閘道器將連接到的網路伺服器。如果下拉列表中沒有可用的網路伺服器，請確保該組織的服務資料文件存在。",
-  "tr000224": "SMB Gateway Profile",
+  "tr000224": "智慧物聯競價閘道器資料",
   "tr000225": "選擇閘道器資料",
   "tr000226": "無選項",
   "tr000227": "可以分配給閘道器的任選閘道器資料文件。當配置了LoRa閘道器橋時，此配置可用於自動重新配置閘道器，以便它管理數據包轉發器配置。",
@@ -275,7 +275,7 @@
   "tr000278": "設備",
   "tr000279": "應用/Gw_Dev_Pri_Application/設備/Dev_Pri",
   "tr000280": "細節",
-  "tr000281": "SMB Device Profile",
+  "tr000281": "智慧物聯競價設備資料",
   "tr000282": "狀態",
   "tr000283": "最後一次觀察",
   "tr000284": "排隊下行鏈路有效負載",
@@ -285,7 +285,7 @@
   "tr000288": "BASE64編碼",
   "tr000289": "BASE64編碼的字符串",
   "tr000290": "JSON對象",
-  "tr000291": "The device must be configured with a SMB Device Profile supporting a Codec which is able to encode the given (JSON) payload.",
+  "tr000291": "該設備必須配置有支持編碼解碼器的智慧物聯競價設備配置資料，該編碼解碼器能夠對給定的（JSON）有效負載進行編碼。",
   "tr000292": "排隊有效負載",
   "tr000293": "下行隊列",
   "tr000294": "FCnt",
@@ -440,7 +440,7 @@
   "tr000462": "回到登入頁面",
   "tr000463": "返回",
   "tr000500": "外部電源",
-  "tr000501": "SMB Device Profile",
+  "tr000501": "智慧物聯競價設備資料",
   "tr000502": "組織裝置",
   "tr000503": "添加裝置",
   "tr000551": "有效負載解碼器腳本",
@@ -449,7 +449,7 @@
   "tr000554": "裝置資訊",
   "tr000555": "FUOTA",
   "tr000556": "偵測到{{num}}個錯誤。 重新提交之前，請修正每個欄位中顯示的驗證錯誤。",
-  "tr000557": "Select an application for the device to load only SMB Device Profiles associated with the application",
+  "tr000557": "選擇設備的應用程式以僅加載與該應用程式有相關的智慧物聯競價設備資料",
   "tr000558": "新增應用程式？",
   "tr000559": "您可以創建設備所屬的應用程式。",
   "tr000560": "您想要創建一個應用程式嗎？",
@@ -463,65 +463,66 @@
   "tr000568": "錢包",
   "tr000569": "未預期的輸入結束",
   "tr000570": "創建資料",
-  "tr000571": "Gateway Manufacturer",
-  "tr000572": "Mac Address",
-  "tr000573": "Gateway Altitude",
-  "tr000574": "WiFi SSID",
-  "tr000575": "Board model",
-  "tr000576": "LAN IP address",
-  "tr000577": "OS Version",
-  "tr000578": "LBT FPGA firmware version",
-  "tr000579": "Upgrade",
-  "tr000580": "Process",
-  "tr000581": "Uptime",
-  "tr000582": "CPU Total",
-  "tr000583": "Memory Total",
-  "tr000584": "Read",
-  "tr000585": "Write",
-  "tr000586": "Net",
-  "tr000587": "Upload",
-  "tr000588": "Host",
-  "tr000589": "Protocol(s)",
-  "tr000590": "Open VPN status",
-  "tr000591": "I agree to terms..",
-  "tr000592": "SSH to GW",
-  "tr000593": "Link to GUI",
-  "tr000594": "Factory reset",
-  "tr000595": "Are you sure you want to reset this Gateway?",
-  "tr000596": "All the data will be deleted.",
-  "tr000597": "SMB Gateway Profile profile",
-  "tr000598": "Listen-Before-Talk / Polite Spectrum Access ",
-  "tr000599": "LoRa MAC Channels",
-  "tr000600": "Antenna Gain",
-  "tr000601": "Class-B Configuration",
-  "tr000602": "Spectrum Scan",
-  "tr000603": "Rescan Spectrum",
-  "tr000604": "Beacon Period",
-  "tr000605": "Beacon Frequency",
-  "tr000606": "Beacon Datarate",
-  "tr000607": "Beacon Bandwidth",
-  "tr000608": "Beacon Power",
-  "tr000609": "Beacon Info",
-  "tr000610": "Channel",
-  "tr000611": "Frequency (MHz)",
-  "tr000612": "Activate",
-  "tr000613": "Scan Time",
-  "tr000614": "Save Config",
+  "tr000571": "閘道器製造商",
+  "tr000572": "Mac地址",
+  "tr000573": "閘道器高度",
+  "tr000574": "WiFi 名稱",
+  "tr000575": "機板型號",
+  "tr000576": "LAN IP 地址",
+  "tr000577": "OS版本",
+  "tr000578": "LBT FPGA固件版本",
+  "tr000579": "升級",
+  "tr000580": "處理",
+  "tr000581": "正常運行時間",
+  "tr000582": "CPU 總使用時間",
+  "tr000583": "總內存",
+  "tr000584": "讀取",
+  "tr000585": "寫入",
+  "tr000586": "網狀圖",
+  "tr000587": "上傳",
+  "tr000588": "主機",
+  "tr000589": "協議",
+  "tr000590": "開啟 VPN 狀態",
+  "tr000591": "我同意條款",
+  "tr000592": "SSH 到 GW",
+  "tr000593": "連結到GUI",
+  "tr000594": "恢復出廠設置",
+  "tr000595": "您確定要重設這台閘道器？",
+  "tr000596": "所有的資料將被刪除。",
+  "tr000597": "智慧物聯競價閘道器資料",
+  "tr000598": "先聽後說/禮貌頻譜使用 ",
+  "tr000599": "LoRa MAC 頻道",
+  "tr000600": "天線增益",
+  "tr000601": "B類配置",
+  "tr000602": "頻譜掃描",
+  "tr000603": "重新掃描頻譜",
+  "tr000604": "信標期",
+  "tr000605": "信標頻率",
+  "tr000606": "信標數據速率",
+  "tr000607": "信標帶寬",
+  "tr000608": "信標電源",
+  "tr000609": "信標資訊",
+  "tr000610": "頻道",
+  "tr000611": "頻率(兆赫)",
+  "tr000612": "啟動",
+  "tr000613": "掃描時間",
+  "tr000614": "保存配置",
   "tr000615": "選擇設備的應用程式以僅加載與該應用程式有相關的設備資料",
-  "tr000616": "Select a device profile to associate with the device",
-  "tr000617": "Required",
-  "tr000618": "© 2020 Powered by MXC",
-  "tr000619": "Root Password",
-  "tr000620": "Warning: Displaying your root password will void your warranty",
-  "tr000621": "By using the root password you gain authoritative access to your device. While this gives you a great amount of control, it also makes it possible for you to modify or delete the MatchX Firmware. If you display your password, you will void your warranty and lose access to the free support provided by MatchX.",
-  "tr000622": "I understand that if click the \"Display Root Password\" button, I will void my warranty and lose access to free support provided by MatchX.",
-  "tr000623": "Display Root Password",
-  "tr000624": "I want to keep my warranty",
-  "tr000625": "Below is your root password. If you change it, MatchX will not be able to recover it for you.",
-  "tr000626": "Region",
+  "tr000616": "選擇要與該設備關聯的設備配置資料",
+  "tr000617": "必填",
+  "tr000618": "基於MXC極域技術構建",
+  "tr000619": "Root 密碼",
+  "tr000620": "警告：顯示您的root密碼將使您的保修無效。",
+  "tr000621": "通過使用root密碼，您可以對設備進行授權訪問。 儘管這給您帶來了很多控制權，但它也使您可以修改或刪除MatchX固件。 如果顯示密碼，將使保修失效並失去對Gateway提供的免費支持的訪問權限。",
+  "tr000622": "我了解，如果單擊“顯示根密碼”按鈕，則我的保修將失效，並且將無法獲得MatchX提供的免費支持。",
+  "tr000623": "顯示根密碼",
+  "tr000624": "我想保留我的保修。",
+  "tr000625": "以下是您的root密碼。 如果您更改它，MatchX將無法為您恢復它。",
+  "tr000626": "地區",
   "common": {
     "delete": "刪除",
-    "reset": "重設"
+    "reset": "重設",
+    "comment": "評論"
   },
   "lpwan": {
     "org_users": {
@@ -533,6 +534,12 @@
     },
     "service_profiles": {
       "delete_service_profile": "您確定要刪除該服務資料嗎？"
+    },
+    "network_servers": {
+      "delete_server": "您確定要刪除此網路伺服器嗎？"
+    },
+    "gateways": {
+      "delete_gateway": "你確定要刪除這個 gadget?"
     }
   },
   "menu": {
@@ -550,23 +557,65 @@
       "type_here": "在此輸入",
       "incorrect_username_or_password": "用戶名或密碼錯誤",
       "cancel": "取消",
-      "proceed": "繼續"
+      "proceed": "繼續",
+      "deny": "拒絕",
+      "total_token_available": "可用總量",
+      "confirm_modal_title": "確認：超級節點退出",
+      "deny_reason": "添加拒絕用戶和MXC記錄的原因",
+      "confirm_text": "您正在確認從其可用令牌餘額中提取。 你確定嗎？",
+      "deny_text": "您拒絕從他們的可用令牌餘額中提款的請求。",
+      "requester": "請求者",
+      "balance": "餘額",
+      "destination": "目的地",
+      "available": "可用",
+      "submit_withdrawal_request": "提交提款請求",
+      "date_requested": "請求日期",
+      "status": "狀態",
+      "transaction_hash": "交易哈希",
+      "request_withdraw_title": "您確定嗎？",
+      "request_withdraw_text_0": "您正在請求提取此超級節點的通證。 請求完成後，超級節點操作員必須確認此動作。",
+      "request_withdraw_text_1": "金額超過1000美元的金額將由超級節點運營商和MXC Foundation共同確認。",
+      "request_withdraw_text_2": "您確定要提出通證嗎？",
+      "request_withdraw_text_com": "您的提出通證請求已成功提交，超級節點運營商將在下一個工作日內確認此交易。",
+      "confirmed": "已確認",
+      "currentFee": "當前費用"
     },
     "topup": {
       "topup": "充值",
       "send_tokens": "轉帳",
       "from_eth_account": "從ETH帳戶",
-      "change_eth_account": "更新ETH帳戶",
+      "change_eth_account": "改變ETH帳戶",
       "to_eth_account": "到ETH帳戶",
       "use_axs_wallet": "使用AXS錢包",
       "no_data_to_display": "沒有更多訊息",
-      "can_not_find_any_account": "無法找到任何匹配賬戶",
-      "synchronize_your_eth_account": "同步您的 ETH 賬戶",
+      "can_not_find_any_account": "無法找到任何匹配帳戶",
+      "synchronize_your_eth_account": "同步您的 ETH 帳戶",
       "note": "將您的ETH帳戶添加到M2M錢包可以提高安全性。 ",
       "notice": "注意",
-      "notice001": "警告: 在用戶充值 MXC 之前，請先更改您的超級節點 ETH 賬戶",
-      "notice002": "警告: 在充值 MXC 之前，請先註冊一個 ETH 賬戶",
-      "notice003": "您想要前往 ETH 賬戶頁面更新您的 ETH 賬戶嗎?"
+      "notice001": "警告: 在用戶充值 MXC 之前，請先更改您的超級節點 ETH帳戶",
+      "notice002": "警告: 在充值 MXC 之前，請先註冊一個 ETH 帳戶",
+      "notice003": "您想要前往 ETH 帳戶頁面更新您的 ETH 帳戶嗎?",
+      "crypto": "加密貨幣",
+      "otc": "OTC (即將到來)",
+      "eth_address": "ETH地址",
+      "copy_addr": "拷貝網址",
+      "show_qr_code": "顯示 QR 代碼",
+      "click_to_copy": "點擊複製",
+      "copied_notice": "已複製位址",
+      "download_qr_code": "下載QR Code",
+      "instruction001": "僅發送MXC到該存款地址。",
+      "instruction002": "將MXC以外的硬幣或代幣發送到該地址可能會導致您的存款丟失。",
+      "instruction003": "您的MXC極域將在經過12次網路確認後存入。",
+      "history": {
+        "status": "狀態",
+        "amount": "金額",
+        "date": "日期",
+        "tx_hash": "TX 哈希值"
+      },
+      "info": {
+        "title": "訊息",
+        "notice": "這是在測試網上運行。"
+      }
     },
     "history": {
       "history": "歷史紀錄",
@@ -576,12 +625,12 @@
       "staking": "質押",
       "from": "從",
       "to": "到",
-      "tx_hash": "TxHash",
-      "type": "類別",
+      "tx_hash": "Tx哈希值",
+      "type": "類型",
       "mxc_amount": "MXC 數量",
       "update_date": "更新日期",
       "status": "狀態",
-      "withdraw": "提款",
+      "withdraw": "提出通證",
       "topup": "充值",
       "successful": "成功",
       "rows_per_page": "每頁行數",
@@ -620,7 +669,7 @@
       "filter": "過濾"
     },
     "application": {
-      "del_application": "您確定要刪除此應用程序嗎？ 這還將刪除此應用程序的所有設備部分"
+      "del_application": "您確定要刪除此應用程式嗎？ 這還將刪除此應用程式的所有設備部分"
     },
     "gateways": {
       "gateway": "閘道器",
@@ -631,8 +680,10 @@
       "filter": "過濾",
       "choose_a_manufacturer": "選擇製造商",
       "other": "其他",
-      "enter_your_gateway_serial_number": "輸入您的網關序列號",
-      "were_searching_with_your_gateway_please_wait": "我們正在搜索您的網關，請稍候..."
+      "enter_your_gateway_serial_number": "輸入您的閘道器序列號",
+      "were_searching_with_your_gateway_please_wait": "我們正在搜索您的閘道器，請稍候...",
+      "qr_code_scan": "QR 碼掃描",
+      "reset_lora_config": "重啟 Lora 配置"
     },
     "staking": {
       "staking": "質押",
@@ -677,23 +728,23 @@
       "packets_received": "收到的數據包",
       "earned": "獲得",
       "spent": "剩餘餘額",
-      "account": "賬戶",
+      "account": "帳戶",
       "status": "狀態",
       "date": "日期"
     },
     "control_panel": "控制面板",
     "organization_list": "組織列表",
-    "lpwan_management": "LPWAN Management",
-    "nb_iot_server": "5G NB-IoT Management",
+    "lpwan_management": "LPWAN 管理",
+    "nb_iot_server": "5G NB-IoT 管理",
     "lpwan_server": "LPWAN伺服器",
     "powered_by": "提供技術支持",
     "lora_server": "Lora伺服器",
     "version": "版本",
     "messages": {
       "confirmation": "確認",
-      "confirmation_text": "您即將從帳戶中提取 MXC",
-      "invalid_amount": "請輸入有效金額以進行提款",
-      "invalid_account": "無效的 ETH 帳戶。請進入 ETH 帳戶選單",
+      "confirmation_text": "您即將從帳戶中提出MXC極域",
+      "invalid_amount": "請輸入有效金額以進行提出通證",
+      "invalid_account": "無效的 ETH 帳戶。請進入 ETH 帳戶選擇",
       "dismiss": "取消",
       "learn_more": "更多訊息",
       "amount": "數量",
@@ -705,14 +756,19 @@
       "set_stake": "設定質押數量",
       "history": "歷史",
       "withdraw_stake": "提款",
-      "congratulations_stake_set": "恭喜您！您的質押已經確定。",
+      "congratulations_stake_set": "恭喜您！您的質押已經確認。",
       "stake_proc_tit": "正在處理您的質押...",
-      "stake_proc_desc": "如果您想要取消，請點擊取消鈕。",
+      "stake_proc_desc": "如果您想要取消，請點擊取消按鈕。",
       "stake_confirmation_text": "一旦您提交了質押，30天內您無法解除該質押。您確定要提交該質押嗎？",
       "unstake_successful": "解除質押成功。MXC 已添加到您的 M2M 錢包中。",
       "staking_enhances": "質押透過鼓勵持有者的公平參與來增強數據交易流程。",
       "close_to_acquiring": "您即將獲得每月收入。如果現在放棄，您將錯過每月收入。",
-      "coming_soon": "敬請期待"
+      "coming_soon": "敬請期待",
+      "moreThan": "金額必須大於0或小於餘額。",
+      "min": "最小值為0。",
+      "need_number": "需要一個數字。",
+      "need_19_digit": "需要少於19位數字。",
+      "format_unmatch": "請匹配要求的格式。"
     },
     "store": {
       "device_has_been": "設備已",
@@ -736,7 +792,10 @@
       "control_panel": "控制面板",
       "back": "回去",
       "submit": "完成",
-      "cancel": "取消"
+      "cancel": "取消",
+      "comment": "評論",
+      "done": "完成",
+      "code_unmatch":"incorrect OTP code. please, try it again."
     },
     "system_settings": {
       "system_settings": "系統設定"
@@ -781,68 +840,163 @@
       "change_password": "更改密碼",
       "delete": "刪除",
       "username": "用戶名",
-      "active": "活躍度",
+      "active": "激活",
       "admin": "管理員",
-      "is_active": "活躍",
+      "is_active": "已啟用",
       "is_global_admin": "是全球管理員"
     },
     "dashboard": {
-      "title": "Dashboard",
-      "roleOrgAdmin": "Organization Admin",
-      "roleDeviceAdmin": "Device Admin",
-      "roleGatewayAdmin": "Gateway Admin",
-      "topupButton": "Topup MXC",
-      "totalUsers": "Total Users",
-      "totalOrgs": "Total Organizations",
-      "totalGateways": "Total Gateways",
-      "totalDevices": "Total Devices",
-      "totalApps": "Total Applications",
+      "title": "監控面板",
+      "roleOrgAdmin": "組織管理員",
+      "roleDeviceAdmin": "設備管理",
+      "roleGatewayAdmin": "閘道器管理員",
+      "topupButton": "充值MXC極域",
+      "remove": "移除",
+      "totalUsers": {
+        "title": "用戶總數：",
+        "description": "顯示在線用戶總數"
+      },
+      "totalOrgs": {
+        "title": "組織總數",
+        "description": "顯示在線組織總數"
+      },
+      "totalGateways": {
+        "title": "閘道器總數",
+        "description": "顯示閘道器總數"
+      },
+      "totalDevices": {
+        "title": "設備總數",
+        "description": "顯示設備總數"
+      },
+      "totalApps": {
+        "title": "應用總數",
+        "description": "顯示應用總數"
+      },
       "tickets": {
-        "title": "Tickets",
-        "view_history": "View History",
-        "approved": "Approved",
-        "pending": "Pending",
-        "subtext": "Today's ticket"
+        "title": "工單",
+        "view_history": "檢視紀錄",
+        "approved": "已核準",
+        "pending": "可能",
+        "subtext": "今天的工單",
+        "description": "顯示工單歷史記錄"
       },
       "withdrawal": {
-        "title": "Withdrawal",
-        "subtext": "Revenue today"
+        "title": "支出",
+        "subtext": "今日收入",
+        "description": "顯示今天的總提出通證"
       },
-      "topup": {
-        "title": "Topup",
-        "subtext": "Revenue today"
+      "mining_revenue": {
+        "title": "充值",
+        "subtext": "今日收入",
+        "description": "顯示充值訊息"
       },
       "mxcAmountChart": {
-        "title": "Total amounts of MXC in Supernode",
-        "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "title": "超級節點中MXC極域通證總數",
+        "subtext": "交易數據量表",
+        "statSubText": "總共",
+        "description": "超級節點中MXC極域通證總數"
       },
       "stakingAmountChart": {
-        "title": "Total Staking amounts in Supernode",
-        "subtext": "Payment volume chart",
-        "statSubText": "Total"
+        "title": "超級節點的總質押金額",
+        "subtext": "交易數據量表",
+        "statSubText": "總共",
+        "description": "顯示超級節點中總質押量"
       },
       "earnedAmountChart": {
-        "title": "Amount earned Data utilities and Staking",
-        "statSubText": "Revenue Today"
+        "title": "數據和質押賺取的金額",
+        "statSubText": "今日收入",
+        "description": "顯示透過數據和質押獲得的收入"
       },
       "packetsReceivedChart": {
-        "title": "Data Packets receieved by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "title": "閘道器收到的數據包",
+        "subTitle": "在過去 24小時內，過去30天",
+        "description": "顯示接收到的數據包"
       },
       "packetsSentChart": {
-        "title": "Data Packets sent by Gateways",
-        "subTitle": "In 24 hours, last 30 days"
+        "title": "閘道器發送的數據包",
+        "subTitle": "在過去 24小時內，過去30天",
+        "description": "顯示已發送的數據包"
       },
       "dataMap": {
-        "title": "Data Map"
+        "title": "覆蓋範圍圖",
+        "description": "在地圖上顯示所在位置"
       },
       "packetsByChannel": {
-        "title": "Packets on Channel"
+        "title": "在地圖上顯示所在位置",
+        "description": "按頻道顯示數據包"
       },
       "packetsBySpreadFactor": {
-        "title": "Packets on SpreadFactor"
+        "title": "SF數據包",
+        "description": "按SF係數顯示數據包"
+      },
+      "addWidget": {
+        "title": "監控面板視窗",
+        "add": "新增小工具"
+      },
+      "coming_soon": "敬請期待"
+    },
+    "registration": {
+      "email": "電子信箱地址",
+      "password": "密碼",
+      "password_hint": "(單詞必須包含至少 8 個字符，一個數字，一個符號，一個字母。)",
+      "user_validation": "不是電子郵件格式，或者用戶已經存在。",
+      "orgname_hint": "允許的字母，數字，破折號和下劃線",
+      "enter_pw": "輸入一次性密碼",
+      "notice_sent_email": "我們已經向您發送了一封電子郵件。",
+      "notice_check_spam": "如果沒有收到，請檢出您的垃圾郵件文件夾。",
+      "restart": "重新啟動",
+      "otp_unmatched": "OTP代碼不匹配。",
+      "password_match_error": "單詞必須包含至少 8 個字符，一個數字，一個符號，一個字母。",
+      "confirm_password": "確認您的密碼",
+      "confirm_password_match_error": "密碼和確認密碼必須相同。",
+      "org_name": "組織名稱",
+      "org_display_name": "組織顯示名稱",
+      "next": "下一個",
+      "mnemonic_phrase_instruction": "在下一個螢幕上，我們將顯示您的助記詞。 請寫下來。 助記詞是重置兩因素身份驗證的唯一方法。 如果您丟失了此密碼，則可能無法訪問您的超級節點帳戶並充值或抵押MXC極域。",
+      "mnemonic_phrase_title": "寫下您的助記詞",
+      "mnemonic_phrase_confirm_title": "請按正確順序點擊助記詞",
+      "2fa_title": "這將使用 Google Authenticator 做雙因素驗證。"
+    },
+    "menmonic_phrase": {
+      "write_button": "我已將它抄寫下來：",
+      "skip_button": "略過",
+      "confirm_button": "確認",
+      "back_button": "返回"
+    },
+    "google_2fa": {
+      "confirm_button": "確認",
+      "skip_button": "略過"
+    },
+    "profile_2fa": {
+      "title": "两个因素的认证",
+      "google": {
+        "title": "Google 身分驗證器",
+        "setup_button": "設定",
+        "2fa_title": "兩步認證設置",
+        "2fa_instruction": "這將使用 Google Authenticator 做雙因素驗證。",
+        "reset_2fa_title": "雙重驗證",
+        "reset_2fa_instruction": "這將使用 Google Authenticator 做雙因素驗證。",
+        "mnemonic_phrase_confirm_title": "請按正確順序點擊助記詞"
       }
+    },
+    "profile_password_reset": {
+      "title": "密碼",
+      "account_password": {
+        "title": "帳號密碼",
+        "reset_button": "重設"
+      },
+      "coming_soon": "敬請期待"
+    },
+    "dashboard_2fa": {
+      "title": "您的超級節點帳戶有一個新功能！",
+      "description": "兩步驗證現在是一個選項。作為此功能添加的一部分，每個帳戶都被分配給一個助記詞。此助記詞是重置您的兩步驗證方法的唯一途徑。在下一個屏幕上將顯示您的助記詞。請將其抄寫下並保持在一個安全的位置。",
+      "agree_instruction": "我明白，如果我不記下我的助記詞，我可能無法訪問我的帳戶。",
+      "next_button": "下一個",
+      "skip_button": "暫不",
+      "done_button": "完成",
+      "menmonic_step_1_title": "將此抄寫下來並將其保存在一個安全的地方。",
+      "menmonic_step_2_title": "請按正確順序點擊助記詞",
+      "menmonic_step_3_title": "已確認"
     }
   }
 }
