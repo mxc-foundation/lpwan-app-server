@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/api/gw_appserver"
+	"github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	"math"
 	"net"
 	"time"
@@ -25,7 +25,7 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
-	gwapi "github.com/mxc-foundation/lpwan-app-server/api/gw_appserver"
+	gwapi "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
@@ -93,7 +93,7 @@ func Setup(conf config.Config) error {
 
 	appserver := grpc.NewServer(grpcOptsM2M...)
 	api.RegisterAppServerServiceServer(appserver, NewAppServerAPI())
-	gw_appserver.RegisterHeartbeatServiceServer(appserver, NewAppServerAPI())
+	appserver_serves_gateway.RegisterHeartbeatServiceServer(appserver, NewAppServerAPI())
 
 	appLn, err := net.Listen("tcp", conf.ApplicationServer.APIForM2M.Bind)
 	if err != nil {
