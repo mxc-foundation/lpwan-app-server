@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
 import { Card, CardBody, Col, Row } from 'reactstrap';
 import AdvancedTable from "../../components/AdvancedTable";
+import ExtLink from "../../components/ExtLink";
 import Loader from "../../components/Loader";
 import i18n, { packageNS } from '../../i18n';
 import TopupStore from "../../stores/TopupStore";
@@ -29,6 +30,10 @@ const tableCols = [
     dataField: 'txHash',
     text: i18n.t(`${packageNS}:menu.topup.history.tx_hash`),
     sort: false,
+    formatter: (cell, row, rowIndex, formatExtraData) => {
+      const url = process.env.REACT_APP_ETHERSCAN_HOST + `/tx/${row.txHash}`;
+      return <ExtLink to={url} />;
+    },
   }
 ]
 
@@ -63,20 +68,15 @@ class TopupHistory extends Component {
   };
 
 
-  getPage(limit, offset) {
+  getPage = async (limit, offset) => {
     this.setState({ loading: true });
-    TopupStore.getTopUpHistory(this.props.organizationID, offset, limit, res => {
-      const object = this.state;
+    const res = await TopupStore.getTopUpHistory(this.props.organizationID, offset, limit);
+    const object = this.state;
 
-      object.totalSize = Number(res.count);
-      object.data = res.topupHistory;
-      object.loading = false;
-      this.setState({ object });
-
-      console.log(this.state);
-    }, error => {
-      this.setState({ loading: false });
-    });
+    object.totalSize = Number(res.count);
+    object.data = res.topupHistory;
+    object.loading = false;
+    this.setState({ object });
   }
 
   render() {

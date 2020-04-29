@@ -2,6 +2,7 @@ package external
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"strconv"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
@@ -63,6 +64,101 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 
 	return &api.GetWalletBalanceResponse{
 		Balance: resp.Balance,
+	}, status.Error(codes.OK, "")
+}
+
+func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.GetWalletMiningIncomeRequest) (*api.GetWalletMiningIncomeResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetWalletMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
+
+	resp, err := walletClient.GetWalletMiningIncome(ctx, &m2mServer.GetWalletMiningIncomeRequest{
+		OrgId: req.OrgId,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &api.GetWalletMiningIncomeResponse{
+		MiningIncome: resp.MiningIncome,
+	}, status.Error(codes.OK, "")
+}
+
+func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningInfoRequest) (*api.GetMiningInfoResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetMiningInfo org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
+
+	resp, err := walletClient.GetMiningInfo(ctx, &m2mServer.GetMiningInfoRequest{
+		UserId: req.UserId,
+		OrgId:  req.OrgId,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	/*miningInfo := &api.GetMiningInfoResponse{}
+	for _, v := range resp.MiningData {
+		miningInfo.MiningData = append(miningInfo.MiningData, v)
+	}*/
+
+	var miningData []*api.MiningData
+	for _, item := range resp.Data {
+		miningInfo := &api.MiningData{
+			Month: item.Month,
+			Amount: item.Amount,
+		}
+
+		miningData = append(miningData, miningInfo)
+	}
+
+	return &api.GetMiningInfoResponse{
+		TodayRev: resp.TodayRev,
+		Data: miningData,
 	}, status.Error(codes.OK, "")
 }
 
@@ -224,4 +320,30 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 	return &api.GetDownLinkPriceResponse{
 		DownLinkPrice: resp.DownLinkPrice,
 	}, status.Error(codes.OK, "")
+}
+
+func (s *WalletServerAPI) GetMXCprice (ctx context.Context, req *api.GetMXCpriceRequest) (*api.GetMXCpriceResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetMXCprice org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &api.GetMXCpriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	price, err := mining.GetMXCprice(config.C, req.MxcPrice)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to get price from CMC")
+	}
+
+	return &api.GetMXCpriceResponse{MxcPrice: price}, nil
 }

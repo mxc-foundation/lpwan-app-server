@@ -45,7 +45,8 @@ import OrganizationRedirect from "./views/organizations/OrganizationRedirect";
 import Login from "./views/users/Login";
 import Logout from "./views/users/Logout";
 import Registration from "./views/users/Registration";
-import RegistrationConfirm from "./views/users/RegistrationConfirm";
+import RegistrationConfirm from "./views/users/RegistrationConfirm.js";
+import RegistrationConfirmSteptwo from "./views/users/RegistrationConfirmSteptwo.js";
 
 import ListUsers from "./views/users/ListUsers";
 import CreateUser from "./views/users/CreateUser";
@@ -114,6 +115,9 @@ import Dashboard from "./views/dashboards/";
 // home
 import HomeComponent from './views/Home';
 
+//2fa
+import VerificationWith2FA from './views/common/VerificationWith2FA';
+
 //Temp banner
 import { initJWTTimer } from "./util/JWTUti";
 
@@ -180,6 +184,22 @@ class NotLoggedinRoute extends Component {
     )
   }
 }
+
+class NewRoute extends Component {
+  route = (props) => {
+    const { Comp, ...otherProps } = this.props;
+
+    SessionStore.setOTPToken(props.match.params.securityToken);
+    return <Redirect to='/registration-confirm' />;
+  }
+  render() {
+    return (
+      <Route {...this.props}
+        render={this.route}
+      />
+    )
+  }
+}
 /*
 class HomeRoute extends Component {
   route = () => {
@@ -218,6 +238,7 @@ class LoggedInRoutes extends Component {
         <Route exact path="/logout" component={Logout} />
 
         <Route exact path="/dashboard" component={Dashboard} />
+        
 
         <Route exact path="/users" component={ListUsers} />
         <Route exact path="/users/create" component={CreateUser} />
@@ -490,18 +511,6 @@ class App extends Component {
     let Layout = NonAuthLayout;
 
     if (user !== null) {
-      /* sideNav = <SideNav open={this.state.drawerOpen} user={this.state.user} />
-      topbanner = <TopBanner setDrawerOpen={this.setDrawerOpen} drawerOpen={this.state.drawerOpen} user={this.state.user} organizationId={this.state.organizationId}/>; 
-      topNav = (
-        <TopNav
-          drawerOpen={this.state.drawerOpen}
-          language={language}
-          onChangeLanguage={this.onChangeLanguage}
-          organizationId={this.state.organizationId}
-          setDrawerOpen={this.setDrawerOpen}
-          user={this.state.user}
-        /> 
-        ); */
       topNav = <Topbar rightSidebarToggle={this.toggleRightSidebar} isMobile={isMobile} onChangeLanguage={this.onChangeLanguage} menuToggle={this.toggleMenu} {...this.props} />;
       sideNav = <Sidebar isCondensed={isCondensed} currentSidebarId={currentSidebarId} switchToSidebarId={this.switchToSidebarId} {...this.props} />;
 
@@ -537,9 +546,28 @@ class App extends Component {
                 <Route exact path="/registration" component={Registration} />
                 <Route exact path="/password-recovery" component={PasswordRecovery} />
                 <Route exact path="/password-reset-confirm" component={PasswordResetConfirm} />
-                <Route exact path="/registration-confirm/:securityToken"
+                {/* <Route exact path="/registration-confirm/:securityToken"
                   render={props =>
                     <RegistrationConfirm {...props}
+                      language={language}
+                      onChangeLanguage={this.onChangeLanguage}
+                    />
+                  }
+                /> */}
+                <NewRoute exact path="/registration-confirm/:securityToken"
+                  Comp={RegistrationConfirm} 
+                  />
+                {/* <Route
+                  path="/registration-confirm/:securityToken"
+                  component={({ match }) => {
+                    return <Redirect to={{ path: '/registration-confirm', state: {...match.params}}} />;
+                  }}
+                /> */}
+                <Route exact path="/registration-confirm" component={RegistrationConfirm} />
+                <Route exact path="/VerificationWith2FA" component={VerificationWith2FA} />
+                <Route exact path="/registration-confirm-steptwo/:securityToken"
+                  render={props =>
+                    <RegistrationConfirmSteptwo {...props}
                       language={language}
                       onChangeLanguage={this.onChangeLanguage}
                     />

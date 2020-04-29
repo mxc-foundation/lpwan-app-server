@@ -195,13 +195,13 @@ class GatewayForm extends Component {
     });
   }
 
-  getNetworkServerOptions = (search, callbackFunc) => {
+  getNetworkServerOptions = async (search, callbackFunc) => {
     this.setState({ loading: true });
-    NetworkServerStore.list(this.props.match.params.organizationID, 999, 0, resp => {
-      const options = resp.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
-      this.setState({ loading: false });
-      callbackFunc(options);
-    });
+
+    const res = await NetworkServerStore.list(this.props.match.params.organizationID, 10, 0);
+    const options = res.result.map((ns, i) => { return { label: ns.name, value: ns.id } });
+    this.setState({ loading: false });
+    callbackFunc(options);
   }
 
   getGatewayProfileOption = (id, callbackFunc) => {
