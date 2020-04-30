@@ -122,6 +122,7 @@ message GetWithdrawHistoryResponse {
 message ModifyWithdrawFeeRequest {
     Money money_abbr = 1;
     double withdraw_fee = 2;
+    string password = 3;
 }
 
 message ModifyWithdrawFeeResponse {
