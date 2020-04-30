@@ -508,7 +508,8 @@ func GetGatewayMiningList(ctx context.Context, db sqlx.Queryer, time int64) ([]l
 		select 
 			mac
 		from gateway
-		where $1 - first_heartbeat > $2`,
+		where first_heartbeat not in (0)
+        and $1 - first_heartbeat > $2`,
 		time, limit,
 	)
 	if err != nil {
