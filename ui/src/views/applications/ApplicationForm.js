@@ -21,17 +21,17 @@ const styles = {
 };
 
 class ApplicationForm extends FormComponent {
-  getServiceProfileOption = (id, callbackFunc) => {
-    ServiceProfileStore.get(id, resp => {
-      callbackFunc({label: resp.serviceProfile.name, value: resp.serviceProfile.id});
-    });
+
+  getServiceProfileOption = async (id, callbackFunc) => {
+    const resp = await ServiceProfileStore.get(id);
+    const options = resp.result.map((o, i) => {return {label: resp.serviceProfile.name, value: resp.serviceProfile.id}});
+    callbackFunc(options);
   }
 
-  getServiceProfileOptions = (search, callbackFunc) => {
-    ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0, resp => {
-      const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
-      callbackFunc(options);
-    });
+  getServiceProfileOptions = async (search, callbackFunc) => {
+    const resp = await ServiceProfileStore.list(this.props.match.params.organizationID, 999, 0);
+    const options = resp.result.map((sp, i) => {return {label: sp.name, value: sp.id}});
+    callbackFunc(options);
   }
 
   getPayloadCodecOptions = (search, callbackFunc) => {

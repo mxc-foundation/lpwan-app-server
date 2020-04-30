@@ -18,12 +18,11 @@ class UpdateServiceProfile extends Component {
 
   }
 
-  onSubmit(serviceProfile) {
+  onSubmit = async (serviceProfile) => {
     this.setState({ loading: true });
-    ServiceProfileStore.update(serviceProfile, resp => {
-      this.setState({ loading: false });
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
-    }, error => { this.setState({ loading: false }) });
+    const res = await ServiceProfileStore.update(serviceProfile);
+    this.setState({ loading: false });
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/service-profiles`);
   }
 
   render() {

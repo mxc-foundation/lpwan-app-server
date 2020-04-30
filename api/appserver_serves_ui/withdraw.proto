@@ -43,9 +43,25 @@ service WithdrawService {
 		};
     }
 
+    // show the pending withdrawal list on the supernode
     rpc GetWithdrawRequestList (GetWithdrawRequestListRequest) returns (GetWithdrawRequestListResponse) {
         option (google.api.http) = {
 			get: "/api/withdraw/requests"
+		};
+    }
+
+    // after user clicks withdraw, send withdraw request to cobo directly
+    rpc GetWithdraw (GetWithdrawRequest) returns (GetWithdrawResponse) {
+        option (google.api.http) = {
+			post: "/api/withdraw/req"
+			body: "*"
+		};
+    }
+
+    // get withdrawal history monthly
+    rpc GetWithdrawMonthly (GetWithdrawMonthlyRequest) returns (GetWithdrawMonthlyResponse) {
+        option (google.api.http) = {
+			get: "/api/withdraw/monthly"
 		};
     }
 }
@@ -106,6 +122,7 @@ message GetWithdrawHistoryResponse {
 message ModifyWithdrawFeeRequest {
     Money money_abbr = 1;
     double withdraw_fee = 2;
+    string password = 3;
 }
 
 message ModifyWithdrawFeeResponse {
@@ -127,4 +144,29 @@ message WithdrawRequest {
 message GetWithdrawRequestListResponse {
     int64 count = 1;
     repeated WithdrawRequest withdraw_request = 2;
+}
+
+message GetWithdrawRequest {
+    int64 org_id = 1;
+    double amount = 2;
+    string eth_address = 3;
+    double available_balance = 4;
+}
+
+message GetWithdrawResponse {
+    bool status = 1;
+}
+
+message MonthlyData {
+    string month = 1;
+    double amount = 2;
+}
+
+message GetWithdrawMonthlyRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+}
+
+message GetWithdrawMonthlyResponse {
+    repeated MonthlyData monthly_data = 1;
 }

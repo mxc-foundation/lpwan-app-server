@@ -448,14 +448,11 @@ class CreateOrganizationUser extends Component {
     });
   }
 
-  onAssignUser(user) {
+  onAssignUser = async (user) => {
     this.setState({loading: true});
-    OrganizationStore.addUser(this.props.match.params.organizationID, user, resp => {
-      this.setState({loading: false});
-      this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
-    }, error => {
-      this.setState({loading: false});
-    });
+    const res = await OrganizationStore.addUser(this.props.match.params.organizationID, user);
+    this.setState({loading: false});
+    this.props.history.push(`/organizations/${this.props.match.params.organizationID}/users`);
   };
 
   onCreateUser(user) {

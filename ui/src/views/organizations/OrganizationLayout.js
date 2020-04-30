@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { Link, withRouter } from "react-router-dom";
-import { Breadcrumb, BreadcrumbItem, Card, CardBody, Col, Row } from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem, Card, CardBody, Col, Row, Alert } from 'reactstrap';
 import Admin from "../../components/Admin";
 import Modal from "../../components/Modal";
 import TitleBar from "../../components/TitleBar";
@@ -34,18 +34,17 @@ class OrganizationLayout extends Component {
     this.loadData();
   }
 
-  loadData() {
-    OrganizationStore.get(this.props.match.params.organizationID, resp => {
-      this.setState({
-        organization: resp,
-      });
+  loadData = async () => {
+    let organization = await OrganizationStore.get(this.props.match.params.organizationID);
+    
+    this.setState({
+      organization
     });
   }
 
-  deleteOrganization() {
-    OrganizationStore.delete(this.props.match.params.organizationID, () => {
-      this.props.history.push("/organizations");
-    });
+  deleteOrganization = async () => {
+    await OrganizationStore.delete(this.props.match.params.organizationID);
+    this.props.history.push("/organizations");
   }
 
   openModal = () => {

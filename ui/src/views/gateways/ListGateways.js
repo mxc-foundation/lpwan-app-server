@@ -58,7 +58,7 @@ const getColumns = (organizationId, stats) => (
     text: i18n.t(`${packageNS}:tr000074`),
     sort: false,
   }, {
-    dataField: 'lastSeenAt',
+    dataField: 'Activity',
     text: i18n.t(`${packageNS}:tr000075`),
     formatter: GatewayActivityColumn,
     formatExtraData: { stats },
@@ -317,9 +317,7 @@ class ListGateways extends Component {
             label={i18n.t(`${packageNS}:tr000277`)}
             icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
             onClick={this.toggle}
-            //to={`/organizations/${this.props.match.params.organizationID}/gateways/brand`}
-            //to={`/organizations/${currentOrgID}/gateways/create`}
-            to={`/organizations/${currentOrgID}/gateways/create`}
+            to={`/organizations/${currentOrgID}/gateways/input-serial`}
           />
         </GatewayAdmin>}
       >

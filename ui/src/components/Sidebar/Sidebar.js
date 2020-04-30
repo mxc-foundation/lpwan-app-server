@@ -39,14 +39,6 @@ import SideNavWalletContent from './SideNavWalletContent';
     hasDivider: true
 }] */
 
-function loadServerVersion() {
-    return new Promise((resolve, reject) => {
-        ServerInfoStore.getAppserverVersion(data => {
-            resolve(data);
-        });
-    });
-}
-
 class Sidebar extends Component {
     constructor(props) {
         super(props);
@@ -67,7 +59,7 @@ class Sidebar extends Component {
     loadData = async () => {
         try {
           const organizationIDs = SessionStore.getOrganizations();
-           var data = await loadServerVersion();
+          var data = await ServerInfoStore.getAppserverVersion();
           const serverInfo = JSON.parse(data);
           
           this.setState({
@@ -87,12 +79,9 @@ class Sidebar extends Component {
     componentDidMount = () => {
         this.initMenu();
         this.loadData();
-        SessionStore.on("organization.change", () => {
-            OrganizationStore.get(SessionStore.getOrganizationID(), resp => {
-              this.setState({
-                organization: resp.organization,
-              });
-            });
+        SessionStore.on("organization.change", async () => {
+            let organization = await OrganizationStore.get(SessionStore.getOrganizationID());
+            this.setState({ organization: organization.organization });
           });
       
           OrganizationStore.on("create", () => {
@@ -145,31 +134,17 @@ class Sidebar extends Component {
         }
       }
     
-      getOrganizationOption(id, callbackFunc) {
-        OrganizationStore.get(id, resp => {
-          callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
-        });
+      getOrganizationOption = async (id, callbackFunc) =>  {
+        let resp = await OrganizationStore.get(id);
+        callbackFunc({label: resp.organization.name, value: resp.organization.id, color:"black"});
       }
     
-      getOrganizationOptions(search, callbackFunc) {
-        OrganizationStore.list(search, 10, 0, resp => {
-          const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
-          callbackFunc(options);
-        });
+      getOrganizationOptions = async (search, callbackFunc) => {
+        const resp = await OrganizationStore.list(search, 10, 0);
+        const options = resp.result.map((o, i) => {return {label: o.name, value: o.id, color:'black'}});
+        callbackFunc(options);
       }
     
-      /* handlingExtLink = () => {
-        const resp = SessionStore.getProfile();
-        resp.then((res) => {
-          let orgId = SessionStore.getOrganizationID();
-          const isBelongToOrg = res.body.organizations.some(e => e.organizationID === SessionStore.getOrganizationID());
-    
-          OrganizationStore.get(orgId, resp => {
-            openM2M(resp.organization, isBelongToOrg, '/modify-account');
-          });
-        })
-      } */
-
     /**
      * Bind event
      */

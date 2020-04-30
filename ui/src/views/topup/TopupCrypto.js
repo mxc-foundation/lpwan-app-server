@@ -8,21 +8,21 @@ import TopupStore from "../../stores/TopupStore";
 
 
 
-function loadSuperNodeActiveMoneyAccount(organizationID) {
+/* function loadSuperNodeActiveMoneyAccount(organizationID) {
   return new Promise((resolve, reject) => {
     TopupStore.getTopUpDestination(organizationID, resp => {
       resolve(resp.activeAccount);
     }, reject);
   });
-}
+} */
 
-function loadActiveMoneyAccount(organizationID) {
+/* function loadActiveMoneyAccount(organizationID) {
   return new Promise((resolve, reject) => {
     TopupStore.getTopUpDestination(organizationID, resp => {
       resolve(resp.activeAccount);
     }, reject);
   });
-}
+} */
 
 /*function loadActiveMoneyAccount(organizationID) {
   return new Promise((resolve, reject) => {
@@ -69,23 +69,25 @@ class TopupCrypto extends Component {
       const organizationID = this.props.match.params.organizationID;
 
       this.setState({ loading: true });
-      var superNodeAccount = await loadSuperNodeActiveMoneyAccount(organizationID);
-      var account = await loadActiveMoneyAccount(organizationID);
-
+      var superNodeAccount = await TopupStore.getTopUpDestination(organizationID);
+      //var account = await loadActiveMoneyAccount(organizationID); //edited 2020-04-02
+      
       const accounts = {};
-      accounts.superNodeAccount = superNodeAccount;
-      accounts.account = account;
-
-
-      let object = this.state.object;
-      object.accounts = {
-        superNodeAccount: superNodeAccount,
-        account: account,
+      if(superNodeAccount !== undefined){
+        accounts.superNodeAccount = superNodeAccount.activeAccount;
+        //accounts.account = account;//edited 2020-04-02
+  
+  
+        let object = this.state.object;
+        object.accounts = {
+          superNodeAccount: superNodeAccount.activeAccount,
+          //account: account,//edited 2020-04-02
+        }
+  
+        this.setState({
+          object
+        });
       }
-
-      this.setState({
-        object
-      });
 
       this.setState({ loading: false });
     } catch (error) {

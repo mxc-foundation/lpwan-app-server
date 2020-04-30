@@ -43,14 +43,13 @@ class CreateMulticastGroup extends Component {
     this.closeDialog = this.closeDialog.bind(this);
   }
 
-  componentDidMount() {
-    ServiceProfileStore.list(this.props.match.params.organizationID, 0, 0, resp => {
-      if (resp.totalCount === "0") {
-        this.setState({
-          spDialog: true,
-        });
-      }
-    });
+  componentDidMount = async () => {
+    const resp = await ServiceProfileStore.list(this.props.match.params.organizationID, 10, 0);
+    if (resp.totalCount === "0") {
+      this.setState({
+        spDialog: true,
+      });
+    }
   }
 
   closeDialog() {
