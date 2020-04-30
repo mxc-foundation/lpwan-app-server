@@ -85,12 +85,14 @@ export default class WithPromises extends Component {
   componentDidMount = async () => {
     
     let resp = await SessionStore.fetchProfile();
-    const options = getOrgList(resp.body.organizations);
-    const dOptions = { label: options[0].label, value: options[0].value };
-    this.setState({
-      options,
-      dOptions
-    });
+    if(resp){
+      const options = getOrgList(resp.body.organizations);
+      const dOptions = { label: options[0].label, value: options[0].value };
+      this.setState({
+        options,
+        dOptions
+      });
+    }
   }
 
   onChange = v => {
