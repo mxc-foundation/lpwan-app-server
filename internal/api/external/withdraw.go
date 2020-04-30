@@ -52,6 +52,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 	resp, err := withdrawClient.ModifyWithdrawFee(ctx, &m2mServer.ModifyWithdrawFeeRequest{
 		MoneyAbbr:   m2mServer.Money(req.MoneyAbbr),
 		WithdrawFee: req.WithdrawFee,
+		Password:    req.Password,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
