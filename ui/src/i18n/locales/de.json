@@ -795,7 +795,7 @@
       "cancel": "Cancel",
       "comment": "Comment",
       "done": "Done",
-      "contour_payments": "Contour Payments"
+      "contour_payments": "Contour Payments",
       "code_unmatch":"incorrect OTP code. please, try it again."
     },
     "system_settings": {

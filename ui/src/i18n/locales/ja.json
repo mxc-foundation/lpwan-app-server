@@ -795,7 +795,7 @@
       "cancel": "キャンセル",
       "comment": "コメント",
       "done": "完了",
-      "contour_payments": "輪郭の支払い"
+      "contour_payments": "輪郭の支払い",
       "code_unmatch":"OTPコードが正しくありません。もう一度やり直してください。"
     },
     "system_settings": {
