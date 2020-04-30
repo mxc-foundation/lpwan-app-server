@@ -795,6 +795,7 @@
       "cancel": "取消",
       "comment": "評論",
       "done": "完成",
+      "contour_payments": "輪廓付款",
       "code_unmatch":"incorrect OTP code. please, try it again."
     },
     "system_settings": {

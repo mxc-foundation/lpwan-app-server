@@ -78,7 +78,7 @@ class AdminDashboard extends Component {
 
         const user = await SessionStore.getUser();
         const orgId = await SessionStore.getOrganizationID();
-        //const topup = await  WalletStore.getMiningInfo(user.id, orgId);
+        const topup = await  WalletStore.getMiningInfo(user.id, orgId);
 
         this.setState({
             data: {
@@ -99,18 +99,7 @@ class AdminDashboard extends Component {
                         { "day": "S", "amount": 47500 },
                     ]
                 },
-                "topup": {
-                    "total": 200000,
-                    "data": [
-                        { "month": "Jun", "amount": 92000 },
-                        { "month": "Jul", "amount": 220000 },
-                        { "month": "Aug", "amount": 242000 },
-                        { "month": "Sep", "amount": 34000 },
-                        { "month": "Oct", "amount": 155000 },
-                        { "month": "Nov", "amount": 172050 },
-                        { "month": "Dec", "amount": 48500 },
-                    ]
-                },
+                topup,
                 "supernodeAmount": {
                     "total": 545000,
                     "data": [
@@ -213,14 +202,13 @@ class AdminDashboard extends Component {
 
             <Row>
                 <Col>
-
                     {this.state.loading ? <Loader /> : null}
-
                     <Row>
                         {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 3).map((widget, idx) => {
-                            if (idx < 3) {//edited 2020-04-23 MD-1240
+                            if (idx < 2) {//edited 2020-04-23 MD-1240
                                 return <Col key={idx} className="mb-0">
                                     <div className="position-relative">
+                                    <div className="card-coming-soon-2"></div> 
                                         <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                     </div>
                                 </Col>
@@ -233,6 +221,9 @@ class AdminDashboard extends Component {
                         })}
                     </Row>
                     <div className="position-relative">
+                        <div className="card-coming-soon-2">
+                            <h1 className="title">{i18n.t(`${packageNS}:menu.dashboard.coming_soon`)}</h1>
+                        </div> 
                         <Row>
                             {this.getWidgets(WIDGET_TYPE_STAT, 0, 5).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">

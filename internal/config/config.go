@@ -35,20 +35,19 @@ type Config struct {
 	}
 
 	SMTP struct {
-		Average struct{
+		Average struct {
 			Email    string `mapstructure:"email"`
 			Password string `mapstructure:"password"`
 			Host     string `mapstructure:"host"`
 			Port     string `mapstructure:"port"`
 		} `mapstructure:"average"`
 
-		Restricted struct{
+		Restricted struct {
 			Email    string `mapstructure:"email"`
 			Password string `mapstructure:"password"`
 			Host     string `mapstructure:"host"`
 			Port     string `mapstructure:"port"`
 		} `mapstructure:"restricted"`
-
 	} `mapstructure:"smtp"`
 
 	M2MServer struct {
@@ -145,8 +144,11 @@ type Config struct {
 		} `mapstructure:"branding"`
 
 		MiningSetUp struct {
-			Mining bool   `mapstructure:"mining"`
-			CMCKey string `mapstructure:"cmc_key"`
+			Mining                bool   `mapstructure:"mining"`
+			CMCKey                string `mapstructure:"cmc_key"`
+			HeartbeatOfflineLimit int64  `mapstructure:"heartbeat_offline_limit"`
+			GwOnlineLimit         int64  `mapstructure:"gw_online_limit"`
+			ExecuteTime           string `mapstructure:"execute_time"`
 		} `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
 
