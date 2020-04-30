@@ -1101,7 +1101,8 @@ func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatReques
 		}
 
 		// if offline longer than 30 mins, last heartbeat and first heartbeat = current heartbeat
-		if current_heartbeat-last_heartbeat > 1800 {
+		//if current_heartbeat-last_heartbeat > 1800 {
+		if current_heartbeat-last_heartbeat > config.C.ApplicationServer.MiningSetUp.HeartbeatOfflineLimit {
 			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			if err != nil {
 				log.WithError(err).Error("Update last heartbeat error")
