@@ -1,15 +1,21 @@
 syntax = "proto3";
 
-package gw_appserver;
-
-import "google/protobuf/empty.proto";
+package appserver_serves_gateway;
 
 service HeartbeatService {
-    rpc Heartbeat (HeartbeatRequest) returns (google.protobuf.Empty);
+    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
 }
 
 // MiningRequest sends gateway list to m2m
 message HeartbeatRequest {
     string gateway_mac = 1;
     string model = 2;
+    string config_hash = 3;
+    string os_version = 4;
+    string statistics = 5;
+}
+
+message HeartbeatResponse {
+    string new_firmware_link = 1;
+    string config = 2;
 }

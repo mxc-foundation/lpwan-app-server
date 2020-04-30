@@ -1062,7 +1062,7 @@ func unwrapASKey(ke *common.KeyEnvelope) (lorawan.AES128Key, error) {
 	return key, fmt.Errorf("unknown kek label: %s", ke.KekLabel)
 }
 
-func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatRequest) (*empty.Empty, error) {
+func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatRequest) (*gwapi.HeartbeatResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayMac)); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1105,20 +1105,20 @@ func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatReques
 			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			if err != nil {
 				log.WithError(err).Error("Update last heartbeat error")
-				return &empty.Empty{}, err
+				return &gwapi.HeartbeatResponse{}, err
 			}
 
 			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			if err != nil {
 				log.WithError(err).Error("Update first heartbeat error")
-				return &empty.Empty{}, err
+				return &gwapi.HeartbeatResponse{}, err
 			}
 		}
 
 		err = storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 		if err != nil {
 			log.WithError(err).Error("Update last heartbeat error")
-			return &empty.Empty{}, err
+			return &gwapi.HeartbeatResponse{}, err
 		}
 	} else {
 		// old gateway
@@ -1129,5 +1129,5 @@ func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatReques
 		}
 	}
 
-	return &empty.Empty{}, nil
+	return &gwapi.HeartbeatResponse{}, nil
 }
