@@ -177,7 +177,8 @@ class UserDashboard extends Component {
 
             {this.state.openAddWidget ? <AddWidget availableWidgets={userWidgetCatalog} closeModal={this.closeAddWidget}
                 addWidget={this.onAddWidget} addedWidgets={this.state.widgets} /> : null}
-
+            <div className="position-relative">
+                <div className="card-coming-soon-2"></div> 
             <Row>
                 <Col>
                     <div className="position-relative">
@@ -251,6 +252,7 @@ class UserDashboard extends Component {
                     </div>
                 </Col>
             </Row>
+            </div>
         </React.Fragment>
         );
     }
