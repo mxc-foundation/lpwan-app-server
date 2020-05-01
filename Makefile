@@ -63,6 +63,7 @@ ui/build:
 api:
 	@echo "Generating API code from .proto files"
 	@go generate api/appserver_serves_ui/api.go
+	@go generate api/appserver-serves-gateway/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
 	@echo "Generating static files"
