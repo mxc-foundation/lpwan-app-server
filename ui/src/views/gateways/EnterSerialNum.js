@@ -44,11 +44,11 @@ class EnterSerialNum extends Component {
     componentDidMount() {
         this.loadData();
       }
-    
+
     loadData = async () => {
         try {
             const res = await ServerInfoStore.getServerRegion();
-            
+
             this.setState({
             serverRegion: res.serverRegion
             });
@@ -116,17 +116,17 @@ class EnterSerialNum extends Component {
             const serial = QRCodeArray[0].split(':')[1].trim();
             let time = '';
             let model = '';
-            let version = ''; 
-            let mac = ''; 
+            let version = '';
+            let mac = '';
             if (serial.substring(0, 2).trim() !== 'M2X') {
                 model = QRCodeArray[1].split(':')[1].trim();
                 version = QRCodeArray[2].trim();
-                time = QRCodeArray[3].trim(); 
-                mac = QRCodeArray[4].substring(5, QRCodeArray[4].length).trim(); 
+                time = QRCodeArray[3].trim();
+                mac = QRCodeArray[4].substring(5, QRCodeArray[4].length).trim();
             } else {
                 time = QRCodeArray[1].split(':')[1];
                 model = QRCodeArray[2].split(':')[1].trim();
-                version = QRCodeArray[3].split(':')[1]; 
+                version = QRCodeArray[3].split(':')[1];
             }
 
             if(this.state.serverRegion === 'RESTRICTED' ){

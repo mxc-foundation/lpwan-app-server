@@ -49,7 +49,7 @@ class Topup extends Component {
         <OrgBreadCumb orgListCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
           orgNameCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
           organizationID={currentOrgID} items={[
-            { label: i18n.t(`${packageNS}:tr000568`), active: false },
+            { label: i18n.t(`${packageNS}:menu.common.contour_payments`), active: false },
             { label: i18n.t(`${packageNS}:menu.topup.topup`), active: true }]}></OrgBreadCumb>
       </TitleBar>
       <Row>

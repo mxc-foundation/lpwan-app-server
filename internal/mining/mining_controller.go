@@ -54,8 +54,11 @@ type Data struct {
 func Setup(conf config.Config) error {
 	log.Info("mining cron task begin...")
 	c := cron.New()
+	exeTime := config.C.ApplicationServer.MiningSetUp.ExecuteTime
+
 	// everyday 3 am
-	err := c.AddFunc("0 0 3 * * ?", func() {
+	//err := c.AddFunc("0 0 3 * * ?", func() {
+	err := c.AddFunc(exeTime, func() {
 		log.Info("Start token mining")
 		go func() {
 			err := tokenMining(context.Background(), conf)

@@ -317,7 +317,6 @@ class ListGateways extends Component {
             label={i18n.t(`${packageNS}:tr000277`)}
             icon={<i className="mdi mdi-plus mr-1 align-middle"></i>}
             onClick={this.toggle}
-            //to={`/organizations/${currentOrgID}/gateways/create`}
             to={`/organizations/${currentOrgID}/gateways/input-serial`}
           />
         </GatewayAdmin>}
