@@ -5,7 +5,9 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/as"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/gws"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/js"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/m2m"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
@@ -22,6 +24,14 @@ func Setup(conf config.Config) error {
 
 	if err := js.Setup(conf); err != nil {
 		return errors.Wrap(err, "setup join-server api error")
+	}
+
+	if err := gws.Setup(conf); err != nil {
+		return errors.Wrap(err, "setup gateway api error")
+	}
+
+	if err := m2m.Setup(conf); err != nil {
+		return errors.Wrap(err, "setup m2m api error")
 	}
 
 	return nil

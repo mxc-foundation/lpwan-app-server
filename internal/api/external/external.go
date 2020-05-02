@@ -94,7 +94,6 @@ func setupAPI(conf config.Config) error {
 	api.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	api.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI())
-	//api.RegisterProxyRequestServer(grpcServer, NewProxyRequestAPI(validator))
 	api.RegisterDSDeviceServiceServer(grpcServer, NewDeviceServerAPI(validator))
 	api.RegisterGSGatewayServiceServer(grpcServer, NewGatewayServerAPI(validator))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI(validator))
@@ -276,9 +275,6 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	if err := api.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register server info handler error")
 	}
-	//if err := pb.RegisterProxyRequestHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-	//	return nil, errors.Wrap(err, "register proxy request handler error")
-	//}
 	if err := api.RegisterDSDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register proxy request handler error")
 	}

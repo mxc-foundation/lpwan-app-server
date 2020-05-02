@@ -10,6 +10,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -28,6 +29,8 @@ import (
 )
 
 var gatewayNameRegexp = regexp.MustCompile(`^[\w-]+$`)
+var serialNumberOldGWValidator = regexp.MustCompile(`^MX([A-Z1-9]){7}$`)
+var serialNumberNewGWValidator = regexp.MustCompile(`^M2X([A-Z1-9]){8}$`)
 
 // Gateway represents a gateway.
 type Gateway struct {
@@ -50,6 +53,16 @@ type Gateway struct {
 	Model            string        `db:"model"`
 	FirstHeartbeat   int64         `db:"first_heartbeat"`
 	LastHeartbeat    int64         `db:"last_heartbeat"`
+	Config           string        `db:"config"`
+	OsVersion        string        `db:"os_version"`
+	Statistics       string        `db:"statistics"`
+	SerialNumber     string        `db:"sn"`
+}
+
+type GatewayFirmware struct {
+	Model            string        `db:"model"`
+	ResourceLink     string        `db:"resource_link"`
+	Updated          bool          `db:"updated"`
 }
 
 // GatewayLocation represents a gateway location.
@@ -108,11 +121,79 @@ func (g Gateway) Validate() error {
 	if !gatewayNameRegexp.MatchString(g.Name) {
 		return ErrGatewayInvalidName
 	}
+
+	if strings.HasPrefix(g.Model, "MX19") {
+		if !serialNumberNewGWValidator.MatchString(g.SerialNumber) {
+			return ErrGatewayInvalidSerialNumber
+		}
+	} else {
+		if !serialNumberOldGWValidator.MatchString(g.SerialNumber) {
+			return ErrGatewayInvalidSerialNumber
+		}
+	}
+
 	return nil
 }
 
+func AddGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string, err error) {
+	err = db.QueryRowx(`
+		insert into gateway_firmware (
+			model, 
+			resource_link, 
+			updated
+		) values ($1, $2, $3)
+		returning 
+		    model;
+		`,
+		gwFw.Model,
+		gwFw.ResourceLink,
+		gwFw.Updated).Scan(&model)
+
+	if err != nil {
+		return "", errors.Wrap(err, "AddGatewayFirmware")
+	}
+	return model, nil
+}
+
+func GetGatewayFirmware(db sqlx.Queryer, model string, forUpdate bool) (gwFw GatewayFirmware, err error) {
+	var fu string
+	if forUpdate {
+		fu = " for update"
+	}
+
+	err = sqlx.Get(db, &gwFw, "select * from gateway_firmware where model = $1 "+fu, model)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return gwFw, ErrDoesNotExist
+		}
+		return gwFw, err
+	}
+	return gwFw, nil
+}
+
+func UpdateGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string, err error) {
+	err = db.QueryRowx(`
+		update 
+		    gateway_firmware 
+		set 
+		    resource_link=$1, updated=$2 
+		where 
+		      model =$3
+		returning 
+		    model;
+		`,
+		gwFw.ResourceLink,
+		gwFw.Updated,
+		gwFw.Model).Scan(&model)
+
+	if err != nil {
+		return "", errors.Wrap(err, "UpdateGatewayFirmware")
+	}
+	return model, nil
+}
+
 // CreateGateway creates the given Gateway.
-func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
+func CreateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -143,8 +224,13 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 			altitude,
 		    model,
 		    first_heartbeat,
-		    last_heartbeat
-		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
+		    last_heartbeat,
+		    config,
+		    os_version,
+			sn,
+		    statistics
+		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
+		          $20, $21, $22, $23)`,
 		gw.MAC[:],
 		gw.CreatedAt,
 		gw.UpdatedAt,
@@ -164,7 +250,10 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 		gw.Model,
 		gw.FirstHeartbeat,
 		gw.LastHeartbeat,
-	)
+		gw.Config,
+		gw.OsVersion,
+		gw.SerialNumber,
+		gw.Statistics)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
 	}
@@ -200,7 +289,7 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 }
 
 // UpdateGateway updates the given Gateway.
-func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
+func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -222,11 +311,17 @@ func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 			last_seen_at = $12,
 			latitude = $13,
 			longitude = $14,
-			altitude = $15
+			altitude = $15,
+		    model = $16,
+		    first_heartbeat = $17,
+		    last_heartbeat = $18,
+		    config = $19,
+		    os_version = $20,
+		    statistics = $21
 		where
 			mac = $1`,
 		gw.MAC[:],
-		now,
+		time.Now().UTC(),
 		gw.Name,
 		gw.Description,
 		gw.OrganizationID,
@@ -240,7 +335,12 @@ func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 		gw.Latitude,
 		gw.Longitude,
 		gw.Altitude,
-	)
+		gw.Model,
+		gw.FirstHeartbeat,
+		gw.LastHeartbeat,
+		gw.Config,
+		gw.OsVersion,
+		gw.Statistics)
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
 	}
@@ -262,7 +362,7 @@ func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 }
 
 // UpdateFirstHeartbeat updates the first heartbeat by mac
-func UpdateFirstHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64, time int64) error {
+func UpdateFirstHeartbeat(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, time int64) error {
 	res, err := db.Exec(`
 		update gateway
 			set first_heartbeat = $1
@@ -286,7 +386,7 @@ func UpdateFirstHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64
 }
 
 // UpdateLastHeartbeat updates the last heartbeat by mac
-func UpdateLastHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64, time int64) error {
+func UpdateLastHeartbeat(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, time int64) error {
 	res, err := db.Exec(`
 		update gateway
 			set last_heartbeat = $1
@@ -398,6 +498,7 @@ func GetGateway(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64, forUpda
 		if err == sql.ErrNoRows {
 			return gw, ErrDoesNotExist
 		}
+		return gw, err
 	}
 	return gw, nil
 }
