@@ -41,10 +41,8 @@ func run(cmd *cobra.Command, args []string) error {
 		setLogLevel,
 		printStartMessage,
 		setupStorage,
-		setupNetworkServer,
-		setupProvisionServer,
+		setupClient,
 		migrateGatewayStats,
-		setupM2MServer,
 		setupIntegration,
 		setupSMTP,
 		setupCodec,
@@ -53,9 +51,9 @@ func run(cmd *cobra.Command, args []string) error {
 		setupMulticastSetup,
 		setupFragmentation,
 		setupFUOTA,
-		setupAPI,
 		setupMetrics,
 		setupMining,
+		setupAPI,
 	}
 
 	for _, t := range tasks {
@@ -141,16 +139,32 @@ func setupIntegration() error {
 	return nil
 }
 
-/* func setupRegSrv() error {
-	if err := regsrv.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup regsrv error")
-	}
-	return nil
-} */
-
 func setupCodec() error {
 	if err := codec.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup codec error")
+	}
+	return nil
+}
+
+func setupClient() error {
+	if err := setupNetworkServer(); err != nil {
+		return err
+	}
+
+	if err := setupProvisionServer(); err != nil {
+		return err
+	}
+
+	if err := setupM2MServer(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setupM2MServer() error {
+	if err := m2m_client.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup m2m-server error")
 	}
 	return nil
 }
@@ -174,13 +188,6 @@ func migrateGatewayStats() error {
 		return errors.Wrap(err, "migration error")
 	}
 
-	return nil
-}
-
-func setupM2MServer() error {
-	if err := m2m_client.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup m2m-server error")
-	}
 	return nil
 }
 
