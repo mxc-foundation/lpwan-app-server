@@ -29,6 +29,7 @@ import (
 	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/spf13/viper"
+	log "github.com/sirupsen/logrus"
 )
 
 // GatewayLocationsRedisKey defines the gateway location based on redis key
@@ -773,29 +774,25 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 
 // UpdateGwConfig gateway configuration file
 func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*pb.UpdateGwConfigResponse, error) {
-	/*	var mac lorawan.EUI64
-		if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
-		}
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
 
-		err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
-		if err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-		}
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	
+	if err := storage.UpdateGatewayConfigByGwId(ctx, storage.DB(), req.Conf, mac); err != nil {
+		log.WithError(err).Error("Update conf to gw failed")
+		return &pb.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
+			grpc.Errorf(codes.Unauthenticated, "cannot update gateway config: %s", err)
+	}
 
-		openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
-		if err != nil {
-			return &pb.UpdateGwConfigResponse{Status: "Update config failed."},
-				grpc.Errorf(codes.Unauthenticated, "cannot get gateway address from db: %s", err)
-		}
-
-		if err := mxConfUpdate(openVPNaddr, req.Conf); err != nil {
-			log.WithError(err).Error("Update conf to gw failed")
-			return &pb.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
-				grpc.Errorf(codes.Unauthenticated, "cannot update gateway config: %s", err)
-		}*/
-
-	return &pb.UpdateGwConfigResponse{}, nil
+	return &pb.UpdateGwConfigResponse{
+		Status: "Update gateway config file successful",
+	}, nil
 }
 
 // Register will first try to get the gateway from provision server

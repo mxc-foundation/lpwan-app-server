@@ -224,6 +224,28 @@ func UpdateGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string
 	return model, nil
 }
 
+func UpdateGatewayConfigByGwId(ctx context.Context, db sqlx.Ext, config string, mac lorawan.EUI64) error {
+	res, err := db.Exec(`
+		update gateway
+			set config = $1
+		where
+			mac = $2`,
+		config,
+		mac)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+
+	return nil
+}
+
 // CreateGateway creates the given Gateway.
 func CreateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 	if err := gw.Validate(); err != nil {
