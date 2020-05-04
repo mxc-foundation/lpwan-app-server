@@ -60,7 +60,6 @@ func Setup(conf config.Config) error {
 			gatewayFw := storage.GatewayFirmware{
 				Model:        v.Model,
 				ResourceLink: res.ResourceLink,
-				Updated:      res.NewFirmware,
 			}
 
 			model, err := storage.UpdateGatewayFirmware(storage.DB(), &gatewayFw)
