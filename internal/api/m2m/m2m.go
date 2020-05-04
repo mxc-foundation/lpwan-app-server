@@ -10,7 +10,7 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -24,10 +24,10 @@ var serviceName = "m2m server"
 func Setup(conf config.Config) error {
 	log.Info("Set up API for m2m server")
 
-	if err := listenWithCredentials(conf.ApplicationServer.APIForGateway.NewGateway.Bind,
-		conf.ApplicationServer.APIForGateway.NewGateway.CACert,
-		conf.ApplicationServer.APIForGateway.NewGateway.TLSCert,
-		conf.ApplicationServer.APIForGateway.NewGateway.TLSKey); err != nil {
+	if err := listenWithCredentials(conf.ApplicationServer.APIForM2M.Bind,
+		conf.ApplicationServer.APIForM2M.CACert,
+		conf.ApplicationServer.APIForM2M.TLSCert,
+		conf.ApplicationServer.APIForM2M.TLSKey); err != nil {
 		return err
 	}
 

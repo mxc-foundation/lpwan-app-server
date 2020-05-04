@@ -2,7 +2,7 @@ package email
 
 import (
 	"bytes"
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"time"

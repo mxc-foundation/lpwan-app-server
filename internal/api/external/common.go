@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
-	api "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )

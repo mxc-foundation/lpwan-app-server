@@ -15,7 +15,7 @@ import (
 
 	"github.com/lib/pq"
 
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
@@ -169,6 +169,38 @@ func GetGatewayFirmware(db sqlx.Queryer, model string, forUpdate bool) (gwFw Gat
 		return gwFw, err
 	}
 	return gwFw, nil
+}
+
+func GetGatewayFirmwareList(db sqlx.Queryer) (list []GatewayFirmware, err error) {
+	res, err := db.Query(`
+		select 
+			model, 
+			resource_link, 
+			updated 
+		from 
+		     gateway_firmware ;
+	`)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return list, ErrDoesNotExist
+		}
+		return nil, errors.Wrap(err, "GetGatewayFirmwareList")
+	}
+
+	defer res.Close()
+	for res.Next() {
+		gatewayFirmware := GatewayFirmware{}
+		err := res.Scan(&gatewayFirmware.Model,
+			&gatewayFirmware.ResourceLink,
+			&gatewayFirmware.Updated)
+		if err != nil {
+			return nil, errors.Wrap(err, "GetGatewayFirmwareList")
+		}
+
+		list = append(list, gatewayFirmware)
+	}
+
+	return list, nil
 }
 
 func UpdateGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string, err error) {

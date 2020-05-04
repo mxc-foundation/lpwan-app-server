@@ -3,18 +3,22 @@ package gws
 import (
 	"context"
 	"crypto/md5"
-	"github.com/brocaar/lorawan"
-	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"net"
 	"strings"
 	"time"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
+	"github.com/brocaar/lorawan"
+	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
+	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // Setup configures the package.
@@ -143,6 +147,26 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 	}
 
 	// update gateway with osVersion and statistics
+	if gw.OsVersion != req.OsVersion {
+		// update provisioning server
+		client, err := provisionserver.CreateClientWithCert(config.C.ProvisionServer.ProvisionServer,
+			config.C.ProvisionServer.CACert,
+			config.C.ProvisionServer.TLSCert,
+			config.C.ProvisionServer.TLSKey)
+		if err == nil {
+			_, err := client.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
+				Sn: gw.SerialNumber,
+				Mac: gw.MAC.String(),
+				OsVersion: req.OsVersion,
+			})
+			if err != nil {
+				log.WithError(err).Error("Failed to call API: UpdateGateway")
+			}
+		} else {
+			log.WithError(err).Error("Failed to create provisioning server client.")
+		}
+	}
+
 	gw.OsVersion = req.OsVersion
 	gw.Statistics = req.Statistics
 	if err := storage.UpdateGateway(ctx, storage.DB(), &gw); err != nil {
