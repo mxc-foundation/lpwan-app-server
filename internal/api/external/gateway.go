@@ -1065,3 +1065,7 @@ func mxConfUpdate(ip string, conf string) error {
 
 	return nil
 }
+
+func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoUpdateFirmwareRequest) (*pb.SetAutoUpdateFirmwareResponse, error) {
+	return &pb.SetAutoUpdateFirmwareResponse{}, nil
+}
