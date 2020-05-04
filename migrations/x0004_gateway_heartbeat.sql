@@ -12,5 +12,9 @@ create table gateway_firmware
     updated boolean not null default false
 );
 
+insert into gateway_firmware
+    (model)
+    values ('MX1901'), ('MX1902'), ('MX1903');
+
 -- +migrate Down
 

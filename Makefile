@@ -62,7 +62,7 @@ ui/build:
 
 api:
 	@echo "Generating API code from .proto files"
-	@go generate api/appserver_serves_ui/api.go
+	@go generate api/appserver-serves-ui/api.go
 	@go generate api/appserver-serves-gateway/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
@@ -73,8 +73,8 @@ internal/statics internal/migrations: static/swagger/api.swagger.json
 
 static/swagger/api.swagger.json:
 	@echo "Generating combined Swagger JSON"
-	@GOOS="" GOARCH="" go run api/appserver_serves_ui/swagger/main.go api/appserver_serves_ui/swagger > static/swagger/api.swagger.json
-	@cp api/appserver_serves_ui/swagger/*.json static/swagger
+	@GOOS="" GOARCH="" go run api/appserver-serves-ui/swagger/main.go api/appserver-serves-ui/swagger > static/swagger/api.swagger.json
+	@cp api/appserver-serves-ui/swagger/*.json static/swagger
 
 
 # shortcuts for development
