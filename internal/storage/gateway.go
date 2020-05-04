@@ -597,6 +597,22 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search
 	return gws, nil
 }
 
+func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (string, error) {
+	var config string
+	err := sqlx.Select(db, &config, `
+		select
+			config
+		from gateway
+		where mac = $1`,
+		mac,
+	)
+	if err != nil {
+		return "", errors.Wrap(err, "select error")
+	}
+
+	return config, nil
+}
+
 // GetFirstHeartbeat returns the first heartbeat
 func GetFirstHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (int64, error) {
 	var firstHeartbeat int64
