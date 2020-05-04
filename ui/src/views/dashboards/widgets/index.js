@@ -170,6 +170,11 @@ const userWidgetCatalog = [
         description: i18n.t(`${packageNS}:menu.dashboard.topup.description`),
     },
     {
+        type: WIDGET_TYPE_GRAPH, name: 'topup', label: i18n.t(`${packageNS}:menu.dashboard.topup.title`),
+        component: Topup, avatar: topupImg,
+        description: i18n.t(`${packageNS}:menu.dashboard.topup.description`),
+    },
+    {
         type: WIDGET_TYPE_STAT, name: 'totalUsers', label: i18n.t(`${packageNS}:menu.dashboard.totalUsers.title`),
         component: TotalUsers, avatar: statImg,
         description: i18n.t(`${packageNS}:menu.dashboard.totalUsers.description`),
