@@ -23,7 +23,7 @@ const Topup = (props) => {
 
     const orgId = SessionStore.getOrganizationID();
 
-    return <div className="card-box">
+    return <div className="card-box" style={{height: 385}}>
         <div className="float-right">
             <WidgetActions widget={props.widget} actionItems={[{ to: '#', label: 'Week' }]} onDelete={props.onDelete} />
         </div>
