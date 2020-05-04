@@ -753,46 +753,22 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 
 // GetGwConfig gets the gateway config file
 func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest) (*pb.GetGwConfigResponse, error) {
-	/*	var mac lorawan.EUI64
-		if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
-		}
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
 
-		err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
-		if err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-		}
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
 
-		openVPNaddr, err := storage.GetOpenVPNByMac(ctx, storage.DB(), mac)
-		if err != nil {
-			log.WithError(err).Error("cannot get openVPN address from DB")
-		}
+	gwConfig, err := storage.GetGatewayConfigByGwId(ctx, storage.DB(), mac)
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unavailable, "GetGwConfig/unable to get gateway config from DB", err)
+	}
 
-		message, err := mxConfDGet(ctx, openVPNaddr, "GGLC", 250)
-		if err != nil {
-			log.WithError(err).Error("cannot connect to gw")
-		}
-
-		comments := []string{" radio_1 provides clock to concentrator ", " dBm ", " 8 channels maximum ",
-			" dB ", " antenna gain, in dBi ", " [126..250] KHz ", " Lora MAC channel, 125kHz, all SF, 868.1 MHz ",
-			" Lora MAC channel, 125kHz, all SF, 868.3 MHz ", " Lora MAC channel, 125kHz, all SF, 868.5 MHz ",
-			" Lora MAC channel, 125kHz, all SF, 868.8 MHz ", " Lora MAC channel, 125kHz, all SF, 864.7 MHz ",
-			" Lora MAC channel, 125kHz, all SF, 864.9 MHz ", " Lora MAC channel, 125kHz, all SF, 865.1 MHz ",
-			" Lora MAC channel, 125kHz, all SF, 865.3 MHz ", " Lora MAC channel, 250kHz, SF7, 868.3 MHz ",
-			" FSK 50kbps channel, 868.8 MHz ", " TX gain table, index 0 ", " TX gain table, index 1 ", " TX gain table, index 2 ",
-			" TX gain table, index 3 ", " TX gain table, index 4 ", " TX gain table, index 5 ", " TX gain table, index 6 ",
-			" TX gain table, index 7 ", " TX gain table, index 8 ", " TX gain table, index 9 ", " TX gain table, index 10 ",
-			" TX gain table, index 11 ", " TX gain table, index 12 ", " TX gain table, index 13 ", " TX gain table, index 14 ",
-			" TX gain table, index 15 ", " change with default server address/ports, or overwrite in local_conf.json ",
-			" adjust the following parameters for your network ", " forward only valid packets ", " GPS configuration ",
-			" GPS reference coordinates "}
-
-		for _, v := range comments {
-			message = strings.Replace(message, v, "", -1)
-		}
-	*/
-
-	return &pb.GetGwConfigResponse{}, nil
+	return &pb.GetGwConfigResponse{Conf: gwConfig}, nil
 }
 
 // UpdateGwConfig gateway configuration file
