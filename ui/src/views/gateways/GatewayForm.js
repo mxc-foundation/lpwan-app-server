@@ -1,11 +1,11 @@
 import { Field, FieldArray, Form, Formik } from "formik";
 import React, { Component } from "react";
 import { Map, Marker } from "react-leaflet";
-import { Button, Card, CardBody, Col, FormGroup, FormText, Input, Label, Row } from "reactstrap";
+import { Button, Card, CardBody, Col, CustomInput, FormGroup, FormText, Input, Label, Row } from "reactstrap";
 import * as Yup from "yup";
 import AESKeyField from "../../components/FormikAESKeyField";
 import EUI64Field from "../../components/FormikEUI64Field";
-import { AsyncAutoComplete, ReactstrapInput } from "../../components/FormInputs";
+import { AsyncAutoComplete, ReactstrapCheckbox, ReactstrapPasswordInput, ReactstrapInput } from "../../components/FormInputs";
 import Loader from "../../components/Loader";
 import MapTileLayer from "../../components/MapTileLayer";
 import TitleBar from "../../components/TitleBar";
@@ -53,7 +53,7 @@ class GatewayForm extends Component {
     // Create Gateway
     if (!this.props.update) {
       this.setCurrentPosition();
-      return;
+      //return;
       // Update Gateway
     } else {
       this.setKVArrayBoards();
@@ -278,6 +278,7 @@ class GatewayForm extends Component {
   formikFormSchema = () => {
     let fieldsSchema = {
       // object: Yup.object().shape({
+      id: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
       name: Yup.string() //.trim().matches(/[\\w-]+/, i18n.t(`${packageNS}:tr000429`))
         .required(i18n.t(`${packageNS}:tr000431`)),
       description: Yup.string()
@@ -317,8 +318,16 @@ class GatewayForm extends Component {
     // TODO - call actual api here for now working with dummy conf object
     const conf = {
       SX1301_conf: {
+        spidev_path: "/dev/spidev1.0",
         lorawan_public: true,
         clksrc: 1,
+        antenna_gain: 2.5,
+        full_duplex: false,
+        precision_timestamp: {
+          enable: false,
+          max_ts_metrics: 255,
+          nb_symbols: 1
+        },
         lbt_cfg: {
           enable: true,
           rssi_target: -81,
@@ -334,7 +343,6 @@ class GatewayForm extends Component {
           ],
           sx127x_rssi_offset: -7
         },
-        antenna_gain: 2.5,
         radio_0: {
           enable: true,
           type: "SX1257",
@@ -392,19 +400,33 @@ class GatewayForm extends Component {
         tx_lut_15: { pa_gain: 3, mix_gain: 14, rf_power: 27, dig_gain: 0 }
       },
       gateway_conf: {
-        server_address: "192.168.0.7",
+        gateway_ID: "5eefcc4211910000",
+        /* change with default server address/ports */
+        server_address: "chirp.matchx.io",
         serv_port_up: 1700,
         serv_port_down: 1700,
+        /* adjust the following parameters for your network */
         keepalive_interval: 10,
         stat_interval: 30,
         push_timeout_ms: 100,
+        /* forward only valid packets */
         forward_crc_valid: true,
         forward_crc_error: false,
         forward_crc_disabled: false,
-        gps_tty_path: "/dev/ttyS1",
-        ref_latitude: 0,
-        ref_longitude: 0,
-        ref_altitude: 0
+        /* GPS configuration */
+        /*"gps_tty_path": "/dev/ttymxc6",*/
+        gps_tty_path: "/tmp/vgps1",
+        /* GPS reference coordinates */
+        ref_latitude: 0.0,
+        ref_longitude: 0.0,
+        ref_altitude: 0,
+        /* Beaconing parameters */
+        beacon_period: 0,
+        beacon_freq_hz: 869525000,
+        beacon_datarate: 9,
+        beacon_bw_hz: 125000,
+        beacon_power: 14,
+        beacon_infodesc: 0
       }
     };
 
@@ -444,8 +466,13 @@ class GatewayForm extends Component {
   }
 
   onLBTStatusChanged(status) {
+    console.log('status', status);
+    console.log('status', this.state.gatewayConfig);
     let conf = { ...this.state.gatewayConfig };
+    console.log('conf', conf);
+    console.log('conf', Object.keys(conf)[0]);
     conf[Object.keys(conf)[0]]["lbt_cfg"]["enable"] = status;
+
     this.setState({ gatewayConfig: conf });
   }
 
@@ -476,6 +503,23 @@ class GatewayForm extends Component {
     this.setState({ gatewayConfig: conf, gatewayConfigAntenna: antennaVal });
   }
 
+  /**
+   * On switch toggle
+   * @param {*} idx
+   * @param {*} e
+   */
+  onToggle(idx, e) {
+    let records = [...this.state.records];
+    records[idx]["enable"] = e.target.checked;
+    this.setState({ records });
+
+    if (this.props.onDataChanged) {
+      this.props.onDataChanged(records);
+    } else {
+      this.setState({ records });
+    }
+  }
+
   render() {
     const { object, loading } = this.state;
     let isLoading = loading;
@@ -497,7 +541,7 @@ class GatewayForm extends Component {
     }
     // console.log(object.discoveryEnabled);
     const discoveryEnabled = object.discoveryEnabled;
-    
+
     return (
       <React.Fragment>
         <Row>
@@ -511,6 +555,7 @@ class GatewayForm extends Component {
                   description: object.description || '',
                   discoveryEnabled: object.discoveryEnabled || false,
                   location: { altitude: object.location.altitude || 0 },
+                  autoUpdate: object.autoUpdate || false,
                   gatewayProfileID: object.gatewayProfileID || '',
                   networkServerID: object.networkServerID || '',
                   boards: (
@@ -632,7 +677,7 @@ class GatewayForm extends Component {
                                 label={i18n.t(`${packageNS}:tr000224`)}
                                 helpText={i18n.t(`${packageNS}:tr000227`)}
                                 // value={values.gatewayProfileID}
-                                getOption={this.getGatewayProfileOption}
+                                //getOption={this.getGatewayProfileOption}
                                 getOptions={this.getGatewayProfileOptions}
                                 setFieldValue={setFieldValue}
                                 inputProps={{
@@ -721,6 +766,19 @@ class GatewayForm extends Component {
                                 {object.location.altitude}
                               </div>
                             ) : null}
+                          <Field
+                            type="checkbox"
+                            label={'Auto update firmware'}
+                            name="autoUpdate"
+                            id="autoUpdate"
+                            value={values.isAdmin}
+
+                            component={ReactstrapCheckbox}
+                            onChange={handleChange}
+
+                            onBlur={handleBlur}
+                            helpText={'The firmware will be updated automatically.'}
+                          />
                         </Col>
                         <Col sm={12} lg={6}>
                           <Field
@@ -758,27 +816,27 @@ class GatewayForm extends Component {
                                 id="id"
                                 name="id"
                                 label={i18n.t(`${packageNS}:tr000074`)}
-                                // value={values.object.id}
-                                // onBlur={handleBlur}
+                                value={values.id}
+                                onBlur={handleBlur}
                                 required
                                 random
-                              // className={
-                              //   errors.object && errors.object.id
-                              //     ? 'is-invalid form-control'
-                              //     : ''
-                              // }
+                                className={
+                                  errors && errors.id
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
                               />
-                              {/* {
-                            errors.object && errors.object.id
-                              ? (
-                                <div
-                                  className="invalid-feedback"
-                                  style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
-                                >
-                                  {errors.object.id}
-                                </div>
-                              ) : null
-                          } */}
+                              {
+                                errors && errors.id
+                                  ? (
+                                    <div
+                                      className="invalid-feedback"
+                                      style={{ display: "block", color: "#ff5b5b", fontSize: "0.75rem", marginTop: "-0.75rem" }}
+                                    >
+                                      {errors.id}
+                                    </div>
+                                  ) : null
+                              }
                             </>
                           )}
 
@@ -811,9 +869,180 @@ class GatewayForm extends Component {
                           ) : null
                       } */}
                         </Col>
-                        
-                      </Row>
 
+                      </Row>
+                      <Row>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            id="server_address"
+                            name="server_address"
+                            type="text"
+                            value={values.server_address}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={'server_address'}
+                            helpText={'server_address'}
+                            component={ReactstrapInput}
+                            className={
+                              errors && errors.server_address
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                        </Col>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            id="keepalive_interval"
+                            name="keepalive_interval"
+                            type="text"
+                            value={values.keepalive_interval}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={'keepalive_interval'}
+                            helpText={'keepalive_interval'}
+                            component={ReactstrapInput}
+                            className={
+                              errors && errors.keepalive_interval
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                        </Col>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            id="stat_interval"
+                            name="stat_interval"
+                            type="text"
+                            value={values.stat_interval}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={'stat_interval'}
+                            helpText={'stat_interval'}
+                            component={ReactstrapInput}
+                            className={
+                              errors && errors.stat_interval
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                        </Col>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            id="push_timeout_ms"
+                            name="push_timeout_ms"
+                            type="text"
+                            value={values.push_timeout_ms}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={'push_timeout_ms'}
+                            helpText={'push_timeout_ms'}
+                            component={ReactstrapInput}
+                            className={
+                              errors && errors.push_timeout_ms
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                        </Col>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            id="serv_port_up"
+                            name="serv_port_up"
+                            type="text"
+                            value={values.serv_port_up}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={'serv_port_up'}
+                            helpText={'serv_port_up'}
+                            component={ReactstrapInput}
+                            className={
+                              errors && errors.serv_port_up
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                        </Col>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            id="serv_port_down"
+                            name="serv_port_down"
+                            type="text"
+                            value={values.serv_port_down}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={'serv_port_down'}
+                            helpText={'serv_port_down'}
+                            component={ReactstrapInput}
+                            className={
+                              errors && errors.serv_port_down
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                        </Col>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            id="gps_tty_path"
+                            name="gps_tty_path"
+                            type="text"
+                            value={values.gps_tty_path}
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            label={'gps_tty_path'}
+                            helpText={'gps_tty_path'}
+                            component={ReactstrapInput}
+                            className={
+                              errors && errors.gps_tty_path
+                                ? 'is-invalid form-control'
+                                : ''
+                            }
+                          />
+                        </Col>
+                        <Col sm={12} lg={6}>
+                          <Field
+                            helpText={this.state.object.helpText}
+                            label={i18n.t(`${packageNS}:tr000004`)}
+                            name="password"
+                            id="password"
+                            component={ReactstrapPasswordInput}
+                            onBlur={handleBlur}
+                          />
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col sm={12} lg={4}>
+                          <CustomInput
+                            type="switch"
+                            id={`switch-0`}
+                            name="forward_crc_valid"
+                            label="forward_crc_valid"
+                            checked={values.forward_crc_valid}
+                            onChange={e => this.onToggle('0', e)}
+                          />
+                        </Col>
+                        <Col sm={12} lg={4}>
+                          <CustomInput
+                            type="switch"
+                            id={`switch-1`}
+                            name="forward_crc_error"
+                            label="forward_crc_error"
+                            checked={values.forward_crc_error}
+                            onChange={e => this.onToggle('1', e)}
+                          />
+                        </Col>
+                        <Col sm={12} lg={4}>
+                          <CustomInput
+                            type="switch"
+                            id={`switch-2`}
+                            name="forward_crc_disabled"
+                            label="forward_crc_disabled"
+                            checked={values.forward_crc_disabled}
+                            onChange={e => this.onToggle('2', e)}
+                          />
+                        </Col>
+
+                      </Row>
+                      <Row>&nbsp;</Row>
                       <GatewayFormLBT
                         records={getLBTChannels(this.state.gatewayConfig)}
                         onDataChanged={this.onLBTDataChanged}
@@ -1077,27 +1306,27 @@ class GatewayForm extends Component {
                               type="button"
                               variant="outlined"
                               className="mb-2"
-                              style={{width: '275px'}}
+                              style={{ width: '275px' }}
                               onClick={() => { arrayHelpers.push({ fpgaID: '', fineTimestampKey: '' }); }}
                             >
                               {i18n.t(`${packageNS}:tr000234`)}
                             </Button>
                             {' '}
                             <Button
-                            type="submit"
-                            color="secondary"
-                            className="mb-2"
-                            style={{width: '275px'}}
+                              type="submit"
+                              color="secondary"
+                              className="mb-2"
+                              style={{ width: '275px' }}
                             //className="d-inline"
-                          // onClick={
-                          //   () => {
-                          //       resetLaraConfig().then(() => {
-                          //     })
-                          //   }
-                          // }
-                          >
-                            {i18n.t(`${packageNS}:menu.gateways.reset_lora_config`)}
-                          </Button>
+                            // onClick={
+                            //   () => {
+                            //       resetLaraConfig().then(() => {
+                            //     })
+                            //   }
+                            // }
+                            >
+                              {i18n.t(`${packageNS}:menu.gateways.reset_lora_config`)}
+                            </Button>
                           </div>
                         )}
                       />
@@ -1135,12 +1364,12 @@ class GatewayForm extends Component {
                         } */}
                       </div>
                       <Row>
-                      <Col lg={12} className="text-right">
-                      <Button
+                        <Col lg={12} className="text-right">
+                          <Button
                             type="submit"
                             color="primary"
                             //className="mr-2"
-                            style={{width: '100%'}}
+                            style={{ width: '100%' }}
                             disabled={
                               (errors && Object.keys(errors).length > 0) ||
                               isLoading ||
@@ -1155,9 +1384,9 @@ class GatewayForm extends Component {
                                 ? i18n.t(`${packageNS}:tr000614`)
                                 : i18n.t(`${packageNS}:tr000277`))}
                           </Button>
-                          
+
                         </Col>
-                        </Row>
+                      </Row>
                     </Form>
                   );
                 }}
