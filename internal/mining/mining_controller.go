@@ -45,7 +45,7 @@ type Data struct {
 			LastUpdate string  `json:"last_update"`
 		}
 		USD struct {
-			Price      string `json:"price"`
+			Price      float64 `json:"price"`
 			LastUpdate string `json:"last_update"`
 		}
 	}
@@ -119,13 +119,15 @@ func getUSDprice(conf config.Config) (float64, error) {
 }
 
 // getMXCprice returns amount of MXC in USD
-func GetMXCprice(conf config.Config, amount string) (price string, err error) {
+func GetMXCprice(conf config.Config, amount string) (price float64, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
 	if err != nil {
 		log.WithError(err).Error("CMC client error")
 		os.Exit(1)
 	}
+
+	log.Println("Amount :", amount)
 
 	q := url.Values{}
 	//q.Add("id", "2")
@@ -152,11 +154,14 @@ func GetMXCprice(conf config.Config, amount string) (price string, err error) {
 			log.Println("JSON unmarshal error: ", err)
 		}
 
+		log.Println("USD Price: ", cmc.Data.Quote.USD.Price)
+		log.Println("MXC Price: ", cmc.Data.Quote.MXC.Price)
+
 		return cmc.Data.Quote.USD.Price, nil
 	}
 
 	err = errors.New("GetMXCprice/Unable to get the MXC price from cmc")
-	return "", err
+	return 0, err
 }
 
 func tokenMining(ctx context.Context, conf config.Config) error {
