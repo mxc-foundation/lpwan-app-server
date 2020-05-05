@@ -107,7 +107,6 @@ release_image_gitlab:
     DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - export VERSION=$(git describe --tags|sed -e "s/^v//")
     - docker pull $CONTAINER_IMAGE
     - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
     - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
@@ -130,7 +129,6 @@ release_image_dockerhub:
     DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - export VERSION=$(git describe --tags|sed -e "s/^v//")
     - docker pull $CONTAINER_IMAGE
     - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
     - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
