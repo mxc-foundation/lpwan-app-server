@@ -1,7 +1,6 @@
 stages: 
   - test # unit tests and so on (native 2mins w. conflicts or dockerized 5mins w. clean env)
   - build # compile code without creating an image (should use buildserver native as only takes 7-10mins)
-  - image # create an actual docker image for deployments (doing same build as above but creating an image takes 20mins)
   - release-private # store the prev. compile image in gitlab registry for buildserver deployments (just tagging above image 2mins)
   - release-public  # store the same image in dockerhub registry for live server deployments (also just tagging above image 2mins)
   - deploy # deploy the same image on either, buildserver for QA or live servers for live (deploy via ssh needed to start up all containers 5mins)
@@ -23,7 +22,7 @@ react_test_frontend:
     - develop
     - buildserver
     - /crowdin/
-    - /l10n_buildserver/
+    - /l10n/
   tags:
     - kubernetes
 
@@ -43,7 +42,7 @@ syntax_test_backend:
     - develop
     - buildserver
     - /crowdin/
-    - /l10n_buildserver/
+    - /l10n/
   tags:
     - kubernetes
 
@@ -63,7 +62,7 @@ syntax_test_backend:
     - develop
     - buildserver
     - /crowdin/
-    - /l10n_buildserver/
+    - /l10n/
   tags:
     - kubernetes
     
@@ -75,7 +74,7 @@ variables:
   DOCKER_REPO: $DOCKER_REPO
   DOCKER_URL: $DOCKER_URL
 
-build_image: # this needs changing to native build to speed up 2-3 times
+build_image: 
   stage: build
   image: docker:19.03.0
   before_script: 
@@ -91,7 +90,7 @@ build_image: # this needs changing to native build to speed up 2-3 times
     - docker push $CONTAINER_IMAGE
   except:
     - /crowdin/
-    - /l10n_buildserver/
+    - /l10n/
   tags:
     - kubernetes
 
@@ -107,14 +106,14 @@ release_image_gitlab:
     DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - export VERSION=$(git describe --tags|sed -e "s/^v//")
+    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - docker pull $CONTAINER_IMAGE
     - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
     - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
   only:
-    - master # should really be this one only
-    - develop # but we keep this enabled too
-    - buildserver # and this to build image for buildserver deploy for QA
+    - master
+    - develop 
+    - buildserver
   tags:
     - kubernetes
 
@@ -130,7 +129,7 @@ release_image_dockerhub:
     DOCKER_TLS_CERTDIR: ""
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - export VERSION=$(git describe --tags|sed -e "s/^v//")
+    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - docker pull $CONTAINER_IMAGE
     - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
     - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
@@ -141,23 +140,7 @@ release_image_dockerhub:
   tags:
     - kubernetes
 
-.deploy_to_staging: #this needs migrating here from lpwan-server-docker project!!!
-  stage: deploy
-  script:
-    - sed -i "s/DOCKER_USER/$DOCKER_USER/" config
-    - sed -i "s/DOCKER_PASS/$DOCKER_PASS/" config
-    - ./mxp-supernode
-    - ls -l
-    - docker-compose up -d appserver
-  environment:
-    name: staging
-    url: http://35.246.213.251:8080
-  only:
-    - master
-  tags:
-    - buildserver
-
-trigger_qa_deploy: #until above is working use a simple multiproject trigger
+trigger_qa_deploy:
   stage: deploy
   image: alpine
   environment:
