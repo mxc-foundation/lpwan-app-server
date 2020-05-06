@@ -220,11 +220,12 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 
 	var macs []string
 
-	// update the first heartbeat = current_time
+	// update the first heartbeat = 0
 	for _, v := range mining_gws {
-		err := storage.UpdateFirstHeartbeat(ctx, storage.DB(), v, current_time)
+		//err := storage.UpdateFirstHeartbeat(ctx, storage.DB(), v, current_time)
+		err := storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), v)
 		if err != nil {
-			log.WithError(err).Error("tokenMining/update first heartbeat error")
+			log.WithError(err).Error("tokenMining/update first heartbeat to zero error")
 		}
 		mac := lorawan.EUI64.String(v)
 		macs = append(macs, mac)
