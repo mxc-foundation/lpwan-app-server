@@ -1,22 +1,23 @@
 package gws
 
 import (
+	"bytes"
 	"context"
 	"crypto/md5"
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"net"
 	"strings"
 	"time"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/lorawan"
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -110,27 +111,7 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 		return nil, status.Errorf(codes.Unauthenticated, "Request model does not match saved gateway.")
 	}
 
-	// compare config hash
-	h := md5.Sum([]byte(gw.Config))
-	configHash := string(h[:])
-	if configHash != req.ConfigHash {
-		response.Config = gw.Config
-	}
-
-	// check if firmware updated
-	firmware, err := storage.GetGatewayFirmware(storage.DB(), gw.Model, false)
-	if err != nil {
-		if err == storage.ErrDoesNotExist {
-			return nil, status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
-		}
-		log.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)
-		return nil, status.Errorf(codes.Unknown, "Failed to get firmware information for model: %s", gw.Model)
-	}
-
-	if firmware.Updated == true {
-		response.NewFirmwareLink = firmware.ResourceLink
-	}
-
+	// important: do this before config and firmware update
 	// mining : update heartbeat only for new gateways
 	if strings.HasPrefix(gw.Model, "MX19") {
 		currentHeartbeat := time.Now().Unix()
@@ -143,6 +124,37 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 			gw.FirstHeartbeat = currentHeartbeat
 		} else {
 			gw.LastHeartbeat = currentHeartbeat
+		}
+	}
+
+	// compare config hash
+	configHash := md5.Sum([]byte(gw.Config))
+	b := types.MD5SUM{}
+	if err := b.UnmarshalText([]byte(req.ConfigHash)); err != nil {
+		log.WithError(err).Errorf("Failed to unmarshal config hash: %s", req.ConfigHash)
+		return nil, status.Errorf(codes.DataLoss, "Failed to unmarshal config hash: %s", req.ConfigHash)
+	}
+
+	if bytes.Equal(configHash[:], b[:]) == false {
+		response.Config = gw.Config
+	}
+
+	// check if firmware updated
+	// TODO: check if auto-update is on first
+	if storage.AutoUpdate {
+		firmware, err := storage.GetGatewayFirmware(storage.DB(), gw.Model, false)
+		if err != nil {
+			if err == storage.ErrDoesNotExist {
+				return nil, status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
+			}
+			log.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)
+			return nil, status.Errorf(codes.Unknown, "Failed to get firmware information for model: %s", gw.Model)
+		}
+
+		if bytes.Equal(firmware.FirmwareHash[:], gw.FirmwareHash[:]) == false {
+			response.NewFirmwareLink = firmware.ResourceLink
+			// update gateway firmware hash as well
+			copy(gw.FirmwareHash[:], firmware.FirmwareHash[:])
 		}
 	}
 

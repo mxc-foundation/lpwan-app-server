@@ -5,19 +5,19 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/lib/pq"
-
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -57,12 +57,14 @@ type Gateway struct {
 	OsVersion        string        `db:"os_version"`
 	Statistics       string        `db:"statistics"`
 	SerialNumber     string        `db:"sn"`
+	FirmwareHash     types.MD5SUM  `db:"firmware_hash"`
 }
+var AutoUpdate = true
 
 type GatewayFirmware struct {
-	Model            string        `db:"model"`
-	ResourceLink     string        `db:"resource_link"`
-	Updated          bool          `db:"updated"`
+	Model        string       `db:"model"`
+	ResourceLink string       `db:"resource_link"`
+	FirmwareHash types.MD5SUM `db:"md5_hash"`
 }
 
 // GatewayLocation represents a gateway location.
@@ -140,14 +142,14 @@ func AddGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string, e
 		insert into gateway_firmware (
 			model, 
 			resource_link, 
-			updated
+			md5_hash
 		) values ($1, $2, $3)
 		returning 
 		    model;
 		`,
 		gwFw.Model,
 		gwFw.ResourceLink,
-		gwFw.Updated).Scan(&model)
+		gwFw.FirmwareHash[:]).Scan(&model)
 
 	if err != nil {
 		return "", errors.Wrap(err, "AddGatewayFirmware")
@@ -176,7 +178,7 @@ func GetGatewayFirmwareList(db sqlx.Queryer) (list []GatewayFirmware, err error)
 		select 
 			model, 
 			resource_link, 
-			updated 
+			md5_hash 
 		from 
 		     gateway_firmware ;
 	`)
@@ -189,13 +191,16 @@ func GetGatewayFirmwareList(db sqlx.Queryer) (list []GatewayFirmware, err error)
 
 	defer res.Close()
 	for res.Next() {
+		var tmp []byte
 		gatewayFirmware := GatewayFirmware{}
 		err := res.Scan(&gatewayFirmware.Model,
 			&gatewayFirmware.ResourceLink,
-			&gatewayFirmware.Updated)
+			&tmp)
 		if err != nil {
 			return nil, errors.Wrap(err, "GetGatewayFirmwareList")
 		}
+
+		copy(gatewayFirmware.FirmwareHash[:], tmp)
 
 		list = append(list, gatewayFirmware)
 	}
@@ -208,14 +213,14 @@ func UpdateGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string
 		update 
 		    gateway_firmware 
 		set 
-		    resource_link=$1, updated=$2 
+		    resource_link=$1, md5_hash=$2 
 		where 
 		      model =$3
 		returning 
 		    model;
 		`,
 		gwFw.ResourceLink,
-		gwFw.Updated,
+		gwFw.FirmwareHash[:],
 		gwFw.Model).Scan(&model)
 
 	if err != nil {
@@ -281,10 +286,9 @@ func CreateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 		    last_heartbeat,
 		    config,
 		    os_version,
-			sn,
-		    statistics
+			sn
 		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
-		          $20, $21, $22, $23)`,
+		          $20, $21, $22)`,
 		gw.MAC[:],
 		gw.CreatedAt,
 		gw.UpdatedAt,
@@ -306,8 +310,7 @@ func CreateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 		gw.LastHeartbeat,
 		gw.Config,
 		gw.OsVersion,
-		gw.SerialNumber,
-		gw.Statistics)
+		gw.SerialNumber)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
 	}
@@ -463,7 +466,7 @@ func UpdateLastHeartbeat(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, ti
 	return nil
 }
 
-func UpdateGatewayModel(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, model string) error  {
+func UpdateGatewayModel(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, model string) error {
 	res, err := db.Exec(`
 		update gateway
 			set model = $1

@@ -42,6 +42,7 @@ func run(cmd *cobra.Command, args []string) error {
 		printStartMessage,
 		setupStorage,
 		setupClient,
+		setupDefaultEnv,
 		migrateGatewayStats,
 		setupIntegration,
 		setupSMTP,
@@ -179,6 +180,13 @@ func setupNetworkServer() error {
 func setupProvisionServer() error {
 	if err := provisionserver.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup provisionserver error")
+	}
+	return nil
+}
+
+func setupDefaultEnv() error {
+	if err := storage.SetupDefaultGatewayProfile(); err != nil {
+		return errors.Wrap(err, "setup default gateway profile error")
 	}
 	return nil
 }
