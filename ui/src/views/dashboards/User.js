@@ -76,14 +76,11 @@ class UserDashboard extends Component {
 
         const user = await SessionStore.getUser();
         const orgId = await SessionStore.getOrganizationID();
-        //const topup = await  WalletStore.getMiningInfo(user.id, orgId);
+        const topup = await  WalletStore.getMiningInfo(user.id, orgId);
 
         this.setState({
             data: {
-                "topup": {
-                    "amount": 1235.09,
-                    "growth": "15%"
-                },
+                topup,
                 "supernodeAmount": {
                     "total": 545000,
                     "data": [
@@ -108,6 +105,7 @@ class UserDashboard extends Component {
                         { "day": "S", "amount": 145000 },
                     ]
                 },
+                
                 "earnedAmount": {
                     "total": 125,
                     "data": [
@@ -177,18 +175,16 @@ class UserDashboard extends Component {
 
             {this.state.openAddWidget ? <AddWidget availableWidgets={userWidgetCatalog} closeModal={this.closeAddWidget}
                 addWidget={this.onAddWidget} addedWidgets={this.state.widgets} /> : null}
-            <div className="position-relative">
-                <div className="card-coming-soon-2"></div> 
+            
             <Row>
                 <Col>
-                    <div className="position-relative">
                         {this.state.loading ? <Loader /> : null}
-
                         <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 1).map((widget, idx) => {
-                                if (idx < 3) { //edited 2020-04-23 MD-1240
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 0, 2).map((widget, idx) => {
+                                if (idx < 1) { //edited 2020-04-23 MD-1240
                                     return <Col key={idx} className="mb-0">
                                         <div className="position-relative">
+                                            <div className="card-coming-soon-2"></div> 
                                             <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                         </div>
                                     </Col>
@@ -199,27 +195,19 @@ class UserDashboard extends Component {
 
                                 }
                             })}
-                            <Col>
-                                <Row>
+                           
+                        </Row>
+                        <div className="position-relative">
+                            <div className="card-coming-soon-2"></div> 
+                            <Row>
                                     {statWidgets.map((widget, idx) => {
                                         return <Col lg={statWidgets.length > 2 ? 6 : 12} key={idx} className="mb-0">
                                             <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                         </Col>
                                     })}
                                 </Row>
-                            </Col>
-                        </Row>
-
                         <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 1, 3).map((widget, idx) => {
-                                return <Col key={idx} className="mb-0">
-                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
-                                </Col>
-                            })}
-                        </Row>
-
-                        <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 4, 1).map((widget, idx) => {
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 2, 3).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
                                     <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                 </Col>
@@ -235,6 +223,14 @@ class UserDashboard extends Component {
                         </Row>
 
                         <Row>
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 6, 1).map((widget, idx) => {
+                                return <Col key={idx} className="mb-0">
+                                    <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
+                                </Col>
+                            })}
+                        </Row>
+
+                        <Row>
                             {this.getWidgets(WIDGET_TYPE_MAP, 0, 1).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
                                     <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
@@ -243,16 +239,16 @@ class UserDashboard extends Component {
                         </Row>
 
                         <Row>
-                            {this.getWidgets(WIDGET_TYPE_GRAPH, 6, 2).map((widget, idx) => {
+                            {this.getWidgets(WIDGET_TYPE_GRAPH, 7, 2).map((widget, idx) => {
                                 return <Col key={idx} className="mb-0">
                                     <widget.component data={widget.data} widget={widget.meta} onDelete={this.onDeletewidget} />
                                 </Col>
                             })}
                         </Row>
-                    </div>
+                        </div>
                 </Col>
             </Row>
-            </div>
+            
         </React.Fragment>
         );
     }
