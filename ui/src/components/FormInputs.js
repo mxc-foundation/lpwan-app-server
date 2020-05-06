@@ -1,8 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import classNames from 'classnames';
 import { withRouter } from "react-router-dom";
 import AsyncSelect from 'react-select/async';
-import { CustomInput, FormFeedback, FormGroup, FormText, Input, InputGroup, InputGroupAddon, Label } from "reactstrap";
+import confirm from "reactstrap-confirm";
+import { CustomInput, FormFeedback, FormGroup, Row, FormText, Input, InputGroup, InputGroupAddon, Label, Alert, Button } from "reactstrap";
+import i18n, { packageNS } from '../i18n';
 
 const ReactstrapInput = (
     {
@@ -272,5 +274,70 @@ const ReactstrapPasswordInput = ({
     );
 }
 
+const ReactstrapRootPasswordInput = ({
+    field: { ...fields },
+    form: { touched, errors, setFieldTouched, ...rest },
+    helpText = false,
+    ...props
+}) => {
+    const [values, setValues] = React.useState({
+        password: fields.value ? fields.value : '',
+        modal: false,
+        showPassword: false,
+    });
 
-export { ReactstrapInput, ReactstrapCheckbox, ReactstrapRadio, ReactstrapSelect, ReactstrapInputGroup, AsyncAutoComplete, ReactstrapPasswordInput };
+    const handleChange = prop => event => {
+        setValues({ ...values, [prop]: event.target.value });
+        if (props.onChange) props.onChange(event.target.valu);
+        if (fields.onChange) fields.onChange(event);
+    };
+
+    const handleClickShowPassword = async () => {
+        let result = await confirm({
+            title: (
+                <>
+                    <strong>{i18n.t(`${packageNS}:tr000620`)}</strong>!
+                </>
+            ),
+            message: (<><Row>{i18n.t(`${packageNS}:tr000621`)}</Row><Row style={{marginTop:10}}>{i18n.t(`${packageNS}:tr000622`)}</Row></>),
+            confirmText: i18n.t(`${packageNS}:tr000623`),
+            confirmColor: "danger",
+            cancelColor: "link text-primary"
+        });
+        
+        if(result){
+            setValues({ ...values, showPassword: !values.showPassword });
+        }else{
+            return;
+        }
+    };
+
+    const handleMouseDownPassword = event => {
+        event.preventDefault();
+    };
+
+    
+    return (
+        <FormGroup>
+            <Label for={props.id}>{props.label}</Label>
+            <InputGroup>
+                <Input {...props} {...fields} type={values.showPassword ? 'text' : 'password'} defaultValue={values.password}
+                    onChange={handleChange('password')} invalid={Boolean(touched[fields.name] && errors[fields.name])} />
+
+                {touched[fields.name] && errors[fields.name] ? <FormFeedback className="order-last">{errors[fields.name]}</FormFeedback> : null}
+
+                <InputGroupAddon addonType="append">
+                    <button className="btn btn-secondary" type="button" onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword}>
+                        {values.showPassword ? <i className="mdi mdi-eye"></i> : <i className="mdi mdi-eye-off"></i>}
+                    </button>
+                </InputGroupAddon>
+            </InputGroup>
+            
+            {helpText && <FormText color="muted">{helpText}</FormText>}
+        </FormGroup>
+    );
+}
+
+
+
+export { ReactstrapInput, ReactstrapCheckbox, ReactstrapRadio, ReactstrapSelect, ReactstrapInputGroup, AsyncAutoComplete, ReactstrapPasswordInput, ReactstrapRootPasswordInput };

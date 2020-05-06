@@ -5,7 +5,7 @@ import { Button, Card, CardBody, Col, CustomInput, FormGroup, FormText, Input, L
 import * as Yup from "yup";
 import AESKeyField from "../../components/FormikAESKeyField";
 import EUI64Field from "../../components/FormikEUI64Field";
-import { AsyncAutoComplete, ReactstrapCheckbox, ReactstrapPasswordInput, ReactstrapInput } from "../../components/FormInputs";
+import { AsyncAutoComplete, ReactstrapCheckbox, ReactstrapRootPasswordInput, ReactstrapPasswordInput, ReactstrapInput } from "../../components/FormInputs";
 import Loader from "../../components/Loader";
 import MapTileLayer from "../../components/MapTileLayer";
 import TitleBar from "../../components/TitleBar";
@@ -17,6 +17,7 @@ import NetworkServerStore from "../../stores/NetworkServerStore";
 import GatewayFormClassB from "./GatewayFormClassB";
 import GatewayFormLBT from "./GatewayFormLBT";
 import GatewayFormMacChannels from "./GatewayFormMacChannels";
+import gatewayConfig from './gatewayConfig.json';
 import { getAntennaGain, getChannelsWithFrequency, getLBTChannels, getLBTConfigStatus } from "./utils";
 
 
@@ -58,7 +59,8 @@ class GatewayForm extends Component {
     } else {
       this.setKVArrayBoards();
     }
-
+    
+    //console.log('gatewayConfig.json', gatewayConfig);
     this.loadGatewayConfig();
     this.loadClassBConfig();
   }
@@ -437,17 +439,127 @@ class GatewayForm extends Component {
   }
 
   loadClassBConfig() {
-    const conf = [
-      {
-        beacon_period: "0 868.2 9",
-        beacon_freq: "125 0 14",
-        beacon_datarate: "",
-        beacon_bandwidth: "",
-        beacon_power: "",
-        beacon_info: ""
+    const conf = {
+      SX1301_conf: {
+        spidev_path: "/dev/spidev1.0",
+        lorawan_public: true,
+        clksrc: 1,
+        antenna_gain: 2.5,
+        full_duplex: false,
+        precision_timestamp: {
+          enable: false,
+          max_ts_metrics: 255,
+          nb_symbols: 1
+        },
+        lbt_cfg: {
+          enable: true,
+          rssi_target: -81,
+          chan_cfg: [
+            { freq_hz: 868100000, scan_time_us: 5000 },
+            { freq_hz: 868300000, scan_time_us: 5000 },
+            { freq_hz: 868500000, scan_time_us: 5000 },
+            { freq_hz: 868800000, scan_time_us: 5000 },
+            { freq_hz: 864700000, scan_time_us: 5000 },
+            { freq_hz: 864900000, scan_time_us: 5000 },
+            { freq_hz: 865100000, scan_time_us: 5000 },
+            { freq_hz: 869525000, scan_time_us: 5000 }
+          ],
+          sx127x_rssi_offset: -7
+        },
+        radio_0: {
+          enable: true,
+          type: "SX1257",
+          freq: 864900000,
+          rssi_offset: -166,
+          tx_enable: true,
+          tx_notch_freq: 129000,
+          tx_freq_min: 863000000,
+          tx_freq_max: 870000000
+        },
+        radio_1: {
+          enable: true,
+          type: "SX1257",
+          freq: 868500000,
+          rssi_offset: -166,
+          tx_enable: false
+        },
+        chan_multiSF_0: { enable: true, radio: 1, if: -400000 },
+        chan_multiSF_1: { enable: true, radio: 1, if: -200000 },
+        chan_multiSF_2: { enable: true, radio: 1, if: 0 },
+        chan_multiSF_3: { enable: true, radio: 1, if: 300000 },
+        chan_multiSF_4: { enable: true, radio: 0, if: -200000 },
+        chan_multiSF_5: { enable: true, radio: 0, if: 0 },
+        chan_multiSF_6: { enable: true, radio: 0, if: 200000 },
+        chan_multiSF_7: { enable: true, radio: 0, if: 400000 },
+        chan_Lora_std: {
+          enable: true,
+          radio: 1,
+          if: -200000,
+          bandwidth: 250000,
+          spread_factor: 7
+        },
+        chan_FSK: {
+          enable: true,
+          radio: 1,
+          if: 300000,
+          bandwidth: 125000,
+          datarate: 50000
+        },
+        tx_lut_0: { pa_gain: 0, mix_gain: 8, rf_power: -6, dig_gain: 2 },
+        tx_lut_1: { pa_gain: 0, mix_gain: 11, rf_power: -3, dig_gain: 3 },
+        tx_lut_2: { pa_gain: 0, mix_gain: 11, rf_power: 0, dig_gain: 1 },
+        tx_lut_3: { pa_gain: 0, mix_gain: 14, rf_power: 3, dig_gain: 0 },
+        tx_lut_4: { pa_gain: 1, mix_gain: 11, rf_power: 6, dig_gain: 3 },
+        tx_lut_5: { pa_gain: 1, mix_gain: 11, rf_power: 10, dig_gain: 0 },
+        tx_lut_6: { pa_gain: 1, mix_gain: 13, rf_power: 11, dig_gain: 2 },
+        tx_lut_7: { pa_gain: 1, mix_gain: 13, rf_power: 12, dig_gain: 1 },
+        tx_lut_8: { pa_gain: 1, mix_gain: 14, rf_power: 13, dig_gain: 1 },
+        tx_lut_9: { pa_gain: 1, mix_gain: 14, rf_power: 14, dig_gain: 0 },
+        tx_lut_10: { pa_gain: 2, mix_gain: 9, rf_power: 16, dig_gain: 0 },
+        tx_lut_11: { pa_gain: 2, mix_gain: 12, rf_power: 20, dig_gain: 1 },
+        tx_lut_12: { pa_gain: 2, mix_gain: 13, rf_power: 23, dig_gain: 0 },
+        tx_lut_13: { pa_gain: 1, mix_gain: 10, rf_power: 25, dig_gain: 1 },
+        tx_lut_14: { pa_gain: 3, mix_gain: 12, rf_power: 26, dig_gain: 2 },
+        tx_lut_15: { pa_gain: 3, mix_gain: 14, rf_power: 27, dig_gain: 0 }
+      },
+      gateway_conf: {
+        gateway_ID: "5eefcc4211910000",
+        /* change with default server address/ports */
+        server_address: "chirp.matchx.io",
+        serv_port_up: 1700,
+        serv_port_down: 1700,
+        /* adjust the following parameters for your network */
+        keepalive_interval: 10,
+        stat_interval: 30,
+        push_timeout_ms: 100,
+        /* forward only valid packets */
+        forward_crc_valid: true,
+        forward_crc_error: false,
+        forward_crc_disabled: false,
+        /* GPS configuration */
+        /*"gps_tty_path": "/dev/ttymxc6",*/
+        gps_tty_path: "/tmp/vgps1",
+        /* GPS reference coordinates */
+        ref_latitude: 0.0,
+        ref_longitude: 0.0,
+        ref_altitude: 0,
+        /* Beaconing parameters */
+        beacon_period: 0,
+        beacon_freq_hz: 869525000,
+        beacon_datarate: 9,
+        beacon_bw_hz: 125000,
+        beacon_power: 14,
+        beacon_infodesc: 0
       }
-    ];
-    this.setState({ classBConfig: conf });
+    };;
+    let classBConfig = {beacon_period : conf.gateway_conf.beacon_period};
+    classBConfig.beacon_freq_hz = conf.gateway_conf.beacon_freq_hz;
+    classBConfig.beacon_datarate = conf.gateway_conf.beacon_datarate;
+    classBConfig.beacon_bw_hz = conf.gateway_conf.beacon_bw_hz;
+    classBConfig.beacon_power = conf.gateway_conf.beacon_power;
+    classBConfig.beacon_infodesc = conf.gateway_conf.beacon_infodesc;
+    this.setState({ classBConfig });
+    console.log('this.state.classBConfig',this.state.classBConfig);
   }
   /**
    * On lbt data changed
@@ -509,15 +621,16 @@ class GatewayForm extends Component {
    * @param {*} e
    */
   onToggle(idx, e) {
-    let records = [...this.state.records];
-    records[idx]["enable"] = e.target.checked;
+    let records = this.state.gatewayConfig;
+    console.log('records', records);
+    records.gateway_conf[idx] = e.target.checked;
     this.setState({ records });
-
-    if (this.props.onDataChanged) {
+    
+    /* if (this.props.onDataChanged) {
       this.props.onDataChanged(records);
     } else {
       this.setState({ records });
-    }
+    }  */
   }
 
   render() {
@@ -880,7 +993,7 @@ class GatewayForm extends Component {
                             value={values.server_address}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            label={'server_address'}
+                            label={'Server Address'}
                             helpText={'server_address'}
                             component={ReactstrapInput}
                             className={
@@ -894,11 +1007,11 @@ class GatewayForm extends Component {
                           <Field
                             id="keepalive_interval"
                             name="keepalive_interval"
-                            type="text"
+                            type="number"
                             value={values.keepalive_interval}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            label={'keepalive_interval'}
+                            label={'Keepalive Interval'}
                             helpText={'keepalive_interval'}
                             component={ReactstrapInput}
                             className={
@@ -912,11 +1025,11 @@ class GatewayForm extends Component {
                           <Field
                             id="stat_interval"
                             name="stat_interval"
-                            type="text"
+                            type="number"
                             value={values.stat_interval}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            label={'stat_interval'}
+                            label={'Stat Interval'}
                             helpText={'stat_interval'}
                             component={ReactstrapInput}
                             className={
@@ -930,11 +1043,11 @@ class GatewayForm extends Component {
                           <Field
                             id="push_timeout_ms"
                             name="push_timeout_ms"
-                            type="text"
+                            type="number"
                             value={values.push_timeout_ms}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            label={'push_timeout_ms'}
+                            label={'Push Timeout(ms)'}
                             helpText={'push_timeout_ms'}
                             component={ReactstrapInput}
                             className={
@@ -948,11 +1061,11 @@ class GatewayForm extends Component {
                           <Field
                             id="serv_port_up"
                             name="serv_port_up"
-                            type="text"
+                            type="number"
                             value={values.serv_port_up}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            label={'serv_port_up'}
+                            label={'Serv Port Up'}
                             helpText={'serv_port_up'}
                             component={ReactstrapInput}
                             className={
@@ -966,11 +1079,11 @@ class GatewayForm extends Component {
                           <Field
                             id="serv_port_down"
                             name="serv_port_down"
-                            type="text"
+                            type="number"
                             value={values.serv_port_down}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            label={'serv_port_down'}
+                            label={'Serv Port Down'}
                             helpText={'serv_port_down'}
                             component={ReactstrapInput}
                             className={
@@ -988,7 +1101,7 @@ class GatewayForm extends Component {
                             value={values.gps_tty_path}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            label={'gps_tty_path'}
+                            label={'GPS TTY Path'}
                             helpText={'gps_tty_path'}
                             component={ReactstrapInput}
                             className={
@@ -1000,11 +1113,12 @@ class GatewayForm extends Component {
                         </Col>
                         <Col sm={12} lg={6}>
                           <Field
+                            style={{color:'red'}}
                             helpText={this.state.object.helpText}
-                            label={i18n.t(`${packageNS}:tr000004`)}
+                            label={(<span style={{color:'red'}}>{i18n.t(`${packageNS}:tr000619`)}</span>)}
                             name="password"
                             id="password"
-                            component={ReactstrapPasswordInput}
+                            component={ReactstrapRootPasswordInput}
                             onBlur={handleBlur}
                           />
                         </Col>
@@ -1017,7 +1131,7 @@ class GatewayForm extends Component {
                             name="forward_crc_valid"
                             label="forward_crc_valid"
                             checked={values.forward_crc_valid}
-                            onChange={e => this.onToggle('0', e)}
+                            onChange={e => this.onToggle('forward_crc_valid', e)}
                           />
                         </Col>
                         <Col sm={12} lg={4}>
@@ -1027,7 +1141,7 @@ class GatewayForm extends Component {
                             name="forward_crc_error"
                             label="forward_crc_error"
                             checked={values.forward_crc_error}
-                            onChange={e => this.onToggle('1', e)}
+                            onChange={e => this.onToggle('forward_crc_error', e)}
                           />
                         </Col>
                         <Col sm={12} lg={4}>
@@ -1037,7 +1151,7 @@ class GatewayForm extends Component {
                             name="forward_crc_disabled"
                             label="forward_crc_disabled"
                             checked={values.forward_crc_disabled}
-                            onChange={e => this.onToggle('2', e)}
+                            onChange={e => this.onToggle('forward_crc_disabled', e)}
                           />
                         </Col>
 
