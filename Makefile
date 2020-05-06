@@ -1,6 +1,6 @@
 .PHONY: build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
-VERSION := $(shell git describe --tags --always |sed -e "s/^v//")
+VERSION := $(shell git describe --tags --always --long |sed -e "s/^v//")
 
 build: internal/statics internal/migrations
 	mkdir -p build cache
