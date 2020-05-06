@@ -5,7 +5,7 @@ stages:
   - release-public
   - deploy
 
-react_test_frontend:
+.react_test_frontend:
   image: golang:1.12-alpine
   stage: test
   before_script:
@@ -24,7 +24,7 @@ react_test_frontend:
   tags:
     - kubernetes
 
-syntax_test_backend:
+.syntax_test_backend:
   image: golang:1.12-alpine
   stage: test
   before_script: 
@@ -74,11 +74,12 @@ build_image:
   variables:
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
-    VERSION: ${git describe --tags --always --long |sed -e "s/^v//"}
   script:
+    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - echo $CONTAINER_IMAGE
     - echo $VERSION
     - echo $SERVICE_NAME
+    - git describe --tags --always --long |sed -e "s/^v//"
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
