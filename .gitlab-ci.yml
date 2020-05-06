@@ -98,7 +98,7 @@ tag_gitlab_image:
   variables:
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
-    VERSION: ${git describe --tags --always --long |sed -e "s/^v//"}
+    VERSION: $(git describe --tags --always --long |sed -e "s/^v//")
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker pull $CONTAINER_IMAGE
@@ -124,21 +124,12 @@ tag_dockerhub_image:
   variables:
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
-<<<<<<< HEAD
-    VERSION: ${git describe --tags --always --long |sed -e "s/^v//"}
-=======
-    GIT_STRATEGY: none
-    DOCKER_USER: $DOCKER_USER
-    DOCKER_PASS: $DOCKER_PASS
-    DOCKER_REPO: $DOCKER_REPO
-    DOCKER_URL: $DOCKER_URL
->>>>>>> 68eb68016b36ebd774333c7970a218313af74cc2
+    VERSION: $(git describe --tags --always --long |sed -e "s/^v//")
   script:
     - echo $CONTAINER_IMAGE
     - echo $VERSION
     - echo $SERVICE_NAME
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - docker pull $CONTAINER_IMAGE
     - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
     - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
