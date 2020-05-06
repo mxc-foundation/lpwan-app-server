@@ -1,15 +1,13 @@
 stages: 
-  - test # unit tests and so on (native 2mins w. conflicts or dockerized 5mins w. clean env)
-  - build # compile code without creating an image (should use buildserver native as only takes 7-10mins)
-  - release-private # store the prev. compile image in gitlab registry for buildserver deployments (just tagging above image 2mins)
-  - release-public  # store the same image in dockerhub registry for live server deployments (also just tagging above image 2mins)
-  - deploy # deploy the same image on either, buildserver for QA or live servers for live (deploy via ssh needed to start up all containers 5mins)
+  - test 
+  - build
+  - release-private
+  - release-public
+  - deploy
 
 react_test_frontend:
   image: golang:1.12-alpine
   stage: test
-  environment:
-    name: development
   before_script:
     - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
   script:
@@ -29,8 +27,6 @@ react_test_frontend:
 syntax_test_backend:
   image: golang:1.12-alpine
   stage: test
-  environment:
-    name: development
   before_script: 
     - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
     - go get -u golang.org/x/lint/golint
@@ -46,11 +42,9 @@ syntax_test_backend:
   tags:
     - kubernetes
 
-.security_test_backend:
+.security_test_backend: # disabled until upgraded to go 1.13
   image: golang:1.12-alpine
   stage: test
-  environment:
-    name: development
   before_script: 
     - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
     - go get github.com/securego/gosec/cmd/gosec
@@ -67,14 +61,10 @@ syntax_test_backend:
     - kubernetes
     
 variables:
-  SERVICE_NAME: $APP_NAME
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  DOCKER_USER: $DOCKER_USER
-  DOCKER_PASS: $DOCKER_PASS
-  DOCKER_REPO: $DOCKER_REPO
-  DOCKER_URL: $DOCKER_URL
+  SERVICE_NAME: $APP_NAME
 
-build_image: 
+build_image:
   stage: build
   image: docker:19.03.0
   before_script: 
@@ -98,7 +88,7 @@ build_image:
   tags:
     - kubernetes
 
-release_image_gitlab:
+tag_gitlab_image:
   stage: release-private
   image: docker:19.03.0
   before_script: 
@@ -119,12 +109,12 @@ release_image_gitlab:
     - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
   only:
     - master
-    - develop 
+    - develop
     - buildserver
   tags:
     - kubernetes
 
-release_image_dockerhub:
+tag_dockerhub_image:
   stage: release-public
   image: docker:19.03.0
   before_script: 
@@ -134,7 +124,15 @@ release_image_dockerhub:
   variables:
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
+<<<<<<< HEAD
     VERSION: ${git describe --tags --always --long |sed -e "s/^v//"}
+=======
+    GIT_STRATEGY: none
+    DOCKER_USER: $DOCKER_USER
+    DOCKER_PASS: $DOCKER_PASS
+    DOCKER_REPO: $DOCKER_REPO
+    DOCKER_URL: $DOCKER_URL
+>>>>>>> 68eb68016b36ebd774333c7970a218313af74cc2
   script:
     - echo $CONTAINER_IMAGE
     - echo $VERSION
@@ -146,12 +144,11 @@ release_image_dockerhub:
     - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
     - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
   only:
-    - tags
     - master
   tags:
     - kubernetes
 
-trigger_qa_deploy:
+deploy_review: 
   stage: deploy
   image: alpine
   environment:
@@ -164,4 +161,4 @@ trigger_qa_deploy:
   only:
     - buildserver
   tags:
-    - buildserver
+    - kubernetes
