@@ -62,6 +62,7 @@ syntax_test_backend:
     
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  SERVICE_NAME: $APP_NAME
 
 build_image:
   stage: build
@@ -144,20 +145,5 @@ deploy_review:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
     - buildserver
-  tags:
-    - kubernetes
-
-deploy_preprod: 
-  stage: deploy
-  image: alpine
-  environment:
-    name: preprod
-    url: $PREPRODURL
-  before_script: 
-    - apk add --no-cache curl
-  script:
-    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHPREPROD https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
-  only:
-    - tags
   tags:
     - kubernetes
