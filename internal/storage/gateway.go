@@ -502,6 +502,7 @@ func GetLastHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (
 
 func GetGatewayMiningList(ctx context.Context, db sqlx.Queryer, time int64) ([]lorawan.EUI64, error) {
 	var macs []lorawan.EUI64
+	// should be 10 mins
 	limit := config.C.ApplicationServer.MiningSetUp.GwOnlineLimit
 
 	err := sqlx.Select(db, &macs, `
