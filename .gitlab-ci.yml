@@ -84,7 +84,11 @@ build_image:
   variables:
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
+    VERSION: ${git describe --tags --always --long |sed -e "s/^v//"}
   script:
+    - echo $CONTAINER_IMAGE
+    - echo $VERSION
+    - echo $SERVICE_NAME
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build --pull -t $CONTAINER_IMAGE .
     - docker push $CONTAINER_IMAGE
@@ -104,10 +108,13 @@ release_image_gitlab:
   variables:
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
+    VERSION: ${git describe --tags --always --long |sed -e "s/^v//"}
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - docker pull $CONTAINER_IMAGE
+    - echo $CONTAINER_IMAGE
+    - echo $VERSION
+    - echo $SERVICE_NAME
     - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
     - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
   only:
@@ -127,7 +134,11 @@ release_image_dockerhub:
   variables:
     DOCKER_HOST: tcp://localhost:2375
     DOCKER_TLS_CERTDIR: ""
+    VERSION: ${git describe --tags --always --long |sed -e "s/^v//"}
   script:
+    - echo $CONTAINER_IMAGE
+    - echo $VERSION
+    - echo $SERVICE_NAME
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - docker pull $CONTAINER_IMAGE
