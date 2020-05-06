@@ -1,7 +1,9 @@
 package storage
 
 import (
+	"context"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"strings"
 	"time"
 
@@ -116,6 +118,56 @@ func Setup(c config.Config) error {
 			return errors.Wrap(err, "storage: applying PostgreSQL data migrations error")
 		}
 		log.WithField("count", n).Info("storage: PostgreSQL data migrations applied")
+	}
+
+
+	return nil
+}
+
+func SetupDefaultGatewayProfile() error {
+	// get default network server
+	networkServerID := int64(1)
+	ctx := context.Background()
+	n, err := GetNetworkServer(ctx, DB(), networkServerID)
+	if err != nil {
+		return errors.Wrap(err, "No default network server found")
+	}
+
+	// create default gateway profile id
+	count, err := GetGatewayProfileCountForNetworkServerID(ctx, DB(), networkServerID)
+	if err != nil && err != ErrDoesNotExist {
+		return errors.Wrap(err, "Failed to load gateway profiles")
+	}
+
+	if count != 0 {
+		// check if default gateway profile already exists
+		gpList, err := GetGatewayProfilesForNetworkServerID(ctx, DB(), networkServerID, count, 0)
+		if err != nil {
+			return errors.Wrap(err, "Failed to load gateway profiles")
+		}
+
+		for _, v := range gpList {
+			if v.Name == "default_gateway_profile" {
+				return nil
+			}
+		}
+	}
+
+	// none default_gateway_profile exists, add one
+	gp := GatewayProfile{
+		NetworkServerID: n.ID,
+		Name:            "default_gateway_profile",
+		GatewayProfile:  ns.GatewayProfile{
+			Channels:             []uint32{0,1,2},
+			ExtraChannels:        []*ns.GatewayProfileExtraChannel{},
+		},
+	}
+
+	err = Transaction(func(tx sqlx.Ext) error {
+		return CreateGatewayProfile(ctx, tx, &gp)
+	})
+	if err != nil {
+		return errors.Wrap(err, "Failed to create default gateway profile")
 	}
 
 	return nil
