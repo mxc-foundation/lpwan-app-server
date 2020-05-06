@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"encoding/base32"
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver_serves_ui"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

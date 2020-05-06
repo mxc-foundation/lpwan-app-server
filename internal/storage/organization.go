@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	m2m "github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"

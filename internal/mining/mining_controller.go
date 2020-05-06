@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/brocaar/lorawan"
-	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
+	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"

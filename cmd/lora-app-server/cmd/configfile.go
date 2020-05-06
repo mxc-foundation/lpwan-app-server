@@ -119,6 +119,12 @@ ca_cert={{ .M2MServer.CACert }}
 tls_cert={{ .M2MServer.TLSCert }}
 tls_key={{ .M2MServer.TLSKey }}
 
+[provision_server]
+provision_server={{ .ProvisionServer.ProvisionServer }}
+ca_cert={{ .ProvisionServer.CACert }}
+tls_cert={{ .ProvisionServer.TLSCert }}
+tls_key={{ .ProvisionServer.TLSKey }}
+
 # Application-server settings.
 [application_server]
 # Application-server identifier.

@@ -106,6 +106,14 @@ service GatewayService {
             get: "/api/gateways/getpassword/{gateway_id}"
         };
 	}
+
+	rpc SetAutoUpdateFirmware(SetAutoUpdateFirmwareRequest) returns (SetAutoUpdateFirmwareResponse) {
+		option (google.api.http) = {
+			put: "/api/gateways/set-auto-update/{gateway_id}"
+			body: "*"
+		};
+	}
+
 }
 
 message Gateway {
@@ -386,4 +394,13 @@ message GetGwPwdRequest {
 
 message GetGwPwdResponse {
 	string password = 1;
+}
+
+message SetAutoUpdateFirmwareRequest {
+	string gateway_id = 1;
+	bool   auto_update = 2;
+}
+
+message SetAutoUpdateFirmwareResponse {
+	string message = 1;
 }

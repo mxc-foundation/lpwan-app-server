@@ -18,7 +18,7 @@ const CommonModal = (props) => {
         setModal(!modal);
         if (closeModal)
             closeModal();
-        props.callback();    
+        props.callback();
     }
     
     const proc = () => {
@@ -27,7 +27,7 @@ const CommonModal = (props) => {
             closeModal();
         props.callback();
     }
-
+    
     return (
         <div>
             {/* {buttonLabel && <Button color={buttonColor} onClick={toggle}>{icon}{buttonLabel}</Button>} */}
