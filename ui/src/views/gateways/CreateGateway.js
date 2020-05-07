@@ -43,6 +43,7 @@ class CreateGateway extends Component {
   };
 
   onSubmit = (gateway, config, classBConfig) => {
+    console.log(gateway);
     GatewayStore.create(gateway, resp => {
       this.props.history.push(
         `/organizations/${this.props.match.params.organizationID}/gateways`
