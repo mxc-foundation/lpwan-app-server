@@ -890,5 +890,19 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 }
 
 func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoUpdateFirmwareRequest) (*pb.SetAutoUpdateFirmwareResponse, error) {
-	return &pb.SetAutoUpdateFirmwareResponse{}, nil
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
+	}
+
+	if err := storage.SetAutoUpdateFirmware(ctx, storage.DB(), mac, req.AutoUpdate); err != nil {
+		return nil, grpc.Errorf(codes.Unknown, err.Error())
+	}
+
+	return &pb.SetAutoUpdateFirmwareResponse{Message: "Auto update firmware set successfully"}, nil
 }

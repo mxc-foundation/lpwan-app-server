@@ -1,12 +1,12 @@
 package storage
 
 import (
-	"os"
 	"context"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"github.com/robfig/cron"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -38,33 +38,32 @@ var serialNumberNewGWValidator = regexp.MustCompile(`^M2X([A-Z1-9]){8}$`)
 
 // Gateway represents a gateway.
 type Gateway struct {
-	MAC              lorawan.EUI64 `db:"mac"`
-	CreatedAt        time.Time     `db:"created_at"`
-	UpdatedAt        time.Time     `db:"updated_at"`
-	FirstSeenAt      *time.Time    `db:"first_seen_at"`
-	LastSeenAt       *time.Time    `db:"last_seen_at"`
-	Name             string        `db:"name"`
-	Description      string        `db:"description"`
-	OrganizationID   int64         `db:"organization_id"`
-	Ping             bool          `db:"ping"`
-	LastPingID       *int64        `db:"last_ping_id"`
-	LastPingSentAt   *time.Time    `db:"last_ping_sent_at"`
-	NetworkServerID  int64         `db:"network_server_id"`
-	GatewayProfileID *string       `db:"gateway_profile_id"`
-	Latitude         float64       `db:"latitude"`
-	Longitude        float64       `db:"longitude"`
-	Altitude         float64       `db:"altitude"`
-	Model            string        `db:"model"`
-	FirstHeartbeat   int64         `db:"first_heartbeat"`
-	LastHeartbeat    int64         `db:"last_heartbeat"`
-	Config           string        `db:"config"`
-	OsVersion        string        `db:"os_version"`
-	Statistics       string        `db:"statistics"`
-	SerialNumber     string        `db:"sn"`
-	FirmwareHash     types.MD5SUM  `db:"firmware_hash"`
+	MAC                lorawan.EUI64 `db:"mac"`
+	CreatedAt          time.Time     `db:"created_at"`
+	UpdatedAt          time.Time     `db:"updated_at"`
+	FirstSeenAt        *time.Time    `db:"first_seen_at"`
+	LastSeenAt         *time.Time    `db:"last_seen_at"`
+	Name               string        `db:"name"`
+	Description        string        `db:"description"`
+	OrganizationID     int64         `db:"organization_id"`
+	Ping               bool          `db:"ping"`
+	LastPingID         *int64        `db:"last_ping_id"`
+	LastPingSentAt     *time.Time    `db:"last_ping_sent_at"`
+	NetworkServerID    int64         `db:"network_server_id"`
+	GatewayProfileID   *string       `db:"gateway_profile_id"`
+	Latitude           float64       `db:"latitude"`
+	Longitude          float64       `db:"longitude"`
+	Altitude           float64       `db:"altitude"`
+	Model              string        `db:"model"`
+	FirstHeartbeat     int64         `db:"first_heartbeat"`
+	LastHeartbeat      int64         `db:"last_heartbeat"`
+	Config             string        `db:"config"`
+	OsVersion          string        `db:"os_version"`
+	Statistics         string        `db:"statistics"`
+	SerialNumber       string        `db:"sn"`
+	FirmwareHash       types.MD5SUM  `db:"firmware_hash"`
+	AutoUpdateFirmware bool          `db:"auto_update_firmware"`
 }
-
-var AutoUpdate = true
 
 type GatewayFirmware struct {
 	Model        string       `db:"model"`
@@ -143,6 +142,7 @@ func (g Gateway) Validate() error {
 }
 
 var SupernodeAddr string
+
 func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
 	SupernodeAddr = os.Getenv("APPSERVER")
 	if strings.HasPrefix(SupernodeAddr, "https://") {
@@ -191,10 +191,10 @@ func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
 
 		for _, v := range gwFwList {
 			res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
-				Model:                v.Model,
-				SuperNodeAddr:        SupernodeAddr,
-				PortOldGateway:       bindPortOldGateway,
-				PortNewGateway:       bindPortNewGateway,
+				Model:          v.Model,
+				SuperNodeAddr:  SupernodeAddr,
+				PortOldGateway: bindPortOldGateway,
+				PortNewGateway: bindPortNewGateway,
 			})
 			if err != nil {
 				log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
@@ -558,17 +558,17 @@ func UpdateLastHeartbeat(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, ti
 	return nil
 }
 
-func UpdateGatewayModel(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, model string) error {
+func SetAutoUpdateFirmware(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, autoUpdateFirmware bool) error {
 	res, err := db.Exec(`
 		update gateway
-			set model = $1
+			set auto_update_firmware = $1
 		where
 			mac = $2`,
-		model,
-		mac,
+		autoUpdateFirmware,
+		mac[:],
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update gateway model error")
+		return handlePSQLError(Update, err, "update auto_update_firmware error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {

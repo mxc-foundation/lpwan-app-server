@@ -4,7 +4,8 @@ alter table gateway
     add column os_version varchar(16) not null default '',
     add column sn varchar(16) not null default '',
     add column statistics text not null default '',
-    add column firmware_hash bytea not null default E'\\000';
+    add column firmware_hash bytea not null default E'\\000',
+    add column auto_update_firmware boolean not null default true;
 
 create table gateway_firmware
 (
