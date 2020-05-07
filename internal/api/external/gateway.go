@@ -871,8 +871,22 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 		return nil, grpc.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
+	provConf := config.C.ProvisionServer
+	provClient, err := provisionserver.CreateClientWithCert(provConf.ProvisionServer, provConf.CACert,
+		provConf.TLSCert, provConf.TLSKey)
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "failed to connect to provisioning server")
+	}
 
-	return &pb.GetGwPwdResponse{}, nil
+	resp, err := provClient.GetRootPWD(context.Background(), &api.GetRootPWDRequest{
+		Sn:  req.Sn,
+		Mac: req.GatewayId,
+	})
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unknown, err.Error())
+	}
+
+	return &pb.GetGwPwdResponse{Password: resp.RootPassword}, nil
 }
 
 func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoUpdateFirmwareRequest) (*pb.SetAutoUpdateFirmwareResponse, error) {
