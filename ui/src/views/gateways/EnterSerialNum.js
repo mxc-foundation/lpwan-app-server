@@ -69,10 +69,6 @@ class EnterSerialNum extends Component {
         }
 
         if (serial.serial.substring(0, 2).trim() !== 'MX' || serial.serial.substring(0, 2).trim() !== 'M2X') {
-            this.props.history.push(
-                `/organizations/${this.props.match.params.organizationID}/gateways/create`
-            );
-        } else {
             let gateway = {};
             gateway.organizationId = this.props.match.params.organizationID;
             gateway.sn = serial
@@ -81,6 +77,10 @@ class EnterSerialNum extends Component {
                     `/organizations/${this.props.match.params.organizationID}/gateways`
                 );
             });
+        } else {
+            this.props.history.push(
+                `/organizations/${this.props.match.params.organizationID}/gateways/create`
+            );
         }
     }
 
