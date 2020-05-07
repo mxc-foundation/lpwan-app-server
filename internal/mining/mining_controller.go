@@ -127,8 +127,6 @@ func GetMXCprice(conf config.Config, amount string) (price float64, err error) {
 		os.Exit(1)
 	}
 
-	log.Println("Amount :", amount)
-
 	q := url.Values{}
 	//q.Add("id", "2")
 	q.Add("symbol", "MXC")
@@ -153,9 +151,6 @@ func GetMXCprice(conf config.Config, amount string) (price float64, err error) {
 		if err != nil {
 			log.Println("JSON unmarshal error: ", err)
 		}
-
-		log.Println("USD Price: ", cmc.Data.Quote.USD.Price)
-		log.Println("MXC Price: ", cmc.Data.Quote.MXC.Price)
 
 		return cmc.Data.Quote.USD.Price, nil
 	}
