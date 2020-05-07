@@ -62,6 +62,7 @@ type Config struct {
 		CACert          string `mapstructure:"ca_cert"`
 		TLSCert         string `mapstructure:"tls_cert"`
 		TLSKey          string `mapstructure:"tls_key"`
+		UpdateSchedule  string `mapstructure:"update_schedule"`
 	} `mapstructure:"provision_server"`
 
 	Recaptcha struct {
@@ -96,7 +97,7 @@ type Config struct {
 		}
 
 		API struct {
-			Bind       string
+			Bind       string `mapstructure:"bind"`
 			CACert     string `mapstructure:"ca_cert"`
 			TLSCert    string `mapstructure:"tls_cert"`
 			TLSKey     string `mapstructure:"tls_key"`
@@ -104,11 +105,27 @@ type Config struct {
 		} `mapstructure:"api"`
 
 		APIForM2M struct {
-			Bind    string
+			Bind    string `mapstructure:"bind"`
 			CACert  string `mapstructure:"ca_cert"`
 			TLSCert string `mapstructure:"tls_cert"`
 			TLSKey  string `mapstructure:"tls_key"`
 		} `mapstructure:"api_for_m2m"`
+
+		APIForGateway struct {
+			NewGateway struct{
+				Bind    string `mapstructure:"new_gateway_bind"`
+				CACert  string `mapstructure:"ecc_ca_cert"`
+				TLSCert string `mapstructure:"ecc_tls_cert"`
+				TLSKey  string `mapstructure:"ecc_tls_key"`
+			} `mapstructure:"new_gateway"`
+
+			OldGateway struct{
+				Bind    string `mapstructure:"old_gateway_bind"`
+				CACert  string `mapstructure:"rsa_ca_cert"`
+				TLSCert string `mapstructure:"rsa_tls_cert"`
+				TLSKey  string `mapstructure:"rsa_tls_key"`
+			} `mapstructure:"old_gateway"`
+		} `mapstructure:"api_for_gateway"`
 
 		ExternalAPI struct {
 			Bind                       string
@@ -151,15 +168,6 @@ type Config struct {
 			ExecuteTime           string `mapstructure:"execute_time"`
 		} `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
-
-	RegistrationServer struct {
-		Server   string `mapstructure:"server"`
-		Username string `mapstructure:"username"`
-		Password string `mapstructure:"password"`
-		CACert   string `mapstructure:"ca_cert"`
-		TLSCert  string `mapstructure:"tls_cert"`
-		TLSKey   string `mapstructure:"tls_key"`
-	} `mapstructure:"registration_server"`
 
 	JoinServer struct {
 		Bind    string

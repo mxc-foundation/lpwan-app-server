@@ -39,6 +39,7 @@ func Setup(conf config.Config) error {
 	p = &pool{
 		clients: make(map[string]client),
 	}
+
 	return nil
 }
 

@@ -49,6 +49,8 @@ services:
       - mxprotocol-server
     ports:
       - 8080:8080
+      - 8004:8004
+      - 8005:8005
     environment:
       - SUPERNODE_DATA_SERVICE=local
     env_file:
@@ -88,6 +90,8 @@ services:
       - redis
     ports:
       - 8080:8080
+      - 8004:8004
+      - 8005:8005
     environment:
       - SUPERNODE_DATA_SERVICE=remote
     env_file:
@@ -124,6 +128,8 @@ services:
       - {}
     ports:
       - 8080:8080
+      - 8004:8004
+      - 8005:8005
     depends_on:
       - postgresql
       - redis
@@ -193,6 +199,8 @@ services:
       - ./configuration:/etc/lora-app-server
     ports:
       - 8080:8080
+      - 8004:8004
+      - 8005:8005
     environment:
       - APPSERVER=http://localhost:8080
       - MXPROTOCOL_SERVER=http://localhost:4000

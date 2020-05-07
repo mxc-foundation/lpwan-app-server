@@ -27,11 +27,11 @@ class ServerInfoStore extends EventEmitter {
 
   async getServerRegion() {
     try {
-        const client = await this.swagger.then((client) => client);
-        let resp = await client.apis.ServerInfoService.GetServerRegion();
-    
+        const client = await this.swagger;
+        let resp = await client.apis.ServerInfoService.GetServerRegion({});
+        
         resp = await checkStatus(resp);
-        return resp.obj;
+        return resp.body;
       } catch (error) {
         errorHandler(error);
     }

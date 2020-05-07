@@ -5,18 +5,23 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/robfig/cron"
+	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/lib/pq"
-
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -28,28 +33,42 @@ import (
 )
 
 var gatewayNameRegexp = regexp.MustCompile(`^[\w-]+$`)
+var serialNumberOldGWValidator = regexp.MustCompile(`^MX([A-Z1-9]){7}$`)
+var serialNumberNewGWValidator = regexp.MustCompile(`^M2X([A-Z1-9]){8}$`)
 
 // Gateway represents a gateway.
 type Gateway struct {
-	MAC              lorawan.EUI64 `db:"mac"`
-	CreatedAt        time.Time     `db:"created_at"`
-	UpdatedAt        time.Time     `db:"updated_at"`
-	FirstSeenAt      *time.Time    `db:"first_seen_at"`
-	LastSeenAt       *time.Time    `db:"last_seen_at"`
-	Name             string        `db:"name"`
-	Description      string        `db:"description"`
-	OrganizationID   int64         `db:"organization_id"`
-	Ping             bool          `db:"ping"`
-	LastPingID       *int64        `db:"last_ping_id"`
-	LastPingSentAt   *time.Time    `db:"last_ping_sent_at"`
-	NetworkServerID  int64         `db:"network_server_id"`
-	GatewayProfileID *string       `db:"gateway_profile_id"`
-	Latitude         float64       `db:"latitude"`
-	Longitude        float64       `db:"longitude"`
-	Altitude         float64       `db:"altitude"`
-	Model            string        `db:"model"`
-	FirstHeartbeat   int64         `db:"first_heartbeat"`
-	LastHeartbeat    int64         `db:"last_heartbeat"`
+	MAC                lorawan.EUI64 `db:"mac"`
+	CreatedAt          time.Time     `db:"created_at"`
+	UpdatedAt          time.Time     `db:"updated_at"`
+	FirstSeenAt        *time.Time    `db:"first_seen_at"`
+	LastSeenAt         *time.Time    `db:"last_seen_at"`
+	Name               string        `db:"name"`
+	Description        string        `db:"description"`
+	OrganizationID     int64         `db:"organization_id"`
+	Ping               bool          `db:"ping"`
+	LastPingID         *int64        `db:"last_ping_id"`
+	LastPingSentAt     *time.Time    `db:"last_ping_sent_at"`
+	NetworkServerID    int64         `db:"network_server_id"`
+	GatewayProfileID   *string       `db:"gateway_profile_id"`
+	Latitude           float64       `db:"latitude"`
+	Longitude          float64       `db:"longitude"`
+	Altitude           float64       `db:"altitude"`
+	Model              string        `db:"model"`
+	FirstHeartbeat     int64         `db:"first_heartbeat"`
+	LastHeartbeat      int64         `db:"last_heartbeat"`
+	Config             string        `db:"config"`
+	OsVersion          string        `db:"os_version"`
+	Statistics         string        `db:"statistics"`
+	SerialNumber       string        `db:"sn"`
+	FirmwareHash       types.MD5SUM  `db:"firmware_hash"`
+	AutoUpdateFirmware bool          `db:"auto_update_firmware"`
+}
+
+type GatewayFirmware struct {
+	Model        string       `db:"model"`
+	ResourceLink string       `db:"resource_link"`
+	FirmwareHash types.MD5SUM `db:"md5_hash"`
 }
 
 // GatewayLocation represents a gateway location.
@@ -108,11 +127,224 @@ func (g Gateway) Validate() error {
 	if !gatewayNameRegexp.MatchString(g.Name) {
 		return ErrGatewayInvalidName
 	}
+
+	if strings.HasPrefix(g.Model, "MX19") {
+		if !serialNumberNewGWValidator.MatchString(g.SerialNumber) {
+			return ErrGatewayInvalidSerialNumber
+		}
+	} else if g.Model != "" {
+		if !serialNumberOldGWValidator.MatchString(g.SerialNumber) {
+			return ErrGatewayInvalidSerialNumber
+		}
+	}
+
+	return nil
+}
+
+var SupernodeAddr string
+
+func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
+	SupernodeAddr = os.Getenv("APPSERVER")
+	if strings.HasPrefix(SupernodeAddr, "https://") {
+		SupernodeAddr = strings.Replace(SupernodeAddr, "https://", "", -1)
+	}
+	if strings.HasPrefix(SupernodeAddr, "http://") {
+		SupernodeAddr = strings.Replace(SupernodeAddr, "http://", "", -1)
+	}
+	if strings.HasSuffix(SupernodeAddr, ":8080") {
+		SupernodeAddr = strings.Replace(SupernodeAddr, ":8080", "", -1)
+	}
+
+	var bindPortOldGateway string
+	var bindPortNewGateway string
+
+	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.OldGateway.Bind, ":"); len(strArray) != 2 {
+		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", conf.ApplicationServer.APIForGateway.OldGateway.Bind))
+	} else {
+		bindPortOldGateway = strArray[1]
+	}
+
+	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.NewGateway.Bind, ":"); len(strArray) != 2 {
+		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", conf.ApplicationServer.APIForGateway.NewGateway.Bind))
+	} else {
+		bindPortNewGateway = strArray[1]
+	}
+
+	c := cron.New()
+	err := c.AddFunc(conf.ProvisionServer.UpdateSchedule, func() {
+		log.Info("Check firmware update...")
+		gwFwList, err := GetGatewayFirmwareList(DB())
+		if err != nil {
+			log.WithError(err).Errorf("Failed to get gateway firmware list.")
+			return
+		}
+
+		// send update
+		psClient, err := provisionserver.CreateClientWithCert(conf.ProvisionServer.ProvisionServer,
+			conf.ProvisionServer.CACert,
+			conf.ProvisionServer.TLSCert,
+			conf.ProvisionServer.TLSKey)
+		if err != nil {
+			log.WithError(err).Errorf("Create Provisioning server client error")
+			return
+		}
+
+		for _, v := range gwFwList {
+			res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
+				Model:          v.Model,
+				SuperNodeAddr:  SupernodeAddr,
+				PortOldGateway: bindPortOldGateway,
+				PortNewGateway: bindPortNewGateway,
+			})
+			if err != nil {
+				log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
+				continue
+			}
+
+			var md5sum types.MD5SUM
+			if err := md5sum.UnmarshalText([]byte(res.FirmwareHash)); err != nil {
+				log.WithError(err).Errorf("Failed to unmarshal firmware hash: %s", res.FirmwareHash)
+				continue
+			}
+
+			gatewayFw := GatewayFirmware{
+				Model:        v.Model,
+				ResourceLink: res.ResourceLink,
+				FirmwareHash: md5sum,
+			}
+
+			model, err := UpdateGatewayFirmware(DB(), &gatewayFw)
+			if model == "" {
+				log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
+			}
+
+		}
+	})
+	if err != nil {
+		log.Fatalf("Failed to set update schedule when set up provisioning server config: %s", err.Error())
+	}
+
+	go c.Start()
+
+	return nil
+}
+
+func AddGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string, err error) {
+	err = db.QueryRowx(`
+		insert into gateway_firmware (
+			model, 
+			resource_link, 
+			md5_hash
+		) values ($1, $2, $3)
+		returning 
+		    model;
+		`,
+		gwFw.Model,
+		gwFw.ResourceLink,
+		gwFw.FirmwareHash[:]).Scan(&model)
+
+	if err != nil {
+		return "", errors.Wrap(err, "AddGatewayFirmware")
+	}
+	return model, nil
+}
+
+func GetGatewayFirmware(db sqlx.Queryer, model string, forUpdate bool) (gwFw GatewayFirmware, err error) {
+	var fu string
+	if forUpdate {
+		fu = " for update"
+	}
+
+	err = sqlx.Get(db, &gwFw, "select * from gateway_firmware where model = $1 "+fu, model)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return gwFw, ErrDoesNotExist
+		}
+		return gwFw, err
+	}
+	return gwFw, nil
+}
+
+func GetGatewayFirmwareList(db sqlx.Queryer) (list []GatewayFirmware, err error) {
+	res, err := db.Query(`
+		select 
+			model, 
+			resource_link, 
+			md5_hash 
+		from 
+		     gateway_firmware ;
+	`)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return list, ErrDoesNotExist
+		}
+		return nil, errors.Wrap(err, "GetGatewayFirmwareList")
+	}
+
+	defer res.Close()
+	for res.Next() {
+		var tmp []byte
+		gatewayFirmware := GatewayFirmware{}
+		err := res.Scan(&gatewayFirmware.Model,
+			&gatewayFirmware.ResourceLink,
+			&tmp)
+		if err != nil {
+			return nil, errors.Wrap(err, "GetGatewayFirmwareList")
+		}
+
+		copy(gatewayFirmware.FirmwareHash[:], tmp)
+
+		list = append(list, gatewayFirmware)
+	}
+
+	return list, nil
+}
+
+func UpdateGatewayFirmware(db sqlx.Queryer, gwFw *GatewayFirmware) (model string, err error) {
+	err = db.QueryRowx(`
+		update 
+		    gateway_firmware 
+		set 
+		    resource_link=$1, md5_hash=$2 
+		where 
+		      model =$3
+		returning 
+		    model;
+		`,
+		gwFw.ResourceLink,
+		gwFw.FirmwareHash[:],
+		gwFw.Model).Scan(&model)
+
+	if err != nil {
+		return "", errors.Wrap(err, "UpdateGatewayFirmware")
+	}
+	return model, nil
+}
+
+func UpdateGatewayConfigByGwId(ctx context.Context, db sqlx.Ext, config string, mac lorawan.EUI64) error {
+	res, err := db.Exec(`
+		update gateway
+			set config = $1
+		where
+			mac = $2`,
+		config,
+		mac[:])
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+
 	return nil
 }
 
 // CreateGateway creates the given Gateway.
-func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
+func CreateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -143,8 +375,12 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 			altitude,
 		    model,
 		    first_heartbeat,
-		    last_heartbeat
-		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
+		    last_heartbeat,
+		    config,
+		    os_version,
+			sn
+		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
+		          $20, $21, $22)`,
 		gw.MAC[:],
 		gw.CreatedAt,
 		gw.UpdatedAt,
@@ -164,7 +400,9 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 		gw.Model,
 		gw.FirstHeartbeat,
 		gw.LastHeartbeat,
-	)
+		gw.Config,
+		gw.OsVersion,
+		gw.SerialNumber)
 	if err != nil {
 		return handlePSQLError(Insert, err, "insert error")
 	}
@@ -200,7 +438,7 @@ func CreateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 }
 
 // UpdateGateway updates the given Gateway.
-func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
+func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -222,11 +460,17 @@ func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 			last_seen_at = $12,
 			latitude = $13,
 			longitude = $14,
-			altitude = $15
+			altitude = $15,
+		    model = $16,
+		    first_heartbeat = $17,
+		    last_heartbeat = $18,
+		    config = $19,
+		    os_version = $20,
+		    statistics = $21
 		where
 			mac = $1`,
 		gw.MAC[:],
-		now,
+		time.Now().UTC(),
 		gw.Name,
 		gw.Description,
 		gw.OrganizationID,
@@ -240,7 +484,12 @@ func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 		gw.Latitude,
 		gw.Longitude,
 		gw.Altitude,
-	)
+		gw.Model,
+		gw.FirstHeartbeat,
+		gw.LastHeartbeat,
+		gw.Config,
+		gw.OsVersion,
+		gw.Statistics)
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
 	}
@@ -262,7 +511,7 @@ func UpdateGateway(ctx context.Context, db sqlx.Execer, gw *Gateway) error {
 }
 
 // UpdateFirstHeartbeat updates the first heartbeat by mac
-func UpdateFirstHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64, time int64) error {
+func UpdateFirstHeartbeat(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, time int64) error {
 	res, err := db.Exec(`
 		update gateway
 			set first_heartbeat = $1
@@ -286,7 +535,7 @@ func UpdateFirstHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64
 }
 
 // UpdateLastHeartbeat updates the last heartbeat by mac
-func UpdateLastHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64, time int64) error {
+func UpdateLastHeartbeat(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, time int64) error {
 	res, err := db.Exec(`
 		update gateway
 			set last_heartbeat = $1
@@ -309,17 +558,17 @@ func UpdateLastHeartbeat(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64,
 	return nil
 }
 
-func UpdateGatewayModel(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, model string) error  {
+func SetAutoUpdateFirmware(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64, autoUpdateFirmware bool) error {
 	res, err := db.Exec(`
 		update gateway
-			set model = $1
+			set auto_update_firmware = $1
 		where
 			mac = $2`,
-		model,
-		mac,
+		autoUpdateFirmware,
+		mac[:],
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update gateway model error")
+		return handlePSQLError(Update, err, "update auto_update_firmware error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
@@ -337,6 +586,28 @@ func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 	n, err := GetNetworkServerForGatewayMAC(ctx, db, mac)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
+	}
+
+	// if the gateway is MatchX gateway, unregister it from provisioning server
+	obj, err := GetGateway(ctx, db, mac, false)
+	if err != nil {
+		return errors.Wrap(err, "get gateway error")
+	}
+	if strings.HasPrefix(obj.Model, "MX") {
+		provConf := config.C.ProvisionServer
+		provClient, err := provisionserver.CreateClientWithCert(provConf.ProvisionServer, provConf.CACert,
+			provConf.TLSCert, provConf.TLSKey)
+		if err != nil {
+			return errors.Wrap(err, "failed to connect to provisioning server")
+		}
+
+		_, err = provClient.UnregisterGw(context.Background(), &psPb.UnregisterGwRequest{
+			Sn:  obj.SerialNumber,
+			Mac: obj.MAC.String(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to unregister from provisioning server")
+		}
 	}
 
 	res, err := db.Exec("delete from gateway where mac = $1", mac[:])
@@ -398,6 +669,7 @@ func GetGateway(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64, forUpda
 		if err == sql.ErrNoRows {
 			return gw, ErrDoesNotExist
 		}
+		return gw, err
 	}
 	return gw, nil
 }
@@ -462,6 +734,22 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search
 		return nil, errors.Wrap(err, "select error")
 	}
 	return gws, nil
+}
+
+func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (string, error) {
+	var config string
+	err := sqlx.Select(db, &config, `
+		select
+			config
+		from gateway
+		where mac = $1`,
+		mac[:],
+	)
+	if err != nil {
+		return "", errors.Wrap(err, "select error")
+	}
+
+	return config, nil
 }
 
 // GetFirstHeartbeat returns the first heartbeat
