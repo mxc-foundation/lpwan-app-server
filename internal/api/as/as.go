@@ -9,8 +9,6 @@ import (
 	"net"
 	"time"
 
-	"google.golang.org/grpc/status"
-
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
@@ -24,9 +22,8 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
-	gwapi "github.com/mxc-foundation/lpwan-app-server/api/gw_appserver"
-	api "github.com/mxc-foundation/lpwan-app-server/api/m2m_serves_appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
@@ -41,158 +38,45 @@ import (
 	"github.com/mxc-foundation/lpwan-server/api/common"
 )
 
-var (
-	bind    string
-	caCert  string
-	tlsCert string
-	tlsKey  string
-)
+var serviceName = "LPWAN service"
 
 // Setup configures the package.
 func Setup(conf config.Config) error {
-	bind = conf.ApplicationServer.API.Bind
-	caCert = conf.ApplicationServer.API.CACert
-	tlsCert = conf.ApplicationServer.API.TLSCert
-	tlsKey = conf.ApplicationServer.API.TLSKey
+	log.Info("Set up API for lpwan server")
 
-	grpcOpts := helpers.GetgRPCServerOptions()
-	if caCert != "" && tlsCert != "" && tlsKey != "" {
-		creds, err := helpers.GetTransportCredentials(caCert, tlsCert, tlsKey, true)
-		if err != nil {
-			return errors.Wrap(err, "get transport credentials error")
-		}
-		grpcOpts = append(grpcOpts, grpc.Creds(creds))
+	if err := listenWithCredentials(serviceName, conf.ApplicationServer.API.Bind,
+		conf.ApplicationServer.API.CACert,
+		conf.ApplicationServer.API.TLSCert,
+		conf.ApplicationServer.API.TLSKey); err != nil {
+		return err
 	}
-
-	server := grpc.NewServer(grpcOpts...)
-	as.RegisterApplicationServerServiceServer(server, NewApplicationServerAPI())
-	ln, err := net.Listen("tcp", bind)
-	if err != nil {
-		return errors.Wrap(err, "start application-server api listener error")
-	}
-	go server.Serve(ln)
-
-	log.WithFields(log.Fields{
-		"bind":     bind,
-		"ca_cert":  caCert,
-		"tls_cert": tlsCert,
-		"tls_key":  tlsKey,
-	}).Info("api/as: starting application-server api")
-
-	// listen to m2m server requsts
-	grpcOptsM2M := helpers.GetgRPCServerOptions()
-	if conf.ApplicationServer.APIForM2M.CACert != "" && conf.ApplicationServer.APIForM2M.TLSCert != "" && conf.ApplicationServer.APIForM2M.TLSKey != "" {
-		creds, err := helpers.GetTransportCredentials(conf.ApplicationServer.APIForM2M.CACert,
-			conf.ApplicationServer.APIForM2M.TLSCert, conf.ApplicationServer.APIForM2M.TLSKey, true)
-		if err != nil {
-			return errors.Wrap(err, "get transport credentials error")
-		}
-		grpcOptsM2M = append(grpcOptsM2M, grpc.Creds(creds))
-	}
-
-	appserver := grpc.NewServer(grpcOptsM2M...)
-	api.RegisterAppServerServiceServer(appserver, NewAppServerAPI())
-	gwapi.RegisterHeartbeatServiceServer(appserver, NewAppServerAPI())
-
-	appLn, err := net.Listen("tcp", conf.ApplicationServer.APIForM2M.Bind)
-	if err != nil {
-		return errors.Wrap(err, "start application-server api listener error")
-	}
-	go appserver.Serve(appLn)
-
-	log.WithFields(log.Fields{
-		"bind":     conf.ApplicationServer.APIForM2M.Bind,
-		"ca_cert":  conf.ApplicationServer.APIForM2M.CACert,
-		"tls_cert": conf.ApplicationServer.APIForM2M.TLSCert,
-		"tls_key":  conf.ApplicationServer.APIForM2M.TLSKey,
-	}).Info("api/as: starting appserver api for m2m-server")
 
 	return nil
 }
 
-// AppServerAPI defines the AppServerAPI structure
-type AppServerAPI struct {
-}
+func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error {
+	log.WithFields(log.Fields{
+		"bind":     bind,
+		"ca-cert":  caCert,
+		"tls-cert": tlsCert,
+		"tls-key":  tlsKey,
+	}).Info("listen With Credentials")
 
-// NewAppServerAPI returns the AppServerAPI
-func NewAppServerAPI() *AppServerAPI {
-	return &AppServerAPI{}
-}
-
-// GetDeviceDevEuiList defines the response of the Device DevEui list
-func (a *AppServerAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty) (*api.GetDeviceDevEuiListResponse, error) {
-	devEuiList, err := storage.GetAllDeviceEuis(ctx, storage.DB())
+	gs, err := tls.NewServerWithTLSCredentials(service, caCert, tlsCert, tlsKey)
 	if err != nil {
-		return &api.GetDeviceDevEuiListResponse{}, status.Errorf(codes.DataLoss, err.Error())
+		return errors.Wrap(err, "listenWithCredentials: get new server error")
 	}
 
-	return &api.GetDeviceDevEuiListResponse{DevEui: devEuiList}, nil
-}
+	asAPI := NewApplicationServerAPI()
+	as.RegisterApplicationServerServiceServer(gs, asAPI)
 
-// GetGatewayMacList defines the response of the Gateway MAC list
-func (a *AppServerAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*api.GetGatewayMacListResponse, error) {
-	gwMacList, err := storage.GetAllGatewayMacList(ctx, storage.DB())
+	ln, err := net.Listen("tcp", bind)
 	if err != nil {
-		return &api.GetGatewayMacListResponse{}, status.Errorf(codes.DataLoss, err.Error())
+		return errors.Wrap(err, "listenWithCredentials: start api listener error")
 	}
+	go gs.Serve(ln)
 
-	return &api.GetGatewayMacListResponse{GatewayMac: gwMacList}, nil
-}
-
-// GetDeviceByDevEui defines the request and response of the Device DevEui
-func (a *AppServerAPI) GetDeviceByDevEui(ctx context.Context, req *api.GetDeviceByDevEuiRequest) (*api.GetDeviceByDevEuiResponse, error) {
-	var devEui lorawan.EUI64
-	resp := api.GetDeviceByDevEuiResponse{DevProfile: &api.AppServerDeviceProfile{}}
-
-	if err := devEui.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
-	}
-
-	device, err := storage.GetDevice(ctx, storage.DB(), devEui, false, true)
-	if err == storage.ErrDoesNotExist {
-		return &resp, nil
-	} else if err != nil {
-		return &resp, status.Errorf(codes.Unknown, err.Error())
-	}
-
-	application, err := storage.GetApplication(ctx, storage.DB(), device.ApplicationID)
-	if err != nil {
-		return &resp, status.Errorf(codes.Unknown, err.Error())
-	}
-
-	resp.OrgId = application.OrganizationID
-	resp.DevProfile.DevEui = req.DevEui
-	resp.DevProfile.Name = device.Name
-	resp.DevProfile.ApplicationId = device.ApplicationID
-	resp.DevProfile.CreatedAt, _ = ptypes.TimestampProto(device.CreatedAt)
-
-	return &resp, nil
-}
-
-// GetGatewayByMac defines the request and response to the the gateway by MAC
-func (a *AppServerAPI) GetGatewayByMac(ctx context.Context, req *api.GetGatewayByMacRequest) (*api.GetGatewayByMacResponse, error) {
-	var mac lorawan.EUI64
-	resp := api.GetGatewayByMacResponse{GwProfile: &api.AppServerGatewayProfile{}}
-
-	if err := mac.UnmarshalText([]byte(req.Mac)); err != nil {
-		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
-	}
-
-	gateway, err := storage.GetGateway(ctx, storage.DB(), mac, false)
-	if err == storage.ErrDoesNotExist {
-		return &resp, nil
-	} else if err != nil {
-		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
-	}
-
-	resp.OrgId = gateway.OrganizationID
-	resp.GwProfile.OrgId = gateway.OrganizationID
-	resp.GwProfile.Mac = req.Mac
-	resp.GwProfile.Name = gateway.Name
-	resp.GwProfile.Description = gateway.Description
-	resp.GwProfile.CreatedAt, _ = ptypes.TimestampProto(gateway.CreatedAt)
-
-	return &resp, nil
+	return nil
 }
 
 // ApplicationServerAPI implements the as.ApplicationServerServer interface.
@@ -1059,133 +943,4 @@ func unwrapASKey(ke *common.KeyEnvelope) (lorawan.AES128Key, error) {
 	}
 
 	return key, fmt.Errorf("unknown kek label: %s", ke.KekLabel)
-}
-
-func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatRequest) (*gwapi.HeartbeatResponse, error) {
-	var mac lorawan.EUI64
-	if err := mac.UnmarshalText([]byte(req.GatewayMac)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
-	}
-
-	current_heartbeat := time.Now().Unix()
-
-	last_heartbeat, err := storage.GetLastHeartbeat(ctx, storage.DB(), mac)
-	if err != nil {
-		log.WithError(err).Error("Heartbeat/Cannot get last heartbeat from DB.")
-		return &gwapi.HeartbeatResponse{
-			NewFirmwareLink: "",
-			Config:          "",
-		}, err
-	}
-
-	// if the gateway is new gateway
-	if req.Model == "MX1901" || req.Model == "MX1902" || req.Model == "MX1903" {
-
-		// if last heartbeat is 0, update first, last heartbeat and model
-		if last_heartbeat == 0 {
-			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
-				return &gwapi.HeartbeatResponse{
-					NewFirmwareLink: "",
-					Config:          "",
-				}, err
-			}
-
-			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
-				return &gwapi.HeartbeatResponse{
-					NewFirmwareLink: "",
-					Config:          "",
-				}, err
-			}
-
-			err = storage.UpdateGatewayModel(ctx, storage.DB(), mac, req.Model)
-			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update gateway model error")
-				return &gwapi.HeartbeatResponse{
-					NewFirmwareLink: "",
-					Config:          "",
-				}, err
-			}
-
-			return &gwapi.HeartbeatResponse{
-				NewFirmwareLink: "",
-				Config:          "",
-			}, nil
-		}
-
-		// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
-		//if current_heartbeat-last_heartbeat > 600 {
-		if current_heartbeat-last_heartbeat > config.C.ApplicationServer.MiningSetUp.HeartbeatOfflineLimit {
-			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
-				return &gwapi.HeartbeatResponse{
-					NewFirmwareLink: "",
-					Config:          "",
-				}, err
-			}
-
-			//err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-			err = storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), mac)
-			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
-				return &gwapi.HeartbeatResponse{
-					NewFirmwareLink: "",
-					Config:          "",
-				}, err
-			}
-
-			return &gwapi.HeartbeatResponse{
-				NewFirmwareLink: "",
-				Config:          "",
-			}, nil
-		}
-
-		firstHeartbeat, err := storage.GetFirstHeartbeat(ctx, storage.DB(), mac)
-		if err != nil {
-			log.WithError(err).Error("Heartbeat/Get first heartbeat error")
-			return &gwapi.HeartbeatResponse{
-				NewFirmwareLink: "",
-				Config:          "",
-			}, err
-		}
-
-		if firstHeartbeat == 0 {
-			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-			if err != nil {
-				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
-				return &gwapi.HeartbeatResponse{
-					NewFirmwareLink: "",
-					Config:          "",
-				}, err
-			}
-		}
-
-		err = storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-		if err != nil {
-			log.WithError(err).Error("Heartbeat/Update last heartbeat error")
-			return &gwapi.HeartbeatResponse{
-				NewFirmwareLink: "",
-				Config:          "",
-			}, err
-		}
-	} else {
-		// old gateway
-		err := storage.UpdateGatewayModel(ctx, storage.DB(), mac, req.Model)
-		if err != nil {
-			log.WithError(err).Error("Heartbeat/Update gateway model error")
-			return &gwapi.HeartbeatResponse{
-				NewFirmwareLink: "",
-				Config:          "",
-			}, err
-		}
-	}
-
-	return &gwapi.HeartbeatResponse{
-		NewFirmwareLink: "",
-		Config:          "",
-	}, nil
 }

@@ -54,6 +54,7 @@
     "react-spinners": "^0.6.1",
     "react-text-mask": "^5.4.3",
     "reactstrap": "^8.2.0",
+    "reactstrap-confirm": "^1.2.0",
     "rfdc": "^1.1.4",
     "robust-websocket": "^1.0.0",
     "source-map-explorer": "^2.0.1",

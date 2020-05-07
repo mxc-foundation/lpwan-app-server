@@ -183,6 +183,38 @@
         ]
       }
     },
+    "/api/gateways/set-auto-update/{gatewayId}": {
+      "put": {
+        "operationId": "SetAutoUpdateFirmware",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiSetAutoUpdateFirmwareResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiSetAutoUpdateFirmwareRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/updateconfig/{gatewayId}": {
       "put": {
         "operationId": "UpdateGwConfig",
@@ -852,6 +884,26 @@
       "type": "object",
       "properties": {
         "status": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiSetAutoUpdateFirmwareRequest": {
+      "type": "object",
+      "properties": {
+        "gatewayId": {
+          "type": "string"
+        },
+        "autoUpdate": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "appserver_serves_uiSetAutoUpdateFirmwareResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
           "type": "string"
         }
       }
