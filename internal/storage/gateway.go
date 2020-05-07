@@ -755,11 +755,12 @@ func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EU
 // GetFirstHeartbeat returns the first heartbeat
 func GetFirstHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (int64, error) {
 	var firstHeartbeat int64
-	err := sqlx.Select(db, &firstHeartbeat, `
+	err := sqlx.Get(db, &firstHeartbeat, `
 		select 
 			first_heartbeat
 		from gateway
-		where mac = $1`,
+		where mac = $1
+        limit 1`,
 		mac,
 	)
 	if err != nil {
@@ -767,6 +768,28 @@ func GetFirstHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) 
 	}
 
 	return firstHeartbeat, nil
+}
+
+func UpdateFirstHeartbeatToZero(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64) error {
+	res, err := db.Exec(`
+		update gateway
+			set first_heartbeat = 0
+		where
+			mac = $1`,
+		mac,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update first heartbeat to zero error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+
+	return nil
 }
 
 // GetLastHeartbeat returns the last heartbeat
@@ -790,6 +813,7 @@ func GetLastHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (
 
 func GetGatewayMiningList(ctx context.Context, db sqlx.Queryer, time int64) ([]lorawan.EUI64, error) {
 	var macs []lorawan.EUI64
+	// should be 10 mins
 	limit := config.C.ApplicationServer.MiningSetUp.GwOnlineLimit
 
 	err := sqlx.Select(db, &macs, `
