@@ -128,7 +128,7 @@ func (g Gateway) Validate() error {
 		if !serialNumberNewGWValidator.MatchString(g.SerialNumber) {
 			return ErrGatewayInvalidSerialNumber
 		}
-	} else {
+	} else if g.Model != "" {
 		if !serialNumberOldGWValidator.MatchString(g.SerialNumber) {
 			return ErrGatewayInvalidSerialNumber
 		}

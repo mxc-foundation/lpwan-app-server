@@ -124,13 +124,28 @@ func Setup(c config.Config) error {
 	return nil
 }
 
-func SetupDefaultGatewayProfile() error {
+func SetupDefault() error {
 	// get default network server
 	networkServerID := int64(1)
 	ctx := context.Background()
 	n, err := GetNetworkServer(ctx, DB(), networkServerID)
 	if err != nil {
-		return errors.Wrap(err, "No default network server found")
+		if err != ErrDoesNotExist {
+			return errors.Wrap(err, "Load network server internal error")
+		}
+
+		// insert default one
+		err := Transaction(func(tx sqlx.Ext) error {
+			return CreateNetworkServer(ctx, DB(), &NetworkServer{
+				Name:                        "default_network_server",
+				Server:                      "network-server:8000",
+				GatewayDiscoveryEnabled:     false,
+			})
+		})
+		if err != nil {
+			return errors.Wrap(err, "Failed to add default network server")
+		}
+
 	}
 
 	// create default gateway profile id

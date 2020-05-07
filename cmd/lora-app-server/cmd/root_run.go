@@ -185,8 +185,8 @@ func setupProvisionServer() error {
 }
 
 func setupDefaultEnv() error {
-	if err := storage.SetupDefaultGatewayProfile(); err != nil {
-		return errors.Wrap(err, "setup default gateway profile error")
+	if err := storage.SetupDefault(); err != nil {
+		return errors.Wrap(err, "setup default error")
 	}
 	return nil
 }
