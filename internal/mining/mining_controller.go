@@ -45,20 +45,36 @@ type Data struct {
 			LastUpdate string  `json:"last_update"`
 		}
 		USD struct {
-			Price      string `json:"price"`
+			Price      float64 `json:"price"`
 			LastUpdate string `json:"last_update"`
 		}
 	}
 }
 
+var dailyMxcPrice, totalMiningValue float64
+
 func Setup(conf config.Config) error {
 	log.Info("mining cron task begin...")
+
+	// usd between 10 - 12
+	rand.Seed(time.Now().UnixNano())
+	min := 10
+	max := 12
+	randNum := float64(rand.Intn(max-min+1) + min)
+	oneMxc, err := getUSDprice(conf)
+	if err != nil {
+		log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
+		return err
+	}
+	dailyMxcPrice = oneMxc
+
+	// totalMiningValue = 1 MXC:USD * rand amount
+	totalMiningValue = dailyMxcPrice * randNum
+
 	c := cron.New()
 	exeTime := config.C.ApplicationServer.MiningSetUp.ExecuteTime
 
-	// everyday 3 am
-	//err := c.AddFunc("0 0 3 * * ?", func() {
-	err := c.AddFunc(exeTime, func() {
+	err = c.AddFunc(exeTime, func() {
 		log.Info("Start token mining")
 		go func() {
 			err := tokenMining(context.Background(), conf)
@@ -68,10 +84,34 @@ func Setup(conf config.Config) error {
 		}()
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.WithError(err).Error("Start mining cron task failed")
 	}
-
 	go c.Start()
+
+	priceCron := cron.New()
+	// update MXC real price everyday 3 am
+	err = priceCron.AddFunc("0 0 3 * * ?", func() {
+		log.Info("Get new MXC Price")
+		go func() {
+			// usd between 10 - 12
+			rand.Seed(time.Now().UnixNano())
+			min := 10
+			max := 12
+			randNum := float64(rand.Intn(max-min+1) + min)
+			oneMxc, err := getUSDprice(conf)
+			if err != nil {
+				log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
+			}
+			dailyMxcPrice = oneMxc
+
+			//totalMiningValue = 1 MXC:USD * rand amount
+			totalMiningValue = dailyMxcPrice * randNum
+		}()
+	})
+	if err != nil {
+		log.WithError(err).Error("Start mining cron task failed")
+	}
+	go priceCron.Start()
 
 	return nil
 }
@@ -119,7 +159,7 @@ func getUSDprice(conf config.Config) (float64, error) {
 }
 
 // getMXCprice returns amount of MXC in USD
-func GetMXCprice(conf config.Config, amount string) (price string, err error) {
+func GetMXCprice(conf config.Config, amount string) (price float64, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
 	if err != nil {
@@ -156,12 +196,13 @@ func GetMXCprice(conf config.Config, amount string) (price string, err error) {
 	}
 
 	err = errors.New("GetMXCprice/Unable to get the MXC price from cmc")
-	return "", err
+	return 0, err
 }
 
 func tokenMining(ctx context.Context, conf config.Config) error {
 	current_time := time.Now().Unix()
 
+	// get the gateway list that should receive the mining tokens
 	mining_gws, err := storage.GetGatewayMiningList(ctx, storage.DB(), current_time)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
@@ -177,36 +218,26 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 		return nil
 	}
 
-	// usd between 10 - 12
-	rand.Seed(time.Now().UnixNano())
-	min := 10
-	max := 12
-	randNum := float64(rand.Intn(max-min+1) + min)
-	mxc_price, err := getUSDprice(conf)
-	if err != nil {
-		log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
-		return err
-	}
-
-	// amount = 1 MXC:USD * rand amount / amount of gateways
-	amount := mxc_price * randNum / float64(len(mining_gws))
-
 	var macs []string
 
-	// update the first heartbeat = current_time
+	// update the first heartbeat = 0
 	for _, v := range mining_gws {
-		err := storage.UpdateFirstHeartbeat(ctx, storage.DB(), v, current_time)
+		//err := storage.UpdateFirstHeartbeat(ctx, storage.DB(), v, current_time)
+		err := storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), v)
 		if err != nil {
-			log.WithError(err).Error("tokenMining/update first heartbeat error")
+			log.WithError(err).Error("tokenMining/update first heartbeat to zero error")
 		}
 		mac := lorawan.EUI64.String(v)
 		macs = append(macs, mac)
 	}
 
+	// 24 hours = 1440 mins
+	amount := totalMiningValue / 1440 * 10
+
 	miningSent := false
 	// if error, resend after one minute
 	for !miningSent {
-		err := sendMining(ctx, macs, mxc_price, amount)
+		err := sendMining(ctx, macs, dailyMxcPrice, amount)
 		if err != nil {
 			log.WithError(err).Error("send mining request to m2m error")
 			time.Sleep(60 * time.Second)
