@@ -871,10 +871,38 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 		return nil, grpc.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
+	provConf := config.C.ProvisionServer
+	provClient, err := provisionserver.CreateClientWithCert(provConf.ProvisionServer, provConf.CACert,
+		provConf.TLSCert, provConf.TLSKey)
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "failed to connect to provisioning server")
+	}
 
-	return &pb.GetGwPwdResponse{}, nil
+	resp, err := provClient.GetRootPWD(context.Background(), &api.GetRootPWDRequest{
+		Sn:  req.Sn,
+		Mac: req.GatewayId,
+	})
+	if err != nil {
+		return nil, grpc.Errorf(codes.Unknown, err.Error())
+	}
+
+	return &pb.GetGwPwdResponse{Password: resp.RootPassword}, nil
 }
 
 func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoUpdateFirmwareRequest) (*pb.SetAutoUpdateFirmwareResponse, error) {
-	return &pb.SetAutoUpdateFirmwareResponse{}, nil
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
+	}
+
+	if err := storage.SetAutoUpdateFirmware(ctx, storage.DB(), mac, req.AutoUpdate); err != nil {
+		return nil, grpc.Errorf(codes.Unknown, err.Error())
+	}
+
+	return &pb.SetAutoUpdateFirmwareResponse{Message: "Auto update firmware set successfully"}, nil
 }

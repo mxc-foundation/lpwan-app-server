@@ -140,8 +140,7 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 	}
 
 	// check if firmware updated
-	// TODO: check if auto-update is on first
-	if storage.AutoUpdate {
+	if gw.AutoUpdateFirmware {
 		firmware, err := storage.GetGatewayFirmware(storage.DB(), gw.Model, false)
 		if err != nil {
 			if err == storage.ErrDoesNotExist {
