@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/api/gw_appserver"
 	"math"
 	"net"
 	"time"
@@ -93,7 +92,7 @@ func Setup(conf config.Config) error {
 
 	appserver := grpc.NewServer(grpcOptsM2M...)
 	api.RegisterAppServerServiceServer(appserver, NewAppServerAPI())
-	gw_appserver.RegisterHeartbeatServiceServer(appserver, NewAppServerAPI())
+	gwapi.RegisterHeartbeatServiceServer(appserver, NewAppServerAPI())
 
 	appLn, err := net.Listen("tcp", conf.ApplicationServer.APIForM2M.Bind)
 	if err != nil {
@@ -1062,7 +1061,7 @@ func unwrapASKey(ke *common.KeyEnvelope) (lorawan.AES128Key, error) {
 	return key, fmt.Errorf("unknown kek label: %s", ke.KekLabel)
 }
 
-func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatRequest) (*empty.Empty, error) {
+func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatRequest) (*gwapi.HeartbeatResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayMac)); err != nil {
 		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1073,7 +1072,10 @@ func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatReques
 	last_heartbeat, err := storage.GetLastHeartbeat(ctx, storage.DB(), mac)
 	if err != nil {
 		log.WithError(err).Error("Heartbeat/Cannot get last heartbeat from DB.")
-		return nil, err
+		return &gwapi.HeartbeatResponse{
+			NewFirmwareLink: "",
+			Config:          "",
+		}, err
 	}
 
 	// if the gateway is new gateway
@@ -1084,22 +1086,34 @@ func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatReques
 			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
-				return nil, err
+				return &gwapi.HeartbeatResponse{
+					NewFirmwareLink: "",
+					Config:          "",
+				}, err
 			}
 
 			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
-				return nil, err
+				return &gwapi.HeartbeatResponse{
+					NewFirmwareLink: "",
+					Config:          "",
+				}, err
 			}
 
 			err = storage.UpdateGatewayModel(ctx, storage.DB(), mac, req.Model)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update gateway model error")
-				return nil, err
+				return &gwapi.HeartbeatResponse{
+					NewFirmwareLink: "",
+					Config:          "",
+				}, err
 			}
 
-			return &empty.Empty{}, nil
+			return &gwapi.HeartbeatResponse{
+				NewFirmwareLink: "",
+				Config:          "",
+			}, nil
 		}
 
 		// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
@@ -1108,46 +1122,70 @@ func (a *AppServerAPI) Heartbeat(ctx context.Context, req *gwapi.HeartbeatReques
 			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
-				return &empty.Empty{}, err
+				return &gwapi.HeartbeatResponse{
+					NewFirmwareLink: "",
+					Config:          "",
+				}, err
 			}
 
 			//err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			err = storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), mac)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
-				return &empty.Empty{}, err
+				return &gwapi.HeartbeatResponse{
+					NewFirmwareLink: "",
+					Config:          "",
+				}, err
 			}
 
-			return &empty.Empty{}, nil
+			return &gwapi.HeartbeatResponse{
+				NewFirmwareLink: "",
+				Config:          "",
+			}, nil
 		}
 
 		firstHeartbeat, err := storage.GetFirstHeartbeat(ctx, storage.DB(), mac)
 		if err != nil {
 			log.WithError(err).Error("Heartbeat/Get first heartbeat error")
-			return &empty.Empty{}, err
+			return &gwapi.HeartbeatResponse{
+				NewFirmwareLink: "",
+				Config:          "",
+			}, err
 		}
 
 		if firstHeartbeat == 0 {
 			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
-				return &empty.Empty{}, err
+				return &gwapi.HeartbeatResponse{
+					NewFirmwareLink: "",
+					Config:          "",
+				}, err
 			}
 		}
 
 		err = storage.UpdateLastHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 		if err != nil {
 			log.WithError(err).Error("Heartbeat/Update last heartbeat error")
-			return &empty.Empty{}, err
+			return &gwapi.HeartbeatResponse{
+				NewFirmwareLink: "",
+				Config:          "",
+			}, err
 		}
 	} else {
 		// old gateway
 		err := storage.UpdateGatewayModel(ctx, storage.DB(), mac, req.Model)
 		if err != nil {
 			log.WithError(err).Error("Heartbeat/Update gateway model error")
-			return nil, err
+			return &gwapi.HeartbeatResponse{
+				NewFirmwareLink: "",
+				Config:          "",
+			}, err
 		}
 	}
 
-	return &empty.Empty{}, nil
+	return &gwapi.HeartbeatResponse{
+		NewFirmwareLink: "",
+		Config:          "",
+	}, nil
 }
