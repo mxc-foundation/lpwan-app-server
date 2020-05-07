@@ -329,7 +329,47 @@ class GatewayStore extends EventEmitter {
       });
     });
   }
+
+  async setAutoUpdateFirmware (gatewayId, autoUpdate) {
+    try {
+        const client = await this.swagger;
+        let resp = await client.apis.GatewayService.SetAutoUpdateFirmware({
+          gatewayId,
+          body: {
+            gatewayId,
+            autoUpdate
+          }
+        });
+    
+        resp = await checkStatus(resp);
+        this.emit("update");
+        this.notify("updated");
+  
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    }
+  }
+
+  async getGatewayConfig (gatewayId) {
+    /* try {
+        const client = await this.swagger;
+        let resp = await client.apis.GatewayService.GetGatewayConfig({
+          gatewayId
+        });
+    
+        resp = await checkStatus(resp);
+        this.emit("update");
+        this.notify("updated");
+  
+        return resp.obj;
+      } catch (error) {
+        errorHandler(error);
+    } */
+  }
+  
 }
+
 
 const gatewayStore = new GatewayStore();
 export default gatewayStore;

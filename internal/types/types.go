@@ -1,7 +1,9 @@
 package types
 
 import (
+	"bytes"
 	"encoding/hex"
+	"errors"
 	"fmt"
 )
 
@@ -28,4 +30,18 @@ func (e *MD5SUM) UnmarshalText(text []byte) error {
 // String implement fmt.Stringer.
 func (e MD5SUM) String() string {
 	return hex.EncodeToString(e[:])
+}
+
+// Scan implements sql.Scanner.
+func (e *MD5SUM) Scan(src interface{}) error {
+	b, ok := src.([]byte)
+	if !ok {
+		return errors.New("Scan md5sum: []byte type expected")
+	}
+	var tmp = []uint8{0}
+	if bytes.Equal(b[:], tmp[:]) == false && len(b) != len(e) {
+		return fmt.Errorf("Scan md5sum: []byte must have length %d", len(e))
+	}
+	copy(e[:], b)
+	return nil
 }

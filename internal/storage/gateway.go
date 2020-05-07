@@ -1,10 +1,12 @@
 package storage
 
 import (
+	"os"
 	"context"
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"github.com/robfig/cron"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,8 +15,10 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/lib/pq"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
@@ -59,6 +63,7 @@ type Gateway struct {
 	SerialNumber     string        `db:"sn"`
 	FirmwareHash     types.MD5SUM  `db:"firmware_hash"`
 }
+
 var AutoUpdate = true
 
 type GatewayFirmware struct {
@@ -128,11 +133,98 @@ func (g Gateway) Validate() error {
 		if !serialNumberNewGWValidator.MatchString(g.SerialNumber) {
 			return ErrGatewayInvalidSerialNumber
 		}
-	} else {
+	} else if g.Model != "" {
 		if !serialNumberOldGWValidator.MatchString(g.SerialNumber) {
 			return ErrGatewayInvalidSerialNumber
 		}
 	}
+
+	return nil
+}
+
+var SupernodeAddr string
+func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
+	SupernodeAddr = os.Getenv("APPSERVER")
+	if strings.HasPrefix(SupernodeAddr, "https://") {
+		SupernodeAddr = strings.Replace(SupernodeAddr, "https://", "", -1)
+	}
+	if strings.HasPrefix(SupernodeAddr, "http://") {
+		SupernodeAddr = strings.Replace(SupernodeAddr, "http://", "", -1)
+	}
+	if strings.HasSuffix(SupernodeAddr, ":8080") {
+		SupernodeAddr = strings.Replace(SupernodeAddr, ":8080", "", -1)
+	}
+
+	var bindPortOldGateway string
+	var bindPortNewGateway string
+
+	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.OldGateway.Bind, ":"); len(strArray) != 2 {
+		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", conf.ApplicationServer.APIForGateway.OldGateway.Bind))
+	} else {
+		bindPortOldGateway = strArray[1]
+	}
+
+	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.NewGateway.Bind, ":"); len(strArray) != 2 {
+		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", conf.ApplicationServer.APIForGateway.NewGateway.Bind))
+	} else {
+		bindPortNewGateway = strArray[1]
+	}
+
+	c := cron.New()
+	err := c.AddFunc(conf.ProvisionServer.UpdateSchedule, func() {
+		log.Info("Check firmware update...")
+		gwFwList, err := GetGatewayFirmwareList(DB())
+		if err != nil {
+			log.WithError(err).Errorf("Failed to get gateway firmware list.")
+			return
+		}
+
+		// send update
+		psClient, err := provisionserver.CreateClientWithCert(conf.ProvisionServer.ProvisionServer,
+			conf.ProvisionServer.CACert,
+			conf.ProvisionServer.TLSCert,
+			conf.ProvisionServer.TLSKey)
+		if err != nil {
+			log.WithError(err).Errorf("Create Provisioning server client error")
+			return
+		}
+
+		for _, v := range gwFwList {
+			res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
+				Model:                v.Model,
+				SuperNodeAddr:        SupernodeAddr,
+				PortOldGateway:       bindPortOldGateway,
+				PortNewGateway:       bindPortNewGateway,
+			})
+			if err != nil {
+				log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
+				continue
+			}
+
+			var md5sum types.MD5SUM
+			if err := md5sum.UnmarshalText([]byte(res.FirmwareHash)); err != nil {
+				log.WithError(err).Errorf("Failed to unmarshal firmware hash: %s", res.FirmwareHash)
+				continue
+			}
+
+			gatewayFw := GatewayFirmware{
+				Model:        v.Model,
+				ResourceLink: res.ResourceLink,
+				FirmwareHash: md5sum,
+			}
+
+			model, err := UpdateGatewayFirmware(DB(), &gatewayFw)
+			if model == "" {
+				log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
+			}
+
+		}
+	})
+	if err != nil {
+		log.Fatalf("Failed to set update schedule when set up provisioning server config: %s", err.Error())
+	}
+
+	go c.Start()
 
 	return nil
 }
@@ -236,7 +328,7 @@ func UpdateGatewayConfigByGwId(ctx context.Context, db sqlx.Ext, config string, 
 		where
 			mac = $2`,
 		config,
-		mac)
+		mac[:])
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
 	}
@@ -496,6 +588,28 @@ func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 		return errors.Wrap(err, "get network-server error")
 	}
 
+	// if the gateway is MatchX gateway, unregister it from provisioning server
+	obj, err := GetGateway(ctx, db, mac, false)
+	if err != nil {
+		return errors.Wrap(err, "get gateway error")
+	}
+	if strings.HasPrefix(obj.Model, "MX") {
+		provConf := config.C.ProvisionServer
+		provClient, err := provisionserver.CreateClientWithCert(provConf.ProvisionServer, provConf.CACert,
+			provConf.TLSCert, provConf.TLSKey)
+		if err != nil {
+			return errors.Wrap(err, "failed to connect to provisioning server")
+		}
+
+		_, err = provClient.UnregisterGw(context.Background(), &psPb.UnregisterGwRequest{
+			Sn:  obj.SerialNumber,
+			Mac: obj.MAC.String(),
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to unregister from provisioning server")
+		}
+	}
+
 	res, err := db.Exec("delete from gateway where mac = $1", mac[:])
 	if err != nil {
 		return errors.Wrap(err, "delete error")
@@ -629,7 +743,7 @@ func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EU
 			config
 		from gateway
 		where mac = $1`,
-		mac,
+		mac[:],
 	)
 	if err != nil {
 		return "", errors.Wrap(err, "select error")

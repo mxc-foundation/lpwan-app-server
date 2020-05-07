@@ -6,12 +6,12 @@ import (
 	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"google.golang.org/grpc/status"
-	"strings"
-
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"strings"
 
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
@@ -23,6 +23,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
@@ -66,14 +67,19 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err := storeGateway(ctx, req.Gateway); err != nil {
+	if err := storeGateway(ctx, req.Gateway, &storage.Gateway{
+		Model:            "",
+		OsVersion:        "",
+		Statistics:       "",
+		SerialNumber:     "",
+	}); err != nil {
 		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func storeGateway(ctx context.Context, req *pb.Gateway) (err error) {
+func storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *storage.Gateway) (err error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -118,22 +124,31 @@ func storeGateway(ctx context.Context, req *pb.Gateway) (err error) {
 	}
 
 	// get default gateway config
-
+	configByte, err := static.Asset("gateway-config/global_conf.json.sx1250.CN490")
+	if err != nil {
+		log.WithError(err).Error("Load default config error: gateway-config/global_conf.json.sx1250.CN490")
+	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
 		err = storage.CreateGateway(ctx, tx, &storage.Gateway{
-			MAC:             mac,
-			Name:            req.Name,
-			Description:     req.Description,
-			OrganizationID:  req.OrganizationId,
-			Ping:            req.DiscoveryEnabled,
-			NetworkServerID: req.NetworkServerId,
-			Latitude:        req.Location.Latitude,
-			Longitude:       req.Location.Longitude,
-			Altitude:        req.Location.Altitude,
-			Model:           "null",
-			FirstHeartbeat:  0,
-			LastHeartbeat:   0,
+			MAC:              mac,
+			Name:             req.Name,
+			Description:      req.Description,
+			OrganizationID:   req.OrganizationId,
+			Ping:             req.DiscoveryEnabled,
+			NetworkServerID:  req.NetworkServerId,
+			Latitude:         req.Location.Latitude,
+			Longitude:        req.Location.Longitude,
+			Altitude:         req.Location.Altitude,
+			Model:            defaultGw.Model,
+			FirstHeartbeat:   0,
+			LastHeartbeat:    0,
+			Config:           string(configByte),
+			OsVersion:        defaultGw.OsVersion,
+			Statistics:       defaultGw.Statistics,
+			SerialNumber:     defaultGw.SerialNumber,
+			FirmwareHash:     types.MD5SUM{},
+
 		})
 		if err != nil {
 			return helpers.ErrToRPCError(err)
@@ -710,12 +725,12 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 
 	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
 	gwConfig, err := storage.GetGatewayConfigByGwId(ctx, storage.DB(), mac)
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unavailable, "GetGwConfig/unable to get gateway config from DB", err)
+		return nil, grpc.Errorf(codes.NotFound, "GetGwConfig/unable to get gateway config from DB", err)
 	}
 
 	return &pb.GetGwConfigResponse{Conf: gwConfig}, nil
@@ -730,13 +745,13 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 
 	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
 	if err := storage.UpdateGatewayConfigByGwId(ctx, storage.DB(), req.Conf, mac); err != nil {
 		log.WithError(err).Error("Update conf to gw failed")
 		return &pb.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
-			grpc.Errorf(codes.Unauthenticated, "cannot update gateway config: %s", err)
+			grpc.Errorf(codes.Internal, "cannot update gateway config: %s", err)
 	}
 
 	return &pb.UpdateGwConfigResponse{
@@ -762,7 +777,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	// register gateway with current supernode on remote provisioning server
 	provReq := api.RegisterGWRequest{
 		Sn:            req.Sn,
-		SuperNodeAddr: provisionserver.SupernodeAddr,
+		SuperNodeAddr: storage.SupernodeAddr,
 		OrgId:         req.OrganizationId,
 	}
 
@@ -831,7 +846,12 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	}
 
 	// create gateway
-	if err := storeGateway(ctx, &gateway); err != nil {
+	if err := storeGateway(ctx, &gateway, &storage.Gateway{
+		Model:            resp.Model,
+		OsVersion:        resp.OsVersion,
+		Statistics:       "",
+		SerialNumber:     resp.Sn,
+	}); err != nil {
 		return nil, err
 	}
 
@@ -841,6 +861,16 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 }
 
 func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb.GetGwPwdResponse, error) {
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	err := a.validator.Validate(ctx, auth.ValidateGatewayAccess(auth.Read, mac))
+	if err != nil {
+		return nil, grpc.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
+	}
+
 
 	return &pb.GetGwPwdResponse{}, nil
 }
