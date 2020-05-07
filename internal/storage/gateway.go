@@ -328,7 +328,7 @@ func UpdateGatewayConfigByGwId(ctx context.Context, db sqlx.Ext, config string, 
 		where
 			mac = $2`,
 		config,
-		mac)
+		mac[:])
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
 	}
@@ -743,7 +743,7 @@ func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EU
 			config
 		from gateway
 		where mac = $1`,
-		mac,
+		mac[:],
 	)
 	if err != nil {
 		return "", errors.Wrap(err, "select error")
