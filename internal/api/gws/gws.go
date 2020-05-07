@@ -4,13 +4,6 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
-	"github.com/mxc-foundation/lpwan-app-server/internal/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"net"
-	"strings"
-	"time"
-
 	"github.com/brocaar/lorawan"
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
@@ -18,8 +11,14 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"net"
+	"strings"
+	"time"
 )
 
 // Setup configures the package.
@@ -117,15 +116,64 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 		currentHeartbeat := time.Now().Unix()
 		lastHeartbeat := gw.LastHeartbeat
 
-		// if last heartbeat is 0, update first, last heartbeat
-		// if offline longer than 30 mins, last heartbeat and first heartbeat = current heartbeat
-		if lastHeartbeat == 0 || currentHeartbeat-lastHeartbeat > 1800 {
-			gw.LastHeartbeat = currentHeartbeat
-			gw.FirstHeartbeat = currentHeartbeat
-		} else {
-			gw.LastHeartbeat = currentHeartbeat
+		// if last heartbeat == 0 is a new gateway
+		if gw.LastHeartbeat == 0 {
+			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			if err != nil {
+				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
+				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
+			}
+
+			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			if err != nil {
+				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
+				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
+			}
+
+			goto Next
+		}
+
+		// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
+		//if current_heartbeat-last_heartbeat > 600 {
+		if currentHeartbeat-lastHeartbeat > config.C.ApplicationServer.MiningSetUp.HeartbeatOfflineLimit {
+			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			if err != nil {
+				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
+				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
+			}
+
+			//err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
+			err = storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), gatewayEUI)
+			if err != nil {
+				log.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
+				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat to zero error")
+			}
+			goto Next
+		}
+
+		// if first heartbeat != 0 and currentHeartbeat - lastHeart !> 600
+		firstHeartbeat, err := storage.GetFirstHeartbeat(ctx, storage.DB(), gatewayEUI)
+		if err != nil {
+			log.WithError(err).Error("Heartbeat/Get first heartbeat error")
+			return nil, status.Errorf(codes.DataLoss, "Get firstHeartbeat from DB error")
+		}
+
+		if firstHeartbeat == 0 {
+			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			if err != nil {
+				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
+				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
+			}
+		}
+
+		err = storage.UpdateLastHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+		if err != nil {
+			log.WithError(err).Error("Heartbeat/Update last heartbeat error")
+			return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 		}
 	}
+
+	Next:
 
 	// compare config hash
 	configHash := md5.Sum([]byte(gw.Config))
