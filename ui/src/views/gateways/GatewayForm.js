@@ -54,7 +54,7 @@ class GatewayForm extends Component {
     // Create Gateway
     if (!this.props.update) {
       this.setCurrentPosition();
-      //return;
+      return;
       // Update Gateway
     } else {
       this.setKVArrayBoards();
