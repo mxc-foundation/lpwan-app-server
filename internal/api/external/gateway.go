@@ -777,7 +777,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	// register gateway with current supernode on remote provisioning server
 	provReq := api.RegisterGWRequest{
 		Sn:            req.Sn,
-		SuperNodeAddr: provisionserver.SupernodeAddr,
+		SuperNodeAddr: storage.SupernodeAddr,
 		OrgId:         req.OrganizationId,
 	}
 

@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"os"
 	"os/signal"
@@ -42,6 +41,7 @@ func run(cmd *cobra.Command, args []string) error {
 		printStartMessage,
 		setupStorage,
 		setupClient,
+		setupUpdateFirmwareFromPs,
 		setupDefaultEnv,
 		migrateGatewayStats,
 		setupIntegration,
@@ -152,10 +152,6 @@ func setupClient() error {
 		return err
 	}
 
-	if err := setupProvisionServer(); err != nil {
-		return err
-	}
-
 	if err := setupM2MServer(); err != nil {
 		return err
 	}
@@ -177,9 +173,9 @@ func setupNetworkServer() error {
 	return nil
 }
 
-func setupProvisionServer() error {
-	if err := provisionserver.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup provisionserver error")
+func setupUpdateFirmwareFromPs() error {
+	if err := storage.UpdateFirmwareFromProvisioningServer(config.C); err != nil {
+		return errors.Wrap(err, "setup update firmware error")
 	}
 	return nil
 }
