@@ -7,10 +7,6 @@ create table network_server (
     server varchar(255) not null 
 );
 
-insert into network_server
-    (created_at, updated_at, name, server)
-    values ('now', 'now', 'default_network_server', 'network-server:8000');
-
 create index idx_network_server_created_at on network_server(created_at);
 create index idx_network_server_updated_at on network_server(updated_at);
 
