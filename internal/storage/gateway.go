@@ -144,6 +144,13 @@ func (g Gateway) Validate() error {
 var SupernodeAddr string
 
 func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
+	log.WithFields(log.Fields{
+		"provisioning-server": conf.ProvisionServer.ProvisionServer,
+		"caCert":  conf.ProvisionServer.CACert,
+		"tlsCert": conf.ProvisionServer.TLSCert,
+		"tlsKey":  conf.ProvisionServer.TLSKey,
+		"schedule":conf.ProvisionServer.UpdateSchedule,
+	}).Info("Start schedule to update gateway firmware...")
 	SupernodeAddr = os.Getenv("APPSERVER")
 	if strings.HasPrefix(SupernodeAddr, "https://") {
 		SupernodeAddr = strings.Replace(SupernodeAddr, "https://", "", -1)
