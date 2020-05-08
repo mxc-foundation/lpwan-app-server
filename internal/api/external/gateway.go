@@ -804,6 +804,11 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		}
 	}
 
+	nServers, err := storage.GetNetworkServers(ctx, storage.DB(), 1,0)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "Failed to load network servers: %s", err.Error())
+	}
+
 	gateway := pb.Gateway{
 		Id:                   resp.Mac,
 		Name:                 fmt.Sprintf("Gateway_%s", resp.Sn),
@@ -817,7 +822,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		},
 		OrganizationId:       req.OrganizationId,
 		DiscoveryEnabled:     true,
-		NetworkServerId:      1,
+		NetworkServerId:      nServers[0].ID,
 		GatewayProfileId:     "",
 		Boards:               []*pb.GatewayBoard{},
 	}
