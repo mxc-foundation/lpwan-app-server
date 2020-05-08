@@ -340,6 +340,10 @@ func (s *WalletServerAPI) GetMXCprice (ctx context.Context, req *api.GetMXCprice
 		}
 	}
 
+	if req.MxcPrice == "0" {
+		return &api.GetMXCpriceResponse{MxcPrice: "0"}, nil
+	}
+
 	price, err := mining.GetMXCprice(config.C, req.MxcPrice)
 	if err != nil {
 		log.WithError(err).Error(logInfo)

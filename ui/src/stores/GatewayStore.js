@@ -106,7 +106,7 @@ class GatewayStore extends EventEmitter {
       client.apis.GatewayService.Register({
         body: {
           organizationId: gateway.organizationId,
-          sn: gateway.sn
+          sn: gateway.sn.serial
         },
       })
       .then(checkStatus)
