@@ -143,7 +143,7 @@ func SetupDefault() error {
 			})
 		})
 		if err != nil {
-			return errors.Wrap(err, "Failed to add default network server")
+			return nil
 		}
 
 	}
