@@ -984,6 +984,8 @@ class GatewayForm extends Component {
                         </Col>
 
                       </Row>
+                      {this.props.update &&
+                      <>
                       <Row>
                         <Col sm={12} lg={6}>
                           <Field
@@ -1123,6 +1125,7 @@ class GatewayForm extends Component {
                           />
                         </Col>
                       </Row>
+                      
                       <Row>
                         <Col sm={12} lg={4}>
                           <CustomInput
@@ -1154,8 +1157,9 @@ class GatewayForm extends Component {
                             onChange={e => this.onToggle('forward_crc_disabled', e)}
                           />
                         </Col>
-
                       </Row>
+                      </>
+                      }
                       <Row>&nbsp;</Row>
                       <GatewayFormLBT
                         records={getLBTChannels(this.state.gatewayConfig)}

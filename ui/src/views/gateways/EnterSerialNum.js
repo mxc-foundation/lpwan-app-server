@@ -234,7 +234,10 @@ class EnterSerialNum extends Component {
                                             </div>
                                             <Row>
                                                 <Col className={classes.between}>
-                                                    <Link to={`/organizations/${currentOrgID}/gateways`}><Button color="secondary" onClick={this.back}>{i18n.t(`${packageNS}:menu.common.back`)}</Button></Link>
+                                                    <div>
+                                                        <Link to={`/organizations/${currentOrgID}/gateways`}><Button color="secondary" onClick={this.back}>{i18n.t(`${packageNS}:menu.common.back`)}</Button></Link>
+                                                        <Link to={`/organizations/${currentOrgID}/gateways/create`}><Button color="danger" onClick={this.back}>{i18n.t(`${packageNS}:menu.common.skip`)}</Button></Link>
+                                                    </div>
                                                     <Button type="submit" color="secondary" className="btn" >{i18n.t(`${packageNS}:menu.common.submit`)}</Button>
                                                 </Col>
                                             </Row>
