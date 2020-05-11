@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"strings"
+	"text/template"
 	"time"
 
 	uuid "github.com/gofrs/uuid"
@@ -16,6 +16,8 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // HashIterations configures the Hash iteration
@@ -120,7 +122,6 @@ func Setup(c config.Config) error {
 		log.WithField("count", n).Info("storage: PostgreSQL data migrations applied")
 	}
 
-
 	return nil
 }
 
@@ -137,13 +138,13 @@ func SetupDefault() error {
 		// insert default one
 		err := Transaction(func(tx sqlx.Ext) error {
 			return CreateNetworkServer(ctx, DB(), &NetworkServer{
-				Name:                        "default_network_server",
-				Server:                      "network-server:8000",
-				GatewayDiscoveryEnabled:     false,
+				Name:                    "default_network_server",
+				Server:                  "network-server:8000",
+				GatewayDiscoveryEnabled: false,
 			})
 		})
 		if err != nil {
-			return errors.Wrap(err, "Failed to add default network server")
+			return nil
 		}
 
 	}
@@ -172,9 +173,9 @@ func SetupDefault() error {
 	gp := GatewayProfile{
 		NetworkServerID: n.ID,
 		Name:            "default_gateway_profile",
-		GatewayProfile:  ns.GatewayProfile{
-			Channels:             []uint32{0,1,2},
-			ExtraChannels:        []*ns.GatewayProfileExtraChannel{},
+		GatewayProfile: ns.GatewayProfile{
+			Channels:      []uint32{0, 1, 2},
+			ExtraChannels: []*ns.GatewayProfileExtraChannel{},
 		},
 	}
 
@@ -184,6 +185,14 @@ func SetupDefault() error {
 	if err != nil {
 		return errors.Wrap(err, "Failed to create default gateway profile")
 	}
+
+	return nil
+}
+
+func LoadTemplates() error {
+	// load gateway config templates
+	GatewayConfigTemplate = template.Must(template.New("gateway-config/global_conf.json.sx1250.CN490").Parse(
+			string(static.MustAsset("gateway-config/global_conf.json.sx1250.CN490"))))
 
 	return nil
 }

@@ -2,6 +2,7 @@ package external
 
 import (
 	"context"
+	"fmt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"strconv"
 
@@ -339,11 +340,17 @@ func (s *WalletServerAPI) GetMXCprice (ctx context.Context, req *api.GetMXCprice
 		}
 	}
 
+	if req.MxcPrice == "0" {
+		return &api.GetMXCpriceResponse{MxcPrice: "0"}, nil
+	}
+
 	price, err := mining.GetMXCprice(config.C, req.MxcPrice)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to get price from CMC")
 	}
 
-	return &api.GetMXCpriceResponse{MxcPrice: price}, nil
+	strPrice := fmt.Sprintf("%f", price)
+
+	return &api.GetMXCpriceResponse{MxcPrice: strPrice}, nil
 }

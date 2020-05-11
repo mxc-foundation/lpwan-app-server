@@ -43,6 +43,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupClient,
 		setupUpdateFirmwareFromPs,
 		setupDefaultEnv,
+		setupLoadGatewayTemplates,
 		migrateGatewayStats,
 		setupIntegration,
 		setupSMTP,
@@ -183,6 +184,13 @@ func setupUpdateFirmwareFromPs() error {
 func setupDefaultEnv() error {
 	if err := storage.SetupDefault(); err != nil {
 		return errors.Wrap(err, "setup default error")
+	}
+	return nil
+}
+
+func setupLoadGatewayTemplates() error {
+	if err := storage.LoadTemplates(); err != nil {
+		return errors.Wrap(err, "load gateway config template error")
 	}
 	return nil
 }
