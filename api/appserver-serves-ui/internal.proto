@@ -66,6 +66,40 @@ service InternalService {
 			body: "*"
 		};
 	}
+
+	rpc GetTOTPStatus (TOTPStatusRequest) returns (TOTPStatusResponse) {
+		option (google.api.http) = {
+			get: "/api/internal/totp-status"
+		};
+	}
+
+	rpc GetTOTPConfiguration (GetTOTPConfigurationRequest) returns (GetTOTPConfigurationResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/totp-configuration"
+                        body: "*"
+		};
+	}
+
+	rpc EnableTOTP (TOTPStatusRequest) returns (TOTPStatusResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/totp-enable"
+                        body: "*"
+		};
+	}
+
+	rpc DisableTOTP (TOTPStatusRequest) returns (TOTPStatusResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/totp-disable"
+                        body: "*"
+		};
+	}
+
+	rpc GetRecoveryCodes (GetRecoveryCodesRequest) returns (GetRecoveryCodesResponse) {
+		option (google.api.http) = {
+			post: "/api/internal/totp-recovery-codes"
+                        body: "*"
+		};
+	}
 }
 
 message GoogleRecaptchaRequest {
@@ -234,4 +268,39 @@ message FinishRegistrationRequest {
     string organizationDisplayName = 2;
     int64 userId = 3;
     string password = 4;
+}
+
+message TOTPStatusResponse {
+    // set to true if TOTP is enabled
+    bool enabled = 1;
+}
+
+message GetTOTPConfigurationRequest {
+    // the size of QR code image
+    int64 qr_code_size = 1;
+}
+
+message GetTOTPConfigurationResponse {
+    // otpauth:// url containing details of TOTP configuration
+    string url = 1;
+    // the secret encoded as a string of 32 characters
+    string secret = 2;
+    // list of recovery codes
+    repeated string recovery_code = 3;
+    // QR code base64 encoded in PNG format
+    string qr_code = 4;
+}
+
+message TOTPStatusRequest {
+}
+
+message GetRecoveryCodesRequest {
+    // if true, then old recovery codes will be removed and new will be
+    // generated, otherwise the old codes will remain valid and will be returned
+    bool regenerate = 1;
+}
+
+message GetRecoveryCodesResponse {
+    // list of recovery codes
+    repeated string recovery_code = 1;
 }

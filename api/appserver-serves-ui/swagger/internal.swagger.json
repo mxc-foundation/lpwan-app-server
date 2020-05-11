@@ -192,6 +192,126 @@
         ]
       }
     },
+    "/api/internal/totp-configuration": {
+      "post": {
+        "operationId": "GetTOTPConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetTOTPConfigurationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetTOTPConfigurationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-disable": {
+      "post": {
+        "operationId": "DisableTOTP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTOTPStatusResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTOTPStatusRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-enable": {
+      "post": {
+        "operationId": "EnableTOTP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTOTPStatusResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTOTPStatusRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-recovery-codes": {
+      "post": {
+        "operationId": "GetRecoveryCodes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetRecoveryCodesResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetRecoveryCodesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/totp-status": {
+      "get": {
+        "operationId": "GetTOTPStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiTOTPStatusResponse"
+            }
+          }
+        },
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
     "/api/internal/verify-g-recaptcha": {
       "post": {
         "operationId": "GetVerifyingGoogleRecaptcha",
@@ -291,6 +411,62 @@
         },
         "password": {
           "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetRecoveryCodesRequest": {
+      "type": "object",
+      "properties": {
+        "regenerate": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "if true, then old recovery codes will be removed and new will be\ngenerated, otherwise the old codes will remain valid and will be returned"
+        }
+      }
+    },
+    "appserver_serves_uiGetRecoveryCodesResponse": {
+      "type": "object",
+      "properties": {
+        "recoveryCode": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of recovery codes"
+        }
+      }
+    },
+    "appserver_serves_uiGetTOTPConfigurationRequest": {
+      "type": "object",
+      "properties": {
+        "qrCodeSize": {
+          "type": "string",
+          "format": "int64",
+          "title": "the size of QR code image"
+        }
+      }
+    },
+    "appserver_serves_uiGetTOTPConfigurationResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "title": "otpauth:// url containing details of TOTP configuration"
+        },
+        "secret": {
+          "type": "string",
+          "title": "the secret encoded as a string of 32 characters"
+        },
+        "recoveryCode": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of recovery codes"
+        },
+        "qrCode": {
+          "type": "string",
+          "title": "QR code base64 encoded in PNG format"
         }
       }
     },
@@ -501,6 +677,19 @@
         },
         "language": {
           "$ref": "#/definitions/appserver_serves_uiLanguage"
+        }
+      }
+    },
+    "appserver_serves_uiTOTPStatusRequest": {
+      "type": "object"
+    },
+    "appserver_serves_uiTOTPStatusResponse": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "set to true if TOTP is enabled"
         }
       }
     },
