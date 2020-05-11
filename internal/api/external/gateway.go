@@ -1,6 +1,7 @@
 package external
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
@@ -23,7 +24,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
@@ -124,9 +124,23 @@ func storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *storage.Gatew
 	}
 
 	// get default gateway config
-	configByte, err := static.Asset("gateway-config/global_conf.json.sx1250.CN490")
-	if err != nil {
-		log.WithError(err).Error("Load default config error: gateway-config/global_conf.json.sx1250.CN490")
+	var defaultGwConfig bytes.Buffer
+	serverPort := ""
+	if strings.HasPrefix(defaultGw.Model, "MX19") {
+		serverPort = strings.Replace(config.C.ApplicationServer.APIForGateway.NewGateway.Bind, "0.0.0.0:", "", -1)
+	} else if defaultGw.Model != "" {
+		serverPort = strings.Replace(config.C.ApplicationServer.APIForGateway.OldGateway.Bind, "0.0.0.0:", "", -1)
+	}
+
+	if err := storage.GatewayConfigTemplate.Execute(&defaultGwConfig, struct {
+		GatewayID, ServerAddr, ServerPort string
+	}{
+		GatewayID: mac.String(),
+		ServerAddr: storage.SupernodeAddr,
+		ServerPort: serverPort,
+	});err != nil {
+		log.WithError(err).Error("Failed to execute gateway config template")
+		return err
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -143,7 +157,7 @@ func storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *storage.Gatew
 			Model:            defaultGw.Model,
 			FirstHeartbeat:   0,
 			LastHeartbeat:    0,
-			Config:           string(configByte),
+			Config:           defaultGwConfig.String(),
 			OsVersion:        defaultGw.OsVersion,
 			Statistics:       defaultGw.Statistics,
 			SerialNumber:     defaultGw.SerialNumber,
@@ -804,6 +818,11 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		}
 	}
 
+	nServers, err := storage.GetNetworkServers(ctx, storage.DB(), 1,0)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "Failed to load network servers: %s", err.Error())
+	}
+
 	gateway := pb.Gateway{
 		Id:                   resp.Mac,
 		Name:                 fmt.Sprintf("Gateway_%s", resp.Sn),
@@ -817,7 +836,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		},
 		OrganizationId:       req.OrganizationId,
 		DiscoveryEnabled:     true,
-		NetworkServerId:      1,
+		NetworkServerId:      nServers[0].ID,
 		GatewayProfileId:     "",
 		Boards:               []*pb.GatewayBoard{},
 	}

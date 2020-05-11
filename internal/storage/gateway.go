@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
@@ -35,6 +36,8 @@ import (
 var gatewayNameRegexp = regexp.MustCompile(`^[\w-]+$`)
 var serialNumberOldGWValidator = regexp.MustCompile(`^MX([A-Z1-9]){7}$`)
 var serialNumberNewGWValidator = regexp.MustCompile(`^M2X([A-Z1-9]){8}$`)
+
+var GatewayConfigTemplate = &template.Template{}
 
 // Gateway represents a gateway.
 type Gateway struct {
@@ -144,6 +147,13 @@ func (g Gateway) Validate() error {
 var SupernodeAddr string
 
 func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
+	log.WithFields(log.Fields{
+		"provisioning-server": conf.ProvisionServer.ProvisionServer,
+		"caCert":              conf.ProvisionServer.CACert,
+		"tlsCert":             conf.ProvisionServer.TLSCert,
+		"tlsKey":              conf.ProvisionServer.TLSKey,
+		"schedule":            conf.ProvisionServer.UpdateSchedule,
+	}).Info("Start schedule to update gateway firmware...")
 	SupernodeAddr = os.Getenv("APPSERVER")
 	if strings.HasPrefix(SupernodeAddr, "https://") {
 		SupernodeAddr = strings.Replace(SupernodeAddr, "https://", "", -1)
@@ -154,6 +164,7 @@ func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
 	if strings.HasSuffix(SupernodeAddr, ":8080") {
 		SupernodeAddr = strings.Replace(SupernodeAddr, ":8080", "", -1)
 	}
+	SupernodeAddr = strings.Replace(SupernodeAddr, "/", "", -1)
 
 	var bindPortOldGateway string
 	var bindPortNewGateway string
@@ -466,7 +477,8 @@ func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 		    last_heartbeat = $18,
 		    config = $19,
 		    os_version = $20,
-		    statistics = $21
+		    statistics = $21,
+			firmware_hash = $22
 		where
 			mac = $1`,
 		gw.MAC[:],
@@ -489,7 +501,8 @@ func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 		gw.LastHeartbeat,
 		gw.Config,
 		gw.OsVersion,
-		gw.Statistics)
+		gw.Statistics,
+		gw.FirmwareHash[:])
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
 	}
@@ -737,8 +750,8 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search
 }
 
 func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (string, error) {
-	var config string
-	err := sqlx.Select(db, &config, `
+	var gwConfig string
+	err := sqlx.Get(db, &gwConfig, `
 		select
 			config
 		from gateway
@@ -749,17 +762,18 @@ func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EU
 		return "", errors.Wrap(err, "select error")
 	}
 
-	return config, nil
+	return gwConfig, nil
 }
 
 // GetFirstHeartbeat returns the first heartbeat
 func GetFirstHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (int64, error) {
 	var firstHeartbeat int64
-	err := sqlx.Select(db, &firstHeartbeat, `
+	err := sqlx.Get(db, &firstHeartbeat, `
 		select 
 			first_heartbeat
 		from gateway
-		where mac = $1`,
+		where mac = $1
+        limit 1`,
 		mac,
 	)
 	if err != nil {
@@ -767,6 +781,28 @@ func GetFirstHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) 
 	}
 
 	return firstHeartbeat, nil
+}
+
+func UpdateFirstHeartbeatToZero(ctx context.Context, db sqlx.Execer, mac lorawan.EUI64) error {
+	res, err := db.Exec(`
+		update gateway
+			set first_heartbeat = 0
+		where
+			mac = $1`,
+		mac,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update first heartbeat to zero error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return ErrDoesNotExist
+	}
+
+	return nil
 }
 
 // GetLastHeartbeat returns the last heartbeat
@@ -790,6 +826,7 @@ func GetLastHeartbeat(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (
 
 func GetGatewayMiningList(ctx context.Context, db sqlx.Queryer, time int64) ([]lorawan.EUI64, error) {
 	var macs []lorawan.EUI64
+	// should be 10 mins
 	limit := config.C.ApplicationServer.MiningSetUp.GwOnlineLimit
 
 	err := sqlx.Select(db, &macs, `
