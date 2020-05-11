@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"context"
 	"crypto/md5"
+	"net"
+	"strings"
+	"time"
+
 	"github.com/brocaar/lorawan"
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
@@ -16,9 +20,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"net"
-	"strings"
-	"time"
 )
 
 // Setup configures the package.
@@ -70,7 +71,7 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 }
 
 // API exports the API related functions.
-type API struct{
+type API struct {
 	BindPort string
 }
 
@@ -95,7 +96,14 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 		return nil, status.Errorf(codes.InvalidArgument, "Invalid gateway mac format: %s", req.GatewayMac)
 	}
 
-	gw, err := storage.GetGateway(ctx, storage.DB(), gatewayEUI, true)
+	tx, err := storage.DB().Beginx()
+	if err != nil {
+		log.WithError(err).Error("Failed to start transaction")
+		return nil, status.Errorf(codes.Unknown, "Failed to start transaction: %v", err)
+	}
+	defer tx.Rollback()
+
+	gw, err := storage.GetGateway(ctx, tx, gatewayEUI, true)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			return nil, status.Errorf(codes.Unauthenticated, "Object does not exist: %s", gatewayEUI.String())
@@ -118,13 +126,13 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 
 		// if last heartbeat == 0 is a new gateway
 		if gw.LastHeartbeat == 0 {
-			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			err := storage.UpdateLastHeartbeat(ctx, tx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 			}
 
-			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			err = storage.UpdateFirstHeartbeat(ctx, tx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
@@ -136,14 +144,14 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 		// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
 		//if current_heartbeat-last_heartbeat > 600 {
 		if currentHeartbeat-lastHeartbeat > config.C.ApplicationServer.MiningSetUp.HeartbeatOfflineLimit {
-			err := storage.UpdateLastHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			err := storage.UpdateLastHeartbeat(ctx, tx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 			}
 
 			//err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-			err = storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), gatewayEUI)
+			err = storage.UpdateFirstHeartbeatToZero(ctx, tx, gatewayEUI)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat to zero error")
@@ -152,28 +160,28 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 		}
 
 		// if first heartbeat != 0 and currentHeartbeat - lastHeart !> 600
-		firstHeartbeat, err := storage.GetFirstHeartbeat(ctx, storage.DB(), gatewayEUI)
+		firstHeartbeat, err := storage.GetFirstHeartbeat(ctx, tx, gatewayEUI)
 		if err != nil {
 			log.WithError(err).Error("Heartbeat/Get first heartbeat error")
 			return nil, status.Errorf(codes.DataLoss, "Get firstHeartbeat from DB error")
 		}
 
 		if firstHeartbeat == 0 {
-			err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+			err = storage.UpdateFirstHeartbeat(ctx, tx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
 			}
 		}
 
-		err = storage.UpdateLastHeartbeat(ctx, storage.DB(), gatewayEUI, currentHeartbeat)
+		err = storage.UpdateLastHeartbeat(ctx, tx, gatewayEUI, currentHeartbeat)
 		if err != nil {
 			log.WithError(err).Error("Heartbeat/Update last heartbeat error")
 			return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 		}
 	}
 
-	Next:
+Next:
 
 	// compare config hash
 	configHash := md5.Sum([]byte(gw.Config))
@@ -189,7 +197,7 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 
 	// check if firmware updated
 	if gw.AutoUpdateFirmware {
-		firmware, err := storage.GetGatewayFirmware(storage.DB(), gw.Model, false)
+		firmware, err := storage.GetGatewayFirmware(tx, gw.Model, false)
 		if err != nil {
 			if err == storage.ErrDoesNotExist {
 				return nil, status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
@@ -214,8 +222,8 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 			config.C.ProvisionServer.TLSKey)
 		if err == nil {
 			_, err := client.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
-				Sn: gw.SerialNumber,
-				Mac: gw.MAC.String(),
+				Sn:        gw.SerialNumber,
+				Mac:       gw.MAC.String(),
 				OsVersion: req.OsVersion,
 			})
 			if err != nil {
@@ -228,8 +236,12 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 
 	gw.OsVersion = req.OsVersion
 	gw.Statistics = req.Statistics
-	if err := storage.UpdateGateway(ctx, storage.DB(), &gw); err != nil {
+	if err := storage.UpdateGateway(ctx, tx, &gw); err != nil {
 		log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
+	} else {
+		if err := tx.Commit(); err != nil {
+			log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
+		}
 	}
 
 	return &response, status.Error(codes.OK, "")
