@@ -55,6 +55,10 @@ class ListDevices extends Component {
   render() {
     const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
     const currentApplicationID = this.props.applicationID || this.props.match.params.applicationID;
+    let currentServiceProfileID = "";
+    if(this.props.application){
+      currentServiceProfileID = this.props.application.serviceProfileID;
+    }
 
     return(
       <React.Fragment>
@@ -91,7 +95,7 @@ class ListDevices extends Component {
         }
         <Switch>
           <Route exact path={this.props.match.path} render={props =>
-            <ListDevicesTable {...props} organizationID={currentOrgID} applicationID={currentApplicationID} />} />
+            <ListDevicesTable {...props} organizationID={currentOrgID} applicationID={currentApplicationID} serviceProfileID={currentServiceProfileID} />} />
           <Route exact path={`${this.props.match.path}/map`} render={props =>
             <ListDevicesMap {...props} organizationID={currentOrgID} applicationID={currentApplicationID} />} />
         </Switch>
