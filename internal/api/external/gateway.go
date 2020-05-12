@@ -818,15 +818,10 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		}
 	}
 
-	nServers, err := storage.GetNetworkServers(ctx, storage.DB(), 1,0)
-	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "Failed to load network servers: %s", err.Error())
-	}
-
 	gateway := pb.Gateway{
 		Id:                   resp.Mac,
 		Name:                 fmt.Sprintf("Gateway_%s", resp.Sn),
-		Description:          fmt.Sprintf("Gateway Model: %s\n Gateway OsVersion: %s\n", resp.Model, resp.OsVersion),
+		Description:          fmt.Sprintf("Gateway Model: %s\nGateway OsVersion: %s\n", resp.Model, resp.OsVersion),
 		Location:             &common.Location{
 			Latitude:             52.520008,
 			Longitude:            13.404954,
@@ -836,18 +831,18 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		},
 		OrganizationId:       req.OrganizationId,
 		DiscoveryEnabled:     true,
-		NetworkServerId:      nServers[0].ID,
+		NetworkServerId:      0,
 		GatewayProfileId:     "",
 		Boards:               []*pb.GatewayBoard{},
 	}
 
-	// get gateway profile id, network id = 1, always use the default one
-	count, err := storage.GetGatewayProfileCountForNetworkServerID(ctx, storage.DB(), gateway.NetworkServerId)
+	// get gateway profile id, always use the default one
+	count, err := storage.GetGatewayProfileCount(ctx, storage.DB())
 	if err != nil && err != storage.ErrDoesNotExist || count == 0 {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
 
-	gpList, err := storage.GetGatewayProfilesForNetworkServerID(ctx, storage.DB(), gateway.NetworkServerId, count, 0)
+	gpList, err := storage.GetGatewayProfiles(ctx, storage.DB(), count, 0)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, err.Error())
 	}
@@ -863,6 +858,20 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	if gateway.GatewayProfileId == "" {
 		return nil, status.Errorf(codes.NotFound, "Default gateway profile does not exist")
 	}
+
+	// get network server from gateway profile
+	gpID, err := uuid.FromString(gateway.GatewayProfileId)
+	if err != nil {
+		log.WithError(err).Error("Gateway profile ID invalid")
+		return nil, status.Errorf(codes.DataLoss, "Gateway profile ID invalid")
+	}
+
+	nServers, err := storage.GetNetworkServerForGatewayProfileID(ctx, storage.DB(), gpID)
+	if err != nil {
+		return nil, status.Errorf(codes.NotFound, "Failed to load network servers: %s", err.Error())
+	}
+
+	gateway.NetworkServerId = nServers.ID
 
 	// create gateway
 	if err := storeGateway(ctx, &gateway, &storage.Gateway{

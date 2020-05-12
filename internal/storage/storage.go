@@ -126,38 +126,15 @@ func Setup(c config.Config) error {
 }
 
 func SetupDefault() error {
-	// get default network server
-	networkServerID := int64(1)
 	ctx := context.Background()
-	n, err := GetNetworkServer(ctx, DB(), networkServerID)
-	if err != nil {
-		if err != ErrDoesNotExist {
-			return errors.Wrap(err, "Load network server internal error")
-		}
-
-		// insert default one
-		err := Transaction(func(tx sqlx.Ext) error {
-			return CreateNetworkServer(ctx, DB(), &NetworkServer{
-				Name:                    "default_network_server",
-				Server:                  "network-server:8000",
-				GatewayDiscoveryEnabled: false,
-			})
-		})
-		if err != nil {
-			return nil
-		}
-
-	}
-
-	// create default gateway profile id
-	count, err := GetGatewayProfileCountForNetworkServerID(ctx, DB(), networkServerID)
+	count, err := GetGatewayProfileCount(ctx, DB())
 	if err != nil && err != ErrDoesNotExist {
 		return errors.Wrap(err, "Failed to load gateway profiles")
 	}
 
 	if count != 0 {
 		// check if default gateway profile already exists
-		gpList, err := GetGatewayProfilesForNetworkServerID(ctx, DB(), networkServerID, count, 0)
+		gpList, err := GetGatewayProfiles(ctx, DB(), count, 0)
 		if err != nil {
 			return errors.Wrap(err, "Failed to load gateway profiles")
 		}
@@ -170,8 +147,36 @@ func SetupDefault() error {
 	}
 
 	// none default_gateway_profile exists, add one
+	var networkServer NetworkServer
+	n, err := GetNetworkServers(ctx, DB(), 1, 0)
+	if err != nil && err != ErrDoesNotExist {
+		return errors.Wrap(err, "Load network server internal error")
+	}
+
+	if len(n) >= 1 {
+		networkServer = n[0]
+	} else {
+		// insert default one
+		err := Transaction(func(tx sqlx.Ext) error {
+			return CreateNetworkServer(ctx, DB(), &NetworkServer{
+				Name:                    "default_network_server",
+				Server:                  "network-server:8000",
+				GatewayDiscoveryEnabled: false,
+			})
+		})
+		if err != nil {
+			return nil
+		}
+
+		// get network-server id
+		networkServer, err = GetDefaultNetworkServer(ctx, DB())
+		if err != nil {
+			return err
+		}
+	}
+
 	gp := GatewayProfile{
-		NetworkServerID: n.ID,
+		NetworkServerID: networkServer.ID,
 		Name:            "default_gateway_profile",
 		GatewayProfile: ns.GatewayProfile{
 			Channels:      []uint32{0, 1, 2},
