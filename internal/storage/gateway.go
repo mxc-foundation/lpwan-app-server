@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
-	"github.com/robfig/cron"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/robfig/cron"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/lib/pq"
@@ -146,10 +147,10 @@ var SupernodeAddr string
 func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
 	log.WithFields(log.Fields{
 		"provisioning-server": conf.ProvisionServer.ProvisionServer,
-		"caCert":  conf.ProvisionServer.CACert,
-		"tlsCert": conf.ProvisionServer.TLSCert,
-		"tlsKey":  conf.ProvisionServer.TLSKey,
-		"schedule":conf.ProvisionServer.UpdateSchedule,
+		"caCert":              conf.ProvisionServer.CACert,
+		"tlsCert":             conf.ProvisionServer.TLSCert,
+		"tlsKey":              conf.ProvisionServer.TLSKey,
+		"schedule":            conf.ProvisionServer.UpdateSchedule,
 	}).Info("Start schedule to update gateway firmware...")
 	SupernodeAddr = os.Getenv("APPSERVER")
 	if strings.HasPrefix(SupernodeAddr, "https://") {
@@ -469,8 +470,6 @@ func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 			longitude = $14,
 			altitude = $15,
 		    model = $16,
-		    first_heartbeat = $17,
-		    last_heartbeat = $18,
 		    config = $19,
 		    os_version = $20,
 		    statistics = $21
@@ -492,8 +491,6 @@ func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 		gw.Longitude,
 		gw.Altitude,
 		gw.Model,
-		gw.FirstHeartbeat,
-		gw.LastHeartbeat,
 		gw.Config,
 		gw.OsVersion,
 		gw.Statistics)
