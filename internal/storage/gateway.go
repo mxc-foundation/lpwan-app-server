@@ -10,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
@@ -36,8 +35,6 @@ import (
 var gatewayNameRegexp = regexp.MustCompile(`^[\w-]+$`)
 var serialNumberOldGWValidator = regexp.MustCompile(`^MX([A-Z1-9]){7}$`)
 var serialNumberNewGWValidator = regexp.MustCompile(`^M2X([A-Z1-9]){8}$`)
-
-var GatewayConfigTemplate = &template.Template{}
 
 // Gateway represents a gateway.
 type Gateway struct {
