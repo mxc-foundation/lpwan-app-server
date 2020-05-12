@@ -112,6 +112,8 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 		return nil, status.Errorf(codes.Unknown, "Failed to select gateway by mac: %s", gatewayEUI.String())
 	}
 
+	log.Infof("got heartbeat from %s, model %s, last heartbeat %d", gw.MAC.MarshalText, gw.Model, gw.LastHeartbeat)
+
 	// verify gateway model
 	if gw.Model != req.Model {
 		log.Errorf("Request model does not match saved gateway.")
@@ -121,11 +123,13 @@ func (obj *API) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwp
 	// important: do this before config and firmware update
 	// mining : update heartbeat only for new gateways
 	if strings.HasPrefix(gw.Model, "MX19") {
+		log.Info("processing MX19 gateway")
 		currentHeartbeat := time.Now().Unix()
 		lastHeartbeat := gw.LastHeartbeat
 
 		// if last heartbeat == 0 is a new gateway
 		if gw.LastHeartbeat == 0 {
+			log.Infof("updating heartbeat for the new gw")
 			err := storage.UpdateLastHeartbeat(ctx, tx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
