@@ -207,7 +207,9 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 	var count int
 	var nss []storage.NetworkServer
 
-	if req.OrganizationId == 0 || req.OrganizationId == 1 {
+	if req.OrganizationId == 0 {
+	// not sure why Brocca makes the difference between Admin and normal user to get the network server list.
+	//if req.OrganizationId == 0 || req.OrganizationId == 1 {
 		if isAdmin {
 			count, err = storage.GetNetworkServerCount(ctx, storage.DB())
 			if err != nil {
@@ -218,6 +220,7 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 				return nil, helpers.ErrToRPCError(err)
 			}
 		}
+
 	} else {
 		count, err = storage.GetNetworkServerCountForOrganizationID(ctx, storage.DB(), req.OrganizationId)
 		if err != nil {
