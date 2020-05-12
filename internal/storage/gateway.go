@@ -470,9 +470,9 @@ func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 			longitude = $14,
 			altitude = $15,
 		    model = $16,
-		    config = $19,
-		    os_version = $20,
-		    statistics = $21
+		    config = $17,
+		    os_version = $18,
+		    statistics = $19
 		where
 			mac = $1`,
 		gw.MAC[:],
