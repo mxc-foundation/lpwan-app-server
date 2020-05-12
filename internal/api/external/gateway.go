@@ -1,29 +1,30 @@
 package external
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/types"
+	"strings"
+
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"strings"
 
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gomodule/redigo/redis"
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/jmoiron/sqlx"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	gwm "github.com/mxc-foundation/lpwan-app-server/internal/gateway-manager"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
@@ -67,12 +68,7 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err := storeGateway(ctx, req.Gateway, &storage.Gateway{
-		Model:            "",
-		OsVersion:        "",
-		Statistics:       "",
-		SerialNumber:     "",
-	}); err != nil {
+	if err := storeGateway(ctx, req.Gateway, &storage.Gateway{}); err != nil {
 		return nil, err
 	}
 
@@ -123,46 +119,32 @@ func storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *storage.Gatew
 		createReq.Gateway.Boards = append(createReq.Gateway.Boards, &gwBoard)
 	}
 
-	// get default gateway config
-	var defaultGwConfig bytes.Buffer
-	serverPort := ""
 	if strings.HasPrefix(defaultGw.Model, "MX19") {
-		serverPort = strings.Replace(config.C.ApplicationServer.APIForGateway.NewGateway.Bind, "0.0.0.0:", "", -1)
-	} else if defaultGw.Model != "" {
-		serverPort = strings.Replace(config.C.ApplicationServer.APIForGateway.OldGateway.Bind, "0.0.0.0:", "", -1)
-	}
-
-	if err := storage.GatewayConfigTemplate.Execute(&defaultGwConfig, struct {
-		GatewayID, ServerAddr, ServerPort string
-	}{
-		GatewayID: mac.String(),
-		ServerAddr: storage.SupernodeAddr,
-		ServerPort: serverPort,
-	});err != nil {
-		log.WithError(err).Error("Failed to execute gateway config template")
-		return err
+		defaultGw.Config, err = gwm.GetDefaultGatewayConfig(ctx, mac, storage.SupernodeAddr, req.NetworkServerId)
+		if err != nil {
+			return grpc.Errorf(codes.Unknown, err.Error())
+		}
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
 		err = storage.CreateGateway(ctx, tx, &storage.Gateway{
-			MAC:              mac,
-			Name:             req.Name,
-			Description:      req.Description,
-			OrganizationID:   req.OrganizationId,
-			Ping:             req.DiscoveryEnabled,
-			NetworkServerID:  req.NetworkServerId,
-			Latitude:         req.Location.Latitude,
-			Longitude:        req.Location.Longitude,
-			Altitude:         req.Location.Altitude,
-			Model:            defaultGw.Model,
-			FirstHeartbeat:   0,
-			LastHeartbeat:    0,
-			Config:           defaultGwConfig.String(),
-			OsVersion:        defaultGw.OsVersion,
-			Statistics:       defaultGw.Statistics,
-			SerialNumber:     defaultGw.SerialNumber,
-			FirmwareHash:     types.MD5SUM{},
-
+			MAC:             mac,
+			Name:            req.Name,
+			Description:     req.Description,
+			OrganizationID:  req.OrganizationId,
+			Ping:            req.DiscoveryEnabled,
+			NetworkServerID: req.NetworkServerId,
+			Latitude:        req.Location.Latitude,
+			Longitude:       req.Location.Longitude,
+			Altitude:        req.Location.Altitude,
+			Model:           defaultGw.Model,
+			FirstHeartbeat:  0,
+			LastHeartbeat:   0,
+			Config:          defaultGw.Config,
+			OsVersion:       defaultGw.OsVersion,
+			Statistics:      defaultGw.Statistics,
+			SerialNumber:    defaultGw.SerialNumber,
+			FirmwareHash:    types.MD5SUM{},
 		})
 		if err != nil {
 			return helpers.ErrToRPCError(err)
@@ -812,28 +794,28 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	_, err = storage.GetGatewayFirmware(storage.DB(), resp.Model, true)
 	if err == storage.ErrDoesNotExist {
 		if _, err = storage.AddGatewayFirmware(storage.DB(), &storage.GatewayFirmware{
-			Model:        resp.Model,
+			Model: resp.Model,
 		}); err != nil {
 			log.WithError(err).Errorf("Failed to add new firmware: %s", resp.Model)
 		}
 	}
 
 	gateway := pb.Gateway{
-		Id:                   resp.Mac,
-		Name:                 fmt.Sprintf("Gateway_%s", resp.Sn),
-		Description:          fmt.Sprintf("Gateway Model: %s\nGateway OsVersion: %s\n", resp.Model, resp.OsVersion),
-		Location:             &common.Location{
-			Latitude:             52.520008,
-			Longitude:            13.404954,
-			Altitude:             0,
-			Source:               0,
-			Accuracy:             0,
+		Id:          resp.Mac,
+		Name:        fmt.Sprintf("Gateway_%s", resp.Sn),
+		Description: fmt.Sprintf("Gateway Model: %s\nGateway OsVersion: %s\n", resp.Model, resp.OsVersion),
+		Location: &common.Location{
+			Latitude:  52.520008,
+			Longitude: 13.404954,
+			Altitude:  0,
+			Source:    0,
+			Accuracy:  0,
 		},
-		OrganizationId:       req.OrganizationId,
-		DiscoveryEnabled:     true,
-		NetworkServerId:      0,
-		GatewayProfileId:     "",
-		Boards:               []*pb.GatewayBoard{},
+		OrganizationId:   req.OrganizationId,
+		DiscoveryEnabled: true,
+		NetworkServerId:  0,
+		GatewayProfileId: "",
+		Boards:           []*pb.GatewayBoard{},
 	}
 
 	// get gateway profile id, always use the default one
@@ -875,10 +857,10 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 
 	// create gateway
 	if err := storeGateway(ctx, &gateway, &storage.Gateway{
-		Model:            resp.Model,
-		OsVersion:        resp.OsVersion,
-		Statistics:       "",
-		SerialNumber:     resp.Sn,
+		Model:        resp.Model,
+		OsVersion:    resp.OsVersion,
+		Statistics:   "",
+		SerialNumber: resp.Sn,
 	}); err != nil {
 		return nil, err
 	}

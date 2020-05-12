@@ -29,6 +29,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/metrics"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	gw "github.com/mxc-foundation/lpwan-app-server/internal/gateway-manager"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -189,7 +190,7 @@ func setupDefaultEnv() error {
 }
 
 func setupLoadGatewayTemplates() error {
-	if err := storage.LoadTemplates(); err != nil {
+	if err := gw.LoadTemplates(); err != nil {
 		return errors.Wrap(err, "load gateway config template error")
 	}
 	return nil

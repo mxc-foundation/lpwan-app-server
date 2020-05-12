@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"text/template"
 	"time"
 
 	uuid "github.com/gofrs/uuid"
@@ -16,7 +15,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
-	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
@@ -194,10 +192,3 @@ func SetupDefault() error {
 	return nil
 }
 
-func LoadTemplates() error {
-	// load gateway config templates
-	GatewayConfigTemplate = template.Must(template.New("gateway-config/global_conf.json.sx1250.CN490").Parse(
-			string(static.MustAsset("gateway-config/global_conf.json.sx1250.CN490"))))
-
-	return nil
-}
