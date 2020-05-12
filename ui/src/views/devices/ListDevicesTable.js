@@ -195,13 +195,16 @@ class ListDevicesTable extends Component {
   getPage = (limit, offset) => {
     limit = MAX_DATA_LIMIT;
     const currentApplicationID = this.props.applicationID;
+    const currentServiceProfileID = this.props.serviceProfileID;
 
     this.setState({ loading: true });
     const filters = {
       limit: limit,
       offset: offset,
-      organizationID: this.props.organizationID,
+      applicationID: currentApplicationID,
       search: "",
+      multicastGroupID: "",
+      serviceProfileID: currentServiceProfileID
     };
     
     DeviceStore.list(filters, (res) => {
