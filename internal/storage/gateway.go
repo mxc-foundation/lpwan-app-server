@@ -162,6 +162,7 @@ func UpdateFirmwareFromProvisioningServer(conf config.Config) error {
 	if strings.HasSuffix(SupernodeAddr, ":8080") {
 		SupernodeAddr = strings.Replace(SupernodeAddr, ":8080", "", -1)
 	}
+	SupernodeAddr = strings.Replace(SupernodeAddr, "/", "", -1)
 
 	var bindPortOldGateway string
 	var bindPortNewGateway string
@@ -472,7 +473,8 @@ func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 		    model = $16,
 		    config = $17,
 		    os_version = $18,
-		    statistics = $19
+		    statistics = $19,
+			firmware_hash = $20
 		where
 			mac = $1`,
 		gw.MAC[:],
@@ -493,7 +495,8 @@ func UpdateGateway(ctx context.Context, db sqlx.Ext, gw *Gateway) error {
 		gw.Model,
 		gw.Config,
 		gw.OsVersion,
-		gw.Statistics)
+		gw.Statistics,
+		gw.FirmwareHash[:])
 	if err != nil {
 		return handlePSQLError(Update, err, "update error")
 	}
@@ -741,8 +744,8 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, limit, offset int, search
 }
 
 func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (string, error) {
-	var config string
-	err := sqlx.Select(db, &config, `
+	var gwConfig string
+	err := sqlx.Get(db, &gwConfig, `
 		select
 			config
 		from gateway
@@ -753,7 +756,7 @@ func GetGatewayConfigByGwId(ctx context.Context, db sqlx.Queryer, mac lorawan.EU
 		return "", errors.Wrap(err, "select error")
 	}
 
-	return config, nil
+	return gwConfig, nil
 }
 
 // GetFirstHeartbeat returns the first heartbeat

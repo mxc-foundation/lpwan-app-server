@@ -134,6 +134,17 @@ func GetNetworkServer(ctx context.Context, db sqlx.Queryer, id int64) (NetworkSe
 	return ns, nil
 }
 
+// GetDefaultNetworkServer returns the network-server matching the given name.
+func GetDefaultNetworkServer(ctx context.Context, db sqlx.Queryer) (NetworkServer, error) {
+	var n NetworkServer
+	err := sqlx.Get(db, &n, "select * from network_server where name = 'default_network_server'")
+	if err != nil {
+		return n, handlePSQLError(Select, err, "select error")
+	}
+
+	return n, nil
+}
+
 // UpdateNetworkServer updates the given network-server.
 func UpdateNetworkServer(ctx context.Context, db sqlx.Execer, n *NetworkServer) error {
 	if err := n.Validate(); err != nil {
