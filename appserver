@@ -109,8 +109,6 @@ if [ "$*" = "remote" ] || [ "$*" = "local" ]; then
   # obtain certificate
   obtain_certificate
   [ -d "$PARENT_PATH"/testing-framework/ ] && rm -rf "$PARENT_PATH"/testing-framework/
-  exit
-
 
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
 
