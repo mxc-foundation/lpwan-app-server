@@ -69,6 +69,24 @@ build_image()
   rm error.txt
 }
 
+obtain_certificate()
+{
+  [ -d "$PARENT_PATH"/configuration/ecc ] &&  echo "$PARENT_PATH/configuration/ecc already exists, skip generate certificates" && return
+  [ -f "$PARENT_PATH"/configuration/pass.txt ] || ( echo "$PARENT_PATH/configuration/pass.txt is required, failed to obtain certificates" && return )
+
+  echo "$PARENT_PATH/configuration/pass.txt exists"
+  mkdir -p "$PARENT_PATH"/configuration/ecc || ( echo "Failed to do mkdir -p $PARENT_PATH/configuration/ecc" && return )
+  SERVER_HOSTNAME=$(hostname -f)
+
+  git clone git@gitlab.com:MXCFoundation/cloud/testing-framework.git
+  mv "$PARENT_PATH"/configuration/pass.txt "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/
+  "$PARENT_PATH"/testing-framework/gRPC-client/certificates/gen-ecc-server-certificates.sh ps-staging.matchx.io "$SERVER_HOSTNAME" || return
+
+  cp "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/"$SERVER_HOSTNAME"/*.crt "$PARENT_PATH"/configuration/ecc/ecc_client.crt
+  cp "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/"$SERVER_HOSTNAME"/*.key "$PARENT_PATH"/configuration/ecc/ecc_client.key
+  cp "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/ecc_rootCA.pem "$PARENT_PATH"/configuration/ecc/ecc_rootCA.pem
+}
+
 if [ "$*" = "remote" ] || [ "$*" = "local" ]; then
   if [ -f "/.dockerenv" ]; then
      echo "Command '$0 $*' only runs outside of a docker container, nothing is executed. "
@@ -87,6 +105,10 @@ if [ "$*" = "remote" ] || [ "$*" = "local" ]; then
   fi
 
   mv tmp "$PARENT_PATH"/docker-compose.yml
+
+  # obtain certificate
+  obtain_certificate
+  [ -d "$PARENT_PATH"/testing-framework/ ] && rm -rf "$PARENT_PATH"/testing-framework/
 
   docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
 
