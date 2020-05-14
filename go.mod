@@ -31,6 +31,7 @@ require (
 	github.com/mxc-foundation/lpwan-server v1.0.0
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/pquerna/otp v1.2.0
 	github.com/prometheus/client_golang v1.1.0
 	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/robfig/cron v1.2.0
