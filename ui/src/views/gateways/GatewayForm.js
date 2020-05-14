@@ -52,7 +52,6 @@ class GatewayForm extends Component {
 
   componentDidMount = async () => {
     // Create Gateway
-    console.log('componentDidMount',this.props.match.params.organizationID);
     if (!this.props.update) {
       this.setCurrentPosition();
       return;
@@ -60,13 +59,39 @@ class GatewayForm extends Component {
     } else {
       this.setKVArrayBoards();
     }
-    const organizationID = this.props.object.id;
+    const gatewayId = this.props.object.id;
+    let name = '';
+    if(this.props.object){
+      name = this.props.object.name;
+    }
+    const sn = name.split("_")[1];
     
-    const conf = await GatewayStore.getConfig(organizationID);
-    const rootPassword = await GatewayStore.getRootConfig(organizationID);
+    let conf = await GatewayStore.getConfig(gatewayId);
+    conf = '{\n \"SX130x_conf\": {\n \"spidev_path\": \"/dev/spidev0.0\",\n \"lorawan_public\": true,\n \"clksrc\": 0,\n \"antenna_gain\": 0,\n \"full_duplex\": false,\n \"precision_timestamp\": {\n \"enable\": false,\n \"max_ts_metrics\": 255,\n \"nb_symbols\": 1\n },\n \"radio_0\": {\n \"enable\": true,\n \"type\": \"SX1250\",\n \"single_input_mode\": true,\n \"freq\": 471400000,\n \"rssi_offset\": -207.0,\n \"rssi_tcomp\": {\"coeff_a\": 0, \"coeff_b\": 0, \"coeff_c\": 20.41, \"coeff_d\": 2162.56, \"coeff_e\": 0},\n \"tx_enable\": true,\n \"tx_freq_min\": 500000000,\n \"tx_freq_max\": 510000000,\n \"tx_gain_lut\":[\n {\"rf_power\": 8, \"pa_gain\": 0, \"pwr_idx\": 10},\n {\"rf_power\": 10, \"pa_gain\": 0, \"pwr_idx\": 12},\n {\"rf_power\": 12, \"pa_gain\": 0, \"pwr_idx\": 14},\n {\"rf_power\": 14, \"pa_gain\": 0, \"pwr_idx\": 16},\n {\"rf_power\": 16, \"pa_gain\": 0, \"pwr_idx\": 19},\n {\"rf_power\": 18, \"pa_gain\": 0, \"pwr_idx\": 21},\n {\"rf_power\": 1, \"pa_gain\": 0, \"pwr_idx\": 2},\n {\"rf_power\": 3, \"pa_gain\": 0, \"pwr_idx\": 5},\n {\"rf_power\": 5, \"pa_gain\": 0, \"pwr_idx\": 7},\n {\"rf_power\": 7, \"pa_gain\": 0, \"pwr_idx\": 9},\n {\"rf_power\": 9, \"pa_gain\": 0, \"pwr_idx\": 11},\n {\"rf_power\": 11, \"pa_gain\": 0, \"pwr_idx\": 14},\n {\"rf_power\": 13, \"pa_gain\": 0, \"pwr_idx\": 16},\n {\"rf_power\": 15, \"pa_gain\": 0, \"pwr_idx\": 18},\n {\"rf_power\": 17, \"pa_gain\": 0, \"pwr_idx\": 20},\n {\"rf_power\": 19, \"pa_gain\": 0, \"pwr_idx\": 22}\n ]\n },\n \"radio_1\": {\n \"enable\": true,\n \"type\": \"SX1250\",\n \"single_input_mode\": true,\n \"freq\": 470600000,\n \"rssi_offset\": -207.0,\n \"rssi_tcomp\": {\"coeff_a\": 0, \"coeff_b\": 0, \"coeff_c\": 20.41, \"coeff_d\": 2162.56, \"coeff_e\": 0},\n \"tx_enable\": false\n },\n \"chan_multiSF_0\": {\"enable\": true, \"radio\": 0, \"if\": -300000},\n \"chan_multiSF_1\": {\"enable\": true, \"radio\": 0, \"if\": -100000},\n \"chan_multiSF_2\": {\"enable\": true, \"radio\": 0, \"if\": 100000},\n \"chan_multiSF_3\": {\"enable\": true, \"radio\": 0, \"if\": 300000},\n \"chan_multiSF_4\": {\"enable\": true, \"radio\": 1, \"if\": -300000},\n \"chan_multiSF_5\": {\"enable\": true, \"radio\": 1, \"if\": -100000},\n \"chan_multiSF_6\": {\"enable\": true, \"radio\": 1, \"if\": 100000},\n \"chan_multiSF_7\": {\"enable\": true, \"radio\": 1, \"if\": 300000},\n \"chan_Lora_std\": {\"enable\": true, \"radio\": 1, \"if\": -200000, \"bandwidth\": 250000, \"spread_factor\": 7,\n \"implicit_hdr\": false, \"implicit_payload_length\": 17, \"implicit_crc_en\": false, \"implicit_coderate\": 1},\n \"chan_FSK\": {\"enable\": true, \"radio\": 1, \"if\": 300000, \"bandwidth\": 125000, \"datarate\": 50000}\n },\n\n \"gateway_conf\": {\n \"gateway_ID\": \"112233fffe445566\",\n\n \"server_address\": \"localhost\",\n \"serv_port_up\": 1700,\n \"serv_port_down\": 1700,\n\n \"keepalive_interval\": 10,\n \"stat_interval\": 30,\n \"push_timeout_ms\": 100,\n\n \"forward_crc_valid\": true,\n \"forward_crc_error\": false,\n \"forward_crc_disabled\": false,\n\n \"gps_tty_path\": \"/tmp/vgps1\",\n\n \"ref_latitude\": 0.0,\n \"ref_longitude\": 0.0,\n \"ref_altitude\": 0,\n\n \"beacon_period\": 0,\n \"beacon_freq_hz\": 508300000,\n \"beacon_datarate\": 10,\n \"beacon_bw_hz\": 125000,\n \"beacon_power\": 17,\n \"beacon_infodesc\": 0\n },\n\n \"debug_conf\": {\n \"ref_payload\":[\n {\"id\": \"0xCAFE1234\"},\n {\"id\": \"0xCAFE2345\"}\n ],\n \"log_file\": \"loragw_hal.log\"\n }\n}'
+    const rootPassword = await GatewayStore.getRootConfig(gatewayId, sn);
+    const object = this.state.object;
+    object.password = rootPassword;
+    this.setState({object});
+
+    /* const object = this.state;
+    this.setState({}); */
+    console.log("Dsfsdf");
+    //conf = conf.replace(/(\r\n|\n|\r)/gm, "");
+    //conf = conf.replace("\\", "");
     
-    this.loadGatewayConfig(conf);
-    this.loadClassBConfig(conf);
+    //console.log("Dsfsdf", conf.);
+
+    //conf = conf.trim().replace(/(\r\n|\n|\r)/gm,"");
+    //conf = conf.trim().replace(/\s+/g,"");
+    //conf = conf.trim().replace("\\","");
+    conf = conf.trim();
+    console.log('conf',conf);
+
+    var json_conf = JSON.parse(conf);
+    console.log('json_conf',json_conf);
+    
+    this.loadGatewayConfig(json_conf);
+    this.loadClassBConfig(json_conf);
   }
 
   componentDidUpdate(prevProps) {
@@ -308,7 +333,8 @@ class GatewayForm extends Component {
       fieldsSchema = {
         ...fieldsSchema,
         id: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
-        networkServerID: Yup.string()
+        networkServerID: Yup.string(),
+        password: Yup.string()
       }
       // fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       // fieldsSchema.object._nodes.push("id");
@@ -321,6 +347,7 @@ class GatewayForm extends Component {
   };
 
   loadGatewayConfig = (conf) => {
+    console.log('loadGatewayConfig', conf);
     this.setState({
       gatewayConfig: conf,
       gatewayConfigAntenna: getAntennaGain(conf)
@@ -446,6 +473,7 @@ class GatewayForm extends Component {
                   autoUpdate: object.autoUpdate || false,
                   gatewayProfileID: object.gatewayProfileID || '',
                   networkServerID: object.networkServerID || '',
+                  password: object.password || '',
                   boards: (
                     (object.boards !== undefined && object.boards.length > 0 && object.boards) || []
                   ),

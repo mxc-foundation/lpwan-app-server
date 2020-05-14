@@ -139,7 +139,7 @@ class GatewayStore extends EventEmitter {
         });
     
         resp = await checkStatus(resp);
-        return resp.obj;
+        return resp.body;
       } catch (error) {
         errorHandler(error);
     }
@@ -315,11 +315,12 @@ class GatewayStore extends EventEmitter {
     });
   }
 
-  async getRootConfig(gatewayId) {
+  async getRootConfig(gatewayId, sn) {
     try {
         const client = await this.swagger.then((client) => client);
         let resp = await client.apis.GatewayService.GetGwPwd({
-          gatewayId
+          gatewayId,
+          sn
         });
     
         resp = await checkStatus(resp);
