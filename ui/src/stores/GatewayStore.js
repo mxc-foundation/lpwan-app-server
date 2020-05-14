@@ -315,20 +315,18 @@ class GatewayStore extends EventEmitter {
     });
   }
 
-  getRootConfig(id, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.GatewayService.GetGwPwd({
-        gatewayId: id,
-      })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
+  async getRootConfig(gatewayId) {
+    try {
+        const client = await this.swagger.then((client) => client);
+        let resp = await client.apis.GatewayService.GetGwPwd({
+          gatewayId
+        });
+    
+        resp = await checkStatus(resp);
+        return resp.obj;
+      } catch (error) {
         errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
-      });
-    });
+    }
   }
 
   async setAutoUpdateFirmware (gatewayId, autoUpdate) {
