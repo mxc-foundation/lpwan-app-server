@@ -27,9 +27,10 @@ class GatewayFormClassB extends Component {
    * @param {*} field
    * @param {*} changedValue
    */
-  onDataChanged(idx, field, changedValue) {
-    let records = [...this.state.records];
-    records[idx][field] = changedValue;
+  onDataChanged(e) {
+    let records = this.state.records;
+    records[e.id] = e.value;
+
     if (this.props.onDataChanged) {
       this.props.onDataChanged(records);
     } else {
@@ -38,6 +39,10 @@ class GatewayFormClassB extends Component {
   }
 
   render() {
+    if (this.state.records.beacon_period === undefined) {
+      return <div></div>;
+    }
+
     return (
       <React.Fragment>
         <Row>
@@ -55,62 +60,63 @@ class GatewayFormClassB extends Component {
                 </tr>
               </thead>
               <tbody>
-                {this.state.records.length
+                <tr>
+                  <td>
+                    <EditableTextInput
+                      value={this.state.records.beacon_period}
+                      id={'beacon_period'}
+                      field={"beacon_period"}
+                      onDataChanged={this.onDataChanged}
+                    />
+                  </td>
+                  <td>
+                    <EditableTextInput
+                      value={this.state.records.beacon_freq_hz}
+                      id={'beacon_freq_hz'}
+                      field={"beacon_freq_hz"}
+                      onDataChanged={this.onDataChanged}
+                    />
+                  </td>
+                  <td>
+                    <EditableTextInput
+                      value={this.state.records.beacon_datarate}
+                      id={'beacon_datarate'}
+                      field={"beacon_datarate"}
+                      onDataChanged={this.onDataChanged}
+                    />
+                  </td>
+                  <td>
+                    <EditableTextInput
+                      value={this.state.records.beacon_bw_hz}
+                      id={'beacon_bw_hz'}
+                      field={"beacon_bw_hz"}
+                      onDataChanged={this.onDataChanged}
+                    />
+                  </td>
+                  <td>
+                    <EditableTextInput
+                      value={this.state.records.beacon_power}
+                      id={'beacon_power'}
+                      field={"beacon_power"}
+                      onDataChanged={this.onDataChanged}
+                    />
+                  </td>
+                  <td>
+                    <EditableTextInput
+                      value={this.state.records.beacon_infodesc}
+                      id={'beacon_infodesc'}
+                      field={"beacon_infodesc"}
+                      onDataChanged={this.onDataChanged}
+                    />
+                  </td>
+                </tr>
+
+                {/* {this.state.records.length
                   ? this.state.records.map((record, idx) => {
-                      return (
-                        <tr key={idx}>
-                          <td>
-                            <EditableTextInput
-                              value={record.beacon_period}
-                              id={idx}
-                              field={"beacon_period"}
-                              onDataChanged={this.onDataChanged}
-                            />
-                          </td>
-                          <td>
-                            <EditableTextInput
-                              value={record.beacon_freq}
-                              id={idx}
-                              field={"beacon_freq"}
-                              onDataChanged={this.onDataChanged}
-                            />
-                          </td>
-                          <td>
-                            <EditableTextInput
-                              value={record.beacon_datarate}
-                              id={idx}
-                              field={"beacon_datarate"}
-                              onDataChanged={this.onDataChanged}
-                            />
-                          </td>
-                          <td>
-                            <EditableTextInput
-                              value={record.beacon_bandwidth}
-                              id={idx}
-                              field={"beacon_bandwidth"}
-                              onDataChanged={this.onDataChanged}
-                            />
-                          </td>
-                          <td>
-                            <EditableTextInput
-                              value={record.beacon_power}
-                              id={idx}
-                              field={"beacon_power"}
-                              onDataChanged={this.onDataChanged}
-                            />
-                          </td>
-                          <td>
-                            <EditableTextInput
-                              value={record.beacon_info}
-                              id={idx}
-                              field={"beacon_info"}
-                              onDataChanged={this.onDataChanged}
-                            />
-                          </td>
-                        </tr>
-                      );
+                    console.log('record', record);
+                      return ();
                     })
-                  : null}
+                  : null} */}
               </tbody>
             </Table>
           </Col>

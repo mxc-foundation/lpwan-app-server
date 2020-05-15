@@ -27,11 +27,11 @@ class GatewayStore extends EventEmitter {
         offset,
         limit
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.body);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -40,15 +40,15 @@ class GatewayStore extends EventEmitter {
       client.apis.GSGatewayService.GetGatewayProfile({
         gwId,
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
-  getGatewayHistory(orgId, gwId, offset, limit, callbackFunc) {    
+  getGatewayHistory(orgId, gwId, offset, limit, callbackFunc) {
     this.swaggerM2M.then(client => {
       client.apis.GSGatewayService.GetGatewayHistory({
         orgId,
@@ -56,11 +56,11 @@ class GatewayStore extends EventEmitter {
         offset,
         limit
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.body);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.body);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -75,13 +75,13 @@ class GatewayStore extends EventEmitter {
           gwMode
         },
       })
-      .then(checkStatus)
-      .then(resp => {
-        this.emit("update");
-        this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          this.emit("update");
+          this.notify("updated");
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -92,12 +92,12 @@ class GatewayStore extends EventEmitter {
           gateway: gateway,
         },
       })
-      .then(checkStatus)
-      .then(resp => {
-        this.notify("created");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          this.notify("created");
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -109,12 +109,12 @@ class GatewayStore extends EventEmitter {
           sn: gateway.sn.serial
         },
       })
-      .then(checkStatus)
-      .then(resp => {
-        this.notify("registered");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          this.notify("registered");
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -123,81 +123,78 @@ class GatewayStore extends EventEmitter {
       client.apis.GatewayService.Get({
         id: id,
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
   async getConfig(gatewayId) {
     try {
-        const client = await this.swagger;
-        let resp = await client.apis.GatewayService.GetGwConfig({
-          gatewayId
-        });
-    
-        resp = await checkStatus(resp);
-        return resp.body;
-      } catch (error) {
-        errorHandler(error);
+      const client = await this.swagger;
+      let resp = await client.apis.GatewayService.GetGwConfig({
+        gatewayId
+      });
+
+      resp = await checkStatus(resp);
+      return resp.body.conf;
+    } catch (error) {
+      errorHandler(error);
     }
   }
 
-  update(gateway, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.GatewayService.Update({
+  async update(gateway) {
+    try {
+      const client = await this.swagger;
+      let resp = await client.apis.GatewayService.Update({
         "gateway.id": gateway.id,
         body: {
-          gateway: gateway,
+          gateway,
         },
-      })
-      .then(checkStatus)
-      .then(resp => {
-        this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
-        errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
       });
-    });
+
+      resp = await checkStatus(resp);
+      this.notify("updated");
+
+      return resp.obj;
+    } catch (error) {
+      errorHandler(error);
+    }
   }
 
-  updateConfig(gateway, config, callbackFunc, errorCallbackFunc) {
-    this.swagger.then(client => {
-      client.apis.GatewayService.UpdateGwConfig({
+  async updateConfig(gateway, config) {
+    try {
+      const client = await this.swagger;
+      let resp = await client.apis.GatewayService.UpdateGwConfig({
         "gatewayId": gateway.id,
         body: {
           gatewayId: gateway.id,
           conf: JSON.stringify(config)
         },
-      })
-      .then(checkStatus)
-      .then(resp => {
-        this.notify("updated");
-        callbackFunc(resp.obj);
-      })
-      .catch(error => {
-        errorHandler(error);
-        if (errorCallbackFunc) errorCallbackFunc(error);
       });
-    });
-  }
 
+      resp = await checkStatus(resp);
+      this.notify("updated");
+
+      return resp.obj;
+    } catch (error) {
+      errorHandler(error);
+    }
+  }
 
   delete(id, callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.Delete({
         id: id,
       })
-      .then(checkStatus)
-      .then(resp => {
-        this.notify("deleted");
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          this.notify("deleted");
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -209,22 +206,22 @@ class GatewayStore extends EventEmitter {
         organizationID: organizationID,
         search: search,
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
   listLocations(callbackFunc) {
     this.swagger.then(client => {
       client.apis.GatewayService.ListLocations()
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -236,11 +233,11 @@ class GatewayStore extends EventEmitter {
         startTimestamp: start,
         endTimestamp: end,
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandler);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandler);
     });
   }
 
@@ -249,11 +246,11 @@ class GatewayStore extends EventEmitter {
       client.apis.GatewayService.GetLastPing({
         gatewayID: gatewayID,
       })
-      .then(checkStatus)
-      .then(resp => {
-        callbackFunc(resp.obj);
-      })
-      .catch(errorHandlerIgnoreNotFound);
+        .then(checkStatus)
+        .then(resp => {
+          callbackFunc(resp.obj);
+        })
+        .catch(errorHandlerIgnoreNotFound);
     });
   }
 
@@ -317,41 +314,41 @@ class GatewayStore extends EventEmitter {
 
   async getRootConfig(gatewayId, sn) {
     try {
-        const client = await this.swagger.then((client) => client);
-        let resp = await client.apis.GatewayService.GetGwPwd({
-          gatewayId,
-          sn
-        });
-    
-        resp = await checkStatus(resp);
-        return resp.obj;
-      } catch (error) {
-        errorHandler(error);
+      const client = await this.swagger.then((client) => client);
+      let resp = await client.apis.GatewayService.GetGwPwd({
+        gatewayId,
+        sn
+      });
+
+      resp = await checkStatus(resp);
+      return resp.obj;
+    } catch (error) {
+      errorHandler(error);
     }
   }
 
-  async setAutoUpdateFirmware (gatewayId, autoUpdate) {
+  async setAutoUpdateFirmware(gatewayId, autoUpdate) {
     try {
-        const client = await this.swagger;
-        let resp = await client.apis.GatewayService.SetAutoUpdateFirmware({
+      const client = await this.swagger;
+      let resp = await client.apis.GatewayService.SetAutoUpdateFirmware({
+        gatewayId,
+        body: {
           gatewayId,
-          body: {
-            gatewayId,
-            autoUpdate
-          }
-        });
-    
-        resp = await checkStatus(resp);
-        this.emit("update");
-        this.notify("updated");
-  
-        return resp.obj;
-      } catch (error) {
-        errorHandler(error);
+          autoUpdate
+        }
+      });
+
+      resp = await checkStatus(resp);
+      this.emit("update");
+      this.notify("updated");
+
+      return resp.obj;
+    } catch (error) {
+      errorHandler(error);
     }
   }
 
-  async getGatewayConfig (gatewayId) {
+  async getGatewayConfig(gatewayId) {
     /* try {
         const client = await this.swagger;
         let resp = await client.apis.GatewayService.GetGatewayConfig({
@@ -367,7 +364,7 @@ class GatewayStore extends EventEmitter {
         errorHandler(error);
     } */
   }
-  
+
 }
 
 
