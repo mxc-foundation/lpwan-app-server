@@ -1,7 +1,7 @@
 import { Field, FieldArray, Form, Formik } from "formik";
 import React, { Component } from "react";
 import { Map, Marker } from "react-leaflet";
-import { Button, Card, CardBody, Col, CustomInput, FormGroup, FormText, Input, Label, Row } from "reactstrap";
+import { Button, Card, CardBody, Col, CustomInput, FormGroup, FormText, Input, Label, Row, Alert } from "reactstrap";
 import * as Yup from "yup";
 import AESKeyField from "../../components/FormikAESKeyField";
 import EUI64Field from "../../components/FormikEUI64Field";
@@ -17,7 +17,7 @@ import NetworkServerStore from "../../stores/NetworkServerStore";
 import GatewayFormClassB from "./GatewayFormClassB";
 import GatewayFormLBT from "./GatewayFormLBT";
 import GatewayFormMacChannels from "./GatewayFormMacChannels";
-import gatewayConfig from './gatewayConfig.json';
+import GatewayStore from "../../stores/GatewayStore";
 import { getAntennaGain, getChannelsWithFrequency, getLBTChannels, getLBTConfigStatus } from "./utils";
 
 
@@ -50,7 +50,7 @@ class GatewayForm extends Component {
     this.onAntennaValueChange = this.onAntennaValueChange.bind(this);
   }
 
-  componentDidMount() {
+  componentDidMount = async () => {
     // Create Gateway
     if (!this.props.update) {
       this.setCurrentPosition();
@@ -60,9 +60,35 @@ class GatewayForm extends Component {
       this.setKVArrayBoards();
     }
     
-    //console.log('gatewayConfig.json', gatewayConfig);
-    this.loadGatewayConfig();
-    this.loadClassBConfig();
+    const gatewayId = this.props.object.id;
+    let name = '';
+    if (this.props.object) {
+      name = this.props.object.name;
+    }
+    const sn = name.split("_")[1];
+    
+    let conf = await GatewayStore.getConfig(gatewayId);
+    const rootPassword = await GatewayStore.getRootConfig(gatewayId, sn);
+    const object = this.state.object;
+    if(rootPassword !== undefined){
+      object.password = rootPassword.password;
+    }
+
+    var json_conf = JSON.parse(conf.trim());
+
+    let classBConfig = { beacon_period: json_conf.gateway_conf.beacon_period };
+    classBConfig.beacon_freq_hz = json_conf.gateway_conf.beacon_freq_hz;
+    classBConfig.beacon_datarate = json_conf.gateway_conf.beacon_datarate;
+    classBConfig.beacon_bw_hz = json_conf.gateway_conf.beacon_bw_hz;
+    classBConfig.beacon_power = json_conf.gateway_conf.beacon_power;
+    classBConfig.beacon_infodesc = json_conf.gateway_conf.beacon_infodesc;
+
+    this.setState({
+      object,
+      gatewayConfig: json_conf,
+      gatewayConfigAntenna: getAntennaGain(json_conf),
+      classBConfig
+    });
   }
 
   componentDidUpdate(prevProps) {
@@ -303,8 +329,19 @@ class GatewayForm extends Component {
     if (this.props.update) {
       fieldsSchema = {
         ...fieldsSchema,
-        id: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
-        networkServerID: Yup.string()
+        //id: Yup.string().required(i18n.t(`${packageNS}:tr000431`)),
+        networkServerID: Yup.string(),
+        password: Yup.string(),
+        server_address: Yup.string(),
+        keepalive_interval: Yup.number(),
+        stat_interval: Yup.number(),
+        push_timeout_ms: Yup.number(),
+        serv_port_up: Yup.number(),
+        gps_tty_path: Yup.string(),
+        serv_port_down: Yup.number(),
+        forward_crc_disabled: Yup.bool(),
+        forward_crc_error: Yup.bool(),
+        forward_crc_valid: Yup.bool(),
       }
       // fieldsSchema.object.fields.id = Yup.string().required(i18n.t(`${packageNS}:tr000431`));
       // fieldsSchema.object._nodes.push("id");
@@ -316,251 +353,6 @@ class GatewayForm extends Component {
     return Yup.object().shape(fieldsSchema);
   };
 
-  loadGatewayConfig() {
-    // TODO - call actual api here for now working with dummy conf object
-    const conf = {
-      SX1301_conf: {
-        spidev_path: "/dev/spidev1.0",
-        lorawan_public: true,
-        clksrc: 1,
-        antenna_gain: 2.5,
-        full_duplex: false,
-        precision_timestamp: {
-          enable: false,
-          max_ts_metrics: 255,
-          nb_symbols: 1
-        },
-        lbt_cfg: {
-          enable: true,
-          rssi_target: -81,
-          chan_cfg: [
-            { freq_hz: 868100000, scan_time_us: 5000 },
-            { freq_hz: 868300000, scan_time_us: 5000 },
-            { freq_hz: 868500000, scan_time_us: 5000 },
-            { freq_hz: 868800000, scan_time_us: 5000 },
-            { freq_hz: 864700000, scan_time_us: 5000 },
-            { freq_hz: 864900000, scan_time_us: 5000 },
-            { freq_hz: 865100000, scan_time_us: 5000 },
-            { freq_hz: 869525000, scan_time_us: 5000 }
-          ],
-          sx127x_rssi_offset: -7
-        },
-        radio_0: {
-          enable: true,
-          type: "SX1257",
-          freq: 864900000,
-          rssi_offset: -166,
-          tx_enable: true,
-          tx_notch_freq: 129000,
-          tx_freq_min: 863000000,
-          tx_freq_max: 870000000
-        },
-        radio_1: {
-          enable: true,
-          type: "SX1257",
-          freq: 868500000,
-          rssi_offset: -166,
-          tx_enable: false
-        },
-        chan_multiSF_0: { enable: true, radio: 1, if: -400000 },
-        chan_multiSF_1: { enable: true, radio: 1, if: -200000 },
-        chan_multiSF_2: { enable: true, radio: 1, if: 0 },
-        chan_multiSF_3: { enable: true, radio: 1, if: 300000 },
-        chan_multiSF_4: { enable: true, radio: 0, if: -200000 },
-        chan_multiSF_5: { enable: true, radio: 0, if: 0 },
-        chan_multiSF_6: { enable: true, radio: 0, if: 200000 },
-        chan_multiSF_7: { enable: true, radio: 0, if: 400000 },
-        chan_Lora_std: {
-          enable: true,
-          radio: 1,
-          if: -200000,
-          bandwidth: 250000,
-          spread_factor: 7
-        },
-        chan_FSK: {
-          enable: true,
-          radio: 1,
-          if: 300000,
-          bandwidth: 125000,
-          datarate: 50000
-        },
-        tx_lut_0: { pa_gain: 0, mix_gain: 8, rf_power: -6, dig_gain: 2 },
-        tx_lut_1: { pa_gain: 0, mix_gain: 11, rf_power: -3, dig_gain: 3 },
-        tx_lut_2: { pa_gain: 0, mix_gain: 11, rf_power: 0, dig_gain: 1 },
-        tx_lut_3: { pa_gain: 0, mix_gain: 14, rf_power: 3, dig_gain: 0 },
-        tx_lut_4: { pa_gain: 1, mix_gain: 11, rf_power: 6, dig_gain: 3 },
-        tx_lut_5: { pa_gain: 1, mix_gain: 11, rf_power: 10, dig_gain: 0 },
-        tx_lut_6: { pa_gain: 1, mix_gain: 13, rf_power: 11, dig_gain: 2 },
-        tx_lut_7: { pa_gain: 1, mix_gain: 13, rf_power: 12, dig_gain: 1 },
-        tx_lut_8: { pa_gain: 1, mix_gain: 14, rf_power: 13, dig_gain: 1 },
-        tx_lut_9: { pa_gain: 1, mix_gain: 14, rf_power: 14, dig_gain: 0 },
-        tx_lut_10: { pa_gain: 2, mix_gain: 9, rf_power: 16, dig_gain: 0 },
-        tx_lut_11: { pa_gain: 2, mix_gain: 12, rf_power: 20, dig_gain: 1 },
-        tx_lut_12: { pa_gain: 2, mix_gain: 13, rf_power: 23, dig_gain: 0 },
-        tx_lut_13: { pa_gain: 1, mix_gain: 10, rf_power: 25, dig_gain: 1 },
-        tx_lut_14: { pa_gain: 3, mix_gain: 12, rf_power: 26, dig_gain: 2 },
-        tx_lut_15: { pa_gain: 3, mix_gain: 14, rf_power: 27, dig_gain: 0 }
-      },
-      gateway_conf: {
-        gateway_ID: "5eefcc4211910000",
-        /* change with default server address/ports */
-        server_address: "chirp.matchx.io",
-        serv_port_up: 1700,
-        serv_port_down: 1700,
-        /* adjust the following parameters for your network */
-        keepalive_interval: 10,
-        stat_interval: 30,
-        push_timeout_ms: 100,
-        /* forward only valid packets */
-        forward_crc_valid: true,
-        forward_crc_error: false,
-        forward_crc_disabled: false,
-        /* GPS configuration */
-        /*"gps_tty_path": "/dev/ttymxc6",*/
-        gps_tty_path: "/tmp/vgps1",
-        /* GPS reference coordinates */
-        ref_latitude: 0.0,
-        ref_longitude: 0.0,
-        ref_altitude: 0,
-        /* Beaconing parameters */
-        beacon_period: 0,
-        beacon_freq_hz: 869525000,
-        beacon_datarate: 9,
-        beacon_bw_hz: 125000,
-        beacon_power: 14,
-        beacon_infodesc: 0
-      }
-    };
-
-    this.setState({
-      gatewayConfig: conf,
-      gatewayConfigAntenna: getAntennaGain(conf)
-    });
-  }
-
-  loadClassBConfig() {
-    const conf = {
-      SX1301_conf: {
-        spidev_path: "/dev/spidev1.0",
-        lorawan_public: true,
-        clksrc: 1,
-        antenna_gain: 2.5,
-        full_duplex: false,
-        precision_timestamp: {
-          enable: false,
-          max_ts_metrics: 255,
-          nb_symbols: 1
-        },
-        lbt_cfg: {
-          enable: true,
-          rssi_target: -81,
-          chan_cfg: [
-            { freq_hz: 868100000, scan_time_us: 5000 },
-            { freq_hz: 868300000, scan_time_us: 5000 },
-            { freq_hz: 868500000, scan_time_us: 5000 },
-            { freq_hz: 868800000, scan_time_us: 5000 },
-            { freq_hz: 864700000, scan_time_us: 5000 },
-            { freq_hz: 864900000, scan_time_us: 5000 },
-            { freq_hz: 865100000, scan_time_us: 5000 },
-            { freq_hz: 869525000, scan_time_us: 5000 }
-          ],
-          sx127x_rssi_offset: -7
-        },
-        radio_0: {
-          enable: true,
-          type: "SX1257",
-          freq: 864900000,
-          rssi_offset: -166,
-          tx_enable: true,
-          tx_notch_freq: 129000,
-          tx_freq_min: 863000000,
-          tx_freq_max: 870000000
-        },
-        radio_1: {
-          enable: true,
-          type: "SX1257",
-          freq: 868500000,
-          rssi_offset: -166,
-          tx_enable: false
-        },
-        chan_multiSF_0: { enable: true, radio: 1, if: -400000 },
-        chan_multiSF_1: { enable: true, radio: 1, if: -200000 },
-        chan_multiSF_2: { enable: true, radio: 1, if: 0 },
-        chan_multiSF_3: { enable: true, radio: 1, if: 300000 },
-        chan_multiSF_4: { enable: true, radio: 0, if: -200000 },
-        chan_multiSF_5: { enable: true, radio: 0, if: 0 },
-        chan_multiSF_6: { enable: true, radio: 0, if: 200000 },
-        chan_multiSF_7: { enable: true, radio: 0, if: 400000 },
-        chan_Lora_std: {
-          enable: true,
-          radio: 1,
-          if: -200000,
-          bandwidth: 250000,
-          spread_factor: 7
-        },
-        chan_FSK: {
-          enable: true,
-          radio: 1,
-          if: 300000,
-          bandwidth: 125000,
-          datarate: 50000
-        },
-        tx_lut_0: { pa_gain: 0, mix_gain: 8, rf_power: -6, dig_gain: 2 },
-        tx_lut_1: { pa_gain: 0, mix_gain: 11, rf_power: -3, dig_gain: 3 },
-        tx_lut_2: { pa_gain: 0, mix_gain: 11, rf_power: 0, dig_gain: 1 },
-        tx_lut_3: { pa_gain: 0, mix_gain: 14, rf_power: 3, dig_gain: 0 },
-        tx_lut_4: { pa_gain: 1, mix_gain: 11, rf_power: 6, dig_gain: 3 },
-        tx_lut_5: { pa_gain: 1, mix_gain: 11, rf_power: 10, dig_gain: 0 },
-        tx_lut_6: { pa_gain: 1, mix_gain: 13, rf_power: 11, dig_gain: 2 },
-        tx_lut_7: { pa_gain: 1, mix_gain: 13, rf_power: 12, dig_gain: 1 },
-        tx_lut_8: { pa_gain: 1, mix_gain: 14, rf_power: 13, dig_gain: 1 },
-        tx_lut_9: { pa_gain: 1, mix_gain: 14, rf_power: 14, dig_gain: 0 },
-        tx_lut_10: { pa_gain: 2, mix_gain: 9, rf_power: 16, dig_gain: 0 },
-        tx_lut_11: { pa_gain: 2, mix_gain: 12, rf_power: 20, dig_gain: 1 },
-        tx_lut_12: { pa_gain: 2, mix_gain: 13, rf_power: 23, dig_gain: 0 },
-        tx_lut_13: { pa_gain: 1, mix_gain: 10, rf_power: 25, dig_gain: 1 },
-        tx_lut_14: { pa_gain: 3, mix_gain: 12, rf_power: 26, dig_gain: 2 },
-        tx_lut_15: { pa_gain: 3, mix_gain: 14, rf_power: 27, dig_gain: 0 }
-      },
-      gateway_conf: {
-        gateway_ID: "5eefcc4211910000",
-        /* change with default server address/ports */
-        server_address: "chirp.matchx.io",
-        serv_port_up: 1700,
-        serv_port_down: 1700,
-        /* adjust the following parameters for your network */
-        keepalive_interval: 10,
-        stat_interval: 30,
-        push_timeout_ms: 100,
-        /* forward only valid packets */
-        forward_crc_valid: true,
-        forward_crc_error: false,
-        forward_crc_disabled: false,
-        /* GPS configuration */
-        /*"gps_tty_path": "/dev/ttymxc6",*/
-        gps_tty_path: "/tmp/vgps1",
-        /* GPS reference coordinates */
-        ref_latitude: 0.0,
-        ref_longitude: 0.0,
-        ref_altitude: 0,
-        /* Beaconing parameters */
-        beacon_period: 0,
-        beacon_freq_hz: 869525000,
-        beacon_datarate: 9,
-        beacon_bw_hz: 125000,
-        beacon_power: 14,
-        beacon_infodesc: 0
-      }
-    };;
-    let classBConfig = {beacon_period : conf.gateway_conf.beacon_period};
-    classBConfig.beacon_freq_hz = conf.gateway_conf.beacon_freq_hz;
-    classBConfig.beacon_datarate = conf.gateway_conf.beacon_datarate;
-    classBConfig.beacon_bw_hz = conf.gateway_conf.beacon_bw_hz;
-    classBConfig.beacon_power = conf.gateway_conf.beacon_power;
-    classBConfig.beacon_infodesc = conf.gateway_conf.beacon_infodesc;
-    this.setState({ classBConfig });
-    console.log('this.state.classBConfig',this.state.classBConfig);
-  }
   /**
    * On lbt data changed
    * @param {*} changedData
@@ -578,11 +370,7 @@ class GatewayForm extends Component {
   }
 
   onLBTStatusChanged(status) {
-    console.log('status', status);
-    console.log('status', this.state.gatewayConfig);
     let conf = { ...this.state.gatewayConfig };
-    console.log('conf', conf);
-    console.log('conf', Object.keys(conf)[0]);
     conf[Object.keys(conf)[0]]["lbt_cfg"]["enable"] = status;
 
     this.setState({ gatewayConfig: conf });
@@ -597,6 +385,8 @@ class GatewayForm extends Component {
    * @param {*} changedData
    */
   onLoraMacChannelsChanged(changedData) {
+
+    console.log('changedData', changedData);
     let conf = { ...this.state.gatewayConfig };
     for (const record of changedData) {
       conf[Object.keys(conf)[0]][record.channel]["enable"] = record.enable;
@@ -622,10 +412,10 @@ class GatewayForm extends Component {
    */
   onToggle(idx, e) {
     let records = this.state.gatewayConfig;
-    console.log('records', records);
+    
     records.gateway_conf[idx] = e.target.checked;
     this.setState({ records });
-    
+
     /* if (this.props.onDataChanged) {
       this.props.onDataChanged(records);
     } else {
@@ -634,11 +424,30 @@ class GatewayForm extends Component {
   }
 
   render() {
-    const { object, loading } = this.state;
+    const { object, loading, gatewayConfig } = this.state;
     let isLoading = loading;
 
     if (object === undefined) {
       return (<div></div>);
+    }
+
+    let gateway_conf = {
+      server_address: '',
+      keepalive_interval: '',
+      stat_interval: '',
+      push_timeout_ms: '',
+      serv_port_up: '',
+      gps_tty_path: '',
+      serv_port_down: '',
+      forward_crc_disabled: false,
+      forward_crc_error: false,
+      forward_crc_valid: false,
+    };
+
+    if (gatewayConfig !== undefined) {
+      if (gatewayConfig.gateway_conf !== undefined) {
+        gateway_conf = gatewayConfig.gateway_conf;
+      }
     }
 
     const style = {
@@ -671,6 +480,17 @@ class GatewayForm extends Component {
                   autoUpdate: object.autoUpdate || false,
                   gatewayProfileID: object.gatewayProfileID || '',
                   networkServerID: object.networkServerID || '',
+                  server_address: gateway_conf.server_address,
+                  keepalive_interval: gateway_conf.keepalive_interval,
+                  stat_interval: gateway_conf.stat_interval,
+                  push_timeout_ms: gateway_conf.push_timeout_ms,
+                  serv_port_up: gateway_conf.serv_port_up,
+                  gps_tty_path: gateway_conf.gps_tty_path,
+                  serv_port_down: gateway_conf.serv_port_down,
+                  forward_crc_disabled: gateway_conf.forward_crc_disabled,
+                  forward_crc_error: gateway_conf.forward_crc_error,
+                  forward_crc_valid: gateway_conf.forward_crc_valid,
+                  password: object.password || '',
                   boards: (
                     (object.boards !== undefined && object.boards.length > 0 && object.boards) || []
                   ),
@@ -682,13 +502,13 @@ class GatewayForm extends Component {
               onSubmit={
                 (values, { setSubmitting }) => {
                   const currentOrgID = this.props.organizationID || this.props.match.params.organizationID;
-                  console.log('Submitted values: ', values);
+                  //console.log('Submitted values: ', values);
 
                   // Deep copy is required otherwise we can change the original values of
                   // 'boards' (and we will not be able to render the different format in the UI)
                   // Reference: https://medium.com/javascript-in-plain-english/how-to-deep-copy-objects-and-arrays-in-javascript-7c911359b089
                   let newValues = clone(values);
-                  console.log('Deep copied submitted values: ', newValues !== values);
+                  //console.log('Deep copied submitted values: ', newValues !== values);
 
                   // let boardsAsObject;
                   // if (Array.isArray(values.object.boards)) {
@@ -702,7 +522,7 @@ class GatewayForm extends Component {
                   // delete newValues.object.location.source;
                   // delete newValues.object.location.accuracy;
 
-                  console.log('Prepared values: ', newValues);
+                  //console.log('Prepared values: ', newValues);
 
                   this.props.onSubmit(
                     newValues,
@@ -985,188 +805,188 @@ class GatewayForm extends Component {
 
                       </Row>
                       {this.props.update &&
-                      <>
-                      <Row>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            id="server_address"
-                            name="server_address"
-                            type="text"
-                            value={values.server_address}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={'Server Address'}
-                            helpText={'server_address'}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.server_address
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                        </Col>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            id="keepalive_interval"
-                            name="keepalive_interval"
-                            type="number"
-                            value={values.keepalive_interval}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={'Keepalive Interval'}
-                            helpText={'keepalive_interval'}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.keepalive_interval
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                        </Col>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            id="stat_interval"
-                            name="stat_interval"
-                            type="number"
-                            value={values.stat_interval}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={'Stat Interval'}
-                            helpText={'stat_interval'}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.stat_interval
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                        </Col>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            id="push_timeout_ms"
-                            name="push_timeout_ms"
-                            type="number"
-                            value={values.push_timeout_ms}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={'Push Timeout(ms)'}
-                            helpText={'push_timeout_ms'}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.push_timeout_ms
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                        </Col>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            id="serv_port_up"
-                            name="serv_port_up"
-                            type="number"
-                            value={values.serv_port_up}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={'Serv Port Up'}
-                            helpText={'serv_port_up'}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.serv_port_up
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                        </Col>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            id="serv_port_down"
-                            name="serv_port_down"
-                            type="number"
-                            value={values.serv_port_down}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={'Serv Port Down'}
-                            helpText={'serv_port_down'}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.serv_port_down
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                        </Col>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            id="gps_tty_path"
-                            name="gps_tty_path"
-                            type="text"
-                            value={values.gps_tty_path}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            label={'GPS TTY Path'}
-                            helpText={'gps_tty_path'}
-                            component={ReactstrapInput}
-                            className={
-                              errors && errors.gps_tty_path
-                                ? 'is-invalid form-control'
-                                : ''
-                            }
-                          />
-                        </Col>
-                        <Col sm={12} lg={6}>
-                          <Field
-                            style={{color:'red'}}
-                            helpText={this.state.object.helpText}
-                            label={(<span style={{color:'red'}}>{i18n.t(`${packageNS}:tr000619`)}</span>)}
-                            name="password"
-                            id="password"
-                            component={ReactstrapRootPasswordInput}
-                            onBlur={handleBlur}
-                          />
-                        </Col>
-                      </Row>
-                      
-                      <Row>
-                        <Col sm={12} lg={4}>
-                          <CustomInput
-                            type="switch"
-                            id={`switch-0`}
-                            name="forward_crc_valid"
-                            label="forward_crc_valid"
-                            checked={values.forward_crc_valid}
-                            onChange={e => this.onToggle('forward_crc_valid', e)}
-                          />
-                        </Col>
-                        <Col sm={12} lg={4}>
-                          <CustomInput
-                            type="switch"
-                            id={`switch-1`}
-                            name="forward_crc_error"
-                            label="forward_crc_error"
-                            checked={values.forward_crc_error}
-                            onChange={e => this.onToggle('forward_crc_error', e)}
-                          />
-                        </Col>
-                        <Col sm={12} lg={4}>
-                          <CustomInput
-                            type="switch"
-                            id={`switch-2`}
-                            name="forward_crc_disabled"
-                            label="forward_crc_disabled"
-                            checked={values.forward_crc_disabled}
-                            onChange={e => this.onToggle('forward_crc_disabled', e)}
-                          />
-                        </Col>
-                      </Row>
-                      </>
+                        <>
+                          <Row>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                id="server_address"
+                                name="server_address"
+                                type="text"
+                                value={values.server_address}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                label={'Server Address'}
+                                /* helpText={'server_address'} */
+                                component={ReactstrapInput}
+                                className={
+                                  errors && errors.server_address
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
+                              />
+                            </Col>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                id="keepalive_interval"
+                                name="keepalive_interval"
+                                type="number"
+                                value={values.keepalive_interval}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                label={'Keepalive Interval'}
+                                /* helpText={'keepalive_interval'} */
+                                component={ReactstrapInput}
+                                className={
+                                  errors && errors.keepalive_interval
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
+                              />
+                            </Col>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                id="stat_interval"
+                                name="stat_interval"
+                                type="number"
+                                value={values.stat_interval}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                label={'Stat Interval'}
+                                /* helpText={'stat_interval'} */
+                                component={ReactstrapInput}
+                                className={
+                                  errors && errors.stat_interval
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
+                              />
+                            </Col>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                id="push_timeout_ms"
+                                name="push_timeout_ms"
+                                type="number"
+                                value={values.push_timeout_ms}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                label={'Push Timeout(ms)'}
+                                /* helpText={'push_timeout_ms'} */
+                                component={ReactstrapInput}
+                                className={
+                                  errors && errors.push_timeout_ms
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
+                              />
+                            </Col>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                id="serv_port_up"
+                                name="serv_port_up"
+                                type="number"
+                                value={values.serv_port_up}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                label={'Serv Port Up'}
+                                /* helpText={'serv_port_up'} */
+                                component={ReactstrapInput}
+                                className={
+                                  errors && errors.serv_port_up
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
+                              />
+                            </Col>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                id="serv_port_down"
+                                name="serv_port_down"
+                                type="number"
+                                value={values.serv_port_down}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                label={'Serv Port Down'}
+                                /* helpText={'serv_port_down'} */
+                                component={ReactstrapInput}
+                                className={
+                                  errors && errors.serv_port_down
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
+                              />
+                            </Col>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                id="gps_tty_path"
+                                name="gps_tty_path"
+                                type="text"
+                                value={values.gps_tty_path}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                label={'GPS TTY Path'}
+                                /* helpText={'gps_tty_path'} */
+                                component={ReactstrapInput}
+                                className={
+                                  errors && errors.gps_tty_path
+                                    ? 'is-invalid form-control'
+                                    : ''
+                                }
+                              />
+                            </Col>
+                            <Col sm={12} lg={6}>
+                              <Field
+                                style={{ color: 'red' }}
+                                helpText={this.state.object.helpText}
+                                label={(<span style={{ color: 'red' }}>{i18n.t(`${packageNS}:tr000619`)}</span>)}
+                                name="password"
+                                id="password"
+                                component={ReactstrapRootPasswordInput}
+                                onBlur={handleBlur}
+                              />
+                            </Col>
+                          </Row>
+
+                          <Row>
+                            <Col sm={12} lg={4}>
+                              <CustomInput
+                                type="switch"
+                                id={`forward_crc_valid`}
+                                name="forward_crc_valid"
+                                label="forward_crc_valid"
+                                checked={values.forward_crc_valid}
+                                onChange={e => this.onToggle('forward_crc_valid', e)}
+                              />
+                            </Col>
+                            <Col sm={12} lg={4}>
+                              <CustomInput
+                                type="switch"
+                                id={`forward_crc_error`}
+                                name="forward_crc_error"
+                                label="forward_crc_error"
+                                checked={values.forward_crc_error}
+                                onChange={e => this.onToggle('forward_crc_error', e)}
+                              />
+                            </Col>
+                            <Col sm={12} lg={4}>
+                              <CustomInput
+                                type="switch"
+                                id={`forward_crc_disabled`}
+                                name="forward_crc_disabled"
+                                label="forward_crc_disabled"
+                                checked={values.forward_crc_disabled}
+                                onChange={e => this.onToggle('forward_crc_disabled', e)}
+                              />
+                            </Col>
+                          </Row>
+                        </>
                       }
                       <Row>&nbsp;</Row>
-                      <GatewayFormLBT
+                      {/* <GatewayFormLBT
                         records={getLBTChannels(this.state.gatewayConfig)}
                         onDataChanged={this.onLBTDataChanged}
                         status={getLBTConfigStatus(this.state.gatewayConfig)}
                         onStatusChanged={this.onLBTStatusChanged}
-                      />
+                      /> */}
                       <GatewayFormMacChannels
                         records={getChannelsWithFrequency(
                           this.state.gatewayConfig

@@ -38,6 +38,8 @@ class GatewayLayout extends Component {
       });
     });
 
+    
+
     SessionStore.on("change", this.setIsAdmin);
     this.setIsAdmin();
     this.locationToTab();
