@@ -24,6 +24,21 @@ react_test_frontend:
   tags:
     - kubernetes
 
+golangci-lint:
+  image: golangci/golangci-lint:v1.26.0
+  stage: test
+  before_script:
+    - go install github.com/jteeuwen/go-bindata/go-bindata
+    - make internal/statics
+  script:
+    - golangci-lint run --new-from-rev origin/master ./...
+  tags:
+    - kubernetes
+  except:
+    - master
+    - /crowdin/
+    - /l10n/
+
 syntax_test_backend:
   image: golang:1.12-alpine
   stage: test

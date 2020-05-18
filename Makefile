@@ -30,6 +30,14 @@ lint:
 	@go get -u golang.org/x/lint/golint
 	@golint -set_exit_status $(PKGS)
 
+golangci-lint-new:
+	docker pull golangci/golangci-lint
+	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.26.0 golangci-lint run --new-from-rev master ./...
+
+golangci-lint:
+	docker pull golangci/golangci-lint
+	docker run --rm -v $$(pwd):/app -w /app golangci/golangci-lint:v1.26.0 golangci-lint run ./...
+
 sec:
 	@echo "Running code security check"
 	@go get github.com/securego/gosec/cmd/gosec
