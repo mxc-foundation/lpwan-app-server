@@ -17,9 +17,10 @@ export default class EditableTextInput extends Component {
 
   onInputChange = e => {
     this.setState({ value: e.target.value });
-    if (this.props.onDataChanged) {
+    this.props.onDataChanged(e.target);
+    /* if (this.props.onDataChanged) {
       this.props.onDataChanged(this.props.id, this.props.field, e.target.value);
-    }
+    } */
   };
 
   onBlur(e) {
@@ -48,6 +49,7 @@ export default class EditableTextInput extends Component {
         {this.state.showEditableInput ? (
           <Input
             type={inputType}
+            id={this.props.id}
             placeholder={this.props.placeholder}
             value={this.state.value || ""}
             onChange={this.onInputChange}

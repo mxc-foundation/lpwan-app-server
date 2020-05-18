@@ -71,6 +71,7 @@ const getAntennaGain = config => {
  */
 const getLBTConfigStatus = config => {
   let obj = config[Object.keys(config)[0]];
+  console.log('getLBTConfigStatus util', obj);
   return obj ? obj["lbt_cfg"]["enable"] : null;
 };
 
