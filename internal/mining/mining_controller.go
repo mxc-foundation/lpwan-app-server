@@ -4,6 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"os"
+	"time"
+
 	"github.com/brocaar/lorawan"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -11,12 +19,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"math/rand"
-	"net/http"
-	"net/url"
-	"os"
-	"time"
 )
 
 type CMC struct {
@@ -46,21 +48,26 @@ type Data struct {
 		}
 		USD struct {
 			Price      float64 `json:"price"`
-			LastUpdate string `json:"last_update"`
+			LastUpdate string  `json:"last_update"`
 		}
 	}
 }
 
 var dailyMxcPrice, totalMiningValue float64
+var rnd *rand.Rand
 
 func Setup(conf config.Config) error {
 	log.Info("mining cron task begin...")
 
-	// usd between 10 - 12
+	// we need to seed it as we use it later
 	rand.Seed(time.Now().UnixNano())
-	min := 10
-	max := 12
-	randNum := float64(rand.Intn(max-min+1) + min)
+
+	mconf := conf.ApplicationServer.MiningSetUp
+	if mconf.MinValue <= 0 || mconf.MinValue > mconf.MaxValue {
+		err := fmt.Errorf("invalid mining configuration, min_value %d and max_value %d", mconf.MinValue, mconf.MaxValue)
+		log.Error(err)
+		return err
+	}
 	oneMxc, err := getUSDprice(conf)
 	if err != nil {
 		log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
@@ -68,8 +75,7 @@ func Setup(conf config.Config) error {
 	}
 	dailyMxcPrice = oneMxc
 
-	// totalMiningValue = 1 MXC:USD * rand amount
-	totalMiningValue = dailyMxcPrice * randNum
+	totalMiningValue = calcTotalMiningValue(conf, dailyMxcPrice)
 
 	c := cron.New()
 	exeTime := config.C.ApplicationServer.MiningSetUp.ExecuteTime
@@ -93,19 +99,13 @@ func Setup(conf config.Config) error {
 	err = priceCron.AddFunc("0 0 3 * * ?", func() {
 		log.Info("Get new MXC Price")
 		go func() {
-			// usd between 10 - 12
-			rand.Seed(time.Now().UnixNano())
-			min := 10
-			max := 12
-			randNum := float64(rand.Intn(max-min+1) + min)
 			oneMxc, err := getUSDprice(conf)
 			if err != nil {
 				log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
 			}
 			dailyMxcPrice = oneMxc
 
-			//totalMiningValue = 1 MXC:USD * rand amount
-			totalMiningValue = dailyMxcPrice * randNum
+			totalMiningValue = calcTotalMiningValue(conf, dailyMxcPrice)
 		}()
 	})
 	if err != nil {
@@ -114,6 +114,12 @@ func Setup(conf config.Config) error {
 	go priceCron.Start()
 
 	return nil
+}
+
+func calcTotalMiningValue(conf config.Config, mxcPrice float64) float64 {
+	mconf := conf.ApplicationServer.MiningSetUp
+	randUSD := float64(rand.Int63n(mconf.MaxValue-mconf.MinValue) + mconf.MinValue)
+	return mxcPrice * randUSD
 }
 
 // getUSDprice returns 1 USD price in MXC
@@ -203,7 +209,7 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 	current_time := time.Now().Unix()
 
 	// get the gateway list that should receive the mining tokens
-	mining_gws, err := storage.GetGatewayMiningList(ctx, storage.DB(), current_time)
+	mining_gws, err := storage.GetGatewayMiningList(ctx, storage.DB(), current_time, conf.ApplicationServer.MiningSetUp.GwOnlineLimit)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			log.Info("No gateway online longer than 24 hours")

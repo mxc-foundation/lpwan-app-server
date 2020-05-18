@@ -112,14 +112,14 @@ type Config struct {
 		} `mapstructure:"api_for_m2m"`
 
 		APIForGateway struct {
-			NewGateway struct{
+			NewGateway struct {
 				Bind    string `mapstructure:"new_gateway_bind"`
 				CACert  string `mapstructure:"ecc_ca_cert"`
 				TLSCert string `mapstructure:"ecc_tls_cert"`
 				TLSKey  string `mapstructure:"ecc_tls_key"`
 			} `mapstructure:"new_gateway"`
 
-			OldGateway struct{
+			OldGateway struct {
 				Bind    string `mapstructure:"old_gateway_bind"`
 				CACert  string `mapstructure:"rsa_ca_cert"`
 				TLSCert string `mapstructure:"rsa_tls_cert"`
@@ -166,6 +166,8 @@ type Config struct {
 			HeartbeatOfflineLimit int64  `mapstructure:"heartbeat_offline_limit"`
 			GwOnlineLimit         int64  `mapstructure:"gw_online_limit"`
 			ExecuteTime           string `mapstructure:"execute_time"`
+			MinValue              int64  `mapstructure:"min_value"`
+			MaxValue              int64  `mapstructure:"max_value"`
 		} `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
 
