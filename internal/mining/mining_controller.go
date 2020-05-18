@@ -4,6 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"os"
+	"time"
+
 	"github.com/brocaar/lorawan"
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -11,12 +18,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
-	"math/rand"
-	"net/http"
-	"net/url"
-	"os"
-	"time"
 )
 
 type CMC struct {
@@ -46,7 +47,7 @@ type Data struct {
 		}
 		USD struct {
 			Price      float64 `json:"price"`
-			LastUpdate string `json:"last_update"`
+			LastUpdate string  `json:"last_update"`
 		}
 	}
 }
@@ -203,7 +204,7 @@ func tokenMining(ctx context.Context, conf config.Config) error {
 	current_time := time.Now().Unix()
 
 	// get the gateway list that should receive the mining tokens
-	mining_gws, err := storage.GetGatewayMiningList(ctx, storage.DB(), current_time)
+	mining_gws, err := storage.GetGatewayMiningList(ctx, storage.DB(), current_time, conf.ApplicationServer.MiningSetUp.GwOnlineLimit)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			log.Info("No gateway online longer than 24 hours")
