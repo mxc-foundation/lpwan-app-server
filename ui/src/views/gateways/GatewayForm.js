@@ -477,7 +477,7 @@ class GatewayForm extends Component {
                   description: object.description || '',
                   discoveryEnabled: object.discoveryEnabled || false,
                   location: { altitude: object.location.altitude || 0 },
-                  autoUpdate: object.autoUpdate || false,
+                  autoUpdate: object.autoUpdate || true,
                   gatewayProfileID: object.gatewayProfileID || '',
                   networkServerID: object.networkServerID || '',
                   server_address: gateway_conf.server_address,
@@ -940,6 +940,7 @@ class GatewayForm extends Component {
                                 label={(<span style={{ color: 'red' }}>{i18n.t(`${packageNS}:tr000619`)}</span>)}
                                 name="password"
                                 id="password"
+                                data-lpignore="true"
                                 component={ReactstrapRootPasswordInput}
                                 onBlur={handleBlur}
                               />
