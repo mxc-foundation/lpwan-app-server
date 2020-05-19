@@ -200,10 +200,7 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 			log.WithError(err).Error(logInfo)
 			return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
-	} else {
-		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
-
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))

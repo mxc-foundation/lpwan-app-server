@@ -142,7 +142,8 @@ class DeviceFormM2M extends Component {
         text: i18n.t(`${packageNS}:menu.devices.available`),
         sort: false,
         formatter: this.DeviceM2MAvailableColumn,
-      }, {
+      },
+/*      {
         dataField: 'mode',
         text: i18n.t(`${packageNS}:menu.devices.mode`),
         sort: false,
@@ -151,7 +152,7 @@ class DeviceFormM2M extends Component {
         headerStyle: (colum, colIndex) => {
           return { minWidth: '150px', textAlign: 'left' };
         }
-      }
+      }*/
     ]
   )
 
