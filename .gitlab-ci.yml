@@ -24,42 +24,21 @@ react_test_frontend:
   tags:
     - kubernetes
 
-syntax_test_backend:
-  image: golang:1.12-alpine
+golangci-lint:
+  image: golangci/golangci-lint:v1.26.0
   stage: test
-  before_script: 
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get -u golang.org/x/lint/golint
+  before_script:
+    - go install github.com/jteeuwen/go-bindata/go-bindata
+    - make internal/statics
   script:
-    - golint -set_exit_status $(go list ./... | grep -v "migrations" | grep -v "static" | grep -v "integration") | grep -v "underscore in package name"
-  allow_failure: true
-  except:
-    - master
-    - develop
-    - buildserver
-    - /crowdin/
-    - /l10n/
+    - golangci-lint run --new-from-rev origin/master ./...
   tags:
     - kubernetes
+  except:
+    - master
+    - /crowdin/
+    - /l10n/
 
-.security_test_backend: # disabled until upgraded to go 1.13
-  image: golang:1.12-alpine
-  stage: test
-  before_script: 
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get github.com/securego/gosec/cmd/gosec
-  script:
-    - gosec ./...
-  allow_failure: true
-  except:
-    - master
-    - develop
-    - buildserver
-    - /crowdin/
-    - /l10n/
-  tags:
-    - kubernetes
-    
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   SERVICE_NAME: $APP_NAME
