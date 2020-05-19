@@ -39,42 +39,6 @@ golangci-lint:
     - /crowdin/
     - /l10n/
 
-syntax_test_backend:
-  image: golang:1.12-alpine
-  stage: test
-  before_script: 
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get -u golang.org/x/lint/golint
-  script:
-    - golint -set_exit_status $(go list ./... | grep -v "migrations" | grep -v "static" | grep -v "integration") | grep -v "underscore in package name"
-  allow_failure: true
-  except:
-    - master
-    - develop
-    - buildserver
-    - /crowdin/
-    - /l10n/
-  tags:
-    - kubernetes
-
-.security_test_backend: # disabled until upgraded to go 1.13
-  image: golang:1.12-alpine
-  stage: test
-  before_script: 
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-    - go get github.com/securego/gosec/cmd/gosec
-  script:
-    - gosec ./...
-  allow_failure: true
-  except:
-    - master
-    - develop
-    - buildserver
-    - /crowdin/
-    - /l10n/
-  tags:
-    - kubernetes
-    
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   SERVICE_NAME: $APP_NAME
