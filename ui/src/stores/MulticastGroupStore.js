@@ -94,7 +94,7 @@ class MulticastGroupStore extends EventEmitter {
   addDevice(multicastGroupID, devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.MulticastGroupService.AddDevice({
-        multicastGroupId: multicastGroupID,
+        multicastGroupID: multicastGroupID,
         body: {
           devEUI: devEUI,
         },
@@ -111,8 +111,8 @@ class MulticastGroupStore extends EventEmitter {
   removeDevice(multicastGroupID, devEUI, callbackFunc) {
     this.swagger.then(client => {
       client.apis.MulticastGroupService.RemoveDevice({
-        multicastGroupId: multicastGroupID,
-        devEui: devEUI,
+        multicastGroupID: multicastGroupID,
+        devEUI: devEUI,
       })
       .then(checkStatus)
       .then(resp => {
