@@ -132,6 +132,7 @@ type Config struct {
 			TLSCert                    string `mapstructure:"tls_cert"`
 			TLSKey                     string `mapstructure:"tls_key"`
 			JWTSecret                  string `mapstructure:"jwt_secret"`
+			OTPSecret                  string `mapstructure:"otp_secret"`
 			DisableAssignExistingUsers bool   `mapstructure:"disable_assign_existing_users"`
 			CORSAllowOrigin            string `mapstructure:"cors_allow_origin"`
 		} `mapstructure:"external_api"`
