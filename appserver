@@ -115,7 +115,7 @@ if [ "$*" = "remote" ] || [ "$*" = "local" ]; then
   if [ "$supernode_mode" = "development" ]; then
     # build mxprotocol-server
     if [ -d "$MXPROTOCOL_SERVER_PATH" ]; then
-      docker-compose exec -d mxprotocol-server bash --init-file "$MXPROTOCOL_SERVER_PATH"/m2m/scripts/compile/develop-compile
+      docker-compose exec -d mxprotocol-server bash --init-file "$MXPROTOCOL_SERVER_PATH"/scripts/compile/develop-compile
     fi
     # build appserver
     docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile

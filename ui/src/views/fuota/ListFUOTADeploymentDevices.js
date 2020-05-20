@@ -118,7 +118,7 @@ class FUOTADeploymentDevices extends Component {
     this.setState({ loading: true });
 
     FUOTADeploymentStore.listDeploymentDevices({
-      fuota_deployment_id: this.props.match.params.fuotaDeploymentID,
+      fuotaDeploymentID: this.props.match.params.fuotaDeploymentID,
       limit: limit,
       offset: offset,
     }, (res) => {
