@@ -132,7 +132,7 @@ class ApplicationStore extends EventEmitter {
   getHTTPIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.GetHTTPIntegration({
-        applicationId: applicationID,
+        applicationID: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -162,7 +162,7 @@ class ApplicationStore extends EventEmitter {
   deleteHTTPIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.DeleteHTTPIntegration({
-        applicationId: applicationID,
+        applicationID: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -197,7 +197,7 @@ class ApplicationStore extends EventEmitter {
   getInfluxDBIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.GetInfluxDBIntegration({
-        applicationId: applicationID,
+        applicationID: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -227,7 +227,7 @@ class ApplicationStore extends EventEmitter {
   deleteInfluxDBIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.DeleteInfluxDBIntegration({
-        applicationId: applicationID,
+        applicationID: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
@@ -261,7 +261,7 @@ class ApplicationStore extends EventEmitter {
   getThingsBoardIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.GetThingsBoardIntegration({
-        applicationId: applicationID,
+        applicationID: applicationID,
       })
         .then(checkStatus)
         .then(resp => {
@@ -291,7 +291,7 @@ class ApplicationStore extends EventEmitter {
   deleteThingsBoardIntegration(applicationID, callbackFunc) {
     this.swagger.then(client => {
       client.apis.ApplicationService.DeleteThingsBoardIntegration({
-        applicationId: applicationID,
+        applicationID: applicationID,
       })
       .then(checkStatus)
       .then(resp => {
