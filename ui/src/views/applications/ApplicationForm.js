@@ -143,7 +143,6 @@ function Decode(fPort, bytes) {
                   name="serviceProfileID"
                   id="serviceProfileID"
                   value={this.state.object.serviceProfileID || ""}
-                  getOption={this.getServiceProfileOption}
                   getOptions={this.getServiceProfileOptions}
                   setFieldValue={setFieldValue}
                   helpText={i18n.t(`${packageNS}:tr000257`)}
