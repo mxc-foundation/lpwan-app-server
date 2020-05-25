@@ -387,6 +387,9 @@
         "withdrawFee": {
           "type": "number",
           "format": "double"
+        },
+        "password": {
+          "type": "string"
         }
       }
     },

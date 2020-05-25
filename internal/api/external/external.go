@@ -26,6 +26,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
@@ -72,7 +74,13 @@ func Setup(conf config.Config) error {
 }
 
 func setupAPI(conf config.Config) error {
-	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret)
+	otpStore := pgstore.New(storage.DB().DB.DB)
+	otpValidator, err := otp.NewValidator("lpwan-app-server", conf.ApplicationServer.ExternalAPI.OTPSecret, otpStore)
+	if err != nil {
+		return err
+	}
+
+	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret, otpValidator)
 	rpID, err := uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
@@ -84,7 +92,7 @@ func setupAPI(conf config.Config) error {
 	api.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(validator))
 	api.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(validator))
 	api.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
-	api.RegisterInternalServiceServer(grpcServer, NewInternalUserAPI(validator))
+	api.RegisterInternalServiceServer(grpcServer, NewInternalUserAPI(validator, otpValidator))
 	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
 	api.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(validator))
 	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(validator))
@@ -121,7 +129,7 @@ func setupAPI(conf config.Config) error {
 			if corsAllowOrigin != "" {
 				w.Header().Set("Access-Control-Allow-Origin", corsAllowOrigin)
 				w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-				w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Grpc-Metadata-Authorization")
+				w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Grpc-Metadata-Authorization, Grpc-Metadata-X-OTP")
 
 				if r.Method == "OPTIONS" {
 					return
