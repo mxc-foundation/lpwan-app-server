@@ -323,6 +323,10 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	return &pb.LoginResponse{Jwt: jwt}, nil
 }
 
+func (a *InternalUserAPI) Login2FA(ctx context.Context, req *pb.Login2FARequest) (*pb.LoginResponse, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 // IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*pb.GoogleRecaptchaResponse, error) {
 	secret := config.C.Recaptcha.Secret

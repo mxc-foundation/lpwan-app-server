@@ -10,13 +10,21 @@ import "user.proto";
 
 // InternalService is the service providing API endpoints for internal usage.
 service InternalService {
-	// Log in a user
+	// Log the user in, returns JWT
 	rpc Login(LoginRequest) returns (LoginResponse) {
 		option(google.api.http) = {
 			post: "/api/internal/login"
 			body: "*"
 		};
 	}
+
+        // Validate OTP, returns JWT
+        rpc Login2FA(Login2FARequest) returns (LoginResponse) {
+                option(google.api.http) = {
+                        post: "/api/internal/login-2fa"
+                        body: "*"
+                };
+        }
 
 	// Get the current user's profile
 	rpc Profile(google.protobuf.Empty) returns (ProfileResponse) {
@@ -156,8 +164,13 @@ message LoginRequest {
 }
 
 message LoginResponse {
-	// The JWT tag to be used to access lora-app-server interfaces.
+	// The JWT token to be used to access lora-app-server interfaces.
 	string jwt = 1;
+        // Two-factor authentication is required to finish the process
+        bool is_2fa_required = 2;
+}
+
+message Login2FARequest {
 }
 
 message ProfileResponse {
