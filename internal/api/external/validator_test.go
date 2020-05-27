@@ -1,8 +1,10 @@
 package external
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
-	"golang.org/x/net/context"
 )
 
 type TestValidator struct {
@@ -21,6 +23,14 @@ func (v *TestValidator) Validate(ctx context.Context, funcs ...auth.ValidatorFun
 
 func (v *TestValidator) GetUsername(ctx context.Context) (string, error) {
 	return v.returnUsername, v.returnError
+}
+
+func (v *TestValidator) GetOTP(ctx context.Context) string {
+	return ""
+}
+
+func (v *TestValidator) ValidateOTP(ctx context.Context) error {
+	return fmt.Errorf("not implemented")
 }
 
 func (v *TestValidator) GetIsAdmin(ctx context.Context) (bool, error) {

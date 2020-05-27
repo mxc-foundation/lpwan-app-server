@@ -2,15 +2,17 @@ package external
 
 import (
 	"context"
+	"strconv"
+
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"strconv"
 )
 
 // WithdrawServerAPI validates the withdraw server api
@@ -148,7 +150,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 }
 
 // GetWithdraw sends the requests to cobo directly
-func (s *WithdrawServerAPI) GetWithdraw (ctx context.Context, req *api.GetWithdrawRequest) (*api.GetWithdrawResponse, error) {
+func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdrawRequest) (*api.GetWithdrawResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
@@ -163,6 +165,10 @@ func (s *WithdrawServerAPI) GetWithdraw (ctx context.Context, req *api.GetWithdr
 			log.WithError(err).Error(logInfo)
 			return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
+	}
+	// we require OTP for withdraw request
+	if err := s.validator.ValidateOTP(ctx); err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -206,6 +212,10 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 			log.WithError(err).Error(logInfo)
 			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
+	}
+	// we require OTP for withdraw request
+	if err := s.validator.ValidateOTP(ctx); err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -349,7 +359,7 @@ func (s *WithdrawServerAPI) GetWithdrawMonthly(ctx context.Context, req *api.Get
 
 	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
 
-	resp, err := withdrawClient.GetWithdrawMonthly (ctx, &m2mServer.GetWithdrawMonthlyRequest{
+	resp, err := withdrawClient.GetWithdrawMonthly(ctx, &m2mServer.GetWithdrawMonthlyRequest{
 		UserId: req.UserId,
 		OrgId:  req.OrgId,
 	})
@@ -361,7 +371,7 @@ func (s *WithdrawServerAPI) GetWithdrawMonthly(ctx context.Context, req *api.Get
 	var withdrawData []*api.MonthlyData
 	for _, item := range resp.MonthlyData {
 		monthlyWithdraw := &api.MonthlyData{
-			Month: item.Month,
+			Month:  item.Month,
 			Amount: item.Amount,
 		}
 

@@ -9,4 +9,5 @@ var (
 	ErrInvalidAlgorithm          = errors.New("invalid algorithm")
 	ErrInvalidToken              = errors.New("invalid token")
 	ErrNotAuthorized             = errors.New("not authorized")
+	ErrNoOTPInMetadata           = errors.New("no OTP in metadata")
 )

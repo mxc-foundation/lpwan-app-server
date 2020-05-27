@@ -6,11 +6,13 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var validAuthorizationRegexp = regexp.MustCompile(`(?i)^bearer (.*)$`)
@@ -21,6 +23,9 @@ type Claims struct {
 
 	// Username defines the identity of the user.
 	Username string `json:"username"`
+
+	// OTP code if it is present, not a part of JWT
+	OTP string `json:"-"`
 }
 
 // Validator defines the interface a validator needs to implement.
@@ -37,6 +42,12 @@ type Validator interface {
 	// GetUsername returns the name of the authenticated user.
 	GetUsername(context.Context) (string, error)
 
+	// GetOTP returns OTP code
+	GetOTP(context.Context) string
+
+	// ValidateOTP validates OTP and returns the error if it is not valid
+	ValidateOTP(context.Context) error
+
 	// GetIsAdmin returns if the authenticated user is a global admin.
 	GetIsAdmin(context.Context) (bool, error)
 }
@@ -48,17 +59,19 @@ type ValidatorFunc func(sqlx.Queryer, *Claims) (bool, error)
 
 // JWTValidator validates JWT tokens.
 type JWTValidator struct {
-	db        sqlx.Ext
-	secret    string
-	algorithm string
+	db           sqlx.Ext
+	secret       string
+	algorithm    string
+	otpValidator *otp.Validator
 }
 
 // NewJWTValidator creates a new JWTValidator.
-func NewJWTValidator(db sqlx.Ext, algorithm, secret string) *JWTValidator {
+func NewJWTValidator(db sqlx.Ext, algorithm, secret string, otpValidator *otp.Validator) *JWTValidator {
 	return &JWTValidator{
-		db:        db,
-		secret:    secret,
-		algorithm: algorithm,
+		db:           db,
+		secret:       secret,
+		algorithm:    algorithm,
+		otpValidator: otpValidator,
 	}
 }
 
@@ -108,6 +121,27 @@ func (v JWTValidator) GetIsAdmin(ctx context.Context) (bool, error) {
 	return user.IsAdmin, nil
 }
 
+// GetOTP returns OTP from the context
+func (v JWTValidator) GetOTP(ctx context.Context) string {
+	return getOTPFromContext(ctx)
+}
+
+// ValidateOTP validates OTP and returns the error if it is not valid
+func (v JWTValidator) ValidateOTP(ctx context.Context) error {
+	claims, err := v.getClaims(ctx)
+	if err != nil {
+		return err
+	}
+	enabled, err := v.otpValidator.IsEnabled(ctx, claims.Username)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return errors.New("OTP is not enabled")
+	}
+	return v.otpValidator.Validate(ctx, claims.Username, claims.OTP)
+}
+
 func (v JWTValidator) getClaims(ctx context.Context) (*Claims, error) {
 	tokenStr, err := getTokenFromContext(ctx)
 	if err != nil {
@@ -134,6 +168,8 @@ func (v JWTValidator) getClaims(ctx context.Context) (*Claims, error) {
 		return nil, fmt.Errorf("api/auth: expected *Claims, got %T", token.Claims)
 	}
 
+	claims.OTP = getOTPFromContext(ctx)
+
 	return claims, nil
 }
 
@@ -157,4 +193,15 @@ func getTokenFromContext(ctx context.Context) (string, error) {
 	}
 
 	return match[1], nil
+}
+
+func getOTPFromContext(ctx context.Context) string {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+	if len(md["x-otp"]) == 1 {
+		return md["x-otp"][0]
+	}
+	return ""
 }
