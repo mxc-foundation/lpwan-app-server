@@ -146,14 +146,18 @@ func (a *UserAPI) Get(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserR
 	return &resp, nil
 }
 
-// GetUserEmail returns true if user is not exist
+// GetUserEmail returns true if user does not exist
 func (a *UserAPI) GetUserEmail(ctx context.Context, req *pb.GetUserEmailRequest) (*pb.GetUserEmailResponse, error) {
-	_, err := storage.GetUserByEmail(ctx, storage.DB(), req.UserEmail)
+	u, err := storage.GetUserByEmail(ctx, storage.DB(), req.UserEmail)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			return &pb.GetUserEmailResponse{Status: true}, nil
 		}
 		return nil, helpers.ErrToRPCError(err)
+	}
+	if u.SecurityToken != nil {
+		// user exists but has not finished registration
+		return &pb.GetUserEmailResponse{Status: true}, nil
 	}
 
 	return &pb.GetUserEmailResponse{Status: false}, nil
