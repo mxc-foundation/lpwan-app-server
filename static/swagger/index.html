@@ -44,6 +44,7 @@
         validatorUrl: null,
         onComplete: function(swaggerApi, swaggerUi) {
           addApiKeyAuthorization();
+          addOtpHeader();
         }
       });
 
@@ -55,6 +56,14 @@
         }
       }
       $('#input_apiKey').change(addApiKeyAuthorization);
+      function addOtpHeader(){
+        var key = encodeURIComponent($('#input_otp')[0].value);
+        if(key && key.trim() != "") {
+            window.swaggerUi.api.clientAuthorizations.add("otpKey", new SwaggerClient.ApiKeyAuthorization("Grpc-Metadata-X-OTP", key, "header"));
+            console.log("added otp " + key);
+        }
+      }
+      $('#input_otp').change(addOtpHeader);
 
       window.swaggerUi.load();
     });
@@ -67,6 +76,7 @@
       <span id="logo">LPWAN App Server REST API</span>
       <form id='api_selector'>
         <div class='input'><input placeholder="JWT TOKEN" id="input_apiKey" name="apiKey" type="text"/></div>
+        <div class='input'><input placeholder="OTP" id="input_otp" name="otpKey" type="text"/></div>
       </form>
     </div>
   </div>
