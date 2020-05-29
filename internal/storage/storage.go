@@ -13,8 +13,10 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
+	authstore "github.com/mxc-foundation/lpwan-app-server/internal/storage/auth"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
@@ -190,4 +192,8 @@ func SetupDefault() error {
 	}
 
 	return nil
+}
+
+func GetAuthStore() auth.Store {
+	return authstore.New(DB().DB.DB)
 }

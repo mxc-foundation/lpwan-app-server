@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -23,9 +22,6 @@ import (
 
 // saltSize defines the salt size
 const saltSize = 16
-
-// defaultSessionTTL defines the default session TTL
-const defaultSessionTTL = time.Hour * 24
 
 // Any upper, lower, digit characters, at least 6 characters.
 var usernameValidator = regexp.MustCompile(`^[[:alnum:]]+$`)
@@ -393,52 +389,24 @@ func DeleteUser(ctx context.Context, db sqlx.Execer, id int64) error {
 	return nil
 }
 
-// LoginUser returns a JWT token for the user matching the given username
-// and password.
-func LoginUser(ctx context.Context, db sqlx.Queryer, username string, password string) (string, error) {
+// CheckPassword returns an error if the password for the user is not valid
+func CheckPassword(ctx context.Context, db sqlx.Queryer, username string, password string) error {
 	// Find the user by username
 	var user userInternal
 	err := sqlx.Get(db, &user, "select "+internalUserFields+" from \"user\" where username = $1", username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", ErrInvalidUsernameOrPassword
+			return ErrInvalidUsernameOrPassword
 		}
-		return "", errors.Wrap(err, "select error")
+		return errors.Wrap(err, "select error")
 	}
 
 	// Compare the passed in password with the hash in the database.
 	if !hashCompare(password, user.PasswordHash) {
-		return "", ErrInvalidUsernameOrPassword
+		return ErrInvalidUsernameOrPassword
 	}
 
-	return MakeJWT(user.Username, user.SessionTTL)
-}
-
-// MakeJWT ...
-func MakeJWT(username string, sessionTTL int32) (string, error) {
-	// Generate the token.
-	now := time.Now()
-	nowSecondsSinceEpoch := now.Unix()
-	var expSecondsSinceEpoch int64
-	if sessionTTL > 0 {
-		expSecondsSinceEpoch = nowSecondsSinceEpoch + (60 * int64(sessionTTL))
-	} else {
-		expSecondsSinceEpoch = nowSecondsSinceEpoch + int64(defaultSessionTTL/time.Second)
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss":      "lora-app-server",
-		"aud":      "lora-app-server",
-		"nbf":      nowSecondsSinceEpoch,
-		"exp":      expSecondsSinceEpoch,
-		"sub":      "user",
-		"username": username,
-	})
-
-	jwt, err := token.SignedString(jwtsecret)
-	if nil != err {
-		return jwt, errors.Wrap(err, "get jwt signed string error")
-	}
-	return jwt, err
+	return nil
 }
 
 // UpdatePassword updates the user with the new password.

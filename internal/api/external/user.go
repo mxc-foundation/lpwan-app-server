@@ -52,17 +52,21 @@ func (a *UserAPI) Create(ctx context.Context, req *pb.CreateUserRequest) (*pb.Cr
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
 
-	if err := a.validator.Validate(ctx,
-		auth.ValidateUsersAccess(auth.Create)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %s", err)
 	}
-
-	// validate if the client has admin rights for the given organizations
-	// to which the user must be linked
-	for _, org := range req.Organizations {
-		if err := a.validator.Validate(ctx,
-			auth.ValidateIsOrganizationAdmin(org.OrganizationId)); err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	if len(req.Organizations) == 0 {
+		if err := cred.IsGlobalAdmin(ctx); err != nil {
+			return nil, status.Errorf(codes.PermissionDenied, "must be a global admin")
+		}
+	} else {
+		// validate if the client has admin rights for the given organizations
+		// to which the user must be linked
+		for _, org := range req.Organizations {
+			if err := cred.IsOrgAdmin(ctx, org.OrganizationId); err != nil {
+				return nil, status.Errorf(codes.PermissionDenied, "must be an organization admin")
+			}
 		}
 	}
 
@@ -75,12 +79,7 @@ func (a *UserAPI) Create(ctx context.Context, req *pb.CreateUserRequest) (*pb.Cr
 		Note:       req.User.Note,
 	}
 
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	if !isAdmin {
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
 		// non-admin users are not able to modify the fields below
 		user.IsAdmin = false
 		user.IsActive = true
@@ -112,9 +111,15 @@ func (a *UserAPI) Create(ctx context.Context, req *pb.CreateUserRequest) (*pb.Cr
 
 // Get returns the user matching the given ID.
 func (a *UserAPI) Get(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	if err := a.validator.Validate(ctx,
-		auth.ValidateUserAccess(req.Id, auth.Read)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %s", err)
+	}
+
+	if cred.UserID() != req.Id {
+		if err := cred.IsGlobalAdmin(ctx); err != nil {
+			return nil, status.Errorf(codes.PermissionDenied, "must be user themselves or a global admin")
+		}
 	}
 
 	user, err := storage.GetUser(ctx, storage.DB(), req.Id)
@@ -165,9 +170,12 @@ func (a *UserAPI) GetUserEmail(ctx context.Context, req *pb.GetUserEmailRequest)
 
 // List lists the users.
 func (a *UserAPI) List(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUserResponse, error) {
-	if err := a.validator.Validate(ctx,
-		auth.ValidateUsersAccess(auth.List)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, "must be a global admin")
 	}
 
 	users, err := storage.GetUsers(ctx, storage.DB(), int(req.Limit), int(req.Offset), req.Search)
@@ -210,13 +218,15 @@ func (a *UserAPI) List(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUs
 
 // Update updates the given user.
 func (a *UserAPI) Update(ctx context.Context, req *pb.UpdateUserRequest) (*empty.Empty, error) {
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %s", err)
+	}
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, "must be a global admin")
+	}
 	if req.User == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
-	}
-
-	if err := a.validator.Validate(ctx,
-		auth.ValidateUserAccess(req.User.Id, auth.Update)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	userUpdate := storage.UserUpdate{
@@ -229,8 +239,7 @@ func (a *UserAPI) Update(ctx context.Context, req *pb.UpdateUserRequest) (*empty
 		Note:       req.User.Note,
 	}
 
-	err := storage.UpdateUser(ctx, storage.DB(), userUpdate)
-	if err != nil {
+	if err := storage.UpdateUser(ctx, storage.DB(), userUpdate); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -239,13 +248,15 @@ func (a *UserAPI) Update(ctx context.Context, req *pb.UpdateUserRequest) (*empty
 
 // Delete deletes the user matching the given ID.
 func (a *UserAPI) Delete(ctx context.Context, req *pb.DeleteUserRequest) (*empty.Empty, error) {
-	if err := a.validator.Validate(ctx,
-		auth.ValidateUserAccess(req.Id, auth.Delete)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %s", err)
+	}
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
 	}
 
-	err := storage.DeleteUser(ctx, storage.DB(), req.Id)
-	if err != nil {
+	if err = storage.DeleteUser(ctx, storage.DB(), req.Id); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -254,14 +265,20 @@ func (a *UserAPI) Delete(ctx context.Context, req *pb.DeleteUserRequest) (*empty
 
 // UpdatePassword updates the password for the user matching the given ID.
 func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPasswordRequest) (*empty.Empty, error) {
-	if err := a.validator.Validate(ctx,
-		auth.ValidateUserAccess(req.UserId, auth.UpdateProfile)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %s", err)
 	}
 
 	user, err := storage.GetUser(ctx, storage.DB(), req.UserId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if cred.Username() != user.Username {
+		if err := cred.IsGlobalAdmin(ctx); err != nil {
+			return nil, status.Errorf(codes.PermissionDenied, "must be user themselves or a global admin")
+		}
 	}
 
 	if user.Username == storage.DemoUser {
@@ -286,9 +303,21 @@ func NewInternalUserAPI(validator auth.Validator, otpValidator *otp.Validator) *
 
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	jwt, err := storage.LoginUser(ctx, storage.DB(), req.Username, req.Password)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
+	if err := storage.CheckPassword(ctx, storage.DB(), req.Username, req.Password); err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid username or password")
+	}
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), req.Username)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "couldn't get info about the user")
+	}
+	if !user.IsActive {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid username or password")
+	}
+
+	jwt, err := a.validator.SignToken(req.Username, 60*int64(user.SessionTTL), nil)
+	if err != nil {
+		log.Errorf("SignToken returned an error: %v", err)
+		return nil, status.Errorf(codes.Internal, "couldn't create a token")
 	}
 
 	return &pb.LoginResponse{Jwt: jwt}, nil
@@ -347,18 +376,13 @@ type claims struct {
 
 // Profile returns the user profile.
 func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*pb.ProfileResponse, error) {
-	if err := a.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	username, err := a.validator.GetUsername(ctx)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %s", err)
 	}
 
 	// Get the user id based on the username.
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), cred.Username())
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -419,22 +443,17 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 
 // GlobalSearch performs a global search.
 func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearchRequest) (*pb.GlobalSearchResponse, error) {
-	if err := a.validator.Validate(ctx,
-		auth.ValidateActiveUser()); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	cred, err := a.validator.GetCredentials(ctx)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %s", err)
 	}
 
-	username, err := a.validator.GetUsername(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+	var isAdmin bool
+	if err := cred.IsGlobalAdmin(ctx); err == nil {
+		isAdmin = true
 	}
 
-	results, err := storage.GlobalSearch(ctx, storage.DB(), username, isAdmin, req.Search, int(req.Limit), int(req.Offset))
+	results, err := storage.GlobalSearch(ctx, storage.DB(), cred.Username(), isAdmin, req.Search, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -480,6 +499,7 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearch
 
 	return &out, nil
 }
+
 func OTPgen() string {
 	var table = [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
 	otp := make([]byte, 6)
@@ -561,14 +581,11 @@ func (a *UserAPI) GetOTPCode(ctx context.Context, req *pb.GetOTPCodeRequest) (*p
 
 // GetTOTPStatus returns info about TOTP status for the current user
 func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *pb.TOTPStatusRequest) (*pb.TOTPStatusResponse, error) {
-	if err := a.validator.Validate(ctx, auth.ValidateActiveUser()); err != nil {
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	username, err := a.validator.GetUsername(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	enabled, err := a.otpValidator.IsEnabled(ctx, username)
+	enabled, err := a.otpValidator.IsEnabled(ctx, cred.Username())
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -580,14 +597,11 @@ func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *pb.TOTPStatusR
 
 // GetTOTPConfiguration generates a new TOTP configuration for the user
 func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *pb.GetTOTPConfigurationRequest) (*pb.GetTOTPConfigurationResponse, error) {
-	if err := a.validator.Validate(ctx, auth.ValidateActiveUser()); err != nil {
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	username, err := a.validator.GetUsername(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	cfg, err := a.otpValidator.NewConfiguration(ctx, username)
+	cfg, err := a.otpValidator.NewConfiguration(ctx, cred.Username())
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -602,15 +616,13 @@ func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *pb.GetT
 
 // EnableTOTP enables TOTP for the user
 func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *pb.TOTPStatusRequest) (*pb.TOTPStatusResponse, error) {
-	if err := a.validator.Validate(ctx, auth.ValidateActiveUser()); err != nil {
+	cred, err := a.validator.GetCredentials(ctx)
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	username, err := a.validator.GetUsername(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+
 	otp := a.validator.GetOTP(ctx)
-	if err := a.otpValidator.Enable(ctx, username, otp); err != nil {
+	if err := a.otpValidator.Enable(ctx, cred.Username(), otp); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
 	return &pb.TOTPStatusResponse{
@@ -620,17 +632,12 @@ func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *pb.TOTPStatusRequ
 
 // DisableTOTP disables TOTP for the user
 func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *pb.TOTPStatusRequest) (*pb.TOTPStatusResponse, error) {
-	if err := a.validator.Validate(ctx, auth.ValidateActiveUser()); err != nil {
+	cred, err := a.validator.GetCredentials(ctx, auth.WithValidOTP())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	if err := a.validator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
-	}
-	username, err := a.validator.GetUsername(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	if err := a.otpValidator.Disable(ctx, username); err != nil {
+
+	if err := a.otpValidator.Disable(ctx, cred.Username()); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 	return &pb.TOTPStatusResponse{
@@ -640,18 +647,12 @@ func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *pb.TOTPStatusReq
 
 // GetRecoveryCodes returns the list of recovery codes for the user
 func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *pb.GetRecoveryCodesRequest) (*pb.GetRecoveryCodesResponse, error) {
-	if err := a.validator.Validate(ctx, auth.ValidateActiveUser()); err != nil {
+	cred, err := a.validator.GetCredentials(ctx, auth.WithValidOTP())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	if err := a.validator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
-	}
-	username, err := a.validator.GetUsername(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
 
-	codes, err := a.otpValidator.GetRecoveryCodes(ctx, username, req.Regenerate)
+	codes, err := a.otpValidator.GetRecoveryCodes(ctx, cred.Username(), req.Regenerate)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -669,9 +670,10 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.Confi
 	}
 
 	log.Println("Confirming GetJwt", user.Username)
-	jwt, err := storage.MakeJWT(user.Username, user.SessionTTL)
+	// give user a token that is valid only to finish the registration process
+	jwt, err := a.validator.SignToken(user.Username, 3600, []string{"registration"})
 	if err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	return &pb.ConfirmRegistrationResponse{
@@ -685,9 +687,25 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.Confi
 
 // FinishRegistration sets new user password and creates a new organization
 func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.FinishRegistrationRequest) (*empty.Empty, error) {
-	if err := a.validator.Validate(ctx, auth.ValidateUserAccess(req.UserId, auth.FinishRegistration)); err != nil {
-		log.Println("UpdatePassword", err)
+	cred, err := a.validator.GetCredentials(ctx,
+		auth.WithLimitedCredentials(), // nolint: staticcheck
+		auth.WithAudience("registration"),
+	)
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	// Get the user id based on the username and check that it matches the one
+	// in the request and that user is not active
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), cred.Username())
+	if nil != err {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	if user.ID != req.UserId {
+		return nil, status.Errorf(codes.PermissionDenied, "user id mismatch")
+	}
+	if user.IsActive {
+		return nil, status.Error(codes.PermissionDenied, "user has been registered already")
 	}
 
 	org := storage.Organization{
@@ -696,7 +714,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *pb.Finish
 		CanHaveGateways: true,
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
+	err = storage.Transaction(func(tx sqlx.Ext) error {
 		err := storage.FinishRegistration(tx, req.UserId, req.Password)
 		if err != nil {
 			return helpers.ErrToRPCError(err)

@@ -36,3 +36,11 @@ func (v *TestValidator) ValidateOTP(ctx context.Context) error {
 func (v *TestValidator) GetIsAdmin(ctx context.Context) (bool, error) {
 	return v.returnIsAdmin, v.returnError
 }
+
+func (v *TestValidator) GetCredentials(ctx context.Context, opts ...auth.Option) (auth.Credentials, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
+func (v *TestValidator) SignToken(username string, ttl int64, audience []string) (string, error) {
+	return "foo", nil
+}

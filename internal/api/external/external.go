@@ -13,6 +13,7 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/tmc/grpc-websocket-proxy/wsproxy"
@@ -80,7 +81,7 @@ func setupAPI(conf config.Config) error {
 		return err
 	}
 
-	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret, otpValidator)
+	validator := auth.NewJWTValidator(storage.DB(), jwa.HS256, []byte(jwtSecret), otpValidator, storage.GetAuthStore())
 	rpID, err := uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
