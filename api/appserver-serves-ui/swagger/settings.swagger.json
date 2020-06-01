@@ -58,15 +58,25 @@
       "properties": {
         "lowBalanceWarning": {
           "type": "string",
-          "format": "int64"
+          "title": "when supernode income is lower than expected revenue, warn system owner to increase income"
         },
-        "downlinkFee": {
-          "type": "string",
-          "format": "int64"
+        "downlinkPrice": {
+          "type": "number",
+          "format": "double"
         },
-        "transactionPercentageShare": {
-          "type": "string",
-          "format": "int64"
+        "supernodeIncomeRatio": {
+          "type": "number",
+          "format": "double"
+        },
+        "stakingPercentage": {
+          "type": "number",
+          "format": "double",
+          "title": "this is the percentage of reward from supernode income"
+        },
+        "stakingExpectedRevenuePercentage": {
+          "type": "number",
+          "format": "double",
+          "title": "this is the percentage of expected reward from staking amount"
         }
       }
     },

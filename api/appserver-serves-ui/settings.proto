@@ -25,9 +25,14 @@ service SettingsService {
 message GetSettingsRequest {}
 
 message GetSettingsResponse {
-    int64 lowBalanceWarning = 1;
-    int64 downlinkFee = 2;
-    int64 transactionPercentageShare = 3;
+    // when supernode income is lower than expected revenue, warn system owner to increase income
+    string low_balance_warning = 1;
+    double downlink_price = 2;
+    double supernode_income_ratio = 3;
+    // this is the percentage of reward from supernode income
+    double staking_percentage = 4;
+    // this is the percentage of expected reward from staking amount
+    double staking_expected_revenue_percentage = 5;
 }
 
 message ModifySettingsRequest {

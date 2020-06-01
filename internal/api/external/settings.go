@@ -56,9 +56,11 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 	}
 
 	return &api.GetSettingsResponse{
-		LowBalanceWarning:          resp.LowBalanceWarning,
-		DownlinkFee:                resp.DownlinkFee,
-		TransactionPercentageShare: resp.TransactionPercentageShare,
+		LowBalanceWarning:                resp.LowBalanceWarning,
+		DownlinkPrice:                    resp.DownlinkPrice,
+		SupernodeIncomeRatio:             resp.SupernodeIncomeRatio,
+		StakingPercentage:                resp.StakingPercentage,
+		StakingExpectedRevenuePercentage: resp.StakingExpectedRevenuePercentage,
 	}, status.Error(codes.OK, "")
 }
 
