@@ -35,9 +35,11 @@ class SettingsForm extends Component {
       SettingsStore.getSystemSettings((resp) => {
         this.setState({
           object: {
-            downlinkPrice: resp.downlinkFee,
-            percentageShare: resp.transactionPercentageShare,
-            lbWarning: resp.lowBalanceWarning
+            lowBalanceWarning: resp.lowBalanceWarning,
+            downlinkPrice: resp.downlinkPrice,
+            supernodeIncomeRatio: resp.supernodeIncomeRatio,
+            stakingPercentage: resp.lowBalanceWarning,
+            stakingExpectedRevenuePercentage: resp.stakingExpectedRevenuePercentage
           }
         });
       });
@@ -55,9 +57,11 @@ class SettingsForm extends Component {
       };
 
       let bodySettings = {
-        downlinkFee: this.state.object.downlinkPrice,
-        lowBalanceWarning: this.state.object.lbWarning,
-        transactionPercentageShare: this.state.object.percentageShare
+        lowBalanceWarning: this.state.object.lowBalanceWarning,
+        downlinkPrice: this.state.object.downlinkPrice,
+        supernodeIncomeRatio: this.state.object.supernodeIncomeRatio,
+        stakingPercentage: this.state.object.lowBalanceWarning,
+        stakingExpectedRevenuePercentage: this.state.object.stakingExpectedRevenuePercentage
       };
 
       WithdrawStore.setWithdrawFee(ETHER, 0, bodyWF, (resp) => { });
@@ -85,10 +89,11 @@ class SettingsForm extends Component {
     }
 
     let fieldsSchema = {
-      withdrawFee: Yup.string().trim(),
+      lowBalanceWarning: Yup.string().trim(),
       downlinkPrice: Yup.string().trim(),
-      percentageShare: Yup.string().trim(),
-      lbWarning: Yup.string().trim(),
+      supernodeIncomeRatio: Yup.string().trim(),
+      stakingPercentage: Yup.string().trim(),
+      stakingExpectedRevenuePercentage: Yup.string().trim(),
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
@@ -127,6 +132,21 @@ class SettingsForm extends Component {
                 />
 
                 <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:menu.settings.low_balance`)}
+                    name="lowBalanceWarning"
+                    id="lowBalanceWarning"
+                    value={this.state.object.lowBalanceWarning || ""}
+                    component={ReactstrapInput}
+                    onBlur={handleBlur}
+                    readOnly
+                    inputProps={{
+                      clearable: true,
+                      cache: false,
+                    }}
+                />
+
+                <Field
                   type="text"
                   label={i18n.t(`${packageNS}:menu.settings.downlink_price`)}
                   name="downlinkPrice"
@@ -143,10 +163,10 @@ class SettingsForm extends Component {
 
                 <Field
                   type="text"
-                  label={i18n.t(`${packageNS}:menu.withdraw.transaction_fee`)}
-                  name="percentageShare"
-                  id="percentageShare"
-                  value={this.state.object.percentageShare || ""}
+                  label={i18n.t(`${packageNS}:menu.settings.supernode_income_ratio`)}
+                  name="supernodeIncomeRatio"
+                  id="supernodeIncomeRatio"
+                  value={this.state.object.supernodeIncomeRatio || ""}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                   readOnly
@@ -157,11 +177,26 @@ class SettingsForm extends Component {
                 />
 
                 <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:menu.settings.percentage_share`)}
+                    name="stakingPercentage"
+                    id="stakingPercentage"
+                    value={this.state.object.stakingPercentage || ""}
+                    component={ReactstrapInput}
+                    onBlur={handleBlur}
+                    readOnly
+                    inputProps={{
+                      clearable: true,
+                      cache: false,
+                    }}
+                />
+
+                <Field
                   type="text"
-                  label={i18n.t(`${packageNS}:menu.settings.low_balance`)}
-                  name="lbWarning"
-                  id="lbWarning"
-                  value={this.state.object.lbWarning || ""}
+                  label={i18n.t(`${packageNS}:menu.settings.expected_percentage`)}
+                  name="stakingExpectedRevenuePercentage"
+                  id="stakingExpectedRevenuePercentage"
+                  value={this.state.object.stakingExpectedRevenuePercentage || ""}
                   component={ReactstrapInput}
                   onBlur={handleBlur}
                   readOnly
