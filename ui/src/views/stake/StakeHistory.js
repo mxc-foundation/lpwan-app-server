@@ -112,10 +112,6 @@ class StakeHistory extends Component {
             dataField: 'revenue',
             text: i18n.t(`${packageNS}:menu.staking.revenue`),
             sort: false,
-        }, {
-            dataField: 'balance',
-            text: i18n.t(`${packageNS}:menu.staking.balance`),
-            sort: false,
         }]
     );
 
