@@ -38,7 +38,7 @@ class SettingsForm extends Component {
             lowBalanceWarning: resp.lowBalanceWarning,
             downlinkPrice: resp.downlinkPrice,
             supernodeIncomeRatio: resp.supernodeIncomeRatio,
-            stakingPercentage: resp.lowBalanceWarning,
+            stakingPercentage: resp.stakingPercentage,
             stakingExpectedRevenuePercentage: resp.stakingExpectedRevenuePercentage
           }
         });
@@ -60,7 +60,7 @@ class SettingsForm extends Component {
         lowBalanceWarning: this.state.object.lowBalanceWarning,
         downlinkPrice: this.state.object.downlinkPrice,
         supernodeIncomeRatio: this.state.object.supernodeIncomeRatio,
-        stakingPercentage: this.state.object.lowBalanceWarning,
+        stakingPercentage: this.state.object.stakingPercentage,
         stakingExpectedRevenuePercentage: this.state.object.stakingExpectedRevenuePercentage
       };
 
