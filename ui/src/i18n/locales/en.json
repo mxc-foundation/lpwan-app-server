@@ -813,6 +813,7 @@
       "percentage_share": "Percentage Share per transaction",
       "expected_percentage": "Percentage Share expected from stake amount",
       "low_balance": "Low Balance warning",
+      "compensation": "Compensate Supernode Income to Meet Minimum Staking Revenue Requirements",
       "supernode_income_ratio": "Supernode Income Ratio",
       "cancel": "CANCEL",
       "welcome": "Welcome !",

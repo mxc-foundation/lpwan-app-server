@@ -33,6 +33,7 @@ message GetSettingsResponse {
     double staking_percentage = 4;
     // this is the percentage of expected reward from staking amount
     double staking_expected_revenue_percentage = 5;
+    double compensation = 6;
 }
 
 message ModifySettingsRequest {

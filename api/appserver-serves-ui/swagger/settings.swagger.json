@@ -77,6 +77,10 @@
           "type": "number",
           "format": "double",
           "title": "this is the percentage of expected reward from staking amount"
+        },
+        "compensation": {
+          "type": "number",
+          "format": "double"
         }
       }
     },

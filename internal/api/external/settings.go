@@ -61,6 +61,7 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 		SupernodeIncomeRatio:             resp.SupernodeIncomeRatio,
 		StakingPercentage:                resp.StakingPercentage,
 		StakingExpectedRevenuePercentage: resp.StakingExpectedRevenuePercentage,
+		Compensation:                     resp.Compensation,
 	}, status.Error(codes.OK, "")
 }
 

@@ -39,7 +39,8 @@ class SettingsForm extends Component {
             downlinkPrice: resp.downlinkPrice,
             supernodeIncomeRatio: resp.supernodeIncomeRatio,
             stakingPercentage: resp.stakingPercentage,
-            stakingExpectedRevenuePercentage: resp.stakingExpectedRevenuePercentage
+            stakingExpectedRevenuePercentage: resp.stakingExpectedRevenuePercentage,
+            compensation: resp.compensation
           }
         });
       });
@@ -61,7 +62,8 @@ class SettingsForm extends Component {
         downlinkPrice: this.state.object.downlinkPrice,
         supernodeIncomeRatio: this.state.object.supernodeIncomeRatio,
         stakingPercentage: this.state.object.stakingPercentage,
-        stakingExpectedRevenuePercentage: this.state.object.stakingExpectedRevenuePercentage
+        stakingExpectedRevenuePercentage: this.state.object.stakingExpectedRevenuePercentage,
+        compensation: this.state.object.compensation
       };
 
       WithdrawStore.setWithdrawFee(ETHER, 0, bodyWF, (resp) => { });
@@ -94,6 +96,7 @@ class SettingsForm extends Component {
       supernodeIncomeRatio: Yup.string().trim(),
       stakingPercentage: Yup.string().trim(),
       stakingExpectedRevenuePercentage: Yup.string().trim(),
+      compensation: Yup.string().trim(),
     }
 
     const formSchema = Yup.object().shape(fieldsSchema);
@@ -146,6 +149,20 @@ class SettingsForm extends Component {
                     }}
                 />
 
+                <Field
+                    type="text"
+                    label={i18n.t(`${packageNS}:menu.settings.compensation`)}
+                    name="compensation"
+                    id="compensation"
+                    value={this.state.object.compensation || ""}
+                    component={ReactstrapInput}
+                    onBlur={handleBlur}
+                    readOnly
+                    inputProps={{
+                      clearable: true,
+                      cache: false,
+                    }}
+                />
                 <Field
                   type="text"
                   label={i18n.t(`${packageNS}:menu.settings.downlink_price`)}
