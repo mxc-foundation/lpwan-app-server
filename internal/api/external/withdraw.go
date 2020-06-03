@@ -167,9 +167,9 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 		}
 	}
 	// we require OTP for withdraw request
-	if err := s.validator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
-	}
+	//if err := s.validator.ValidateOTP(ctx); err != nil {
+	//	return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
+	//}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -214,9 +214,9 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 		}
 	}
 	// we require OTP for withdraw request
-	if err := s.validator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
-	}
+	// if err := s.validator.ValidateOTP(ctx); err != nil {
+	// 	return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
+	// }
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
