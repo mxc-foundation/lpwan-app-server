@@ -1,27 +1,17 @@
 package storage
 
 import (
-	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/sha512"
 	"database/sql"
-	"encoding/base64"
 	"regexp"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
-
-// saltSize defines the salt size
-const saltSize = 16
 
 // Any upper, lower, digit characters, at least 6 characters.
 var usernameValidator = regexp.MustCompile(`^[[:alnum:]]+$`)
@@ -144,7 +134,7 @@ func CreateUser(ctx context.Context, db sqlx.Queryer, user *User, password strin
 		return 0, errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := hash(password, saltSize, HashIterations)
+	pwHash, err := pwh.HashPassword(password)
 	if err != nil {
 		return 0, err
 	}
@@ -188,59 +178,6 @@ func CreateUser(ctx context.Context, db sqlx.Queryer, user *User, password strin
 		"ctx_id":      ctx.Value(logging.ContextIDKey),
 	}).Info("user created")
 	return user.ID, nil
-}
-
-// Generate the hash of a password for storage in the database.
-// NOTE: We store the details of the hashing algorithm with the hash itself,
-// making it easy to recreate the hash for password checking, even if we change
-// the default criteria here.
-func hash(password string, saltSize int, iterations int) (string, error) {
-	// Generate a random salt value, 128 bits.
-	salt := make([]byte, saltSize)
-	_, err := rand.Read(salt)
-	if err != nil {
-		return "", errors.Wrap(err, "read random bytes error")
-	}
-
-	return hashWithSalt(password, salt, iterations), nil
-}
-
-func hashWithSalt(password string, salt []byte, iterations int) string {
-	// Generate the hash.  This should be a little painful, adjust ITERATIONS
-	// if it needs performance tweeking.  Greatly depends on the hardware.
-	// NOTE: We store these details with the returned hash, so changes will not
-	// affect our ability to do password compares.
-	hash := pbkdf2.Key([]byte(password), salt, iterations, sha512.Size, sha512.New)
-
-	// Build up the parameters and hash into a single string so we can compare
-	// other string to the same hash.  Note that the hash algorithm is hard-
-	// coded here, as it is above.  Introducing alternate encodings must support
-	// old encodings as well, and build this string appropriately.
-	var buffer bytes.Buffer
-
-	buffer.WriteString("PBKDF2$")
-	buffer.WriteString("sha512$")
-	buffer.WriteString(strconv.Itoa(iterations))
-	buffer.WriteString("$")
-	buffer.WriteString(base64.StdEncoding.EncodeToString(salt))
-	buffer.WriteString("$")
-	buffer.WriteString(base64.StdEncoding.EncodeToString(hash))
-
-	return buffer.String()
-}
-
-// HashCompare verifies that passed password hashes to the same value as the
-// passed passwordHash.
-func hashCompare(password string, passwordHash string) bool {
-	// SPlit the hash string into its parts.
-	hashSplit := strings.Split(passwordHash, "$")
-
-	// Get the iterations and the salt and use them to encode the password
-	// being compared.cre
-	iterations, _ := strconv.Atoi(hashSplit[2])
-	salt, _ := base64.StdEncoding.DecodeString(hashSplit[3])
-	newHash := hashWithSalt(password, salt, iterations)
-	return newHash == passwordHash
 }
 
 // GetUser returns the User for the given id.
@@ -402,7 +339,7 @@ func CheckPassword(ctx context.Context, db sqlx.Queryer, username string, passwo
 	}
 
 	// Compare the passed in password with the hash in the database.
-	if !hashCompare(password, user.PasswordHash) {
+	if err := pwh.Validate(password, user.PasswordHash); err != nil {
 		return ErrInvalidUsernameOrPassword
 	}
 
@@ -415,7 +352,7 @@ func UpdatePassword(ctx context.Context, db sqlx.Execer, id int64, newpassword s
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := hash(newpassword, saltSize, HashIterations)
+	pwHash, err := pwh.HashPassword(newpassword)
 	if err != nil {
 		return err
 	}
@@ -555,7 +492,7 @@ func FinishRegistration(db sqlx.Execer, userID int64, newPwd string) error {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwdHash, err := hash(newPwd, saltSize, HashIterations)
+	pwdHash, err := pwh.HashPassword(newPwd)
 	if err != nil {
 		return err
 	}

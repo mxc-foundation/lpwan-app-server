@@ -13,9 +13,6 @@ import (
 func TestUser(t *testing.T) {
 	conf := test.GetConfig()
 
-	// Set a user secret so JWTs can be assigned
-	jwtsecret = []byte("DoWahDiddy")
-
 	// Note that a "clean" database includes the admin user.
 
 	Convey("Given a clean database", t, func() {
