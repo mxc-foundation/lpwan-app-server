@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -45,9 +44,6 @@ type Validator interface {
 
 	// GetOTP returns OTP code
 	GetOTP(context.Context) string
-
-	// ValidateOTP validates OTP and returns the error if it is not valid
-	ValidateOTP(context.Context) error
 
 	// GetIsAdmin returns if the authenticated user is a global admin.
 	GetIsAdmin(context.Context) (bool, error)
@@ -194,22 +190,6 @@ func (v JWTValidator) GetIsAdmin(ctx context.Context) (bool, error) {
 // GetOTP returns OTP from the context
 func (v JWTValidator) GetOTP(ctx context.Context) string {
 	return getOTPFromContext(ctx)
-}
-
-// ValidateOTP validates OTP and returns the error if it is not valid
-func (v JWTValidator) ValidateOTP(ctx context.Context) error {
-	claims, err := v.getClaims(ctx, "")
-	if err != nil {
-		return err
-	}
-	enabled, err := v.otpValidator.IsEnabled(ctx, claims.Username)
-	if err != nil {
-		return err
-	}
-	if !enabled {
-		return errors.New("OTP is not enabled")
-	}
-	return v.otpValidator.Validate(ctx, claims.Username, claims.OTP)
 }
 
 func (v JWTValidator) GetCredentials(ctx context.Context, opts ...Option) (Credentials, error) {

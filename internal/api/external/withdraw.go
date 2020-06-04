@@ -31,15 +31,12 @@ func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
 	logInfo := "api/appserver_serves_ui/ModifyWithdrawFee"
 
-	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
-		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Internal, "authentication failed")
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -96,18 +93,13 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.GetWithdrawHistoryRequest) (*api.GetWithdrawHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdrawHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Errorf(codes.PermissionDenied, "must be an organization admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -152,23 +144,14 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 // GetWithdraw sends the requests to cobo directly
 func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdrawRequest) (*api.GetWithdrawResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
-
-	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
 	}
-	// if user is not global admin, user must have access to this organization
-	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
-	}
-	// we require OTP for withdraw request
-	if err := s.validator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
+	// user must be organization admin to withdraw
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, "must be an organization admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -200,22 +183,13 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawReqRequest) (*api.WithdrawReqResponse, error) {
 	logInfo := "api/appserver_serves_ui/WithdrawReq org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.WithdrawReqResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
 	}
-	// if user is not global admin, user must have access to this organization
-	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, auth.ValidateOrganizationAccess(auth.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
-	}
-	// we require OTP for withdraw request
-	if err := s.validator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, "must be an organization admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -246,15 +220,14 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.ConfirmWithdrawRequest) (*api.ConfirmWithdrawResponse, error) {
 	logInfo := "api/appserver_serves_ui/ConfirmWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
-		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -285,15 +258,15 @@ func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.Confir
 // GetWithdrawRequestList returns all users withdrawal requests to the front-end
 func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api.GetWithdrawRequestListRequest) (*api.GetWithdrawRequestListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdrawRequestList"
-	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+
+	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
-		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -339,15 +312,15 @@ func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api
 
 func (s *WithdrawServerAPI) GetWithdrawMonthly(ctx context.Context, req *api.GetWithdrawMonthlyRequest) (*api.GetWithdrawMonthlyResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdrawMonthly"
-	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+
+	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
-		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	if err := cred.IsGlobalAdmin(ctx); err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
