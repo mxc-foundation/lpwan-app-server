@@ -12,6 +12,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -314,17 +315,52 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 		return nil, status.Errorf(codes.Unauthenticated, "invalid username or password")
 	}
 
-	jwt, err := a.validator.SignToken(req.Username, 60*int64(user.SessionTTL), nil)
+	ttl := 60 * int64(user.SessionTTL)
+	var audience []string
+
+	is2fa, err := a.otpValidator.IsEnabled(ctx, req.Username)
+	if err != nil {
+		ctxlogrus.Extract(ctx).WithError(err).Error("couldn't get 2fa status")
+		return nil, status.Error(codes.Internal, "couldn't get 2fa status")
+	}
+	if is2fa {
+		// if 2fa is enabled we issue token that is only valid for 10 minutes
+		// and is only good to perform second factor authentication. If second
+		// factor authentication has been successful then it will return to the
+		// user another token, that provides access to all the api
+		ttl = 600
+		audience = []string{"login-2fa"}
+	}
+
+	jwt, err := a.validator.SignToken(req.Username, ttl, audience)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
 	}
 
-	return &pb.LoginResponse{Jwt: jwt}, nil
+	return &pb.LoginResponse{Jwt: jwt, Is_2FaRequired: is2fa}, nil
 }
 
+// Login2FA performs second factor authentication. It requires user to have
+// already passed password check and checks if the OTP code is valid. If it is
+// it returns JWT with access to the api.
 func (a *InternalUserAPI) Login2FA(ctx context.Context, req *pb.Login2FARequest) (*pb.LoginResponse, error) {
-	return nil, fmt.Errorf("not implemented")
+	cred, err := a.validator.GetCredentials(ctx, auth.WithAudience("login-2fa"), auth.WithValidOTP())
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
+	}
+
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), cred.Username())
+	if err != nil {
+		return nil, status.Error(codes.Internal, "couldn't get info about the user")
+	}
+	jwt, err := a.validator.SignToken(cred.Username(), 60*int64(user.SessionTTL), nil)
+	if err != nil {
+		log.Errorf("SignToken returned an error: %v", err)
+		return nil, status.Error(codes.Internal, "couldn't create a token")
+	}
+
+	return &pb.LoginResponse{Jwt: jwt}, nil
 }
 
 // IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
