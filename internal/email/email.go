@@ -2,9 +2,8 @@ package email
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/base32"
-	"net"
+	"fmt"
 	"net/smtp"
 	"os"
 	"text/template"
@@ -12,17 +11,25 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
+var cli *Client
+
 var (
-	senderID   string
-	password   string
-	host       string
-	smtpServer string
-	smtpPort   string
+	senderID string
+	host     string
 )
+
+type Client struct {
+	senderID string
+	username string
+	password string
+	authType string
+	host     string
+	smtpHost string
+	smtpPort string
+}
 
 type mailTemplateStruct struct {
 	templatePath string
@@ -40,20 +47,23 @@ var (
 
 // Setup configures the package.
 func Setup(c config.Config) error {
-	host = os.Getenv("APPSERVER")
-	serverRegion := os.Getenv("SERVER_REGION")
-	if serverRegion == pb.ServerRegion_name[int32(pb.ServerRegion_RESTRICTED)] {
-		senderID = c.SMTP.Restricted.Email
-		password = c.SMTP.Restricted.Password
-		smtpServer = c.SMTP.Restricted.Host
-		smtpPort = c.SMTP.Restricted.Port
-
-	} else {
-		senderID = c.SMTP.Average.Email
-		password = c.SMTP.Average.Password
-		smtpServer = c.SMTP.Average.Host
-		smtpPort = c.SMTP.Average.Port
+	port := c.SMTP.Port
+	if port == "" {
+		port = "25"
 	}
+	cli = &Client{
+		senderID: c.SMTP.Email,
+		host:     os.Getenv("APPSERVER"),
+
+		username: c.SMTP.Username,
+		password: c.SMTP.Password,
+		authType: c.SMTP.AuthType,
+		smtpHost: c.SMTP.Host,
+		smtpPort: port,
+	}
+
+	senderID = cli.senderID
+	host = cli.host
 
 	base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
@@ -66,7 +76,7 @@ func Setup(c config.Config) error {
 func SendInvite(user, token string, language EmailLanguage, option EmailOptions) error {
 	var err error
 
-	if smtpServer == "" {
+	if cli == nil {
 		log.Error("Tried to send registration email, but SMTP is not configured")
 		return errors.New("Unable to send confirmation email")
 	}
@@ -76,87 +86,20 @@ func SendInvite(user, token string, language EmailLanguage, option EmailOptions)
 	return errors.Wrap(err, "")
 }
 
-func sendEmail(user string, msg bytes.Buffer) error {
-	serverRegion := os.Getenv("SERVER_REGION")
-
-	if serverRegion == pb.ServerRegion_name[int32(pb.ServerRegion_RESTRICTED)] {
-		return sendEmailRestricted(user, msg)
+func (c *Client) sendEmail(user string, msg bytes.Buffer) error {
+	var auth smtp.Auth
+	if c.authType == "PLAIN" {
+		auth = smtp.PlainAuth("", c.username, c.password, c.smtpHost)
+	} else if c.authType == "CRAM-MD5" {
+		auth = smtp.CRAMMD5Auth(c.username, c.password)
+	} else if c.authType != "" {
+		return fmt.Errorf("unsupported authentication type: %s", c.authType)
 	}
 
-	// serverRegion == pb.ServerRegion_name[int32(pb.ServerRegion_NOT_DEFINED)]
-	// serverRegion == pb.ServerRegion_name[int32(pb.ServerRegion_AVERAGE)]
-	// serverRegion == ""
-	return sendEmailAverage(user, msg)
-}
-
-func sendEmailAverage(user string, msg bytes.Buffer) error {
-	return smtp.SendMail(smtpServer+":"+smtpPort,
-		smtp.CRAMMD5Auth(senderID, password), senderID, []string{user}, msg.Bytes())
-}
-
-func sendEmailRestricted(user string, msg bytes.Buffer) error {
-	return SendMailUsingTLS(
-		smtpServer+":465",
-		smtp.PlainAuth(
-			"",
-			senderID,
-			password,
-			smtpServer,
-		),
-		senderID,
-		[]string{user},
-		msg.Bytes(),
-	)
-}
-
-//return a smtp client
-func Dial(addr string) (*smtp.Client, error) {
-	conn, err := tls.Dial("tcp", addr, nil)
+	err := smtp.SendMail(c.smtpHost+":"+c.smtpPort, auth, c.senderID, []string{user}, msg.Bytes())
 	if err != nil {
-		log.Println("Dialing Error:", err)
-		return nil, err
+		return fmt.Errorf("couldn't send an email: %v", err)
 	}
-	//split host address and port
-	host, _, _ := net.SplitHostPort(addr)
-	return smtp.NewClient(conn, host)
-}
 
-func SendMailUsingTLS(addr string, auth smtp.Auth, from string,
-	to []string, msg []byte) (err error) {
-	//create smtp client
-	c, err := Dial(addr)
-	if err != nil {
-		log.Println("Create smpt client error:", err)
-		return err
-	}
-	defer c.Close()
-	if auth != nil {
-		if ok, _ := c.Extension("AUTH"); ok {
-			if err = c.Auth(auth); err != nil {
-				log.Println("Error during AUTH", err)
-				return err
-			}
-		}
-	}
-	if err = c.Mail(from); err != nil {
-		return err
-	}
-	for _, addr := range to {
-		if err = c.Rcpt(addr); err != nil {
-			return err
-		}
-	}
-	w, err := c.Data()
-	if err != nil {
-		return err
-	}
-	_, err = w.Write(msg)
-	if err != nil {
-		return err
-	}
-	err = w.Close()
-	if err != nil {
-		return err
-	}
-	return c.Quit()
+	return nil
 }
