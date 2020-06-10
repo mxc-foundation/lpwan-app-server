@@ -108,6 +108,20 @@ service InternalService {
                         body: "*"
 		};
 	}
+
+        rpc RequestPasswordReset (PasswordResetReq) returns (PasswordResetResp) {
+                option (google.api.http) = {
+                        post: "/api/internal/request-password-reset"
+                        body: "*"
+                };
+        }
+
+        rpc ConfirmPasswordReset (ConfirmPasswordResetReq) returns (PasswordResetResp) {
+                option (google.api.http) = {
+                        post: "/api/internal/confirm-password-reset"
+                        body: "*"
+                };
+        }
 }
 
 message GoogleRecaptchaRequest {
@@ -260,7 +274,7 @@ enum Language {
 
 message RegisterUserRequest {
     string email = 1;
-	Language language = 2;
+    Language language = 2;
 }
 
 message ConfirmRegistrationRequest {
@@ -316,4 +330,23 @@ message GetRecoveryCodesRequest {
 message GetRecoveryCodesResponse {
     // list of recovery codes
     repeated string recovery_code = 1;
+}
+
+message PasswordResetReq {
+    // username to reset password for
+    string username = 1;
+    // language for the email
+    Language language = 2;
+}
+
+message PasswordResetResp {
+}
+
+message ConfirmPasswordResetReq {
+    // username to reset password for
+    string username = 1;
+    // OTP code from password reset email
+    string otp = 2;
+    // new password
+    string new_password = 3;
 }

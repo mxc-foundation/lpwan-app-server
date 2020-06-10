@@ -2,6 +2,8 @@ package external
 
 import (
 	"crypto/rand"
+	"crypto/subtle"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -700,6 +703,81 @@ func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *pb.GetRecov
 	return &pb.GetRecoveryCodesResponse{
 		RecoveryCode: codes,
 	}, nil
+}
+
+func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.PasswordResetReq) (*pb.PasswordResetResp, error) {
+	tx, err := storage.DB().BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
+	}
+	defer tx.Rollback()
+	user, err := storage.GetUserByUsername(ctx, tx, req.Username)
+	if err != nil {
+		if err == storage.ErrDoesNotExist {
+			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
+			return &pb.PasswordResetResp{}, nil
+		}
+		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
+	}
+	pr, err := storage.GetPasswordResetRecord(tx, user.ID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
+	}
+	if pr.GeneratedAt.After(time.Now().Add(-30 * 24 * time.Hour)) {
+		return nil, status.Errorf(codes.PermissionDenied, "can't reset password more than once a month")
+	}
+	if err := pr.SetOTP(OTPgen()); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
+	}
+	if err := email.SendInvite(req.Username, pr.OTP, email.EmailLanguage(req.Language.String()), email.PasswordReset); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
+	}
+	return &pb.PasswordResetResp{}, nil
+}
+
+func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *pb.ConfirmPasswordResetReq) (*pb.PasswordResetResp, error) {
+	tx, err := storage.DB().BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
+	}
+	defer tx.Rollback()
+	user, err := storage.GetUserByUsername(ctx, tx, req.Username)
+	if err != nil {
+		if err == storage.ErrDoesNotExist {
+			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
+			return &pb.PasswordResetResp{}, nil
+		}
+		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
+	}
+	pr, err := storage.GetPasswordResetRecord(tx, user.ID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
+	}
+	if pr.AttemptsLeft < 1 {
+		return nil, status.Errorf(codes.PermissionDenied, "no match found")
+	}
+	if err := pr.ReduceAttempts(); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
+	}
+	if subtle.ConstantTimeCompare([]byte(pr.OTP), []byte(req.Otp)) == 1 {
+		if err := pr.SetOTP(""); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
+		}
+		if err := storage.UpdatePassword(ctx, tx, pr.UserID, req.NewPassword); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
+		}
+		if err := tx.Commit(); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
+		}
+		return &pb.PasswordResetResp{}, nil
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
+	}
+	return nil, status.Errorf(codes.PermissionDenied, "no match found")
 }
 
 // ConfirmRegistration checks provided security token and activates user

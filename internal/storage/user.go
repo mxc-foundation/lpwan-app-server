@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -516,5 +517,83 @@ func FinishRegistration(db sqlx.Execer, userID int64, newPwd string) error {
 		"id": userID,
 	}).Info("user password updated")
 
+	return nil
+}
+
+type PasswordResetRecord struct {
+	db           sqlx.Ext
+	UserID       int64
+	OTP          string
+	GeneratedAt  time.Time
+	AttemptsLeft int64
+}
+
+func GetPasswordResetRecord(db sqlx.Ext, userID int64) (*PasswordResetRecord, error) {
+	query := `SELECT otp, generated_at, attempts_left FROM password_reset WHERE user_id = $1`
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	res := &PasswordResetRecord{db: db, UserID: userID}
+	var count int
+	defer rows.Close()
+	for rows.Next() {
+		if count > 0 {
+			return nil, fmt.Errorf("got multiple reset password rows for %d", userID)
+		}
+		count++
+		if err := rows.Scan(&res.OTP, &res.GeneratedAt, &res.AttemptsLeft); err != nil {
+			return nil, fmt.Errorf("scan has failed: %v", err)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if count == 0 {
+		_, err := db.Exec(`INSERT INTO password_reset (user_id, otp, generated_at, attempts_left) VALUES ($1, $2, $3, $4)`, res.UserID, res.OTP, res.GeneratedAt, res.AttemptsLeft)
+		if err != nil {
+			return nil, fmt.Errorf("failed to add a new password reset record: %v", err)
+		}
+	}
+	return res, nil
+}
+
+func (pr *PasswordResetRecord) SetOTP(otp string) error {
+	pr.OTP = otp
+	pr.GeneratedAt = time.Now()
+	pr.AttemptsLeft = 3
+	res, err := pr.db.Exec(`UPDATE password_reset
+						SET otp = $1, generated_at = $2, attempts_left = $3
+						WHERE user_id = $4`,
+		pr.OTP, pr.GeneratedAt, pr.AttemptsLeft, pr.UserID)
+	if err != nil {
+		return err
+	}
+	// we need to make sure that we've updated exactly one row
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowCnt != 1 {
+		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
+	}
+	return nil
+}
+
+func (pr *PasswordResetRecord) ReduceAttempts() error {
+	pr.AttemptsLeft--
+	res, err := pr.db.Exec(`UPDATE password_reset SET attempts_left = $1 WHERE user_id = $2`,
+		pr.AttemptsLeft, pr.UserID)
+	if err != nil {
+		return err
+	}
+	// we need to make sure that we've updated exactly one row
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowCnt != 1 {
+		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
+	}
 	return nil
 }

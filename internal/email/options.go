@@ -12,6 +12,7 @@ type EmailLanguage string
 
 const (
 	RegistrationConfirmation EmailOptions = "registration-confirm"
+	PasswordReset            EmailOptions = "password-reset"
 	TwoFALogin               EmailOptions = "2fa-login"
 	TwoFAWithdraw            EmailOptions = "2fa-withdraw"
 	StakingIncome            EmailOptions = "staking-income"
@@ -22,6 +23,7 @@ const (
 
 var emailOptionsList = map[EmailOptions]emailInterface{
 	RegistrationConfirmation: registrationInterface,
+	PasswordReset:            passwordReset,
 	TwoFALogin:               twofaLogin,
 	TwoFAWithdraw:            twoFAWithdraw,
 	StakingIncome:            stakingIncome,
@@ -48,9 +50,17 @@ func loadEmailTemplates() {
 				}
 			}
 		}
+		if option == PasswordReset {
+			for _, language := range pb.Language_name {
+				mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
+					templatePath: mailTemplateNames[option][EmailLanguage(language)].templatePath,
+					url:          "/#/reset-password-confirm/",
+				}
+			}
+		}
 	}
 
-	for option, _ := range emailOptionsList {
+	for option := range emailOptionsList {
 		mailTemplates[option] = make(map[EmailLanguage]*template.Template)
 
 		for _, language := range pb.Language_name {

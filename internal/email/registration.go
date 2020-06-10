@@ -16,6 +16,8 @@ type registrationEmailInterface struct {
 
 var registrationEmail = registrationEmailInterface{option: RegistrationConfirmation}
 
+var passwordReset = &registrationEmailInterface{option: PasswordReset}
+
 func (s *registrationEmailInterface) sendEmail(user, token string, language EmailLanguage) error {
 	mailTemplate := mailTemplates[s.option][language]
 	if mailTemplate == nil {

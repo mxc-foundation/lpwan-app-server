@@ -28,6 +28,32 @@
         ]
       }
     },
+    "/api/internal/confirm-password-reset": {
+      "post": {
+        "operationId": "ConfirmPasswordReset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiPasswordResetResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiConfirmPasswordResetReq"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
     "/api/internal/login": {
       "post": {
         "summary": "Log the user in, returns JWT",
@@ -169,6 +195,32 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiFinishRegistrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/request-password-reset": {
+      "post": {
+        "operationId": "RequestPasswordReset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiPasswordResetResp"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiPasswordResetReq"
             }
           }
         ],
@@ -385,6 +437,23 @@
         "logoPath": {
           "type": "string",
           "title": "Logo img path"
+        }
+      }
+    },
+    "appserver_serves_uiConfirmPasswordResetReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "title": "username to reset password for"
+        },
+        "otp": {
+          "type": "string",
+          "title": "OTP code from password reset email"
+        },
+        "newPassword": {
+          "type": "string",
+          "title": "new password"
         }
       }
     },
@@ -673,6 +742,22 @@
         }
       },
       "description": "Defines an organization to which an user is associated."
+    },
+    "appserver_serves_uiPasswordResetReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "title": "username to reset password for"
+        },
+        "language": {
+          "$ref": "#/definitions/appserver_serves_uiLanguage",
+          "title": "language for the email"
+        }
+      }
+    },
+    "appserver_serves_uiPasswordResetResp": {
+      "type": "object"
     },
     "appserver_serves_uiProfileResponse": {
       "type": "object",
