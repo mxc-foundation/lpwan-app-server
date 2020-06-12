@@ -719,6 +719,10 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 		}
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 	}
+	if !user.IsActive {
+		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", req.Username)
+		return &pb.PasswordResetResp{}, nil
+	}
 	pr, err := storage.GetPasswordResetRecord(tx, user.ID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
