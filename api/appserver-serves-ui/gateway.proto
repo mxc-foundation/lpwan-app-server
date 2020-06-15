@@ -114,6 +114,25 @@ service GatewayService {
 		};
 	}
 
+	rpc InsertNewDefaultGatewayConfig(InsertNewDefaultGatewayConfigRequest) returns (InsertNewDefaultGatewayConfigResponse) {
+		option (google.api.http) = {
+			post: "/api/gateways/add-new-default-gateway-config"
+			body: "*"
+		};
+	}
+
+	rpc UpdateDefaultGatewayConfig(UpdateDefaultGatewayConfigRequest) returns (UpdateDefaultGatewayConfigResponse) {
+		option (google.api.http) = {
+			put: "/api/gateways/update-default-gateway-config"
+			body: "*"
+		};
+	}
+
+	rpc GetDefaultGatewayConfig(GetDefaultGatewayConfigRequest) returns (GetDefaultGatewayConfigResponse) {
+		option (google.api.http) = {
+			get: "/api/gateways/get-default-gateway-config"
+		};
+	}
 }
 
 message Gateway {
@@ -403,4 +422,33 @@ message SetAutoUpdateFirmwareRequest {
 
 message SetAutoUpdateFirmwareResponse {
 	string message = 1;
+}
+
+message InsertNewDefaultGatewayConfigRequest {
+	string model = 1;
+	string region = 2;
+	string default_config = 3;
+}
+
+message InsertNewDefaultGatewayConfigResponse {
+	string status = 1;
+}
+
+message UpdateDefaultGatewayConfigRequest {
+	string model = 1;
+	string region = 2;
+	string default_config = 3;
+}
+
+message UpdateDefaultGatewayConfigResponse {
+	string status = 1;
+}
+
+message GetDefaultGatewayConfigRequest {
+	string model = 1;
+	string region = 2;
+}
+
+message GetDefaultGatewayConfigResponse {
+	string default_config = 1;
 }

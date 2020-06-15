@@ -5,7 +5,7 @@ localDevelopTemplate = \
 version: "2"
 services:  
   network-server:
-    image: mxcdocker/supernode:network-server.2.0.0-6-g956f51f
+    image: mxcdocker/supernode:network-server.2.0.0-8-ga6cef9c
     ports:
       - 8000:8000
     volumes:

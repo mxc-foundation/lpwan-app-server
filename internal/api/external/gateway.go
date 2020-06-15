@@ -47,6 +47,108 @@ func NewGatewayAPI(validator auth.Validator) *GatewayAPI {
 	}
 }
 
+// InsertNewDefaultGatewayConfig insert given new default gateway config
+func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.InsertNewDefaultGatewayConfigRequest) (*pb.InsertNewDefaultGatewayConfigResponse, error) {
+	log.WithFields(log.Fields{
+		"model": req.Model,
+		"region": req.Region,
+	}).Info("InsertNewDefaultGatewayConfig is called")
+
+	// check user permission, only global admin allowed
+	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if isAdmin == false {
+		return nil, status.Errorf(codes.PermissionDenied, "not authorized for this operation")
+	}
+
+	defaultGatewayConfig := storage.DefaultGatewayConfig{
+		Model:         req.Model,
+		Region:        req.Region,
+		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", fmt.Sprintf("%s", storage.SupernodeAddr), -1),
+	}
+
+	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
+	if err == nil {
+		// config already exist, no need to insert
+		return nil, status.Errorf(codes.AlreadyExists, "model=%s, region=%s", req.Model, req.Region)
+	} else if err != storage.ErrDoesNotExist {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	err = storage.AddNewDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%s", err)
+	}
+
+	return &pb.InsertNewDefaultGatewayConfigResponse{}, status.Error(codes.OK, "")
+}
+
+// UpdateNewDefaultGatewayConfig update default gateway config matching model and region
+func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.UpdateDefaultGatewayConfigRequest) (*pb.UpdateDefaultGatewayConfigResponse, error){
+	log.WithFields(log.Fields{
+		"model": req.Model,
+		"region": req.Region,
+	}).Info("UpdateDefaultGatewayConfig is called")
+
+	// check user permission
+	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if isAdmin == false {
+		return nil, status.Errorf(codes.PermissionDenied, "not authorized for this operation")
+	}
+
+	defaultGatewayConfig := storage.DefaultGatewayConfig{
+		Model:         req.Model,
+		Region:        req.Region,
+		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", fmt.Sprintf("%s", storage.SupernodeAddr), -1),
+	}
+
+	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, err.Error())
+	}
+
+	err = storage.UpdateDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%s", err)
+	}
+
+	return &pb.UpdateDefaultGatewayConfigResponse{}, status.Error(codes.OK, "")
+}
+
+// GetDefaultGatewayConfig get content of default gateway config matching model and region
+func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *pb.GetDefaultGatewayConfigRequest) (*pb.GetDefaultGatewayConfigResponse, error) {
+	log.WithFields(log.Fields{
+		"model": req.Model,
+		"region": req.Region,
+	}).Info("GetDefaultGatewayConfig is called")
+
+	// check user permission
+	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if isAdmin == false {
+		return nil, status.Errorf(codes.PermissionDenied, "not authorized for this operation")
+	}
+
+	defaultGatewayConfig := storage.DefaultGatewayConfig{
+		Model:         req.Model,
+		Region:        req.Region,
+	}
+
+	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%s", err)
+	}
+
+	return &pb.GetDefaultGatewayConfigResponse{DefaultConfig: defaultGatewayConfig.DefaultConfig}, status.Error(codes.OK, "")
+}
+
 // Create creates the given gateway.
 func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (*empty.Empty, error) {
 	if req.Gateway == nil {
@@ -119,11 +221,10 @@ func storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *storage.Gatew
 		createReq.Gateway.Boards = append(createReq.Gateway.Boards, &gwBoard)
 	}
 
-	if strings.HasPrefix(defaultGw.Model, "MX19") {
-		defaultGw.Config, err = gwm.GetDefaultGatewayConfig(ctx, mac, storage.SupernodeAddr, req.NetworkServerId)
-		if err != nil {
-			return grpc.Errorf(codes.Unknown, err.Error())
-		}
+	defaultGw.MAC = mac
+	err = gwm.GetDefaultGatewayConfig(ctx, defaultGw, req.NetworkServerId)
+	if err != nil {
+		return grpc.Errorf(codes.Unknown, err.Error())
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
