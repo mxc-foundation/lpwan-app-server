@@ -103,6 +103,140 @@
         ]
       }
     },
+    "/api/gateways/default-config/add": {
+      "post": {
+        "operationId": "InsertNewDefaultGatewayConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiInsertNewDefaultGatewayConfigResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiInsertNewDefaultGatewayConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateways/default-config/batch-reset": {
+      "put": {
+        "operationId": "BatchResetDefaultGatewatConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiBatchResetDefaultGatewatConfigResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiBatchResetDefaultGatewatConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateways/default-config/get": {
+      "get": {
+        "operationId": "GetDefaultGatewayConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetDefaultGatewayConfigResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateways/default-config/reset": {
+      "put": {
+        "operationId": "ResetDefaultGatewatConfigByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiResetDefaultGatewatConfigByIDResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiResetDefaultGatewatConfigByIDRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateways/default-config/update": {
+      "put": {
+        "operationId": "UpdateDefaultGatewayConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiUpdateDefaultGatewayConfigResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiUpdateDefaultGatewayConfigRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/getconfig/{gatewayId}": {
       "get": {
         "operationId": "GetGwConfig",
@@ -443,6 +577,22 @@
     }
   },
   "definitions": {
+    "appserver_serves_uiBatchResetDefaultGatewatConfigRequest": {
+      "type": "object",
+      "properties": {
+        "organizationList": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiBatchResetDefaultGatewatConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
     "appserver_serves_uiCreateGatewayRequest": {
       "type": "object",
       "properties": {
@@ -722,6 +872,14 @@
         }
       }
     },
+    "appserver_serves_uiGetDefaultGatewayConfigResponse": {
+      "type": "object",
+      "properties": {
+        "defaultConfig": {
+          "type": "string"
+        }
+      }
+    },
     "appserver_serves_uiGetGatewayResponse": {
       "type": "object",
       "properties": {
@@ -802,6 +960,28 @@
             "$ref": "#/definitions/appserver_serves_uiPingRX"
           },
           "description": "Gateways and meta-data of reception."
+        }
+      }
+    },
+    "appserver_serves_uiInsertNewDefaultGatewayConfigRequest": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "defaultConfig": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiInsertNewDefaultGatewayConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
         }
       }
     },
@@ -888,6 +1068,22 @@
         }
       }
     },
+    "appserver_serves_uiResetDefaultGatewatConfigByIDRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiResetDefaultGatewatConfigByIDResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
     "appserver_serves_uiSetAutoUpdateFirmwareRequest": {
       "type": "object",
       "properties": {
@@ -918,6 +1114,28 @@
         "downlinkFrame": {
           "$ref": "#/definitions/appserver_serves_uiDownlinkFrameLog",
           "description": "Contains a downlink frame."
+        }
+      }
+    },
+    "appserver_serves_uiUpdateDefaultGatewayConfigRequest": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "defaultConfig": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiUpdateDefaultGatewayConfigResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
         }
       }
     },

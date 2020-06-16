@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/brocaar/lorawan"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"

@@ -4,9 +4,10 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 // when updating this template, don't forget to update config.md!

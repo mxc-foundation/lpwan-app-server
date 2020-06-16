@@ -3,17 +3,19 @@ package external
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"strconv"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
+
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // WalletServerAPI is the structure that contains the validator
@@ -150,7 +152,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	var miningData []*api.MiningData
 	for _, item := range resp.Data {
 		miningInfo := &api.MiningData{
-			Month: item.Month,
+			Month:  item.Month,
 			Amount: item.Amount,
 		}
 
@@ -159,7 +161,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 
 	return &api.GetMiningInfoResponse{
 		TodayRev: resp.TodayRev,
-		Data: miningData,
+		Data:     miningData,
 	}, status.Error(codes.OK, "")
 }
 
@@ -323,7 +325,7 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 	}, status.Error(codes.OK, "")
 }
 
-func (s *WalletServerAPI) GetMXCprice (ctx context.Context, req *api.GetMXCpriceRequest) (*api.GetMXCpriceResponse, error) {
+func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceRequest) (*api.GetMXCpriceResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetMXCprice org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin

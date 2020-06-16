@@ -1,9 +1,10 @@
 package email
 
 import (
+	"text/template"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-	"text/template"
 )
 
 type EmailOptions string
@@ -43,7 +44,7 @@ func loadEmailTemplates() {
 			for _, language := range pb.Language_name {
 				mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
 					templatePath: mailTemplateNames[option][EmailLanguage(language)].templatePath,
-					url: "/#/registration-confirm/",
+					url:          "/#/registration-confirm/",
 				}
 			}
 		}

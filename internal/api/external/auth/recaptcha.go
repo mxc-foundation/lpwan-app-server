@@ -9,14 +9,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
 	"time"
+
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 type AliRes struct {
@@ -27,13 +29,13 @@ type AliRes struct {
 	Code      int    `json:"code"`
 }
 
-func SendRequest(httpMethod string, path string, query map[string]string, token, sessionId, sig, remoteIp string) (resCode int , err error) {
+func SendRequest(httpMethod string, path string, query map[string]string, token, sessionID, sig, remoteIP string) (resCode int, err error) {
 	aliyunBaseUrl := "https://afs.aliyuncs.com"
 
 	if query == nil {
 		query = make(map[string]string)
 	}
-	canonicalizedString := SignRequest(httpMethod, path, query, token, sessionId, sig, remoteIp)
+	canonicalizedString := SignRequest(httpMethod, path, query, token, sessionID, sig, remoteIP)
 	uri := aliyunBaseUrl + path + "?" + canonicalizedString
 
 	targetUrl, err := url.Parse(uri)
@@ -67,10 +69,10 @@ func SendRequest(httpMethod string, path string, query map[string]string, token,
 		return aliRes.Code, errors.New(response.Status)
 	}
 
-	return aliRes.Code ,nil
+	return aliRes.Code, nil
 }
 
-func SignRequest(httpMethod string, path string, query map[string]string, token, sessionId, sig , remoteIp string) string {
+func SignRequest(httpMethod string, path string, query map[string]string, token, sessionID, sig, remoteIP string) string {
 	accKey := config.C.AliyunRecaptcha.AccessKey
 	accKeySecret := config.C.AliyunRecaptcha.AccSecretKey
 	appKey := config.C.AliyunRecaptcha.AppKey
@@ -87,11 +89,11 @@ func SignRequest(httpMethod string, path string, query map[string]string, token,
 	query["SignatureNonce"] = GenerateGUID()                   // 唯一隨機數，用於防止網絡重放攻擊。用戶在不同請求間要使用不同的隨機數值
 
 	query["AppKey"] = appKey
-	query["RemoteIp"] = remoteIp
+	query["RemoteIp"] = remoteIP
 	query["Scene"] = scene
 
 	query["Token"] = token
-	query["SessionId"] = sessionId
+	query["SessionId"] = sessionID
 	query["Sig"] = sig
 
 	// 1.使用請求參數構造規範化的請求字符串（Canonicalized Query String）

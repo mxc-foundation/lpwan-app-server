@@ -2,10 +2,12 @@ package email
 
 import (
 	"bytes"
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"time"
+
+	log "github.com/sirupsen/logrus"
+
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 )
 
 type registrationEmailInterface struct {
@@ -34,16 +36,16 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 	if err := mailTemplate.Execute(&msg, struct {
 		From, To, Host, MsgID, Token, Boundary, Link, Logo, Operator, PrimaryColor, SecondaryColor string
 	}{
-		From:     senderID,
-		To:       user,
-		Host:     host,
-		MsgID:    messageID + "@" + host,
-		Token:    token,
-		Boundary: "----=_Part_" + messageID,
-		Link:     link,
-		Logo:     logo,
-		Operator: "MXC",
-		PrimaryColor: "#71B6F9",
+		From:           senderID,
+		To:             user,
+		Host:           host,
+		MsgID:          messageID + "@" + host,
+		Token:          token,
+		Boundary:       "----=_Part_" + messageID,
+		Link:           link,
+		Logo:           logo,
+		Operator:       "MXC",
+		PrimaryColor:   "#71B6F9",
 		SecondaryColor: "#10c469",
 	}); err != nil {
 		log.Error(err)

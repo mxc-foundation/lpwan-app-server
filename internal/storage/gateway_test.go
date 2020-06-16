@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/brocaar/lorawan"
+	"github.com/pkg/errors"
+	. "github.com/smartystreets/goconvey/convey"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/test"
-	"github.com/pkg/errors"
-	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGateway(t *testing.T) {

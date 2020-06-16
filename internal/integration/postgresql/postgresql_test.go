@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -16,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 )
 

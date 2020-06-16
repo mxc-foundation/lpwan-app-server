@@ -114,6 +114,56 @@ service GatewayService {
 		};
 	}
 
+	rpc InsertNewDefaultGatewayConfig(InsertNewDefaultGatewayConfigRequest) returns (InsertNewDefaultGatewayConfigResponse) {
+		option (google.api.http) = {
+			post: "/api/gateways/default-config/add"
+			body: "*"
+		};
+	}
+
+	rpc UpdateDefaultGatewayConfig(UpdateDefaultGatewayConfigRequest) returns (UpdateDefaultGatewayConfigResponse) {
+		option (google.api.http) = {
+			put: "/api/gateways/default-config/update"
+			body: "*"
+		};
+	}
+
+	rpc GetDefaultGatewayConfig(GetDefaultGatewayConfigRequest) returns (GetDefaultGatewayConfigResponse) {
+		option (google.api.http) = {
+			get: "/api/gateways/default-config/get"
+		};
+	}
+
+	rpc BatchResetDefaultGatewatConfig(BatchResetDefaultGatewatConfigRequest) returns (BatchResetDefaultGatewatConfigResponse) {
+		option (google.api.http) = {
+			put: "/api/gateways/default-config/batch-reset"
+			body: "*"
+		};
+	}
+
+	rpc ResetDefaultGatewatConfigByID(ResetDefaultGatewatConfigByIDRequest) returns (ResetDefaultGatewatConfigByIDResponse) {
+		option (google.api.http) = {
+			put: "/api/gateways/default-config/reset"
+			body: "*"
+		};
+	}
+
+}
+
+message BatchResetDefaultGatewatConfigRequest {
+	string organization_list = 1;
+}
+
+message BatchResetDefaultGatewatConfigResponse {
+	string status = 1;
+}
+
+message ResetDefaultGatewatConfigByIDRequest {
+	string id = 1;
+}
+
+message ResetDefaultGatewatConfigByIDResponse {
+	string status = 1;
 }
 
 message Gateway {
@@ -403,4 +453,33 @@ message SetAutoUpdateFirmwareRequest {
 
 message SetAutoUpdateFirmwareResponse {
 	string message = 1;
+}
+
+message InsertNewDefaultGatewayConfigRequest {
+	string model = 1;
+	string region = 2;
+	string default_config = 3;
+}
+
+message InsertNewDefaultGatewayConfigResponse {
+	string status = 1;
+}
+
+message UpdateDefaultGatewayConfigRequest {
+	string model = 1;
+	string region = 2;
+	string default_config = 3;
+}
+
+message UpdateDefaultGatewayConfigResponse {
+	string status = 1;
+}
+
+message GetDefaultGatewayConfigRequest {
+	string model = 1;
+	string region = 2;
+}
+
+message GetDefaultGatewayConfigResponse {
+	string default_config = 1;
 }

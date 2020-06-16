@@ -9,8 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/spf13/viper"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

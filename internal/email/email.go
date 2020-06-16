@@ -3,16 +3,17 @@ package email
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/base32"
 	"net"
 	"net/smtp"
 	"os"
 	"text/template"
 
-	"encoding/base32"
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 var (
@@ -35,7 +36,6 @@ var (
 	mailTemplates     = mailTemplatesType{}
 	base32endocoding  *base32.Encoding
 	mailTemplateNames = mailTemplateNamesType{}
-
 )
 
 // Setup configures the package.
@@ -76,7 +76,6 @@ func SendInvite(user, token string, language EmailLanguage, option EmailOptions)
 	return errors.Wrap(err, "")
 }
 
-
 func sendEmail(user string, msg bytes.Buffer) error {
 	serverRegion := os.Getenv("SERVER_REGION")
 
@@ -97,7 +96,7 @@ func sendEmailAverage(user string, msg bytes.Buffer) error {
 
 func sendEmailRestricted(user string, msg bytes.Buffer) error {
 	return SendMailUsingTLS(
-		smtpServer + ":465",
+		smtpServer+":465",
 		smtp.PlainAuth(
 			"",
 			senderID,

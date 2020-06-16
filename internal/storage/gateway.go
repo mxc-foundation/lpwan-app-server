@@ -11,10 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/robfig/cron"
-
-	"github.com/golang/protobuf/ptypes"
-	"github.com/lib/pq"
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -24,13 +20,16 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/lorawan"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/pkg/errors"
+	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 var gatewayNameRegexp = regexp.MustCompile(`^[\w-]+$`)

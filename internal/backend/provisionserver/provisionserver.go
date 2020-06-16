@@ -4,12 +4,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	"io/ioutil"
+	"path/filepath"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"io/ioutil"
-	"path/filepath"
+
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 )
 
 func CreateClientWithCert(hostname, CACert, TLSCert, TLSKey string) (api.ProvisionClient, error) {

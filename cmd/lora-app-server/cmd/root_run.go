@@ -3,10 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -22,6 +23,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/fuota"
+	gw "github.com/mxc-foundation/lpwan-app-server/internal/gateway-manager"
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/application"
@@ -29,7 +31,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/metrics"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	gw "github.com/mxc-foundation/lpwan-app-server/internal/gateway-manager"
 )
 
 func run(cmd *cobra.Command, args []string) error {
