@@ -4,12 +4,13 @@ import (
 	"testing"
 
 	uuid "github.com/gofrs/uuid"
-	"github.com/mxc-foundation/lpwan-server/api/common"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"

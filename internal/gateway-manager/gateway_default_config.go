@@ -5,10 +5,11 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var configTemplate = &template.Template{}
@@ -33,8 +34,8 @@ func GetDefaultGatewayConfig(ctx context.Context, gw *storage.Gateway) error {
 	}
 
 	defaultGatewayConfig := storage.DefaultGatewayConfig{
-		Model:         gw.Model,
-		Region:        n.Region,
+		Model:  gw.Model,
+		Region: n.Region,
 	}
 
 	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
@@ -43,5 +44,5 @@ func GetDefaultGatewayConfig(ctx context.Context, gw *storage.Gateway) error {
 	}
 
 	gw.Config = strings.Replace(defaultGatewayConfig.DefaultConfig, "{{ .GatewayID }}", gw.MAC.String(), -1)
-	return  nil
+	return nil
 }

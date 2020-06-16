@@ -4,14 +4,15 @@ import (
 	"context"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // GatewayServerAPI defines the Gateway Server API structure
@@ -180,7 +181,7 @@ func (s *GatewayServerAPI) GetGatewayHistory(ctx context.Context, req *api.GetGa
 	}
 
 	return &api.GetGatewayHistoryResponse{
-		GwHistory:   resp.GwHistory,
+		GwHistory: resp.GwHistory,
 	}, status.Error(codes.OK, "")
 }
 
@@ -222,6 +223,6 @@ func (s *GatewayServerAPI) SetGatewayMode(ctx context.Context, req *api.SetGatew
 	}
 
 	return &api.SetGatewayModeResponse{
-		Status:      resp.Status,
+		Status: resp.Status,
 	}, status.Error(codes.OK, "")
 }

@@ -8,9 +8,10 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // Integration represents an integration.

@@ -8,11 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/brocaar/lorawan"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	httpint "github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
 	mqttint "github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"

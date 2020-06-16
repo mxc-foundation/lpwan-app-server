@@ -2,14 +2,16 @@ package external
 
 import (
 	"context"
+
 	"github.com/golang/protobuf/ptypes/empty"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	log "github.com/sirupsen/logrus"
 )
 
 // MiningServerAPI defines the Mining Server API structure

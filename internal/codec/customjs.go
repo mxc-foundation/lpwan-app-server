@@ -4,13 +4,15 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"github.com/apex/log"
 	"reflect"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/apex/log"
+
 	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 func init() {

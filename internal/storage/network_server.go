@@ -2,8 +2,9 @@ package storage
 
 import (
 	"context"
-	"github.com/golang/protobuf/ptypes/empty"
 	"time"
+
+	"github.com/golang/protobuf/ptypes/empty"
 
 	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
@@ -242,7 +243,6 @@ func UpdateNetworkServer(ctx context.Context, db sqlx.Execer, n *NetworkServer) 
 		return errors.Wrap(err, "update routing-profile error")
 	}
 
-
 	resp, err := nsClient.GetVersion(ctx, &empty.Empty{})
 	if err != nil {
 		return errors.Wrap(err, "failed to get network server region infomation")
@@ -261,7 +261,6 @@ func UpdateNetworkServer(ctx context.Context, db sqlx.Execer, n *NetworkServer) 
 	if err != nil {
 		return errors.Wrap(err, "failed to update netwokd server region information into database")
 	}
-
 
 	log.WithFields(log.Fields{
 		"id":     n.ID,

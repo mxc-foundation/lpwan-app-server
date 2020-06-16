@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 func (ts *StorageTestSuite) TestMetrics() {

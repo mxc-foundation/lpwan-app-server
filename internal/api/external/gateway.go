@@ -3,9 +3,10 @@ package external
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -17,6 +18,9 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
@@ -29,8 +33,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 // GatewayLocationsRedisKey defines the gateway location based on redis key
@@ -76,7 +78,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb
 		}
 
 		limit := 100
-		for offset := 0; offset <= count/limit; offset ++ {
+		for offset := 0; offset <= count/limit; offset++ {
 			list, err := storage.GetOrganizationIDList(storage.DB(), limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
@@ -132,7 +134,7 @@ func resetDefaultGatewayConfigByOrganizationID(ctx context.Context, orgID int64)
 	}
 
 	limit := 100
-	for offset := 0; offset <= count/limit; offset ++ {
+	for offset := 0; offset <= count/limit; offset++ {
 		gwList, err := storage.GetGatewaysForOrganizationID(ctx, storage.DB(), orgID, limit, offset, "")
 		if err != nil {
 			return err
@@ -188,14 +190,14 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *pb.
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
-	
+
 	return &pb.ResetDefaultGatewatConfigByIDResponse{}, status.Error(codes.OK, "")
 }
 
 // InsertNewDefaultGatewayConfig insert given new default gateway config
 func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.InsertNewDefaultGatewayConfigRequest) (*pb.InsertNewDefaultGatewayConfigResponse, error) {
 	log.WithFields(log.Fields{
-		"model": req.Model,
+		"model":  req.Model,
 		"region": req.Region,
 	}).Info("InsertNewDefaultGatewayConfig is called")
 
@@ -231,9 +233,9 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.
 }
 
 // UpdateNewDefaultGatewayConfig update default gateway config matching model and region
-func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.UpdateDefaultGatewayConfigRequest) (*pb.UpdateDefaultGatewayConfigResponse, error){
+func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.UpdateDefaultGatewayConfigRequest) (*pb.UpdateDefaultGatewayConfigResponse, error) {
 	log.WithFields(log.Fields{
-		"model": req.Model,
+		"model":  req.Model,
 		"region": req.Region,
 	}).Info("UpdateDefaultGatewayConfig is called")
 
@@ -247,8 +249,8 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.Upd
 	}
 
 	defaultGatewayConfig := storage.DefaultGatewayConfig{
-		Model:         req.Model,
-		Region:        req.Region,
+		Model:  req.Model,
+		Region: req.Region,
 	}
 
 	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
@@ -268,7 +270,7 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.Upd
 // GetDefaultGatewayConfig get content of default gateway config matching model and region
 func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *pb.GetDefaultGatewayConfigRequest) (*pb.GetDefaultGatewayConfigResponse, error) {
 	log.WithFields(log.Fields{
-		"model": req.Model,
+		"model":  req.Model,
 		"region": req.Region,
 	}).Info("GetDefaultGatewayConfig is called")
 
@@ -282,8 +284,8 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *pb.GetDef
 	}
 
 	defaultGatewayConfig := storage.DefaultGatewayConfig{
-		Model:         req.Model,
-		Region:        req.Region,
+		Model:  req.Model,
+		Region: req.Region,
 	}
 
 	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)

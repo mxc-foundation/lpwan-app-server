@@ -22,6 +22,7 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"

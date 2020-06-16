@@ -9,6 +9,11 @@ import (
 	"time"
 
 	"github.com/brocaar/lorawan"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
@@ -16,10 +21,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 // Setup configures the package.

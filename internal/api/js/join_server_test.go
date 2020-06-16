@@ -13,6 +13,7 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"

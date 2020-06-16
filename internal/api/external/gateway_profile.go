@@ -3,18 +3,18 @@ package external
 import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
+
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // GatewayProfileAPI exports the GatewayProfile related functions.

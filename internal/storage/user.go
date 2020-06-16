@@ -14,10 +14,11 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/pbkdf2"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // saltSize defines the salt size
@@ -274,7 +275,7 @@ func GetUserByUsername(ctx context.Context, db sqlx.Queryer, username string) (U
 	return user, nil
 }
 
-func GetUserByEmail(ctx context.Context, db sqlx.Queryer, email string) (User, error)  {
+func GetUserByEmail(ctx context.Context, db sqlx.Queryer, email string) (User, error) {
 	var user User
 	err := sqlx.Get(db, &user, "select "+externalUserFields+" from \"user\" where username = $1", email)
 	if err != nil {

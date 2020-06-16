@@ -9,11 +9,11 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/brocaar/lorawan"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 )

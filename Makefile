@@ -1,6 +1,10 @@
-.PHONY: build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: format build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags --always --long |sed -e "s/^v//")
+
+format:
+	goimports -w -local github.com/mxc-foundation ./..
+	gofmt ./..
 
 build: internal/statics internal/migrations
 	mkdir -p build cache

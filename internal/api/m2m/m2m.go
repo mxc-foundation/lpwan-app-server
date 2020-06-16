@@ -10,12 +10,13 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 var serviceName = "m2m server"

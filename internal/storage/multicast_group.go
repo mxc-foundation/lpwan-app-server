@@ -8,11 +8,12 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 )

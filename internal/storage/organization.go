@@ -2,16 +2,18 @@ package storage
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"regexp"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	m2m "github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 var organizationNameRegexp = regexp.MustCompile(`^[\w-]+$`)

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/api/option"
 
 	"github.com/brocaar/lorawan"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )

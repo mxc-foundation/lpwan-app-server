@@ -53,7 +53,6 @@ func UpdateDefaultGatewayConfig(db sqlx.Execer, defaultConfig *DefaultGatewayCon
 	return errors.Wrap(err, "UpdateDefaultGatewayConfig")
 }
 
-
 func GetDefaultGatewayConfig(db sqlx.Queryer, defaultConfig *DefaultGatewayConfig) error {
 	err := db.QueryRowx(`
 		select 
@@ -64,12 +63,12 @@ func GetDefaultGatewayConfig(db sqlx.Queryer, defaultConfig *DefaultGatewayConfi
 		    model = $1 and region = $2 `,
 		defaultConfig.Model,
 		defaultConfig.Region).Scan(
-			&defaultConfig.ID,
-			&defaultConfig.Model,
-			&defaultConfig.Region,
-			&defaultConfig.CreatedAt,
-			&defaultConfig.UpdatedAt,
-			&defaultConfig.DefaultConfig)
+		&defaultConfig.ID,
+		&defaultConfig.Model,
+		&defaultConfig.Region,
+		&defaultConfig.CreatedAt,
+		&defaultConfig.UpdatedAt,
+		&defaultConfig.DefaultConfig)
 
 	if err != nil {
 		return handlePSQLError(Select, err, "select error")

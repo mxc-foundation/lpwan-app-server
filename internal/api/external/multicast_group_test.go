@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/brocaar/lorawan"
-
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
