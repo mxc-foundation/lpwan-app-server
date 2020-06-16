@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"text/template"
 
@@ -23,7 +22,7 @@ func LoadTemplates() error {
 }
 
 func GetDefaultGatewayConfig(ctx context.Context, gw *storage.Gateway) error {
-	if strings.HasPrefix(gw.Model, "MX19") == false {
+	if !strings.HasPrefix(gw.Model, "MX19") {
 		return nil
 	}
 
@@ -43,6 +42,6 @@ func GetDefaultGatewayConfig(ctx context.Context, gw *storage.Gateway) error {
 		return errors.Wrapf(err, "Failed to get default gateway config for model= %s, region= %s", defaultGatewayConfig.Model, defaultGatewayConfig.Region)
 	}
 
-	gw.Config = strings.Replace(defaultGatewayConfig.DefaultConfig, "{{ .GatewayID }}", fmt.Sprintf("%s", gw.MAC.String()), -1)
+	gw.Config = strings.Replace(defaultGatewayConfig.DefaultConfig, "{{ .GatewayID }}", gw.MAC.String(), -1)
 	return  nil
 }

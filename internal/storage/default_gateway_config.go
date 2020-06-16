@@ -16,7 +16,7 @@ type DefaultGatewayConfig struct {
 	DefaultConfig string     `db:"default_config"`
 }
 
-func AddNewDefaultGatewayConfig(db sqlx.Ext, defaultConfig *DefaultGatewayConfig) error {
+func AddNewDefaultGatewayConfig(db sqlx.Execer, defaultConfig *DefaultGatewayConfig) error {
 	_, err := db.Exec(`
 		insert into default_gateway_config (
 		    model, region, created_at, updated_at, default_config
@@ -34,7 +34,7 @@ func AddNewDefaultGatewayConfig(db sqlx.Ext, defaultConfig *DefaultGatewayConfig
 	return errors.Wrap(err, "AddNewDefaultGatewayConfig")
 }
 
-func UpdateDefaultGatewayConfig(db sqlx.Ext, defaultConfig *DefaultGatewayConfig) error {
+func UpdateDefaultGatewayConfig(db sqlx.Execer, defaultConfig *DefaultGatewayConfig) error {
 	_, err := db.Exec(`
 		update 
 		    default_gateway_config 
@@ -54,7 +54,7 @@ func UpdateDefaultGatewayConfig(db sqlx.Ext, defaultConfig *DefaultGatewayConfig
 }
 
 
-func GetDefaultGatewayConfig(db sqlx.Ext, defaultConfig *DefaultGatewayConfig) error {
+func GetDefaultGatewayConfig(db sqlx.Queryer, defaultConfig *DefaultGatewayConfig) error {
 	err := db.QueryRowx(`
 		select 
 		    id, model, region, created_at, updated_at, default_config 
@@ -76,30 +76,4 @@ func GetDefaultGatewayConfig(db sqlx.Ext, defaultConfig *DefaultGatewayConfig) e
 	}
 
 	return errors.Wrap(err, "GetDefaultGatewayConfig")
-}
-
-func GetDefaultGatewayConfigCount(db sqlx.Queryer) (count int64, err error) {
-	err = db.QueryRowx(`
-		select count(id) from default_gateway_config
-	`).Scan(&count)
-
-	if err != nil {
-		return 0, handlePSQLError(Select, err, "select error")
-	}
-
-	return count, errors.Wrap(err, "GetDefaultGatewayConfig")
-}
-
-func GetDefaultGatewayConfigs(db sqlx.Queryer, limit, offset int64) ([]DefaultGatewayConfig, error) {
-	var defaultGatewayConfigs []DefaultGatewayConfig
-
-	err := sqlx.Select(db, &defaultGatewayConfigs, `
-		select *
-		from default_gateway_config
-		limit $1 offset $2`, limit, offset)
-	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
-	}
-
-	return defaultGatewayConfigs, nil
 }
