@@ -77,3 +77,29 @@ func GetDefaultGatewayConfig(db sqlx.Ext, defaultConfig *DefaultGatewayConfig) e
 
 	return errors.Wrap(err, "GetDefaultGatewayConfig")
 }
+
+func GetDefaultGatewayConfigCount(db sqlx.Queryer) (count int64, err error) {
+	err = db.QueryRowx(`
+		select count(id) from default_gateway_config
+	`).Scan(&count)
+
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+
+	return count, errors.Wrap(err, "GetDefaultGatewayConfig")
+}
+
+func GetDefaultGatewayConfigs(db sqlx.Queryer, limit, offset int64) ([]DefaultGatewayConfig, error) {
+	var defaultGatewayConfigs []DefaultGatewayConfig
+
+	err := sqlx.Select(db, &defaultGatewayConfigs, `
+		select *
+		from default_gateway_config
+		limit $1 offset $2`, limit, offset)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	return defaultGatewayConfigs, nil
+}

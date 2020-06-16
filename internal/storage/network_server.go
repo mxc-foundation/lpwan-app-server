@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"github.com/golang/protobuf/ptypes/empty"
 	"time"
 
 	"github.com/brocaar/lorawan"
@@ -34,6 +35,8 @@ type NetworkServer struct {
 	GatewayDiscoveryInterval    int       `db:"gateway_discovery_interval"`
 	GatewayDiscoveryTXFrequency int       `db:"gateway_discovery_tx_frequency"`
 	GatewayDiscoveryDR          int       `db:"gateway_discovery_dr"`
+	Version                     string    `db:"version"`
+	Region                      string    `db:"region"`
 }
 
 // Validate validates the network-server data.
@@ -112,6 +115,25 @@ func CreateNetworkServer(ctx context.Context, db sqlx.Queryer, n *NetworkServer)
 	})
 	if err != nil {
 		return errors.Wrap(err, "create routing-profile error")
+	}
+
+	resp, err := nsClient.GetVersion(ctx, &empty.Empty{})
+	if err != nil {
+		return errors.Wrap(err, "failed to get network server region infomation")
+	}
+
+	err = db.QueryRowx(`
+		update 
+			network_server 
+		set 
+			version = $1,
+			region = $2
+		where id = $3;`,
+		resp.Version,
+		resp.Region.String(),
+		n.ID).Err()
+	if err != nil {
+		return errors.Wrap(err, "failed to update netwokd server region information into database")
 	}
 
 	log.WithFields(log.Fields{
@@ -219,6 +241,27 @@ func UpdateNetworkServer(ctx context.Context, db sqlx.Execer, n *NetworkServer) 
 	if err != nil {
 		return errors.Wrap(err, "update routing-profile error")
 	}
+
+
+	resp, err := nsClient.GetVersion(ctx, &empty.Empty{})
+	if err != nil {
+		return errors.Wrap(err, "failed to get network server region infomation")
+	}
+
+	_, err = db.Exec(`
+		update 
+			network_server 
+		set 
+			version = $1,
+			region = $2
+		where id = $3;`,
+		resp.Version,
+		resp.Region.String(),
+		n.ID)
+	if err != nil {
+		return errors.Wrap(err, "failed to update netwokd server region information into database")
+	}
+
 
 	log.WithFields(log.Fields{
 		"id":     n.ID,

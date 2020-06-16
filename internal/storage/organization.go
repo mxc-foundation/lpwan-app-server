@@ -99,6 +99,29 @@ func CreateOrganization(ctx context.Context, db sqlx.Queryer, org *Organization)
 	return nil
 }
 
+// GetOrganizationIDList returns a slice of organizations id, sorted by name and
+// respecting the given limit and offset.
+func GetOrganizationIDList(db sqlx.Queryer, limit, offset int, search string) ([]int, error) {
+	var orgIDList []int
+
+	if search != "" {
+		search = "%" + search + "%"
+	}
+
+	err := sqlx.Select(db, &orgIDList, `
+		select id
+		from organization
+		where
+			($3 != '' and display_name ilike $3)
+			or ($3 = '')
+		order by display_name
+		limit $1 offset $2`, limit, offset, search)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+	return orgIDList, nil
+}
+
 // GetOrganization returns the Organization for the given id.
 func GetOrganization(ctx context.Context, db sqlx.Queryer, id int64) (Organization, error) {
 	var org Organization

@@ -3,6 +3,8 @@ package external
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
+	"strconv"
 	"strings"
 
 	"golang.org/x/net/context"
@@ -15,17 +17,17 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/gomodule/redigo/redis"
-	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/jmoiron/sqlx"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	gwm "github.com/mxc-foundation/lpwan-app-server/internal/gateway-manager"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 	"github.com/mxc-foundation/lpwan-server/api/common"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 	log "github.com/sirupsen/logrus"
@@ -45,6 +47,150 @@ func NewGatewayAPI(validator auth.Validator) *GatewayAPI {
 	return &GatewayAPI{
 		validator: validator,
 	}
+}
+
+// BatchResetDefaultGatewatConfig reset gateways config to default config matching organization list
+func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb.BatchResetDefaultGatewatConfigRequest) (*pb.BatchResetDefaultGatewatConfigResponse, error) {
+	log.WithFields(log.Fields{
+		"organization_list": req.OrganizationList,
+	}).Info("BatchResetDefaultGatewatConfig is called")
+
+	// check user permission, only global admin allowed
+	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if isAdmin == false {
+		return nil, status.Errorf(codes.PermissionDenied, "not authorized for this operation")
+	}
+
+	// if process for any organizaiton failed, return this error message to user for retry
+	var failedList []string
+	var succeededList []string
+	var organizationList []int
+
+	if req.OrganizationList == "all" {
+		// reset for all organizations
+		count, err := storage.GetOrganizationCount(ctx, storage.DB(), "")
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+
+		limit := 100
+		for offset := 0; offset <= count/limit; offset ++ {
+			list, err := storage.GetOrganizationIDList(storage.DB(), limit, offset, "")
+			if err != nil {
+				return nil, status.Errorf(codes.Internal, err.Error())
+			}
+
+			organizationList = append(organizationList, list...)
+		}
+
+	} else {
+		// parse organization list
+		strOrgList := strings.Split(req.OrganizationList, ",")
+		for _, v := range strOrgList {
+			orgID, err := strconv.Atoi(v)
+			if err != nil {
+				return nil, status.Errorf(codes.InvalidArgument, "invalid organization list format: %s (correct example: '2, 3, 4, 5' or '1' or 'all')", req.OrganizationList)
+			}
+
+			organizationList = append(organizationList, orgID)
+		}
+	}
+
+	// proceed when organizationList is complete
+	for _, v := range organizationList {
+		if v == 0 {
+			log.Warn("0 is in organization list")
+			continue
+		}
+
+		err := resetDefaultGatewayConfigByOrganizationID(ctx, int64(v))
+		if err != nil {
+			log.WithError(err).Errorf("failed to reset default gateway config for organization %d", v)
+			failedList = append(failedList, strconv.Itoa(v))
+			continue
+		}
+
+		succeededList = append(succeededList, strconv.Itoa(v))
+	}
+
+	return &pb.BatchResetDefaultGatewatConfigResponse{
+		Status: fmt.Sprintf("following organization failed: %s \n following organization succeeded: %s",
+			strings.Join(failedList, ","), strings.Join(succeededList, ",")),
+	}, status.Error(codes.OK, "")
+}
+
+func resetDefaultGatewayConfigByOrganizationID(ctx context.Context, orgID int64) error {
+	count, err := storage.GetGatewayCountForOrganizationID(ctx, storage.DB(), orgID, "")
+	if err != nil {
+		return err
+	}
+
+	if count == 0 {
+		return errors.New(fmt.Sprintf("There is no gateway in organization : %d", orgID))
+	}
+
+	limit := 100
+	for offset := 0; offset <= count/limit; offset ++ {
+		gwList, err := storage.GetGatewaysForOrganizationID(ctx, storage.DB(), orgID, limit, offset, "")
+		if err != nil {
+			return err
+		}
+
+		for _, v := range gwList {
+			err := gwm.GetDefaultGatewayConfig(ctx, &v)
+			if err != nil {
+				return err
+			}
+
+			err = storage.UpdateGatewayConfigByGwId(ctx, storage.DB(), v.Config, v.MAC)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// ResetDefaultGatewatConfigByID reste gateway config to default config matching gateway id
+func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *pb.ResetDefaultGatewatConfigByIDRequest) (*pb.ResetDefaultGatewatConfigByIDResponse, error) {
+	log.WithFields(log.Fields{
+		"gateway_id": req.Id,
+	}).Info("ResetDefaultGatewatConfigByID is called")
+
+	// check user permission, only global admin allowed
+	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if isAdmin == false {
+		return nil, status.Errorf(codes.PermissionDenied, "not authorized for this operation")
+	}
+
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	gw, err := storage.GetGateway(ctx, storage.DB(), mac, true)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, err.Error())
+	}
+
+	err = gwm.GetDefaultGatewayConfig(ctx, &gw)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, err.Error())
+	}
+
+	err = storage.UpdateGatewayConfigByGwId(ctx, storage.DB(), gw.Config, gw.MAC)
+	if err != nil {
+		return nil, status.Error(codes.Unknown, err.Error())
+	}
+	
+	return &pb.ResetDefaultGatewatConfigByIDResponse{}, status.Error(codes.OK, "")
 }
 
 // InsertNewDefaultGatewayConfig insert given new default gateway config
@@ -104,7 +250,6 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.Upd
 	defaultGatewayConfig := storage.DefaultGatewayConfig{
 		Model:         req.Model,
 		Region:        req.Region,
-		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", fmt.Sprintf("%s", storage.SupernodeAddr), -1),
 	}
 
 	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
@@ -112,6 +257,7 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.Upd
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
+	defaultGatewayConfig.DefaultConfig = strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", fmt.Sprintf("%s", storage.SupernodeAddr), -1)
 	err = storage.UpdateDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
@@ -222,7 +368,8 @@ func storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *storage.Gatew
 	}
 
 	defaultGw.MAC = mac
-	err = gwm.GetDefaultGatewayConfig(ctx, defaultGw, req.NetworkServerId)
+	defaultGw.NetworkServerID = req.NetworkServerId
+	err = gwm.GetDefaultGatewayConfig(ctx, defaultGw)
 	if err != nil {
 		return grpc.Errorf(codes.Unknown, err.Error())
 	}

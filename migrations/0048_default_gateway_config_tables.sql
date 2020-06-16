@@ -9,4 +9,7 @@ CREATE TABLE default_gateway_config (
     PRIMARY KEY (id)
 );
 
+alter table network_server add column version varchar(32) not null default '';
+alter table network_server add column region varchar(32) not null default '';
+
 -- +migrate Down

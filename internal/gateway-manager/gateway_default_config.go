@@ -6,8 +6,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/pkg/errors"
@@ -24,30 +22,20 @@ func LoadTemplates() error {
 	return nil
 }
 
-func GetDefaultGatewayConfig(ctx context.Context, gw *storage.Gateway, networkServerID int64) error {
+func GetDefaultGatewayConfig(ctx context.Context, gw *storage.Gateway) error {
 	if strings.HasPrefix(gw.Model, "MX19") == false {
 		return nil
 	}
 
-	n, err := storage.GetNetworkServer(ctx, storage.DB(), networkServerID)
+	n, err := storage.GetNetworkServer(ctx, storage.DB(), gw.NetworkServerID)
 	if err != nil {
-		log.WithError(err).Errorf("Failed to get network server %d", networkServerID)
+		log.WithError(err).Errorf("Failed to get network server %d", gw.NetworkServerID)
 		return errors.Wrapf(err, "GetDefaultGatewayConfig")
-	}
-
-	var region string
-
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-	if err == nil {
-		resp, err := nsClient.GetVersion(ctx, &empty.Empty{})
-		if err == nil {
-			region = resp.Region.String()
-		}
 	}
 
 	defaultGatewayConfig := storage.DefaultGatewayConfig{
 		Model:         gw.Model,
-		Region:        region,
+		Region:        n.Region,
 	}
 
 	err = storage.GetDefaultGatewayConfig(storage.DB(), &defaultGatewayConfig)
