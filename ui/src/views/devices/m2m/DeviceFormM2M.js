@@ -85,6 +85,7 @@ class DeviceFormM2M extends Component {
   }
 
   DeviceM2MModeColumn = (cell, row, index, extraData) => {
+    return row.mode;
     /*
     let dValue = null;
     const options = DV_MODE_OPTION;
@@ -100,7 +101,7 @@ class DeviceFormM2M extends Component {
         dValue = options[0];
         break;
     }
-    */
+
     const options = DV_MODE_OPTION;
     const dValue = options[1];
 
@@ -119,6 +120,8 @@ class DeviceFormM2M extends Component {
         />
       </span>
     );
+  */
+
   }
 
   getColumns = (currentOrgID, currentApplicationID) => (
@@ -143,6 +146,12 @@ class DeviceFormM2M extends Component {
         sort: false,
         formatter: this.DeviceM2MAvailableColumn,
       },
+      {
+        dataField: 'mode',
+        text: i18n.t(`${packageNS}:menu.devices.mode`),
+        sort: false,
+        formatter: this.DeviceM2MModeColumn,
+      }
 /*      {
         dataField: 'mode',
         text: i18n.t(`${packageNS}:menu.devices.mode`),
