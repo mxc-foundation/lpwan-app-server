@@ -68,7 +68,14 @@ class DeviceActivation extends Component {
       act.fNwkSIntKey = act.nwkSEncKey;
       act.sNwkSIntKey = act.nwkSEncKey;
     }
-
+    
+    let devAddr = '';
+    if(act.devAddr){
+      devAddr = act.devAddr.replace(/ /g,'');
+      act.devAddr = devAddr;
+    }
+    devAddr = null;
+    
     DeviceStore.activate(act, resp => {
       isApplication
       ? history.push(`/organizations/${currentOrgID}/applications/${currentApplicationID}`)
@@ -81,9 +88,9 @@ class DeviceActivation extends Component {
       object: Yup.object().shape({
         deviceActivation: Yup.object().shape({
           // https://regexr.com/4rg3a
-          devEUI: Yup.string().trim()
+          devEUI: Yup.string().trim(),
             // .trim().matches(/([A-Fa-f0-9]){16}/, "Must be length 16")
-            .required(i18n.t(`${packageNS}:tr000431`)),
+            //.required(i18n.t(`${packageNS}:tr000431`)),
           devAddr: Yup.string().trim()
             // FIXME - changes to DevAddr component required to get these to work
             // since the length of the value when debugging `values.object.deviceActivation.devAddr`
