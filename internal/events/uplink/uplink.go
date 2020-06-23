@@ -16,15 +16,16 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/as"
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
-	"github.com/brocaar/chirpstack-application-server/internal/applayer/clocksync"
-	"github.com/brocaar/chirpstack-application-server/internal/applayer/fragmentation"
-	"github.com/brocaar/chirpstack-application-server/internal/applayer/multicastsetup"
-	"github.com/brocaar/chirpstack-application-server/internal/codec"
-	"github.com/brocaar/chirpstack-application-server/internal/config"
-	"github.com/brocaar/chirpstack-application-server/internal/integration"
-	"github.com/brocaar/chirpstack-application-server/internal/storage"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 type uplinkContext struct {

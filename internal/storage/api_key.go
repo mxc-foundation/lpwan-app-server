@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/brocaar/chirpstack-application-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // APIKey represents an API key.

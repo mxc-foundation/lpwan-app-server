@@ -1,4 +1,4 @@
-/var/log/chirpstack-application-server/chirpstack-application-server.log {
+/var/log/lpwan-app-server/lpwan-app-server.log {
     daily
     rotate 7
     missingok

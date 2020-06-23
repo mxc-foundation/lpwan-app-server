@@ -11,19 +11,19 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"github.com/brocaar/chirpstack-application-server/internal/api"
-	"github.com/brocaar/chirpstack-application-server/internal/applayer/fragmentation"
-	"github.com/brocaar/chirpstack-application-server/internal/applayer/multicastsetup"
-	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
-	jscodec "github.com/brocaar/chirpstack-application-server/internal/codec/js"
-	"github.com/brocaar/chirpstack-application-server/internal/config"
-	"github.com/brocaar/chirpstack-application-server/internal/downlink"
-	"github.com/brocaar/chirpstack-application-server/internal/fuota"
-	"github.com/brocaar/chirpstack-application-server/internal/gwping"
-	"github.com/brocaar/chirpstack-application-server/internal/integration"
-	"github.com/brocaar/chirpstack-application-server/internal/migrations/code"
-	"github.com/brocaar/chirpstack-application-server/internal/monitoring"
-	"github.com/brocaar/chirpstack-application-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	jscodec "github.com/mxc-foundation/lpwan-app-server/internal/codec/js"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
+	"github.com/mxc-foundation/lpwan-app-server/internal/fuota"
+	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
+	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -36,16 +36,23 @@ func run(cmd *cobra.Command, args []string) error {
 		setSyslog,
 		printStartMessage,
 		setupStorage,
+		setupClient,
+		setupUpdateFirmwareFromPs,
+		setupDefaultEnv,
+		setupLoadGatewayTemplates,
 		setupNetworkServer,
 		migrateGatewayStats,
 		migrateToClusterKeys,
 		setupIntegration,
+		setupSMTP,
 		setupCodec,
 		handleDataDownPayloads,
 		startGatewayPing,
 		setupMulticastSetup,
 		setupFragmentation,
 		setupFUOTA,
+
+		setupMining,
 		setupAPI,
 		setupMonitoring,
 	}
@@ -61,7 +68,7 @@ func run(cmd *cobra.Command, args []string) error {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 	log.WithField("signal", <-sigChan).Info("signal received")
 	go func() {
-		log.Warning("stopping chirpstack-application-server")
+		log.Warning("stopping lora-app-server")
 		// todo: handle graceful shutdown?
 		exitChan <- struct{}{}
 	}()
@@ -95,6 +102,14 @@ func setupStorage() error {
 	return nil
 }
 
+func setupSMTP() error {
+	if err := email.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup SMTP error")
+	}
+
+	return nil
+}
+
 func setupIntegration() error {
 	if err := integration.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup integration error")
@@ -111,9 +126,49 @@ func setupCodec() error {
 	return nil
 }
 
+func setupClient() error {
+	if err := setupNetworkServer(); err != nil {
+		return err
+	}
+
+	if err := setupM2MServer(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setupM2MServer() error {
+	if err := m2m_client.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup m2m-server error")
+	}
+	return nil
+}
+
 func setupNetworkServer() error {
 	if err := networkserver.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup networkserver error")
+	}
+	return nil
+}
+
+func setupUpdateFirmwareFromPs() error {
+	if err := storage.UpdateFirmwareFromProvisioningServer(config.C); err != nil {
+		return errors.Wrap(err, "setup update firmware error")
+	}
+	return nil
+}
+
+func setupDefaultEnv() error {
+	if err := storage.SetupDefault(); err != nil {
+		return errors.Wrap(err, "setup default error")
+	}
+	return nil
+}
+
+func setupLoadGatewayTemplates() error {
+	if err := gw.LoadTemplates(); err != nil {
+		return errors.Wrap(err, "load gateway config template error")
 	}
 	return nil
 }

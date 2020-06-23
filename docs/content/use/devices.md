@@ -158,6 +158,6 @@ AT+DI?
 
 ### Your device not here?
 
-Please help making this guide complete! Fork the [github.com/brocaar/chirpstack-application-server](https://github.com/brocaar/chirpstack-application-server)
+Please help making this guide complete! Fork the [github.com/mxc-foundation/lpwan-app-server](https://github.com/mxc-foundation/lpwan-app-server)
 repository, update this page with the actions needed to setup your device
 and create a pull-request.

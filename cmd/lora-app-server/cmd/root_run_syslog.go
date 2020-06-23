@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	lsyslog "github.com/sirupsen/logrus/hooks/syslog"
 
-	"github.com/brocaar/chirpstack-application-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 func setSyslog() error {
@@ -34,7 +34,7 @@ func setSyslog() error {
 		prio = syslog.LOG_USER | syslog.LOG_CRIT
 	}
 
-	hook, err := lsyslog.NewSyslogHook("", "", prio, "chirpstack-application-server")
+	hook, err := lsyslog.NewSyslogHook("", "", prio, "lpwan-app-server")
 	if err != nil {
 		return errors.Wrap(err, "get syslog hook error")
 	}

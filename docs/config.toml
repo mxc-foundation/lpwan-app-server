@@ -49,4 +49,4 @@ theme = "chirpstack-hugo-theme"
 
 [params]
 version = "3.11.0"
-component = "chirpstack-application-server"
+component = "lpwan-app-server"

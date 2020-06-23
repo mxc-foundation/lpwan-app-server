@@ -11,8 +11,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/brocaar/chirpstack-application-server/internal/integration/loracloud/client/helpers"
 	"github.com/brocaar/lorawan"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/loracloud/client/helpers"
 )
 
 type ClientTestSuite struct {

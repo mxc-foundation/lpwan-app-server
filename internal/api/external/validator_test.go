@@ -1,10 +1,11 @@
 package external
 
 import (
-	"github.com/brocaar/chirpstack-application-server/internal/api/external/auth"
-	"github.com/brocaar/chirpstack-application-server/internal/storage"
 	"github.com/gofrs/uuid"
 	"golang.org/x/net/context"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 type TestValidator struct {
@@ -14,6 +15,8 @@ type TestValidator struct {
 	returnSubject  string
 	returnAPIKeyID uuid.UUID
 	returnUser     storage.User
+	returnUsername string
+	returnIsAdmin  bool
 }
 
 func (v *TestValidator) Validate(ctx context.Context, funcs ...auth.ValidatorFunc) error {
@@ -32,4 +35,21 @@ func (v *TestValidator) GetAPIKeyID(ctx context.Context) (uuid.UUID, error) {
 
 func (v *TestValidator) GetUser(ctx context.Context) (storage.User, error) {
 	return v.returnUser, v.returnError
+}
+
+
+func (v *TestValidator) GetUsername(ctx context.Context) (string, error) {
+	return v.returnUsername, v.returnError
+}
+
+func (v *TestValidator) GetOTP(ctx context.Context) string {
+	return ""
+}
+
+func (v *TestValidator) ValidateOTP(ctx context.Context) error {
+	return fmt.Errorf("not implemented")
+}
+
+func (v *TestValidator) GetIsAdmin(ctx context.Context) (bool, error) {
+	return v.returnIsAdmin, v.returnError
 }

@@ -76,11 +76,11 @@ This feature makes it possible to (temporarily) disable a device.
 * Make it possible to use activate API endpoint for OTAA devices (to import an existing activation).
 * Gateway Profile / channel-plan re-configuration documentation in web-interface.
 * Internal cleanup auto-complete select in web-interface.
-* Expose (un)confirmed + DevAddr in integration payloads. ([#453](https://github.com/brocaar/chirpstack-application-server/issues/453))
-* Highlight rlow when hovering over table rows in web-interface. ([#474](https://github.com/brocaar/chirpstack-application-server/pull/474))
-* Include Network Server name column in Device- and Service Profile list. ([#475](https://github.com/brocaar/chirpstack-application-server/pull/475))
-* Include RSSI and SNR in ThingsBoard integration. ([#478](https://github.com/brocaar/chirpstack-application-server/pull/478/))
-* Align Gateway detail overview styling. ([#480](https://github.com/brocaar/chirpstack-application-server/pull/480/))
+* Expose (un)confirmed + DevAddr in integration payloads. ([#453](https://github.com/mxc-foundation/lpwan-app-server/issues/453))
+* Highlight rlow when hovering over table rows in web-interface. ([#474](https://github.com/mxc-foundation/lpwan-app-server/pull/474))
+* Include Network Server name column in Device- and Service Profile list. ([#475](https://github.com/mxc-foundation/lpwan-app-server/pull/475))
+* Include RSSI and SNR in ThingsBoard integration. ([#478](https://github.com/mxc-foundation/lpwan-app-server/pull/478/))
+* Align Gateway detail overview styling. ([#480](https://github.com/mxc-foundation/lpwan-app-server/pull/480/))
 
 ### Bugfixes
 
@@ -94,7 +94,7 @@ This feature makes it possible to (temporarily) disable a device.
 
 This makes it possible to generate (and revoke) API keys directly from within
 the web-interface. Internally, a lot of authorization code has been cleaned up
-to remove duplication and make the code easier to maintain. ([#421](https://github.com/brocaar/chirpstack-application-server/pull/421))
+to remove duplication and make the code easier to maintain. ([#421](https://github.com/mxc-foundation/lpwan-app-server/pull/421))
 
 #### Redis Cluster and Sentinel
 
@@ -103,21 +103,21 @@ and [Redis Sentinel](https://redis.io/topics/sentinel).
 
 ### Improvements
 
-* Use server time instead of gateway reported time in stats. ([#440](https://github.com/brocaar/chirpstack-application-server/pull/440/))
-* Add "Last seen" column to gateway list view. ([#444](https://github.com/brocaar/chirpstack-application-server/pull/444))
-* Change ISM band names to their common name. ([#456](https://github.com/brocaar/chirpstack-application-server/pull/456))
+* Use server time instead of gateway reported time in stats. ([#440](https://github.com/mxc-foundation/lpwan-app-server/pull/440/))
+* Add "Last seen" column to gateway list view. ([#444](https://github.com/mxc-foundation/lpwan-app-server/pull/444))
+* Change ISM band names to their common name. ([#456](https://github.com/mxc-foundation/lpwan-app-server/pull/456))
 
 ### Bugfixes
 
 * Fix `objectJSON` formatting in web-interface.
 * Fix AMQP re-connect issue.
-* Fix setting `updated_at` field on organization user update. ([#430](https://github.com/brocaar/chirpstack-application-server/pull/430))
-* Fix create service-profile with empty name. ([#436](https://github.com/brocaar/chirpstack-application-server/pull/436/))
-* Fix closing WebSocket connections. ([#373](https://github.com/brocaar/chirpstack-application-server/issues/373))
-* Fix create multicast-group with empty name. ([#451](https://github.com/brocaar/chirpstack-application-server/pull/451/))
+* Fix setting `updated_at` field on organization user update. ([#430](https://github.com/mxc-foundation/lpwan-app-server/pull/430))
+* Fix create service-profile with empty name. ([#436](https://github.com/mxc-foundation/lpwan-app-server/pull/436/))
+* Fix closing WebSocket connections. ([#373](https://github.com/mxc-foundation/lpwan-app-server/issues/373))
+* Fix create multicast-group with empty name. ([#451](https://github.com/mxc-foundation/lpwan-app-server/pull/451/))
 * Fix device-status margin type (uint32 > int32).
-* Fix passing the correct database transaction on downlink enqueue. ([#412](https://github.com/brocaar/chirpstack-application-server/issues/412))
-* Update viper to fix reading configfile error. ([#461](https://github.com/brocaar/chirpstack-application-server/pull/461))
+* Fix passing the correct database transaction on downlink enqueue. ([#412](https://github.com/mxc-foundation/lpwan-app-server/issues/412))
+* Update viper to fix reading configfile error. ([#461](https://github.com/mxc-foundation/lpwan-app-server/pull/461))
 
 ## v3.9.0
 
@@ -153,7 +153,7 @@ endpoint is now enabled for the myDevices integration.
 
 ### Bugfixes
 
-* Update gRPC dependency to fix 'DNS name does not exist' error. ([#426](https://github.com/brocaar/chirpstack-application-server/issues/426))
+* Update gRPC dependency to fix 'DNS name does not exist' error. ([#426](https://github.com/mxc-foundation/lpwan-app-server/issues/426))
 
 ## v3.8.0
 
@@ -186,14 +186,14 @@ be forwarded to syslog.
 * Add API option to fetch device queue size only.
 * Add device profile to device list in web-interface.
 * Enable DNS round-robin load-balancing for gRPC client (to NS).
-* Add uplink IDs used for gelocation to geolocation event. ([#413](https://github.com/brocaar/chirpstack-application-server/issues/413))
+* Add uplink IDs used for gelocation to geolocation event. ([#413](https://github.com/mxc-foundation/lpwan-app-server/issues/413))
 * Internal cleanup of unused `device_activation` table and code.
-* Add option for 200 and 500 items per page in web-interface. ([#418](https://github.com/brocaar/chirpstack-application-server/pull/418))
+* Add option for 200 and 500 items per page in web-interface. ([#418](https://github.com/mxc-foundation/lpwan-app-server/pull/418))
 
 ### Bugfixes
 
-* Fix LoRaWAN 1.1 OTAA bug (and update tests). ([#382](https://github.com/brocaar/chirpstack-application-server/issues/382))
-* Fix assigning device profile to device (validate they share the same organization). ([#415](https://github.com/brocaar/chirpstack-application-server/issues/415))
+* Fix LoRaWAN 1.1 OTAA bug (and update tests). ([#382](https://github.com/mxc-foundation/lpwan-app-server/issues/382))
+* Fix assigning device profile to device (validate they share the same organization). ([#415](https://github.com/mxc-foundation/lpwan-app-server/issues/415))
 * Fix assigning service profile to application (validate they share the same organization).
 
 ## v3.7.0
@@ -225,14 +225,14 @@ specific to each function, instead of a shared SQL query joining all tables.
 
 ### Bugfixes
 
-* Check for null values in JSONTree web-interface component. ([#398](https://github.com/brocaar/chirpstack-application-server/issues/398))
+* Check for null values in JSONTree web-interface component. ([#398](https://github.com/mxc-foundation/lpwan-app-server/issues/398))
 
 ## v3.6.1
 
 ### Bugfixes
 
 * Fix setting `time` in `rxInfo` for `json_v3` (default) integration marshaler.
-* Fix integrations break when codec function returns a NaN value. ([#390](https://github.com/brocaar/chirpstack-application-server/issues/390))
+* Fix integrations break when codec function returns a NaN value. ([#390](https://github.com/mxc-foundation/lpwan-app-server/issues/390))
 
 ## v3.6.0
 
@@ -247,7 +247,7 @@ JSON).
 
 #### RPM packaging
 
-This is the first release providing .rpm packages for CentOS and RedHat. ([#383](https://github.com/brocaar/chirpstack-application-server/pull/383)
+This is the first release providing .rpm packages for CentOS and RedHat. ([#383](https://github.com/mxc-foundation/lpwan-app-server/pull/383)
 
 ### Improvements
 
@@ -278,11 +278,11 @@ required database transactions.
 
 ### Improvements
 
-* Deprecate use of dots (`.`) in environment variable names, use double underscore (`__`) instead. ([#369](https://github.com/brocaar/chirpstack-application-server/issues/369))
+* Deprecate use of dots (`.`) in environment variable names, use double underscore (`__`) instead. ([#369](https://github.com/mxc-foundation/lpwan-app-server/issues/369))
 
 ### Bugfixes
 
-* Fixes init stop script which could cause the ChirpStack Application Server to not properly stop or restart. ([#379](https://github.com/brocaar/chirpstack-application-server/issues/379))
+* Fixes init stop script which could cause the ChirpStack Application Server to not properly stop or restart. ([#379](https://github.com/mxc-foundation/lpwan-app-server/issues/379))
 
 ## v3.5.0
 
@@ -292,7 +292,7 @@ See the [Rename Announcement](https://www.chirpstack.io/r/rename-announcement) f
 ### Improvements
 
 * Add copy to clipboard for hex heys. ([#364](https://github.com/brocaar/chirpstack-applocation-server/issues/364))
-* Persist selected number of table rows per page in localStorage. ([#351](https://github.com/brocaar/chirpstack-application-server/issues/351))
+* Persist selected number of table rows per page in localStorage. ([#351](https://github.com/mxc-foundation/lpwan-app-server/issues/351))
 
 ### Bugfixes
 
@@ -346,12 +346,12 @@ during the upgrade of LoRa App Server.
 
 ### Improvements
 
-* Add RXInfo and TXInfo to join-notifications. ([#235](https://github.com/brocaar/chirpstack-application-server/pull/347))
+* Add RXInfo and TXInfo to join-notifications. ([#235](https://github.com/mxc-foundation/lpwan-app-server/pull/347))
 
 ### Bugfixes
 
-* Propagate gRPC errors to that the correct HTTP status is returned. ([#349](https://github.com/brocaar/chirpstack-application-server/issues/349))
-* Fix not found UI error when device is inactive. ([#359](https://github.com/brocaar/chirpstack-application-server/issues/359))
+* Propagate gRPC errors to that the correct HTTP status is returned. ([#349](https://github.com/mxc-foundation/lpwan-app-server/issues/349))
+* Fix not found UI error when device is inactive. ([#359](https://github.com/mxc-foundation/lpwan-app-server/issues/359))
 
 ## v3.3.0
 
@@ -369,14 +369,14 @@ Prometheus metics have been implemented for the Join Server API interface.
 ### Improvements
 
 * Update UI dependencies to their latest versions.
-* Show popup on gateway create when no Service Profile exists. ([#345](https://github.com/brocaar/chirpstack-application-server/issues/345))
-* Remove unused fields when listing users. ([#328](https://github.com/brocaar/chirpstack-application-server/issues/345))
+* Show popup on gateway create when no Service Profile exists. ([#345](https://github.com/mxc-foundation/lpwan-app-server/issues/345))
+* Remove unused fields when listing users. ([#328](https://github.com/mxc-foundation/lpwan-app-server/issues/345))
 * Update multicast address and session-key input field widgets.
-* Mention in API description that the organization ID of an application can not be updated after create. ([#343](https://github.com/brocaar/chirpstack-application-server/issues/343))
+* Mention in API description that the organization ID of an application can not be updated after create. ([#343](https://github.com/mxc-foundation/lpwan-app-server/issues/343))
 
 ### Bugfixes
 
-* Trigger organization dropdown reload on organization change. ([#342](https://github.com/brocaar/chirpstack-application-server/issues/342))
+* Trigger organization dropdown reload on organization change. ([#342](https://github.com/mxc-foundation/lpwan-app-server/issues/342))
 
 ## v3.2.0
 
@@ -397,7 +397,7 @@ In future releases, more metrics will be exposed using this endpoint.
 
 ### Improvements
 
-* Multicast-group frame-counter cleanup (there was a column in both the LoRa App Server and LoRa Server database). ([#339](https://github.com/brocaar/chirpstack-application-server/issues/339))
+* Multicast-group frame-counter cleanup (there was a column in both the LoRa App Server and LoRa Server database). ([#339](https://github.com/mxc-foundation/lpwan-app-server/issues/339))
 
 ### Bugfixes
 
@@ -430,14 +430,14 @@ documentation for more information.
 
 ### Improvements
 
-* Speedup login with default admin / admin credentials (for low CPU power devices). ([#320](https://github.com/brocaar/chirpstack-application-server/issues/320))
+* Speedup login with default admin / admin credentials (for low CPU power devices). ([#320](https://github.com/mxc-foundation/lpwan-app-server/issues/320))
 * Gateway ID, FPGA ID and AES-key widgets have been updated.
 * Always display Class-C timeout field in Device Profile.
 
 ### Bugfixes
 
-* Fix Gen Application Key is no longer a mandatory field. ([#322](https://github.com/brocaar/chirpstack-application-server/issues/322))
-* Fix create organization user. ([#323](https://github.com/brocaar/chirpstack-application-server/issues/323))
+* Fix Gen Application Key is no longer a mandatory field. ([#322](https://github.com/mxc-foundation/lpwan-app-server/issues/322))
+* Fix create organization user. ([#323](https://github.com/mxc-foundation/lpwan-app-server/issues/323))
 
 ### Upgrading
 
@@ -485,7 +485,7 @@ configured in the Device Profile.
 
 ### Bugfixes
 
-* Fix organization admin cannot add existing users. ([#315](https://github.com/brocaar/chirpstack-application-server/issues/315))
+* Fix organization admin cannot add existing users. ([#315](https://github.com/mxc-foundation/lpwan-app-server/issues/315))
 
 ### Upgrading
 
@@ -503,7 +503,7 @@ backwards compatible.
 
 ### Bugfixes
 
-* Fix `panic` when JOSN object is set but contains `null`. ([#314](https://github.com/brocaar/chirpstack-application-server/issues/314))
+* Fix `panic` when JOSN object is set but contains `null`. ([#314](https://github.com/mxc-foundation/lpwan-app-server/issues/314))
 
 ## v2.6.0
 
@@ -517,18 +517,18 @@ or to [AWS SNS](https://aws.amazon.com/sns/). See [Configuration](https://www.ch
 ### Improvements
 
 * Make JS codec maximum execution-time configurable and increase default value to 100ms.
-* Add configuration option for CORS headers. ([#275](https://github.com/brocaar/chirpstack-application-server/pull/275))
+* Add configuration option for CORS headers. ([#275](https://github.com/mxc-foundation/lpwan-app-server/pull/275))
 * Internal code-cleanup with regards to passing configuration and objects.
 * Internal migration from Dep to [Go modules](https://github.com/golang/go/wiki/Modules).
-* Improve authentication validator SQL query for speed. ([#302](https://github.com/brocaar/chirpstack-application-server/pull/302))
-* Add codec execution time for decoding. ([#307](https://github.com/brocaar/chirpstack-application-server/pull/307))
-* UI: Make delete application confirmation more explicit. ([#306](https://github.com/brocaar/chirpstack-application-server/pull/306))
+* Improve authentication validator SQL query for speed. ([#302](https://github.com/mxc-foundation/lpwan-app-server/pull/302))
+* Add codec execution time for decoding. ([#307](https://github.com/mxc-foundation/lpwan-app-server/pull/307))
+* UI: Make delete application confirmation more explicit. ([#306](https://github.com/mxc-foundation/lpwan-app-server/pull/306))
 
 ## v2.5.1
 
 ### Bugfixes
 
-* Fix panic in InfluxDB handler on `null` values in object ([#295](https://github.com/brocaar/chirpstack-application-server/issues/295))
+* Fix panic in InfluxDB handler on `null` values in object ([#295](https://github.com/mxc-foundation/lpwan-app-server/issues/295))
 
 ## v2.5.0
 
@@ -538,7 +538,7 @@ or to [AWS SNS](https://aws.amazon.com/sns/). See [Configuration](https://www.ch
 
 It is now possible to [configure](https://www.chirpstack.io/application-server/install/config/) the retained flag for the MQTT integration.
 When set, the MQTT broker will retain the last message and send this
-immediately when a MQTT client connects. ([#272](https://github.com/brocaar/chirpstack-application-server/pull/272))
+immediately when a MQTT client connects. ([#272](https://github.com/mxc-foundation/lpwan-app-server/pull/272))
 
 #### Environment variable based configuration
 
@@ -552,7 +552,7 @@ Environment variable based [configuration](https://www.chirpstack.io/application
 ### Bugfixes
 
 * Fix potential deadlock on MQTT re-connect ([#103](https://github.com/brocaar/chirpstack-gateway-bridge/issues/103))
-* Fix logrotate issue (init based systems) ([#282](https://github.com/brocaar/chirpstack-application-server/pull/282)
+* Fix logrotate issue (init based systems) ([#282](https://github.com/mxc-foundation/lpwan-app-server/pull/282)
 
 ## v2.4.1
 
@@ -664,7 +664,7 @@ This update adds LoRaWAN 1.0.3 in MAC version dropdown.
 
 ### Bugfixes
 
-* Use `gofrs/uuid` UUID library as `satori/go.uuid` is not truly random. ([#253](https://github.com/brocaar/chirpstack-application-server/pull/253))
+* Use `gofrs/uuid` UUID library as `satori/go.uuid` is not truly random. ([#253](https://github.com/mxc-foundation/lpwan-app-server/pull/253))
 * Fix web-interface login form (sometimes a double login was required).
 
 ## v2.0.0
@@ -769,7 +769,7 @@ downlink payload.
 
 ### Bugfixes
 
-* Lock device row on downlink enqueue to avoid duplicated frame-counter values ([#245](https://github.com/brocaar/chirpstack-application-server/issues/245))
+* Lock device row on downlink enqueue to avoid duplicated frame-counter values ([#245](https://github.com/mxc-foundation/lpwan-app-server/issues/245))
 
 ## v1.0.1
 
@@ -854,7 +854,7 @@ repository for v1.x.
 **Bugfixes:**
 
 * Fix leaking Redis connections on pubsub subscriber ([#313](https://github.com/brocaar/chirpstack-network-server/issues/313).
-* Fix discovery interval validation ([#226](https://github.com/brocaar/chirpstack-application-server/issues/226)).
+* Fix discovery interval validation ([#226](https://github.com/mxc-foundation/lpwan-app-server/issues/226)).
 
 **Upgrade notes:**
 
@@ -922,7 +922,7 @@ create extension pg_trgm;
   * Clean session on connect
 * Expose LoRa Server version and configured region through the network-server
   API endpoint.
-* Websocket client automatically re-connects on connection error ([#221](https://github.com/brocaar/chirpstack-application-server/pull/221))
+* Websocket client automatically re-connects on connection error ([#221](https://github.com/mxc-foundation/lpwan-app-server/pull/221))
 
 **Bugfixes:**
 
@@ -952,7 +952,7 @@ create extension pg_trgm;
   * You need LoRa Server 0.24+ in order to use this feature.
 * Added streaming frame-logs for gateways (which also can be downloaded as JSON file).
   * You need LoRa Server 0.24+ in order to use this feature.
-* Support MQTT client certificate authentication ([#201](https://github.com/brocaar/chirpstack-application-server/pull/201)).
+* Support MQTT client certificate authentication ([#201](https://github.com/mxc-foundation/lpwan-app-server/pull/201)).
 
 **Upgrade notes:**
 
@@ -1001,7 +1001,7 @@ please see [configuration](https://www.chirpstack.io/application-server/install/
 
 **Bugfixes:**
 
-* `--gw-ping-dr 0` is now handled correctly ([#204](https://github.com/brocaar/chirpstack-application-server/pull/204))
+* `--gw-ping-dr 0` is now handled correctly ([#204](https://github.com/mxc-foundation/lpwan-app-server/pull/204))
 
 
 ## 0.16.1
@@ -1263,7 +1263,7 @@ version 0.20.0+.
 **Bugfixes:**
 
 * Fix ABP sesstings not editable by organization admin
-  ([#85](https://github.com/brocaar/chirpstack-application-server/issues/85))
+  ([#85](https://github.com/mxc-foundation/lpwan-app-server/issues/85))
 
 ## 0.9.0
 
@@ -1276,7 +1276,7 @@ version 0.20.0+.
 
 * On editing a gateway, disable the MAC input field (as this is the unique
   identifier of the gateway).
-* A pagination regression has been fixed ([#82](https://github.com/brocaar/chirpstack-application-server/issues/82)).
+* A pagination regression has been fixed ([#82](https://github.com/mxc-foundation/lpwan-app-server/issues/82)).
 
 **Note:** when upgrading to this version with `--db-automigrate` /
 `DB_AUTOMIGRATE` set, channel-list data will be removed.

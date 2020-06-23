@@ -8,8 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/brocaar/chirpstack-application-server/internal/config"
 	"github.com/spf13/viper"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,11 +20,11 @@ var cfgFile string
 var version string
 
 var rootCmd = &cobra.Command{
-	Use:   "chirpstack-application-server",
-	Short: "ChirpStack Application Server",
-	Long: `ChirpStack Application Server is an open-source Application Server, part of the ChirpStack LoRaWAN Network Server stack.
-	> documentation & support: https://www.chirpstack.io/application-server
-	> source & copyright information: https://github.com/brocaar/chirpstack-application-server`,
+	Use:   "lora-app-server",
+	Short: "LPWAN Server project application-server",
+	Long: `LPWAN App Server is an open-source application-server, part of the LPWAN Server project
+	> documentation & support: https://www.loraserver.io/lora-app-server
+	> source & copyright information: https://github.com/mxc-foundation/lpwan-app-server`,
 	RunE: run,
 }
 
@@ -106,10 +107,11 @@ func initConfig() {
 			log.WithError(err).WithField("config", cfgFile).Fatal("error loading config file")
 		}
 	} else {
-		viper.SetConfigName("chirpstack-application-server")
+		viper.SetConfigName("lora-app-server")
 		viper.AddConfigPath(".")
-		viper.AddConfigPath("$HOME/.config/chirpstack-application-server")
-		viper.AddConfigPath("/etc/chirpstack-application-server")
+		viper.AddConfigPath("./configuration")
+		viper.AddConfigPath("$HOME/.config/lora-app-server")
+		viper.AddConfigPath("/etc/lora-app-server")
 		if err := viper.ReadInConfig(); err != nil {
 			switch err.(type) {
 			case viper.ConfigFileNotFoundError:
@@ -142,6 +144,21 @@ func initConfig() {
 	if config.C.ApplicationServer.Integration.Backend != "" {
 		config.C.ApplicationServer.Integration.Enabled = []string{config.C.ApplicationServer.Integration.Backend}
 	}
+
+	config.AppserverVersion = version
+
+	// replace servers with local env parameter
+	dataServiceMode := os.Getenv("SUPERNODE_DATA_SERVICE")
+	remoteServer := os.Getenv("REMOTE_SERVER_NAME")
+	if (dataServiceMode == "remote") && (remoteServer != "") {
+		config.C.PostgreSQL.DSN = strings.Replace(config.C.PostgreSQL.DSN,
+			"@postgresql:5432/", fmt.Sprintf("@%s:5432/", remoteServer), -1)
+		config.C.ApplicationServer.Integration.MQTT.Server = strings.Replace(config.C.ApplicationServer.Integration.MQTT.Server,
+			"//mosquitto:1883", fmt.Sprintf("//%s:1883", remoteServer), -1)
+		/*		config.C.Redis.URL = strings.Replace(config.C.Redis.URL,
+				"//redis:6379", fmt.Sprintf("//%s:6379", remoteServer), -1)*/
+	}
+
 }
 
 func viperBindEnvs(iface interface{}, parts ...string) {

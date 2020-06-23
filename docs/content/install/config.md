@@ -15,7 +15,7 @@ The `chirpstack-application-server` binary has the following command-line flags:
 {{<highlight text>}}
 ChirpStack Application Server is an open-source application-server, part of the ChirpStack Network Server project
 	> documentation & support: https://www.chirpstack.io/application-server/
-	> source & copyright information: https://github.com/brocaar/chirpstack-application-server
+	> source & copyright information: https://github.com/mxc-foundation/lpwan-app-server
 
 Usage:
   chirpstack-application-server [flags]
@@ -114,7 +114,7 @@ dsn="postgres://localhost/chirpstack_as?sslmode=disable"
 # Automatically apply database migrations.
 #
 # It is possible to apply the database-migrations by hand
-# (see https://github.com/brocaar/chirpstack-application-server/tree/master/migrations)
+# (see https://github.com/mxc-foundation/lpwan-app-server/tree/master/migrations)
 # or let ChirpStack Application Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading Lora
 # App Server and / or applying migrations.

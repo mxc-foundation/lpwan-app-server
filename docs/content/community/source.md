@@ -9,7 +9,7 @@ description: How to get the ChirpStack Application Server source and how to comp
 
 # ChirpStack Application Server source
 
-Source-code can be found at [https://github.com/brocaar/chirpstack-application-server](https://github.com/brocaar/chirpstack-application-server).
+Source-code can be found at [https://github.com/mxc-foundation/lpwan-app-server](https://github.com/mxc-foundation/lpwan-app-server).
 
 ### Building
 

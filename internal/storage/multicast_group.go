@@ -13,8 +13,9 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-	"github.com/brocaar/chirpstack-application-server/internal/logging"
 	"github.com/brocaar/lorawan"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // MulticastGroup defines the multicast-group.

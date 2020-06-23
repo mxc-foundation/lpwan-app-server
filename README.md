@@ -29,7 +29,7 @@ and payloads can be enqueued by using MQTT or the API.
 * [Contributing](https://www.chirpstack.io/application-server/community/contribute/)
 * Support
   * [Support forum](https://forum.chirpstack.io)
-  * [Bug or feature requests](https://github.com/brocaar/chirpstack-application-server/issues)
+  * [Bug or feature requests](https://github.com/mxc-foundation/lpwan-app-server/issues)
 
 ## Sponsors
 
@@ -40,4 +40,4 @@ and payloads can be enqueued by using MQTT or the API.
 ## License
 
 ChirpStack Application Server is distributed under the MIT license. See also
-[LICENSE](https://github.com/brocaar/chirpstack-application-server/blob/master/LICENSE).
+[LICENSE](https://github.com/mxc-foundation/lpwan-app-server/blob/master/LICENSE).

@@ -14,9 +14,10 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
-	"github.com/brocaar/chirpstack-application-server/internal/codec"
-	"github.com/brocaar/chirpstack-application-server/internal/logging"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // DeviceProfile defines the device-profile.
@@ -35,13 +36,13 @@ type DeviceProfile struct {
 
 // DeviceProfileMeta defines the device-profile meta record.
 type DeviceProfileMeta struct {
-	DeviceProfileID 	uuid.UUID	`db:"device_profile_id"`
-	NetworkServerID 	int64    	`db:"network_server_id"`
-	OrganizationID  	int64    	`db:"organization_id"`
-	CreatedAt       	time.Time	`db:"created_at"`
-	UpdatedAt       	time.Time	`db:"updated_at"`
-	Name            	string   	`db:"name"`
-	NetworkServerName	string		`db:"network_server_name"`
+	DeviceProfileID   uuid.UUID `db:"device_profile_id"`
+	NetworkServerID   int64     `db:"network_server_id"`
+	OrganizationID    int64     `db:"organization_id"`
+	CreatedAt         time.Time `db:"created_at"`
+	UpdatedAt         time.Time `db:"updated_at"`
+	Name              string    `db:"name"`
+	NetworkServerName string    `db:"network_server_name"`
 }
 
 // Validate validates the device-profile data.

@@ -15,7 +15,8 @@ import (
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/chirpstack-api/go/v3/gw"
-	"github.com/brocaar/chirpstack-application-server/internal/integration/models"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 )
 
 func init() {

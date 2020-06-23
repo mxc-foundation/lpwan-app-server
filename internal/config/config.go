@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+var AppserverVersion string
+
 // Config defines the configuration structure.
 type Config struct {
 	General struct {
@@ -25,6 +27,35 @@ type Config struct {
 		MasterName string `mapstructure:"master_name"`
 		PoolSize   int    `mapstructure:"pool_size"`
 	} `mapstructure:"redis"`
+
+	SMTP struct {
+			Email    string `mapstructure:"email"`
+			Username string `mapstructure:"username"`
+			Password string `mapstructure:"password"`
+			AuthType string `mapstructure:"auth_type"`
+			Host     string `mapstructure:"host"`
+			Port     string `mapstructure:"port"`
+	} `mapstructure:"smtp"`
+
+	M2MServer struct {
+		M2MServer string `mapstructure:"m2m_server"`
+		CACert    string `mapstructure:"ca_cert"`
+		TLSCert   string `mapstructure:"tls_cert"`
+		TLSKey    string `mapstructure:"tls_key"`
+	} `mapstructure:"m2m_server"`
+
+	ProvisionServer struct {
+		ProvisionServer string `mapstructure:"provision_server"`
+		CACert          string `mapstructure:"ca_cert"`
+		TLSCert         string `mapstructure:"tls_cert"`
+		TLSKey          string `mapstructure:"tls_key"`
+		UpdateSchedule  string `mapstructure:"update_schedule"`
+	} `mapstructure:"provision_server"`
+
+	Recaptcha struct {
+		HostServer string `mapstructure:"host_server"`
+		Secret     string `mapstructure:"secret"`
+	} `mapstructure:"recaptcha"`
 
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
@@ -69,12 +100,37 @@ type Config struct {
 			PublicHost string `mapstructure:"public_host"`
 		} `mapstructure:"api"`
 
+		APIForM2M struct {
+			Bind    string `mapstructure:"bind"`
+			CACert  string `mapstructure:"ca_cert"`
+			TLSCert string `mapstructure:"tls_cert"`
+			TLSKey  string `mapstructure:"tls_key"`
+		} `mapstructure:"api_for_m2m"`
+
+		APIForGateway struct {
+			NewGateway struct {
+				Bind    string `mapstructure:"new_gateway_bind"`
+				CACert  string `mapstructure:"ecc_ca_cert"`
+				TLSCert string `mapstructure:"ecc_tls_cert"`
+				TLSKey  string `mapstructure:"ecc_tls_key"`
+			} `mapstructure:"new_gateway"`
+
+			OldGateway struct {
+				Bind    string `mapstructure:"old_gateway_bind"`
+				CACert  string `mapstructure:"rsa_ca_cert"`
+				TLSCert string `mapstructure:"rsa_tls_cert"`
+				TLSKey  string `mapstructure:"rsa_tls_key"`
+			} `mapstructure:"old_gateway"`
+		} `mapstructure:"api_for_gateway"`
+
 		ExternalAPI struct {
-			Bind            string
-			TLSCert         string `mapstructure:"tls_cert"`
-			TLSKey          string `mapstructure:"tls_key"`
-			JWTSecret       string `mapstructure:"jwt_secret"`
-			CORSAllowOrigin string `mapstructure:"cors_allow_origin"`
+			Bind                       string
+			TLSCert                    string `mapstructure:"tls_cert"`
+			TLSKey                     string `mapstructure:"tls_key"`
+			JWTSecret                  string `mapstructure:"jwt_secret"`
+			OTPSecret                  string `mapstructure:"otp_secret"`
+			DisableAssignExistingUsers bool   `mapstructure:"disable_assign_existing_users"`
+			CORSAllowOrigin            string `mapstructure:"cors_allow_origin"`
 		} `mapstructure:"external_api"`
 
 		RemoteMulticastSetup struct {
@@ -95,9 +151,21 @@ type Config struct {
 		} `mapstructure:"fuota_deployment"`
 
 		Branding struct {
-			Footer       string
-			Registration string
+			Header       string `mapstructure:"header"`
+			Footer       string `mapstructure:"footer"`
+			Registration string `mapstructure:"registration"`
+			LogoPath     string `mapstructure:"logo_path"`
 		} `mapstructure:"branding"`
+
+		MiningSetUp struct {
+			Mining                bool   `mapstructure:"mining"`
+			CMCKey                string `mapstructure:"cmc_key"`
+			HeartbeatOfflineLimit int64  `mapstructure:"heartbeat_offline_limit"`
+			GwOnlineLimit         int64  `mapstructure:"gw_online_limit"`
+			ExecuteTime           string `mapstructure:"execute_time"`
+			MinValue              int64  `mapstructure:"min_value"`
+			MaxValue              int64  `mapstructure:"max_value"`
+		} `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
 
 	JoinServer struct {
