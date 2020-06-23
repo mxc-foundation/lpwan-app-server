@@ -52,7 +52,7 @@ func (s *registrationEmailInterface) sendEmail(user, token string, language Emai
 		return err
 	}
 
-	err := sendEmail(user, msg)
+	err := cli.sendEmail(user, msg)
 
 	return err
 }
