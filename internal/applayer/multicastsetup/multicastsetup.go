@@ -10,14 +10,12 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/brocaar/chirpstack-application-server/internal/config"
+	"github.com/brocaar/chirpstack-application-server/internal/logging"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/multicastsetup"
 	"github.com/brocaar/lorawan/gps"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var (
@@ -275,7 +273,7 @@ func syncRemoteMulticastSetupItem(ctx context.Context, db sqlx.Ext, item storage
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = downlink.EnqueueDownlinkPayload(ctx, db, item.DevEUI, false, multicastsetup.DefaultFPort, b)
+	_, err = storage.EnqueueDownlinkPayload(ctx, db, item.DevEUI, false, multicastsetup.DefaultFPort, b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}
@@ -333,7 +331,7 @@ func syncRemoteMulticastClassCSessionItem(ctx context.Context, db sqlx.Ext, item
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = downlink.EnqueueDownlinkPayload(ctx, db, item.DevEUI, false, multicastsetup.DefaultFPort, b)
+	_, err = storage.EnqueueDownlinkPayload(ctx, db, item.DevEUI, false, multicastsetup.DefaultFPort, b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

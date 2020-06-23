@@ -8,10 +8,10 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+	"github.com/brocaar/chirpstack-application-server/internal/api/external/auth"
+	"github.com/brocaar/chirpstack-application-server/internal/api/helpers"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 )
 
 // OrganizationAPI exports the organization related functions.
@@ -41,6 +41,8 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 		Name:            req.Organization.Name,
 		DisplayName:     req.Organization.DisplayName,
 		CanHaveGateways: req.Organization.CanHaveGateways,
+		MaxDeviceCount:  int(req.Organization.MaxDeviceCount),
+		MaxGatewayCount: int(req.Organization.MaxGatewayCount),
 	}
 
 	err := storage.CreateOrganization(ctx, storage.DB(), &org)
@@ -60,7 +62,7 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	org, err := storage.GetOrganization(ctx, storage.DB(), req.Id)
+	org, err := storage.GetOrganization(ctx, storage.DB(), req.Id, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -71,6 +73,8 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 			Name:            org.Name,
 			DisplayName:     org.DisplayName,
 			CanHaveGateways: org.CanHaveGateways,
+			MaxDeviceCount:  uint32(org.MaxDeviceCount),
+			MaxGatewayCount: uint32(org.MaxGatewayCount),
 		},
 	}
 
@@ -93,37 +97,42 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	filters := storage.OrganizationFilters{
+		Search: req.Search,
+		Limit:  int(req.Limit),
+		Offset: int(req.Offset),
+	}
+
+	sub, err := a.validator.GetSubject(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	var count int
-	var orgs []storage.Organization
-
-	if isAdmin {
-		count, err = storage.GetOrganizationCount(ctx, storage.DB(), req.Search)
+	switch sub {
+	case auth.SubjectUser:
+		user, err := a.validator.GetUser(ctx)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 
-		orgs, err = storage.GetOrganizations(ctx, storage.DB(), int(req.Limit), int(req.Offset), req.Search)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+		if !user.IsAdmin {
+			filters.UserID = user.ID
 		}
-	} else {
-		username, err := a.validator.GetUsername(ctx)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		count, err = storage.GetOrganizationCountForUser(ctx, storage.DB(), username, req.Search)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		orgs, err = storage.GetOrganizationsForUser(ctx, storage.DB(), username, int(req.Limit), int(req.Offset), req.Search)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+	case auth.SubjectAPIKey:
+		// Nothing to do as the validator function already validated that the
+		// API key must be a global admin key.
+	default:
+		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
+	}
+
+	count, err := storage.GetOrganizationCount(ctx, storage.DB(), filters)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	orgs, err := storage.GetOrganizations(ctx, storage.DB(), filters)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
 	resp := pb.ListOrganizationResponse{
@@ -164,20 +173,22 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	user, err := a.validator.GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	org, err := storage.GetOrganization(ctx, storage.DB(), req.Organization.Id)
+	org, err := storage.GetOrganization(ctx, storage.DB(), req.Organization.Id, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	org.Name = req.Organization.Name
 	org.DisplayName = req.Organization.DisplayName
-	if isAdmin {
+	if user.IsAdmin {
 		org.CanHaveGateways = req.Organization.CanHaveGateways
+		org.MaxGatewayCount = int(req.Organization.MaxGatewayCount)
+		org.MaxDeviceCount = int(req.Organization.MaxDeviceCount)
 	}
 
 	err = storage.UpdateOrganization(ctx, storage.DB(), &org)
@@ -237,7 +248,7 @@ func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizatio
 	for _, u := range users {
 		row := pb.OrganizationUserListItem{
 			UserId:         u.UserID,
-			Username:       u.Username,
+			Email:          u.Email,
 			IsAdmin:        u.IsAdmin,
 			IsDeviceAdmin:  u.IsDeviceAdmin,
 			IsGatewayAdmin: u.IsGatewayAdmin,
@@ -269,10 +280,15 @@ func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUs
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.CreateOrganizationUser(ctx,
+	user, err := storage.GetUserByEmail(ctx, storage.DB(), req.OrganizationUser.Email)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	err = storage.CreateOrganizationUser(ctx,
 		storage.DB(),
 		req.OrganizationUser.OrganizationId,
-		req.OrganizationUser.UserId,
+		user.ID,
 		req.OrganizationUser.IsAdmin,
 		req.OrganizationUser.IsDeviceAdmin,
 		req.OrganizationUser.IsGatewayAdmin,
@@ -344,7 +360,7 @@ func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUs
 			IsAdmin:        user.IsAdmin,
 			IsDeviceAdmin:  user.IsDeviceAdmin,
 			IsGatewayAdmin: user.IsGatewayAdmin,
-			Username:       user.Username,
+			Email:          user.Email,
 		},
 	}
 

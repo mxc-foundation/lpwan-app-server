@@ -9,14 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+	"github.com/brocaar/chirpstack-api/go/v3/common"
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver/mock"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 	"github.com/brocaar/lorawan"
-
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/common"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 func (ts *APITestSuite) TestFUOTADeployment() {
@@ -71,6 +70,20 @@ func (ts *APITestSuite) TestFUOTADeployment() {
 		Name:            "test-device",
 	}
 	assert.NoError(storage.CreateDevice(context.Background(), storage.DB(), &d))
+
+	adminUser := storage.User{
+		Email:    "admin@user.com",
+		IsActive: true,
+		IsAdmin:  true,
+	}
+	assert.NoError(storage.CreateUser(context.Background(), storage.DB(), &adminUser))
+
+	user := storage.User{
+		Email:    "some@user.com",
+		IsActive: true,
+		IsAdmin:  false,
+	}
+	assert.NoError(storage.CreateUser(context.Background(), storage.DB(), &user))
 
 	ts.T().Run("CreateForDevice", func(t *testing.T) {
 		assert := require.New(t)
@@ -146,7 +159,7 @@ func (ts *APITestSuite) TestFUOTADeployment() {
 
 			t.Run("No filters - no admin", func(t *testing.T) {
 				assert := require.New(t)
-				validator.returnIsAdmin = false
+				validator.returnUser = user
 
 				_, err := api.List(context.Background(), &pb.ListFUOTADeploymentRequest{
 					Limit: 10,
@@ -156,7 +169,7 @@ func (ts *APITestSuite) TestFUOTADeployment() {
 
 			t.Run("No filters - admin", func(t *testing.T) {
 				assert := require.New(t)
-				validator.returnIsAdmin = true
+				validator.returnUser = adminUser
 
 				resp, err := api.List(context.Background(), &pb.ListFUOTADeploymentRequest{
 					Limit: 10,

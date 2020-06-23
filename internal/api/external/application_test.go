@@ -6,13 +6,14 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver/mock"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 )
 
 func (ts *APITestSuite) TestApplication() {
@@ -21,7 +22,7 @@ func (ts *APITestSuite) TestApplication() {
 	nsClient := mock.NewClient()
 	networkserver.SetPool(mock.NewPool(nsClient))
 
-	validator := &TestValidator{}
+	validator := &TestValidator{returnSubject: "user"}
 	api := NewApplicationAPI(validator)
 
 	org := storage.Organization{
@@ -36,12 +37,50 @@ func (ts *APITestSuite) TestApplication() {
 	assert.NoError(storage.CreateNetworkServer(context.Background(), storage.DB(), &n))
 
 	sp := storage.ServiceProfile{
+		Name:            "test-sp",
 		OrganizationID:  org.ID,
 		NetworkServerID: n.ID,
 	}
 	assert.NoError(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp))
 	spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
 	assert.NoError(err)
+
+	org2 := storage.Organization{
+		Name: "test-org-2",
+	}
+	assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org2))
+
+	sp2 := storage.ServiceProfile{
+		Name:            "test-sp2",
+		NetworkServerID: n.ID,
+		OrganizationID:  org2.ID,
+	}
+	assert.NoError(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp2))
+	spID2, err := uuid.FromBytes(sp2.ServiceProfile.Id)
+	assert.NoError(err)
+
+	user := storage.User{
+		Email:    "foo@bar.com",
+		IsActive: true,
+		IsAdmin:  true,
+	}
+	assert.NoError(storage.CreateUser(context.Background(), storage.DB(), &user))
+
+	ts.T().Run("Create with service-profile under different organization", func(t *testing.T) {
+		assert := require.New(t)
+		_, err := api.Create(context.Background(), &pb.CreateApplicationRequest{
+			Application: &pb.Application{
+				OrganizationId:       org.ID,
+				Name:                 "test-app",
+				Description:          "A test application",
+				ServiceProfileId:     spID2.String(),
+				PayloadCodec:         "CUSTOM_JS",
+				PayloadEncoderScript: "Encode() {}",
+				PayloadDecoderScript: "Decode() {}",
+			},
+		})
+		assert.Equal(codes.InvalidArgument, grpc.Code(err))
+	})
 
 	ts.T().Run("Create", func(t *testing.T) {
 		assert := require.New(t)
@@ -83,18 +122,6 @@ func (ts *APITestSuite) TestApplication() {
 		t.Run("Create application for different organization", func(t *testing.T) {
 			assert := require.New(t)
 
-			org2 := storage.Organization{
-				Name: "test-org-2",
-			}
-			assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org2))
-
-			sp2 := storage.ServiceProfile{
-				Name:            "test-sp2",
-				NetworkServerID: n.ID,
-				OrganizationID:  org.ID,
-			}
-			assert.NoError(storage.CreateServiceProfile(context.Background(), storage.DB(), &sp2))
-
 			app2 := storage.Application{
 				OrganizationID:   org2.ID,
 				Name:             "test-app-2",
@@ -105,7 +132,7 @@ func (ts *APITestSuite) TestApplication() {
 			t.Run("List", func(t *testing.T) {
 				t.Run("As global admin", func(t *testing.T) {
 					assert := require.New(t)
-					validator.returnIsAdmin = true
+					validator.returnUser = user
 
 					apps, err := api.List(context.Background(), &pb.ListApplicationRequest{
 						Limit:  10,
@@ -127,7 +154,7 @@ func (ts *APITestSuite) TestApplication() {
 
 				t.Run("As global admin - with org id filter", func(t *testing.T) {
 					assert := require.New(t)
-					validator.returnIsAdmin = true
+					validator.returnUser = user
 
 					apps, err := api.List(context.Background(), &pb.ListApplicationRequest{
 						Limit:          10,
@@ -141,6 +168,23 @@ func (ts *APITestSuite) TestApplication() {
 					assert.Equal(org2.ID, apps.Result[0].OrganizationId)
 				})
 			})
+		})
+
+		t.Run("Update with service-profile under different organization", func(t *testing.T) {
+			assert := require.New(t)
+
+			_, err := api.Update(context.Background(), &pb.UpdateApplicationRequest{
+				Application: &pb.Application{
+					Id:                   createResp.Id,
+					Name:                 "test-app-updated",
+					Description:          "An updated test description",
+					ServiceProfileId:     spID2.String(),
+					PayloadCodec:         "CUSTOM_JS",
+					PayloadEncoderScript: "Encode2() {}",
+					PayloadDecoderScript: "Decode2() {}",
+				},
+			})
+			assert.Equal(codes.InvalidArgument, grpc.Code(err))
 		})
 
 		t.Run("Update", func(t *testing.T) {
@@ -194,6 +238,7 @@ func (ts *APITestSuite) TestApplication() {
 						ErrorNotificationUrl:    "http://error",
 						StatusNotificationUrl:   "http://status",
 						LocationNotificationUrl: "http://location",
+						TxAckNotificationUrl:    "http://txack",
 					},
 				}
 				_, err := api.CreateHTTPIntegration(context.Background(), &req)
@@ -232,6 +277,7 @@ func (ts *APITestSuite) TestApplication() {
 							ErrorNotificationUrl:    "http://error",
 							StatusNotificationUrl:   "http://status2",
 							LocationNotificationUrl: "http://location2",
+							TxAckNotificationUrl:    "http://txack2",
 						},
 					}
 					_, err := api.UpdateHTTPIntegration(context.Background(), &req)
@@ -262,7 +308,7 @@ func (ts *APITestSuite) TestApplication() {
 					Integration: &pb.InfluxDBIntegration{
 						ApplicationId:       createResp.Id,
 						Endpoint:            "http://localhost:8086/write",
-						Db:                  "loraserver",
+						Db:                  "chirpstack",
 						Username:            "username",
 						Password:            "password",
 						RetentionPolicyName: "DEFAULT",
@@ -299,7 +345,7 @@ func (ts *APITestSuite) TestApplication() {
 						Integration: &pb.InfluxDBIntegration{
 							ApplicationId:       createResp.Id,
 							Endpoint:            "http://localhost:8086/write2",
-							Db:                  "loraserver2",
+							Db:                  "chirpstack2",
 							Username:            "username2",
 							Password:            "password2",
 							RetentionPolicyName: "CUSTOM",
@@ -387,6 +433,170 @@ func (ts *APITestSuite) TestApplication() {
 					assert.NoError(err)
 
 					_, err = api.GetThingsBoardIntegration(context.Background(), &pb.GetThingsBoardIntegrationRequest{ApplicationId: createResp.Id})
+					assert.Equal(codes.NotFound, grpc.Code(err))
+				})
+			})
+		})
+
+		t.Run("MyDevicesIntegration", func(t *testing.T) {
+			t.Run("Create", func(t *testing.T) {
+				assert := require.New(t)
+
+				createReq := pb.CreateMyDevicesIntegrationRequest{
+					Integration: &pb.MyDevicesIntegration{
+						ApplicationId: createResp.Id,
+						Endpoint:      "https://localhost:1234",
+					},
+				}
+				_, err := api.CreateMyDevicesIntegration(context.Background(), &createReq)
+				assert.NoError(err)
+
+				t.Run("Get", func(t *testing.T) {
+					assert := require.New(t)
+
+					i, err := api.GetMyDevicesIntegration(context.Background(), &pb.GetMyDevicesIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(createReq.Integration, i.Integration)
+				})
+
+				t.Run("List", func(t *testing.T) {
+					assert := require.New(t)
+
+					resp, err := api.ListIntegrations(context.Background(), &pb.ListIntegrationRequest{ApplicationId: createResp.Id})
+					assert.NoError(err)
+
+					assert.EqualValues(1, resp.TotalCount)
+					assert.Equal(pb.IntegrationKind_MYDEVICES, resp.Result[0].Kind)
+				})
+
+				t.Run("Update", func(t *testing.T) {
+					assert := require.New(t)
+
+					updateReq := pb.UpdateMyDevicesIntegrationRequest{
+						Integration: &pb.MyDevicesIntegration{
+							ApplicationId: createResp.Id,
+							Endpoint:      "http://localhost:12345",
+						},
+					}
+					_, err := api.UpdateMyDevicesIntegration(context.Background(), &updateReq)
+					assert.NoError(err)
+
+					i, err := api.GetMyDevicesIntegration(context.Background(), &pb.GetMyDevicesIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(updateReq.Integration, i.Integration)
+				})
+
+				t.Run("Delete", func(t *testing.T) {
+					assert := require.New(t)
+
+					_, err := api.DeleteMyDevicesIntegration(context.Background(), &pb.DeleteMyDevicesIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+
+					_, err = api.GetMyDevicesIntegration(context.Background(), &pb.GetMyDevicesIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.Equal(codes.NotFound, grpc.Code(err))
+				})
+			})
+		})
+
+		t.Run("LoRaCloudIntegration", func(t *testing.T) {
+			t.Run("Create", func(t *testing.T) {
+				assert := require.New(t)
+
+				createReq := pb.CreateLoRaCloudIntegrationRequest{
+					Integration: &pb.LoRaCloudIntegration{
+						ApplicationId:               createResp.Id,
+						Geolocation:                 true,
+						GeolocationToken:            "ab123",
+						GeolocationBufferTtl:        10,
+						GeolocationMinBufferSize:    4,
+						GeolocationTdoa:             true,
+						GeolocationRssi:             true,
+						GeolocationGnss:             true,
+						GeolocationGnssPayloadField: "lr1110_gnss",
+						GeolocationGnssUseRxTime:    true,
+						GeolocationWifi:             true,
+						GeolocationWifiPayloadField: "access_points",
+						Das:                         true,
+						DasToken:                    "ba321",
+						DasModemPort:                199,
+					},
+				}
+				_, err := api.CreateLoRaCloudIntegration(context.Background(), &createReq)
+				assert.NoError(err)
+
+				t.Run("Get", func(t *testing.T) {
+					assert := require.New(t)
+
+					i, err := api.GetLoRaCloudIntegration(context.Background(), &pb.GetLoRaCloudIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(createReq.Integration, i.Integration)
+				})
+
+				t.Run("List", func(t *testing.T) {
+					assert := require.New(t)
+
+					resp, err := api.ListIntegrations(context.Background(), &pb.ListIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.EqualValues(1, resp.TotalCount)
+					assert.Equal(pb.IntegrationKind_LORACLOUD, resp.Result[0].Kind)
+				})
+
+				t.Run("Update", func(t *testing.T) {
+					assert := require.New(t)
+
+					updateReq := pb.UpdateLoRaCloudIntegrationRequest{
+						Integration: &pb.LoRaCloudIntegration{
+							ApplicationId:               createResp.Id,
+							Geolocation:                 true,
+							GeolocationToken:            "123ab",
+							GeolocationBufferTtl:        4,
+							GeolocationMinBufferSize:    10,
+							GeolocationTdoa:             true,
+							GeolocationRssi:             true,
+							GeolocationGnss:             true,
+							GeolocationGnssPayloadField: "lr1110_gnss_updated",
+							GeolocationGnssUseRxTime:    true,
+							GeolocationWifi:             true,
+							GeolocationWifiPayloadField: "access_points_updated",
+							Das:                         true,
+							DasToken:                    "321ba",
+							DasModemPort:                189,
+						},
+					}
+
+					_, err := api.UpdateLoRaCloudIntegration(context.Background(), &updateReq)
+					assert.NoError(err)
+
+					i, err := api.GetLoRaCloudIntegration(context.Background(), &pb.GetLoRaCloudIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(updateReq.Integration, i.Integration)
+				})
+
+				t.Run("Delete", func(t *testing.T) {
+					assert := require.New(t)
+
+					_, err := api.DeleteLoRaCloudIntegration(context.Background(), &pb.DeleteLoRaCloudIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+
+					_, err = api.GetLoRaCloudIntegration(context.Background(), &pb.GetLoRaCloudIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
 					assert.Equal(codes.NotFound, grpc.Code(err))
 				})
 			})

@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/brocaar/chirpstack-application-server/internal/logging"
+	"github.com/brocaar/lorawan"
 )
 
 // RemoteMulticastClassCSession defines a remote multicast-setup Class-C session record.

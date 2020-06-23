@@ -4,17 +4,18 @@ import (
 	"testing"
 
 	"github.com/brocaar/lorawan"
+
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver/mock"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 )
 
 func (ts *APITestSuite) TestMulticastGroup() {
@@ -63,6 +64,20 @@ func (ts *APITestSuite) TestMulticastGroup() {
 	assert.NoError(storage.CreateDeviceProfile(context.Background(), storage.DB(), &dp))
 	var dpID uuid.UUID
 	copy(dpID[:], dp.DeviceProfile.Id)
+
+	adminUser := storage.User{
+		Email:    "admin@user.com",
+		IsAdmin:  true,
+		IsActive: true,
+	}
+	assert.NoError(storage.CreateUser(context.Background(), storage.DB(), &adminUser))
+
+	user := storage.User{
+		Email:    "some@user.com",
+		IsAdmin:  false,
+		IsActive: true,
+	}
+	assert.NoError(storage.CreateUser(context.Background(), storage.DB(), &user))
 
 	ts.T().Run("Create", func(t *testing.T) {
 		assert := require.New(t)
@@ -122,7 +137,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 
 			testTable := []struct {
 				Name             string
-				IsAdmin          bool
+				User             storage.User
 				Request          pb.ListMulticastGroupRequest
 				ExpectedResponse pb.ListMulticastGroupResponse
 				ExpectedError    error
@@ -135,8 +150,8 @@ func (ts *APITestSuite) TestMulticastGroup() {
 					ExpectedError: grpc.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request"),
 				},
 				{
-					Name:    "admin, list all",
-					IsAdmin: true,
+					Name: "admin, list all",
+					User: adminUser,
 					Request: pb.ListMulticastGroupRequest{
 						Limit: 10,
 					},
@@ -153,8 +168,8 @@ func (ts *APITestSuite) TestMulticastGroup() {
 					},
 				},
 				{
-					Name:    "non-matching search",
-					IsAdmin: true,
+					Name: "non-matching search",
+					User: adminUser,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:  10,
 						Search: "testing",
@@ -164,8 +179,8 @@ func (ts *APITestSuite) TestMulticastGroup() {
 					},
 				},
 				{
-					Name:    "matching search",
-					IsAdmin: true,
+					Name: "matching search",
+					User: adminUser,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:  10,
 						Search: "tes",
@@ -184,6 +199,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				},
 				{
 					Name: "non-matching org id",
+					User: user,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:          10,
 						OrganizationId: org.ID + 1,
@@ -194,6 +210,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				},
 				{
 					Name: "matching org id",
+					User: user,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:          10,
 						OrganizationId: org.ID,
@@ -212,6 +229,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				},
 				{
 					Name: "non-matching service-profile id",
+					User: user,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:            10,
 						ServiceProfileId: uuid.Must(uuid.NewV4()).String(),
@@ -222,6 +240,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				},
 				{
 					Name: "matching service-profile id",
+					User: user,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:            10,
 						ServiceProfileId: spID.String(),
@@ -240,6 +259,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				},
 				{
 					Name: "non-matching deveui",
+					User: user,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:  10,
 						DevEui: "0807060504030201",
@@ -250,6 +270,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				},
 				{
 					Name: "non-matching deveui",
+					User: user,
 					Request: pb.ListMulticastGroupRequest{
 						Limit:  10,
 						DevEui: "0102030405060708",
@@ -272,7 +293,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				t.Run(test.Name, func(t *testing.T) {
 					assert := require.New(t)
 
-					validator.returnIsAdmin = test.IsAdmin
+					validator.returnUser = test.User
 
 					resp, err := api.List(context.Background(), &test.Request)
 					assert.Equal(test.ExpectedError, err)

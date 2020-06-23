@@ -11,11 +11,10 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/brocaar/chirpstack-application-server/internal/config"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend/joinserver"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var (
@@ -104,6 +103,7 @@ func getHandler(conf config.Config) (http.Handler, error) {
 			return joinserver.DeviceKeys{
 				DevEUI:    dk.DevEUI,
 				NwkKey:    dk.NwkKey,
+				AppKey:    dk.AppKey,
 				JoinNonce: dk.JoinNonce,
 			}, nil
 		},

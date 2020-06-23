@@ -8,11 +8,11 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+	"github.com/brocaar/chirpstack-application-server/internal/api/external/auth"
+	"github.com/brocaar/chirpstack-application-server/internal/api/helpers"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 )
 
 // NetworkServerAPI exports the NetworkServer related functions.
@@ -199,7 +199,7 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	user, err := a.validator.GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -208,9 +208,7 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 	var nss []storage.NetworkServer
 
 	if req.OrganizationId == 0 {
-		// not sure why Brocca makes the difference between Admin and normal user to get the network server list.
-		//if req.OrganizationId == 0 || req.OrganizationId == 1 {
-		if isAdmin {
+		if user.IsAdmin {
 			count, err = storage.GetNetworkServerCount(ctx, storage.DB())
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
@@ -220,7 +218,6 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 				return nil, helpers.ErrToRPCError(err)
 			}
 		}
-
 	} else {
 		count, err = storage.GetNetworkServerCountForOrganizationID(ctx, storage.DB(), req.OrganizationId)
 		if err != nil {

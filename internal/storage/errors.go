@@ -33,12 +33,13 @@ var (
 	ErrInvalidUsernameOrPassword       = errors.New("invalid username or password")
 	ErrOrganizationInvalidName         = errors.New("invalid organization name")
 	ErrGatewayInvalidName              = errors.New("invalid gateway name")
-	ErrGatewayInvalidSerialNumber      = errors.New("invalid gateway serial number")
-	ErrGatewayInvalidMac               = errors.New("invalid gateway mac")
 	ErrInvalidEmail                    = errors.New("invalid e-mail")
 	ErrInvalidGatewayDiscoveryInterval = errors.New("invalid gateway-discovery interval, it must be greater than 0")
 	ErrDeviceProfileInvalidName        = errors.New("invalid device-profile name")
-	ErrBoardInvalidServer              = errors.New("invalid hostname of the server")
+	ErrServiceProfileInvalidName       = errors.New("invalid service-profile name")
+	ErrMulticastGroupInvalidName       = errors.New("invalid multicast-group name")
+	ErrOrganizationMaxDeviceCount      = errors.New("organization reached max. device count")
+	ErrOrganizationMaxGatewayCount     = errors.New("organization reached max. gateway count")
 )
 
 func handlePSQLError(action Action, err error, description string) error {
@@ -62,19 +63,4 @@ func handlePSQLError(action Action, err error, description string) error {
 	}
 
 	return errors.Wrap(err, description)
-}
-
-func handleGrpcError(err error, description string) error {
-	return errors.Wrap(err, description)
-}
-
-func handlePSQLEffect(res sql.Result) error {
-	ra, err := res.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "get rows affected error")
-	}
-	if ra == 0 {
-		return ErrDoesNotExist
-	}
-	return nil
 }

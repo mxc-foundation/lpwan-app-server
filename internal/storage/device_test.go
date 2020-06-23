@@ -10,12 +10,11 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/stretchr/testify/require"
 
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver/mock"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 func (ts *StorageTestSuite) TestDevice() {
@@ -127,6 +126,7 @@ func (ts *StorageTestSuite) TestDevice() {
 					"foo": sql.NullString{String: "bar", Valid: true},
 				},
 			},
+			IsDisabled: true,
 		}
 		assert.NoError(CreateDevice(context.Background(), ts.Tx(), &d))
 		d.CreatedAt = d.CreatedAt.UTC().Truncate(time.Millisecond)
@@ -141,6 +141,7 @@ func (ts *StorageTestSuite) TestDevice() {
 				RoutingProfileId:  applicationServerID.Bytes(),
 				SkipFCntCheck:     true,
 				ReferenceAltitude: 5.6,
+				IsDisabled:        true,
 			},
 		}, createReq)
 
@@ -156,6 +157,18 @@ func (ts *StorageTestSuite) TestDevice() {
 			assert.Equal(1, count)
 		})
 
+		t.Run("List by OrganizationID", func(t *testing.T) {
+			assert := require.New(t)
+
+			devices, err := GetDevices(context.Background(), ts.Tx(), DeviceFilters{Limit: 10, OrganizationID: org.ID})
+			assert.NoError(err)
+			assert.Len(devices, 1)
+
+			count, err := GetDeviceCount(context.Background(), ts.Tx(), DeviceFilters{OrganizationID: org.ID})
+			assert.NoError(err)
+			assert.Equal(1, count)
+		})
+
 		t.Run("List by ApplicationID", func(t *testing.T) {
 			assert := require.New(t)
 
@@ -166,6 +179,26 @@ func (ts *StorageTestSuite) TestDevice() {
 			count, err := GetDeviceCount(context.Background(), ts.Tx(), DeviceFilters{ApplicationID: app.ID})
 			assert.NoError(err)
 			assert.Equal(1, count)
+		})
+
+		t.Run("List by Tags", func(t *testing.T) {
+			assert := require.New(t)
+
+			devices, err := GetDevices(context.Background(), ts.Tx(), DeviceFilters{Limit: 10, Tags: hstore.Hstore{
+				Map: map[string]sql.NullString{
+					"foo": sql.NullString{String: "bar", Valid: true},
+				},
+			}})
+			assert.NoError(err)
+			assert.Len(devices, 1)
+
+			devices, err = GetDevices(context.Background(), ts.Tx(), DeviceFilters{Limit: 10, Tags: hstore.Hstore{
+				Map: map[string]sql.NullString{
+					"foo": sql.NullString{String: "bas", Valid: true},
+				},
+			}})
+			assert.NoError(err)
+			assert.Len(devices, 0)
 		})
 
 		t.Run("Get", func(t *testing.T) {
@@ -206,6 +239,7 @@ func (ts *StorageTestSuite) TestDevice() {
 			d.DR = &dr
 			d.Variables.Map["var_2"] = sql.NullString{String: "test var 2", Valid: true}
 			d.Tags.Map["bar"] = sql.NullString{String: "foo", Valid: true}
+			d.IsDisabled = true
 
 			assert.NoError(UpdateDevice(context.Background(), ts.Tx(), &d, false))
 			d.UpdatedAt = d.UpdatedAt.UTC().Truncate(time.Millisecond)
@@ -219,6 +253,7 @@ func (ts *StorageTestSuite) TestDevice() {
 					RoutingProfileId:  applicationServerID.Bytes(),
 					SkipFCntCheck:     true,
 					ReferenceAltitude: 5.6,
+					IsDisabled:        true,
 				},
 			}, updateReq)
 
@@ -282,40 +317,6 @@ func (ts *StorageTestSuite) TestDevice() {
 				assert.NoError(DeleteDeviceKeys(context.Background(), ts.Tx(), d.DevEUI))
 				_, err := GetDeviceKeys(context.Background(), ts.Tx(), d.DevEUI)
 				assert.Equal(ErrDoesNotExist, err)
-			})
-		})
-
-		t.Run("CreateDeviceActivation", func(t *testing.T) {
-			assert := require.New(t)
-
-			da := DeviceActivation{
-				DevEUI:  d.DevEUI,
-				DevAddr: lorawan.DevAddr{1, 2, 3, 4},
-				AppSKey: lorawan.AES128Key{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
-			}
-			assert.NoError(CreateDeviceActivation(context.Background(), ts.Tx(), &da))
-			da.CreatedAt = da.CreatedAt.UTC().Truncate(time.Millisecond)
-
-			daGet, err := GetLastDeviceActivationForDevEUI(context.Background(), ts.Tx(), d.DevEUI)
-			assert.NoError(err)
-			daGet.CreatedAt = daGet.CreatedAt.UTC().Truncate(time.Millisecond)
-			assert.Equal(da, daGet)
-
-			t.Run("GetLastDeviceActivationForDevEUI", func(t *testing.T) {
-				assert := require.New(t)
-
-				da2 := DeviceActivation{
-					DevEUI:  d.DevEUI,
-					DevAddr: lorawan.DevAddr{4, 3, 2, 1},
-					AppSKey: lorawan.AES128Key{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2},
-				}
-				assert.NoError(CreateDeviceActivation(context.Background(), ts.Tx(), &da2))
-				da2.CreatedAt = da2.CreatedAt.UTC().Truncate(time.Millisecond)
-
-				daGet, err := GetLastDeviceActivationForDevEUI(context.Background(), ts.Tx(), d.DevEUI)
-				assert.NoError(err)
-				daGet.CreatedAt = daGet.CreatedAt.UTC().Truncate(time.Millisecond)
-				assert.Equal(da2, daGet)
 			})
 		})
 

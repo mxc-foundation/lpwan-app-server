@@ -1,28 +1,24 @@
 package storage
 
 import (
-	"context"
-	"fmt"
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v7"
 	uuid "github.com/gofrs/uuid"
-	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
+	"github.com/brocaar/chirpstack-application-server/internal/config"
+	"github.com/brocaar/chirpstack-application-server/internal/migrations"
 )
 
-// HashIterations configures the Hash iteration
 var (
-	jwtsecret           []byte
+	jwtsecret []byte
+	// HashIterations denfines the number of times a password is hashed.
 	HashIterations      = 100000
-	DemoUser            = ""
 	applicationServerID uuid.UUID
 )
 
@@ -32,7 +28,6 @@ func Setup(c config.Config) error {
 
 	jwtsecret = []byte(c.ApplicationServer.ExternalAPI.JWTSecret)
 	HashIterations = c.General.PasswordHashIterations
-	DemoUser = c.General.DemoUser
 
 	if err := applicationServerID.UnmarshalText([]byte(c.ApplicationServer.ID)); err != nil {
 		return errors.Wrap(err, "decode application_server.id error")
@@ -61,31 +56,28 @@ func Setup(c config.Config) error {
 		c.Metrics.Redis.MonthAggregationTTL,
 	)
 
-	log.Info("storage: setting up Redis pool")
-	redisPool = &redis.Pool{
-		MaxIdle:     10,
-		IdleTimeout: c.Redis.IdleTimeout,
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.DialURL(c.Redis.URL,
-				redis.DialReadTimeout(redisDialReadTimeout),
-				redis.DialWriteTimeout(redisDialWriteTimeout),
-			)
-			if err != nil {
-				return nil, fmt.Errorf("redis connection error: %s", err)
-			}
-			return c, err
-		},
-		TestOnBorrow: func(c redis.Conn, t time.Time) error {
-			if time.Now().Sub(t) < onBorrowPingInterval {
-				return nil
-			}
-
-			_, err := c.Do("PING")
-			if err != nil {
-				return fmt.Errorf("ping redis error: %s", err)
-			}
-			return nil
-		},
+	log.Info("storage: setting up Redis client")
+	opt, err := redis.ParseURL(c.Redis.URL)
+	if err != nil {
+		return errors.Wrap(err, "parse redis url error")
+	}
+	opt.PoolSize = c.Redis.PoolSize
+	if c.Redis.Cluster {
+		redisClient = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:    []string{opt.Addr},
+			PoolSize: opt.PoolSize,
+			Password: opt.Password,
+		})
+	} else if c.Redis.MasterName != "" {
+		redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
+			MasterName:       c.Redis.MasterName,
+			SentinelAddrs:    []string{opt.Addr},
+			SentinelPassword: opt.Password,
+			DB:               opt.DB,
+			PoolSize:         opt.PoolSize,
+		})
+	} else {
+		redisClient = redis.NewClient(opt)
 	}
 
 	log.Info("storage: connecting to PostgreSQL database")
@@ -118,75 +110,6 @@ func Setup(c config.Config) error {
 			return errors.Wrap(err, "storage: applying PostgreSQL data migrations error")
 		}
 		log.WithField("count", n).Info("storage: PostgreSQL data migrations applied")
-	}
-
-	return nil
-}
-
-func SetupDefault() error {
-	ctx := context.Background()
-	count, err := GetGatewayProfileCount(ctx, DB())
-	if err != nil && err != ErrDoesNotExist {
-		return errors.Wrap(err, "Failed to load gateway profiles")
-	}
-
-	if count != 0 {
-		// check if default gateway profile already exists
-		gpList, err := GetGatewayProfiles(ctx, DB(), count, 0)
-		if err != nil {
-			return errors.Wrap(err, "Failed to load gateway profiles")
-		}
-
-		for _, v := range gpList {
-			if v.Name == "default_gateway_profile" {
-				return nil
-			}
-		}
-	}
-
-	// none default_gateway_profile exists, add one
-	var networkServer NetworkServer
-	n, err := GetNetworkServers(ctx, DB(), 1, 0)
-	if err != nil && err != ErrDoesNotExist {
-		return errors.Wrap(err, "Load network server internal error")
-	}
-
-	if len(n) >= 1 {
-		networkServer = n[0]
-	} else {
-		// insert default one
-		err := Transaction(func(tx sqlx.Ext) error {
-			return CreateNetworkServer(ctx, DB(), &NetworkServer{
-				Name:                    "default_network_server",
-				Server:                  "network-server:8000",
-				GatewayDiscoveryEnabled: false,
-			})
-		})
-		if err != nil {
-			return nil
-		}
-
-		// get network-server id
-		networkServer, err = GetDefaultNetworkServer(ctx, DB())
-		if err != nil {
-			return err
-		}
-	}
-
-	gp := GatewayProfile{
-		NetworkServerID: networkServer.ID,
-		Name:            "default_gateway_profile",
-		GatewayProfile: ns.GatewayProfile{
-			Channels:      []uint32{0, 1, 2},
-			ExtraChannels: []*ns.GatewayProfileExtraChannel{},
-		},
-	}
-
-	err = Transaction(func(tx sqlx.Ext) error {
-		return CreateGatewayProfile(ctx, tx, &gp)
-	})
-	if err != nil {
-		return errors.Wrap(err, "Failed to create default gateway profile")
 	}
 
 	return nil

@@ -12,16 +12,14 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
+	"github.com/brocaar/chirpstack-application-server/internal/config"
+	"github.com/brocaar/chirpstack-application-server/internal/logging"
+	"github.com/brocaar/chirpstack-application-server/internal/multicast"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/fragmentation"
 	"github.com/brocaar/lorawan/applayer/multicastsetup"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/multicast"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 var (
@@ -160,7 +158,7 @@ func stepMulticastCreate(ctx context.Context, db sqlx.Ext, item storage.FUOTADep
 	case storage.FUOTADeploymentGroupTypeC:
 		mg.MulticastGroup.GroupType = ns.MulticastGroupType_CLASS_C
 	default:
-		return fmt.Errorf("unkonwn group-type: %s", item.GroupType)
+		return fmt.Errorf("unknown group-type: %s", item.GroupType)
 	}
 
 	err = storage.CreateMulticastGroup(ctx, db, &mg)
@@ -505,7 +503,7 @@ func stepStatusRequest(ctx context.Context, db sqlx.Ext, item storage.FUOTADeplo
 			return errors.Wrap(err, "marshal binary error")
 		}
 
-		_, err = downlink.EnqueueDownlinkPayload(ctx, db, devEUI, false, fragmentation.DefaultFPort, b)
+		_, err = storage.EnqueueDownlinkPayload(ctx, db, devEUI, false, fragmentation.DefaultFPort, b)
 		if err != nil {
 			return errors.Wrap(err, "enqueue downlink payload error")
 		}

@@ -12,15 +12,14 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 	"golang.org/x/net/context"
 
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver"
+	"github.com/brocaar/chirpstack-application-server/internal/backend/networkserver/mock"
+	"github.com/brocaar/chirpstack-application-server/internal/codec"
+	"github.com/brocaar/chirpstack-application-server/internal/integration/models"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
+	"github.com/brocaar/chirpstack-application-server/internal/test"
 	"github.com/brocaar/lorawan"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 func TestHandleDownlinkQueueItem(t *testing.T) {
@@ -89,23 +88,18 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 					"secret_token": sql.NullString{String: "secret value", Valid: true},
 				},
 			},
+			DevAddr: lorawan.DevAddr{0x01, 0x02, 0x03, 0x04},
+			AppSKey: lorawan.AES128Key{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
 		}
 		So(storage.CreateDevice(context.Background(), storage.DB(), &device), ShouldBeNil)
 
-		da := storage.DeviceActivation{
-			DevEUI:  [8]byte{1, 2, 3, 4, 5, 6, 7, 8},
-			DevAddr: [4]byte{1, 2, 3, 4},
-			AppSKey: [16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
-		}
-		So(storage.CreateDeviceActivation(context.Background(), storage.DB(), &da), ShouldBeNil)
-
-		b, err := lorawan.EncryptFRMPayload(da.AppSKey, false, da.DevAddr, 12, []byte{1, 2, 3, 4})
+		b, err := lorawan.EncryptFRMPayload(device.AppSKey, false, device.DevAddr, 12, []byte{1, 2, 3, 4})
 		So(err, ShouldBeNil)
 
 		Convey("Given a set of tests", func() {
 			tests := []struct {
 				Name                 string
-				Payload              integration.DataDownPayload
+				Payload              models.DataDownPayload
 				PayloadCodec         codec.Type
 				PayloadEncoderScript string
 
@@ -114,7 +108,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 			}{
 				{
 					Name: "unconfirmed payload",
-					Payload: integration.DataDownPayload{
+					Payload: models.DataDownPayload{
 						ApplicationID: app.ID,
 						DevEUI:        device.DevEUI,
 						Confirmed:     false,
@@ -124,7 +118,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 
 					ExpectedCreateDeviceQueueItemRequest: ns.CreateDeviceQueueItemRequest{
 						Item: &ns.DeviceQueueItem{
-							DevAddr:    da.DevAddr[:],
+							DevAddr:    device.DevAddr[:],
 							DevEui:     device.DevEUI[:],
 							FrmPayload: b,
 							FCnt:       12,
@@ -135,7 +129,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 				},
 				{
 					Name: "confirmed payload",
-					Payload: integration.DataDownPayload{
+					Payload: models.DataDownPayload{
 						ApplicationID: app.ID,
 						DevEUI:        device.DevEUI,
 						Confirmed:     true,
@@ -145,7 +139,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 
 					ExpectedCreateDeviceQueueItemRequest: ns.CreateDeviceQueueItemRequest{
 						Item: &ns.DeviceQueueItem{
-							DevAddr:    da.DevAddr[:],
+							DevAddr:    device.DevAddr[:],
 							DevEui:     device.DevEUI[:],
 							FrmPayload: b,
 							FCnt:       12,
@@ -156,7 +150,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 				},
 				{
 					Name: "invalid application id",
-					Payload: integration.DataDownPayload{
+					Payload: models.DataDownPayload{
 						ApplicationID: app.ID + 1,
 						DevEUI:        device.DevEUI,
 						Confirmed:     true,
@@ -178,7 +172,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 							];
 						}
 					`,
-					Payload: integration.DataDownPayload{
+					Payload: models.DataDownPayload{
 						ApplicationID: app.ID,
 						DevEUI:        device.DevEUI,
 						FPort:         2,
@@ -187,7 +181,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 
 					ExpectedCreateDeviceQueueItemRequest: ns.CreateDeviceQueueItemRequest{
 						Item: &ns.DeviceQueueItem{
-							DevAddr:    da.DevAddr[:],
+							DevAddr:    device.DevAddr[:],
 							DevEui:     device.DevEUI[:],
 							FrmPayload: b,
 							FCnt:       12,
@@ -209,7 +203,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 							];
 						}
 					`,
-					Payload: integration.DataDownPayload{
+					Payload: models.DataDownPayload{
 						ApplicationID: app.ID,
 						DevEUI:        device.DevEUI,
 						FPort:         2,
@@ -218,7 +212,7 @@ func TestHandleDownlinkQueueItem(t *testing.T) {
 
 					ExpectedCreateDeviceQueueItemRequest: ns.CreateDeviceQueueItemRequest{
 						Item: &ns.DeviceQueueItem{
-							DevAddr:   da.DevAddr[:],
+							DevAddr:   device.DevAddr[:],
 							DevEui:    device.DevEUI[:],
 							FCnt:      12,
 							FPort:     2,
