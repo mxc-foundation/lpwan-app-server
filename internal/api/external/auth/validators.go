@@ -27,7 +27,6 @@ const (
 	Delete
 	List
 	UpdateProfile
-	FinishRegistration
 )
 
 // ValidateActiveUser validates if the user in the JWT claim is active.
@@ -167,14 +166,6 @@ func ValidateUserAccess(userID int64, flag Flag) ValidatorFunc {
 		apiKeyWhere = [][]string{
 			{"ak.id = $1", "ak.is_admin = true"},
 		}
-	case FinishRegistration:
-		// global admin
-		// inactive user itself
-		where = [][]string{
-			{"u.username = $1", "u.is_active = true", "u.is_admin = true"},
-			{"u.username = $1", "u.is_active = false", "u.id = $2"},
-		}
-
 	default:
 		panic("unsupported flag")
 	}

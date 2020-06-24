@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/brocaar/chirpstack-application-server/internal/storage"
 )
 
 var validAuthorizationRegexp = regexp.MustCompile(`(?i)^bearer (.*)$`)

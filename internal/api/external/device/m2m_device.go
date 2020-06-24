@@ -1,4 +1,4 @@
-package external
+package device
 
 import (
 	"context"
