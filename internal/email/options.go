@@ -13,6 +13,7 @@ type EmailLanguage string
 const (
 	RegistrationConfirmation EmailOptions = "registration-confirm"
 	PasswordReset            EmailOptions = "password-reset"
+	PasswordResetUnknown     EmailOptions = "password-reset-unknown"
 	TwoFALogin               EmailOptions = "2fa-login"
 	TwoFAWithdraw            EmailOptions = "2fa-withdraw"
 	StakingIncome            EmailOptions = "staking-income"
@@ -24,6 +25,7 @@ const (
 var emailOptionsList = map[EmailOptions]emailInterface{
 	RegistrationConfirmation: registrationInterface,
 	PasswordReset:            passwordReset,
+	PasswordResetUnknown:     passwordResetUnknown,
 	TwoFALogin:               twofaLogin,
 	TwoFAWithdraw:            twoFAWithdraw,
 	StakingIncome:            stakingIncome,

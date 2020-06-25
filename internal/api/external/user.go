@@ -715,6 +715,9 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
+			if err := email.SendInvite(req.Username, "", email.EmailLanguage(req.Language.String()), email.PasswordResetUnknown); err != nil {
+				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
+			}
 			return &pb.PasswordResetResp{}, nil
 		}
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
@@ -752,7 +755,7 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *pb.Conf
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
-			return &pb.PasswordResetResp{}, nil
+			return nil, status.Errorf(codes.PermissionDenied, "no match found")
 		}
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 	}
