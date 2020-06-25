@@ -33,8 +33,6 @@ var (
 	ErrInvalidUsernameOrPassword       = errors.New("invalid username or password")
 	ErrOrganizationInvalidName         = errors.New("invalid organization name")
 	ErrGatewayInvalidName              = errors.New("invalid gateway name")
-	ErrGatewayInvalidSerialNumber      = errors.New("invalid gateway serial number")
-	ErrGatewayInvalidMac               = errors.New("invalid gateway mac")
 	ErrInvalidEmail                    = errors.New("invalid e-mail")
 	ErrInvalidGatewayDiscoveryInterval = errors.New("invalid gateway-discovery interval, it must be greater than 0")
 	ErrDeviceProfileInvalidName        = errors.New("invalid device-profile name")

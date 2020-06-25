@@ -3,7 +3,7 @@ syntax = "proto3";
 package appserver_serves_ui;
 
 import "google/api/annotations.proto";
-import "timestamp/timestamp.proto";
+import "google/protobuf/timestamp.proto";
 import "empty/empty.proto";
 
 // profiles
@@ -12,38 +12,38 @@ import "profiles.proto";
 // ServiceProfileService is the service managing service-profiles.
 service ServiceProfileService {
     // Create creates the given service-profile.
-    rpc Create(CreateServiceProfileRequest) returns (CreateServiceProfileResponse) {
-        option(google.api.http) = {
+    rpc Create (CreateServiceProfileRequest) returns (CreateServiceProfileResponse) {
+        option (google.api.http) = {
             post: "/api/service-profiles"
             body: "*"
         };
     }
 
     // Get returns the service-profile matching the given id.
-    rpc Get(GetServiceProfileRequest) returns (GetServiceProfileResponse) {
-        option(google.api.http) = {
+    rpc Get (GetServiceProfileRequest) returns (GetServiceProfileResponse) {
+        option (google.api.http) = {
             get: "/api/service-profiles/{id}"
         };
     }
 
     // Update updates the given serviceprofile.
-    rpc Update(UpdateServiceProfileRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Update (UpdateServiceProfileRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             put: "/api/service-profiles/{service_profile.id}"
             body: "*"
         };
     }
 
     // Delete deletes the service-profile matching the given id.
-    rpc Delete(DeleteServiceProfileRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Delete (DeleteServiceProfileRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             delete: "/api/service-profiles/{id}"
         };
     }
 
     // List lists the available service-profiles.
-    rpc List(ListServiceProfileRequest) returns (ListServiceProfileResponse) {
-        option(google.api.http) = {
+    rpc List (ListServiceProfileRequest) returns (ListServiceProfileResponse) {
+        option (google.api.http) = {
             get: "/api/service-profiles"
         };
     }
@@ -54,17 +54,17 @@ message CreateServiceProfileRequest {
     ServiceProfile service_profile = 1;
 }
 
-message CreateServiceProfileResponse{
+message CreateServiceProfileResponse {
     // Service-profile ID (UUID string).
     string id = 1;
 }
 
-message GetServiceProfileRequest{
+message GetServiceProfileRequest {
     // Service-profile ID (UUID string).
     string id = 1;
 }
 
-message GetServiceProfileResponse{
+message GetServiceProfileResponse {
     // Service-profile object.
     ServiceProfile service_profile = 1;
 
@@ -75,17 +75,17 @@ message GetServiceProfileResponse{
     google.protobuf.Timestamp updated_at = 3;
 }
 
-message UpdateServiceProfileRequest{
+message UpdateServiceProfileRequest {
     // Service-profile object to update.
     ServiceProfile service_profile = 1;
 }
 
-message DeleteServiceProfileRequest{
+message DeleteServiceProfileRequest {
     // Service-profile ID (UUID string).
     string id = 1;
 }
 
-message ListServiceProfileRequest{
+message ListServiceProfileRequest {
     // Max number of items to return.
     int64 limit = 1;
 
@@ -116,7 +116,7 @@ message ServiceProfileListItem {
     google.protobuf.Timestamp updated_at = 6;
 }
 
-message ListServiceProfileResponse{
+message ListServiceProfileResponse {
     // Total number of service-profiles.
     int64 total_count = 1;
 

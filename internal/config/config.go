@@ -29,12 +29,12 @@ type Config struct {
 	} `mapstructure:"redis"`
 
 	SMTP struct {
-			Email    string `mapstructure:"email"`
-			Username string `mapstructure:"username"`
-			Password string `mapstructure:"password"`
-			AuthType string `mapstructure:"auth_type"`
-			Host     string `mapstructure:"host"`
-			Port     string `mapstructure:"port"`
+		Email    string `mapstructure:"email"`
+		Username string `mapstructure:"username"`
+		Password string `mapstructure:"password"`
+		AuthType string `mapstructure:"auth_type"`
+		Host     string `mapstructure:"host"`
+		Port     string `mapstructure:"port"`
 	} `mapstructure:"smtp"`
 
 	M2MServer struct {

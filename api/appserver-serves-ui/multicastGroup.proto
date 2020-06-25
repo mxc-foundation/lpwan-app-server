@@ -3,81 +3,81 @@ syntax = "proto3";
 package appserver_serves_ui;
 
 import "google/api/annotations.proto";
-import "timestamp/timestamp.proto";
+import "google/protobuf/timestamp.proto";
 import "empty/empty.proto";
 
 // MulticastGroupService is the service managing multicast-groups.
 service MulticastGroupService {
     // Create creates the given multicast-group.
-    rpc Create(CreateMulticastGroupRequest) returns (CreateMulticastGroupResponse) {
-        option(google.api.http) = {
+    rpc Create (CreateMulticastGroupRequest) returns (CreateMulticastGroupResponse) {
+        option (google.api.http) = {
             post: "/api/multicast-groups"
             body: "*"
         };
     }
 
     // Get returns a multicast-group given an ID.
-    rpc Get(GetMulticastGroupRequest) returns (GetMulticastGroupResponse) {
-        option(google.api.http) = {
+    rpc Get (GetMulticastGroupRequest) returns (GetMulticastGroupResponse) {
+        option (google.api.http) = {
             get: "/api/multicast-groups/{id}"
         };
     }
 
     // Update updates the given multicast-group.
-    rpc Update(UpdateMulticastGroupRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Update (UpdateMulticastGroupRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             put: "/api/multicast-groups/{multicast_group.id}"
             body: "*"
         };
     }
 
     // Delete deletes a multicast-group given an ID.
-    rpc Delete(DeleteMulticastGroupRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Delete (DeleteMulticastGroupRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             delete: "/api/multicast-groups/{id}"
         };
     }
 
     // List lists the available multicast-groups.
-    rpc List(ListMulticastGroupRequest) returns (ListMulticastGroupResponse) {
-        option(google.api.http) = {
+    rpc List (ListMulticastGroupRequest) returns (ListMulticastGroupResponse) {
+        option (google.api.http) = {
             get: "/api/multicast-groups"
         };
     }
 
     // AddDevice adds the given device to the multicast-group.
-    rpc AddDevice(AddDeviceToMulticastGroupRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc AddDevice (AddDeviceToMulticastGroupRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             post: "/api/multicast-groups/{multicast_group_id}/devices"
             body: "*"
         };
     }
 
     // RemoveDevice removes the given device from the multicast-group.
-    rpc RemoveDevice(RemoveDeviceFromMulticastGroupRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc RemoveDevice (RemoveDeviceFromMulticastGroupRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             delete: "/api/multicast-groups/{multicast_group_id}/devices/{dev_eui}"
         };
     }
 
     // Enqueue adds the given item to the multicast-queue.
-    rpc Enqueue(EnqueueMulticastQueueItemRequest) returns (EnqueueMulticastQueueItemResponse) {
-        option(google.api.http) = {
+    rpc Enqueue (EnqueueMulticastQueueItemRequest) returns (EnqueueMulticastQueueItemResponse) {
+        option (google.api.http) = {
             post: "/api/multicast-groups/{multicast_queue_item.multicast_group_id}/queue"
             body: "*"
         };
     }
 
     // FlushQueue flushes the multicast-group queue.
-    rpc FlushQueue(FlushMulticastGroupQueueItemsRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc FlushQueue (FlushMulticastGroupQueueItemsRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             delete: "/api/multicast-groups/{multicast_group_id}/queue"
         };
     }
 
     // ListQueue lists the items in the multicast-group queue.
-    rpc ListQueue(ListMulticastGroupQueueItemsRequest) returns (ListMulticastGroupQueueItemsResponse) {
-        option(google.api.http) = {
+    rpc ListQueue (ListMulticastGroupQueueItemsRequest) returns (ListMulticastGroupQueueItemsResponse) {
+        option (google.api.http) = {
             get: "/api/multicast-groups/{multicast_group_id}/queue"
         };
     }
@@ -140,7 +140,7 @@ message MulticastGroupListItem {
     string service_profile_id = 3 [json_name = "serviceProfileID"];
 
     // Service-profile name.
-    string service_profile_name = 4; 
+    string service_profile_name = 4;
 }
 
 message CreateMulticastGroupRequest {

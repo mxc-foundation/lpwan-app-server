@@ -3,16 +3,16 @@ syntax = "proto3";
 package appserver_serves_ui;
 
 // from loraserver
-import "api/common/common.proto";
-import "api/gw/gw.proto";
-import "timestamp/timestamp.proto";
-import "duration/duration.proto";
+import "common/common.proto";
+import "gw/gw.proto";
 
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 
 enum RXWindow {
-	RX1 = 0;
-	RX2 = 1;
+    RX1 = 0;
+    RX2 = 1;
 }
 
 message UplinkFrameLog {

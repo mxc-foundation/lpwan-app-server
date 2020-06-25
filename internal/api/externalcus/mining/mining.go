@@ -9,18 +9,18 @@ import (
 	"google.golang.org/grpc/status"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/authcus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 // MiningServerAPI defines the Mining Server API structure
 type MiningServerAPI struct {
-	validator auth.Validator
+	validator authcus.Validator
 }
 
 // NewMiningServerAPI defines the Mining Server API validator
-func NewMiningServerAPI(validator auth.Validator) *MiningServerAPI {
+func NewMiningServerAPI(validator authcus.Validator) *MiningServerAPI {
 	return &MiningServerAPI{
 		validator: validator,
 	}

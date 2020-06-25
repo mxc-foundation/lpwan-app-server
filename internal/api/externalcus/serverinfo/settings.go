@@ -9,18 +9,18 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/authcus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 // SettingsServerAPI defines the settings of the Server API structure
 type SettingsServerAPI struct {
-	validator auth.Validator
+	validator authcus.Validator
 }
 
 // NewSettingsServerAPI defines the SettingsServerAPI validator
-func NewSettingsServerAPI(validator auth.Validator) *SettingsServerAPI {
+func NewSettingsServerAPI(validator authcus.Validator) *SettingsServerAPI {
 	return &SettingsServerAPI{
 		validator: validator,
 	}

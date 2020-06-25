@@ -72,6 +72,9 @@ ui/build:
 
 api:
 	@echo "Generating API code from .proto files"
+	@rm -rf /tmp/chirpstack-api
+	@git clone https://github.com/brocaar/chirpstack-api.git /tmp/chirpstack-api
+	@cp -rf /tmp/chirpstack-api/protobuf/* api/appserver-serves-ui/
 	@go generate api/appserver-serves-ui/api.go
 	@go generate api/appserver-serves-gateway/api.go
 

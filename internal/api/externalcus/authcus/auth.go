@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"regexp"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +24,11 @@ type Claims struct {
 
 	// Username defines the identity of the user.
 	Username string `json:"username"`
+	// UserID defines the ID of th user.
+	UserID int64 `json:"user_id"`
+
+	// APIKeyID defines the API key ID.
+	APIKeyID uuid.UUID `json:"api_key_id"`
 
 	// OTP code if it is present, not a part of JWT
 	OTP string `json:"-"`
@@ -39,6 +45,15 @@ type Validator interface {
 	//   if validatorFunc1 && validatorFunc2 && ValidatorFunc3 ...
 	Validate(context.Context, ...ValidatorFunc) error
 
+	// GetSubject returns the claim subject.
+	GetSubject(context.Context) (string, error)
+
+	// GetUser returns the user object.
+	GetUser(context.Context) (storage.User, error)
+
+	// GetAPIKey returns the API key ID.
+	GetAPIKeyID(context.Context) (uuid.UUID, error)
+
 	// GetUsername returns the name of the authenticated user.
 	GetUsername(context.Context) (string, error)
 
@@ -54,7 +69,7 @@ type Validator interface {
 
 // ValidatorFunc defines the signature of a claim validator function.
 // It returns a bool indicating if the validation passed or failed and an
-// error in case an error occured (e.g. db connectivity).
+// error in case an error occurred (e.g. db connectivity).
 type ValidatorFunc func(sqlx.Queryer, *Claims) (bool, error)
 
 // JWTValidator validates JWT tokens.
@@ -94,6 +109,48 @@ func (v JWTValidator) Validate(ctx context.Context, funcs ...ValidatorFunc) erro
 	}
 
 	return ErrNotAuthorized
+}
+
+// GetSubject returns the subject of the claim.
+func (v JWTValidator) GetSubject(ctx context.Context) (string, error) {
+	claims, err := v.getClaims(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	return claims.Subject, nil
+}
+
+// GetAPIKeyID returns the API key of the token.
+func (v JWTValidator) GetAPIKeyID(ctx context.Context) (uuid.UUID, error) {
+	claims, err := v.getClaims(ctx)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return claims.APIKeyID, nil
+}
+
+// GetUser returns the user object.
+func (v JWTValidator) GetUser(ctx context.Context) (storage.User, error) {
+	claims, err := v.getClaims(ctx)
+	if err != nil {
+		return storage.User{}, err
+	}
+
+	if claims.Subject != SubjectUser {
+		return storage.User{}, errors.New("subject must be user")
+	}
+
+	if claims.UserID != 0 {
+		return storage.GetUser(ctx, v.db, claims.UserID)
+	}
+
+	if claims.Username != "" {
+		return storage.GetUserByEmail(ctx, v.db, claims.Username)
+	}
+
+	return storage.User{}, errors.New("no username or user_id in claims")
 }
 
 // GetUsername returns the username of the authenticated user.

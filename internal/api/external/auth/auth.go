@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/brocaar/chirpstack-application-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var validAuthorizationRegexp = regexp.MustCompile(`(?i)^bearer (.*)$`)

@@ -7,11 +7,11 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/authcus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
-func getUserProfileByJwt(ctx context.Context, v auth.Validator, organizationID int64) (api.ProfileResponse, error) {
+func getUserProfileByJwt(ctx context.Context, v authcus.Validator, organizationID int64) (api.ProfileResponse, error) {
 	username, err := v.GetUsername(ctx)
 	if nil != err {
 		return api.ProfileResponse{}, err
@@ -38,7 +38,7 @@ func getUserProfileByJwt(ctx context.Context, v auth.Validator, organizationID i
 		IsActive:   prof.User.IsActive,
 	}
 	userProfile.Settings = &api.ProfileSettings{
-		DisableAssignExistingUsers: auth.DisableAssignExistingUsers,
+		DisableAssignExistingUsers: authcus.DisableAssignExistingUsers,
 	}
 
 	orgDeleted := true

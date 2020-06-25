@@ -1,4 +1,4 @@
-package storage
+package user
 
 import (
 	"bytes"
@@ -18,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/pbkdf2"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
@@ -47,6 +48,7 @@ type User struct {
 	EmailOld      string    `db:"email_old"`
 	Note          string    `db:"note"`
 	ExternalID    *string   `db:"external_id"` // must be pointer for unique index
+	SecurityToken *string   `db:"security_token"`
 }
 
 // Validate validates the user data.
@@ -64,7 +66,7 @@ func (u *User) SetPasswordHash(pw string) error {
 		return ErrUserPasswordLength
 	}
 
-	pwHash, err := hash(pw, saltSize, HashIterations)
+	pwHash, err := hash(pw, saltSize, config.C.General.PasswordHashIterations)
 	if err != nil {
 		return err
 	}
@@ -467,7 +469,6 @@ func hashCompare(password string, passwordHash string) bool {
 	return newHash == passwordHash
 }
 
-// GetUserToken returns a JWT token for the given user.
 func GetUserToken(u User) (string, error) {
 	// Generate the token.
 	now := time.Now()
@@ -479,8 +480,8 @@ func GetUserToken(u User) (string, error) {
 		expSecondsSinceEpoch = nowSecondsSinceEpoch + int64(defaultSessionTTL/time.Second)
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss":      "chirpstack-application-server",
-		"aud":      "chirpstack-application-server",
+		"iss":      "lpwan-app-server",
+		"aud":      "lpwan-app-server",
 		"nbf":      nowSecondsSinceEpoch,
 		"exp":      expSecondsSinceEpoch,
 		"sub":      "user",
@@ -488,9 +489,113 @@ func GetUserToken(u User) (string, error) {
 		"username": u.Email, // backwards compatibility
 	})
 
-	jwt, err := token.SignedString(jwtsecret)
+	jwt, err := token.SignedString([]byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
 	if err != nil {
 		return jwt, errors.Wrap(err, "get jwt signed string error")
 	}
 	return jwt, err
+}
+
+// RegisterUser ...
+func RegisterUser(db sqlx.Queryer, user *User, token string) error {
+	if user.Username == "" {
+		if err := ValidateUsername(user.Username); err != nil {
+			errors.Wrap(err, "validation error")
+		}
+	}
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+
+	// Add the new user.
+	err := sqlx.Get(db, &user.ID, `
+		insert into "user" (
+			username,
+			is_admin,
+			is_active,
+			session_ttl,
+			created_at,
+			updated_at,
+	        security_token)
+		values (
+			$1, $2, $3, $4, $5, $6, $7) returning id`,
+		user.Username,
+		user.IsAdmin,
+		user.IsActive,
+		user.SessionTTL,
+		user.CreatedAt,
+		user.UpdatedAt,
+		token,
+	)
+	if err != nil {
+		return handlePSQLError(Insert, err, "insert error")
+	}
+
+	log.WithFields(log.Fields{
+		"email":       user.Email,
+		"session_ttl": user.SessionTTL,
+		"is_admin":    user.IsAdmin,
+	}).Info("Registration: user created")
+	return nil
+}
+
+// GetUserByToken ...
+func GetUserByToken(db sqlx.Queryer, token string) (User, error) {
+	var user User
+	err := sqlx.Get(db, &user, "select "+externalUserFields+" from \"user\" where security_token = $1", token)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, ErrDoesNotExist
+		}
+		return user, errors.Wrap(err, "select error")
+	}
+
+	return user, nil
+}
+
+// GetTokenByUsername ...
+func GetTokenByUsername(ctx context.Context, db sqlx.Queryer, username string) (string, error) {
+	//var user User
+	var otp string
+	err := sqlx.Get(db, &otp, "select security_token from \"user\" where username = $1", username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return otp, ErrDoesNotExist
+		}
+		return otp, errors.Wrap(err, "select error")
+	}
+
+	return otp, nil
+}
+
+// FinishRegistration ...
+func FinishRegistration(db sqlx.Execer, userID int64, newPwd string) error {
+	if err := ValidatePassword(newPwd); err != nil {
+		return errors.Wrap(err, "validation error")
+	}
+
+	pwdHash, err := hash(newPwd, saltSize, HashIterations)
+	if err != nil {
+		return err
+	}
+	log.Println("newPwd", newPwd)
+	_, err = db.Exec(`
+		update "user"
+		set
+			password_hash = $1,
+			is_active = true,
+			security_token = null,
+			updated_at = now()
+		where id = $2`,
+		pwdHash,
+		userID,
+	)
+	if err != nil {
+		return errors.Wrap(err, "update error")
+	}
+
+	log.WithFields(log.Fields{
+		"id": userID,
+	}).Info("user password updated")
+
+	return nil
 }

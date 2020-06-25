@@ -21,6 +21,7 @@ require (
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/golang/protobuf v1.3.5
+	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/goreleaser/goreleaser v0.106.0
 	github.com/goreleaser/nfpm v0.11.0
 	github.com/gorilla/mux v1.7.3

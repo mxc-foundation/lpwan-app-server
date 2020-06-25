@@ -29,6 +29,12 @@ build
 
 # dependencies
 /vendor
+api/appserver-serves-ui/as/
+api/appserver-serves-ui/common/
+api/appserver-serves-ui/geo/
+api/appserver-serves-ui/gw/
+api/appserver-serves-ui/nc/
+api/appserver-serves-ui/ns/
 
 # certificates
 /certs

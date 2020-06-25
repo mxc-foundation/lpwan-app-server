@@ -9,18 +9,18 @@ import (
 	"google.golang.org/grpc/status"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/authcus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 // M2MServerAPI defines the machine to machine server API structure
 type M2MServerAPI struct {
-	validator auth.Validator
+	validator authcus.Validator
 }
 
 // NewM2MServerAPI defines the machine to machine server API validator
-func NewM2MServerAPI(validator auth.Validator) *M2MServerAPI {
+func NewM2MServerAPI(validator authcus.Validator) *M2MServerAPI {
 	return &M2MServerAPI{
 		validator: validator,
 	}

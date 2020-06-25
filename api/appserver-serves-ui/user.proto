@@ -3,7 +3,7 @@ syntax = "proto3";
 package appserver_serves_ui;
 
 import "google/api/annotations.proto";
-import "timestamp/timestamp.proto";
+import "google/protobuf/timestamp.proto";
 import "empty/empty.proto";
 
 // UserService is the service managing the user access.

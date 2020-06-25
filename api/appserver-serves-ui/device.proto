@@ -3,47 +3,46 @@ syntax = "proto3";
 package appserver_serves_ui;
 
 import "google/api/annotations.proto";
-import "timestamp/timestamp.proto";
+import "google/protobuf/timestamp.proto";
 import "empty/empty.proto";
+
 import "common.proto";
-
 // from loraserver
-import "api/common/common.proto";
-
+import "common/common.proto";
 
 // DeviceService is the service managing the devices.
 service DeviceService {
     // Create creates the given device.
-    rpc Create(CreateDeviceRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Create (CreateDeviceRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             post: "/api/devices"
             body: "*"
         };
     }
 
     // Get returns the device matching the given DevEUI.
-    rpc Get(GetDeviceRequest) returns (GetDeviceResponse) {
+    rpc Get (GetDeviceRequest) returns (GetDeviceResponse) {
         option (google.api.http) = {
             get: "/api/devices/{dev_eui}"
         };
     }
 
     // List returns the available devices.
-    rpc List(ListDeviceRequest) returns (ListDeviceResponse) {
+    rpc List (ListDeviceRequest) returns (ListDeviceResponse) {
         option (google.api.http) = {
             get: "/api/devices"
         };
     }
 
     // Delete deletes the device matching the given DevEUI.
-    rpc Delete(DeleteDeviceRequest) returns (google.protobuf.Empty) {
+    rpc Delete (DeleteDeviceRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/api/devices/{dev_eui}"
         };
     }
 
     // Update updates the device matching the given DevEUI.
-    rpc Update(UpdateDeviceRequest) returns (google.protobuf.Empty) {
+    rpc Update (UpdateDeviceRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/api/devices/{device.dev_eui}"
             body: "*"
@@ -51,7 +50,7 @@ service DeviceService {
     }
 
     // CreateKeys creates the given device-keys.
-    rpc CreateKeys(CreateDeviceKeysRequest) returns (google.protobuf.Empty) {
+    rpc CreateKeys (CreateDeviceKeysRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/api/devices/{device_keys.dev_eui}/keys"
             body: "*"
@@ -59,14 +58,14 @@ service DeviceService {
     }
 
     // GetKeys returns the device-keys for the given DevEUI.
-    rpc GetKeys(GetDeviceKeysRequest) returns (GetDeviceKeysResponse) {
+    rpc GetKeys (GetDeviceKeysRequest) returns (GetDeviceKeysResponse) {
         option (google.api.http) = {
             get: "/api/devices/{dev_eui}/keys"
         };
     }
 
     // UpdateKeys updates the device-keys.
-    rpc UpdateKeys(UpdateDeviceKeysRequest) returns (google.protobuf.Empty) {
+    rpc UpdateKeys (UpdateDeviceKeysRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             put: "/api/devices/{device_keys.dev_eui}/keys"
             body: "*"
@@ -74,14 +73,14 @@ service DeviceService {
     }
 
     // DeleteKeys deletes the device-keys for the given DevEUI.
-    rpc DeleteKeys(DeleteDeviceKeysRequest) returns (google.protobuf.Empty) {
+    rpc DeleteKeys (DeleteDeviceKeysRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/api/devices/{dev_eui}/keys"
         };
     };
 
     // Activate (re)activates the device (only when ABP is set to true).
-    rpc Activate(ActivateDeviceRequest) returns (google.protobuf.Empty) {
+    rpc Activate (ActivateDeviceRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/api/devices/{device_activation.dev_eui}/activate"
             body: "*"
@@ -89,39 +88,39 @@ service DeviceService {
     }
 
     // Deactivate de-activates the device.
-    rpc Deactivate(DeactivateDeviceRequest) returns (google.protobuf.Empty) {
+    rpc Deactivate (DeactivateDeviceRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             delete: "/api/devices/{dev_eui}/activation"
         };
     }
 
     // GetActivation returns the current activation details of the device (OTAA and ABP).
-    rpc GetActivation(GetDeviceActivationRequest) returns (GetDeviceActivationResponse) {
+    rpc GetActivation (GetDeviceActivationRequest) returns (GetDeviceActivationResponse) {
         option (google.api.http) = {
             get: "/api/devices/{dev_eui}/activation"
         };
     }
 
     // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
-    rpc GetRandomDevAddr(GetRandomDevAddrRequest) returns (GetRandomDevAddrResponse) {
+    rpc GetRandomDevAddr (GetRandomDevAddrRequest) returns (GetRandomDevAddrResponse) {
         option (google.api.http) = {
             post: "/api/devices/{dev_eui}/getRandomDevAddr"
         };
     }
 
     // StreamFrameLogs streams the uplink and downlink frame-logs for the given DevEUI.
-	//   * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.
-	//   * This endpoint does not work from a web-browser.
-    rpc StreamFrameLogs(StreamDeviceFrameLogsRequest) returns (stream StreamDeviceFrameLogsResponse) {
+    //   * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.
+    //   * This endpoint does not work from a web-browser.
+    rpc StreamFrameLogs (StreamDeviceFrameLogsRequest) returns (stream StreamDeviceFrameLogsResponse) {
         option (google.api.http) = {
             get: "/api/devices/{dev_eui}/frames"
         };
     }
 
     // StreamEventLogs stream the device events (uplink payloads, ACKs, joins, errors).
-	//   * This endpoint is intended for debugging only.
-	//   * This endpoint does not work from a web-browser.
-    rpc StreamEventLogs(StreamDeviceEventLogsRequest) returns (stream StreamDeviceEventLogsResponse) {
+    //   * This endpoint is intended for debugging only.
+    //   * This endpoint does not work from a web-browser.
+    rpc StreamEventLogs (StreamDeviceEventLogsRequest) returns (stream StreamDeviceEventLogsResponse) {
         option (google.api.http) = {
             get: "/api/devices/{dev_eui}/events"
         };
@@ -130,8 +129,8 @@ service DeviceService {
 
 message Device {
     // Device EUI (HEX encoded).
-    string dev_eui = 1 [json_name = "devEUI"]; 
-    
+    string dev_eui = 1 [json_name = "devEUI"];
+
     // Name of the device (if left blank, it will be set to the DevEUI).
     string name = 2;
 
@@ -170,8 +169,8 @@ message Device {
 
 message DeviceListItem {
     // Device EUI (HEX encoded).
-    string dev_eui = 1 [json_name = "devEUI"]; 
-    
+    string dev_eui = 1 [json_name = "devEUI"];
+
     // Name of the device.
     string name = 2;
 
@@ -197,7 +196,7 @@ message DeviceListItem {
     // The device margin status
     // -32..32: The demodulation SNR ration in dB
     // 256:     The device-status is not available.
-    int32  device_status_margin = 8;
+    int32 device_status_margin = 8;
 
     // Device is connected to an external power source.
     bool device_status_external_power_source = 10;
@@ -262,7 +261,7 @@ message GetDeviceResponse {
     // The device margin status
     // -32..32: The demodulation SNR ration in dB
     // 256:     The device-status is not available.
-    int32  device_status_margin = 20;
+    int32 device_status_margin = 20;
 
     // Device location.
     // This will set when the network-server was able to resolve the location
