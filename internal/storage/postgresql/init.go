@@ -2,22 +2,25 @@ package postgresql
 
 import (
 	"context"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
 	"github.com/mxc-foundation/lpwan-server/api/ns"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func SetupDefault() error {
 	ctx := context.Background()
-	count, err := GetGatewayProfileCount(ctx, DB())
+	count, err := storage.GetGatewayProfileCount(ctx, storage.DB())
 	if err != nil && err != ErrDoesNotExist {
 		return errors.Wrap(err, "Failed to load gateway profiles")
 	}
 
 	if count != 0 {
 		// check if default gateway profile already exists
-		gpList, err := GetGatewayProfiles(ctx, DB(), count, 0)
+		gpList, err := storage.GetGatewayProfiles(ctx, storage.DB(), count, 0)
 		if err != nil {
 			return errors.Wrap(err, "Failed to load gateway profiles")
 		}
@@ -30,8 +33,8 @@ func SetupDefault() error {
 	}
 
 	// none default_gateway_profile exists, add one
-	var networkServer NetworkServer
-	n, err := GetNetworkServers(ctx, DB(), 1, 0)
+	var networkServer storage.NetworkServer
+	n, err := storage.GetNetworkServers(ctx, storage.DB(), 1, 0)
 	if err != nil && err != ErrDoesNotExist {
 		return errors.Wrap(err, "Load network server internal error")
 	}
@@ -40,8 +43,8 @@ func SetupDefault() error {
 		networkServer = n[0]
 	} else {
 		// insert default one
-		err := Transaction(func(tx sqlx.Ext) error {
-			return CreateNetworkServer(ctx, DB(), &NetworkServer{
+		err := storage.Transaction(func(tx sqlx.Ext) error {
+			return storage.CreateNetworkServer(ctx, storage.DB(), &storage.NetworkServer{
 				Name:                    "default_network_server",
 				Server:                  "network-server:8000",
 				GatewayDiscoveryEnabled: false,
@@ -52,13 +55,13 @@ func SetupDefault() error {
 		}
 
 		// get network-server id
-		networkServer, err = GetDefaultNetworkServer(ctx, DB())
+		networkServer, err = storage.GetDefaultNetworkServer(ctx, storage.DB())
 		if err != nil {
 			return err
 		}
 	}
 
-	gp := GatewayProfile{
+	gp := storage.GatewayProfile{
 		NetworkServerID: networkServer.ID,
 		Name:            "default_gateway_profile",
 		GatewayProfile: ns.GatewayProfile{
@@ -67,8 +70,8 @@ func SetupDefault() error {
 		},
 	}
 
-	err = Transaction(func(tx sqlx.Ext) error {
-		return CreateGatewayProfile(ctx, tx, &gp)
+	err = storage.Transaction(func(tx sqlx.Ext) error {
+		return storage.CreateGatewayProfile(ctx, tx, &gp)
 	})
 	if err != nil {
 		return errors.Wrap(err, "Failed to create default gateway profile")

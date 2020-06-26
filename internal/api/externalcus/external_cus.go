@@ -7,19 +7,23 @@ import (
 	"google.golang.org/grpc"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/authcus"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/device"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/gateway"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/serverinfo"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/staking"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/topup"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/user"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/wallet"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus/withdraw"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	devicePg "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	gwPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/staking"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/topup"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+	userPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/wallet"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 )
 
 func SetupAPI(grpcServer *grpc.Server) error {
@@ -31,13 +35,13 @@ func SetupAPI(grpcServer *grpc.Server) error {
 
 	validator := authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret, otpValidator)
 
-	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(validator))
-	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(validator))
-	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI(validator, otpValidator))
-	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(validator))
+	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(validator, devicePg.New(storage.DB().DB)))
+	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(validator, userPg.New(storage.DB().DB)))
+	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI(validator, otpValidator, userPg.New(storage.DB().DB)))
+	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(validator, gwPg.New(storage.DB().DB)))
 	api.RegisterServerInfoServiceServer(grpcServer, serverinfo.NewServerInfoAPI())
-	api.RegisterDSDeviceServiceServer(grpcServer, device.NewDeviceServerAPI(validator))
-	api.RegisterGSGatewayServiceServer(grpcServer, gateway.NewGatewayServerAPI(validator))
+	api.RegisterDSDeviceServiceServer(grpcServer, device.NewM2MDeviceAPI(validator))
+	api.RegisterGSGatewayServiceServer(grpcServer, gateway.NewM2MGatewayAPI(validator))
 	api.RegisterSettingsServiceServer(grpcServer, serverinfo.NewSettingsServerAPI(validator))
 	api.RegisterStakingServiceServer(grpcServer, staking.NewStakingServerAPI(validator))
 	api.RegisterTopUpServiceServer(grpcServer, topup.NewTopUpServerAPI(validator))

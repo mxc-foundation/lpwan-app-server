@@ -13,7 +13,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/postgresql"
 )
 
 var (
@@ -98,8 +97,6 @@ func Setup(c config.Config) error {
 	}
 
 	db = &DBLogger{d}
-
-	postgresql.PgDB.AddDB(d)
 
 	if c.PostgreSQL.Automigrate {
 		log.Info("storage: applying PostgreSQL data migrations")
