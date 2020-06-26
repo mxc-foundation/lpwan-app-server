@@ -1,22 +1,17 @@
-package gateway
+package postgresql
 
 import (
-	"time"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+
+	gw "github.com/mxc-foundation/lpwan-app-server/internal/modules/default-gateway-config"
 )
 
-type DefaultGatewayConfig struct {
-	ID            int64      `db:"id"`
-	Model         string     `db:"model"`
-	Region        string     `db:"region"`
-	CreatedAt     *time.Time `db:"created_at"`
-	UpdatedAt     *time.Time `db:"updated_at"`
-	DefaultConfig string     `db:"default_config"`
-}
+type defaultGatewayConfigTableHandler struct{}
 
-func AddNewDefaultGatewayConfig(db sqlx.Execer, defaultConfig *DefaultGatewayConfig) error {
+var DefaultGatewayConfigTable defaultGatewayConfigTableHandler
+
+func (*defaultGatewayConfigTableHandler) AddNewDefaultGatewayConfig(db sqlx.Execer, defaultConfig *gw.DefaultGatewayConfig) error {
 	_, err := db.Exec(`
 		insert into default_gateway_config (
 		    model, region, created_at, updated_at, default_config
@@ -34,7 +29,7 @@ func AddNewDefaultGatewayConfig(db sqlx.Execer, defaultConfig *DefaultGatewayCon
 	return errors.Wrap(err, "AddNewDefaultGatewayConfig")
 }
 
-func UpdateDefaultGatewayConfig(db sqlx.Execer, defaultConfig *DefaultGatewayConfig) error {
+func (*defaultGatewayConfigTableHandler) UpdateDefaultGatewayConfig(db sqlx.Execer, defaultConfig *gw.DefaultGatewayConfig) error {
 	_, err := db.Exec(`
 		update 
 		    default_gateway_config 
@@ -53,7 +48,7 @@ func UpdateDefaultGatewayConfig(db sqlx.Execer, defaultConfig *DefaultGatewayCon
 	return errors.Wrap(err, "UpdateDefaultGatewayConfig")
 }
 
-func GetDefaultGatewayConfig(db sqlx.Queryer, defaultConfig *DefaultGatewayConfig) error {
+func (*defaultGatewayConfigTableHandler) GetDefaultGatewayConfig(db sqlx.Queryer, defaultConfig *gw.DefaultGatewayConfig) error {
 	err := db.QueryRowx(`
 		select 
 		    id, model, region, created_at, updated_at, default_config 
