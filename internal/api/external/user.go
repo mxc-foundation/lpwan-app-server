@@ -326,6 +326,9 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 		ctxlogrus.Extract(ctx).WithError(err).Error("couldn't get 2fa status")
 		return nil, status.Error(codes.Internal, "couldn't get 2fa status")
 	}
+	if !config.C.General.Enable2FALogin {
+		is2fa = false
+	}
 	if is2fa {
 		// if 2fa is enabled we issue token that is only valid for 10 minutes
 		// and is only good to perform second factor authentication. If second
