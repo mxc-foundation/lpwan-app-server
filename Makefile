@@ -77,6 +77,7 @@ api:
 	@cp -rf /tmp/chirpstack-api/protobuf/* api/appserver-serves-ui/
 	@go generate api/appserver-serves-ui/api.go
 	@go generate api/appserver-serves-gateway/api.go
+	@go generate api/appserver-serves-m2m/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
 	@echo "Generating static files"

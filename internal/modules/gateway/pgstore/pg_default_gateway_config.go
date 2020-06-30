@@ -61,7 +61,7 @@ func (h *GWHandler) GetDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewayC
 		&defaultConfig.DefaultConfig)
 
 	if err != nil {
-		return handlePSQLError(Select, err, "select error")
+		return errors.Wrap(err, "select error")
 	}
 
 	return errors.Wrap(err, "GetDefaultGatewayConfig")

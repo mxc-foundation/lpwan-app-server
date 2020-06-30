@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"os"
 
 	"github.com/golang/protobuf/ptypes"
@@ -96,8 +97,8 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 // Branding returns UI branding.
 func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
 	resp := inpb.BrandingResponse{
-		Registration: brandingRegistration,
-		Footer:       brandingFooter,
+		Registration: config.C.ApplicationServer.Branding.Registration,
+		Footer:       config.C.ApplicationServer.Branding.Footer,
 		LogoPath:     os.Getenv("APPSERVER") + "/branding.png",
 	}
 
@@ -259,7 +260,8 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.FinishRegistration(req.UserId, req.Password)
+		pwdHash, err := hash(req.Password, saltSize, config.C.General.PasswordHashIterations)
+		err = a.Store.FinishRegistration(req.UserId, pwdHash)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}

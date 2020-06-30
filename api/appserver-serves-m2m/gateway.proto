@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package appserver_serves_m2m;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service GatewayM2MService {
+    rpc GetGatewayByMac (GetGatewayByMacRequest) returns (GetGatewayByMacResponse);
+    rpc GetGatewayMacList (google.protobuf.Empty) returns (GetGatewayMacListResponse);
+}
+
+message AppServerGatewayProfile {
+    string mac = 1;
+    int64 org_id = 2;
+    string description = 3;
+    string name = 4;
+    google.protobuf.Timestamp created_at = 5;
+}
+
+message GetGatewayByMacRequest {
+    string mac = 1;
+}
+
+message GetGatewayByMacResponse {
+    int64 org_id = 1;
+    AppServerGatewayProfile gw_profile = 2;
+}
+
+message GetGatewayMacListResponse {
+    repeated string gateway_mac = 1;
+}

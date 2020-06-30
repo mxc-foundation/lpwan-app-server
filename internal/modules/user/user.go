@@ -50,7 +50,7 @@ type UserStore interface {
 	RegisterUser(user *User, token string) error
 	GetUserByToken(token string) (User, error)
 	GetTokenByUsername(ctx context.Context, username string) (string, error)
-	FinishRegistration(userID int64, newPwd string) error
+	FinishRegistration(userID int64, pwdHash string) error
 }
 
 // UserAPI exports the User related functions.

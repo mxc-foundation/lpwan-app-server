@@ -23,7 +23,7 @@ func (v *validator) GetIsAdmin(ctx context.Context) (bool, error) {
 		return false, err
 	}
 
-	user, err := userAPI.Store.GetUserByUsername(ctx, claims.Username)
+	user, err := userAPI.Store.GetUserByEmail(ctx, claims.Username)
 	if err != nil {
 		return false, errors.Wrap(err, "get user by username error")
 	}

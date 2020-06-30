@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-GRPC_PATH=`go list -f '{{ .Dir }}' github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway`
-GRPC_PATH="${GRPC_PATH}/../third_party/googleapis"
-
 # generate the gRPC code
-protoc -I. -I${GRPC_PATH} --go_out=plugins=grpc:. \
-    heartbeat.proto
+protoc -I. --go_out=plugins=grpc:. \
+  heartbeat.proto

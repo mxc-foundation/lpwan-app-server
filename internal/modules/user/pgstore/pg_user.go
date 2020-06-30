@@ -15,6 +15,9 @@ import (
 	umod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
+const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
+const internalUserFields = "*"
+
 type UserPgHandler struct {
 	db *sqlx.DB
 }
@@ -63,7 +66,7 @@ func (h *UserPgHandler) CreateUser(ctx context.Context, user *umod.User) error {
 		user.ExternalID,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	var externalID string
@@ -95,7 +98,7 @@ func (h *UserPgHandler) GetUser(ctx context.Context, id int64) (umod.User, error
 	`, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, ErrDoesNotExist
+			return user, errors.New("not exist")
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -117,7 +120,7 @@ func (h *UserPgHandler) GetUserByExternalID(ctx context.Context, externalID stri
 	`, externalID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, ErrDoesNotExist
+			return user, errors.New("not exist")
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -139,7 +142,7 @@ func (h *UserPgHandler) GetUserByEmail(ctx context.Context, email string) (umod.
 	`, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, ErrDoesNotExist
+			return user, errors.New("not exist")
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -215,14 +218,14 @@ func (h *UserPgHandler) UpdateUser(ctx context.Context, u *umod.User) error {
 		u.PasswordHash,
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update error")
+		return errors.Wrap(err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	var extUser string
@@ -255,7 +258,7 @@ func (h *UserPgHandler) DeleteUser(ctx context.Context, id int64) error {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	log.WithFields(log.Fields{
@@ -280,14 +283,14 @@ func (h *UserPgHandler) LoginUserByPassword(ctx context.Context, email string, p
 	`, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", ErrInvalidUsernameOrPassword
+			return "", errors.New("invalid username or password")
 		}
 		return "", errors.Wrap(err, "select error")
 	}
 
 	// Compare the passed in password with the hash in the database.
 	if !user.HashCompare(password, user.PasswordHash) {
-		return "", ErrInvalidUsernameOrPassword
+		return "", errors.New("invalid username or password")
 	}
 
 	return h.GetUserToken(user)
@@ -365,18 +368,13 @@ func (h *UserPgHandler) GetUserToken(u umod.User) (string, error) {
 
 // RegisterUser ...
 func (h *UserPgHandler) RegisterUser(user *umod.User, token string) error {
-	if user.Username == "" {
-		if err := ValidateUsername(user.Username); err != nil {
-			errors.Wrap(err, "validation error")
-		}
-	}
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
 	// Add the new user.
 	err := sqlx.Get(h.db, &user.ID, `
 		insert into "user" (
-			username,
+			email,
 			is_admin,
 			is_active,
 			session_ttl,
@@ -385,7 +383,7 @@ func (h *UserPgHandler) RegisterUser(user *umod.User, token string) error {
 	        security_token)
 		values (
 			$1, $2, $3, $4, $5, $6, $7) returning id`,
-		user.Username,
+		user.Email,
 		user.IsAdmin,
 		user.IsActive,
 		user.SessionTTL,
@@ -394,7 +392,7 @@ func (h *UserPgHandler) RegisterUser(user *umod.User, token string) error {
 		token,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -411,7 +409,7 @@ func (h *UserPgHandler) GetUserByToken(token string) (umod.User, error) {
 	err := sqlx.Get(h.db, &user, "select "+externalUserFields+" from \"user\" where security_token = $1", token)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, ErrDoesNotExist
+			return user, errors.New("not exist")
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -426,7 +424,7 @@ func (h *UserPgHandler) GetTokenByUsername(ctx context.Context, username string)
 	err := sqlx.Get(h.db, &otp, "select security_token from \"user\" where username = $1", username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return otp, ErrDoesNotExist
+			return otp, errors.New("not exist")
 		}
 		return otp, errors.Wrap(err, "select error")
 	}
@@ -435,17 +433,8 @@ func (h *UserPgHandler) GetTokenByUsername(ctx context.Context, username string)
 }
 
 // FinishRegistration ...
-func (h *UserPgHandler) FinishRegistration(userID int64, newPwd string) error {
-	if err := ValidatePassword(newPwd); err != nil {
-		return errors.Wrap(err, "validation error")
-	}
-
-	pwdHash, err := hash(newPwd, saltSize, config.C.General.PasswordHashIterations)
-	if err != nil {
-		return err
-	}
-	log.Println("newPwd", newPwd)
-	_, err = h.db.Exec(`
+func (h *UserPgHandler) FinishRegistration(userID int64, pwdHash string) error {
+	_, err := h.db.Exec(`
 		update "user"
 		set
 			password_hash = $1,

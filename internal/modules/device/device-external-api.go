@@ -3,6 +3,13 @@ package device
 import (
 	"database/sql"
 	"encoding/json"
+	"strconv"
+
+	"google.golang.org/grpc/status"
+
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
@@ -781,9 +788,9 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 
 	return &pb.GetDeviceActivationResponse{
 		DeviceActivation: &pb.DeviceActivation{
-			DevEui:      d.DevEUI.String(),
-			DevAddr:     devAddr.String(),
-			AppSKey:     d.AppSKey.String(),
+			DevEui:  d.DevEUI.String(),
+			DevAddr: devAddr.String(),
+			//AppSKey:     d.AppSKey.String(),
 			NwkSEncKey:  nwkSEncKey.String(),
 			SNwkSIntKey: sNwkSIntKey.String(),
 			FNwkSIntKey: fNwkSIntKey.String(),
@@ -1043,4 +1050,198 @@ func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFram
 	}
 
 	return nil, nil, nil
+}
+
+// GetDeviceList defines the get device list request and response
+func (s *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequest) (*pb.GetDeviceListResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetDeviceList org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
+
+	resp, err := devClient.GetDeviceList(ctx, &m2mServer.GetDeviceListRequest{
+		OrgId:  req.OrgId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	var deviceProfileList []*pb.DSDeviceProfile
+	for _, item := range resp.DevProfile {
+		deviceProfile := &pb.DSDeviceProfile{
+			Id:            item.Id,
+			DevEui:        item.DevEui,
+			FkWallet:      item.Id,
+			Mode:          pb.DeviceMode(item.Mode),
+			CreatedAt:     item.CreatedAt,
+			LastSeenAt:    item.LastSeenAt,
+			ApplicationId: item.ApplicationId,
+			Name:          item.Name,
+		}
+
+		deviceProfileList = append(deviceProfileList, deviceProfile)
+	}
+
+	return &pb.GetDeviceListResponse{
+		DevProfile: deviceProfileList,
+		Count:      resp.Count,
+	}, status.Error(codes.OK, "")
+}
+
+// GetDeviceProfile defines the function to get the device profile
+func (s *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDeviceProfileRequest) (*pb.GetDSDeviceProfileResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetDeviceProfile org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
+
+	resp, err := devClient.GetDeviceProfile(ctx, &m2mServer.GetDSDeviceProfileRequest{
+		OrgId: req.OrgId,
+		DevId: req.DevId,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &pb.GetDSDeviceProfileResponse{
+		DevProfile: &pb.DSDeviceProfile{
+			Id:            resp.DevProfile.Id,
+			DevEui:        resp.DevProfile.DevEui,
+			FkWallet:      resp.DevProfile.FkWallet,
+			Mode:          pb.DeviceMode(resp.DevProfile.Mode),
+			CreatedAt:     resp.DevProfile.CreatedAt,
+			LastSeenAt:    resp.DevProfile.LastSeenAt,
+			ApplicationId: resp.DevProfile.ApplicationId,
+			Name:          resp.DevProfile.Name,
+		},
+	}, status.Error(codes.OK, "")
+}
+
+// GetDeviceHistory defines the get device history request and response
+func (s *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHistoryRequest) (*pb.GetDeviceHistoryResponse, error) {
+	logInfo := "api/appserver_serves_ui/GetDeviceHistory org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
+
+	resp, err := devClient.GetDeviceHistory(ctx, &m2mServer.GetDeviceHistoryRequest{
+		OrgId:  req.OrgId,
+		DevId:  req.DevId,
+		Offset: req.Offset,
+		Limit:  req.Limit,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &pb.GetDeviceHistoryResponse{
+		DevHistory: resp.DevHistory,
+	}, status.Error(codes.OK, "")
+}
+
+// SetDeviceMode defines the set device mode request and response
+func (s *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequest) (*pb.SetDeviceModeResponse, error) {
+	logInfo := "api/appserver_serves_ui/SetDeviceMode org=" + strconv.FormatInt(req.OrgId, 10)
+
+	// verify if user is global admin
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+	}
+	// is user is not global admin, user must have accesss to this organization
+	if userIsAdmin == false {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+			log.WithError(err).Error(logInfo)
+			return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		}
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
+
+	resp, err := devClient.SetDeviceMode(ctx, &m2mServer.SetDeviceModeRequest{
+		OrgId:   req.OrgId,
+		DevId:   req.DevId,
+		DevMode: m2mServer.DeviceMode(req.DevMode),
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &pb.SetDeviceModeResponse{
+		Status: resp.Status,
+	}, status.Error(codes.OK, "")
 }

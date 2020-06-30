@@ -87,7 +87,7 @@ func (h *DeviceHandler) CreateDevice(ctx context.Context, d *devmod.Device, appl
 		d.Tags,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	app, err := storage.GetApplication(ctx, h.db, d.ApplicationID)
@@ -163,7 +163,7 @@ func (h *DeviceHandler) GetDevice(ctx context.Context, devEUI lorawan.EUI64, for
 	var d devmod.Device
 	err := sqlx.Get(h.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
 	if err != nil {
-		return d, handlePSQLError(Select, err, "select error")
+		return d, errors.Wrap(err, "select error")
 	}
 
 	if localOnly {
@@ -229,7 +229,7 @@ func (h *DeviceHandler) GetAllDeviceEuis(ctx context.Context) ([]string, error) 
 	var list []lorawan.EUI64
 	err := sqlx.Select(h.db, &list, "select dev_eui from device ORDER BY created_at DESC")
 	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
+		return nil, errors.Wrap(err, "select error")
 	}
 
 	for _, devEui := range list {
@@ -270,7 +270,7 @@ func (h *DeviceHandler) GetDevices(ctx context.Context, filters devmod.DeviceFil
 	var devices []devmod.DeviceListItem
 	err = sqlx.Select(h.db, &devices, query, args...)
 	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
+		return nil, errors.Wrap(err, "select error")
 	}
 
 	return devices, nil
@@ -323,14 +323,14 @@ func (h *DeviceHandler) UpdateDevice(ctx context.Context, d *devmod.Device, loca
 		d.Tags,
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update error")
+		return errors.Wrap(err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	// update the device on the network-server
@@ -387,14 +387,14 @@ func (h *DeviceHandler) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) 
 
 	res, err := h.db.Exec("delete from device where dev_eui = $1", devEUI[:])
 	if err != nil {
-		return handlePSQLError(Delete, err, "delete error")
+		return errors.Wrap(err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	// delete device from networkserver
@@ -459,7 +459,7 @@ func (h *DeviceHandler) CreateDeviceKeys(ctx context.Context, dc *devmod.DeviceK
 		dc.GenAppKey[:],
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -476,7 +476,7 @@ func (h *DeviceHandler) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64)
 
 	err := sqlx.Get(h.db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
-		return dc, handlePSQLError(Select, err, "select error")
+		return dc, errors.Wrap(err, "select error")
 	}
 
 	return dc, nil
@@ -504,14 +504,14 @@ func (h *DeviceHandler) UpdateDeviceKeys(ctx context.Context, dc *devmod.DeviceK
 		dc.GenAppKey[:],
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update error")
+		return errors.Wrap(err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	log.WithFields(log.Fields{
@@ -526,14 +526,14 @@ func (h *DeviceHandler) UpdateDeviceKeys(ctx context.Context, dc *devmod.DeviceK
 func (h *DeviceHandler) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error {
 	res, err := h.db.Exec("delete from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
-		return handlePSQLError(Delete, err, "delete error")
+		return errors.Wrap(err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected errro")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	log.WithFields(log.Fields{
@@ -562,7 +562,7 @@ func (h *DeviceHandler) CreateDeviceActivation(ctx context.Context, da *devmod.D
 		da.AppSKey[:],
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -589,7 +589,7 @@ func (h *DeviceHandler) GetLastDeviceActivationForDevEUI(ctx context.Context, de
 		devEUI[:],
 	)
 	if err != nil {
-		return da, handlePSQLError(Select, err, "select error")
+		return da, errors.Wrap(err, "select error")
 	}
 
 	return da, nil
@@ -600,7 +600,7 @@ func (h *DeviceHandler) DeleteAllDevicesForApplicationID(ctx context.Context, ap
 	var devs []devmod.Device
 	err := sqlx.Select(h.db, &devs, "select * from device where application_id = $1", applicationID)
 	if err != nil {
-		return handlePSQLError(Select, err, "select error")
+		return errors.Wrap(err, "select error")
 	}
 
 	for _, dev := range devs {

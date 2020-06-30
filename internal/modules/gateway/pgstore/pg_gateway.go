@@ -68,7 +68,7 @@ func (h *GWHandler) GetGatewayFirmware(model string, forUpdate bool) (gwFw gwmod
 	err = sqlx.Get(h.db, &gwFw, "select * from gateway_firmware where model = $1 "+fu, model)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return gwFw, ErrDoesNotExist
+			return gwFw, errors.New("not exist")
 		}
 		return gwFw, err
 	}
@@ -86,7 +86,7 @@ func (h *GWHandler) GetGatewayFirmwareList() (list []gwmod.GatewayFirmware, err 
 	`)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return list, ErrDoesNotExist
+			return list, errors.New("not exist")
 		}
 		return nil, errors.Wrap(err, "GetGatewayFirmwareList")
 	}
@@ -140,14 +140,14 @@ func (h *GWHandler) UpdateGatewayConfigByGwId(ctx context.Context, config string
 		config,
 		mac[:])
 	if err != nil {
-		return handlePSQLError(Update, err, "update error")
+		return errors.Wrap(err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	return nil
@@ -214,7 +214,7 @@ func (h *GWHandler) CreateGateway(ctx context.Context, gw *gwmod.Gateway) error 
 		gw.OsVersion,
 		gw.SerialNumber)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	// add this gateway to m2m server
@@ -299,14 +299,14 @@ func (h *GWHandler) UpdateGateway(ctx context.Context, gw *gwmod.Gateway) error 
 		gw.Statistics,
 		gw.FirmwareHash[:])
 	if err != nil {
-		return handlePSQLError(Update, err, "update error")
+		return errors.Wrap(err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	gw.UpdatedAt = now
@@ -329,14 +329,14 @@ func (h *GWHandler) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64,
 		mac,
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update first heartbeat error")
+		return errors.Wrap(err, "update first heartbeat error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	return nil
@@ -353,14 +353,14 @@ func (h *GWHandler) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, 
 		mac,
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update last heartbeat error")
+		return errors.Wrap(err, "update last heartbeat error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	return nil
@@ -376,14 +376,14 @@ func (h *GWHandler) SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64
 		mac[:],
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update auto_update_firmware error")
+		return errors.Wrap(err, "update auto_update_firmware error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	return nil
@@ -427,7 +427,7 @@ func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error 
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
@@ -475,7 +475,7 @@ func (h *GWHandler) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate
 	err := sqlx.Get(h.db, &gw, "select * from gateway where mac = $1"+fu, mac[:])
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return gw, ErrDoesNotExist
+			return gw, errors.New("not exist")
 		}
 		return gw, err
 	}
@@ -587,14 +587,14 @@ func (h *GWHandler) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.
 		mac,
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update first heartbeat to zero error")
+		return errors.Wrap(err, "update first heartbeat to zero error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	return nil
@@ -668,7 +668,7 @@ func (h *GWHandler) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64
 	var gws []gwmod.Gateway
 	err := sqlx.Select(h.db, &gws, "select * from gateway where mac = any($1)", pq.ByteaArray(macsB))
 	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
+		return nil, errors.Wrap(err, "select error")
 	}
 
 	if len(gws) != len(macs) {
@@ -858,7 +858,7 @@ func (h *GWHandler) CreateGatewayPing(ctx context.Context, ping *gwmod.GatewayPi
 		ping.DR,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -877,7 +877,7 @@ func (h *GWHandler) GetGatewayPing(ctx context.Context, id int64) (gwmod.Gateway
 	var ping gwmod.GatewayPing
 	err := sqlx.Get(h.db, &ping, "select * from gateway_ping where id = $1", id)
 	if err != nil {
-		return ping, handlePSQLError(Select, err, "select error")
+		return ping, errors.Wrap(err, "select error")
 	}
 
 	return ping, nil
@@ -909,7 +909,7 @@ func (h *GWHandler) CreateGatewayPingRX(ctx context.Context, rx *gwmod.GatewayPi
 		rx.Altitude,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return errors.Wrap(err, "insert error")
 	}
 
 	return nil
@@ -921,7 +921,7 @@ func (h *GWHandler) DeleteAllGatewaysForOrganizationID(ctx context.Context, orga
 	var gws []gwmod.Gateway
 	err := sqlx.Select(h.db, &gws, "select * from gateway where organization_id = $1", organizationID)
 	if err != nil {
-		return handlePSQLError(Select, err, "select error")
+		return errors.Wrap(err, "select error")
 	}
 
 	for _, gw := range gws {
@@ -956,7 +956,7 @@ func (h *GWHandler) GetGatewayPingRXForPingID(ctx context.Context, pingID int64)
 
 	err := sqlx.Select(h.db, &rx, "select * from gateway_ping_rx where ping_id = $1", pingID)
 	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
+		return nil, errors.Wrap(err, "select error")
 	}
 
 	return rx, nil
@@ -971,7 +971,7 @@ func (h *GWHandler) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI
 	}
 
 	if gw.LastPingID == nil {
-		return gwmod.GatewayPing{}, nil, ErrDoesNotExist
+		return gwmod.GatewayPing{}, nil, errors.New("not exist")
 	}
 
 	ping, err := h.GetGatewayPing(ctx, *gw.LastPingID)

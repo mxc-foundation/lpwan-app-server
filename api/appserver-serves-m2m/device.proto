@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package appserver_serves_m2m;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service DeviceM2MService {
+    rpc GetDeviceByDevEui (GetDeviceByDevEuiRequest) returns (GetDeviceByDevEuiResponse);
+    rpc GetDeviceDevEuiList (google.protobuf.Empty) returns (GetDeviceDevEuiListResponse);
+}
+
+message AppServerDeviceProfile {
+    string dev_eui = 1;
+    int64 application_id = 2;
+    string name = 3;
+    google.protobuf.Timestamp created_at = 4;
+}
+
+message GetDeviceByDevEuiRequest {
+    string dev_eui = 1;
+}
+
+message GetDeviceByDevEuiResponse {
+    int64 org_id = 1;
+    AppServerDeviceProfile dev_profile = 2;
+}
+
+message GetDeviceDevEuiListResponse {
+    repeated string dev_eui = 1;
+}
