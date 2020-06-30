@@ -93,7 +93,7 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.GetWithdrawHistoryRequest) (*api.GetWithdrawHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdrawHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
-	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
 	}
