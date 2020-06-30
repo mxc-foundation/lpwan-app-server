@@ -26,10 +26,7 @@ protoc -I. -I.. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=plugins=grpc:. \
   topup.proto \
   wallet.proto \
   withdraw.proto \
-  m2mserver_device.proto \
-  m2mserver_gateway.proto \
   settings.proto \
-  server.proto \
   staking.proto
 
 # generate the JSON interface code
@@ -53,10 +50,7 @@ protoc -I. -I.. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=logtostd
   topup.proto \
   wallet.proto \
   withdraw.proto \
-  m2mserver_device.proto \
-  m2mserver_gateway.proto \
   settings.proto \
-  server.proto \
   staking.proto
 
 # generate the swagger definitions
@@ -80,10 +74,7 @@ protoc -I. -I.. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_names_fo
   topup.proto \
   wallet.proto \
   withdraw.proto \
-  m2mserver_device.proto \
-  m2mserver_gateway.proto \
   settings.proto \
-  server.proto \
   staking.proto
 
 # merge the swagger code into one file

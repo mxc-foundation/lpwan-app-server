@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,29 +19,34 @@ import (
 
 // StakingServerAPI defines the Staking Server API structure
 type StakingServerAPI struct {
-	validator authcus.Validator
+	Validator *validator
 }
 
-// NewStakingServerAPI defines the Stagking Server API validator
-func NewStakingServerAPI(validator authcus.Validator) *StakingServerAPI {
-	return &StakingServerAPI{
-		validator: validator,
+// NewStakingServerAPI defines the Stagking Server API Validator
+func NewStakingServerAPI(api StakingServerAPI) *StakingServerAPI {
+	stakingServerAPI = StakingServerAPI{
+		Validator: api.Validator,
 	}
+	return &stakingServerAPI
 }
+
+var (
+	stakingServerAPI StakingServerAPI
+)
 
 // GetStakingPercentage defines the request and response to get staking percentage
 func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingPercentage org=%d", req.OrgId)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakingPercentageResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.StakingPercentageResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -72,14 +79,14 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/Stake org=%d", req.OrgId)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -115,14 +122,14 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/Unstake org=%d", req.OrgId)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.UnstakeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -157,14 +164,14 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetActiveStakes org=%d", req.OrgId)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -208,14 +215,14 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingHistory org=%d", req.OrgId)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.StakingHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}

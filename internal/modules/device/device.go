@@ -25,11 +25,12 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 type DeviceStore interface {
-	CreateDevice(ctx context.Context, d *Device) error
+	CreateDevice(ctx context.Context, d *Device, applicationServerID uuid.UUID) error
 	GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate, localOnly bool) (Device, error)
 	GetDeviceCount(ctx context.Context, filters DeviceFilters) (int, error)
 	GetAllDeviceEuis(ctx context.Context) ([]string, error)
@@ -47,16 +48,28 @@ type DeviceStore interface {
 
 // DeviceAPI exports the Node related functions.
 type DeviceAPI struct {
-	validator authcus.Validator
-	store     DeviceStore
+	Validator            *validator
+	Store                DeviceStore
+	AppplicationServerID uuid.UUID
 }
 
 // NewDeviceAPI creates a new NodeAPI.
-func NewDeviceAPI(validator authcus.Validator, store DeviceStore) *DeviceAPI {
-	return &DeviceAPI{
-		validator: validator,
-		store:     store,
+func NewDeviceAPI(api DeviceAPI) *DeviceAPI {
+	deviceAPI = DeviceAPI{
+		Validator:            api.Validator,
+		Store:                api.Store,
+		AppplicationServerID: api.AppplicationServerID,
 	}
+
+	return &deviceAPI
+}
+
+var (
+	deviceAPI DeviceAPI
+)
+
+func GetDeviceAPI() *DeviceAPI {
+	return &deviceAPI
 }
 
 // Create creates the given device.
@@ -75,7 +88,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodesAccess(req.Device.ApplicationId, authcus.Create)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -137,7 +150,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 
 		// Validate max. device count when != 0.
 		if org.MaxDeviceCount != 0 {
-			count, err := a.store.GetDeviceCount(ctx, DeviceFilters{OrganizationID: app.OrganizationID})
+			count, err := a.Store.GetDeviceCount(ctx, DeviceFilters{ApplicationID: app.OrganizationID})
 			if err != nil {
 				return err
 			}
@@ -147,7 +160,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 			}
 		}
 
-		return a.store.CreateDevice(ctx, &d)
+		return a.Store.CreateDevice(ctx, &d, a.AppplicationServerID)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -163,12 +176,12 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(eui, authcus.Read)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.store.GetDevice(ctx, eui, false, false)
+	d, err := a.Store.GetDevice(ctx, eui, false, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -182,7 +195,6 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 			DeviceProfileId:   d.DeviceProfileID.String(),
 			SkipFCntCheck:     d.SkipFCntCheck,
 			ReferenceAltitude: d.ReferenceAltitude,
-			IsDisabled:        d.IsDisabled,
 			Variables:         make(map[string]string),
 			Tags:              make(map[string]string),
 		},
@@ -264,7 +276,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given application
-		if err := a.validator.Validate(ctx,
+		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 			authcus.ValidateApplicationAccess(req.ApplicationId, authcus.Read),
 		); err != nil {
 			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
@@ -276,7 +288,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given multicast-group
-		if err := a.validator.Validate(ctx,
+		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 			authcus.ValidateMulticastGroupAccess(authcus.Read, filters.MulticastGroupID),
 		); err != nil {
 			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
@@ -287,7 +299,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given service-profile
-		if err := a.validator.Validate(ctx,
+		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 			authcus.ValidateServiceProfileAccess(authcus.Read, filters.ServiceProfileID),
 		); err != nil {
 			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
@@ -295,7 +307,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 	}
 
 	if !idFilter {
-		user, err := a.validator.GetUser(ctx)
+		user, err := user.GetUserAPI().Validator.GetUser(ctx)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
@@ -305,12 +317,12 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		}
 	}
 
-	count, err := a.store.GetDeviceCount(ctx, filters)
+	count, err := a.Store.GetDeviceCount(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	devices, err := a.store.GetDevices(ctx, filters)
+	devices, err := a.Store.GetDevices(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -334,7 +346,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(devEUI, authcus.Update)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -354,7 +366,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err := a.store.GetDevice(ctx, devEUI, true, false)
+		d, err := a.Store.GetDevice(ctx, devEUI, true, false)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -400,7 +412,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 			d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
 		}
 
-		if err := a.store.UpdateDevice(ctx, &d, false); err != nil {
+		if err := a.Store.UpdateDevice(ctx, &d, false); err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
@@ -420,7 +432,7 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(eui, authcus.Delete)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -428,7 +440,7 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 	// as this also performs a remote call to delete the node from the
 	// network-server, wrap it in a transaction
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		return a.store.DeleteDevice(ctx, eui)
+		return a.Store.DeleteDevice(ctx, eui)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -472,13 +484,13 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(eui, authcus.Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.store.CreateDeviceKeys(ctx, &DeviceKeys{
+	err := a.Store.CreateDeviceKeys(ctx, &DeviceKeys{
 		DevEUI:    eui,
 		NwkKey:    nwkKey,
 		AppKey:    appKey,
@@ -498,13 +510,13 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(eui, authcus.Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	dk, err := a.store.GetDeviceKeys(ctx, eui)
+	dk, err := a.Store.GetDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -552,13 +564,13 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(eui, authcus.Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	dk, err := a.store.GetDeviceKeys(ctx, eui)
+	dk, err := a.Store.GetDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -566,7 +578,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 	dk.AppKey = appKey
 	dk.GenAppKey = genAppKey
 
-	err = a.store.UpdateDeviceKeys(ctx, &dk)
+	err = a.Store.UpdateDeviceKeys(ctx, &dk)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -581,13 +593,13 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(eui, authcus.Delete),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err := a.store.DeleteDeviceKeys(ctx, eui); err != nil {
+	if err := a.Store.DeleteDeviceKeys(ctx, eui); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -601,13 +613,13 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(devEUI, authcus.Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.store.GetDevice(ctx, devEUI, false, true)
+	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -661,12 +673,12 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		return nil, grpc.Errorf(codes.InvalidArgument, "fNwkSIntKey: %s", err)
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(devEUI, authcus.Update)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.store.GetDevice(ctx, devEUI, false, true)
+	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -735,12 +747,12 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateNodeAccess(devEUI, authcus.Read)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.store.GetDevice(ctx, devEUI, false, true)
+	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -791,7 +803,7 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 		return grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if err := a.validator.Validate(srv.Context(),
+	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
 		authcus.ValidateNodeAccess(devEUI, authcus.Read)); err != nil {
 		return grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -858,7 +870,7 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 		return grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if err := a.validator.Validate(srv.Context(),
+	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
 		authcus.ValidateNodeAccess(devEUI, authcus.Read)); err != nil {
 		return grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -1025,7 +1037,6 @@ func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFram
 		downlinkFrameLog := pb.DownlinkFrameLog{
 			TxInfo:         down.TxInfo,
 			PhyPayloadJson: string(phyJSON),
-			GatewayId:      gatewayID.String(),
 		}
 
 		return nil, &downlinkFrameLog, nil

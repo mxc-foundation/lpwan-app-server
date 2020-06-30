@@ -512,7 +512,7 @@ func (h *GWHandler) GetGatewayCount(ctx context.Context, search string) (int, er
 }
 
 // GetGateways returns a slice of gateways sorted by name.
-func (h *GWHandler) GetGateways(ctx context.Context, limit, offset int, search string) ([]gwmod.Gateway, error) {
+func (h *GWHandler) GetGateways(ctx context.Context, limit, offset int32, search string) ([]gwmod.Gateway, error) {
 	var gws []gwmod.Gateway
 	if search != "" {
 		search = "%" + search + "%"

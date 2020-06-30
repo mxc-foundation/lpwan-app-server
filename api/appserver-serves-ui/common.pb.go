@@ -7,11 +7,8 @@ import (
 	fmt "fmt"
 	math "math"
 
-	common "github.com/brocaar/chirpstack-api/go/v3/common"
 	gw "github.com/brocaar/chirpstack-api/go/v3/gw"
 	proto "github.com/golang/protobuf/proto"
-	duration "github.com/golang/protobuf/ptypes/duration"
-	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -54,7 +51,7 @@ type UplinkFrameLog struct {
 	// TX information of the uplink.
 	TxInfo *gw.UplinkTXInfo `protobuf:"bytes,1,opt,name=tx_info,json=txInfo,proto3" json:"tx_info,omitempty"`
 	// RX information of the uplink.
-	RxInfo []*UplinkRXInfo `protobuf:"bytes,2,rep,name=rx_info,json=rxInfo,proto3" json:"rx_info,omitempty"`
+	RxInfo []*gw.UplinkRXInfo `protobuf:"bytes,2,rep,name=rx_info,json=rxInfo,proto3" json:"rx_info,omitempty"`
 	// LoRaWAN PHYPayload.
 	PhyPayloadJson       string   `protobuf:"bytes,3,opt,name=phy_payload_json,json=phyPayloadJSON,proto3" json:"phy_payload_json,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -94,7 +91,7 @@ func (m *UplinkFrameLog) GetTxInfo() *gw.UplinkTXInfo {
 	return nil
 }
 
-func (m *UplinkFrameLog) GetRxInfo() []*UplinkRXInfo {
+func (m *UplinkFrameLog) GetRxInfo() []*gw.UplinkRXInfo {
 	if m != nil {
 		return m.RxInfo
 	}
@@ -110,7 +107,7 @@ func (m *UplinkFrameLog) GetPhyPayloadJson() string {
 
 type DownlinkFrameLog struct {
 	// TX information of the downlink.
-	TxInfo *DownlinkTXInfo `protobuf:"bytes,1,opt,name=tx_info,json=txInfo,proto3" json:"tx_info,omitempty"`
+	TxInfo *gw.DownlinkTXInfo `protobuf:"bytes,1,opt,name=tx_info,json=txInfo,proto3" json:"tx_info,omitempty"`
 	// LoRaWAN PHYPayload.
 	PhyPayloadJson       string   `protobuf:"bytes,2,opt,name=phy_payload_json,json=phyPayloadJSON,proto3" json:"phy_payload_json,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -143,7 +140,7 @@ func (m *DownlinkFrameLog) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_DownlinkFrameLog proto.InternalMessageInfo
 
-func (m *DownlinkFrameLog) GetTxInfo() *DownlinkTXInfo {
+func (m *DownlinkFrameLog) GetTxInfo() *gw.DownlinkTXInfo {
 	if m != nil {
 		return m.TxInfo
 	}
@@ -157,557 +154,29 @@ func (m *DownlinkFrameLog) GetPhyPayloadJson() string {
 	return ""
 }
 
-// This is a copy of gw.UplinkRXInfo with the only change that the
-// gateway_id is of type string so that we can return it as HEX encoded
-// instead of base64.
-type UplinkRXInfo struct {
-	// Gateway ID.
-	GatewayId string `protobuf:"bytes,1,opt,name=gateway_id,json=gatewayID,proto3" json:"gateway_id,omitempty"`
-	// Uplink ID (UUID).
-	UplinkId string `protobuf:"bytes,16,opt,name=uplink_id,json=uplinkID,proto3" json:"uplink_id,omitempty"`
-	// RX time (only set when the gateway has a GPS module).
-	Time *timestamp.Timestamp `protobuf:"bytes,2,opt,name=time,proto3" json:"time,omitempty"`
-	// RX time since GPS epoch (only set when the gateway has a GPS module).
-	TimeSinceGpsEpoch *duration.Duration `protobuf:"bytes,3,opt,name=time_since_gps_epoch,json=timeSinceGpsEpoch,proto3" json:"time_since_gps_epoch,omitempty"`
-	// RSSI.
-	Rssi int32 `protobuf:"varint,5,opt,name=rssi,proto3" json:"rssi,omitempty"`
-	// LoRa SNR.
-	LoraSnr float64 `protobuf:"fixed64,6,opt,name=lora_snr,json=loraSnr,proto3" json:"lora_snr,omitempty"`
-	// Channel.
-	Channel uint32 `protobuf:"varint,7,opt,name=channel,proto3" json:"channel,omitempty"`
-	// RF Chain.
-	RfChain uint32 `protobuf:"varint,8,opt,name=rf_chain,json=rfChain,proto3" json:"rf_chain,omitempty"`
-	// Board.
-	Board uint32 `protobuf:"varint,9,opt,name=board,proto3" json:"board,omitempty"`
-	// Antenna.
-	Antenna uint32 `protobuf:"varint,10,opt,name=antenna,proto3" json:"antenna,omitempty"`
-	// Location.
-	Location *common.Location `protobuf:"bytes,11,opt,name=location,proto3" json:"location,omitempty"`
-	// Fine-timestamp type.
-	FineTimestampType gw.FineTimestampType `protobuf:"varint,12,opt,name=fine_timestamp_type,json=fineTimestampType,proto3,enum=gw.FineTimestampType" json:"fine_timestamp_type,omitempty"`
-	// Fine-timestamp data.
-	//
-	// Types that are valid to be assigned to FineTimestamp:
-	//	*UplinkRXInfo_EncryptedFineTimestamp
-	//	*UplinkRXInfo_PlainFineTimestamp
-	FineTimestamp isUplinkRXInfo_FineTimestamp `protobuf_oneof:"fine_timestamp"`
-	// Gateway specific context.
-	Context              []byte   `protobuf:"bytes,15,opt,name=context,proto3" json:"context,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *UplinkRXInfo) Reset()         { *m = UplinkRXInfo{} }
-func (m *UplinkRXInfo) String() string { return proto.CompactTextString(m) }
-func (*UplinkRXInfo) ProtoMessage()    {}
-func (*UplinkRXInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{2}
-}
-
-func (m *UplinkRXInfo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_UplinkRXInfo.Unmarshal(m, b)
-}
-func (m *UplinkRXInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_UplinkRXInfo.Marshal(b, m, deterministic)
-}
-func (m *UplinkRXInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UplinkRXInfo.Merge(m, src)
-}
-func (m *UplinkRXInfo) XXX_Size() int {
-	return xxx_messageInfo_UplinkRXInfo.Size(m)
-}
-func (m *UplinkRXInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_UplinkRXInfo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_UplinkRXInfo proto.InternalMessageInfo
-
-func (m *UplinkRXInfo) GetGatewayId() string {
-	if m != nil {
-		return m.GatewayId
-	}
-	return ""
-}
-
-func (m *UplinkRXInfo) GetUplinkId() string {
-	if m != nil {
-		return m.UplinkId
-	}
-	return ""
-}
-
-func (m *UplinkRXInfo) GetTime() *timestamp.Timestamp {
-	if m != nil {
-		return m.Time
-	}
-	return nil
-}
-
-func (m *UplinkRXInfo) GetTimeSinceGpsEpoch() *duration.Duration {
-	if m != nil {
-		return m.TimeSinceGpsEpoch
-	}
-	return nil
-}
-
-func (m *UplinkRXInfo) GetRssi() int32 {
-	if m != nil {
-		return m.Rssi
-	}
-	return 0
-}
-
-func (m *UplinkRXInfo) GetLoraSnr() float64 {
-	if m != nil {
-		return m.LoraSnr
-	}
-	return 0
-}
-
-func (m *UplinkRXInfo) GetChannel() uint32 {
-	if m != nil {
-		return m.Channel
-	}
-	return 0
-}
-
-func (m *UplinkRXInfo) GetRfChain() uint32 {
-	if m != nil {
-		return m.RfChain
-	}
-	return 0
-}
-
-func (m *UplinkRXInfo) GetBoard() uint32 {
-	if m != nil {
-		return m.Board
-	}
-	return 0
-}
-
-func (m *UplinkRXInfo) GetAntenna() uint32 {
-	if m != nil {
-		return m.Antenna
-	}
-	return 0
-}
-
-func (m *UplinkRXInfo) GetLocation() *common.Location {
-	if m != nil {
-		return m.Location
-	}
-	return nil
-}
-
-func (m *UplinkRXInfo) GetFineTimestampType() gw.FineTimestampType {
-	if m != nil {
-		return m.FineTimestampType
-	}
-	return gw.FineTimestampType_NONE
-}
-
-type isUplinkRXInfo_FineTimestamp interface {
-	isUplinkRXInfo_FineTimestamp()
-}
-
-type UplinkRXInfo_EncryptedFineTimestamp struct {
-	EncryptedFineTimestamp *EncryptedFineTimestamp `protobuf:"bytes,13,opt,name=encrypted_fine_timestamp,json=encryptedFineTimestamp,proto3,oneof"`
-}
-
-type UplinkRXInfo_PlainFineTimestamp struct {
-	PlainFineTimestamp *gw.PlainFineTimestamp `protobuf:"bytes,14,opt,name=plain_fine_timestamp,json=plainFineTimestamp,proto3,oneof"`
-}
-
-func (*UplinkRXInfo_EncryptedFineTimestamp) isUplinkRXInfo_FineTimestamp() {}
-
-func (*UplinkRXInfo_PlainFineTimestamp) isUplinkRXInfo_FineTimestamp() {}
-
-func (m *UplinkRXInfo) GetFineTimestamp() isUplinkRXInfo_FineTimestamp {
-	if m != nil {
-		return m.FineTimestamp
-	}
-	return nil
-}
-
-func (m *UplinkRXInfo) GetEncryptedFineTimestamp() *EncryptedFineTimestamp {
-	if x, ok := m.GetFineTimestamp().(*UplinkRXInfo_EncryptedFineTimestamp); ok {
-		return x.EncryptedFineTimestamp
-	}
-	return nil
-}
-
-func (m *UplinkRXInfo) GetPlainFineTimestamp() *gw.PlainFineTimestamp {
-	if x, ok := m.GetFineTimestamp().(*UplinkRXInfo_PlainFineTimestamp); ok {
-		return x.PlainFineTimestamp
-	}
-	return nil
-}
-
-func (m *UplinkRXInfo) GetContext() []byte {
-	if m != nil {
-		return m.Context
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*UplinkRXInfo) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*UplinkRXInfo_EncryptedFineTimestamp)(nil),
-		(*UplinkRXInfo_PlainFineTimestamp)(nil),
-	}
-}
-
-// this s a copy of gw.EncryptedFineTimestamp which the only change that
-// the fpga_id is of type string so that it can be returned in HEX format
-// instead of base64.
-type EncryptedFineTimestamp struct {
-	// AES key index used for encrypting the fine timestamp.
-	AesKeyIndex uint32 `protobuf:"varint,1,opt,name=aes_key_index,json=aesKeyIndex,proto3" json:"aes_key_index,omitempty"`
-	// Encrypted 'main' fine-timestamp (ns precision part of the timestamp).
-	EncryptedNs []byte `protobuf:"bytes,2,opt,name=encrypted_ns,json=encryptedNS,proto3" json:"encrypted_ns,omitempty"`
-	// FPGA ID.
-	FpgaId               string   `protobuf:"bytes,3,opt,name=fpga_id,json=fpgaID,proto3" json:"fpga_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *EncryptedFineTimestamp) Reset()         { *m = EncryptedFineTimestamp{} }
-func (m *EncryptedFineTimestamp) String() string { return proto.CompactTextString(m) }
-func (*EncryptedFineTimestamp) ProtoMessage()    {}
-func (*EncryptedFineTimestamp) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{3}
-}
-
-func (m *EncryptedFineTimestamp) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_EncryptedFineTimestamp.Unmarshal(m, b)
-}
-func (m *EncryptedFineTimestamp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_EncryptedFineTimestamp.Marshal(b, m, deterministic)
-}
-func (m *EncryptedFineTimestamp) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_EncryptedFineTimestamp.Merge(m, src)
-}
-func (m *EncryptedFineTimestamp) XXX_Size() int {
-	return xxx_messageInfo_EncryptedFineTimestamp.Size(m)
-}
-func (m *EncryptedFineTimestamp) XXX_DiscardUnknown() {
-	xxx_messageInfo_EncryptedFineTimestamp.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_EncryptedFineTimestamp proto.InternalMessageInfo
-
-func (m *EncryptedFineTimestamp) GetAesKeyIndex() uint32 {
-	if m != nil {
-		return m.AesKeyIndex
-	}
-	return 0
-}
-
-func (m *EncryptedFineTimestamp) GetEncryptedNs() []byte {
-	if m != nil {
-		return m.EncryptedNs
-	}
-	return nil
-}
-
-func (m *EncryptedFineTimestamp) GetFpgaId() string {
-	if m != nil {
-		return m.FpgaId
-	}
-	return ""
-}
-
-// Same comment as above applies to this message.
-type DownlinkTXInfo struct {
-	// Gateway ID.
-	GatewayId string `protobuf:"bytes,1,opt,name=gateway_id,json=gatewayID,proto3" json:"gateway_id,omitempty"`
-	// Downlink ID (UUID).
-	DownlinkId string `protobuf:"bytes,17,opt,name=downlink_id,json=downlinkID,proto3" json:"downlink_id,omitempty"`
-	// TX frequency (in Hz).
-	Frequency uint32 `protobuf:"varint,5,opt,name=frequency,proto3" json:"frequency,omitempty"`
-	// TX power (in dBm).
-	Power int32 `protobuf:"varint,6,opt,name=power,proto3" json:"power,omitempty"`
-	// Modulation.
-	Modulation common.Modulation `protobuf:"varint,7,opt,name=modulation,proto3,enum=common.Modulation" json:"modulation,omitempty"`
-	// Types that are valid to be assigned to ModulationInfo:
-	//	*DownlinkTXInfo_LoraModulationInfo
-	//	*DownlinkTXInfo_FskModulationInfo
-	ModulationInfo isDownlinkTXInfo_ModulationInfo `protobuf_oneof:"modulation_info"`
-	// The board identifier for emitting the frame.
-	Board uint32 `protobuf:"varint,10,opt,name=board,proto3" json:"board,omitempty"`
-	// The antenna identifier for emitting the frame.
-	Antenna uint32 `protobuf:"varint,11,opt,name=antenna,proto3" json:"antenna,omitempty"`
-	// Timing defines the downlink timing to use.
-	Timing gw.DownlinkTiming `protobuf:"varint,12,opt,name=timing,proto3,enum=gw.DownlinkTiming" json:"timing,omitempty"`
-	// Types that are valid to be assigned to TimingInfo:
-	//	*DownlinkTXInfo_ImmediatelyTimingInfo
-	//	*DownlinkTXInfo_DelayTimingInfo
-	//	*DownlinkTXInfo_GpsEpochTimingInfo
-	TimingInfo isDownlinkTXInfo_TimingInfo `protobuf_oneof:"timing_info"`
-	// Gateway specific context.
-	// In case of a Class-A downlink, this contains a copy of the uplink context.
-	Context              []byte   `protobuf:"bytes,16,opt,name=context,proto3" json:"context,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *DownlinkTXInfo) Reset()         { *m = DownlinkTXInfo{} }
-func (m *DownlinkTXInfo) String() string { return proto.CompactTextString(m) }
-func (*DownlinkTXInfo) ProtoMessage()    {}
-func (*DownlinkTXInfo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_555bd8c177793206, []int{4}
-}
-
-func (m *DownlinkTXInfo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_DownlinkTXInfo.Unmarshal(m, b)
-}
-func (m *DownlinkTXInfo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_DownlinkTXInfo.Marshal(b, m, deterministic)
-}
-func (m *DownlinkTXInfo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_DownlinkTXInfo.Merge(m, src)
-}
-func (m *DownlinkTXInfo) XXX_Size() int {
-	return xxx_messageInfo_DownlinkTXInfo.Size(m)
-}
-func (m *DownlinkTXInfo) XXX_DiscardUnknown() {
-	xxx_messageInfo_DownlinkTXInfo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_DownlinkTXInfo proto.InternalMessageInfo
-
-func (m *DownlinkTXInfo) GetGatewayId() string {
-	if m != nil {
-		return m.GatewayId
-	}
-	return ""
-}
-
-func (m *DownlinkTXInfo) GetDownlinkId() string {
-	if m != nil {
-		return m.DownlinkId
-	}
-	return ""
-}
-
-func (m *DownlinkTXInfo) GetFrequency() uint32 {
-	if m != nil {
-		return m.Frequency
-	}
-	return 0
-}
-
-func (m *DownlinkTXInfo) GetPower() int32 {
-	if m != nil {
-		return m.Power
-	}
-	return 0
-}
-
-func (m *DownlinkTXInfo) GetModulation() common.Modulation {
-	if m != nil {
-		return m.Modulation
-	}
-	return common.Modulation_LORA
-}
-
-type isDownlinkTXInfo_ModulationInfo interface {
-	isDownlinkTXInfo_ModulationInfo()
-}
-
-type DownlinkTXInfo_LoraModulationInfo struct {
-	LoraModulationInfo *gw.LoRaModulationInfo `protobuf:"bytes,8,opt,name=lora_modulation_info,json=loraModulationInfo,proto3,oneof"`
-}
-
-type DownlinkTXInfo_FskModulationInfo struct {
-	FskModulationInfo *gw.FSKModulationInfo `protobuf:"bytes,9,opt,name=fsk_modulation_info,json=fskModulationInfo,proto3,oneof"`
-}
-
-func (*DownlinkTXInfo_LoraModulationInfo) isDownlinkTXInfo_ModulationInfo() {}
-
-func (*DownlinkTXInfo_FskModulationInfo) isDownlinkTXInfo_ModulationInfo() {}
-
-func (m *DownlinkTXInfo) GetModulationInfo() isDownlinkTXInfo_ModulationInfo {
-	if m != nil {
-		return m.ModulationInfo
-	}
-	return nil
-}
-
-func (m *DownlinkTXInfo) GetLoraModulationInfo() *gw.LoRaModulationInfo {
-	if x, ok := m.GetModulationInfo().(*DownlinkTXInfo_LoraModulationInfo); ok {
-		return x.LoraModulationInfo
-	}
-	return nil
-}
-
-func (m *DownlinkTXInfo) GetFskModulationInfo() *gw.FSKModulationInfo {
-	if x, ok := m.GetModulationInfo().(*DownlinkTXInfo_FskModulationInfo); ok {
-		return x.FskModulationInfo
-	}
-	return nil
-}
-
-func (m *DownlinkTXInfo) GetBoard() uint32 {
-	if m != nil {
-		return m.Board
-	}
-	return 0
-}
-
-func (m *DownlinkTXInfo) GetAntenna() uint32 {
-	if m != nil {
-		return m.Antenna
-	}
-	return 0
-}
-
-func (m *DownlinkTXInfo) GetTiming() gw.DownlinkTiming {
-	if m != nil {
-		return m.Timing
-	}
-	return gw.DownlinkTiming_IMMEDIATELY
-}
-
-type isDownlinkTXInfo_TimingInfo interface {
-	isDownlinkTXInfo_TimingInfo()
-}
-
-type DownlinkTXInfo_ImmediatelyTimingInfo struct {
-	ImmediatelyTimingInfo *gw.ImmediatelyTimingInfo `protobuf:"bytes,13,opt,name=immediately_timing_info,json=immediatelyTimingInfo,proto3,oneof"`
-}
-
-type DownlinkTXInfo_DelayTimingInfo struct {
-	DelayTimingInfo *gw.DelayTimingInfo `protobuf:"bytes,14,opt,name=delay_timing_info,json=delayTimingInfo,proto3,oneof"`
-}
-
-type DownlinkTXInfo_GpsEpochTimingInfo struct {
-	GpsEpochTimingInfo *gw.GPSEpochTimingInfo `protobuf:"bytes,15,opt,name=gps_epoch_timing_info,json=gpsEpochTimingInfo,proto3,oneof"`
-}
-
-func (*DownlinkTXInfo_ImmediatelyTimingInfo) isDownlinkTXInfo_TimingInfo() {}
-
-func (*DownlinkTXInfo_DelayTimingInfo) isDownlinkTXInfo_TimingInfo() {}
-
-func (*DownlinkTXInfo_GpsEpochTimingInfo) isDownlinkTXInfo_TimingInfo() {}
-
-func (m *DownlinkTXInfo) GetTimingInfo() isDownlinkTXInfo_TimingInfo {
-	if m != nil {
-		return m.TimingInfo
-	}
-	return nil
-}
-
-func (m *DownlinkTXInfo) GetImmediatelyTimingInfo() *gw.ImmediatelyTimingInfo {
-	if x, ok := m.GetTimingInfo().(*DownlinkTXInfo_ImmediatelyTimingInfo); ok {
-		return x.ImmediatelyTimingInfo
-	}
-	return nil
-}
-
-func (m *DownlinkTXInfo) GetDelayTimingInfo() *gw.DelayTimingInfo {
-	if x, ok := m.GetTimingInfo().(*DownlinkTXInfo_DelayTimingInfo); ok {
-		return x.DelayTimingInfo
-	}
-	return nil
-}
-
-func (m *DownlinkTXInfo) GetGpsEpochTimingInfo() *gw.GPSEpochTimingInfo {
-	if x, ok := m.GetTimingInfo().(*DownlinkTXInfo_GpsEpochTimingInfo); ok {
-		return x.GpsEpochTimingInfo
-	}
-	return nil
-}
-
-func (m *DownlinkTXInfo) GetContext() []byte {
-	if m != nil {
-		return m.Context
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*DownlinkTXInfo) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*DownlinkTXInfo_LoraModulationInfo)(nil),
-		(*DownlinkTXInfo_FskModulationInfo)(nil),
-		(*DownlinkTXInfo_ImmediatelyTimingInfo)(nil),
-		(*DownlinkTXInfo_DelayTimingInfo)(nil),
-		(*DownlinkTXInfo_GpsEpochTimingInfo)(nil),
-	}
-}
-
 func init() {
 	proto.RegisterEnum("appserver_serves_ui.RXWindow", RXWindow_name, RXWindow_value)
 	proto.RegisterType((*UplinkFrameLog)(nil), "appserver_serves_ui.UplinkFrameLog")
 	proto.RegisterType((*DownlinkFrameLog)(nil), "appserver_serves_ui.DownlinkFrameLog")
-	proto.RegisterType((*UplinkRXInfo)(nil), "appserver_serves_ui.UplinkRXInfo")
-	proto.RegisterType((*EncryptedFineTimestamp)(nil), "appserver_serves_ui.EncryptedFineTimestamp")
-	proto.RegisterType((*DownlinkTXInfo)(nil), "appserver_serves_ui.DownlinkTXInfo")
 }
 
 func init() { proto.RegisterFile("common.proto", fileDescriptor_555bd8c177793206) }
 
 var fileDescriptor_555bd8c177793206 = []byte{
-	// 895 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0x5f, 0x73, 0xdb, 0x44,
-	0x10, 0xaf, 0x9a, 0xfa, 0xdf, 0xca, 0x76, 0xec, 0x73, 0x93, 0xaa, 0xa1, 0x50, 0xd7, 0xbc, 0x98,
-	0xc2, 0x38, 0x83, 0x79, 0x63, 0x78, 0xa1, 0x38, 0x0d, 0x6e, 0x42, 0xc9, 0x9c, 0xc3, 0x90, 0x37,
-	0xcd, 0xc5, 0x3a, 0xc9, 0x47, 0xa4, 0xbb, 0x43, 0x92, 0xb1, 0xc5, 0xb7, 0xe1, 0x1b, 0xf0, 0x39,
-	0xf8, 0x54, 0xcc, 0xdd, 0x49, 0xb6, 0xe5, 0x98, 0xe1, 0x49, 0xda, 0xdf, 0xee, 0xfe, 0x76, 0xa5,
-	0xfd, 0xed, 0x42, 0x73, 0x2e, 0xa2, 0x48, 0xf0, 0x91, 0x8c, 0x45, 0x2a, 0x50, 0x8f, 0x48, 0x99,
-	0xd0, 0xf8, 0x0f, 0x1a, 0xbb, 0xfa, 0x91, 0xb8, 0x4b, 0x76, 0xd6, 0x33, 0x21, 0xe7, 0xbb, 0x91,
-	0x67, 0x76, 0xb0, 0x3a, 0x0f, 0x56, 0xb9, 0xf1, 0x3a, 0x10, 0x22, 0x08, 0xe9, 0xb9, 0xb6, 0xee,
-	0x97, 0xfe, 0x79, 0xca, 0x22, 0x9a, 0xa4, 0x24, 0x92, 0x79, 0xc0, 0x67, 0xfb, 0x01, 0xde, 0x32,
-	0x26, 0x29, 0x2b, 0xd8, 0x06, 0x7f, 0x59, 0xd0, 0xfe, 0x45, 0x86, 0x8c, 0x3f, 0xbc, 0x8f, 0x49,
-	0x44, 0xaf, 0x45, 0x80, 0xbe, 0x80, 0x5a, 0xba, 0x76, 0x19, 0xf7, 0x85, 0x63, 0xf5, 0xad, 0xa1,
-	0x3d, 0xee, 0x8c, 0x82, 0xd5, 0xc8, 0x04, 0xdd, 0xde, 0x4d, 0xb9, 0x2f, 0x70, 0x35, 0x5d, 0xab,
-	0x27, 0xfa, 0x16, 0x6a, 0x71, 0x1e, 0xfa, 0xb4, 0x7f, 0x34, 0xb4, 0xc7, 0x6f, 0x46, 0x07, 0xbe,
-	0x23, 0xcf, 0xc5, 0x79, 0x6e, 0x6c, 0x72, 0x87, 0xd0, 0x91, 0x8b, 0xcc, 0x95, 0x24, 0x0b, 0x05,
-	0xf1, 0xdc, 0xdf, 0x12, 0xc1, 0x9d, 0xa3, 0xbe, 0x35, 0x6c, 0xe0, 0xb6, 0x5c, 0x64, 0x37, 0x06,
-	0xfe, 0x30, 0xfb, 0xf9, 0xe3, 0xe0, 0x4f, 0xe8, 0x4c, 0xc4, 0x8a, 0x97, 0x9a, 0xfc, 0x6e, 0xbf,
-	0xc9, 0xcf, 0x0f, 0x56, 0x2e, 0xf2, 0xf6, 0xfa, 0x3e, 0x54, 0xfb, 0xe9, 0xc1, 0xda, 0x7f, 0x57,
-	0xa0, 0xb9, 0xdb, 0x3e, 0xfa, 0x14, 0x20, 0x20, 0x29, 0x5d, 0x91, 0xcc, 0x65, 0x9e, 0xae, 0xdd,
-	0xc0, 0x8d, 0x1c, 0x99, 0x4e, 0xd0, 0x27, 0xd0, 0x58, 0xea, 0x70, 0xe5, 0xed, 0x68, 0x6f, 0xdd,
-	0x00, 0xd3, 0x09, 0x1a, 0xc1, 0x33, 0x35, 0x1f, 0x5d, 0xca, 0x1e, 0x9f, 0x8d, 0xcc, 0x6c, 0x46,
-	0xc5, 0x6c, 0x46, 0xb7, 0xc5, 0xf0, 0xb0, 0x8e, 0x43, 0x1f, 0xe0, 0xb9, 0x7a, 0xba, 0x09, 0xe3,
-	0x73, 0xea, 0x06, 0x32, 0x71, 0xa9, 0x14, 0xf3, 0x85, 0xfe, 0x4d, 0xf6, 0xf8, 0xe5, 0xa3, 0xfc,
-	0x49, 0x3e, 0x5b, 0xdc, 0x55, 0x69, 0x33, 0x95, 0x75, 0x29, 0x93, 0x0b, 0x95, 0x83, 0x10, 0x3c,
-	0x8b, 0x93, 0x84, 0x39, 0x95, 0xbe, 0x35, 0xac, 0x60, 0xfd, 0x8e, 0x5e, 0x42, 0x3d, 0x14, 0x31,
-	0x71, 0x13, 0x1e, 0x3b, 0xd5, 0xbe, 0x35, 0xb4, 0x70, 0x4d, 0xd9, 0x33, 0x1e, 0x23, 0x07, 0x6a,
-	0xf3, 0x05, 0xe1, 0x9c, 0x86, 0x4e, 0xad, 0x6f, 0x0d, 0x5b, 0xb8, 0x30, 0x55, 0x52, 0xec, 0xbb,
-	0xf3, 0x05, 0x61, 0xdc, 0xa9, 0x1b, 0x57, 0xec, 0xff, 0xa0, 0x4c, 0xf4, 0x1c, 0x2a, 0xf7, 0x82,
-	0xc4, 0x9e, 0xd3, 0xd0, 0xb8, 0x31, 0x14, 0x15, 0xe1, 0x29, 0xe5, 0x9c, 0x38, 0x60, 0xe2, 0x73,
-	0x13, 0x7d, 0xa5, 0xea, 0xcf, 0x75, 0xcb, 0x8e, 0x9d, 0x4b, 0x2d, 0xd7, 0xfa, 0x75, 0x8e, 0xe3,
-	0x4d, 0x04, 0xba, 0x80, 0x9e, 0xcf, 0x38, 0x75, 0x37, 0x12, 0x77, 0xd3, 0x4c, 0x52, 0xa7, 0xd9,
-	0xb7, 0x86, 0xed, 0xf1, 0x89, 0xd2, 0xe8, 0x7b, 0xc6, 0xe9, 0xe6, 0x1f, 0xde, 0x66, 0x92, 0xe2,
-	0xae, 0xbf, 0x0f, 0xa1, 0x00, 0x1c, 0xca, 0xe7, 0x71, 0x26, 0x53, 0xea, 0xb9, 0x65, 0x42, 0xa7,
-	0xa5, 0x9b, 0xf8, 0xf2, 0xa0, 0x94, 0x2e, 0x8a, 0xa4, 0x52, 0x95, 0x1f, 0x9f, 0xe0, 0x53, 0x7a,
-	0xd0, 0xa3, 0xa6, 0x27, 0x43, 0xc2, 0xf8, 0x7e, 0x91, 0xb6, 0x2e, 0x72, 0xaa, 0x1a, 0xbe, 0x51,
-	0xfe, 0x7d, 0x3e, 0x24, 0x1f, 0xa1, 0x7a, 0x1c, 0x82, 0xa7, 0x74, 0x9d, 0x3a, 0xc7, 0x7d, 0x6b,
-	0xd8, 0xc4, 0x85, 0xf9, 0xae, 0x03, 0xed, 0x32, 0xff, 0x60, 0x0d, 0xa7, 0x87, 0x7b, 0x45, 0x03,
-	0x68, 0x11, 0x9a, 0xb8, 0x0f, 0x34, 0x73, 0x19, 0xf7, 0xe8, 0x5a, 0xcb, 0xb7, 0x85, 0x6d, 0x42,
-	0x93, 0x2b, 0x9a, 0x4d, 0x15, 0x84, 0xde, 0x40, 0x73, 0xfb, 0x7b, 0x78, 0xa2, 0xb5, 0xda, 0xc4,
-	0xf6, 0x06, 0xfb, 0x38, 0x43, 0x2f, 0xa0, 0xe6, 0xcb, 0x80, 0x28, 0x85, 0x9b, 0x85, 0xad, 0x2a,
-	0x73, 0x3a, 0x19, 0xfc, 0x53, 0x81, 0x76, 0x79, 0xe3, 0xfe, 0x6f, 0x5d, 0x5e, 0x83, 0xed, 0xe5,
-	0x09, 0xca, 0xdf, 0xd5, 0x7e, 0x28, 0xa0, 0xe9, 0x04, 0xbd, 0x82, 0x86, 0x1f, 0xd3, 0xdf, 0x97,
-	0x94, 0xcf, 0x33, 0xad, 0xdd, 0x16, 0xde, 0x02, 0x4a, 0x70, 0x52, 0xac, 0xa8, 0x51, 0x6f, 0x05,
-	0x1b, 0x03, 0x8d, 0x01, 0x22, 0xe1, 0x2d, 0x43, 0x23, 0xac, 0x9a, 0xd6, 0x07, 0x2a, 0x84, 0xf5,
-	0xd3, 0xc6, 0x83, 0x77, 0xa2, 0xd4, 0xb0, 0xf4, 0x2a, 0x6c, 0x21, 0x73, 0x5c, 0xea, 0xdb, 0x61,
-	0x5d, 0x0b, 0x4c, 0xb6, 0xd9, 0xea, 0xeb, 0xd4, 0xb0, 0x54, 0x56, 0x19, 0x45, 0x97, 0xd0, 0xf3,
-	0x93, 0x87, 0x47, 0x54, 0x0d, 0x4d, 0x65, 0x84, 0x3a, 0xbb, 0x7a, 0xc4, 0xd4, 0xf5, 0x93, 0x87,
-	0x3d, 0xa2, 0xcd, 0x3e, 0xc1, 0x7f, 0xec, 0x93, 0x5d, 0xde, 0xa7, 0xb7, 0x50, 0x4d, 0x59, 0xc4,
-	0x78, 0x90, 0x2f, 0x05, 0x52, 0xb5, 0x36, 0x03, 0xd1, 0x1e, 0x9c, 0x47, 0xa0, 0x19, 0xbc, 0x60,
-	0x51, 0x44, 0x3d, 0x46, 0x52, 0x1a, 0x66, 0xae, 0x41, 0x4d, 0xa3, 0xad, 0xe2, 0xbc, 0xac, 0x46,
-	0xd3, 0x6d, 0x88, 0xc9, 0xd7, 0xcd, 0x5a, 0xf8, 0x84, 0x1d, 0x72, 0xa0, 0xef, 0xa1, 0xeb, 0xd1,
-	0x90, 0x94, 0xe9, 0x8c, 0xde, 0x7b, 0xba, 0x17, 0xe5, 0x2c, 0x11, 0x1d, 0x7b, 0x65, 0x08, 0x5d,
-	0xc1, 0xc9, 0xe6, 0xd0, 0x95, 0x68, 0x8e, 0xb7, 0x93, 0xb8, 0xbc, 0x99, 0xe9, 0xa3, 0x56, 0x62,
-	0x42, 0x41, 0x7e, 0xea, 0x76, 0xc8, 0x76, 0xd6, 0xa6, 0x53, 0x5e, 0x9b, 0x2e, 0x1c, 0xef, 0xcd,
-	0xe7, 0x5d, 0x0b, 0xec, 0x9d, 0x7a, 0x6f, 0x5f, 0x41, 0x1d, 0xdf, 0xfd, 0xca, 0xb8, 0x27, 0x56,
-	0xa8, 0x06, 0x47, 0xf8, 0xee, 0xeb, 0xce, 0x13, 0xf3, 0x32, 0xee, 0x58, 0xf7, 0x55, 0x7d, 0x74,
-	0xbf, 0xf9, 0x37, 0x00, 0x00, 0xff, 0xff, 0x34, 0xc5, 0x6d, 0xa4, 0xc6, 0x07, 0x00, 0x00,
+	// 232 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0xce, 0xcf, 0xcd,
+	0xcd, 0xcf, 0xd3, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x4e, 0x2c, 0x28, 0x28, 0x4e, 0x2d,
+	0x2a, 0x4b, 0x2d, 0x8a, 0x07, 0x53, 0xc5, 0xf1, 0xa5, 0x99, 0x52, 0xdc, 0xe9, 0xe5, 0xfa, 0xe9,
+	0xe5, 0x10, 0x15, 0x4a, 0x13, 0x18, 0xb9, 0xf8, 0x42, 0x0b, 0x72, 0x32, 0xf3, 0xb2, 0xdd, 0x8a,
+	0x12, 0x73, 0x53, 0x7d, 0xf2, 0xd3, 0x85, 0x34, 0xb9, 0xd8, 0x4b, 0x2a, 0xe2, 0x33, 0xf3, 0xd2,
+	0xf2, 0x25, 0x18, 0x15, 0x18, 0x35, 0xb8, 0x8d, 0x04, 0xf4, 0xd2, 0xcb, 0xf5, 0x20, 0x8a, 0x42,
+	0x22, 0x3c, 0xf3, 0xd2, 0xf2, 0x83, 0xd8, 0x4a, 0x2a, 0x40, 0x34, 0x48, 0x69, 0x11, 0x54, 0x29,
+	0x93, 0x02, 0x33, 0xaa, 0xd2, 0x20, 0xa8, 0xd2, 0x22, 0x88, 0x52, 0x0d, 0x2e, 0x81, 0x82, 0x8c,
+	0xca, 0xf8, 0x82, 0xc4, 0xca, 0x9c, 0xfc, 0xc4, 0x94, 0xf8, 0xac, 0xe2, 0xfc, 0x3c, 0x09, 0x66,
+	0x05, 0x46, 0x0d, 0xce, 0x20, 0xbe, 0x82, 0x8c, 0xca, 0x00, 0x88, 0xb0, 0x57, 0xb0, 0xbf, 0x9f,
+	0x52, 0x26, 0x97, 0x80, 0x4b, 0x7e, 0x79, 0x1e, 0x8a, 0x9b, 0xb4, 0xd1, 0xdd, 0x24, 0x04, 0xb2,
+	0x08, 0xa6, 0x0c, 0xcd, 0x55, 0xd8, 0xac, 0x62, 0xc2, 0x66, 0x95, 0x96, 0x0c, 0x17, 0x47, 0x50,
+	0x44, 0x78, 0x66, 0x5e, 0x4a, 0x7e, 0xb9, 0x10, 0x3b, 0x17, 0x73, 0x50, 0x84, 0xa1, 0x00, 0x03,
+	0x84, 0x61, 0x24, 0xc0, 0x98, 0xc4, 0x06, 0x0e, 0x22, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff,
+	0x99, 0xc4, 0xf5, 0x2e, 0x54, 0x01, 0x00, 0x00,
 }

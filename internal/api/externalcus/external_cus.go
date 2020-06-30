@@ -1,6 +1,7 @@
 package externalcus
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
@@ -26,28 +27,62 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 )
 
-func SetupAPI(grpcServer *grpc.Server) error {
+func SetupAPI(grpcServer *grpc.Server, applicationServerID uuid.UUID) error {
+	jwtValidator := authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret)
 	otpStore := pgstore.New(storage.DB().DB.DB)
-	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, otpStore)
+	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, otpStore, jwtValidator)
 	if err != nil {
 		return err
 	}
 
-	validator := authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret, otpValidator)
+	// device
+	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(device.DeviceAPI{
+		Validator:            device.NewValidator(otpValidator),
+		Store:                devicePg.New(storage.DB().DB),
+		AppplicationServerID: applicationServerID,
+	}))
 
-	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(validator, devicePg.New(storage.DB().DB)))
-	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(validator, userPg.New(storage.DB().DB)))
-	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI(validator, otpValidator, userPg.New(storage.DB().DB)))
-	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(validator, gwPg.New(storage.DB().DB)))
-	api.RegisterServerInfoServiceServer(grpcServer, serverinfo.NewServerInfoAPI())
-	api.RegisterDSDeviceServiceServer(grpcServer, device.NewM2MDeviceAPI(validator))
-	api.RegisterGSGatewayServiceServer(grpcServer, gateway.NewM2MGatewayAPI(validator))
-	api.RegisterSettingsServiceServer(grpcServer, serverinfo.NewSettingsServerAPI(validator))
-	api.RegisterStakingServiceServer(grpcServer, staking.NewStakingServerAPI(validator))
-	api.RegisterTopUpServiceServer(grpcServer, topup.NewTopUpServerAPI(validator))
-	api.RegisterWalletServiceServer(grpcServer, wallet.NewWalletServerAPI(validator))
-	api.RegisterWithdrawServiceServer(grpcServer, withdraw.NewWithdrawServerAPI(validator))
-	api.RegisterM2MServerInfoServiceServer(grpcServer, serverinfo.NewM2MServerAPI(validator))
+	// user
+	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(user.UserAPI{
+		Validator: user.NewValidator(otpValidator),
+		Store:     userPg.New(storage.DB().DB),
+	}))
+
+	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI(user.InternalUserAPI{
+		Validator: user.NewValidator(otpValidator),
+		Store:     userPg.New(storage.DB().DB),
+	}))
+
+	// gateway
+	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(gateway.GatewayAPI{
+		Validator:           gateway.NewValidator(otpValidator),
+		Store:               gwPg.New(storage.DB().DB),
+		ApplicationServerID: applicationServerID,
+	}))
+
+	api.RegisterServerInfoServiceServer(grpcServer, serverinfo.NewServerInfoAPI(serverinfo.ServerInfoAPI{
+		Validator: serverinfo.NewValidator(otpValidator),
+	}))
+
+	api.RegisterSettingsServiceServer(grpcServer, serverinfo.NewSettingsServerAPI(serverinfo.SettingsServerAPI{
+		Validator: serverinfo.NewValidator(otpValidator),
+	}))
+
+	api.RegisterStakingServiceServer(grpcServer, staking.NewStakingServerAPI(staking.StakingServerAPI{
+		Validator: staking.NewValidator(otpValidator),
+	}))
+
+	api.RegisterTopUpServiceServer(grpcServer, topup.NewTopUpServerAPI(topup.TopUpServerAPI{
+		Validator: topup.NewValidator(otpValidator),
+	}))
+
+	api.RegisterWalletServiceServer(grpcServer, wallet.NewWalletServerAPI(wallet.WalletServerAPI{
+		Validator: wallet.NewValidator(otpValidator),
+	}))
+
+	api.RegisterWithdrawServiceServer(grpcServer, withdraw.NewWithdrawServerAPI(withdraw.WithdrawServerAPI{
+		Validator: withdraw.NewValidator(otpValidator),
+	}))
 
 	return nil
 }
@@ -69,12 +104,6 @@ func CusGetJSONGateway(ctx context.Context, mux *runtime.ServeMux, apiEndpoint s
 	if err := api.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return errors.Wrap(err, "register server info handler error")
 	}
-	if err := api.RegisterDSDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterGSGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
-	}
 	if err := api.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return errors.Wrap(err, "register proxy request handler error")
 	}
@@ -88,9 +117,6 @@ func CusGetJSONGateway(ctx context.Context, mux *runtime.ServeMux, apiEndpoint s
 		return errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterM2MServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return errors.Wrap(err, "register proxy request handler error")
 	}
 

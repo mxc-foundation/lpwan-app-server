@@ -55,16 +55,26 @@ type UserStore interface {
 
 // UserAPI exports the User related functions.
 type UserAPI struct {
-	validator authcus.Validator
-	store     UserStore
+	Validator *validator
+	Store     UserStore
 }
 
 // NewUserAPI creates a new UserAPI.
-func NewUserAPI(validator authcus.Validator, store UserStore) *UserAPI {
-	return &UserAPI{
-		validator: validator,
-		store:     store,
+func NewUserAPI(api UserAPI) *UserAPI {
+	userAPI = UserAPI{
+		Validator: api.Validator,
+		Store:     api.Store,
 	}
+
+	return &userAPI
+}
+
+var (
+	userAPI UserAPI
+)
+
+func GetUserAPI() *UserAPI {
+	return &userAPI
 }
 
 // Create creates the given user.
@@ -73,7 +83,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateUsersAccess(authcus.Create)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -91,7 +101,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.store.CreateUser(ctx, &user)
+		err := a.Store.CreateUser(ctx, &user)
 		if err != nil {
 			return err
 		}
@@ -113,12 +123,12 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 
 // Get returns the user matching the given ID.
 func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUserResponse, error) {
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateUserAccess(req.Id, authcus.Read)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.store.GetUser(ctx, req.Id)
+	user, err := a.Store.GetUser(ctx, req.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -148,7 +158,7 @@ func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetU
 
 // GetUserEmail returns true if user does not exist
 func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailRequest) (*inpb.GetUserEmailResponse, error) {
-	u, err := a.store.GetUserByEmail(ctx, req.UserEmail)
+	u, err := a.Store.GetUserByEmail(ctx, req.UserEmail)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			return &inpb.GetUserEmailResponse{Status: true}, nil
@@ -165,17 +175,17 @@ func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailReques
 
 // List lists the users.
 func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.ListUserResponse, error) {
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateUsersAccess(authcus.List)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	users, err := a.store.GetUsers(ctx, int(req.Limit), int(req.Offset))
+	users, err := a.Store.GetUsers(ctx, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	totalUserCount, err := a.store.GetUserCount(ctx)
+	totalUserCount, err := a.Store.GetUserCount(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -213,12 +223,12 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
 
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateUserAccess(req.User.Id, authcus.Update)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.store.GetUser(ctx, req.User.Id)
+	user, err := a.Store.GetUser(ctx, req.User.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -229,7 +239,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 	user.Email = req.User.Email
 	user.Note = req.User.Note
 
-	if err := a.store.UpdateUser(ctx, &user); err != nil {
+	if err := a.Store.UpdateUser(ctx, &user); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -238,12 +248,12 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 
 // Delete deletes the user matching the given ID.
 func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empty.Empty, error) {
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateUserAccess(req.Id, authcus.Delete)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.store.DeleteUser(ctx, req.Id)
+	err := a.Store.DeleteUser(ctx, req.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -253,12 +263,12 @@ func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*emp
 
 // UpdatePassword updates the password for the user matching the given ID.
 func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswordRequest) (*empty.Empty, error) {
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateUserAccess(req.UserId, authcus.UpdateProfile)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.store.GetUser(ctx, req.UserId)
+	user, err := a.Store.GetUser(ctx, req.UserId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -324,7 +334,7 @@ func OTPgen() string {
 }
 
 func (a *UserAPI) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
-	otp, err := a.store.GetTokenByUsername(ctx, req.UserEmail)
+	otp, err := a.Store.GetTokenByUsername(ctx, req.UserEmail)
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +360,7 @@ var (
 // Validate validates the user data.
 func (u *User) Validate() error {
 	if !emailValidator.MatchString(u.Email) {
-		return ErrInvalidEmail
+		return errors.New("invalid email")
 	}
 
 	return nil
@@ -359,7 +369,7 @@ func (u *User) Validate() error {
 // SetPasswordHash hashes the given password and sets it.
 func (u *User) SetPasswordHash(pw string) error {
 	if !passwordValidator.MatchString(pw) {
-		return ErrUserPasswordLength
+		return errors.New("invalid user password length")
 	}
 
 	pwHash, err := hash(pw, saltSize, config.C.General.PasswordHashIterations)
@@ -387,7 +397,7 @@ func (u *User) HashCompare(password string, passwordHash string) bool {
 }
 
 // Generate the hash of a password for storage in the database.
-// NOTE: We store the details of the hashing algorithm with the hash itself,
+// NOTE: We Store the details of the hashing algorithm with the hash itself,
 // making it easy to recreate the hash for password checking, even if we change
 // the default criteria here.
 func hash(password string, saltSize int, iterations int) (string, error) {
@@ -404,7 +414,7 @@ func hash(password string, saltSize int, iterations int) (string, error) {
 func hashWithSalt(password string, salt []byte, iterations int) string {
 	// Generate the hash.  This should be a little painful, adjust ITERATIONS
 	// if it needs performance tweeking.  Greatly depends on the hardware.
-	// NOTE: We store these details with the returned hash, so changes will not
+	// NOTE: We Store these details with the returned hash, so changes will not
 	// affect our ability to do password compares.
 	hash := pbkdf2.Key([]byte(password), salt, iterations, sha512.Size, sha512.New)
 

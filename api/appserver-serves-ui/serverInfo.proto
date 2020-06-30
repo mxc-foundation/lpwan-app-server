@@ -7,15 +7,21 @@ import "empty/empty.proto";
 
 service ServerInfoService {
     // get version
-    rpc GetAppserverVersion(google.protobuf.Empty) returns (GetAppserverVersionResponse) {
-        option(google.api.http) = {
+    rpc GetAppserverVersion (google.protobuf.Empty) returns (GetAppserverVersionResponse) {
+        option (google.api.http) = {
             get: "/api/server-info/appserver-version"
         };
     };
 
-    rpc GetServerRegion(google.protobuf.Empty) returns (GetServerRegionResponse) {
-        option(google.api.http) = {
+    rpc GetServerRegion (google.protobuf.Empty) returns (GetServerRegionResponse) {
+        option (google.api.http) = {
             get: "/api/server-info/server-region"
+        };
+    };
+
+    rpc GetMxprotocolServerVersion (google.protobuf.Empty) returns (GetMxprotocolServerVersionResponse) {
+        option (google.api.http) = {
+            get: "/api/server-info/mxprotocol-server-version"
         };
     };
 }
@@ -32,4 +38,8 @@ enum ServerRegion {
 
 message GetServerRegionResponse {
     string server_region = 1;
+}
+
+message GetMxprotocolServerVersionResponse {
+    string version = 1;
 }

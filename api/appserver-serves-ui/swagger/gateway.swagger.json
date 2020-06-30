@@ -11,6 +11,177 @@
     "application/json"
   ],
   "paths": {
+    "/api/gateway/{orgId}/gateway-history/{gwId}": {
+      "get": {
+        "operationId": "GetGatewayHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetGatewayHistoryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gwId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateway/{orgId}/gateway-list": {
+      "get": {
+        "operationId": "GetGatewayList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetGatewayListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateway/{orgId}/gateway-mode/{gwId}": {
+      "post": {
+        "operationId": "SetGatewayMode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiSetGatewayModeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gwId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiSetGatewayModeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
+    "/api/gateway/{orgId}/gateway-profile/{gwId}": {
+      "get": {
+        "operationId": "GetGatewayProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetGSGatewayProfileResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "gwId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways": {
       "get": {
         "summary": "List lists the gateways.",
@@ -606,7 +777,7 @@
       "type": "object",
       "properties": {
         "txInfo": {
-          "$ref": "#/definitions/appserver_serves_uiDownlinkTXInfo",
+          "$ref": "#/definitions/gwDownlinkTXInfo",
           "description": "TX information of the downlink."
         },
         "phyPayloadJSON": {
@@ -615,92 +786,44 @@
         }
       }
     },
-    "appserver_serves_uiDownlinkTXInfo": {
+    "appserver_serves_uiGSGatewayProfile": {
       "type": "object",
       "properties": {
-        "gatewayID": {
+        "id": {
           "type": "string",
-          "description": "Gateway ID."
+          "format": "int64"
         },
-        "downlinkID": {
+        "mac": {
+          "type": "string"
+        },
+        "fkGwNs": {
           "type": "string",
-          "description": "Downlink ID (UUID)."
+          "format": "int64"
         },
-        "frequency": {
-          "type": "integer",
-          "format": "int64",
-          "description": "TX frequency (in Hz)."
-        },
-        "power": {
-          "type": "integer",
-          "format": "int32",
-          "description": "TX power (in dBm)."
-        },
-        "modulation": {
-          "$ref": "#/definitions/commonModulation",
-          "description": "Modulation."
-        },
-        "loraModulationInfo": {
-          "$ref": "#/definitions/gwLoRaModulationInfo",
-          "description": "LoRa modulation information."
-        },
-        "fskModulationInfo": {
-          "$ref": "#/definitions/gwFSKModulationInfo",
-          "description": "FSK modulation information."
-        },
-        "board": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The board identifier for emitting the frame."
-        },
-        "antenna": {
-          "type": "integer",
-          "format": "int64",
-          "description": "The antenna identifier for emitting the frame."
-        },
-        "timing": {
-          "$ref": "#/definitions/gwDownlinkTiming",
-          "description": "Timing defines the downlink timing to use."
-        },
-        "immediatelyTimingInfo": {
-          "$ref": "#/definitions/gwImmediatelyTimingInfo",
-          "description": "Immediately timing information."
-        },
-        "delayTimingInfo": {
-          "$ref": "#/definitions/gwDelayTimingInfo",
-          "description": "Context based delay timing information."
-        },
-        "gpsEpochTimingInfo": {
-          "$ref": "#/definitions/gwGPSEpochTimingInfo",
-          "description": "GPS Epoch timing information."
-        },
-        "context": {
+        "fkWallet": {
           "type": "string",
-          "format": "byte",
-          "description": "Gateway specific context.\nIn case of a Class-A downlink, this contains a copy of the uplink context."
+          "format": "int64"
+        },
+        "mode": {
+          "$ref": "#/definitions/appserver_serves_uiGatewayMode"
+        },
+        "createAt": {
+          "type": "string"
+        },
+        "lastSeenAt": {
+          "type": "string"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
-      },
-      "description": "Same comment as above applies to this message."
-    },
-    "appserver_serves_uiEncryptedFineTimestamp": {
-      "type": "object",
-      "properties": {
-        "aesKeyIndex": {
-          "type": "integer",
-          "format": "int64",
-          "description": "AES key index used for encrypting the fine timestamp."
-        },
-        "encryptedNS": {
-          "type": "string",
-          "format": "byte",
-          "description": "Encrypted 'main' fine-timestamp (ns precision part of the timestamp)."
-        },
-        "fpgaID": {
-          "type": "string",
-          "description": "FPGA ID."
-        }
-      },
-      "description": "this s a copy of gw.EncryptedFineTimestamp which the only change that\nthe fpga_id is of type string so that it can be returned in HEX format\ninstead of base64."
+      }
     },
     "appserver_serves_uiGateway": {
       "type": "object",
@@ -842,6 +965,16 @@
         }
       }
     },
+    "appserver_serves_uiGatewayMode": {
+      "type": "string",
+      "enum": [
+        "GW_INACTIVE",
+        "GW_FREE_GATEWAYS_LIMITED",
+        "GW_WHOLE_NETWORK",
+        "GW_DELETED"
+      ],
+      "default": "GW_INACTIVE"
+    },
     "appserver_serves_uiGatewayStats": {
       "type": "object",
       "properties": {
@@ -877,6 +1010,37 @@
       "properties": {
         "defaultConfig": {
           "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetGSGatewayProfileResponse": {
+      "type": "object",
+      "properties": {
+        "gwProfile": {
+          "$ref": "#/definitions/appserver_serves_uiGSGatewayProfile"
+        }
+      }
+    },
+    "appserver_serves_uiGetGatewayHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "gwHistory": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetGatewayListResponse": {
+      "type": "object",
+      "properties": {
+        "gwProfile": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiGSGatewayProfile"
+          }
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1104,6 +1268,31 @@
         }
       }
     },
+    "appserver_serves_uiSetGatewayModeRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gwId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "gwMode": {
+          "$ref": "#/definitions/appserver_serves_uiGatewayMode"
+        }
+      }
+    },
+    "appserver_serves_uiSetGatewayModeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "appserver_serves_uiStreamGatewayFrameLogsResponse": {
       "type": "object",
       "properties": {
@@ -1177,7 +1366,7 @@
         "rxInfo": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/appserver_serves_uiUplinkRXInfo"
+            "$ref": "#/definitions/gwUplinkRXInfo"
           },
           "description": "RX information of the uplink."
         },
@@ -1186,80 +1375,6 @@
           "description": "LoRaWAN PHYPayload."
         }
       }
-    },
-    "appserver_serves_uiUplinkRXInfo": {
-      "type": "object",
-      "properties": {
-        "gatewayID": {
-          "type": "string",
-          "description": "Gateway ID."
-        },
-        "uplinkID": {
-          "type": "string",
-          "description": "Uplink ID (UUID)."
-        },
-        "time": {
-          "type": "string",
-          "format": "date-time",
-          "description": "RX time (only set when the gateway has a GPS module)."
-        },
-        "timeSinceGpsEpoch": {
-          "type": "string",
-          "description": "RX time since GPS epoch (only set when the gateway has a GPS module)."
-        },
-        "rssi": {
-          "type": "integer",
-          "format": "int32",
-          "description": "RSSI."
-        },
-        "loraSnr": {
-          "type": "number",
-          "format": "double",
-          "description": "LoRa SNR."
-        },
-        "channel": {
-          "type": "integer",
-          "format": "int64",
-          "description": "Channel."
-        },
-        "rfChain": {
-          "type": "integer",
-          "format": "int64",
-          "description": "RF Chain."
-        },
-        "board": {
-          "type": "integer",
-          "format": "int64",
-          "description": "Board."
-        },
-        "antenna": {
-          "type": "integer",
-          "format": "int64",
-          "description": "Antenna."
-        },
-        "location": {
-          "$ref": "#/definitions/commonLocation",
-          "description": "Location."
-        },
-        "fineTimestampType": {
-          "$ref": "#/definitions/gwFineTimestampType",
-          "description": "Fine-timestamp type."
-        },
-        "encryptedFineTimestamp": {
-          "$ref": "#/definitions/appserver_serves_uiEncryptedFineTimestamp",
-          "description": "Encrypted fine-timestamp data."
-        },
-        "plainFineTimestamp": {
-          "$ref": "#/definitions/gwPlainFineTimestamp",
-          "description": "Plain fine-timestamp data."
-        },
-        "context": {
-          "type": "string",
-          "format": "byte",
-          "description": "Gateway specific context."
-        }
-      },
-      "description": "This is a copy of gw.UplinkRXInfo with the only change that the\ngateway_id is of type string so that we can return it as HEX encoded\ninstead of base64."
     },
     "commonLocation": {
       "type": "object",
@@ -1313,12 +1428,85 @@
       "default": "LORA",
       "title": "- LORA: LoRa\n - FSK: FSK"
     },
+    "gwCRCStatus": {
+      "type": "string",
+      "enum": [
+        "NO_CRC",
+        "BAD_CRC",
+        "CRC_OK"
+      ],
+      "default": "NO_CRC",
+      "description": " - NO_CRC: No CRC.\n - BAD_CRC: Bad CRC.\n - CRC_OK: CRC OK."
+    },
     "gwDelayTimingInfo": {
       "type": "object",
       "properties": {
         "delay": {
           "type": "string",
           "description": "Delay (duration).\nThe delay will be added to the gateway internal timing, provided by the context object."
+        }
+      }
+    },
+    "gwDownlinkTXInfo": {
+      "type": "object",
+      "properties": {
+        "gatewayID": {
+          "type": "string",
+          "format": "byte",
+          "description": "Gateway ID.\nDeprecated: replaced by gateway_id in DownlinkFrame."
+        },
+        "frequency": {
+          "type": "integer",
+          "format": "int64",
+          "description": "TX frequency (in Hz)."
+        },
+        "power": {
+          "type": "integer",
+          "format": "int32",
+          "description": "TX power (in dBm)."
+        },
+        "modulation": {
+          "$ref": "#/definitions/commonModulation",
+          "description": "Modulation."
+        },
+        "loRaModulationInfo": {
+          "$ref": "#/definitions/gwLoRaModulationInfo",
+          "description": "LoRa modulation information."
+        },
+        "fskModulationInfo": {
+          "$ref": "#/definitions/gwFSKModulationInfo",
+          "description": "FSK modulation information."
+        },
+        "board": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The board identifier for emitting the frame."
+        },
+        "antenna": {
+          "type": "integer",
+          "format": "int64",
+          "description": "The antenna identifier for emitting the frame."
+        },
+        "timing": {
+          "$ref": "#/definitions/gwDownlinkTiming",
+          "description": "Timing defines the downlink timing to use."
+        },
+        "immediatelyTimingInfo": {
+          "$ref": "#/definitions/gwImmediatelyTimingInfo",
+          "description": "Immediately timing information."
+        },
+        "delayTimingInfo": {
+          "$ref": "#/definitions/gwDelayTimingInfo",
+          "description": "Context based delay timing information."
+        },
+        "gpsEpochTimingInfo": {
+          "$ref": "#/definitions/gwGPSEpochTimingInfo",
+          "description": "GPS Epoch timing information."
+        },
+        "context": {
+          "type": "string",
+          "format": "byte",
+          "description": "Gateway specific context.\nIn case of a Class-A downlink, this contains a copy of the uplink context."
         }
       }
     },
@@ -1331,6 +1519,26 @@
       ],
       "default": "IMMEDIATELY",
       "description": " - IMMEDIATELY: Send the downlink immediately.\n - DELAY: Send downlink at the given delay (based on provided context).\n - GPS_EPOCH: Send at given GPS epoch value."
+    },
+    "gwEncryptedFineTimestamp": {
+      "type": "object",
+      "properties": {
+        "aesKeyIndex": {
+          "type": "integer",
+          "format": "int64",
+          "description": "AES key index used for encrypting the fine timestamp."
+        },
+        "encryptedNS": {
+          "type": "string",
+          "format": "byte",
+          "description": "Encrypted 'main' fine-timestamp (ns precision part of the timestamp)."
+        },
+        "fpgaID": {
+          "type": "string",
+          "format": "byte",
+          "description": "FPGA ID."
+        }
+      }
     },
     "gwFSKModulationInfo": {
       "type": "object",
@@ -1400,6 +1608,85 @@
           "type": "string",
           "format": "date-time",
           "description": "Full timestamp."
+        }
+      }
+    },
+    "gwUplinkRXInfo": {
+      "type": "object",
+      "properties": {
+        "gatewayID": {
+          "type": "string",
+          "format": "byte",
+          "description": "Gateway ID."
+        },
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "description": "RX time (only set when the gateway has a GPS module)."
+        },
+        "timeSinceGPSEpoch": {
+          "type": "string",
+          "description": "RX time since GPS epoch (only set when the gateway has a GPS module)."
+        },
+        "rssi": {
+          "type": "integer",
+          "format": "int32",
+          "description": "RSSI."
+        },
+        "loRaSNR": {
+          "type": "number",
+          "format": "double",
+          "description": "LoRa SNR."
+        },
+        "channel": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Channel."
+        },
+        "rfChain": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RF Chain."
+        },
+        "board": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Board."
+        },
+        "antenna": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Antenna."
+        },
+        "location": {
+          "$ref": "#/definitions/commonLocation",
+          "description": "Location."
+        },
+        "fineTimestampType": {
+          "$ref": "#/definitions/gwFineTimestampType",
+          "description": "Fine-timestamp type."
+        },
+        "encryptedFineTimestamp": {
+          "$ref": "#/definitions/gwEncryptedFineTimestamp",
+          "description": "Encrypted fine-timestamp data."
+        },
+        "plainFineTimestamp": {
+          "$ref": "#/definitions/gwPlainFineTimestamp",
+          "description": "Plain fine-timestamp data."
+        },
+        "context": {
+          "type": "string",
+          "format": "byte",
+          "description": "Gateway specific context."
+        },
+        "uplinkID": {
+          "type": "string",
+          "format": "byte",
+          "description": "Uplink ID (UUID bytes).\nUnique and random ID which can be used to correlate the uplink across multiple logs."
+        },
+        "crcStatus": {
+          "$ref": "#/definitions/gwCRCStatus",
+          "description": "CRC status."
         }
       }
     },

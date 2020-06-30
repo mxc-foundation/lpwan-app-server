@@ -15,29 +15,26 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
-	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // InternalUserAPI exports the internal User related functions.
 type InternalUserAPI struct {
-	validator    authcus.Validator
-	otpValidator *otp.Validator
-	store        UserStore
+	Validator *validator
+	Store     UserStore
 }
 
 // NewInternalUserAPI creates a new InternalUserAPI.
-func NewInternalUserAPI(validator authcus.Validator, otpValidator *otp.Validator, store UserStore) *InternalUserAPI {
+func NewInternalUserAPI(api InternalUserAPI) *InternalUserAPI {
 	return &InternalUserAPI{
-		validator:    validator,
-		otpValidator: otpValidator,
-		store:        store,
+		Validator: api.Validator,
+		Store:     api.Store,
 	}
 }
 
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
-	jwt, err := a.store.LoginUserByPassword(ctx, req.Username, req.Password)
+	jwt, err := a.Store.LoginUserByPassword(ctx, req.Username, req.Password)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -47,17 +44,17 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 
 // Profile returns the user profile.
 func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileResponse, error) {
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateActiveUser()); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.validator.GetUser(ctx)
+	user, err := a.Validator.GetUser(ctx)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	prof, err := a.store.GetProfile(ctx, user.ID)
+	prof, err := a.Store.GetProfile(ctx, user.ID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -69,9 +66,6 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 			SessionTtl: prof.User.SessionTTL,
 			IsAdmin:    prof.User.IsAdmin,
 			IsActive:   prof.User.IsActive,
-		},
-		Settings: &inpb.ProfileSettings{
-			DisableAssignExistingUsers: authcus.DisableAssignExistingUsers,
 		},
 	}
 
@@ -112,17 +106,17 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb
 
 // GlobalSearch performs a global search.
 func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *inpb.GlobalSearchRequest) (*inpb.GlobalSearchResponse, error) {
-	if err := a.validator.Validate(ctx,
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		authcus.ValidateActiveUser()); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	isAdmin, err := a.Validator.GetIsAdmin(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	user, err := a.validator.GetUser(ctx)
+	user, err := a.Validator.GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -197,17 +191,17 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 	// }
 	token := u
 
-	obj, err := a.store.GetUserByEmail(ctx, user.Email)
+	obj, err := a.Store.GetUserByEmail(ctx, user.Email)
 	if err == storage.ErrDoesNotExist {
 		// user has never been created yet
-		err = a.store.RegisterUser(&user, token)
+		err = a.Store.RegisterUser(&user, token)
 		if err != nil {
 			log.WithError(err).Error(logInfo)
 			return nil, helpers.ErrToRPCError(err)
 		}
 
 		// get user again
-		obj, err = a.store.GetUserByEmail(ctx, user.Email)
+		obj, err = a.Store.GetUserByEmail(ctx, user.Email)
 		if err != nil {
 			log.WithError(err).Error(logInfo)
 			// internal error
@@ -233,12 +227,12 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 
 // ConfirmRegistration checks provided security token and activates user
 func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegistrationRequest) (*inpb.ConfirmRegistrationResponse, error) {
-	user, err := a.store.GetUserByToken(req.Token)
+	user, err := a.Store.GetUserByToken(req.Token)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	jwt, err := a.store.GetUserToken(user)
+	jwt, err := a.Store.GetUserToken(user)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -253,7 +247,7 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.Con
 
 // FinishRegistration sets new user password and creates a new organization
 func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.FinishRegistrationRequest) (*empty.Empty, error) {
-	if err := a.validator.Validate(ctx, authcus.ValidateUserAccess(req.UserId, authcus.FinishRegistration)); err != nil {
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateUserAccess(req.UserId, authcus.FinishRegistration)); err != nil {
 		log.Println("UpdatePassword", err)
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -265,7 +259,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.store.FinishRegistration(req.UserId, req.Password)
+		err := a.Store.FinishRegistration(req.UserId, req.Password)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -303,14 +297,14 @@ func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *
 
 // GetTOTPStatus returns info about TOTP status for the current user
 func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
-	if err := a.validator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	username, err := a.validator.GetUsername(ctx)
+	username, err := a.Validator.otpValidator.JwtValidator.GetUsername(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	enabled, err := a.otpValidator.IsEnabled(ctx, username)
+	enabled, err := a.Validator.otpValidator.IsEnabled(ctx, username)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -322,14 +316,14 @@ func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *inpb.TOTPStatu
 
 // GetTOTPConfiguration generates a new TOTP configuration for the user
 func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *inpb.GetTOTPConfigurationRequest) (*inpb.GetTOTPConfigurationResponse, error) {
-	if err := a.validator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	username, err := a.validator.GetUsername(ctx)
+	username, err := a.Validator.otpValidator.JwtValidator.GetUsername(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	cfg, err := a.otpValidator.NewConfiguration(ctx, username)
+	cfg, err := a.Validator.otpValidator.NewConfiguration(ctx, username)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -344,15 +338,15 @@ func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *inpb.Ge
 
 // EnableTOTP enables TOTP for the user
 func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
-	if err := a.validator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	username, err := a.validator.GetUsername(ctx)
+	username, err := a.Validator.otpValidator.JwtValidator.GetUsername(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	otp := a.validator.GetOTP(ctx)
-	if err := a.otpValidator.Enable(ctx, username, otp); err != nil {
+	otp := a.Validator.otpValidator.JwtValidator.GetOTP(ctx)
+	if err := a.Validator.otpValidator.Enable(ctx, username, otp); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
 	return &inpb.TOTPStatusResponse{
@@ -362,17 +356,17 @@ func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *inpb.TOTPStatusRe
 
 // DisableTOTP disables TOTP for the user
 func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
-	if err := a.validator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	if err := a.validator.ValidateOTP(ctx); err != nil {
+	if err := a.Validator.otpValidator.ValidateOTP(ctx); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
 	}
-	username, err := a.validator.GetUsername(ctx)
+	username, err := a.Validator.otpValidator.JwtValidator.GetUsername(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	if err := a.otpValidator.Disable(ctx, username); err != nil {
+	if err := a.Validator.otpValidator.Disable(ctx, username); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 	return &inpb.TOTPStatusResponse{
@@ -382,18 +376,18 @@ func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *inpb.TOTPStatusR
 
 // GetRecoveryCodes returns the list of recovery codes for the user
 func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRecoveryCodesRequest) (*inpb.GetRecoveryCodesResponse, error) {
-	if err := a.validator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
+	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateActiveUser()); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	if err := a.validator.ValidateOTP(ctx); err != nil {
+	if err := a.Validator.otpValidator.ValidateOTP(ctx); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
 	}
-	username, err := a.validator.GetUsername(ctx)
+	username, err := a.Validator.otpValidator.JwtValidator.GetUsername(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	codes, err := a.otpValidator.GetRecoveryCodes(ctx, username, req.Regenerate)
+	codes, err := a.Validator.otpValidator.GetRecoveryCodes(ctx, username, req.Regenerate)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

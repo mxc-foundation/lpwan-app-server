@@ -28,6 +28,22 @@
         ]
       }
     },
+    "/api/server-info/mxprotocol-server-version": {
+      "get": {
+        "operationId": "GetMxprotocolServerVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetMxprotocolServerVersionResponse"
+            }
+          }
+        },
+        "tags": [
+          "ServerInfoService"
+        ]
+      }
+    },
     "/api/server-info/server-region": {
       "get": {
         "operationId": "GetServerRegion",
@@ -47,6 +63,14 @@
   },
   "definitions": {
     "appserver_serves_uiGetAppserverVersionResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetMxprotocolServerVersionResponse": {
       "type": "object",
       "properties": {
         "version": {

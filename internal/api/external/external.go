@@ -99,7 +99,7 @@ func setupAPI(conf config.Config) error {
 	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 
-	err = externalcus.SetupAPI(grpcServer)
+	err = externalcus.SetupAPI(grpcServer, externalCtx.applicationServerID)
 	if err != nil {
 		return errors.Wrap(err, "failed to register customized external APIs ")
 	}
@@ -284,9 +284,4 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	}
 
 	return mux, nil
-}
-
-// GetApplicationServerID gets application server id from external package
-func GetApplicationServerID() uuid.UUID {
-	return externalCtx.applicationServerID
 }

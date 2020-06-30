@@ -3,35 +3,41 @@ package serverinfo
 import (
 	"context"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 // SettingsServerAPI defines the settings of the Server API structure
 type SettingsServerAPI struct {
-	validator authcus.Validator
+	Validator *validator
 }
 
 // NewSettingsServerAPI defines the SettingsServerAPI validator
-func NewSettingsServerAPI(validator authcus.Validator) *SettingsServerAPI {
-	return &SettingsServerAPI{
-		validator: validator,
+func NewSettingsServerAPI(api SettingsServerAPI) *SettingsServerAPI {
+	settingsServerAPI = SettingsServerAPI{
+		Validator: api.Validator,
 	}
+	return &settingsServerAPI
 }
+
+var (
+	settingsServerAPI SettingsServerAPI
+)
 
 // GetSettings defines the settings of the Server API request and response
 func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSettingsRequest) (*api.GetSettingsResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetSettings"
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -71,7 +77,7 @@ func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifyS
 	logInfo := "api/appserver_serves_ui/ModifySettings"
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())

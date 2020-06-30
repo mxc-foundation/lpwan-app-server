@@ -16,8 +16,8 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	"github.com/brocaar/lorawan"
+
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -37,7 +37,7 @@ func New(db *sqlx.DB) *DeviceHandler {
 }
 
 // CreateDevice creates the given device.
-func (h *DeviceHandler) CreateDevice(ctx context.Context, d *devmod.Device) error {
+func (h *DeviceHandler) CreateDevice(ctx context.Context, d *devmod.Device, applicationServerID uuid.UUID) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -111,7 +111,7 @@ func (h *DeviceHandler) CreateDevice(ctx context.Context, d *devmod.Device) erro
 			DevEui:            d.DevEUI[:],
 			DeviceProfileId:   d.DeviceProfileID.Bytes(),
 			ServiceProfileId:  app.ServiceProfileID.Bytes(),
-			RoutingProfileId:  external.GetApplicationServerID().Bytes(),
+			RoutingProfileId:  applicationServerID.Bytes(),
 			SkipFCntCheck:     d.SkipFCntCheck,
 			ReferenceAltitude: d.ReferenceAltitude,
 		},
@@ -217,7 +217,7 @@ func (h *DeviceHandler) GetDeviceCount(ctx context.Context, filters devmod.Devic
 	var count int
 	err = sqlx.Get(h.db, &count, query, args...)
 	if err != nil {
-		return 0, handlePSQLError(Select, err, "select error")
+		return 0, errors.Wrap(err, "select query error")
 	}
 
 	return count, nil

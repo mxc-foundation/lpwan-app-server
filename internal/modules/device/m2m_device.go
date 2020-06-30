@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,31 +17,19 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
-// M2MDeviceAPI defines the device server api structure
-type M2MDeviceAPI struct {
-	validator authcus.Validator
-}
-
-// NewM2MDeviceAPI validates the new devices server api
-func NewM2MDeviceAPI(validator authcus.Validator) *M2MDeviceAPI {
-	return &M2MDeviceAPI{
-		validator: validator,
-	}
-}
-
 // GetDeviceList defines the get device list request and response
-func (s *M2MDeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
+func (s *DeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceList org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetDeviceListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -87,18 +77,18 @@ func (s *M2MDeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceList
 }
 
 // GetDeviceProfile defines the function to get the device profile
-func (s *M2MDeviceAPI) GetDeviceProfile(ctx context.Context, req *api.GetDSDeviceProfileRequest) (*api.GetDSDeviceProfileResponse, error) {
+func (s *DeviceAPI) GetDeviceProfile(ctx context.Context, req *api.GetDSDeviceProfileRequest) (*api.GetDSDeviceProfileResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceProfile org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -137,18 +127,18 @@ func (s *M2MDeviceAPI) GetDeviceProfile(ctx context.Context, req *api.GetDSDevic
 }
 
 // GetDeviceHistory defines the get device history request and response
-func (s *M2MDeviceAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
+func (s *DeviceAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -180,18 +170,18 @@ func (s *M2MDeviceAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceH
 }
 
 // SetDeviceMode defines the set device mode request and response
-func (s *M2MDeviceAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
+func (s *DeviceAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
 	logInfo := "api/appserver_serves_ui/SetDeviceMode org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}

@@ -14,8 +14,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
+
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
 // TOTPInfo contains user's TOTP configuration
@@ -51,13 +54,14 @@ const (
 
 // Validator provides methods to generate TOTP configuration for the user and validate OTPs
 type Validator struct {
-	issuer string
-	block  cipher.Block
-	store  Store
+	issuer       string
+	block        cipher.Block
+	store        Store
+	JwtValidator *authcus.JWTValidator
 }
 
 // NewValidator creates a new TOTP validator using given issuer, master key and store.
-func NewValidator(issuer, key string, store Store) (*Validator, error) {
+func NewValidator(issuer, key string, store Store, jwtValidator *authcus.JWTValidator) (*Validator, error) {
 	k, err := hex.DecodeString(key)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't decode the key: %v", err)
@@ -67,9 +71,10 @@ func NewValidator(issuer, key string, store Store) (*Validator, error) {
 		return nil, fmt.Errorf("couldn't initialize cipher: %v", err)
 	}
 	return &Validator{
-		issuer: issuer,
-		block:  block,
-		store:  store,
+		issuer:       issuer,
+		block:        block,
+		store:        store,
+		JwtValidator: jwtValidator,
 	}, nil
 }
 
@@ -134,6 +139,22 @@ func (v *Validator) NewConfiguration(ctx context.Context, username string) (*Con
 	conf.RecoveryCodes = rCodes
 
 	return conf, nil
+}
+
+// ValidateOTP validates OTP and returns the error if it is not valid
+func (v *Validator) ValidateOTP(ctx context.Context) error {
+	claims, err := v.JwtValidator.GetClaims(ctx)
+	if err != nil {
+		return err
+	}
+	enabled, err := v.IsEnabled(ctx, claims.Username)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return errors.New("OTP is not enabled")
+	}
+	return v.Validate(ctx, claims.Username, claims.OTP)
 }
 
 // GetRecoveryCodes returns the list of recovery codes for the user. If

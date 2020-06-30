@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
@@ -25,7 +27,6 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
@@ -54,7 +55,7 @@ type GatewayStore interface {
 	DeleteGateway(ctx context.Context, mac lorawan.EUI64) error
 	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (Gateway, error)
 	GetGatewayCount(ctx context.Context, search string) (int, error)
-	GetGateways(ctx context.Context, limit, offset int, search string) ([]Gateway, error)
+	GetGateways(ctx context.Context, limit, offset int32, search string) ([]Gateway, error)
 	GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI64) (string, error)
 	GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error)
 	UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error
@@ -77,23 +78,33 @@ type GatewayStore interface {
 
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
-	validator authcus.Validator
-	store     GatewayStore
+	Validator           *validator
+	Store               GatewayStore
+	ApplicationServerID uuid.UUID
 }
 
 // NewGatewayAPI creates a new GatewayAPI.
-func NewGatewayAPI(validator authcus.Validator, store GatewayStore) *GatewayAPI {
-	return &GatewayAPI{
-		validator: validator,
-		store:     store,
+func NewGatewayAPI(api GatewayAPI) *GatewayAPI {
+	gwAPI = GatewayAPI{
+		Validator:           api.Validator,
+		Store:               api.Store,
+		ApplicationServerID: api.ApplicationServerID,
 	}
+
+	return &gwAPI
 }
 
 var (
+	gwAPI GatewayAPI
+
 	gatewayNameRegexp          = regexp.MustCompile(`^[\w-]+$`)
 	serialNumberOldGWValidator = regexp.MustCompile(`^MX([A-Z1-9]){7}$`)
 	serialNumberNewGWValidator = regexp.MustCompile(`^M2X([A-Z1-9]){8}$`)
 )
+
+func GetGatewayAPI() *GatewayAPI {
+	return &gwAPI
+}
 
 // Value implements the driver.Valuer interface.
 func (l GPSPoint) Value() (driver.Value, error) {
@@ -114,16 +125,16 @@ func (l *GPSPoint) Scan(src interface{}) error {
 // Validate validates the gateway data.
 func (g Gateway) Validate() error {
 	if !gatewayNameRegexp.MatchString(g.Name) {
-		return ErrGatewayInvalidName
+		return errors.New("invalid gateway name")
 	}
 
 	if strings.HasPrefix(g.Model, "MX19") {
 		if !serialNumberNewGWValidator.MatchString(g.SerialNumber) {
-			return ErrGatewayInvalidSerialNumber
+			return errors.New("invalid gateway serial number")
 		}
 	} else if g.Model != "" {
 		if !serialNumberOldGWValidator.MatchString(g.SerialNumber) {
-			return ErrGatewayInvalidSerialNumber
+			return errors.New("invalid gateway serial number")
 		}
 	}
 
@@ -131,6 +142,14 @@ func (g Gateway) Validate() error {
 }
 
 var SupernodeAddr string
+
+func (a *GatewayAPI) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error) {
+	return a.Store.GetGatewayMiningList(ctx, time, limit)
+}
+
+func (a *GatewayAPI) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error {
+	return a.Store.UpdateFirstHeartbeatToZero(ctx, mac)
+}
 
 func (a *GatewayAPI) UpdateFirmwareFromProvisioningServer(conf config.Config) error {
 	log.WithFields(log.Fields{
@@ -170,7 +189,7 @@ func (a *GatewayAPI) UpdateFirmwareFromProvisioningServer(conf config.Config) er
 	c := cron.New()
 	err := c.AddFunc(conf.ProvisionServer.UpdateSchedule, func() {
 		log.Info("Check firmware update...")
-		gwFwList, err := a.store.GetGatewayFirmwareList()
+		gwFwList, err := a.Store.GetGatewayFirmwareList()
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get gateway firmware list.")
 			return
@@ -210,7 +229,7 @@ func (a *GatewayAPI) UpdateFirmwareFromProvisioningServer(conf config.Config) er
 				FirmwareHash: md5sum,
 			}
 
-			model, err := a.store.UpdateGatewayFirmware(&gatewayFw)
+			model, err := a.Store.UpdateGatewayFirmware(&gatewayFw)
 			if model == "" {
 				log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
 			}
@@ -233,7 +252,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb
 	}).Info("BatchResetDefaultGatewatConfig is called")
 
 	// check user permission, only global admin allowed
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	isAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -248,7 +267,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb
 
 	if req.OrganizationList == "all" {
 		// reset for all organizations
-		count, err := storage.GetOrganizationCount(ctx, storage.DB(), "")
+		count, err := storage.GetOrganizationCount(ctx, storage.DB(), storage.OrganizationFilters{})
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -300,7 +319,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb
 }
 
 func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Context, orgID int64) error {
-	count, err := a.store.GetGatewayCountForOrganizationID(ctx, orgID, "")
+	count, err := a.Store.GetGatewayCountForOrganizationID(ctx, orgID, "")
 	if err != nil {
 		return err
 	}
@@ -311,7 +330,7 @@ func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Conte
 
 	limit := 100
 	for offset := 0; offset <= count/limit; offset++ {
-		gwList, err := a.store.GetGatewaysForOrganizationID(ctx, orgID, limit, offset, "")
+		gwList, err := a.Store.GetGatewaysForOrganizationID(ctx, orgID, limit, offset, "")
 		if err != nil {
 			return err
 		}
@@ -322,7 +341,7 @@ func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Conte
 				return err
 			}
 
-			err = a.store.UpdateGatewayConfigByGwId(ctx, v.Config, v.MAC)
+			err = a.Store.UpdateGatewayConfigByGwId(ctx, v.Config, v.MAC)
 			if err != nil {
 				return err
 			}
@@ -339,7 +358,7 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *pb.
 	}).Info("ResetDefaultGatewatConfigByID is called")
 
 	// check user permission, only global admin allowed
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	isAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -352,7 +371,7 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *pb.
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	gw, err := a.store.GetGateway(ctx, mac, true)
+	gw, err := a.Store.GetGateway(ctx, mac, true)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
@@ -362,7 +381,7 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *pb.
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	err = a.store.UpdateGatewayConfigByGwId(ctx, gw.Config, gw.MAC)
+	err = a.Store.UpdateGatewayConfigByGwId(ctx, gw.Config, gw.MAC)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
@@ -378,7 +397,7 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.
 	}).Info("InsertNewDefaultGatewayConfig is called")
 
 	// check user permission, only global admin allowed
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	isAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -392,7 +411,7 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.
 		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", SupernodeAddr, -1),
 	}
 
-	err = a.store.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.Store.GetDefaultGatewayConfig(&defaultGatewayConfig)
 	if err == nil {
 		// config already exist, no need to insert
 		return nil, status.Errorf(codes.AlreadyExists, "model=%s, region=%s", req.Model, req.Region)
@@ -400,7 +419,7 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = a.store.AddNewDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.Store.AddNewDefaultGatewayConfig(&defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
@@ -416,7 +435,7 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.Upd
 	}).Info("UpdateDefaultGatewayConfig is called")
 
 	// check user permission
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	isAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -429,13 +448,13 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.Upd
 		Region: req.Region,
 	}
 
-	err = a.store.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.Store.GetDefaultGatewayConfig(&defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
 	defaultGatewayConfig.DefaultConfig = strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", SupernodeAddr, -1)
-	err = a.store.UpdateDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.Store.UpdateDefaultGatewayConfig(&defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
@@ -451,7 +470,7 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *pb.GetDef
 	}).Info("GetDefaultGatewayConfig is called")
 
 	// check user permission
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
+	isAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -464,7 +483,7 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *pb.GetDef
 		Region: req.Region,
 	}
 
-	err = a.store.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.Store.GetDefaultGatewayConfig(&defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
@@ -482,13 +501,13 @@ func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (
 		return nil, status.Error(codes.InvalidArgument, "gateway.location must not be nil")
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewaysAccess(authcus.Create, req.Gateway.OrganizationId))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewaysAccess(authcus.Create, req.Gateway.OrganizationId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// also validate that the network-server is accessible for the given organization
-	err = a.validator.Validate(ctx, authcus.ValidateOrganizationNetworkServerAccess(authcus.Read, req.Gateway.OrganizationId, req.Gateway.NetworkServerId))
+	err = a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationNetworkServerAccess(authcus.Read, req.Gateway.OrganizationId, req.Gateway.NetworkServerId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -516,7 +535,7 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 		Region: n.Region,
 	}
 
-	err = a.store.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.Store.GetDefaultGatewayConfig(&defaultGatewayConfig)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to get default gateway config for model= %s, region= %s", defaultGatewayConfig.Model, defaultGatewayConfig.Region)
 	}
@@ -526,8 +545,6 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 }
 
 func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *Gateway) (err error) {
-	applicationServerID := external.GetApplicationServerID()
-
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -537,7 +554,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 		Gateway: &ns.Gateway{
 			Id:               mac[:],
 			Location:         req.Location,
-			RoutingProfileId: applicationServerID.Bytes(),
+			RoutingProfileId: a.ApplicationServerID.Bytes(),
 		},
 	}
 
@@ -601,7 +618,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 
 		// Validate max. gateway count when != 0.
 		if org.MaxGatewayCount != 0 {
-			count, err := a.store.GetGatewayCount(ctx, tx, "")
+			count, err := a.Store.GetGatewayCount(ctx, "")
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}
@@ -611,7 +628,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 			}
 		}
 
-		err = a.store.CreateGateway(ctx, tx, &Gateway{
+		err = a.Store.CreateGateway(ctx, &Gateway{
 			MAC:             mac,
 			Name:            req.Name,
 			Description:     req.Description,
@@ -665,12 +682,12 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	gw, err := a.store.GetGateway(ctx, mac, false)
+	gw, err := a.Store.GetGateway(ctx, mac, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -773,7 +790,7 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 
 // List lists the gateways.
 func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.ListGatewayResponse, error) {
-	err := a.validator.Validate(ctx, authcus.ValidateGatewaysAccess(authcus.List, req.OrganizationId))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewaysAccess(authcus.List, req.OrganizationId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -785,14 +802,14 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 		OrganizationID: req.OrganizationId,
 	}
 
-	sub, err := a.validator.GetSubject(ctx)
+	sub, err := a.Validator.otpValidator.JwtValidator.GetSubject(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	switch sub {
 	case authcus.SubjectUser:
-		user, err := a.validator.GetUser(ctx)
+		user, err := user.GetUserAPI().Validator.GetUser(ctx)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
@@ -804,18 +821,18 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 		}
 
 	case authcus.SubjectAPIKey:
-		// Nothing to do as the validator function already validated that the
+		// Nothing to do as the Validator function already validated that the
 		// API Key has access to the given OrganizationID.
 	default:
 		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
 	}
 
-	count, err := a.store.GetGatewayCount(ctx, "")
+	count, err := a.Store.GetGatewayCount(ctx, "")
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	gws, err := a.store.GetGateways(ctx, req.Limit, req.Offset, "")
+	gws, err := a.Store.GetGateways(ctx, req.Limit, req.Offset, "")
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -868,41 +885,41 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 
 // ListLocations lists the gateway locations.
 func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
-	/*var result []*pb.GatewayLocationListItem
+	var result []*pb.GatewayLocationListItem
+	/*
+		redisConn := storage.RedisPool().Get()
+		defer redisConn.Close()
 
-	redisConn := storage.RedisPool().Get()
-	defer redisConn.Close()
-
-	resultJSON, err := redis.Bytes(redisConn.Do("GET", GatewayLocationsRedisKey))
-	if err == nil {
-		json.Unmarshal(resultJSON, &result)
-	}
-
-	if len(result) == 0 {
-		gwsLoc, err := a.store.GetGatewaysLoc(ctx, storage.DB(), viper.GetInt("application_server.gateways_locations_limit"))
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		for _, loc := range gwsLoc {
-			result = append(result, &pb.GatewayLocationListItem{
-				Location: &pb.GatewayLocation{
-					Latitude:  loc.Latitude,
-					Longitude: loc.Longitude,
-					Altitude:  loc.Altitude,
-				},
-			})
-		}
-
-		bytes, err := json.Marshal(&result)
+		resultJSON, err := redis.Bytes(redisConn.Do("GET", GatewayLocationsRedisKey))
 		if err == nil {
-			redisConn.Do("SET", GatewayLocationsRedisKey, bytes)
+			json.Unmarshal(resultJSON, &result)
 		}
-	}
 
+		if len(result) == 0 {
+			gwsLoc, err := a.Store.GetGatewaysLoc(ctx, storage.DB(), viper.GetInt("application_server.gateways_locations_limit"))
+			if err != nil {
+				return nil, helpers.ErrToRPCError(err)
+			}
+
+			for _, loc := range gwsLoc {
+				result = append(result, &pb.GatewayLocationListItem{
+					Location: &pb.GatewayLocation{
+						Latitude:  loc.Latitude,
+						Longitude: loc.Longitude,
+						Altitude:  loc.Altitude,
+					},
+				})
+			}
+
+			bytes, err := json.Marshal(&result)
+			if err == nil {
+				redisConn.Do("SET", GatewayLocationsRedisKey, bytes)
+			}
+		}
+	*/
 	resp := pb.ListGatewayLocationsResponse{
 		Result: result,
-	}*/
+	}
 
 	return &resp, nil
 }
@@ -922,7 +939,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Update, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Update, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -937,7 +954,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 			}
 	*/
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		gw, err := a.store.GetGateway(ctx, tx, mac, true)
+		gw, err := a.Store.GetGateway(ctx, mac, true)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -950,7 +967,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		gw.Altitude = req.Gateway.Location.Altitude
 		//gw.Tags = tags
 
-		err = a.store.UpdateGateway(ctx, tx, &gw)
+		err = a.Store.UpdateGateway(ctx, &gw)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -1022,13 +1039,13 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Delete, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Delete, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err = a.store.DeleteGateway(ctx, tx, mac)
+		err = a.Store.DeleteGateway(ctx, mac)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -1049,7 +1066,7 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *pb.GetGatewayStatsReques
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, gatewayID))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, gatewayID))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -1101,12 +1118,12 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *pb.GetLastPingRequest
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	ping, pingRX, err := a.store.GetLastGatewayPingAndRX(ctx, mac)
+	ping, pingRX, err := a.Store.GetLastGatewayPingAndRX(ctx, mac)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -1144,7 +1161,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 		return status.Errorf(codes.InvalidArgument, "mac: %s", err)
 	}
 
-	err := a.validator.Validate(srv.Context(), authcus.ValidateGatewayAccess(authcus.Read, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(), authcus.ValidateGatewayAccess(authcus.Read, mac))
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -1204,12 +1221,12 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
-	gwConfig, err := a.store.GetGatewayConfigByGwId(ctx, mac)
+	gwConfig, err := a.Store.GetGatewayConfigByGwId(ctx, mac)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "GetGwConfig/unable to get gateway config from DB %s", err)
 	}
@@ -1224,12 +1241,12 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
-	if err := a.store.UpdateGatewayConfigByGwId(ctx, req.Conf, mac); err != nil {
+	if err := a.Store.UpdateGatewayConfigByGwId(ctx, req.Conf, mac); err != nil {
 		log.WithError(err).Error("Update conf to gw failed")
 		return &pb.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
 			status.Errorf(codes.Internal, "cannot update gateway config: %s", err)
@@ -1250,7 +1267,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	if req.Sn == "" {
 		return nil, status.Error(codes.InvalidArgument, "gateway sn number must not be empty string")
 	}
-	err := a.validator.Validate(ctx, authcus.ValidateGatewaysAccess(authcus.Create, req.OrganizationId))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewaysAccess(authcus.Create, req.OrganizationId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
@@ -1276,9 +1293,9 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	}
 
 	// add new firmware if new model is registered
-	_, err = a.store.GetGatewayFirmware(resp.Model, true)
+	_, err = a.Store.GetGatewayFirmware(resp.Model, true)
 	if err == storage.ErrDoesNotExist {
-		if _, err = a.store.AddGatewayFirmware(&GatewayFirmware{
+		if _, err = a.Store.AddGatewayFirmware(&GatewayFirmware{
 			Model: resp.Model,
 		}); err != nil {
 			log.WithError(err).Errorf("Failed to add new firmware: %s", resp.Model)
@@ -1361,7 +1378,7 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
@@ -1390,12 +1407,12 @@ func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoU
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
-	err := a.validator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
+	err := a.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateGatewayAccess(authcus.Read, mac))
 	if err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
-	if err := a.store.SetAutoUpdateFirmware(ctx, mac, req.AutoUpdate); err != nil {
+	if err := a.Store.SetAutoUpdateFirmware(ctx, mac, req.AutoUpdate); err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 

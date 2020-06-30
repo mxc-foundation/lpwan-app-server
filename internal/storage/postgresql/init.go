@@ -55,6 +55,7 @@ func SetupDefault() error {
 		}
 
 		// get network-server id
+
 		networkServer, err = storage.GetDefaultNetworkServer(ctx, storage.DB())
 		if err != nil {
 			return err

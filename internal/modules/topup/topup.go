@@ -4,6 +4,8 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,29 +19,34 @@ import (
 
 // TopUpServerAPI defines the topup server api structure
 type TopUpServerAPI struct {
-	validator authcus.Validator
+	Validator *validator
 }
 
 // NewTopUpServerAPI validates the topup server api
-func NewTopUpServerAPI(validator authcus.Validator) *TopUpServerAPI {
-	return &TopUpServerAPI{
-		validator: validator,
+func NewTopUpServerAPI(api TopUpServerAPI) *TopUpServerAPI {
+	topupServerAPI = TopUpServerAPI{
+		Validator: api.Validator,
 	}
+	return &topupServerAPI
 }
+
+var (
+	topupServerAPI TopUpServerAPI
+)
 
 // GetTopUpHistory defines the topup history request and response
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetTopUpHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -86,14 +93,14 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	logInfo := "api/appserver_serves_ui/GetTopUpDestination org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := s.validator.GetIsAdmin(ctx)
+	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.validator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
