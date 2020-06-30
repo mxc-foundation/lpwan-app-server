@@ -19,6 +19,7 @@ type Config struct {
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
 		HostServer             string `mapstructure:"host_server"`
 		DemoUser               string `mapstructure:"demo_user"`
+		Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
 	}
 
 	PostgreSQL struct {
@@ -35,12 +36,12 @@ type Config struct {
 	}
 
 	SMTP struct {
-			Email    string `mapstructure:"email"`
-			Username string `mapstructure:"username"`
-			Password string `mapstructure:"password"`
-			AuthType string `mapstructure:"auth_type"`
-			Host     string `mapstructure:"host"`
-			Port     string `mapstructure:"port"`
+		Email    string `mapstructure:"email"`
+		Username string `mapstructure:"username"`
+		Password string `mapstructure:"password"`
+		AuthType string `mapstructure:"auth_type"`
+		Host     string `mapstructure:"host"`
+		Port     string `mapstructure:"port"`
 	} `mapstructure:"smtp"`
 
 	M2MServer struct {

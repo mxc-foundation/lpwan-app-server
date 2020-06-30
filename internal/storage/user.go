@@ -1,31 +1,18 @@
 package storage
 
 import (
-	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/sha512"
 	"database/sql"
-	"encoding/base64"
+	"fmt"
 	"regexp"
-	"strconv"
-	"strings"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
-
-// saltSize defines the salt size
-const saltSize = 16
-
-// defaultSessionTTL defines the default session TTL
-const defaultSessionTTL = time.Hour * 24
 
 // Any upper, lower, digit characters, at least 6 characters.
 var usernameValidator = regexp.MustCompile(`^[[:alnum:]]+$`)
@@ -148,7 +135,7 @@ func CreateUser(ctx context.Context, db sqlx.Queryer, user *User, password strin
 		return 0, errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := hash(password, saltSize, HashIterations)
+	pwHash, err := pwh.HashPassword(password)
 	if err != nil {
 		return 0, err
 	}
@@ -192,59 +179,6 @@ func CreateUser(ctx context.Context, db sqlx.Queryer, user *User, password strin
 		"ctx_id":      ctx.Value(logging.ContextIDKey),
 	}).Info("user created")
 	return user.ID, nil
-}
-
-// Generate the hash of a password for storage in the database.
-// NOTE: We store the details of the hashing algorithm with the hash itself,
-// making it easy to recreate the hash for password checking, even if we change
-// the default criteria here.
-func hash(password string, saltSize int, iterations int) (string, error) {
-	// Generate a random salt value, 128 bits.
-	salt := make([]byte, saltSize)
-	_, err := rand.Read(salt)
-	if err != nil {
-		return "", errors.Wrap(err, "read random bytes error")
-	}
-
-	return hashWithSalt(password, salt, iterations), nil
-}
-
-func hashWithSalt(password string, salt []byte, iterations int) string {
-	// Generate the hash.  This should be a little painful, adjust ITERATIONS
-	// if it needs performance tweeking.  Greatly depends on the hardware.
-	// NOTE: We store these details with the returned hash, so changes will not
-	// affect our ability to do password compares.
-	hash := pbkdf2.Key([]byte(password), salt, iterations, sha512.Size, sha512.New)
-
-	// Build up the parameters and hash into a single string so we can compare
-	// other string to the same hash.  Note that the hash algorithm is hard-
-	// coded here, as it is above.  Introducing alternate encodings must support
-	// old encodings as well, and build this string appropriately.
-	var buffer bytes.Buffer
-
-	buffer.WriteString("PBKDF2$")
-	buffer.WriteString("sha512$")
-	buffer.WriteString(strconv.Itoa(iterations))
-	buffer.WriteString("$")
-	buffer.WriteString(base64.StdEncoding.EncodeToString(salt))
-	buffer.WriteString("$")
-	buffer.WriteString(base64.StdEncoding.EncodeToString(hash))
-
-	return buffer.String()
-}
-
-// HashCompare verifies that passed password hashes to the same value as the
-// passed passwordHash.
-func hashCompare(password string, passwordHash string) bool {
-	// SPlit the hash string into its parts.
-	hashSplit := strings.Split(passwordHash, "$")
-
-	// Get the iterations and the salt and use them to encode the password
-	// being compared.cre
-	iterations, _ := strconv.Atoi(hashSplit[2])
-	salt, _ := base64.StdEncoding.DecodeString(hashSplit[3])
-	newHash := hashWithSalt(password, salt, iterations)
-	return newHash == passwordHash
 }
 
 // GetUser returns the User for the given id.
@@ -393,52 +327,24 @@ func DeleteUser(ctx context.Context, db sqlx.Execer, id int64) error {
 	return nil
 }
 
-// LoginUser returns a JWT token for the user matching the given username
-// and password.
-func LoginUser(ctx context.Context, db sqlx.Queryer, username string, password string) (string, error) {
+// CheckPassword returns an error if the password for the user is not valid
+func CheckPassword(ctx context.Context, db sqlx.Queryer, username string, password string) error {
 	// Find the user by username
 	var user userInternal
 	err := sqlx.Get(db, &user, "select "+internalUserFields+" from \"user\" where username = $1", username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", ErrInvalidUsernameOrPassword
+			return ErrInvalidUsernameOrPassword
 		}
-		return "", errors.Wrap(err, "select error")
+		return errors.Wrap(err, "select error")
 	}
 
 	// Compare the passed in password with the hash in the database.
-	if !hashCompare(password, user.PasswordHash) {
-		return "", ErrInvalidUsernameOrPassword
+	if err := pwh.Validate(password, user.PasswordHash); err != nil {
+		return ErrInvalidUsernameOrPassword
 	}
 
-	return MakeJWT(user.Username, user.SessionTTL)
-}
-
-// MakeJWT ...
-func MakeJWT(username string, sessionTTL int32) (string, error) {
-	// Generate the token.
-	now := time.Now()
-	nowSecondsSinceEpoch := now.Unix()
-	var expSecondsSinceEpoch int64
-	if sessionTTL > 0 {
-		expSecondsSinceEpoch = nowSecondsSinceEpoch + (60 * int64(sessionTTL))
-	} else {
-		expSecondsSinceEpoch = nowSecondsSinceEpoch + int64(defaultSessionTTL/time.Second)
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss":      "lora-app-server",
-		"aud":      "lora-app-server",
-		"nbf":      nowSecondsSinceEpoch,
-		"exp":      expSecondsSinceEpoch,
-		"sub":      "user",
-		"username": username,
-	})
-
-	jwt, err := token.SignedString(jwtsecret)
-	if nil != err {
-		return jwt, errors.Wrap(err, "get jwt signed string error")
-	}
-	return jwt, err
+	return nil
 }
 
 // UpdatePassword updates the user with the new password.
@@ -447,7 +353,7 @@ func UpdatePassword(ctx context.Context, db sqlx.Execer, id int64, newpassword s
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := hash(newpassword, saltSize, HashIterations)
+	pwHash, err := pwh.HashPassword(newpassword)
 	if err != nil {
 		return err
 	}
@@ -587,7 +493,7 @@ func FinishRegistration(db sqlx.Execer, userID int64, newPwd string) error {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwdHash, err := hash(newPwd, saltSize, HashIterations)
+	pwdHash, err := pwh.HashPassword(newPwd)
 	if err != nil {
 		return err
 	}
@@ -611,5 +517,83 @@ func FinishRegistration(db sqlx.Execer, userID int64, newPwd string) error {
 		"id": userID,
 	}).Info("user password updated")
 
+	return nil
+}
+
+type PasswordResetRecord struct {
+	db           sqlx.Ext
+	UserID       int64
+	OTP          string
+	GeneratedAt  time.Time
+	AttemptsLeft int64
+}
+
+func GetPasswordResetRecord(db sqlx.Ext, userID int64) (*PasswordResetRecord, error) {
+	query := `SELECT otp, generated_at, attempts_left FROM password_reset WHERE user_id = $1`
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	res := &PasswordResetRecord{db: db, UserID: userID}
+	var count int
+	defer rows.Close()
+	for rows.Next() {
+		if count > 0 {
+			return nil, fmt.Errorf("got multiple reset password rows for %d", userID)
+		}
+		count++
+		if err := rows.Scan(&res.OTP, &res.GeneratedAt, &res.AttemptsLeft); err != nil {
+			return nil, fmt.Errorf("scan has failed: %v", err)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if count == 0 {
+		_, err := db.Exec(`INSERT INTO password_reset (user_id, otp, generated_at, attempts_left) VALUES ($1, $2, $3, $4)`, res.UserID, res.OTP, res.GeneratedAt, res.AttemptsLeft)
+		if err != nil {
+			return nil, fmt.Errorf("failed to add a new password reset record: %v", err)
+		}
+	}
+	return res, nil
+}
+
+func (pr *PasswordResetRecord) SetOTP(otp string) error {
+	pr.OTP = otp
+	pr.GeneratedAt = time.Now()
+	pr.AttemptsLeft = 3
+	res, err := pr.db.Exec(`UPDATE password_reset
+						SET otp = $1, generated_at = $2, attempts_left = $3
+						WHERE user_id = $4`,
+		pr.OTP, pr.GeneratedAt, pr.AttemptsLeft, pr.UserID)
+	if err != nil {
+		return err
+	}
+	// we need to make sure that we've updated exactly one row
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowCnt != 1 {
+		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
+	}
+	return nil
+}
+
+func (pr *PasswordResetRecord) ReduceAttempts() error {
+	pr.AttemptsLeft--
+	res, err := pr.db.Exec(`UPDATE password_reset SET attempts_left = $1 WHERE user_id = $2`,
+		pr.AttemptsLeft, pr.UserID)
+	if err != nil {
+		return err
+	}
+	// we need to make sure that we've updated exactly one row
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowCnt != 1 {
+		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
+	}
 	return nil
 }

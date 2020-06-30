@@ -13,15 +13,17 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
+	authstore "github.com/mxc-foundation/lpwan-app-server/internal/storage/auth"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // HashIterations configures the Hash iteration
 var (
-	jwtsecret           []byte
-	HashIterations      = 100000
+	pwh                 *pwhash.PasswordHasher
 	DemoUser            = ""
 	applicationServerID uuid.UUID
 )
@@ -30,8 +32,12 @@ var (
 func Setup(c config.Config) error {
 	log.Info("storage: setting up storage package")
 
-	jwtsecret = []byte(c.ApplicationServer.ExternalAPI.JWTSecret)
-	HashIterations = c.General.PasswordHashIterations
+	var err error
+	pwh, err = pwhash.New(16, c.General.PasswordHashIterations)
+	if err != nil {
+		return err
+	}
+
 	DemoUser = c.General.DemoUser
 
 	if err := applicationServerID.UnmarshalText([]byte(c.ApplicationServer.ID)); err != nil {
@@ -190,4 +196,8 @@ func SetupDefault() error {
 	}
 
 	return nil
+}
+
+func GetAuthStore() auth.Store {
+	return authstore.New(DB().DB.DB)
 }

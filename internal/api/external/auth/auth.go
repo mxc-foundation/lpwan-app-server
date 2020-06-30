@@ -3,24 +3,24 @@ package auth
 import (
 	"fmt"
 	"regexp"
+	"strings"
+	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
+	"github.com/lestrrat-go/jwx/jwa"
+	"github.com/lestrrat-go/jwx/jwt"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
+
+// defaultSessionTTL defines the default session TTL
+const defaultSessionTTL = 86400
 
 var validAuthorizationRegexp = regexp.MustCompile(`(?i)^bearer (.*)$`)
 
 // Claims defines the struct containing the token claims.
 type Claims struct {
-	jwt.StandardClaims
-
 	// Username defines the identity of the user.
 	Username string `json:"username"`
 
@@ -45,11 +45,47 @@ type Validator interface {
 	// GetOTP returns OTP code
 	GetOTP(context.Context) string
 
-	// ValidateOTP validates OTP and returns the error if it is not valid
-	ValidateOTP(context.Context) error
-
 	// GetIsAdmin returns if the authenticated user is a global admin.
 	GetIsAdmin(context.Context) (bool, error)
+
+	// GetCredentials returns users credentials
+	GetCredentials(context.Context, ...Option) (Credentials, error)
+
+	// SignToken returns a signed token for the user
+	SignToken(username string, ttl int64, audience []string) (string, error)
+}
+
+type options struct {
+	audience    string
+	requireOTP  bool
+	limitedCred bool
+}
+
+// Option is used to configure validator checks
+type Option func(opts *options)
+
+// WithAudience requires that credentials presented included all the listed audiences
+func WithAudience(audience string) Option {
+	return func(opts *options) {
+		opts.audience = audience
+	}
+}
+
+// WithValidOTP requires that the request included valid OTP code
+func WithValidOTP() Option {
+	return func(opts *options) {
+		opts.requireOTP = true
+	}
+}
+
+// WithLimitedCredentials creates limited credentials
+//
+// Deprecated: do not use, this is only for the purposes of the registration
+// process
+func WithLimitedCredentials() Option {
+	return func(opts *options) {
+		opts.limitedCred = true
+	}
 }
 
 // ValidatorFunc defines the signature of a claim validator function.
@@ -57,28 +93,61 @@ type Validator interface {
 // error in case an error occured (e.g. db connectivity).
 type ValidatorFunc func(sqlx.Queryer, *Claims) (bool, error)
 
+// OTPValidator provides methods to check if 2FA is enabled and if OTP is valid
+type OTPValidator interface {
+	// IsEnabled returns true if 2FA for the given user is enabled
+	IsEnabled(ctx context.Context, username string) (bool, error)
+	// Validate checks that the OTP for the given user is valid, if not it
+	// returns an error
+	Validate(ctx context.Context, username, otp string) error
+}
+
 // JWTValidator validates JWT tokens.
 type JWTValidator struct {
 	db           sqlx.Ext
-	secret       string
-	algorithm    string
-	otpValidator *otp.Validator
+	userStore    Store
+	secret       interface{}
+	algorithm    jwa.SignatureAlgorithm
+	otpValidator OTPValidator
 }
 
 // NewJWTValidator creates a new JWTValidator.
-func NewJWTValidator(db sqlx.Ext, algorithm, secret string, otpValidator *otp.Validator) *JWTValidator {
+func NewJWTValidator(db sqlx.Ext, algorithm jwa.SignatureAlgorithm, secret interface{}, otpValidator OTPValidator, userStore Store) *JWTValidator {
 	return &JWTValidator{
 		db:           db,
 		secret:       secret,
 		algorithm:    algorithm,
 		otpValidator: otpValidator,
+		userStore:    userStore,
 	}
+}
+
+// SignToken creates and signs a new JWT token for user
+func (v JWTValidator) SignToken(username string, ttl int64, audience []string) (string, error) {
+	t := jwt.New()
+	if ttl == 0 {
+		ttl = defaultSessionTTL
+	}
+	t.Set(jwt.IssuerKey, "lora-app-server")
+	if len(audience) == 0 {
+		t.Set(jwt.AudienceKey, "lora-app-server")
+	} else {
+		t.Set(jwt.AudienceKey, audience)
+	}
+	t.Set(jwt.IssuedAtKey, time.Now())
+	t.Set(jwt.ExpirationKey, time.Now().Add(time.Duration(ttl)*time.Second))
+	t.Set("username", username)
+	token, err := jwt.Sign(t, v.algorithm, v.secret)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign JWT: %v", err)
+	}
+	return string(token), nil
 }
 
 // Validate validates the token from the given context against the given
 // validator funcs.
 func (v JWTValidator) Validate(ctx context.Context, funcs ...ValidatorFunc) error {
-	claims, err := v.getClaims(ctx)
+	claims, err := v.getClaims(ctx, "")
 	if err != nil {
 		return err
 	}
@@ -86,7 +155,7 @@ func (v JWTValidator) Validate(ctx context.Context, funcs ...ValidatorFunc) erro
 	for _, f := range funcs {
 		ok, err := f(v.db, claims)
 		if err != nil {
-			return errors.Wrap(err, "validator func error")
+			return fmt.Errorf("validation has failed: %v", err)
 		}
 		if ok {
 			return nil
@@ -98,7 +167,7 @@ func (v JWTValidator) Validate(ctx context.Context, funcs ...ValidatorFunc) erro
 
 // GetUsername returns the username of the authenticated user.
 func (v JWTValidator) GetUsername(ctx context.Context) (string, error) {
-	claims, err := v.getClaims(ctx)
+	claims, err := v.getClaims(ctx, "")
 	if err != nil {
 		return "", err
 	}
@@ -108,17 +177,14 @@ func (v JWTValidator) GetUsername(ctx context.Context) (string, error) {
 
 // GetIsAdmin returns if the authenticated user is a global amin.
 func (v JWTValidator) GetIsAdmin(ctx context.Context) (bool, error) {
-	claims, err := v.getClaims(ctx)
+	cred, err := v.GetCredentials(ctx)
 	if err != nil {
 		return false, err
 	}
-
-	user, err := storage.GetUserByUsername(ctx, v.db, claims.Username)
-	if err != nil {
-		return false, errors.Wrap(err, "get user by username error")
+	if err = cred.IsGlobalAdmin(ctx); err != nil {
+		return false, nil
 	}
-
-	return user.IsAdmin, nil
+	return true, nil
 }
 
 // GetOTP returns OTP from the context
@@ -126,49 +192,70 @@ func (v JWTValidator) GetOTP(ctx context.Context) string {
 	return getOTPFromContext(ctx)
 }
 
-// ValidateOTP validates OTP and returns the error if it is not valid
-func (v JWTValidator) ValidateOTP(ctx context.Context) error {
-	claims, err := v.getClaims(ctx)
+func (v JWTValidator) GetCredentials(ctx context.Context, opts ...Option) (Credentials, error) {
+	cfg := options{audience: "lora-app-server"}
+	for _, o := range opts {
+		o(&cfg)
+	}
+	claims, err := v.getClaims(ctx, cfg.audience)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	enabled, err := v.otpValidator.IsEnabled(ctx, claims.Username)
+
+	var cred Credentials
+	if cfg.limitedCred {
+		cred, err = GetLimitedCredentials(ctx, nil, claims.Username)
+	} else {
+		cred, err = GetCredentials(ctx, v.userStore, claims.Username)
+	}
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if !enabled {
-		return errors.New("OTP is not enabled")
+
+	if cfg.requireOTP {
+		if claims.OTP == "" {
+			return nil, fmt.Errorf("OTP is required")
+		}
+		if enabled, err := v.otpValidator.IsEnabled(ctx, claims.Username); !enabled || err != nil {
+			return nil, fmt.Errorf("two-factor authentication is not enabled")
+		}
+		if err := v.otpValidator.Validate(ctx, claims.Username, claims.OTP); err != nil {
+			return nil, fmt.Errorf("OTP is not valid")
+		}
 	}
-	return v.otpValidator.Validate(ctx, claims.Username, claims.OTP)
+	return cred, nil
 }
 
-func (v JWTValidator) getClaims(ctx context.Context) (*Claims, error) {
+func (v JWTValidator) getClaims(ctx context.Context, audience string) (*Claims, error) {
 	tokenStr, err := getTokenFromContext(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "get token from context error")
+		return nil, fmt.Errorf("get token from context error: %v", err)
 	}
 
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if token.Header["alg"] != v.algorithm {
-			return nil, ErrInvalidAlgorithm
-		}
-		return []byte(v.secret), nil
-	})
+	token, err := jwt.ParseVerify(strings.NewReader(tokenStr), v.algorithm, v.secret)
 	if err != nil {
-		return nil, errors.Wrap(err, "jwt parse error")
+		return nil, err
+	}
+	if audience == "" {
+		audience = "lora-app-server"
+	}
+	if err := jwt.Verify(token, jwt.WithAudience(audience)); err != nil {
+		return nil, err
 	}
 
-	if !token.Valid {
-		return nil, ErrInvalidToken
-	}
-
-	claims, ok := token.Claims.(*Claims)
+	username, ok := token.Get("username")
 	if !ok {
-		// no need to use a static error, this should never happen
-		return nil, fmt.Errorf("api/auth: expected *Claims, got %T", token.Claims)
+		return nil, fmt.Errorf("username is missing from the token")
+	}
+	usernameStr, ok := username.(string)
+	if !ok {
+		return nil, fmt.Errorf("username is not a string")
 	}
 
-	claims.OTP = getOTPFromContext(ctx)
+	claims := &Claims{
+		Username: usernameStr,
+		OTP:      getOTPFromContext(ctx),
+	}
 
 	return claims, nil
 }

@@ -13,9 +13,6 @@ import (
 func TestUser(t *testing.T) {
 	conf := test.GetConfig()
 
-	// Set a user secret so JWTs can be assigned
-	jwtsecret = []byte("DoWahDiddy")
-
 	// Note that a "clean" database includes the admin user.
 
 	Convey("Given a clean database", t, func() {
@@ -136,9 +133,8 @@ func TestUser(t *testing.T) {
 			})
 
 			Convey("Then the user can log in", func() {
-				jwt, err := LoginUser(context.Background(), DB(), user.Username, password)
+				err := CheckPassword(context.Background(), DB(), user.Username, password)
 				So(err, ShouldBeNil)
-				So(jwt, ShouldNotBeNil)
 			})
 
 			Convey("When updating the user password", func() {
@@ -146,9 +142,8 @@ func TestUser(t *testing.T) {
 				So(UpdatePassword(context.Background(), DB(), user.ID, password), ShouldBeNil)
 
 				Convey("Then the user can log in with the new password", func() {
-					jwt, err := LoginUser(context.Background(), DB(), user.Username, password)
+					err := CheckPassword(context.Background(), DB(), user.Username, password)
 					So(err, ShouldBeNil)
-					So(jwt, ShouldNotBeNil)
 				})
 			})
 
