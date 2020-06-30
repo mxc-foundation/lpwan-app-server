@@ -1,7 +1,6 @@
-package externalcus
+package external
 
 import (
-	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
@@ -27,7 +26,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 )
 
-func SetupAPI(grpcServer *grpc.Server, applicationServerID uuid.UUID) error {
+func SetupCusAPI(grpcServer *grpc.Server) error {
 	jwtValidator := authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret)
 	otpStore := pgstore.New(storage.DB().DB.DB)
 	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, otpStore, jwtValidator)
@@ -39,7 +38,7 @@ func SetupAPI(grpcServer *grpc.Server, applicationServerID uuid.UUID) error {
 	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(device.DeviceAPI{
 		Validator:            device.NewValidator(otpValidator),
 		Store:                devicePg.New(storage.DB().DB),
-		AppplicationServerID: applicationServerID,
+		AppplicationServerID: externalCtx.applicationServerID,
 	}))
 
 	// user
@@ -57,7 +56,7 @@ func SetupAPI(grpcServer *grpc.Server, applicationServerID uuid.UUID) error {
 	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(gateway.GatewayAPI{
 		Validator:           gateway.NewValidator(otpValidator),
 		Store:               gwPg.New(storage.DB().DB),
-		ApplicationServerID: applicationServerID,
+		ApplicationServerID: externalCtx.applicationServerID,
 	}))
 
 	api.RegisterServerInfoServiceServer(grpcServer, serverinfo.NewServerInfoAPI(serverinfo.ServerInfoAPI{

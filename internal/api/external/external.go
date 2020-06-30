@@ -26,7 +26,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/externalcus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
@@ -99,7 +98,7 @@ func setupAPI(conf config.Config) error {
 	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 
-	err = externalcus.SetupAPI(grpcServer, externalCtx.applicationServerID)
+	err = SetupCusAPI(grpcServer)
 	if err != nil {
 		return errors.Wrap(err, "failed to register customized external APIs ")
 	}
@@ -238,7 +237,7 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		},
 	))
 
-	err := externalcus.CusGetJSONGateway(ctx, mux, apiEndpoint, grpcDialOpts)
+	err := CusGetJSONGateway(ctx, mux, apiEndpoint, grpcDialOpts)
 	if err != nil {
 		return nil, errors.Wrap(err, "register customized external service handler error")
 	}
