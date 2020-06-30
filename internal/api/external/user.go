@@ -799,7 +799,7 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *pb.Confi
 
 	log.Println("Confirming GetJwt", user.Username)
 	// give user a token that is valid only to finish the registration process
-	jwt, err := a.validator.SignToken(user.Username, 3600, []string{"registration"})
+	jwt, err := a.validator.SignToken(user.Username, 86400, []string{"registration", "lora-app-server"})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
