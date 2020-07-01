@@ -12,6 +12,8 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
 	umod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
@@ -19,10 +21,10 @@ const externalUserFields = "id, username, is_admin, is_active, session_ttl, crea
 const internalUserFields = "*"
 
 type UserPgHandler struct {
-	db *sqlx.DB
+	db *storage.DBLogger
 }
 
-func New(db *sqlx.DB) *UserPgHandler {
+func New(db *storage.DBLogger) *UserPgHandler {
 	return &UserPgHandler{
 		db: db,
 	}

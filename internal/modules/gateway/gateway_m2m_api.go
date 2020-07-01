@@ -44,7 +44,7 @@ func (a *GatewayM2MAPI) GetGatewayByMac(ctx context.Context, req *pb.GetGatewayB
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	gateway, err := storage.GetGateway(ctx, storage.DB(), mac, false)
+	gateway, err := a.Store.GetGateway(ctx, mac, false)
 	if err == storage.ErrDoesNotExist {
 		return &resp, nil
 	} else if err != nil {

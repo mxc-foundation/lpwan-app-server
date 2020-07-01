@@ -252,6 +252,110 @@
         ]
       }
     },
+    "/api/applications/{applicationID}/integrations/loracloud": {
+      "get": {
+        "summary": "GetLoRaCloudIntegration returns the LoRaCloud application-integration.",
+        "operationId": "GetLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetLoRaCloudIntegrationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteLoRaCloudIntegration deletes the LoRaCloud application-integration.",
+        "operationId": "DeleteLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{applicationID}/integrations/mydevices": {
+      "get": {
+        "summary": "GetMyDevicesIntegration returns the MyDevices application-integration.",
+        "operationId": "GetMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetMyDevicesIntegrationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteMyDevicesIntegration deletes the MyDevices application-integration.",
+        "operationId": "DeleteMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
     "/api/applications/{applicationID}/integrations/thingsboard": {
       "get": {
         "summary": "GetThingsBoardIntegration returns the ThingsBoard application-integration.",
@@ -492,6 +596,142 @@
         ]
       }
     },
+    "/api/applications/{integration.applicationId}/integrations/loracloud": {
+      "post": {
+        "summary": "CreateLoRaCloudIntegration creates A LoRaCloud application-integration.",
+        "operationId": "CreateLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationId",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiCreateLoRaCloudIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateLoRaCloudIntegration updates the LoRaCloud application-integration.",
+        "operationId": "UpdateLoRaCloudIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationId",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiUpdateLoRaCloudIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
+    "/api/applications/{integration.applicationId}/integrations/mydevices": {
+      "post": {
+        "summary": "CreateMyDevicesIntegration creates a MyDevices application-integration.",
+        "operationId": "CreateMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationId",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiCreateMyDevicesIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      },
+      "put": {
+        "summary": "UpdateMyDevicesIntegration updates the MyDevices application-integration.",
+        "operationId": "UpdateMyDevicesIntegration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "integration.applicationId",
+            "description": "Application ID.",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiUpdateMyDevicesIntegrationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ApplicationService"
+        ]
+      }
+    },
     "/api/applications/{integration.applicationId}/integrations/thingsboard": {
       "post": {
         "summary": "CreateThingsBoardIntegration creates a ThingsBoard application-integration.",
@@ -669,6 +909,24 @@
         }
       }
     },
+    "appserver_serves_uiCreateLoRaCloudIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/appserver_serves_uiLoRaCloudIntegration",
+          "description": "Integration object to create."
+        }
+      }
+    },
+    "appserver_serves_uiCreateMyDevicesIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/appserver_serves_uiMyDevicesIntegration",
+          "description": "Integration object to create."
+        }
+      }
+    },
     "appserver_serves_uiCreateThingsBoardIntegrationRequest": {
       "type": "object",
       "properties": {
@@ -701,6 +959,24 @@
       "properties": {
         "integration": {
           "$ref": "#/definitions/appserver_serves_uiInfluxDBIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "appserver_serves_uiGetLoRaCloudIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/appserver_serves_uiLoRaCloudIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "appserver_serves_uiGetMyDevicesIntegrationResponse": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/appserver_serves_uiMyDevicesIntegration",
           "description": "Integration object."
         }
       }
@@ -752,6 +1028,14 @@
         "locationNotificationURL": {
           "type": "string",
           "description": "The URL to call for location notifications."
+        },
+        "txAckNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for tx ack notifications (downlink acknowledged by gateway for transmission)."
+        },
+        "integrationNotificationURL": {
+          "type": "string",
+          "description": "The URL to call for integration notifications."
         }
       }
     },
@@ -819,7 +1103,9 @@
       "enum": [
         "HTTP",
         "INFLUXDB",
-        "THINGSBOARD"
+        "THINGSBOARD",
+        "MYDEVICES",
+        "LORACLOUD"
       ],
       "default": "HTTP"
     },
@@ -866,6 +1152,96 @@
         }
       }
     },
+    "appserver_serves_uiLoRaCloudIntegration": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        },
+        "geolocation": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Geolocation enabled."
+        },
+        "geolocationToken": {
+          "type": "string",
+          "description": "Geolocation token.\nThis token can be obtained from the LoRa Cloud console."
+        },
+        "geolocationBufferTTL": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Geolocation buffer TTL (in seconds).\nWhen \u003e 0, uplink RX meta-data will be stored in a buffer so that\nthe meta-data of multiple uplinks can be used for geolocation."
+        },
+        "geolocationMinBufferSize": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Geolocation minimum buffer size.\nWhen \u003e 0, geolocation will only be performed when the buffer has\nat least the given size."
+        },
+        "geolocationTDOA": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "TDOA based geolocation is enabled."
+        },
+        "geolocationRSSI": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "RSSI based geolocation is enabled."
+        },
+        "geolocationGNSS": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "GNSS based geolocation is enabled (LR1110)."
+        },
+        "geolocationGNSSPayloadField": {
+          "type": "string",
+          "description": "GNSS payload field.\nThis holds the name of the field in the decoded payload object which\ncontains the GNSS payload bytes."
+        },
+        "geolocationGNSSUseRxTime": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "GNSS use RX time.\nIn case this is set to true, the resolver will use the RX time of the\nnetwork instead of the timestamp included in the LR1110 payload."
+        },
+        "geolocationWifi": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Wifi based geolocation is enabled."
+        },
+        "geolocationWifiPayloadField": {
+          "type": "string",
+          "title": "Wifi payload field.\nThis holds the name of the field in the decoded payload object which\ncontains an array of objects with the following fields:\n* macAddress - e.g. 01:23:45:67:89:ab\n* signalStrength - e.g. -51 (optional)"
+        },
+        "das": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Device Application Services enabled."
+        },
+        "dasToken": {
+          "type": "string",
+          "description": "Device Application Services token.\nThis token can be obtained from the LoRa Cloud console."
+        },
+        "dasModemPort": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Device Application Services modem port (FPort).\nChirpStack Application Server will only forward the FRMPayload to DAS\nwhen the uplink FPort is equal to this value."
+        }
+      }
+    },
+    "appserver_serves_uiMyDevicesIntegration": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Application ID."
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "MyDevices API endpoint."
+        }
+      }
+    },
     "appserver_serves_uiThingsBoardIntegration": {
       "type": "object",
       "properties": {
@@ -903,6 +1279,24 @@
       "properties": {
         "integration": {
           "$ref": "#/definitions/appserver_serves_uiInfluxDBIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "appserver_serves_uiUpdateLoRaCloudIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/appserver_serves_uiLoRaCloudIntegration",
+          "description": "Integration object."
+        }
+      }
+    },
+    "appserver_serves_uiUpdateMyDevicesIntegrationRequest": {
+      "type": "object",
+      "properties": {
+        "integration": {
+          "$ref": "#/definitions/appserver_serves_uiMyDevicesIntegration",
           "description": "Integration object."
         }
       }

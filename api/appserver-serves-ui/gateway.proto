@@ -4,7 +4,7 @@ package appserver_serves_ui;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "empty/empty.proto";
+import "google/protobuf/empty.proto";
 
 import "common.proto";
 // from loraserver
@@ -285,6 +285,11 @@ message Gateway {
     // and you you would like to add the FPGA ID to the gateway meta-data or would
     // like LPWAN Server to decrypt the fine-timestamp.
     repeated GatewayBoard boards = 9;
+    // Tags (user defined).
+    map<string, string> tags = 10;
+
+    // Metadata (provided by the gateway).
+    map<string, string> metadata = 11;
 }
 
 message GatewayBoard {

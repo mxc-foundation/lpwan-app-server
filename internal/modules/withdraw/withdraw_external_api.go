@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -12,9 +12,10 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 // WithdrawServerAPI validates the withdraw server api
@@ -111,7 +112,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -168,7 +169,7 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 	}
 	// if user is not global admin, user must have access to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -215,7 +216,7 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 	}
 	// if user is not global admin, user must have access to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}

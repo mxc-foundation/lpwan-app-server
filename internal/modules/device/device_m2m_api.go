@@ -11,6 +11,8 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 )
 
 // DeviceM2MAPI exports the API for mxprotocol-server
@@ -44,19 +46,19 @@ func (a *DeviceM2MAPI) GetDeviceByDevEui(ctx context.Context, req *pb.GetDeviceB
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	device, err := storage.GetDevice(ctx, storage.DB(), devEui, false, true)
+	device, err := a.Store.GetDevice(ctx, devEui, false, true)
 	if err == storage.ErrDoesNotExist {
 		return &resp, nil
 	} else if err != nil {
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	application, err := storage.GetApplication(ctx, storage.DB(), device.ApplicationID)
+	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, device.ApplicationID)
 	if err != nil {
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	resp.OrgId = application.OrganizationID
+	resp.OrgId = app.OrganizationID
 	resp.DevProfile.DevEui = req.DevEui
 	resp.DevProfile.Name = device.Name
 	resp.DevProfile.ApplicationId = device.ApplicationID

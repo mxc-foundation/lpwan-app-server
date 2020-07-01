@@ -30,9 +30,10 @@ import (
 
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 )
 
 type UserStore interface {
@@ -84,11 +85,12 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateUsersAccess(authcus.Create)); err != nil {
+		validateUsersAccess(Create)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user := User{
+		Username:   req.User.Username,
 		SessionTTL: req.User.SessionTtl,
 		IsAdmin:    req.User.IsAdmin,
 		IsActive:   req.User.IsActive,
@@ -107,7 +109,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		}
 
 		for _, org := range req.Organizations {
-			if err := storage.CreateOrganizationUser(ctx, tx, org.OrganizationId, user.ID, org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
+			if err := organization.GetOrganizationAPI().Store.CreateOrganizationUser(ctx, org.OrganizationId, user.Username, org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
 				return err
 			}
 		}
@@ -124,7 +126,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 // Get returns the user matching the given ID.
 func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUserResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateUserAccess(req.Id, authcus.Read)); err != nil {
+		validateUserAccess(req.Id, Read)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -176,7 +178,7 @@ func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailReques
 // List lists the users.
 func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.ListUserResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateUsersAccess(authcus.List)); err != nil {
+		validateUsersAccess(List)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -224,7 +226,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateUserAccess(req.User.Id, authcus.Update)); err != nil {
+		validateUserAccess(req.User.Id, Update)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -249,7 +251,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 // Delete deletes the user matching the given ID.
 func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empty.Empty, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateUserAccess(req.Id, authcus.Delete)); err != nil {
+		validateUserAccess(req.Id, Delete)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -264,7 +266,7 @@ func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*emp
 // UpdatePassword updates the password for the user matching the given ID.
 func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswordRequest) (*empty.Empty, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateUserAccess(req.UserId, authcus.UpdateProfile)); err != nil {
+		validateUserAccess(req.UserId, UpdateProfile)); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 

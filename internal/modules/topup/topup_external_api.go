@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -12,9 +12,10 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 // TopUpServerAPI defines the topup server api structure
@@ -46,7 +47,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -100,7 +101,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}

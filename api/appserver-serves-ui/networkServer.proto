@@ -4,7 +4,7 @@ package appserver_serves_ui;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "empty/empty.proto";
+import "google/protobuf/empty.proto";
 
 // NetworkServerService is the service managing network-servers.
 service NetworkServerService {

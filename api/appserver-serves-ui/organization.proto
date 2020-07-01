@@ -4,7 +4,8 @@ package appserver_serves_ui;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "empty/empty.proto";
+import "google/protobuf/empty.proto";
+
 
 // OrganizationService is the service managing the organization access.
 service OrganizationService {
@@ -93,8 +94,16 @@ message Organization {
     // Organization display name.
     string display_name = 3;
 
-    // Can the organization create and "own" Gateways?
-    bool can_have_gateways = 4;
+	// Can the organization create and "own" Gateways?
+	bool can_have_gateways = 4;
+
+    // Max. gateway count for organization.
+    // When set to 0, the organization can have unlimited gateways.
+    uint32 max_gateway_count = 5;
+
+    // Max. device count for organization.
+    // When set to 0, the organization can have unlimited devices.
+    uint32 max_device_count = 6;
 }
 
 message OrganizationListItem {

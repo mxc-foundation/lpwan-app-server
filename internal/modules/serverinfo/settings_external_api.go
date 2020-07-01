@@ -3,8 +3,6 @@ package serverinfo
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
-
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,6 +11,8 @@ import (
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 // SettingsServerAPI defines the settings of the Server API structure

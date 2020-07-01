@@ -869,6 +869,20 @@
             "$ref": "#/definitions/appserver_serves_uiGatewayBoard"
           },
           "description": "Gateway boards configuration (optional).\nThis is (currently) only needed when the gateway supports the fine-timestamp\nand you you would like to add the FPGA ID to the gateway meta-data or would\nlike LPWAN Server to decrypt the fine-timestamp."
+        },
+        "tags": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Tags (user defined)."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Metadata (provided by the gateway)."
         }
       }
     },

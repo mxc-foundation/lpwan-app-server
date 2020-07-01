@@ -46,4 +46,5 @@ type User struct {
 	Note          string    `db:"note"`
 	ExternalID    *string   `db:"external_id"` // must be pointer for unique index
 	SecurityToken *string   `db:"security_token"`
+	Username      string    `db:"username"`
 }

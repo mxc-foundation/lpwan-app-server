@@ -26,6 +26,9 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
 	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -40,8 +43,6 @@ func run(cmd *cobra.Command, args []string) error {
 		setupStorage,
 		setupClient,
 		setupUpdateFirmwareFromPs,
-		setupDefaultEnv,
-		setupLoadGatewayTemplates,
 		setupNetworkServer,
 		migrateGatewayStats,
 		migrateToClusterKeys,
@@ -155,22 +156,8 @@ func setupNetworkServer() error {
 }
 
 func setupUpdateFirmwareFromPs() error {
-	if err := storage.UpdateFirmwareFromProvisioningServer(config.C); err != nil {
+	if err := gateway.GetGatewayAPI().UpdateFirmwareFromProvisioningServer(config.C); err != nil {
 		return errors.Wrap(err, "setup update firmware error")
-	}
-	return nil
-}
-
-func setupDefaultEnv() error {
-	if err := storage.SetupDefault(); err != nil {
-		return errors.Wrap(err, "setup default error")
-	}
-	return nil
-}
-
-func setupLoadGatewayTemplates() error {
-	if err := gw.LoadTemplates(); err != nil {
-		return errors.Wrap(err, "load gateway config template error")
 	}
 	return nil
 }
@@ -232,6 +219,13 @@ func setupFUOTA() error {
 func setupMonitoring() error {
 	if err := monitoring.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup monitoring error")
+	}
+	return nil
+}
+
+func setupMining() error {
+	if err := mining.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup mining error")
 	}
 	return nil
 }

@@ -4,7 +4,8 @@ package appserver_serves_ui;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "empty/empty.proto";
+import "google/protobuf/empty.proto";
+
 
 // UserService is the service managing the user access.
 service UserService {
@@ -176,11 +177,8 @@ message ListUserRequest {
     // Max number of user to return in the result-set.
     int64 limit = 1;
 
-    // Offset in the result-set (for pagination).
-    int64 offset = 2;
-
-    // When provided, the given string will be used to search on username.
-    string search = 3;
+	// Offset in the result-set (for pagination).
+	int64 offset = 2;
 }
 
 message ListUserResponse {

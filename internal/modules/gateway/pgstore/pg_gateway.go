@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
@@ -22,18 +20,21 @@ import (
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	networkServerPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver/pgstore"
 )
 
 type GWHandler struct {
-	db *sqlx.DB
+	db *storage.DBLogger
 }
 
-func New(db *sqlx.DB) *GWHandler {
+func New(db *storage.DBLogger) *GWHandler {
 	return &GWHandler{
 		db: db,
 	}
@@ -391,7 +392,7 @@ func (h *GWHandler) SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64
 
 // DeleteGateway deletes the gateway matching the given MAC.
 func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
-	n, err := storage.GetNetworkServerForGatewayMAC(ctx, h.db, mac)
+	n, err := networkServerPg.Handler().GetNetworkServerForGatewayMAC(ctx, mac)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -430,12 +431,12 @@ func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error 
 		return errors.New("not exist")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
+	_, err = client.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
 		Id: mac[:],
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {

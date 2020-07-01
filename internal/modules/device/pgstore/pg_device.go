@@ -4,9 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang/protobuf/ptypes"
-
 	"github.com/gofrs/uuid"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -14,26 +13,70 @@ import (
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
 	"github.com/brocaar/lorawan"
 
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 )
 
 type DeviceHandler struct {
-	db *sqlx.DB
+	db *storage.DBLogger
 }
 
-func New(db *sqlx.DB) *DeviceHandler {
-	return &DeviceHandler{
+func New(db *storage.DBLogger) *DeviceHandler {
+	deviceHandler = DeviceHandler{
 		db: db,
 	}
+	return &deviceHandler
+}
+
+var deviceHandler DeviceHandler
+
+func Handler() *DeviceHandler {
+	return &deviceHandler
+}
+
+// UpdateDeviceActivation updates the device address and the AppSKey.
+func (h *DeviceHandler) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error {
+	res, err := h.db.Exec(`
+		update device
+		set
+			dev_addr = $2,
+			app_s_key = $3
+		where
+			dev_eui = $1`,
+		devEUI[:],
+		devAddr[:],
+		appSKey[:],
+	)
+	if err != nil {
+		return errors.Wrap(err, "update last-seen and dr error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return errors.New("ErrDoesNotExist")
+	}
+
+	log.WithFields(log.Fields{
+		"dev_eui":  devEUI,
+		"dev_addr": devAddr,
+		"ctx_id":   ctx.Value(logging.ContextIDKey),
+	}).Info("device activation updated")
+
+	return nil
 }
 
 // CreateDevice creates the given device.
@@ -90,23 +133,23 @@ func (h *DeviceHandler) CreateDevice(ctx context.Context, d *devmod.Device, appl
 		return errors.Wrap(err, "insert error")
 	}
 
-	app, err := storage.GetApplication(ctx, h.db, d.ApplicationID)
+	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get application error")
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, h.db, d.DevEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
 
 	// add this device to network server
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.CreateDevice(ctx, &ns.CreateDeviceRequest{
+	_, err = client.CreateDevice(ctx, &ns.CreateDeviceRequest{
 		Device: &ns.Device{
 			DevEui:            d.DevEUI[:],
 			DeviceProfileId:   d.DeviceProfileID.Bytes(),
@@ -170,17 +213,17 @@ func (h *DeviceHandler) GetDevice(ctx context.Context, devEUI lorawan.EUI64, for
 		return d, nil
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, h.db, d.DevEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return d, errors.Wrap(err, "get network-server error")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return d, errors.Wrap(err, "get network-server client error")
 	}
 
-	resp, err := nsClient.GetDevice(ctx, &ns.GetDeviceRequest{
+	resp, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
 		DevEui: d.DevEUI[:],
 	})
 	if err != nil {
@@ -335,17 +378,17 @@ func (h *DeviceHandler) UpdateDevice(ctx context.Context, d *devmod.Device, loca
 
 	// update the device on the network-server
 	if !localOnly {
-		app, err := storage.GetApplication(ctx, h.db, d.ApplicationID)
+		app, err := application.GetApplicationAPI().Store.GetApplication(ctx, d.ApplicationID)
 		if err != nil {
 			return errors.Wrap(err, "get application error")
 		}
 
-		n, err := storage.GetNetworkServerForDevEUI(ctx, h.db, d.DevEUI)
+		n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
 
-		nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+		client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 		if err != nil {
 			return errors.Wrap(err, "get network-server client error")
 		}
@@ -355,7 +398,7 @@ func (h *DeviceHandler) UpdateDevice(ctx context.Context, d *devmod.Device, loca
 			return errors.Wrap(err, "uuid from string error")
 		}
 
-		_, err = nsClient.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
+		_, err = client.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
 			Device: &ns.Device{
 				DevEui:            d.DevEUI[:],
 				DeviceProfileId:   d.DeviceProfileID.Bytes(),
@@ -380,7 +423,7 @@ func (h *DeviceHandler) UpdateDevice(ctx context.Context, d *devmod.Device, loca
 
 // DeleteDevice deletes the device matching the given DevEUI.
 func (h *DeviceHandler) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
-	n, err := storage.GetNetworkServerForDevEUI(ctx, h.db, devEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -398,12 +441,12 @@ func (h *DeviceHandler) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) 
 	}
 
 	// delete device from networkserver
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	_, err = nsClient.DeleteDevice(ctx, &ns.DeleteDeviceRequest{
+	_, err = client.DeleteDevice(ctx, &ns.DeleteDeviceRequest{
 		DevEui: devEUI[:],
 	})
 	if err != nil && grpc.Code(err) != codes.NotFound {

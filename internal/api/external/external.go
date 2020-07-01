@@ -32,7 +32,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
-var externalCtx struct {
+var (
 	brandingRegistration    string
 	brandingFooter          string
 	openIDLoginLabel        string
@@ -47,7 +47,7 @@ var externalCtx struct {
 	corsAllowOrigin string
 
 	applicationServerID uuid.UUID
-}
+)
 
 // Setup configures the API package.
 func Setup(conf config.Config) error {
@@ -55,20 +55,20 @@ func Setup(conf config.Config) error {
 		return errors.New("jwt_secret must be set")
 	}
 
-	externalCtx.brandingRegistration = conf.ApplicationServer.Branding.Registration
-	externalCtx.brandingFooter = conf.ApplicationServer.Branding.Footer
-	externalCtx.registrationEnabled = conf.ApplicationServer.UserAuthentication.OpenIDConnect.RegistrationEnabled
-	externalCtx.registrationCallbackURL = conf.ApplicationServer.UserAuthentication.OpenIDConnect.RegistrationCallbackURL
-	externalCtx.openIDConnectEnabled = conf.ApplicationServer.UserAuthentication.OpenIDConnect.Enabled
-	externalCtx.openIDLoginLabel = conf.ApplicationServer.UserAuthentication.OpenIDConnect.LoginLabel
+	brandingRegistration = conf.ApplicationServer.Branding.Registration
+	brandingFooter = conf.ApplicationServer.Branding.Footer
+	registrationEnabled = conf.ApplicationServer.UserAuthentication.OpenIDConnect.RegistrationEnabled
+	registrationCallbackURL = conf.ApplicationServer.UserAuthentication.OpenIDConnect.RegistrationCallbackURL
+	openIDConnectEnabled = conf.ApplicationServer.UserAuthentication.OpenIDConnect.Enabled
+	openIDLoginLabel = conf.ApplicationServer.UserAuthentication.OpenIDConnect.LoginLabel
 
-	externalCtx.bind = conf.ApplicationServer.ExternalAPI.Bind
-	externalCtx.tlsCert = conf.ApplicationServer.ExternalAPI.TLSCert
-	externalCtx.tlsKey = conf.ApplicationServer.ExternalAPI.TLSKey
-	externalCtx.jwtSecret = conf.ApplicationServer.ExternalAPI.JWTSecret
-	externalCtx.corsAllowOrigin = conf.ApplicationServer.ExternalAPI.CORSAllowOrigin
+	bind = conf.ApplicationServer.ExternalAPI.Bind
+	tlsCert = conf.ApplicationServer.ExternalAPI.TLSCert
+	tlsKey = conf.ApplicationServer.ExternalAPI.TLSKey
+	jwtSecret = conf.ApplicationServer.ExternalAPI.JWTSecret
+	corsAllowOrigin = conf.ApplicationServer.ExternalAPI.CORSAllowOrigin
 
-	if err := externalCtx.applicationServerID.UnmarshalText([]byte(conf.ApplicationServer.ID)); err != nil {
+	if err := applicationServerID.UnmarshalText([]byte(conf.ApplicationServer.ID)); err != nil {
 		return errors.Wrap(err, "decode application_server.id error")
 	}
 
@@ -76,7 +76,7 @@ func Setup(conf config.Config) error {
 }
 
 func setupAPI(conf config.Config) error {
-	validator := auth.NewJWTValidator(storage.DB(), "HS256", externalCtx.jwtSecret)
+	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret)
 	rpID, err := uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
@@ -84,15 +84,12 @@ func setupAPI(conf config.Config) error {
 
 	grpcOpts := helpers.GetgRPCServerOptions()
 	grpcServer := grpc.NewServer(grpcOpts...)
-	pb.RegisterApplicationServiceServer(grpcServer, NewApplicationAPI(validator))
 	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(validator))
 	pb.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(validator))
 	pb.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
 	pb.RegisterInternalServiceServer(grpcServer, NewInternalAPI(validator))
 	pb.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
 	pb.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(validator))
-	pb.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(validator))
-	pb.RegisterNetworkServerServiceServer(grpcServer, NewNetworkServerAPI(validator))
 	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(validator))
 	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(validator))
 	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
@@ -118,8 +115,8 @@ func setupAPI(conf config.Config) error {
 				return
 			}
 
-			if externalCtx.corsAllowOrigin != "" {
-				w.Header().Set("Access-Control-Allow-Origin", externalCtx.corsAllowOrigin)
+			if corsAllowOrigin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", corsAllowOrigin)
 				w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 				w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Grpc-Metadata-Authorization")
 
@@ -135,18 +132,18 @@ func setupAPI(conf config.Config) error {
 	// start the API server
 	go func() {
 		log.WithFields(log.Fields{
-			"bind":     externalCtx.bind,
-			"tls-cert": externalCtx.tlsCert,
-			"tls-key":  externalCtx.tlsKey,
+			"bind":     bind,
+			"tls-cert": tlsCert,
+			"tls-key":  tlsKey,
 		}).Info("api/external: starting api server")
 
-		if externalCtx.tlsCert == "" || externalCtx.tlsKey == "" {
-			log.Fatal(http.ListenAndServe(externalCtx.bind, h2c.NewHandler(handler, &http2.Server{})))
+		if tlsCert == "" || tlsKey == "" {
+			log.Fatal(http.ListenAndServe(bind, h2c.NewHandler(handler, &http2.Server{})))
 		} else {
 			log.Fatal(http.ListenAndServeTLS(
-				externalCtx.bind,
-				externalCtx.tlsCert,
-				externalCtx.tlsKey,
+				bind,
+				tlsCert,
+				tlsKey,
 				h2c.NewHandler(handler, &http2.Server{}),
 			))
 		}
@@ -204,10 +201,10 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	// dial options for the grpc-gateway
 	var grpcDialOpts []grpc.DialOption
 
-	if externalCtx.tlsCert == "" || externalCtx.tlsKey == "" {
+	if tlsCert == "" || tlsKey == "" {
 		grpcDialOpts = append(grpcDialOpts, grpc.WithInsecure())
 	} else {
-		b, err := ioutil.ReadFile(externalCtx.tlsCert)
+		b, err := ioutil.ReadFile(tlsCert)
 		if err != nil {
 			return nil, errors.Wrap(err, "read external api tls cert error")
 		}
@@ -223,7 +220,7 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		})))
 	}
 
-	bindParts := strings.SplitN(externalCtx.bind, ":", 2)
+	bindParts := strings.SplitN(bind, ":", 2)
 	if len(bindParts) != 2 {
 		log.Fatal("get port from bind failed")
 	}

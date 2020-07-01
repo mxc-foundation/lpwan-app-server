@@ -7,10 +7,6 @@ import (
 
 	"google.golang.org/grpc/status"
 
-	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -27,13 +23,20 @@ import (
 	"github.com/brocaar/lorawan"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 type DeviceStore interface {
@@ -51,6 +54,7 @@ type DeviceStore interface {
 	CreateDeviceActivation(ctx context.Context, da *DeviceActivation) error
 	GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error)
 	DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error
+	UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error
 }
 
 // DeviceAPI exports the Node related functions.
@@ -96,7 +100,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodesAccess(req.Device.ApplicationId, authcus.Create)); err != nil {
+		validateNodesAccess(req.Device.ApplicationId, Create)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -107,7 +111,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 
 	// Validate that application and device-profile are under the same
 	// organization ID.
-	app, err := storage.GetApplication(ctx, storage.DB(), req.Device.ApplicationId)
+	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, req.Device.ApplicationId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -150,7 +154,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 	//  * We want to lock the organization so that we can validate the
 	//    max device count.
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		org, err := storage.GetOrganization(ctx, tx, app.OrganizationID, true)
+		org, err := organization.GetOrganizationAPI().Store.GetOrganization(ctx, app.OrganizationID, true)
 		if err != nil {
 			return err
 		}
@@ -184,7 +188,7 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(eui, authcus.Read)); err != nil {
+		validateNodeAccess(eui, Read)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -284,7 +288,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 
 		// validate that the client has access to the given application
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-			authcus.ValidateApplicationAccess(req.ApplicationId, authcus.Read),
+			application.ValidateApplicationAccess(req.ApplicationId, application.Read),
 		); err != nil {
 			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
@@ -354,11 +358,11 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(devEUI, authcus.Update)); err != nil {
+		validateNodeAccess(devEUI, Update)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	app, err := storage.GetApplication(ctx, storage.DB(), req.Device.ApplicationId)
+	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, req.Device.ApplicationId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -383,12 +387,12 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		// This to guarantee that the new application is still on the same
 		// network-server and is not assigned to a different organization.
 		if req.Device.ApplicationId != d.ApplicationID {
-			appOld, err := storage.GetApplication(ctx, tx, d.ApplicationID)
+			appOld, err := application.GetApplicationAPI().Store.GetApplication(ctx, d.ApplicationID)
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}
 
-			appNew, err := storage.GetApplication(ctx, tx, req.Device.ApplicationId)
+			appNew, err := application.GetApplicationAPI().Store.GetApplication(ctx, req.Device.ApplicationId)
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}
@@ -440,7 +444,7 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(eui, authcus.Delete)); err != nil {
+		validateNodeAccess(eui, Delete)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -492,7 +496,7 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(eui, authcus.Update),
+		validateNodeAccess(eui, Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -518,7 +522,7 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(eui, authcus.Update),
+		validateNodeAccess(eui, Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -572,7 +576,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(eui, authcus.Update),
+		validateNodeAccess(eui, Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -601,7 +605,7 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(eui, authcus.Delete),
+		validateNodeAccess(eui, Delete),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -621,7 +625,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(devEUI, authcus.Update),
+		validateNodeAccess(devEUI, Update),
 	); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -631,17 +635,17 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), d.DevEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	_, _ = nsClient.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
+	_, _ = client.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
 		DevEui: d.DevEUI[:],
 	})
 
@@ -681,7 +685,7 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(devEUI, authcus.Update)); err != nil {
+		validateNodeAccess(devEUI, Update)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -690,17 +694,17 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	_, _ = nsClient.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
+	_, _ = client.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
 		DevEui: d.DevEUI[:],
 	})
 
@@ -718,11 +722,11 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 	}
 
 	err = storage.Transaction(func(db sqlx.Ext) error {
-		if err := storage.UpdateDeviceActivation(ctx, db, d.DevEUI, devAddr, appSKey); err != nil {
+		if err := a.Store.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
-		_, err := nsClient.ActivateDevice(ctx, &actReq)
+		_, err := client.ActivateDevice(ctx, &actReq)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -755,7 +759,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		authcus.ValidateNodeAccess(devEUI, authcus.Read)); err != nil {
+		validateNodeAccess(devEUI, Read)); err != nil {
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -764,17 +768,17 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	devAct, err := nsClient.GetDeviceActivation(ctx, &ns.GetDeviceActivationRequest{
+	devAct, err := client.GetDeviceActivation(ctx, &ns.GetDeviceActivationRequest{
 		DevEui: d.DevEUI[:],
 	})
 	if err != nil {
@@ -811,21 +815,21 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
-		authcus.ValidateNodeAccess(devEUI, authcus.Read)); err != nil {
+		validateNodeAccess(devEUI, Read)); err != nil {
 		return grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(srv.Context(), storage.DB(), devEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(srv.Context(), devEUI)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
 
-	streamClient, err := nsClient.StreamFrameLogsForDevice(srv.Context(), &ns.StreamFrameLogsForDeviceRequest{
+	streamClient, err := client.StreamFrameLogsForDevice(srv.Context(), &ns.StreamFrameLogsForDeviceRequest{
 		DevEui: devEUI[:],
 	})
 	if err != nil {
@@ -878,7 +882,7 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
-		authcus.ValidateNodeAccess(devEUI, authcus.Read)); err != nil {
+		validateNodeAccess(devEUI, Read)); err != nil {
 		return grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -919,17 +923,17 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *pb.GetRandomDevAd
 		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
+	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	resp, err := nsClient.GetRandomDevAddr(ctx, &empty.Empty{})
+	resp, err := client.GetRandomDevAddr(ctx, &empty.Empty{})
 	if err != nil {
 		return nil, err
 	}
@@ -1064,7 +1068,7 @@ func (s *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequ
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -1123,7 +1127,7 @@ func (s *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDevicePro
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -1173,7 +1177,7 @@ func (s *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHisto
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -1216,7 +1220,7 @@ func (s *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequ
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}

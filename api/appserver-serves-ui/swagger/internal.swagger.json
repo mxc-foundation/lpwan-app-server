@@ -11,6 +11,116 @@
     "application/json"
   ],
   "paths": {
+    "/api/internal/api-keys": {
+      "get": {
+        "summary": "ListAPIKeys lists the available API keys.",
+        "operationId": "ListAPIKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiListAPIKeysResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "description": "Max number of items to return.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset in the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "isAdmin",
+            "description": "Return only admin keys.",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "organizationID",
+            "description": "Filter on organization ID.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "applicationID",
+            "description": "Filter on application ID.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      },
+      "post": {
+        "summary": "CreateAPIKey creates the given API key.",
+        "operationId": "CreateAPIKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiCreateAPIKeyResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiCreateAPIKeyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/api-keys/{id}": {
+      "delete": {
+        "summary": "DeleteAPIKey deletes the API key.",
+        "operationId": "DeleteAPIKey",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "API key ID.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
     "/api/internal/branding": {
       "get": {
         "summary": "Get the branding for the UI",
@@ -48,6 +158,39 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiLoginRequest"
             }
+          }
+        ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/oidc/login": {
+      "get": {
+        "summary": "OpenID Connect login.",
+        "operationId": "OpenIDConnectLogin",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiOpenIDConnectLoginResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "code",
+            "description": "OpenID Connect callback code.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "description": "OpenID Connect callback state.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -187,6 +330,23 @@
             "format": "int64"
           }
         ],
+        "tags": [
+          "InternalService"
+        ]
+      }
+    },
+    "/api/internal/settings": {
+      "get": {
+        "summary": "Get the global settings.",
+        "operationId": "Settings",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiSettingsResponse"
+            }
+          }
+        },
         "tags": [
           "InternalService"
         ]
@@ -340,6 +500,47 @@
     }
   },
   "definitions": {
+    "appserver_serves_uiAPIKey": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "API key ID.\nThis value will be automatically generated on create."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name."
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Is global admin key."
+        },
+        "organizationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Organization ID.\nIn case this API key is to manage resources within a single organization\nset this to the ID of this organization."
+        },
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "title": "Application ID.\nIn case the API key is to manage resources within an application, set\nthis to the ID of this application.message"
+        }
+      }
+    },
+    "appserver_serves_uiBranding": {
+      "type": "object",
+      "properties": {
+        "registration": {
+          "type": "string",
+          "description": "Registration html."
+        },
+        "footer": {
+          "type": "string",
+          "description": "Footer html."
+        }
+      }
+    },
     "appserver_serves_uiBrandingResponse": {
       "type": "object",
       "properties": {
@@ -393,6 +594,28 @@
         },
         "jwt": {
           "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiCreateAPIKeyRequest": {
+      "type": "object",
+      "properties": {
+        "apiKey": {
+          "$ref": "#/definitions/appserver_serves_uiAPIKey",
+          "description": "The API key to create."
+        }
+      }
+    },
+    "appserver_serves_uiCreateAPIKeyResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "API key ID."
+        },
+        "jwtToken": {
+          "type": "string",
+          "description": "JWT token for this API Key."
         }
       }
     },
@@ -577,6 +800,22 @@
       ],
       "default": "de"
     },
+    "appserver_serves_uiListAPIKeysResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of API keys."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiAPIKey"
+          }
+        }
+      }
+    },
     "appserver_serves_uiLoginRequest": {
       "type": "object",
       "properties": {
@@ -596,6 +835,33 @@
         "jwt": {
           "type": "string",
           "description": "The JWT tag to be used to access lora-app-server interfaces."
+        }
+      }
+    },
+    "appserver_serves_uiOpenIDConnect": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Enable OpenID Connect authentication."
+        },
+        "loginURL": {
+          "type": "string",
+          "description": "Login url."
+        },
+        "loginLabel": {
+          "type": "string",
+          "description": "Login label."
+        }
+      }
+    },
+    "appserver_serves_uiOpenIDConnectLoginResponse": {
+      "type": "object",
+      "properties": {
+        "jwtToken": {
+          "type": "string",
+          "description": "JWT token to use for authentication."
         }
       }
     },
@@ -652,20 +918,6 @@
             "$ref": "#/definitions/appserver_serves_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
-        },
-        "settings": {
-          "$ref": "#/definitions/appserver_serves_uiProfileSettings",
-          "description": "Profile settings."
-        }
-      }
-    },
-    "appserver_serves_uiProfileSettings": {
-      "type": "object",
-      "properties": {
-        "disableAssignExistingUsers": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
         }
       }
     },
@@ -677,6 +929,19 @@
         },
         "language": {
           "$ref": "#/definitions/appserver_serves_uiLanguage"
+        }
+      }
+    },
+    "appserver_serves_uiSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "branding": {
+          "$ref": "#/definitions/appserver_serves_uiBranding",
+          "description": "Branding settings."
+        },
+        "openidConnect": {
+          "$ref": "#/definitions/appserver_serves_uiOpenIDConnect",
+          "description": "OpenID Connect settings."
         }
       }
     },

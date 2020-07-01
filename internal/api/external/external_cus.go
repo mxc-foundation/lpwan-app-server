@@ -6,7 +6,12 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
@@ -14,16 +19,20 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	devicePg "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
-	gwPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/topup"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
-	userPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/wallet"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
+
+	applicationPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/pgstore"
+	devicePg "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/pgstore"
+	gwPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/pgstore"
+	networkServerPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver/pgstore"
+	organizationPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/pgstore"
+	userPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/pgstore"
 )
 
 func SetupCusAPI(grpcServer *grpc.Server) error {
@@ -37,26 +46,26 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 	// device
 	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(device.DeviceAPI{
 		Validator:            device.NewValidator(otpValidator),
-		Store:                devicePg.New(storage.DB().DB),
-		AppplicationServerID: externalCtx.applicationServerID,
+		Store:                devicePg.New(storage.DB()),
+		AppplicationServerID: applicationServerID,
 	}))
 
 	// user
 	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(user.UserAPI{
 		Validator: user.NewValidator(otpValidator),
-		Store:     userPg.New(storage.DB().DB),
+		Store:     userPg.New(storage.DB()),
 	}))
 
 	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI(user.InternalUserAPI{
 		Validator: user.NewValidator(otpValidator),
-		Store:     userPg.New(storage.DB().DB),
+		Store:     userPg.New(storage.DB()),
 	}))
 
 	// gateway
 	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(gateway.GatewayAPI{
 		Validator:           gateway.NewValidator(otpValidator),
-		Store:               gwPg.New(storage.DB().DB),
-		ApplicationServerID: externalCtx.applicationServerID,
+		Store:               gwPg.New(storage.DB()),
+		ApplicationServerID: applicationServerID,
 	}))
 
 	api.RegisterServerInfoServiceServer(grpcServer, serverinfo.NewServerInfoAPI(serverinfo.ServerInfoAPI{
@@ -81,6 +90,21 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 
 	api.RegisterWithdrawServiceServer(grpcServer, withdraw.NewWithdrawServerAPI(withdraw.WithdrawServerAPI{
 		Validator: withdraw.NewValidator(otpValidator),
+	}))
+
+	api.RegisterNetworkServerServiceServer(grpcServer, networkserver.NewNetworkServerAPI(networkserver.NetworkServerAPI{
+		Validator: networkserver.NewValidator(otpValidator),
+		Store:     networkServerPg.New(storage.DB()),
+	}))
+
+	api.RegisterApplicationServiceServer(grpcServer, application.NewApplicationAPI(application.ApplicationAPI{
+		Validator: application.NewValidator(otpValidator),
+		Store:     applicationPg.New(storage.DB()),
+	}))
+
+	api.RegisterOrganizationServiceServer(grpcServer, organization.NewOrganizationAPI(organization.OrganizationAPI{
+		Validator: organization.NewValidator(otpValidator),
+		Store:     organizationPg.New(storage.DB()),
 	}))
 
 	return nil

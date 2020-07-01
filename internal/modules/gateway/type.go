@@ -1,6 +1,7 @@
 package gateway
 
 import (
+	"strings"
 	"time"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
@@ -85,4 +86,39 @@ type GatewayPingRX struct {
 type GPSPoint struct {
 	Latitude  float64
 	Longitude float64
+}
+
+// GatewayFilters provides filters for filtering gateways.
+type GatewayFilters struct {
+	OrganizationID int64  `db:"organization_id"`
+	UserID         int64  `db:"user_id"`
+	Search         string `db:"search"`
+
+	// Limit and Offset are added for convenience so that this struct can
+	// be given as the arguments.
+	Limit  int `db:"limit"`
+	Offset int `db:"offset"`
+}
+
+// SQL returns the SQL filters.
+func (f GatewayFilters) SQL() string {
+	var filters []string
+
+	if f.OrganizationID != 0 {
+		filters = append(filters, "g.organization_id = :organization_id")
+	}
+
+	if f.UserID != 0 {
+		filters = append(filters, "u.id = :user_id")
+	}
+
+	if f.Search != "" {
+		filters = append(filters, "(g.name ilike :search or encode(g.mac, 'hex') ilike :search)")
+	}
+
+	if len(filters) == 0 {
+		return ""
+	}
+
+	return "where " + strings.Join(filters, " and ")
 }

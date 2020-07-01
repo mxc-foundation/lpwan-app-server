@@ -46,11 +46,11 @@ func listenWithCredentials(bind, caCert, tlsCert, tlsKey string) error {
 	}
 
 	pb.RegisterDeviceM2MServiceServer(gs, device.NewDeviceM2MAPI(device.DeviceM2MAPI{
-		Store: devPg.New(storage.DB().DB),
+		Store: devPg.New(storage.DB()),
 	}))
 
 	pb.RegisterGatewayM2MServiceServer(gs, gateway.NewGatewayM2MAPI(gateway.GatewayM2MAPI{
-		Store: gwPg.New(storage.DB().DB),
+		Store: gwPg.New(storage.DB()),
 	}))
 
 	ln, err := net.Listen("tcp", bind)

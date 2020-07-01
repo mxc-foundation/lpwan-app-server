@@ -4,7 +4,7 @@ package appserver_serves_ui;
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
-import "empty/empty.proto";
+import "google/protobuf/empty.proto";
 
 import "common.proto";
 // from loraserver
@@ -250,6 +250,9 @@ message Device {
     // These tags are exposed in the event payloads or to integration. Tags are
     // intended for aggregation and filtering.
     map<string, string> tags = 9;
+
+    // Device is disabled.
+    bool is_disabled = 10;
 }
 
 message DeviceListItem {
@@ -372,6 +375,9 @@ message ListDeviceRequest {
 
     // Service-profile ID to filter on (string formatted UUID).
     string service_profile_id = 6 [json_name = "serviceProfileID"];
+
+    // Tags to filter on.
+    map<string, string> tags = 7;
 }
 
 message ListDeviceResponse {

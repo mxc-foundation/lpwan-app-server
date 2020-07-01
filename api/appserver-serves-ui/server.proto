@@ -3,7 +3,7 @@ syntax = "proto3";
 package appserver_serves_ui;
 
 import "google/api/annotations.proto";
-import "empty/empty.proto";
+import "google/protobuf/empty.proto";
 
 service M2MServerInfoService {
     // get version

@@ -466,20 +466,6 @@
             "$ref": "#/definitions/appserver_serves_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
-        },
-        "settings": {
-          "$ref": "#/definitions/appserver_serves_uiProfileSettings",
-          "description": "Profile settings."
-        }
-      }
-    },
-    "appserver_serves_uiProfileSettings": {
-      "type": "object",
-      "properties": {
-        "disableAssignExistingUsers": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "Existing users in the system can not be assigned to organizations and\napplication and can not be listed by non global admin users."
         }
       }
     },

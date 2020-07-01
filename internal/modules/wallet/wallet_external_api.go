@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -13,10 +13,11 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 // WalletServerAPI is the structure that contains the Validator
@@ -48,7 +49,7 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -87,7 +88,7 @@ func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.Ge
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -126,7 +127,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -183,7 +184,7 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -239,7 +240,7 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -303,7 +304,7 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -342,7 +343,7 @@ func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceR
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, authcus.ValidateOrganizationAccess(authcus.Read, req.OrgId)); err != nil {
+		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetMXCpriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
