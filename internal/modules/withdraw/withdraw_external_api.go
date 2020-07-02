@@ -20,7 +20,7 @@ import (
 
 // WithdrawServerAPI validates the withdraw server api
 type WithdrawServerAPI struct {
-	Validator *validator
+	Validator *Validator
 }
 
 // NewWithdrawServerAPI defines the withdraw server api

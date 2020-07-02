@@ -19,7 +19,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -82,7 +81,7 @@ type GatewayStore interface {
 
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
-	Validator           *validator
+	Validator           *Validator
 	Store               GatewayStore
 	ApplicationServerID uuid.UUID
 }
@@ -233,7 +232,7 @@ func (a *GatewayAPI) UpdateFirmwareFromProvisioningServer(conf config.Config) er
 				FirmwareHash: md5sum,
 			}
 
-			model, err := a.Store.UpdateGatewayFirmware(&gatewayFw)
+			model, _ := a.Store.UpdateGatewayFirmware(&gatewayFw)
 			if model == "" {
 				log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
 			}
@@ -829,7 +828,7 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 		// Nothing to do as the Validator function already validated that the
 		// HeartbeatAPI Key has access to the given OrganizationID.
 	default:
-		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
 	}
 
 	count, err := a.Store.GetGatewayCount(ctx, "")
@@ -1425,7 +1424,7 @@ func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoU
 }
 
 // GetGatewayList defines the get Gateway list request and response
-func (s *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
+func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayList org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
@@ -1436,7 +1435,7 @@ func (s *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
+		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -1486,7 +1485,7 @@ func (s *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 }
 
 // GetGatewayProfile defines the get Gateway Profile request and response
-func (s *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewayProfileRequest) (*api.GetGSGatewayProfileResponse, error) {
+func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewayProfileRequest) (*api.GetGSGatewayProfileResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayProfile org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
@@ -1497,7 +1496,7 @@ func (s *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
+		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -1540,7 +1539,7 @@ func (s *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 }
 
 // GetGatewayHistory defines the get Gateway History request and response
-func (s *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
+func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
@@ -1551,7 +1550,7 @@ func (s *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayH
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
+		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -1583,7 +1582,7 @@ func (s *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayH
 }
 
 // SetGatewayMode defines the set Gateway mode request and response
-func (s *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayModeRequest) (*api.SetGatewayModeResponse, error) {
+func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayModeRequest) (*api.SetGatewayModeResponse, error) {
 	logInfo := "api/appserver_serves_ui/SetGatewayMode org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
@@ -1594,7 +1593,7 @@ func (s *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if userIsAdmin == false {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
+		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}

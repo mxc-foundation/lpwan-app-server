@@ -356,7 +356,7 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, filters GatewayFilters) (
 		filters.Search = "%" + filters.Search + "%"
 	}
 
-	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
+	query, args, _ := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			g.*
 		from
@@ -377,7 +377,7 @@ func GetGateways(ctx context.Context, db sqlx.Queryer, filters GatewayFilters) (
 	`, filters)
 
 	var gws []Gateway
-	err = sqlx.Select(db, &gws, query, args...)
+	err := sqlx.Select(db, &gws, query, args...)
 	if err != nil {
 		return nil, handlePSQLError(Select, err, "select error")
 	}

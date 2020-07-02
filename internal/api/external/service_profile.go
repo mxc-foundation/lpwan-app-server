@@ -7,8 +7,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -33,13 +33,13 @@ func NewServiceProfileServiceAPI(validator auth.Validator) *ServiceProfileServic
 // Create creates the given service-profile.
 func (a *ServiceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateServiceProfileRequest) (*pb.CreateServiceProfileResponse, error) {
 	if req.ServiceProfile == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "service_profile must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "service_profile must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateServiceProfilesAccess(auth.Create, req.ServiceProfile.OrganizationId),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	sp := storage.ServiceProfile{
@@ -92,13 +92,13 @@ func (a *ServiceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateSer
 func (a *ServiceProfileServiceAPI) Get(ctx context.Context, req *pb.GetServiceProfileRequest) (*pb.GetServiceProfileResponse, error) {
 	spID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateServiceProfileAccess(auth.Read, spID),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	sp, err := storage.GetServiceProfile(ctx, storage.DB(), spID, false)
@@ -149,18 +149,18 @@ func (a *ServiceProfileServiceAPI) Get(ctx context.Context, req *pb.GetServicePr
 // Update updates the given serviceprofile.
 func (a *ServiceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateServiceProfileRequest) (*empty.Empty, error) {
 	if req.ServiceProfile == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "service_profile must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "service_profile must not be nil")
 	}
 
 	spID, err := uuid.FromString(req.ServiceProfile.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateServiceProfileAccess(auth.Update, spID),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	sp, err := storage.GetServiceProfile(ctx, storage.DB(), spID, false)
@@ -208,13 +208,13 @@ func (a *ServiceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateSer
 func (a *ServiceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteServiceProfileRequest) (*empty.Empty, error) {
 	spID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateServiceProfileAccess(auth.Delete, spID),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -232,7 +232,7 @@ func (a *ServiceProfileServiceAPI) List(ctx context.Context, req *pb.ListService
 	if err := a.validator.Validate(ctx,
 		auth.ValidateServiceProfilesAccess(auth.List, req.OrganizationId),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := a.validator.GetUser(ctx)

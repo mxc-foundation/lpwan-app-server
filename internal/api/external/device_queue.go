@@ -5,8 +5,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -36,21 +36,21 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 	var fCnt uint32
 
 	if req.DeviceQueueItem == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "queue_item must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "queue_item must not be nil")
 	}
 
 	if req.DeviceQueueItem.FPort == 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "f_port must be > 0")
+		return nil, status.Errorf(codes.InvalidArgument, "f_port must be > 0")
 	}
 
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DeviceQueueItem.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if err := d.validator.Validate(ctx,
 		auth.ValidateDeviceQueueAccess(devEUI, auth.Create)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -71,7 +71,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 			dp, err := storage.GetDeviceProfile(ctx, storage.DB(), dev.DeviceProfileID, false, true)
 			if err != nil {
 				log.WithError(err).WithField("id", dev.DeviceProfileID).Error("get device-profile error")
-				return grpc.Errorf(codes.Internal, "get device-profile error: %s", err)
+				return status.Errorf(codes.Internal, "get device-profile error: %s", err)
 			}
 
 			// TODO: in the next major release, remove this and always use the
@@ -92,7 +92,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 
 		fCnt, err = storage.EnqueueDownlinkPayload(ctx, tx, devEUI, req.DeviceQueueItem.Confirmed, uint8(req.DeviceQueueItem.FPort), req.DeviceQueueItem.Data)
 		if err != nil {
-			return grpc.Errorf(codes.Internal, "enqueue downlink payload error: %s", err)
+			return status.Errorf(codes.Internal, "enqueue downlink payload error: %s", err)
 		}
 
 		return nil
@@ -109,12 +109,12 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequest) (*empty.Empty, error) {
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if err := d.validator.Validate(ctx,
 		auth.ValidateDeviceQueueAccess(devEUI, auth.Delete)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
@@ -141,12 +141,12 @@ func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequ
 func (d *DeviceQueueAPI) List(ctx context.Context, req *pb.ListDeviceQueueItemsRequest) (*pb.ListDeviceQueueItemsResponse, error) {
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if err := d.validator.Validate(ctx,
 		auth.ValidateDeviceQueueAccess(devEUI, auth.List)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	device, err := storage.GetDevice(ctx, storage.DB(), devEUI, false, true)

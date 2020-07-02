@@ -173,7 +173,7 @@ func (ts *APITestSuite) TestServiceProfile() {
 						Email:    "foo2@bar.com",
 					}
 
-					err := storage.CreateUser(context.Background(), storage.DB(), &user)
+					_ = storage.CreateUser(context.Background(), storage.DB(), &user)
 
 					validator.returnUser = user
 

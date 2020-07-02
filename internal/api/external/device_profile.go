@@ -12,8 +12,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
@@ -38,13 +38,13 @@ func NewDeviceProfileServiceAPI(validator auth.Validator) *DeviceProfileServiceA
 // Create creates the given device-profile.
 func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDeviceProfileRequest) (*pb.CreateDeviceProfileResponse, error) {
 	if req.DeviceProfile == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "deviceProfile expected")
+		return nil, status.Errorf(codes.InvalidArgument, "deviceProfile expected")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfilesAccess(auth.Create, req.DeviceProfile.OrganizationId, 0),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	dp := storage.DeviceProfile{
@@ -107,13 +107,13 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProfileRequest) (*pb.GetDeviceProfileResponse, error) {
 	dpID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfileAccess(auth.Read, dpID),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	dp, err := storage.GetDeviceProfile(ctx, storage.DB(), dpID, false, false)
@@ -172,18 +172,18 @@ func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProf
 // Update updates the given device-profile.
 func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDeviceProfileRequest) (*empty.Empty, error) {
 	if req.DeviceProfile == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "deviceProfile expected")
+		return nil, status.Errorf(codes.InvalidArgument, "deviceProfile expected")
 	}
 
 	dpID, err := uuid.FromString(req.DeviceProfile.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfileAccess(auth.Update, dpID),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// As this also performs a remote call to update the device-profile
@@ -242,13 +242,13 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 func (a *DeviceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceProfileRequest) (*empty.Empty, error) {
 	dpID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfileAccess(auth.Delete, dpID),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// as this also performs a remote call to delete the device-profile
@@ -269,13 +269,13 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		if err := a.validator.Validate(ctx,
 			auth.ValidateDeviceProfilesAccess(auth.List, 0, req.ApplicationId),
 		); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	} else {
 		if err := a.validator.Validate(ctx,
 			auth.ValidateDeviceProfilesAccess(auth.List, req.OrganizationId, 0),
 		); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -308,7 +308,7 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		// API key is either of type admin, org (for the req.OrganizationId) or
 		// app (for the req.ApplicationId).
 	default:
-		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", sub)
+		return nil, status.Errorf(codes.Unauthenticated, "invalid token subject: %s", sub)
 	}
 
 	count, err := storage.GetDeviceProfileCount(ctx, storage.DB(), filters)

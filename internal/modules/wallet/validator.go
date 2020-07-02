@@ -4,12 +4,12 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
 
-type validator struct {
+type Validator struct {
 	otpValidator *otp.Validator
 }
 
-func NewValidator(otpValidator *otp.Validator) *validator {
-	return &validator{otpValidator: otpValidator}
+func NewValidator(otpValidator *otp.Validator) *Validator {
+	return &Validator{otpValidator: otpValidator}
 }
 
 // API key subjects.

@@ -17,10 +17,10 @@ import (
 
 // SettingsServerAPI defines the settings of the Server API structure
 type SettingsServerAPI struct {
-	Validator *validator
+	Validator *Validator
 }
 
-// NewSettingsServerAPI defines the SettingsServerAPI validator
+// NewSettingsServerAPI defines the SettingsServerAPI Validator
 func NewSettingsServerAPI(api SettingsServerAPI) *SettingsServerAPI {
 	settingsServerAPI = SettingsServerAPI{
 		Validator: api.Validator,

@@ -20,7 +20,7 @@ import (
 
 // StakingServerAPI defines the Staking Server API structure
 type StakingServerAPI struct {
-	Validator *validator
+	Validator *Validator
 }
 
 // NewStakingServerAPI defines the Stagking Server API Validator

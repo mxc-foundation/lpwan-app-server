@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
@@ -47,7 +47,7 @@ func (a *InternalAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 func (a *InternalAPI) Profile(ctx context.Context, req *empty.Empty) (*pb.ProfileResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// Get the user
@@ -99,7 +99,7 @@ func (a *InternalAPI) Profile(ctx context.Context, req *empty.Empty) (*pb.Profil
 func (a *InternalAPI) GlobalSearch(ctx context.Context, req *pb.GlobalSearchRequest) (*pb.GlobalSearchResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateActiveUser()); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := a.validator.GetUser(ctx)
@@ -160,11 +160,11 @@ func (a *InternalAPI) CreateAPIKey(ctx context.Context, req *pb.CreateAPIKeyRequ
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateAPIKeysAccess(auth.Create, apiKey.GetOrganizationId(), apiKey.GetApplicationId())); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if apiKey.GetIsAdmin() && (apiKey.GetOrganizationId() != 0 || apiKey.GetApplicationId() != 0) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
+		return nil, status.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
 	}
 
 	var organizationID *int64
@@ -200,11 +200,11 @@ func (a *InternalAPI) CreateAPIKey(ctx context.Context, req *pb.CreateAPIKeyRequ
 func (a *InternalAPI) ListAPIKeys(ctx context.Context, req *pb.ListAPIKeysRequest) (*pb.ListAPIKeysResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateAPIKeysAccess(auth.List, req.GetOrganizationId(), req.GetApplicationId())); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if req.GetIsAdmin() && (req.GetOrganizationId() != 0 || req.GetApplicationId() != 0) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
+		return nil, status.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
 	}
 
 	filters := storage.APIKeyFilters{
@@ -260,12 +260,12 @@ func (a *InternalAPI) ListAPIKeys(ctx context.Context, req *pb.ListAPIKeysReques
 func (a *InternalAPI) DeleteAPIKey(ctx context.Context, req *pb.DeleteAPIKeyRequest) (*empty.Empty, error) {
 	apiKeyID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "api_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "api_key: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateAPIKeyAccess(auth.Delete, apiKeyID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if err := storage.DeleteAPIKey(ctx, storage.DB(), apiKeyID); err != nil {
@@ -298,7 +298,7 @@ func (a *InternalAPI) OpenIDConnectLogin(ctx context.Context, req *pb.OpenIDConn
 	}
 
 	if !oidcUser.EmailVerified {
-		return nil, grpc.Errorf(codes.FailedPrecondition, "email address must be verified before you can login")
+		return nil, status.Errorf(codes.FailedPrecondition, "email address must be verified before you can login")
 	}
 
 	var user storage.User

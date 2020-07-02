@@ -41,7 +41,7 @@ type NetworkServerStore interface {
 
 // NetworkServerAPI exports the NetworkServer related functions.
 type NetworkServerAPI struct {
-	Validator *validator
+	Validator *Validator
 	Store     NetworkServerStore
 }
 

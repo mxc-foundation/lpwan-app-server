@@ -5,8 +5,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
@@ -31,13 +31,13 @@ func NewNetworkServerAPI(validator auth.Validator) *NetworkServerAPI {
 // Create creates the given network-server.
 func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServerRequest) (*pb.CreateNetworkServerResponse, error) {
 	if req.NetworkServer == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "network_server must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "network_server must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateNetworkServersAccess(auth.Create, 0),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	ns := storage.NetworkServer{
@@ -72,7 +72,7 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 	if err := a.validator.Validate(ctx,
 		auth.ValidateNetworkServerAccess(auth.Read, req.Id),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	n, err := storage.GetNetworkServer(ctx, storage.DB(), req.Id)
@@ -125,13 +125,13 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 // Update updates the given network-server.
 func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServerRequest) (*empty.Empty, error) {
 	if req.NetworkServer == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "network_server must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "network_server must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateNetworkServerAccess(auth.Update, req.NetworkServer.Id),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	ns, err := storage.GetNetworkServer(ctx, storage.DB(), req.NetworkServer.Id)
@@ -179,7 +179,7 @@ func (a *NetworkServerAPI) Delete(ctx context.Context, req *pb.DeleteNetworkServ
 	if err := a.validator.Validate(ctx,
 		auth.ValidateNetworkServerAccess(auth.Delete, req.Id),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -197,7 +197,7 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 	if err := a.validator.Validate(ctx,
 		auth.ValidateNetworkServersAccess(auth.List, req.OrganizationId),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := a.validator.GetUser(ctx)

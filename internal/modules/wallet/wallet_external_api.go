@@ -22,7 +22,7 @@ import (
 
 // WalletServerAPI is the structure that contains the Validator
 type WalletServerAPI struct {
-	Validator *validator
+	Validator *Validator
 }
 
 // NewWalletServerAPI validates the new wallet server api

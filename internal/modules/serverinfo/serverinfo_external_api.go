@@ -18,7 +18,7 @@ import (
 
 // ServerInfoAPI defines the Server Info API structure
 type ServerInfoAPI struct {
-	Validator *validator
+	Validator *Validator
 }
 
 // NewServerInfoAPI defines the Server Info API

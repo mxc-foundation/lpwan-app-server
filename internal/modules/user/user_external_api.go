@@ -56,7 +56,7 @@ type UserStore interface {
 
 // UserAPI exports the User related functions.
 type UserAPI struct {
-	Validator *validator
+	Validator *Validator
 	Store     UserStore
 }
 
@@ -301,6 +301,7 @@ func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*inpb.Goo
 	postURL := config.C.Recaptcha.HostServer
 
 	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
+	/* #nosec */
 	responsePost, err := http.PostForm(postURL, postStr)
 
 	if err != nil {
@@ -329,10 +330,6 @@ func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*inpb.Goo
 	}
 
 	return gresponse, nil
-}
-
-type claims struct {
-	Username string `json:"username"`
 }
 
 func OTPgen() string {

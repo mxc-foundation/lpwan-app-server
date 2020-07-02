@@ -17,7 +17,6 @@ import (
 )
 
 const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
-const internalUserFields = "*"
 
 type UserPgHandler struct {
 	tx *sqlx.Tx

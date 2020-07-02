@@ -20,7 +20,7 @@ import (
 
 // TopUpServerAPI defines the topup server api structure
 type TopUpServerAPI struct {
-	Validator *validator
+	Validator *Validator
 }
 
 // NewTopUpServerAPI validates the topup server api

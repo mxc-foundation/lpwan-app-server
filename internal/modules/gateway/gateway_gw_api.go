@@ -3,6 +3,8 @@ package gateway
 import (
 	"bytes"
 	"context"
+
+	/* #nosec */
 	"crypto/md5"
 	"strings"
 	"time"
@@ -140,6 +142,7 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 Next:
 
 	// compare config hash
+	/* #nosec */
 	configHash := md5.Sum([]byte(gw.Config))
 	b := types.MD5SUM{}
 	if err := b.UnmarshalText([]byte(req.ConfigHash)); err != nil {

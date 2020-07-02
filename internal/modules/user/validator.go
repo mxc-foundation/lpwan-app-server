@@ -11,16 +11,16 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
 
-type validator struct {
+type Validator struct {
 	otpValidator *otp.Validator
 }
 
-func NewValidator(otpValidator *otp.Validator) *validator {
-	return &validator{otpValidator: otpValidator}
+func NewValidator(otpValidator *otp.Validator) *Validator {
+	return &Validator{otpValidator: otpValidator}
 }
 
 // GetIsAdmin returns if the authenticated user is a global amin.
-func (v *validator) GetIsAdmin(ctx context.Context) (bool, error) {
+func (v *Validator) GetIsAdmin(ctx context.Context) (bool, error) {
 	claims, err := v.otpValidator.JwtValidator.GetClaims(ctx)
 	if err != nil {
 		return false, err
@@ -35,7 +35,7 @@ func (v *validator) GetIsAdmin(ctx context.Context) (bool, error) {
 }
 
 // GetUser returns the user object.
-func (v *validator) GetUser(ctx context.Context) (User, error) {
+func (v *Validator) GetUser(ctx context.Context) (User, error) {
 	claims, err := v.otpValidator.JwtValidator.GetClaims(ctx)
 	if err != nil {
 		return User{}, err

@@ -15,7 +15,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
 	"github.com/brocaar/chirpstack-api/go/v3/common"
@@ -59,7 +58,7 @@ type DeviceStore interface {
 
 // DeviceAPI exports the Node related functions.
 type DeviceAPI struct {
-	Validator            *validator
+	Validator            *Validator
 	Store                DeviceStore
 	AppplicationServerID uuid.UUID
 }
@@ -86,22 +85,22 @@ func GetDeviceAPI() *DeviceAPI {
 // Create creates the given device.
 func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*empty.Empty, error) {
 	if req.Device == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "device must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "device must not be nil")
 	}
 
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.Device.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	dpID, err := uuid.FromString(req.Device.DeviceProfileId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodesAccess(req.Device.ApplicationId, Create)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// if Name is "", set it to the DevEUI
@@ -120,7 +119,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 		return nil, helpers.ErrToRPCError(err)
 	}
 	if app.OrganizationID != dp.OrganizationID {
-		return nil, grpc.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
+		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
 	}
 
 	// Set Device struct.
@@ -184,12 +183,12 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetDeviceResponse, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(eui, Read)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	d, err := a.Store.GetDevice(ctx, eui, false, false)
@@ -290,7 +289,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 			application.ValidateApplicationAccess(req.ApplicationId, application.Read),
 		); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 
 	}
@@ -302,7 +301,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 			authcus.ValidateMulticastGroupAccess(authcus.Read, filters.MulticastGroupID),
 		); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -313,7 +312,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 			authcus.ValidateServiceProfileAccess(authcus.Read, filters.ServiceProfileID),
 		); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -324,7 +323,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		}
 
 		if !user.IsAdmin {
-			return nil, grpc.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request")
+			return nil, status.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request")
 		}
 	}
 
@@ -344,22 +343,22 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 // Update updates the device matching the given DevEUI.
 func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*empty.Empty, error) {
 	if req.Device == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "device must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "device must not be nil")
 	}
 
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.Device.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	dpID, err := uuid.FromString(req.Device.DeviceProfileId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(devEUI, Update)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, req.Device.ApplicationId)
@@ -373,7 +372,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 	}
 
 	if app.OrganizationID != dp.OrganizationID {
-		return nil, grpc.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
+		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -398,7 +397,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 			}
 
 			if appOld.ServiceProfileID != appNew.ServiceProfileID {
-				return grpc.Errorf(codes.InvalidArgument, "when moving a device from application A to B, both A and B must share the same service-profile")
+				return status.Errorf(codes.InvalidArgument, "when moving a device from application A to B, both A and B must share the same service-profile")
 			}
 		}
 
@@ -440,12 +439,12 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*empty.Empty, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(eui, Delete)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// as this also performs a remote call to delete the node from the
@@ -463,14 +462,14 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 // CreateKeys creates the given device-keys.
 func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequest) (*empty.Empty, error) {
 	if req.DeviceKeys == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "device_keys must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "device_keys must not be nil")
 	}
 
 	// appKey is not used for LoRaWAN 1.0
 	var appKey lorawan.AES128Key
 	if req.DeviceKeys.AppKey != "" {
 		if err := appKey.UnmarshalText([]byte(req.DeviceKeys.AppKey)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
 		}
 	}
 
@@ -479,26 +478,26 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 	var genAppKey lorawan.AES128Key
 	if req.DeviceKeys.GenAppKey != "" {
 		if err := genAppKey.UnmarshalText([]byte(req.DeviceKeys.GenAppKey)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
 		}
 	}
 
 	// nwkKey
 	var nwkKey lorawan.AES128Key
 	if err := nwkKey.UnmarshalText([]byte(req.DeviceKeys.NwkKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	// devEUI
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DeviceKeys.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(eui, Update),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -522,13 +521,13 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (*pb.GetDeviceKeysResponse, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(eui, Update),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	dk, err := a.Store.GetDeviceKeys(ctx, eui)
@@ -549,14 +548,14 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (
 // UpdateKeys updates the device-keys.
 func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequest) (*empty.Empty, error) {
 	if req.DeviceKeys == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "device_keys must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "device_keys must not be nil")
 	}
 
 	var appKey lorawan.AES128Key
 	// appKey is not used for LoRaWAN 1.0
 	if req.DeviceKeys.AppKey != "" {
 		if err := appKey.UnmarshalText([]byte(req.DeviceKeys.AppKey)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
 		}
 	}
 
@@ -565,24 +564,24 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 	var genAppKey lorawan.AES128Key
 	if req.DeviceKeys.GenAppKey != "" {
 		if err := genAppKey.UnmarshalText([]byte(req.DeviceKeys.GenAppKey)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+			return nil, status.Errorf(codes.InvalidArgument, err.Error())
 		}
 	}
 
 	var nwkKey lorawan.AES128Key
 	if err := nwkKey.UnmarshalText([]byte(req.DeviceKeys.NwkKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DeviceKeys.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(eui, Update),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	dk, err := a.Store.GetDeviceKeys(ctx, eui)
@@ -608,13 +607,13 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequest) (*empty.Empty, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(eui, Delete),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -632,13 +631,13 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequest) (*empty.Empty, error) {
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(devEUI, Update),
 	); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
@@ -666,7 +665,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 // Activate activates the node (ABP only).
 func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest) (*empty.Empty, error) {
 	if req.DeviceActivation == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "device_activation must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "device_activation must not be nil")
 	}
 
 	var devAddr lorawan.DevAddr
@@ -677,27 +676,27 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 	var fNwkSIntKey lorawan.AES128Key
 
 	if err := devAddr.UnmarshalText([]byte(req.DeviceActivation.DevAddr)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devAddr: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devAddr: %s", err)
 	}
 	if err := devEUI.UnmarshalText([]byte(req.DeviceActivation.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 	if err := appSKey.UnmarshalText([]byte(req.DeviceActivation.AppSKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "appSKey: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "appSKey: %s", err)
 	}
 	if err := nwkSEncKey.UnmarshalText([]byte(req.DeviceActivation.NwkSEncKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "nwkSEncKey: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "nwkSEncKey: %s", err)
 	}
 	if err := sNwkSIntKey.UnmarshalText([]byte(req.DeviceActivation.SNwkSIntKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "sNwkSIntKey: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "sNwkSIntKey: %s", err)
 	}
 	if err := fNwkSIntKey.UnmarshalText([]byte(req.DeviceActivation.FNwkSIntKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "fNwkSIntKey: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "fNwkSIntKey: %s", err)
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(devEUI, Update)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
@@ -766,12 +765,12 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 	var nwkSEncKey lorawan.AES128Key
 
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateNodeAccess(devEUI, Read)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
@@ -822,12 +821,12 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 	var devEUI lorawan.EUI64
 
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
 		validateNodeAccess(devEUI, Read)); err != nil {
-		return grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(srv.Context(), devEUI)
@@ -889,12 +888,12 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 	var devEUI lorawan.EUI64
 
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
 		validateNodeAccess(devEUI, Read)); err != nil {
-		return grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	eventLogChan := make(chan eventlog.EventLog)
@@ -909,7 +908,7 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 	for el := range eventLogChan {
 		b, err := json.Marshal(el.Payload)
 		if err != nil {
-			return grpc.Errorf(codes.Internal, "marshal json error: %s", err)
+			return status.Errorf(codes.Internal, "marshal json error: %s", err)
 		}
 
 		resp := pb.StreamDeviceEventLogsResponse{
@@ -931,7 +930,7 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *pb.GetRandomDevAd
 	var devEUI lorawan.EUI64
 
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "devEUI: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
 	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)

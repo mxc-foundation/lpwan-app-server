@@ -5,8 +5,6 @@ import (
 	"os"
 
 	"github.com/gofrs/uuid"
-	"google.golang.org/grpc"
-
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -26,7 +24,7 @@ import (
 
 // InternalUserAPI exports the internal User related functions.
 type InternalUserAPI struct {
-	Validator *validator
+	Validator *Validator
 	Store     UserStore
 }
 
@@ -275,8 +273,8 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		pwdHash, err := hash(req.Password, saltSize, config.C.General.PasswordHashIterations)
-		err = a.Store.FinishRegistration(req.UserId, pwdHash)
+		pwdHash, _ := hash(req.Password, saltSize, config.C.General.PasswordHashIterations)
+		err := a.Store.FinishRegistration(req.UserId, pwdHash)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -425,11 +423,11 @@ func (a *InternalUserAPI) CreateAPIKey(ctx context.Context, req *inpb.CreateAPIK
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateAPIKeysAccess(Create, apiKey.GetOrganizationId(), apiKey.GetApplicationId())); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if apiKey.GetIsAdmin() && (apiKey.GetOrganizationId() != 0 || apiKey.GetApplicationId() != 0) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
+		return nil, status.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
 	}
 
 	var organizationID *int64
@@ -465,11 +463,11 @@ func (a *InternalUserAPI) CreateAPIKey(ctx context.Context, req *inpb.CreateAPIK
 func (a *InternalUserAPI) ListAPIKeys(ctx context.Context, req *inpb.ListAPIKeysRequest) (*inpb.ListAPIKeysResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateAPIKeysAccess(List, req.GetOrganizationId(), req.GetApplicationId())); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if req.GetIsAdmin() && (req.GetOrganizationId() != 0 || req.GetApplicationId() != 0) {
-		return nil, grpc.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
+		return nil, status.Errorf(codes.InvalidArgument, "when is_admin is true, organization_id and application_id must be left blank")
 	}
 
 	filters := storage.APIKeyFilters{
@@ -525,12 +523,12 @@ func (a *InternalUserAPI) ListAPIKeys(ctx context.Context, req *inpb.ListAPIKeys
 func (a *InternalUserAPI) DeleteAPIKey(ctx context.Context, req *inpb.DeleteAPIKeyRequest) (*empty.Empty, error) {
 	apiKeyID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "api_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "api_key: %s", err)
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		validateAPIKeyAccess(Delete, apiKeyID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if err := storage.DeleteAPIKey(ctx, storage.DB(), apiKeyID); err != nil {
@@ -563,7 +561,7 @@ func (a *InternalUserAPI) OpenIDConnectLogin(ctx context.Context, req *inpb.Open
 	}
 
 	if !oidcUser.EmailVerified {
-		return nil, grpc.Errorf(codes.FailedPrecondition, "email address must be verified before you can login")
+		return nil, status.Errorf(codes.FailedPrecondition, "email address must be verified before you can login")
 	}
 
 	var user User

@@ -101,7 +101,7 @@ func New(m marshaler.Type, conf config.IntegrationMQTTConfig) (*Integration, err
 	if err != nil {
 		return nil, errors.Wrap(err, "parse tx ack template error")
 	}
-	i.integrationTemplate, err = template.New("integration").Parse(i.config.IntegrationTopicTemplate)
+	i.integrationTemplate, _ = template.New("integration").Parse(i.config.IntegrationTopicTemplate)
 
 	i.uplinkRetained = i.config.UplinkRetainedMessage
 	i.joinRetained = i.config.JoinRetainedMessage

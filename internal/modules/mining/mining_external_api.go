@@ -24,7 +24,6 @@ import (
 )
 
 type MiningAPI struct {
-	validator *validator
 }
 
 var (

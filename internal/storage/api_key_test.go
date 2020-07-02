@@ -60,7 +60,7 @@ func (ts *StorageTestSuite) TestAPIKey() {
 
 		var claims jwt.MapClaims
 
-		token, err := jwt.ParseWithClaims(str, &claims, func(token *jwt.Token) (interface{}, error) {
+		token, _ := jwt.ParseWithClaims(str, &claims, func(token *jwt.Token) (interface{}, error) {
 			assert.Equal("HS256", token.Header["alg"])
 			return jwtsecret, nil
 		})
