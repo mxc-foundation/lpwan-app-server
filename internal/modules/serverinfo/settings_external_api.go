@@ -43,7 +43,7 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
@@ -83,7 +83,7 @@ func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifyS
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 

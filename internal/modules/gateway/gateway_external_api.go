@@ -1434,7 +1434,7 @@ func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -1495,7 +1495,7 @@ func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -1549,7 +1549,7 @@ func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayH
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -1592,7 +1592,7 @@ func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())

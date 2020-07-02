@@ -46,7 +46,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -100,7 +100,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())

@@ -48,7 +48,7 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -87,7 +87,7 @@ func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.Ge
 		return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -126,7 +126,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -183,7 +183,7 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -239,7 +239,7 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -303,7 +303,7 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -342,7 +342,7 @@ func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceR
 		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetMXCpriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())

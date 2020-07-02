@@ -46,7 +46,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Internal, "authentication failed")
 	}
 
@@ -111,7 +111,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -168,7 +168,7 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 		return &api.GetWithdrawResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// if user is not global admin, user must have access to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -215,7 +215,7 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// if user is not global admin, user must have access to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -261,7 +261,7 @@ func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.Confir
 		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
@@ -300,7 +300,7 @@ func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api
 		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 
@@ -354,7 +354,7 @@ func (s *WithdrawServerAPI) GetWithdrawMonthly(ctx context.Context, req *api.Get
 		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
 	}
 

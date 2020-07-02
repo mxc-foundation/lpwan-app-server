@@ -20,6 +20,8 @@ linters:
   disable:
     - errcheck
     - unused
+    - gosimple
+    - staticcheck
 issues:
   exclude-rules:
     - path: _test\.go

@@ -46,7 +46,7 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 		return &api.StakingPercentageResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.StakingPercentageResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -86,7 +86,7 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 		return &api.StakeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -129,7 +129,7 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 		return &api.UnstakeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -171,7 +171,7 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -222,7 +222,7 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.StakingHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())

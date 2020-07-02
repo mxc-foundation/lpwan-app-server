@@ -1077,7 +1077,7 @@ func (s *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequ
 		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -1136,7 +1136,7 @@ func (s *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDevicePro
 		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -1186,7 +1186,7 @@ func (s *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHisto
 		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
@@ -1229,7 +1229,7 @@ func (s *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequ
 		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if userIsAdmin == false {
+	if !userIsAdmin {
 		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
 			log.WithError(err).Error(logInfo)
 			return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
