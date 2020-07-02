@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"
 
@@ -97,8 +99,12 @@ func (a *ApplicationAPI) Create(ctx context.Context, req *pb.CreateApplicationRe
 		PayloadDecoderScript: req.Application.PayloadDecoderScript,
 	}
 
-	if err := a.Store.CreateApplication(ctx, &app); err != nil {
-		return nil, helpers.ErrToRPCError(err)
+	err = storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.CreateApplication(ctx, &app)
+		return errors.Wrap(err, "")
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &pb.CreateApplicationResponse{
@@ -173,9 +179,12 @@ func (a *ApplicationAPI) Update(ctx context.Context, req *pb.UpdateApplicationRe
 	app.PayloadEncoderScript = req.Application.PayloadEncoderScript
 	app.PayloadDecoderScript = req.Application.PayloadDecoderScript
 
-	err = a.Store.UpdateApplication(ctx, app)
+	err = storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.UpdateApplication(ctx, app)
+		return errors.Wrap(err, "")
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil

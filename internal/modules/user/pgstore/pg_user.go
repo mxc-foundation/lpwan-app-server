@@ -12,7 +12,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	umod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
@@ -21,11 +20,13 @@ const externalUserFields = "id, username, is_admin, is_active, session_ttl, crea
 const internalUserFields = "*"
 
 type UserPgHandler struct {
-	db *storage.DBLogger
+	tx *sqlx.Tx
+	db *sqlx.DB
 }
 
-func New(db *storage.DBLogger) *UserPgHandler {
+func New(tx *sqlx.Tx, db *sqlx.DB) *UserPgHandler {
 	return &UserPgHandler{
+		tx: tx,
 		db: db,
 	}
 }
@@ -39,7 +40,7 @@ func (h *UserPgHandler) CreateUser(ctx context.Context, user *umod.User) error {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	err := sqlx.Get(h.db, &user.ID, `
+	err := sqlx.Get(h.tx, &user.ID, `
 		insert into "user" (
 			is_admin,
 			is_active,
@@ -194,7 +195,7 @@ func (h *UserPgHandler) UpdateUser(ctx context.Context, u *umod.User) error {
 
 	u.UpdatedAt = time.Now()
 
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update "user"
 		set
 			updated_at = $2,
@@ -246,7 +247,7 @@ func (h *UserPgHandler) UpdateUser(ctx context.Context, u *umod.User) error {
 
 // DeleteUser deletes the User record matching the given ID.
 func (h *UserPgHandler) DeleteUser(ctx context.Context, id int64) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		delete from
 			"user"
 		where
@@ -374,7 +375,7 @@ func (h *UserPgHandler) RegisterUser(user *umod.User, token string) error {
 	user.UpdatedAt = time.Now()
 
 	// Add the new user.
-	err := sqlx.Get(h.db, &user.ID, `
+	err := sqlx.Get(h.tx, &user.ID, `
 		insert into "user" (
 			email,
 			is_admin,
@@ -436,7 +437,7 @@ func (h *UserPgHandler) GetTokenByUsername(ctx context.Context, username string)
 
 // FinishRegistration ...
 func (h *UserPgHandler) FinishRegistration(userID int64, pwdHash string) error {
-	_, err := h.db.Exec(`
+	_, err := h.tx.Exec(`
 		update "user"
 		set
 			password_hash = $1,

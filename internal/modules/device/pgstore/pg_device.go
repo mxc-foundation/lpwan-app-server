@@ -21,8 +21,6 @@ import (
 	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
@@ -30,11 +28,13 @@ import (
 )
 
 type DeviceHandler struct {
-	db *storage.DBLogger
+	tx *sqlx.Tx
+	db *sqlx.DB
 }
 
-func New(db *storage.DBLogger) *DeviceHandler {
+func New(tx *sqlx.Tx, db *sqlx.DB) *DeviceHandler {
 	deviceHandler = DeviceHandler{
+		tx: tx,
 		db: db,
 	}
 	return &deviceHandler
@@ -48,7 +48,7 @@ func Handler() *DeviceHandler {
 
 // UpdateDeviceActivation updates the device address and the AppSKey.
 func (h *DeviceHandler) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update device
 		set
 			dev_addr = $2,
@@ -91,7 +91,7 @@ func (h *DeviceHandler) CreateDevice(ctx context.Context, d *devmod.Device, appl
 
 	d.UpdatedAt = now
 
-	_, err := h.db.Exec(`
+	_, err := h.tx.Exec(`
         insert into device (
             dev_eui,
             created_at,
@@ -194,7 +194,7 @@ func (h *DeviceHandler) CreateDevice(ctx context.Context, d *devmod.Device, appl
 }
 
 // GetDevice returns the device matching the given DevEUI.
-// When forUpdate is set to true, then db must be a db transaction.
+// When forUpdate is set to true, then tx must be a tx transaction.
 // When localOnly is set to true, no call to the network-server is made to
 // retrieve additional device data.
 func (h *DeviceHandler) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate, localOnly bool) (devmod.Device, error) {
@@ -328,7 +328,7 @@ func (h *DeviceHandler) UpdateDevice(ctx context.Context, d *devmod.Device, loca
 
 	d.UpdatedAt = time.Now()
 
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
         update device
         set
             updated_at = $2,
@@ -428,7 +428,7 @@ func (h *DeviceHandler) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) 
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	res, err := h.db.Exec("delete from device where dev_eui = $1", devEUI[:])
+	res, err := h.tx.Exec("delete from device where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -483,7 +483,7 @@ func (h *DeviceHandler) CreateDeviceKeys(ctx context.Context, dc *devmod.DeviceK
 	dc.CreatedAt = now
 	dc.UpdatedAt = now
 
-	_, err := h.db.Exec(`
+	_, err := h.tx.Exec(`
         insert into device_keys (
             created_at,
             updated_at,
@@ -529,7 +529,7 @@ func (h *DeviceHandler) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64)
 func (h *DeviceHandler) UpdateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) error {
 	dc.UpdatedAt = time.Now()
 
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
         update device_keys
         set
             updated_at = $2,
@@ -567,7 +567,7 @@ func (h *DeviceHandler) UpdateDeviceKeys(ctx context.Context, dc *devmod.DeviceK
 
 // DeleteDeviceKeys deletes the device-keys for the given DevEUI.
 func (h *DeviceHandler) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error {
-	res, err := h.db.Exec("delete from device_keys where dev_eui = $1", devEUI[:])
+	res, err := h.tx.Exec("delete from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -591,7 +591,7 @@ func (h *DeviceHandler) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI
 func (h *DeviceHandler) CreateDeviceActivation(ctx context.Context, da *devmod.DeviceActivation) error {
 	da.CreatedAt = time.Now()
 
-	err := sqlx.Get(h.db, &da.ID, `
+	err := sqlx.Get(h.tx, &da.ID, `
         insert into device_activation (
             created_at,
             dev_eui,

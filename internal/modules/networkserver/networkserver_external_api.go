@@ -36,7 +36,7 @@ type NetworkServerStore interface {
 	GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error)
 	GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
 	GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetDefaultNetworkServer(ctx context.Context, db sqlx.Queryer) (NetworkServer, error)
+	GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error)
 }
 
 // NetworkServerAPI exports the NetworkServer related functions.
@@ -110,7 +110,7 @@ func (a *NetworkServerAPI) SetupDefault() error {
 
 		// get network-server id
 
-		networkServer, err = a.Store.GetDefaultNetworkServer(ctx, storage.DB())
+		networkServer, err = a.Store.GetDefaultNetworkServer(ctx)
 		if err != nil {
 			return err
 		}

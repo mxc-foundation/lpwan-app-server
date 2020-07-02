@@ -9,18 +9,19 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 )
 
 type ApplicationHandler struct {
-	db *storage.DBLogger
+	tx *sqlx.Tx
+	db *sqlx.DB
 }
 
-func New(db *storage.DBLogger) *ApplicationHandler {
+func New(tx *sqlx.Tx, db *sqlx.DB) *ApplicationHandler {
 	applicationHandler = ApplicationHandler{
+		tx: tx,
 		db: db,
 	}
 	return &applicationHandler
@@ -38,7 +39,7 @@ func (h *ApplicationHandler) CreateApplication(ctx context.Context, item *appmod
 		return errors.Wrap(err, "validate error")
 	}
 
-	err := sqlx.Get(h.db, &item.ID, `
+	err := sqlx.Get(h.tx, &item.ID, `
 		insert into application (
 			name,
 			description,
@@ -156,7 +157,7 @@ func (h *ApplicationHandler) UpdateApplication(ctx context.Context, item appmod.
 		return fmt.Errorf("validate application error: %s", err)
 	}
 
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update application
 		set
 			name = $2,
@@ -203,7 +204,7 @@ func (h *ApplicationHandler) DeleteApplication(ctx context.Context, id int64) er
 		return errors.Wrap(err, "delete all nodes error")
 	}
 
-	res, err := h.db.Exec("delete from application where id = $1", id)
+	res, err := h.tx.Exec("delete from application where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}

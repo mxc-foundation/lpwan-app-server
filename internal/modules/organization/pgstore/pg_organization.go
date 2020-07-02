@@ -17,11 +17,13 @@ import (
 )
 
 type OrgHandler struct {
-	db *storage.DBLogger
+	tx *sqlx.Tx
+	db *sqlx.DB
 }
 
-func New(db *storage.DBLogger) *OrgHandler {
+func New(tx *sqlx.Tx, db *sqlx.DB) *OrgHandler {
 	return &OrgHandler{
+		tx: tx,
 		db: db,
 	}
 }
@@ -57,7 +59,7 @@ func (h *OrgHandler) CreateOrganization(ctx context.Context, org *orgmod.Organiz
 
 	now := time.Now()
 
-	err := sqlx.Get(h.db, &org.ID, `
+	err := sqlx.Get(h.tx, &org.ID, `
 		insert into organization (
 			created_at,
 			updated_at,
@@ -89,7 +91,7 @@ func (h *OrgHandler) CreateOrganization(ctx context.Context, org *orgmod.Organiz
 }
 
 // GetOrganization returns the orgmod.Organization for the given id.
-// When forUpdate is set to true, then db must be a db transaction.
+// When forUpdate is set to true, then tx must be a tx transaction.
 func (h *OrgHandler) GetOrganization(ctx context.Context, id int64, forUpdate bool) (orgmod.Organization, error) {
 	var fu string
 	if forUpdate {
@@ -168,7 +170,7 @@ func (h *OrgHandler) UpdateOrganization(ctx context.Context, org *orgmod.Organiz
 	}
 
 	now := time.Now()
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update organization
 		set
 			name = $2,
@@ -214,17 +216,17 @@ func (h *OrgHandler) DeleteOrganization(ctx context.Context, id int64) error {
 		return errors.Wrap(err, "delete all applications error")
 	}
 
-	err = storage.DeleteAllServiceProfilesForOrganizationID(ctx, h.db, id)
+	err = storage.DeleteAllServiceProfilesForOrganizationID(ctx, h.tx, id)
 	if err != nil {
 		return errors.Wrap(err, "delete all service-profiles error")
 	}
 
-	err = storage.DeleteAllDeviceProfilesForOrganizationID(ctx, h.db, id)
+	err = storage.DeleteAllDeviceProfilesForOrganizationID(ctx, h.tx, id)
 	if err != nil {
 		return errors.Wrap(err, "delete all device-profiles error")
 	}
 
-	res, err := h.db.Exec("delete from organization where id = $1", id)
+	res, err := h.tx.Exec("delete from organization where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -253,7 +255,7 @@ func (h *OrgHandler) CreateOrganizationUser(ctx context.Context, organizationID 
 		return errors.Wrap(err, "select error")
 	}
 
-	_, err = h.db.Exec(`
+	_, err = h.tx.Exec(`
 		insert into organization_user (
 			organization_id,
 			user_id,
@@ -287,7 +289,7 @@ func (h *OrgHandler) CreateOrganizationUser(ctx context.Context, organizationID 
 
 // UpdateOrganizationUser updates the given user of the organization.
 func (h *OrgHandler) UpdateOrganizationUser(ctx context.Context, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update organization_user
 		set
 			is_admin = $3,
@@ -322,7 +324,7 @@ func (h *OrgHandler) UpdateOrganizationUser(ctx context.Context, organizationID,
 
 // DeleteOrganizationUser deletes the given organization user.
 func (h *OrgHandler) DeleteOrganizationUser(ctx context.Context, organizationID, userID int64) error {
-	res, err := h.db.Exec(`delete from organization_user where organization_id = $1 and user_id = $2`, organizationID, userID)
+	res, err := h.tx.Exec(`delete from organization_user where organization_id = $1 and user_id = $2`, organizationID, userID)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}

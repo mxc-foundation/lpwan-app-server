@@ -3,12 +3,15 @@ package organization
 import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 type OrganizationStore interface {
@@ -69,9 +72,13 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 		MaxGatewayCount: int(req.Organization.MaxGatewayCount),
 	}
 
-	err := a.Store.CreateOrganization(ctx, &org)
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.CreateOrganization(ctx, &org)
+
+		return errors.Wrap(err, "")
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &pb.CreateOrganizationResponse{
@@ -208,22 +215,28 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 			return nil, helpers.ErrToRPCError(err)
 		}*/
 
-	org, err := a.Store.GetOrganization(ctx, req.Organization.Id, false)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		org, err := a.Store.GetOrganization(ctx, req.Organization.Id, false)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	org.Name = req.Organization.Name
-	org.DisplayName = req.Organization.DisplayName
-	/*	if u.IsAdmin {
-		org.CanHaveGateways = req.Organization.CanHaveGateways
-		org.MaxGatewayCount = int(req.Organization.MaxGatewayCount)
-		org.MaxDeviceCount = int(req.Organization.MaxDeviceCount)
-	}*/
+		org.Name = req.Organization.Name
+		org.DisplayName = req.Organization.DisplayName
+		/*	if u.IsAdmin {
+			org.CanHaveGateways = req.Organization.CanHaveGateways
+			org.MaxGatewayCount = int(req.Organization.MaxGatewayCount)
+			org.MaxDeviceCount = int(req.Organization.MaxDeviceCount)
+		}*/
 
-	err = a.Store.UpdateOrganization(ctx, &org)
+		err = a.Store.UpdateOrganization(ctx, &org)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
@@ -310,15 +323,21 @@ func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUs
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.Store.CreateOrganizationUser(ctx,
-		req.OrganizationUser.OrganizationId,
-		req.OrganizationUser.Username,
-		req.OrganizationUser.IsAdmin,
-		req.OrganizationUser.IsDeviceAdmin,
-		req.OrganizationUser.IsGatewayAdmin,
-	)
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.CreateOrganizationUser(ctx,
+			req.OrganizationUser.OrganizationId,
+			req.OrganizationUser.Username,
+			req.OrganizationUser.IsAdmin,
+			req.OrganizationUser.IsDeviceAdmin,
+			req.OrganizationUser.IsGatewayAdmin,
+		)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
@@ -335,15 +354,21 @@ func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganiza
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.Store.UpdateOrganizationUser(ctx,
-		req.OrganizationUser.OrganizationId,
-		req.OrganizationUser.UserId,
-		req.OrganizationUser.IsAdmin,
-		req.OrganizationUser.IsDeviceAdmin,
-		req.OrganizationUser.IsGatewayAdmin,
-	)
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.UpdateOrganizationUser(ctx,
+			req.OrganizationUser.OrganizationId,
+			req.OrganizationUser.UserId,
+			req.OrganizationUser.IsAdmin,
+			req.OrganizationUser.IsDeviceAdmin,
+			req.OrganizationUser.IsGatewayAdmin,
+		)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
@@ -356,9 +381,15 @@ func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganiza
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.Store.DeleteOrganizationUser(ctx, req.OrganizationId, req.UserId)
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.DeleteOrganizationUser(ctx, req.OrganizationId, req.UserId)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil

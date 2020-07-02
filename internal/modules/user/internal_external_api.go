@@ -199,19 +199,29 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 
 	obj, err := a.Store.GetUserByEmail(ctx, user.Email)
 	if err == storage.ErrDoesNotExist {
-		// user has never been created yet
-		err = a.Store.RegisterUser(&user, token)
-		if err != nil {
-			log.WithError(err).Error(logInfo)
-			return nil, helpers.ErrToRPCError(err)
-		}
 
-		// get user again
-		obj, err = a.Store.GetUserByEmail(ctx, user.Email)
+		err := storage.Transaction(func(tx sqlx.Ext) error {
+			// user has never been created yet
+			err = a.Store.RegisterUser(&user, token)
+			if err != nil {
+				log.WithError(err).Error(logInfo)
+				return helpers.ErrToRPCError(err)
+			}
+
+			// get user again
+			obj, err = a.Store.GetUserByEmail(ctx, user.Email)
+			if err != nil {
+				log.WithError(err).Error(logInfo)
+				// internal error
+				return helpers.ErrToRPCError(err)
+			}
+			if err != nil {
+				return helpers.ErrToRPCError(err)
+			}
+			return nil
+		})
 		if err != nil {
-			log.WithError(err).Error(logInfo)
-			// internal error
-			return nil, helpers.ErrToRPCError(err)
+			return nil, err
 		}
 
 	} else if err != nil && err != storage.ErrDoesNotExist {

@@ -43,28 +43,33 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 		return err
 	}
 
+	tx, err := storage.DB().Beginx()
+	if err != nil {
+		return err
+	}
+
 	// device
 	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(device.DeviceAPI{
 		Validator:            device.NewValidator(otpValidator),
-		Store:                devicePg.New(storage.DB()),
+		Store:                devicePg.New(tx.Tx, storage.DB().DB),
 		AppplicationServerID: applicationServerID,
 	}))
 
 	// user
 	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(user.UserAPI{
 		Validator: user.NewValidator(otpValidator),
-		Store:     userPg.New(storage.DB()),
+		Store:     userPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI(user.InternalUserAPI{
 		Validator: user.NewValidator(otpValidator),
-		Store:     userPg.New(storage.DB()),
+		Store:     userPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	// gateway
 	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(gateway.GatewayAPI{
 		Validator:           gateway.NewValidator(otpValidator),
-		Store:               gwPg.New(storage.DB()),
+		Store:               gwPg.New(tx.Tx, storage.DB().DB),
 		ApplicationServerID: applicationServerID,
 	}))
 
@@ -94,17 +99,17 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 
 	api.RegisterNetworkServerServiceServer(grpcServer, networkserver.NewNetworkServerAPI(networkserver.NetworkServerAPI{
 		Validator: networkserver.NewValidator(otpValidator),
-		Store:     networkServerPg.New(storage.DB()),
+		Store:     networkServerPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	api.RegisterApplicationServiceServer(grpcServer, application.NewApplicationAPI(application.ApplicationAPI{
 		Validator: application.NewValidator(otpValidator),
-		Store:     applicationPg.New(storage.DB()),
+		Store:     applicationPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	api.RegisterOrganizationServiceServer(grpcServer, organization.NewOrganizationAPI(organization.OrganizationAPI{
 		Validator: organization.NewValidator(otpValidator),
-		Store:     organizationPg.New(storage.DB()),
+		Store:     organizationPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	return nil

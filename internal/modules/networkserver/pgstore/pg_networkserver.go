@@ -15,17 +15,17 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 )
 
 type NetworkServerHandler struct {
-	db *storage.DBLogger
+	tx *sqlx.Tx
+	db *sqlx.DB
 }
 
-func New(db *storage.DBLogger) *NetworkServerHandler {
+func New(tx *sqlx.Tx, db *sqlx.DB) *NetworkServerHandler {
 	networkServerHandler = NetworkServerHandler{
+		tx: tx,
 		db: db,
 	}
 	return &networkServerHandler
@@ -38,9 +38,9 @@ func Handler() *NetworkServerHandler {
 }
 
 // GetDefaultNetworkServer returns the network-server matching the given name.
-func (h *NetworkServerHandler) GetDefaultNetworkServer(ctx context.Context, db sqlx.Queryer) (nsmod.NetworkServer, error) {
+func (h *NetworkServerHandler) GetDefaultNetworkServer(ctx context.Context) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(db, &n, "select * from network_server where name = 'default_network_server'")
+	err := sqlx.Get(h.db, &n, "select * from network_server where name = 'default_network_server'")
 	if err != nil {
 		return n, errors.Wrap(err, "select error")
 	}
@@ -58,7 +58,7 @@ func (h *NetworkServerHandler) CreateNetworkServer(ctx context.Context, n *nsmod
 	n.CreatedAt = now
 	n.UpdatedAt = now
 
-	err := sqlx.Get(h.db, &n.ID, `
+	err := sqlx.Get(h.tx, &n.ID, `
 		insert into network_server (
 			created_at,
 			updated_at,
@@ -146,7 +146,7 @@ func (h *NetworkServerHandler) UpdateNetworkServer(ctx context.Context, n *nsmod
 
 	n.UpdatedAt = time.Now()
 
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update network_server
 		set
 			updated_at = $2,
@@ -229,7 +229,7 @@ func (h *NetworkServerHandler) DeleteNetworkServer(ctx context.Context, id int64
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	res, err := h.db.Exec("delete from network_server where id = $1", id)
+	res, err := h.tx.Exec("delete from network_server where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}

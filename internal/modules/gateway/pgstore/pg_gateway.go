@@ -25,23 +25,24 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	networkServerPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver/pgstore"
 )
 
 type GWHandler struct {
-	db *storage.DBLogger
+	tx *sqlx.Tx
+	db *sqlx.DB
 }
 
-func New(db *storage.DBLogger) *GWHandler {
+func New(tx *sqlx.Tx, db *sqlx.DB) *GWHandler {
 	return &GWHandler{
+		tx: tx,
 		db: db,
 	}
 }
 
 func (h *GWHandler) AddGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model string, err error) {
-	err = h.db.QueryRowx(`
+	err = h.tx.QueryRowx(`
 		insert into gateway_firmware (
 			model, 
 			resource_link, 
@@ -112,7 +113,7 @@ func (h *GWHandler) GetGatewayFirmwareList() (list []gwmod.GatewayFirmware, err 
 }
 
 func (h *GWHandler) UpdateGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model string, err error) {
-	err = h.db.QueryRowx(`
+	err = h.tx.QueryRowx(`
 		update 
 		    gateway_firmware 
 		set 
@@ -133,7 +134,7 @@ func (h *GWHandler) UpdateGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model st
 }
 
 func (h *GWHandler) UpdateGatewayConfigByGwId(ctx context.Context, config string, mac lorawan.EUI64) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update gateway
 			set config = $1
 		where
@@ -166,7 +167,7 @@ func (h *GWHandler) CreateGateway(ctx context.Context, gw *gwmod.Gateway) error 
 
 	gw.UpdatedAt = now
 
-	_, err := h.db.Exec(`
+	_, err := h.tx.Exec(`
 		insert into gateway (
 			mac,
 			created_at,
@@ -256,7 +257,7 @@ func (h *GWHandler) UpdateGateway(ctx context.Context, gw *gwmod.Gateway) error 
 
 	now := time.Now()
 
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update gateway
 			set updated_at = $2,
 			name = $3,
@@ -321,7 +322,7 @@ func (h *GWHandler) UpdateGateway(ctx context.Context, gw *gwmod.Gateway) error 
 
 // UpdateFirstHeartbeat updates the first heartbeat by mac
 func (h *GWHandler) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update gateway
 			set first_heartbeat = $1
 		where
@@ -345,7 +346,7 @@ func (h *GWHandler) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64,
 
 // UpdateLastHeartbeat updates the last heartbeat by mac
 func (h *GWHandler) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update gateway
 			set last_heartbeat = $1
 		where
@@ -368,7 +369,7 @@ func (h *GWHandler) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, 
 }
 
 func (h *GWHandler) SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64, autoUpdateFirmware bool) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update gateway
 			set auto_update_firmware = $1
 		where
@@ -419,7 +420,7 @@ func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error 
 		}
 	}
 
-	res, err := h.db.Exec("delete from gateway where mac = $1", mac[:])
+	res, err := h.tx.Exec("delete from gateway where mac = $1", mac[:])
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -580,7 +581,7 @@ func (h *GWHandler) GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (i
 }
 
 func (h *GWHandler) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error {
-	res, err := h.db.Exec(`
+	res, err := h.tx.Exec(`
 		update gateway
 			set first_heartbeat = 0
 		where
@@ -845,7 +846,7 @@ func (h *GWHandler) GetGatewaysForUser(ctx context.Context, username string, lim
 func (h *GWHandler) CreateGatewayPing(ctx context.Context, ping *gwmod.GatewayPing) error {
 	ping.CreatedAt = time.Now()
 
-	err := sqlx.Get(h.db, &ping.ID, `
+	err := sqlx.Get(h.tx, &ping.ID, `
 		insert into gateway_ping (
 			created_at,
 			gateway_mac,
@@ -888,7 +889,7 @@ func (h *GWHandler) GetGatewayPing(ctx context.Context, id int64) (gwmod.Gateway
 func (h *GWHandler) CreateGatewayPingRX(ctx context.Context, rx *gwmod.GatewayPingRX) error {
 	rx.CreatedAt = time.Now()
 
-	err := sqlx.Get(h.db, &rx.ID, `
+	err := sqlx.Get(h.tx, &rx.ID, `
 		insert into gateway_ping_rx (
 			ping_id,
 			created_at,

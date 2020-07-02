@@ -51,9 +51,14 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 		return errors.Wrap(err, "listenWithCredentials: get new server error")
 	}
 
+	tx, err := storage.DB().Beginx()
+	if err != nil {
+		return err
+	}
+
 	gwpb.RegisterHeartbeatServiceServer(gs, gateway.NewHeartbeatAPI(gateway.HeartbeatAPI{
 		BindPort: bind,
-		Store:    gatewayPg.New(storage.DB()),
+		Store:    gatewayPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	ln, err := net.Listen("tcp", bind)

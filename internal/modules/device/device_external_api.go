@@ -501,14 +501,18 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.Store.CreateDeviceKeys(ctx, &DeviceKeys{
-		DevEUI:    eui,
-		NwkKey:    nwkKey,
-		AppKey:    appKey,
-		GenAppKey: genAppKey,
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.CreateDeviceKeys(ctx, &DeviceKeys{
+			DevEUI:    eui,
+			NwkKey:    nwkKey,
+			AppKey:    appKey,
+			GenAppKey: genAppKey,
+		})
+
+		return errors.Wrap(err, "")
 	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
@@ -589,9 +593,12 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 	dk.AppKey = appKey
 	dk.GenAppKey = genAppKey
 
-	err = a.Store.UpdateDeviceKeys(ctx, &dk)
+	err = storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.UpdateDeviceKeys(ctx, &dk)
+		return errors.Wrap(err, "")
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
@@ -610,8 +617,12 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err := a.Store.DeleteDeviceKeys(ctx, eui); err != nil {
-		return nil, helpers.ErrToRPCError(err)
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.DeleteDeviceKeys(ctx, eui)
+		return errors.Wrap(err, "")
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil

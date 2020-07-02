@@ -230,19 +230,26 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.Store.GetUser(ctx, req.User.Id)
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		user, err := a.Store.GetUser(ctx, req.User.Id)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+
+		user.IsAdmin = req.User.IsAdmin
+		user.IsActive = req.User.IsActive
+		user.SessionTTL = req.User.SessionTtl
+		user.Email = req.User.Email
+		user.Note = req.User.Note
+
+		err = a.Store.UpdateUser(ctx, &user)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	user.IsAdmin = req.User.IsAdmin
-	user.IsActive = req.User.IsActive
-	user.SessionTTL = req.User.SessionTtl
-	user.Email = req.User.Email
-	user.Note = req.User.Note
-
-	if err := a.Store.UpdateUser(ctx, &user); err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil
@@ -255,9 +262,15 @@ func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*emp
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.Store.DeleteUser(ctx, req.Id)
+	err := storage.Transaction(func(tx sqlx.Ext) error {
+		err := a.Store.DeleteUser(ctx, req.Id)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
 	return &empty.Empty{}, nil

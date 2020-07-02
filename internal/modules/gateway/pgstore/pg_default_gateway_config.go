@@ -7,7 +7,7 @@ import (
 )
 
 func (h *GWHandler) AddNewDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewayConfig) error {
-	_, err := h.db.Exec(`
+	_, err := h.tx.Exec(`
 		insert into default_gateway_config (
 		    model, region, created_at, updated_at, default_config
 		) values (
@@ -25,7 +25,7 @@ func (h *GWHandler) AddNewDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatew
 }
 
 func (h *GWHandler) UpdateDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewayConfig) error {
-	_, err := h.db.Exec(`
+	_, err := h.tx.Exec(`
 		update 
 		    default_gateway_config 
 		set
