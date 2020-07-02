@@ -14,6 +14,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
@@ -800,7 +801,7 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 	for {
 		resp, err := streamClient.Recv()
 		if err != nil {
-			if grpc.Code(err) == codes.Canceled {
+			if status.Code(err) == codes.Canceled {
 				return nil
 			}
 

@@ -7,8 +7,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
@@ -138,11 +138,11 @@ func (a *NetworkServerAPI) SetupDefault() error {
 // Create creates the given network-server.
 func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServerRequest) (*pb.CreateNetworkServerResponse, error) {
 	if req.NetworkServer == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "network_server must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "network_server must not be nil")
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServersAccess(Create, 0)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	networkServer := NetworkServer{
@@ -175,7 +175,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 // Get returns the network-server matching the given id.
 func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequest) (*pb.GetNetworkServerResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServerAccess(Read, req.Id)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	n, err := a.Store.GetNetworkServer(ctx, req.Id)
@@ -228,11 +228,11 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 // Update updates the given network-server.
 func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServerRequest) (*empty.Empty, error) {
 	if req.NetworkServer == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "network_server must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "network_server must not be nil")
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServerAccess(Update, req.NetworkServer.Id)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	networkServer, err := a.Store.GetNetworkServer(ctx, req.NetworkServer.Id)
@@ -278,7 +278,7 @@ func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServ
 // Delete deletes the network-server matching the given id.
 func (a *NetworkServerAPI) Delete(ctx context.Context, req *pb.DeleteNetworkServerRequest) (*empty.Empty, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServerAccess(Delete, req.Id)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -294,7 +294,7 @@ func (a *NetworkServerAPI) Delete(ctx context.Context, req *pb.DeleteNetworkServ
 // List lists the available network-servers.
 func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRequest) (*pb.ListNetworkServerResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServersAccess(List, req.OrganizationId)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	u, err := user.GetUserAPI().Validator.GetUser(ctx)

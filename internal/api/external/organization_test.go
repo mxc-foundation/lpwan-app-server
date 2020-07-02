@@ -5,8 +5,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
@@ -204,7 +204,7 @@ func (ts *APITestSuite) TestOrganization() {
 					assert.NoError(err)
 
 					_, err = api.DeleteUser(context.Background(), delOrgUser)
-					assert.Equal(codes.NotFound, grpc.Code(err))
+					assert.Equal(codes.NotFound, status.Code(err))
 				})
 			})
 		})
@@ -247,7 +247,7 @@ func (ts *APITestSuite) TestOrganization() {
 			_, err = api.Delete(context.Background(), &pb.DeleteOrganizationRequest{
 				Id: createResp.Id,
 			})
-			assert.Equal(codes.NotFound, grpc.Code(err))
+			assert.Equal(codes.NotFound, status.Code(err))
 		})
 	})
 }

@@ -7,8 +7,8 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
@@ -108,7 +108,7 @@ func (ts *APITestSuite) TestGateway() {
 				},
 			}
 			_, err := api.Create(ctx, &createReq)
-			assert.Equal(codes.FailedPrecondition, grpc.Code(err))
+			assert.Equal(codes.FailedPrecondition, status.Code(err))
 			assert.Equal("rpc error: code = FailedPrecondition desc = organization reached max. gateway count", err.Error())
 		})
 
@@ -196,8 +196,8 @@ func (ts *APITestSuite) TestGateway() {
 			assert := require.New(t)
 			updateReq := pb.UpdateGatewayRequest{
 				Gateway: &pb.Gateway{
-					Id:   "0807060504030201",
-					Name: "test-gateway-updated",
+					Id:          "0807060504030201",
+					Name:        "test-gateway-updated",
 					Description: "test gateway updated	",
 					Location: &common.Location{
 						Latitude:  2.1234,
@@ -379,7 +379,7 @@ func (ts *APITestSuite) TestGateway() {
 			_, err = api.Get(ctx, &pb.GetGatewayRequest{
 				Id: createReq.Gateway.Id,
 			})
-			assert.Equal(codes.NotFound, grpc.Code(err))
+			assert.Equal(codes.NotFound, status.Code(err))
 		})
 	})
 }

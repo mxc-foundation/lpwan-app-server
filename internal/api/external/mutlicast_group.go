@@ -37,12 +37,12 @@ func NewMulticastGroupAPI(validator auth.Validator, routingProfileID uuid.UUID) 
 // Create creates the given multicast-group.
 func (a *MulticastGroupAPI) Create(ctx context.Context, req *pb.CreateMulticastGroupRequest) (*pb.CreateMulticastGroupResponse, error) {
 	if req.MulticastGroup == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_group must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_group must not be nil")
 	}
 
 	spID, err := uuid.FromString(req.MulticastGroup.ServiceProfileId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	sp, err := storage.GetServiceProfile(ctx, storage.DB(), spID, true) // local-only, as we only want to fetch the org. id
@@ -52,17 +52,17 @@ func (a *MulticastGroupAPI) Create(ctx context.Context, req *pb.CreateMulticastG
 
 	if err = a.validator.Validate(ctx,
 		auth.ValidateMulticastGroupsAccess(auth.Create, sp.OrganizationID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	var mcAddr lorawan.DevAddr
 	if err = mcAddr.UnmarshalText([]byte(req.MulticastGroup.McAddr)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
 	var mcNwkSKey lorawan.AES128Key
 	if err = mcNwkSKey.UnmarshalText([]byte(req.MulticastGroup.McNwkSKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "mc_net_s_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "mc_net_s_key: %s", err)
 	}
 
 	mg := storage.MulticastGroup{
@@ -82,7 +82,7 @@ func (a *MulticastGroupAPI) Create(ctx context.Context, req *pb.CreateMulticastG
 	}
 
 	if err = mg.MCAppSKey.UnmarshalText([]byte(req.MulticastGroup.McAppSKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
 	if err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -107,12 +107,12 @@ func (a *MulticastGroupAPI) Create(ctx context.Context, req *pb.CreateMulticastG
 func (a *MulticastGroupAPI) Get(ctx context.Context, req *pb.GetMulticastGroupRequest) (*pb.GetMulticastGroupResponse, error) {
 	mgID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "id: %s", err)
 	}
 
 	if err = a.validator.Validate(ctx,
 		auth.ValidateMulticastGroupAccess(auth.Read, mgID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	mg, err := storage.GetMulticastGroup(ctx, storage.DB(), mgID, false, false)
@@ -157,17 +157,17 @@ func (a *MulticastGroupAPI) Get(ctx context.Context, req *pb.GetMulticastGroupRe
 // Update updates the given multicast-group.
 func (a *MulticastGroupAPI) Update(ctx context.Context, req *pb.UpdateMulticastGroupRequest) (*empty.Empty, error) {
 	if req.MulticastGroup == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_group must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_group must not be nil")
 	}
 
 	mgID, err := uuid.FromString(req.MulticastGroup.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "id: %s", err)
 	}
 
 	if err = a.validator.Validate(ctx,
 		auth.ValidateMulticastGroupAccess(auth.Update, mgID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	mg, err := storage.GetMulticastGroup(ctx, storage.DB(), mgID, false, false)
@@ -177,12 +177,12 @@ func (a *MulticastGroupAPI) Update(ctx context.Context, req *pb.UpdateMulticastG
 
 	var mcAddr lorawan.DevAddr
 	if err = mcAddr.UnmarshalText([]byte(req.MulticastGroup.McAddr)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
 	var mcNwkSKey lorawan.AES128Key
 	if err = mcNwkSKey.UnmarshalText([]byte(req.MulticastGroup.McNwkSKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "mc_net_s_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "mc_net_s_key: %s", err)
 	}
 
 	mg.Name = req.MulticastGroup.Name
@@ -200,7 +200,7 @@ func (a *MulticastGroupAPI) Update(ctx context.Context, req *pb.UpdateMulticastG
 	}
 
 	if err = mg.MCAppSKey.UnmarshalText([]byte(req.MulticastGroup.McAppSKey)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
 	if err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -220,7 +220,7 @@ func (a *MulticastGroupAPI) Update(ctx context.Context, req *pb.UpdateMulticastG
 func (a *MulticastGroupAPI) Delete(ctx context.Context, req *pb.DeleteMulticastGroupRequest) (*empty.Empty, error) {
 	mgID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "id: %s", err)
 	}
 
 	if err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -253,7 +253,7 @@ func (a *MulticastGroupAPI) List(ctx context.Context, req *pb.ListMulticastGroup
 
 		if err = a.validator.Validate(ctx,
 			auth.ValidateOrganizationAccess(auth.Read, req.OrganizationId)); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -263,12 +263,12 @@ func (a *MulticastGroupAPI) List(ctx context.Context, req *pb.ListMulticastGroup
 
 		filters.ServiceProfileID, err = uuid.FromString(req.ServiceProfileId)
 		if err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, "service_profile_id: %s", err)
+			return nil, status.Errorf(codes.InvalidArgument, "service_profile_id: %s", err)
 		}
 
 		if err = a.validator.Validate(ctx,
 			auth.ValidateServiceProfileAccess(auth.Read, filters.ServiceProfileID)); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication error: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication error: %s", err)
 		}
 	}
 
@@ -277,12 +277,12 @@ func (a *MulticastGroupAPI) List(ctx context.Context, req *pb.ListMulticastGroup
 		idFilter = true
 
 		if err = filters.DevEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
+			return nil, status.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
 		}
 
 		if err = a.validator.Validate(ctx,
 			auth.ValidateNodeAccess(filters.DevEUI, auth.Read)); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication error: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication error: %s", err)
 		}
 	}
 
@@ -294,7 +294,7 @@ func (a *MulticastGroupAPI) List(ctx context.Context, req *pb.ListMulticastGroup
 		}
 
 		if !user.IsAdmin {
-			return nil, grpc.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request")
+			return nil, status.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request")
 		}
 	}
 
@@ -328,17 +328,17 @@ func (a *MulticastGroupAPI) List(ctx context.Context, req *pb.ListMulticastGroup
 func (a *MulticastGroupAPI) AddDevice(ctx context.Context, req *pb.AddDeviceToMulticastGroupRequest) (*empty.Empty, error) {
 	mgID, err := uuid.FromString(req.MulticastGroupId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
 	}
 
 	var devEUI lorawan.EUI64
 	if err = devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
 	}
 
 	if err = a.validator.Validate(ctx,
 		auth.ValidateMulticastGroupAccess(auth.Update, mgID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// validate that the device is under the same service-profile as the multicast-group
@@ -358,7 +358,7 @@ func (a *MulticastGroupAPI) AddDevice(ctx context.Context, req *pb.AddDeviceToMu
 	}
 
 	if app.ServiceProfileID != mg.ServiceProfileID {
-		return nil, grpc.Errorf(codes.FailedPrecondition, "service-profile of device != service-profile of multicast-group")
+		return nil, status.Errorf(codes.FailedPrecondition, "service-profile of device != service-profile of multicast-group")
 	}
 
 	if err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -377,17 +377,17 @@ func (a *MulticastGroupAPI) AddDevice(ctx context.Context, req *pb.AddDeviceToMu
 func (a *MulticastGroupAPI) RemoveDevice(ctx context.Context, req *pb.RemoveDeviceFromMulticastGroupRequest) (*empty.Empty, error) {
 	mgID, err := uuid.FromString(req.MulticastGroupId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
 	}
 
 	var devEUI lorawan.EUI64
 	if err = devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
 	}
 
 	if err = a.validator.Validate(ctx,
 		auth.ValidateMulticastGroupAccess(auth.Update, mgID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if err = storage.Transaction(func(tx sqlx.Ext) error {
@@ -407,28 +407,28 @@ func (a *MulticastGroupAPI) Enqueue(ctx context.Context, req *pb.EnqueueMulticas
 	var fCnt uint32
 
 	if req.MulticastQueueItem == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_queue_item must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_queue_item must not be nil")
 	}
 
 	if req.MulticastQueueItem.FPort == 0 {
-		return nil, grpc.Errorf(codes.InvalidArgument, "f_port must be > 0")
+		return nil, status.Errorf(codes.InvalidArgument, "f_port must be > 0")
 	}
 
 	mgID, err := uuid.FromString(req.MulticastQueueItem.MulticastGroupId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
 	}
 
 	if err = a.validator.Validate(ctx,
 		auth.ValidateMulticastGroupQueueAccess(auth.Create, mgID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	if err = storage.Transaction(func(tx sqlx.Ext) error {
 		var err error
 		fCnt, err = multicast.Enqueue(ctx, tx, mgID, uint8(req.MulticastQueueItem.FPort), req.MulticastQueueItem.Data)
 		if err != nil {
-			return grpc.Errorf(codes.Internal, "enqueue multicast-group queue-item error: %s", err)
+			return status.Errorf(codes.Internal, "enqueue multicast-group queue-item error: %s", err)
 		}
 
 		return nil
@@ -445,12 +445,12 @@ func (a *MulticastGroupAPI) Enqueue(ctx context.Context, req *pb.EnqueueMulticas
 func (a *MulticastGroupAPI) FlushQueue(ctx context.Context, req *pb.FlushMulticastGroupQueueItemsRequest) (*empty.Empty, error) {
 	mgID, err := uuid.FromString(req.MulticastGroupId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
 	}
 
 	if err = a.validator.Validate(ctx,
 		auth.ValidateMulticastGroupQueueAccess(auth.Delete, mgID)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	n, err := storage.GetNetworkServerForMulticastGroupID(ctx, storage.DB(), mgID)
@@ -477,7 +477,7 @@ func (a *MulticastGroupAPI) FlushQueue(ctx context.Context, req *pb.FlushMultica
 func (a *MulticastGroupAPI) ListQueue(ctx context.Context, req *pb.ListMulticastGroupQueueItemsRequest) (*pb.ListMulticastGroupQueueItemsResponse, error) {
 	mgID, err := uuid.FromString(req.MulticastGroupId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "multicast_group_id: %s", err)
 	}
 
 	if err = a.validator.Validate(ctx,

@@ -12,8 +12,8 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
@@ -440,7 +440,7 @@ func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error 
 	_, err = client.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
 		Id: mac[:],
 	})
-	if err != nil && grpc.Code(err) != codes.NotFound {
+	if err != nil && status.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete gateway error")
 	}
 
@@ -452,7 +452,7 @@ func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error 
 		_, err = gwClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
 			MacAddress: mac.String(),
 		})
-		if err != nil && grpc.Code(err) != codes.NotFound {
+		if err != nil && status.Code(err) != codes.NotFound {
 			log.WithError(err).Error("delete gateway from m2m-server error")
 		}
 	} else {

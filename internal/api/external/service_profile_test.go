@@ -6,8 +6,8 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -243,7 +243,7 @@ func (ts *APITestSuite) TestServiceProfile() {
 			_, err = api.Delete(context.Background(), &pb.DeleteServiceProfileRequest{
 				Id: createResp.Id,
 			})
-			assert.Equal(codes.NotFound, grpc.Code(err))
+			assert.Equal(codes.NotFound, status.Code(err))
 		})
 	})
 }

@@ -9,8 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
@@ -449,7 +449,7 @@ func (h *DeviceHandler) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) 
 	_, err = client.DeleteDevice(ctx, &ns.DeleteDeviceRequest{
 		DevEui: devEUI[:],
 	})
-	if err != nil && grpc.Code(err) != codes.NotFound {
+	if err != nil && status.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete device error")
 	}
 
@@ -462,7 +462,7 @@ func (h *DeviceHandler) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) 
 		_, err = dvClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
 			DevEui: devEUI.String(),
 		})
-		if err != nil && grpc.Code(err) != codes.NotFound {
+		if err != nil && status.Code(err) != codes.NotFound {
 			log.WithError(err).Error("m2m-server delete device api error")
 		}
 	} else {

@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
@@ -80,7 +80,7 @@ func (ts *APITestSuite) TestApplication() {
 				PayloadDecoderScript: "Decode() {}",
 			},
 		})
-		assert.Equal(codes.InvalidArgument, grpc.Code(err))
+		assert.Equal(codes.InvalidArgument, status.Code(err))
 	})
 
 	ts.T().Run("Create", func(t *testing.T) {
@@ -185,7 +185,7 @@ func (ts *APITestSuite) TestApplication() {
 					PayloadDecoderScript: "Decode2() {}",
 				},
 			})
-			assert.Equal(codes.InvalidArgument, grpc.Code(err))
+			assert.Equal(codes.InvalidArgument, status.Code(err))
 		})
 
 		t.Run("Update", func(t *testing.T) {
@@ -296,7 +296,7 @@ func (ts *APITestSuite) TestApplication() {
 					assert.NoError(err)
 
 					_, err = api.GetHTTPIntegration(context.Background(), &pb.GetHTTPIntegrationRequest{ApplicationId: createResp.Id})
-					assert.Equal(codes.NotFound, grpc.Code(err))
+					assert.Equal(codes.NotFound, status.Code(err))
 				})
 			})
 		})
@@ -370,7 +370,7 @@ func (ts *APITestSuite) TestApplication() {
 					assert.NoError(err)
 
 					_, err = api.GetInfluxDBIntegration(context.Background(), &pb.GetInfluxDBIntegrationRequest{ApplicationId: createResp.Id})
-					assert.Equal(codes.NotFound, grpc.Code(err))
+					assert.Equal(codes.NotFound, status.Code(err))
 				})
 			})
 		})
@@ -434,7 +434,7 @@ func (ts *APITestSuite) TestApplication() {
 					assert.NoError(err)
 
 					_, err = api.GetThingsBoardIntegration(context.Background(), &pb.GetThingsBoardIntegrationRequest{ApplicationId: createResp.Id})
-					assert.Equal(codes.NotFound, grpc.Code(err))
+					assert.Equal(codes.NotFound, status.Code(err))
 				})
 			})
 		})
@@ -502,7 +502,7 @@ func (ts *APITestSuite) TestApplication() {
 					_, err = api.GetMyDevicesIntegration(context.Background(), &pb.GetMyDevicesIntegrationRequest{
 						ApplicationId: createResp.Id,
 					})
-					assert.Equal(codes.NotFound, grpc.Code(err))
+					assert.Equal(codes.NotFound, status.Code(err))
 				})
 			})
 		})
@@ -598,7 +598,7 @@ func (ts *APITestSuite) TestApplication() {
 					_, err = api.GetLoRaCloudIntegration(context.Background(), &pb.GetLoRaCloudIntegrationRequest{
 						ApplicationId: createResp.Id,
 					})
-					assert.Equal(codes.NotFound, grpc.Code(err))
+					assert.Equal(codes.NotFound, status.Code(err))
 				})
 			})
 		})
@@ -614,7 +614,7 @@ func (ts *APITestSuite) TestApplication() {
 			_, err = api.Get(context.Background(), &pb.GetApplicationRequest{
 				Id: createResp.Id,
 			})
-			assert.Equal(codes.NotFound, grpc.Code(err))
+			assert.Equal(codes.NotFound, status.Code(err))
 		})
 	})
 }

@@ -6,8 +6,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
@@ -35,17 +35,17 @@ func NewFUOTADeploymentAPI(validator auth.Validator) *FUOTADeploymentAPI {
 // CreateForDevice creates a deployment for the given DevEUI.
 func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.CreateFUOTADeploymentForDeviceRequest) (*pb.CreateFUOTADeploymentForDeviceResponse, error) {
 	if req.FuotaDeployment == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "fuota_deployment must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "fuota_deployment must not be nil")
 	}
 
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, err.Error())
+		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
 	if err := f.validator.Validate(ctx,
 		auth.ValidateFUOTADeploymentsAccess(auth.Create, 0, devEUI)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
@@ -117,7 +117,7 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 			return nil, helpers.ErrToRPCError(err)
 		}
 	default:
-		return nil, grpc.Errorf(codes.Internal, "region %s is not implemented", versionResp.Region)
+		return nil, status.Errorf(codes.Internal, "region %s is not implemented", versionResp.Region)
 	}
 
 	maxPLSize, err := b.GetMaxPayloadSizeForDataRateIndex("", "", int(req.FuotaDeployment.Dr))
@@ -139,12 +139,12 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 	case pb.MulticastGroupType_CLASS_C:
 		fd.GroupType = storage.FUOTADeploymentGroupTypeC
 	default:
-		return nil, grpc.Errorf(codes.InvalidArgument, "group_type %s is not supported", req.FuotaDeployment.GroupType)
+		return nil, status.Errorf(codes.InvalidArgument, "group_type %s is not supported", req.FuotaDeployment.GroupType)
 	}
 
 	fd.UnicastTimeout, err = ptypes.Duration(req.FuotaDeployment.UnicastTimeout)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "unicast_timeout: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "unicast_timeout: %s", err)
 	}
 
 	err = storage.Transaction(func(db sqlx.Ext) error {
@@ -163,14 +163,14 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 func (f *FUOTADeploymentAPI) Get(ctx context.Context, req *pb.GetFUOTADeploymentRequest) (*pb.GetFUOTADeploymentResponse, error) {
 	id, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "id: %s", err)
 	}
 
 	err = f.validator.Validate(ctx,
 		auth.ValidateFUOTADeploymentAccess(auth.Read, id),
 	)
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	fd, err := storage.GetFUOTADeployment(ctx, storage.DB(), id, false)
@@ -211,7 +211,7 @@ func (f *FUOTADeploymentAPI) Get(ctx context.Context, req *pb.GetFUOTADeployment
 	case storage.FUOTADeploymentGroupTypeC:
 		resp.FuotaDeployment.GroupType = pb.MulticastGroupType_CLASS_C
 	default:
-		return nil, grpc.Errorf(codes.Internal, "unexpected group-type: %s", fd.GroupType)
+		return nil, status.Errorf(codes.Internal, "unexpected group-type: %s", fd.GroupType)
 	}
 
 	return &resp, nil
@@ -235,21 +235,21 @@ func (f *FUOTADeploymentAPI) List(ctx context.Context, req *pb.ListFUOTADeployme
 		if err := f.validator.Validate(ctx,
 			auth.ValidateApplicationAccess(req.ApplicationId, auth.Read),
 		); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
 	if req.DevEui != "" {
 		idFilter = true
 		if err := filters.DevEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
-			return nil, grpc.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
+			return nil, status.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
 		}
 
 		// validate that the client has access to the given devEUI
 		if err := f.validator.Validate(ctx,
 			auth.ValidateNodeAccess(filters.DevEUI, auth.Read),
 		); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -260,7 +260,7 @@ func (f *FUOTADeploymentAPI) List(ctx context.Context, req *pb.ListFUOTADeployme
 		}
 
 		if !user.IsAdmin {
-			return nil, grpc.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request")
+			return nil, status.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request")
 		}
 	}
 
@@ -281,20 +281,20 @@ func (f *FUOTADeploymentAPI) List(ctx context.Context, req *pb.ListFUOTADeployme
 func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *pb.GetFUOTADeploymentDeviceRequest) (*pb.GetFUOTADeploymentDeviceResponse, error) {
 	fuotaDeploymentID, err := uuid.FromString(req.FuotaDeploymentId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "fuota_deployment_id: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "fuota_deployment_id: %s", err)
 	}
 
 	var devEUI lorawan.EUI64
 	err = devEUI.UnmarshalText([]byte(req.DevEui))
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "dev_eui: %s", err)
 	}
 
 	err = f.validator.Validate(ctx,
 		auth.ValidateFUOTADeploymentAccess(auth.Read, fuotaDeploymentID),
 	)
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	d, err := storage.GetDevice(ctx, storage.DB(), devEUI, false, true)
@@ -323,7 +323,7 @@ func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *pb.Ge
 	case storage.FUOTADeploymentDeviceError:
 		resp.DeploymentDevice.State = pb.FUOTADeploymentDeviceState_ERROR
 	default:
-		return nil, grpc.Errorf(codes.Internal, "unexpected state: %s", fdd.State)
+		return nil, status.Errorf(codes.Internal, "unexpected state: %s", fdd.State)
 	}
 
 	resp.DeploymentDevice.CreatedAt, err = ptypes.TimestampProto(fdd.CreatedAt)
@@ -342,14 +342,14 @@ func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *pb.Ge
 func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.ListFUOTADeploymentDevicesRequest) (*pb.ListFUOTADeploymentDevicesResponse, error) {
 	fuotaDeploymentID, err := uuid.FromString(req.FuotaDeploymentId)
 	if err != nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "fuota_deployment_id %s", err)
+		return nil, status.Errorf(codes.InvalidArgument, "fuota_deployment_id %s", err)
 	}
 
 	err = f.validator.Validate(ctx,
 		auth.ValidateFUOTADeploymentAccess(auth.Read, fuotaDeploymentID),
 	)
 	if err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	count, err := storage.GetFUOTADeploymentDeviceCount(ctx, storage.DB(), fuotaDeploymentID)
@@ -384,7 +384,7 @@ func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.
 		case storage.FUOTADeploymentDeviceError:
 			dd.State = pb.FUOTADeploymentDeviceState_ERROR
 		default:
-			return nil, grpc.Errorf(codes.Internal, "unexpected state: %s", devices[i].State)
+			return nil, status.Errorf(codes.Internal, "unexpected state: %s", devices[i].State)
 		}
 
 		dd.CreatedAt, err = ptypes.TimestampProto(devices[i].CreatedAt)

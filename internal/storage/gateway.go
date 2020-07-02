@@ -15,8 +15,8 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
@@ -255,7 +255,7 @@ func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 	_, err = nsClient.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
 		Id: mac[:],
 	})
-	if err != nil && grpc.Code(err) != codes.NotFound {
+	if err != nil && status.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete gateway error")
 	}
 

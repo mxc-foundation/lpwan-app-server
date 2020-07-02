@@ -6,8 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -56,12 +56,12 @@ func GetOrganizationAPI() *OrganizationAPI {
 // Create creates the given organization.
 func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganizationRequest) (*pb.CreateOrganizationResponse, error) {
 	if req.Organization == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "organization must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationsAccess(Create)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org := Organization{
@@ -90,7 +90,7 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationRequest) (*pb.GetOrganizationResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationAccess(Read, req.Id)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org, err := a.Store.GetOrganization(ctx, req.Id, false)
@@ -125,7 +125,7 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequest) (*pb.ListOrganizationResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationsAccess(List)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	filters := OrganizationFilters{
@@ -159,7 +159,7 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 		// Nothing to do as the Validator function already validated that the
 		// API key must be a global admin key.
 	default:
-		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
 	}
 
 	count, err := a.Store.GetOrganizationCount(ctx, filters)
@@ -202,12 +202,12 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 // Update updates the given organization.
 func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganizationRequest) (*empty.Empty, error) {
 	if req.Organization == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "organization must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationAccess(Update, req.Organization.Id)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	/*	u, err := user.GetUserAPI().Validator.GetUser(ctx)
@@ -247,7 +247,7 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganizationRequest) (*empty.Empty, error) {
 	/*	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 			ValidateOrganizationAccess(Delete, req.Id)); err != nil {
-			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 
 		err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -272,7 +272,7 @@ func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganization
 func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizationUsersRequest) (*pb.ListOrganizationUsersResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationUsersAccess(List, req.OrganizationId)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	users, err := a.Store.GetOrganizationUsers(ctx, req.OrganizationId, int(req.Limit), int(req.Offset))
@@ -315,12 +315,12 @@ func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizatio
 // AddUser creates the given organization-user link.
 func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUserRequest) (*empty.Empty, error) {
 	if req.OrganizationUser == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "organization_user must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationUsersAccess(Create, req.OrganizationUser.OrganizationId)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -346,12 +346,12 @@ func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUs
 // UpdateUser updates the given user.
 func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganizationUserRequest) (*empty.Empty, error) {
 	if req.OrganizationUser == nil {
-		return nil, grpc.Errorf(codes.InvalidArgument, "organization_user must not be nil")
+		return nil, status.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationUserAccess(Update, req.OrganizationUser.OrganizationId, req.OrganizationUser.UserId)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -378,7 +378,7 @@ func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganiza
 func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganizationUserRequest) (*empty.Empty, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationUserAccess(Delete, req.OrganizationId, req.UserId)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -399,7 +399,7 @@ func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganiza
 func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUserRequest) (*pb.GetOrganizationUserResponse, error) {
 	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
 		ValidateOrganizationUserAccess(Read, req.OrganizationId, req.UserId)); err != nil {
-		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	u, err := a.Store.GetOrganizationUser(ctx, req.OrganizationId, req.UserId)
