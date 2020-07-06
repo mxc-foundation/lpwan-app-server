@@ -43,9 +43,8 @@ type OrganizationUser struct {
 
 // OrganizationFilters provides filters for filtering organizations.
 type OrganizationFilters struct {
-	UserID   int64  `db:"user_id"`
-	UserName string `db:"username"`
-	Search   string `db:"search"`
+	UserID int64  `db:"user_id"`
+	Search string `db:"search"`
 
 	// Limit and Offset are added for convenience so that this struct can
 	// be given as the arguments.
@@ -63,10 +62,6 @@ func (f OrganizationFilters) SQL() string {
 
 	if f.Search != "" {
 		filters = append(filters, "o.display_name ilike :search")
-	}
-
-	if f.UserName != "" {
-		filters = append(filters, "u.username = :username")
 	}
 
 	if len(filters) == 0 {

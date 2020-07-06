@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"google.golang.org/grpc/metadata"
 	"image/png"
 	"strings"
 	"time"
@@ -17,8 +18,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
-
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
 // TOTPInfo contains user's TOTP configuration
@@ -52,16 +51,21 @@ const (
 	errOTPLockedOut = "Too many unsuccessful attemps, try again in 10 minutes"
 )
 
+// Claims defines the struct containing the token claims.
+type Claims struct {
+	// OTP code if it is present, not a part of JWT
+	OTP string `json:"-"`
+}
+
 // Validator provides methods to generate TOTP configuration for the user and validate OTPs
 type Validator struct {
-	issuer       string
-	block        cipher.Block
-	store        Store
-	JwtValidator *authcus.JWTValidator
+	issuer string
+	block  cipher.Block
+	store  Store
 }
 
 // NewValidator creates a new TOTP validator using given issuer, master key and store.
-func NewValidator(issuer, key string, store Store, jwtValidator *authcus.JWTValidator) (*Validator, error) {
+func NewValidator(issuer, key string, store Store) (*Validator, error) {
 	k, err := hex.DecodeString(key)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't decode the key: %v", err)
@@ -71,10 +75,9 @@ func NewValidator(issuer, key string, store Store, jwtValidator *authcus.JWTVali
 		return nil, fmt.Errorf("couldn't initialize cipher: %v", err)
 	}
 	return &Validator{
-		issuer:       issuer,
-		block:        block,
-		store:        store,
-		JwtValidator: jwtValidator,
+		issuer: issuer,
+		block:  block,
+		store:  store,
 	}, nil
 }
 
@@ -142,19 +145,15 @@ func (v *Validator) NewConfiguration(ctx context.Context, username string) (*Con
 }
 
 // ValidateOTP validates OTP and returns the error if it is not valid
-func (v *Validator) ValidateOTP(ctx context.Context) error {
-	claims, err := v.JwtValidator.GetClaims(ctx)
-	if err != nil {
-		return err
-	}
-	enabled, err := v.IsEnabled(ctx, claims.Username)
+func (v *Validator) ValidateOTP(ctx context.Context, username, otp string) error {
+	enabled, err := v.IsEnabled(ctx, username)
 	if err != nil {
 		return err
 	}
 	if !enabled {
 		return errors.New("OTP is not enabled")
 	}
-	return v.Validate(ctx, claims.Username, claims.OTP)
+	return v.Validate(ctx, username, otp)
 }
 
 // GetRecoveryCodes returns the list of recovery codes for the user. If
@@ -353,4 +352,19 @@ func generateRecoveryCode() (string, error) {
 	}
 	code := fmt.Sprintf("%x", binCode)
 	return code[:5] + "-" + code[5:], nil
+}
+
+func (v *Validator) GetClaims(ctx context.Context) (*Claims, error) {
+	return &Claims{OTP: getOTPFromContext(ctx)}, nil
+}
+
+func getOTPFromContext(ctx context.Context) string {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+	if len(md["x-otp"]) == 1 {
+		return md["x-otp"][0]
+	}
+	return ""
 }

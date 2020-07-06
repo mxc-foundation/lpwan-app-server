@@ -1,6 +1,8 @@
-package authentication
+package jwt
 
-import "errors"
+import (
+	"github.com/pkg/errors"
+)
 
 // errors
 var (

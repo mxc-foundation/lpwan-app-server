@@ -2,6 +2,7 @@ package external
 
 import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -12,8 +13,8 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -27,6 +28,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/wallet"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 
+	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/pgstore"
 	applicationPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/pgstore"
 	devicePg "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/pgstore"
 	gwPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/pgstore"
@@ -36,9 +38,8 @@ import (
 )
 
 func SetupCusAPI(grpcServer *grpc.Server) error {
-	jwtValidator := authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret)
-	otpStore := pgstore.New(storage.DB().DB.DB)
-	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, otpStore, jwtValidator)
+	jwtValidator := jwt.NewJWTValidator("HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret)
+	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, pgstore.New(storage.DB().DB.DB))
 	if err != nil {
 		return err
 	}
@@ -47,6 +48,8 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 	if err != nil {
 		return err
 	}
+
+	authcus.SetupCred(authPg.New(storage.DB().DB), jwtValidator, otpValidator)
 
 	// device
 	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(device.DeviceAPI{
@@ -103,8 +106,11 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 	}))
 
 	api.RegisterApplicationServiceServer(grpcServer, application.NewApplicationAPI(application.ApplicationAPI{
-		Validator: application.NewValidator(otpValidator),
-		Store:     applicationPg.New(tx.Tx, storage.DB().DB),
+		Validator: application.NewValidator(application.Validator{
+			Store:       applicationPg.New(tx.Tx, storage.DB().DB),
+			Credentials: authcus.NewCredentials(),
+		}),
+		Store: applicationPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	api.RegisterOrganizationServiceServer(grpcServer, organization.NewOrganizationAPI(organization.OrganizationAPI{

@@ -3,6 +3,7 @@ package pgstore
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -31,6 +32,191 @@ var applicationHandler ApplicationHandler
 
 func Handler() *ApplicationHandler {
 	return &applicationHandler
+}
+
+// CheckCreateApplicationAccess validate validates if the client has access to the applications resource.
+func (h *ApplicationHandler) CheckCreateApplicationAccess(username string, userID, organizationID int64) (bool, error) {
+	// global admin
+	// organization admin
+	// organization device admin
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2", "ou.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2", "ou.is_device_admin = true"},
+	}
+
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+// CheckListApplicationAccess :
+func (h *ApplicationHandler) CheckListApplicationAccess(username string, userID, organizationID int64) (bool, error) {
+	// global admin
+	// organization user (when organization id is given)
+	// any active user (api will filter on user)
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 > 0", "o.id = $2 or a.organization_id = $2"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 = 0"},
+	}
+
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+// CheckReadApplicationAccess :
+func (h *ApplicationHandler) CheckReadApplicationAccess(username string, userID, applicationID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+	// global admin
+	// organization user
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "a.id = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(h.db, &count, userQuery, username, applicationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+// CheckUpdateApplicationAccess :
+func (h *ApplicationHandler) CheckUpdateApplicationAccess(username string, userID, applicationID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+	// global admin
+	// organization admin
+	// organization device admin
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_device_admin = true", "a.id = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(h.db, &count, userQuery, username, applicationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+// CheckDeleteApplicationAccess :
+func (h *ApplicationHandler) CheckDeleteApplicationAccess(username string, userID, applicationID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join application a
+			on a.organization_id = o.id
+	`
+	// global admin
+	// organization admin
+	// organization device admin
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_admin = true", "a.id = $2"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_device_admin = true", "a.id = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(h.db, &count, userQuery, username, applicationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
 }
 
 // CreateApplication creates the given Application.

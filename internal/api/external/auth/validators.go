@@ -182,7 +182,7 @@ func ValidateUserAccess(userID int64, flag Flag) ValidatorFunc {
 	}
 }
 
-// ValidateApplicationsAccess validates if the client has access to the
+// ValidateGlobalApplicationsAccess validates if the client has access to the
 // global applications resource.
 func ValidateApplicationsAccess(flag Flag, organizationID int64) ValidatorFunc {
 	userQuery := `

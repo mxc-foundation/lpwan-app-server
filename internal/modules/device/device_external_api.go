@@ -35,7 +35,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 type DeviceStore interface {
@@ -54,6 +53,14 @@ type DeviceStore interface {
 	GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error)
 	DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error
 	UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error
+
+	// validator
+	CheckCreateNodeAccess(username string, applicationID int64, userID int64) (bool, error)
+	CheckListNodeAccess(username string, applicationID int64, userID int64) (bool, error)
+
+	CheckReadNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error)
+	CheckUpdateNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error)
+	CheckDeleteNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error)
 }
 
 // DeviceAPI exports the Node related functions.
@@ -98,8 +105,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodesAccess(req.Device.ApplicationId, Create)); err != nil {
+	if valid, err := a.Validator.ValidateGlobalNodesAccess(ctx, Create, req.Device.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -186,8 +192,7 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(eui, Read)); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Read, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -286,9 +291,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given application
-		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-			application.ValidateApplicationAccess(req.ApplicationId, application.Read),
-		); err != nil {
+		if valid, err := application.GetApplicationAPI().Validator.ValidateApplicationAccess(ctx, application.Read, req.ApplicationId); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 
@@ -298,9 +301,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given multicast-group
-		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-			authcus.ValidateMulticastGroupAccess(authcus.Read, filters.MulticastGroupID),
-		); err != nil {
+		if valid, err := a.Validator.Credentials.ValidateMulticastGroupAccess(ctx, authcus.Read, filters.MulticastGroupID); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -309,20 +310,18 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given service-profile
-		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-			authcus.ValidateServiceProfileAccess(authcus.Read, filters.ServiceProfileID),
-		); err != nil {
+		if valid, err := a.Validator.Credentials.ValidateServiceProfileAccess(ctx, authcus.Read, filters.ServiceProfileID); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
 	if !idFilter {
-		user, err := user.GetUserAPI().Validator.GetUser(ctx)
+		u, err := a.Validator.Credentials.GetUser(ctx)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 
-		if !user.IsAdmin {
+		if !u.IsGlobalAdmin {
 			return nil, status.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request")
 		}
 	}
@@ -356,8 +355,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(devEUI, Update)); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -442,8 +440,7 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(eui, Delete)); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Delete, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -494,9 +491,7 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(eui, Update),
-	); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -524,9 +519,7 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(eui, Update),
-	); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -578,9 +571,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(eui, Update),
-	); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -610,9 +601,7 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(eui, Delete),
-	); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Delete, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -634,9 +623,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(devEUI, Update),
-	); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -694,8 +681,7 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		return nil, status.Errorf(codes.InvalidArgument, "fNwkSIntKey: %s", err)
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(devEUI, Update)); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -768,8 +754,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateNodeAccess(devEUI, Read)); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(ctx, Read, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -824,8 +809,7 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 		return status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
-		validateNodeAccess(devEUI, Read)); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(srv.Context(), Read, devEUI); !valid || err != nil {
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -891,8 +875,7 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 		return status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(srv.Context(),
-		validateNodeAccess(devEUI, Read)); err != nil {
+	if valid, err := a.Validator.ValidateNodeAccess(srv.Context(), Read, devEUI); !valid || err != nil {
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -1067,20 +1050,19 @@ func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFram
 }
 
 // GetDeviceList defines the get device list request and response
-func (s *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequest) (*pb.GetDeviceListResponse, error) {
+func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequest) (*pb.GetDeviceListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceList org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	u, err := a.Validator.Credentials.GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	if !u.IsGlobalAdmin {
+		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+			return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -1126,20 +1108,19 @@ func (s *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequ
 }
 
 // GetDeviceProfile defines the function to get the device profile
-func (s *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDeviceProfileRequest) (*pb.GetDSDeviceProfileResponse, error) {
+func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDeviceProfileRequest) (*pb.GetDSDeviceProfileResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceProfile org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	u, err := a.Validator.Credentials.GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	if !u.IsGlobalAdmin {
+		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+			return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -1176,20 +1157,19 @@ func (s *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDevicePro
 }
 
 // GetDeviceHistory defines the get device history request and response
-func (s *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHistoryRequest) (*pb.GetDeviceHistoryResponse, error) {
+func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHistoryRequest) (*pb.GetDeviceHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	u, err := a.Validator.Credentials.GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	if !u.IsGlobalAdmin {
+		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+			return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -1219,20 +1199,19 @@ func (s *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHisto
 }
 
 // SetDeviceMode defines the set device mode request and response
-func (s *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequest) (*pb.SetDeviceModeResponse, error) {
+func (a *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequest) (*pb.SetDeviceModeResponse, error) {
 	logInfo := "api/appserver_serves_ui/SetDeviceMode org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	u, err := a.Validator.Credentials.GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	if !u.IsGlobalAdmin {
+		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+			return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 

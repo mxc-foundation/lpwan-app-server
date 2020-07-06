@@ -9,13 +9,21 @@ import "user.proto";
 
 // InternalService is the service providing API endpoints for internal usage.
 service InternalService {
-    // Log in a user
-    rpc Login (LoginRequest) returns (LoginResponse) {
-        option (google.api.http) = {
+	// Log the user in, returns JWT
+	rpc Login(LoginRequest) returns (LoginResponse) {
+		option(google.api.http) = {
 			post: "/api/internal/login"
 			body: "*"
 		};
-    }
+	}
+
+        // Validate OTP, returns JWT
+        rpc Login2FA(Login2FARequest) returns (LoginResponse) {
+                option(google.api.http) = {
+                        post: "/api/internal/login-2fa"
+                        body: "*"
+                };
+        }
 
     // Get the current user's profile
     rpc Profile (google.protobuf.Empty) returns (ProfileResponse) {
@@ -101,6 +109,20 @@ service InternalService {
     }
     
     
+        rpc RequestPasswordReset (PasswordResetReq) returns (PasswordResetResp) {
+                option (google.api.http) = {
+                        post: "/api/internal/request-password-reset"
+                        body: "*"
+                };
+        }
+
+        rpc ConfirmPasswordReset (ConfirmPasswordResetReq) returns (PasswordResetResp) {
+                option (google.api.http) = {
+                        post: "/api/internal/confirm-password-reset"
+                        body: "*"
+                };
+        }
+	
     // CreateAPIKey creates the given API key.
     rpc CreateAPIKey(CreateAPIKeyRequest) returns (CreateAPIKeyResponse) {
         option(google.api.http) = {
@@ -256,8 +278,13 @@ message LoginRequest {
 }
 
 message LoginResponse {
-    // The JWT tag to be used to access lora-app-server interfaces.
-    string jwt = 1;
+	// The JWT token to be used to access lora-app-server interfaces.
+	string jwt = 1;
+        // Two-factor authentication is required to finish the process
+        bool is_2fa_required = 2;
+}
+
+message Login2FARequest {
 }
 
 message ProfileResponse {
@@ -441,4 +468,23 @@ message GetRecoveryCodesRequest {
 message GetRecoveryCodesResponse {
     // list of recovery codes
     repeated string recovery_code = 1;
+}
+
+message PasswordResetReq {
+    // username to reset password for
+    string username = 1;
+    // language for the email
+    Language language = 2;
+}
+
+message PasswordResetResp {
+}
+
+message ConfirmPasswordResetReq {
+    // username to reset password for
+    string username = 1;
+    // OTP code from password reset email
+    string otp = 2;
+    // new password
+    string new_password = 3;
 }
