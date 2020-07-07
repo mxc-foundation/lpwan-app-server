@@ -113,7 +113,9 @@ tag_dockerhub_image:
     - docker pull $CONTAINER_IMAGE
     - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
     - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
+    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.latest
     - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
+    - docker push $DOCKER_REPO:$SERVICE_NAME.latest
   only:
     - master
   tags:
