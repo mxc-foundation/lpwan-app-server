@@ -657,22 +657,6 @@
         }
       }
     },
-    "appserver_serves_uiLanguage": {
-      "type": "string",
-      "enum": [
-        "de",
-        "en",
-        "es",
-        "fr",
-        "ja",
-        "ko",
-        "nl",
-        "ru",
-        "zhCN",
-        "zhTW"
-      ],
-      "default": "de"
-    },
     "appserver_serves_uiLogin2FARequest": {
       "type": "object"
     },
@@ -751,7 +735,7 @@
           "title": "username to reset password for"
         },
         "language": {
-          "$ref": "#/definitions/appserver_serves_uiLanguage",
+          "type": "string",
           "title": "language for the email"
         }
       }
@@ -796,7 +780,7 @@
           "type": "string"
         },
         "language": {
-          "$ref": "#/definitions/appserver_serves_uiLanguage"
+          "type": "string"
         }
       }
     },

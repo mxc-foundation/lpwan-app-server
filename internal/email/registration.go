@@ -6,8 +6,6 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
-
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 )
 
 type registrationEmailInterface struct {
@@ -22,7 +20,7 @@ var passwordResetUnknown = &registrationEmailInterface{option: PasswordResetUnkn
 func (s *registrationEmailInterface) sendEmail(user, token string, language EmailLanguage) error {
 	mailTemplate := mailTemplates[s.option][language]
 	if mailTemplate == nil {
-		mailTemplate = mailTemplates[s.option][EmailLanguage(pb.Language_name[int32(pb.Language_en)])]
+		mailTemplate = mailTemplates[s.option]["en"]
 	}
 
 	link := host + mailTemplateNames[s.option][language].url + token

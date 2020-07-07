@@ -3,7 +3,6 @@ package email
 import (
 	"text/template"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 )
 
@@ -35,29 +34,23 @@ var emailOptionsList = map[EmailOptions]emailInterface{
 }
 
 func loadEmailTemplates() {
-	for option, _ := range emailOptionsList {
+	// this is not a nice solution and we should move away from it to use
+	// whatever languages templates are available in, instead of hardcoding the
+	// list of supported languages
+	supportedLanguages := []string{"de", "en", "es", "fr", "ja", "ko", "nl", "ru", "zhCN", "zhTW"}
+	for option := range emailOptionsList {
 		mailTemplateNames[option] = make(map[EmailLanguage]mailTemplateStruct)
 
-		for _, language := range pb.Language_name {
+		for _, language := range supportedLanguages {
+			var url string
+			if option == RegistrationConfirmation {
+				url = "/#/registration-confirm/"
+			} else if option == PasswordReset {
+				url = "/#/reset-password-confirm"
+			}
 			mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
 				templatePath: "templates/email/" + string(option) + "/" + string(option) + "-" + language,
-			}
-		}
-
-		if option == RegistrationConfirmation {
-			for _, language := range pb.Language_name {
-				mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
-					templatePath: mailTemplateNames[option][EmailLanguage(language)].templatePath,
-					url:          "/#/registration-confirm/",
-				}
-			}
-		}
-		if option == PasswordReset {
-			for _, language := range pb.Language_name {
-				mailTemplateNames[option][EmailLanguage(language)] = mailTemplateStruct{
-					templatePath: mailTemplateNames[option][EmailLanguage(language)].templatePath,
-					url:          "/#/reset-password-confirm/",
-				}
+				url:          url,
 			}
 		}
 	}
@@ -65,7 +58,7 @@ func loadEmailTemplates() {
 	for option := range emailOptionsList {
 		mailTemplates[option] = make(map[EmailLanguage]*template.Template)
 
-		for _, language := range pb.Language_name {
+		for _, language := range supportedLanguages {
 			_, err := static.AssetInfo(mailTemplateNames[option][EmailLanguage(language)].templatePath)
 			if err != nil {
 				continue
