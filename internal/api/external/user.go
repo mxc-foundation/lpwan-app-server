@@ -565,7 +565,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 
 	log.WithFields(log.Fields{
 		"email":     req.Email,
-		"languange": pb.Language_name[int32(req.Language)],
+		"languange": req.Language,
 	}).Info(logInfo)
 
 	user := storage.User{
@@ -607,7 +607,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(obj.Username, *obj.SecurityToken, email.EmailLanguage(pb.Language_name[int32(req.Language)]), email.RegistrationConfirmation)
+	err = email.SendInvite(obj.Username, *obj.SecurityToken, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
@@ -718,7 +718,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
-			if err := email.SendInvite(req.Username, "", email.EmailLanguage(req.Language.String()), email.PasswordResetUnknown); err != nil {
+			if err := email.SendInvite(req.Username, "", email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
 				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 			}
 			return &pb.PasswordResetResp{}, nil
@@ -742,7 +742,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 	if err := tx.Commit(); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
 	}
-	if err := email.SendInvite(req.Username, pr.OTP, email.EmailLanguage(req.Language.String()), email.PasswordReset); err != nil {
+	if err := email.SendInvite(req.Username, pr.OTP, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 	}
 	return &pb.PasswordResetResp{}, nil
