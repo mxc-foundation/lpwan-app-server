@@ -135,3 +135,33 @@ deploy_review:
     - buildserver
   tags:
     - kubernetes
+
+deploy_test_cloud: 
+  stage: deploy
+  image: alpine
+  environment:
+    name: preprod
+    url: $PREPRODURL
+  before_script: 
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCLOUD https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+  only:
+    - master
+  tags:
+    - kubernetes
+
+deploy_test_china: 
+  stage: deploy
+  image: alpine
+  environment:
+    name: preprodcn
+    url: $PREPRODCNURL
+  before_script: 
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCHINA https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+  only:
+    - master
+  tags:
+    - kubernetes
