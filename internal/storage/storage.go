@@ -16,6 +16,7 @@ import (
 )
 
 var (
+	pwh                 *pwhash.PasswordHasher
 	jwtsecret []byte
 	// HashIterations denfines the number of times a password is hashed.
 	HashIterations      = 100000
@@ -23,11 +24,16 @@ var (
 )
 
 // Setup configures the storage package.
-func Setup(c config.Config) error {
+func Setup(c config.Config) err error {
 	log.Info("storage: setting up storage package")
 
 	jwtsecret = []byte(c.ApplicationServer.ExternalAPI.JWTSecret)
 	HashIterations = c.General.PasswordHashIterations
+	
+	pwh, err = pwhash.New(16, c.General.PasswordHashIterations)
+	if err != nil {
+		return err
+	}
 
 	if err := applicationServerID.UnmarshalText([]byte(c.ApplicationServer.ID)); err != nil {
 		return errors.Wrap(err, "decode application_server.id error")

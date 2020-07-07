@@ -3,57 +3,21 @@ package user
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
 
 type Validator struct {
-	otpValidator *otp.Validator
+	Store       UserStore
+	Credentials *authcus.Credentials
 }
 
-func NewValidator(otpValidator *otp.Validator) *Validator {
-	return &Validator{otpValidator: otpValidator}
-}
-
-// GetIsAdmin returns if the authenticated user is a global amin.
-func (v *Validator) GetIsAdmin(ctx context.Context) (bool, error) {
-	claims, err := v.otpValidator.JwtValidator.GetClaims(ctx)
-	if err != nil {
-		return false, err
+func NewValidator(v Validator) *Validator {
+	return &Validator{
+		Store:       v.Store,
+		Credentials: v.Credentials,
 	}
-
-	user, err := userAPI.Store.GetUserByEmail(ctx, claims.Username)
-	if err != nil {
-		return false, errors.Wrap(err, "get user by username error")
-	}
-
-	return user.IsAdmin, nil
-}
-
-// GetUser returns the user object.
-func (v *Validator) GetUser(ctx context.Context) (User, error) {
-	claims, err := v.otpValidator.JwtValidator.GetClaims(ctx)
-	if err != nil {
-		return User{}, err
-	}
-
-	if claims.Subject != "user" {
-		return User{}, errors.New("subject must be user")
-	}
-
-	if claims.UserID != 0 {
-		return userAPI.Store.GetUser(ctx, claims.UserID)
-	}
-
-	if claims.Username != "" {
-		return userAPI.Store.GetUserByEmail(ctx, claims.Username)
-	}
-
-	return User{}, errors.New("no username or user_id in claims")
 }
 
 // API key subjects.
@@ -73,241 +37,56 @@ const (
 	Delete
 	List
 	UpdateProfile
+	UpdatePassword
 	FinishRegistration
 )
 
 // ValidateActiveUser validates if the user in the JWT claim is active.
-func validateActiveUser() authcus.ValidatorFunc {
-	query := `
-		select
-			1
-		from
-			"user" u
-	`
-
-	where := [][]string{
-		{"(u.email = $1 or u.id = $2)", "u.is_active = true"},
+func (v *Validator) ValidateActiveUser(ctx context.Context) (bool, error) {
+	u, err := v.Credentials.GetUser(ctx)
+	if err != nil {
+		return false, errors.Wrap(err, "ValidateActiveUser")
 	}
 
-	return func(db sqlx.Queryer, claims *authcus.Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return authcus.ExecuteQuery(db, query, where, claims.Username, claims.UserID)
-		case SubjectAPIKey:
-			return false, nil
-		default:
-			return false, nil
-		}
-	}
+	return v.Store.CheckAvtiveUser(u.Username, u.ID)
 }
 
 // ValidateUsersAccess validates if the client has access to the global users
 // resource.
-func validateUsersAccess(flag Flag) authcus.ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-	`
-
-	var userWhere [][]string
-	var apiKeyWhere [][]string
+func (v *Validator) ValidateUsersGlobalAccess(ctx context.Context, flag Flag) (bool, error) {
+	u, err := v.Credentials.GetUser(ctx)
+	if err != nil {
+		return false, errors.Wrap(err, "ValidateUsersGlobalAccess")
+	}
 
 	switch flag {
 	case Create:
-		// global admin
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $2)", "u.is_active = true", "u.is_admin = true"},
-		}
-
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-		}
+		return v.Store.CheckCreateUserAcess(u.Username, u.ID)
 	case List:
-		// global admin users
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $2)", "u.is_active = true", "u.is_admin = true"},
-		}
-
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-		}
+		return v.Store.CheckListUserAcess(u.Username, u.ID)
 	default:
 		panic("unsupported flag")
-	}
-
-	return func(db sqlx.Queryer, claims *authcus.Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return authcus.ExecuteQuery(db, userQuery, userWhere, claims.Username, claims.UserID)
-		case SubjectAPIKey:
-			return authcus.ExecuteQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID)
-		default:
-			return false, nil
-		}
 	}
 }
 
 // ValidateUserAccess validates if the client has access to the given user
 // resource.
-func validateUserAccess(userID int64, flag Flag) authcus.ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-	`
-
-	var userWhere [][]string
-	var apiKeyWhere [][]string
+func (v *Validator) ValidateUserAccess(ctx context.Context, flag Flag, userID int64) (bool, error) {
+	u, err := v.Credentials.GetUser(ctx)
+	if err != nil {
+		return false, errors.Wrap(err, "ValidateUserAccess")
+	}
 
 	switch flag {
 	case Read:
-		// global admin
-		// user itself
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.id = $2"},
-		}
-
-		// admin token
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-		}
+		return v.Store.CheckReadUserAccess(u.Username, userID, u.ID)
 	case Update, Delete:
-		// global admin
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
-		}
-
-		// admin token
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-		}
+		return v.Store.CheckUpdateDeleteUserAccess(u.Username, userID, u.ID)
 	case UpdateProfile:
-		// global admin
-		// user itself
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.id = $2"},
-		}
-
-		// admin token
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-		}
+		return v.Store.CheckUpdateProfileUserAccess(u.Username, userID, u.ID)
+	case UpdatePassword:
+		return v.Store.CheckUpdatePasswordUserAccess(u.Username, userID, u.ID)
 	default:
 		panic("unsupported flag")
-	}
-
-	return func(db sqlx.Queryer, claims *authcus.Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return authcus.ExecuteQuery(db, userQuery, userWhere, claims.Username, userID, claims.UserID)
-		case SubjectAPIKey:
-			return authcus.ExecuteQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateAPIKeysAccess validates if the client has access to the global
-// API key resource.
-func validateAPIKeysAccess(flag Flag, organizationID int64, applicationID int64) authcus.ValidatorFunc {
-	query := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on ou.organization_id = o.id
-		left join application a
-			on o.id = a.organization_id
-	`
-
-	var where [][]string
-
-	switch flag {
-	case Create:
-		// global admin
-		// organization admin of given org id
-		// organization admin of given app id
-		where = [][]string{
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "ou.is_admin = true", "$2 > 0", "$3 = 0", "o.id = $2"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "ou.is_admin = true", "$3 > 0", "$2 = 0", "a.id = $3"},
-		}
-
-	case List:
-		// global admin
-		// organization admin of given org id (api key filtered by org in api)
-		// organization admin of given app id (api key filtered by app in api)
-		where = [][]string{
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "ou.is_admin = true", "$2 > 0", "$3 = 0", "o.id = $2"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "ou.is_admin = true", "$3 > 0", "$2 = 0", "a.id = $3"},
-		}
-	default:
-		panic("unsupported flag")
-	}
-
-	return func(db sqlx.Queryer, claims *authcus.Claims) (bool, error) {
-		return authcus.ExecuteQuery(db, query, where, claims.Username, organizationID, applicationID, claims.UserID)
-	}
-}
-
-// ValidateAPIKeyAccess validates if the client has access to the given API
-// key.
-func validateAPIKeyAccess(flag Flag, id uuid.UUID) authcus.ValidatorFunc {
-	query := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on ou.organization_id = o.id
-		left join application a
-			on o.id = a.organization_id
-		left join api_key ak
-			on a.id = ak.application_id or o.id = ak.organization_id or u.is_admin
-	`
-
-	var where [][]string
-	switch flag {
-	case Delete:
-		// global admin
-		// organization admin
-		where = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_admin = true", "ak.id = $2"},
-		}
-	default:
-		panic("unsupported flag")
-	}
-
-	return func(db sqlx.Queryer, claims *authcus.Claims) (bool, error) {
-		return authcus.ExecuteQuery(db, query, where, claims.Username, id, claims.UserID)
 	}
 }

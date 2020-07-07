@@ -49,18 +49,6 @@ type handler struct {
 	otpValidator *otp.Validator
 }
 
-type UserCredentials struct {
-	id            int64
-	username      string
-	isGlobalAdmin bool
-}
-
-type OrgUserCredentials struct {
-	id            int64
-	username      string
-	isGlobalAdmin bool
-}
-
 type Credentials struct {
 	// init when service starts
 	h *handler
@@ -184,8 +172,8 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 	return cred, nil
 }
 
-func (c *Credentials) GetUser(ctx context.Context) (User, error) {
-	cred, err := c.getCredentials(ctx)
+func (c *Credentials) GetUser(ctx context.Context, opts ...Option) (User, error) {
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return User{}, errors.Wrap(err, "failed to get credentials")
 	}
@@ -193,8 +181,9 @@ func (c *Credentials) GetUser(ctx context.Context) (User, error) {
 	return cred.user, nil
 }
 
-func (c *Credentials) GetUserPermissionWithOrgID(ctx context.Context, orgID int64) (OrgUser, error) {
-	cred, err := c.getCredentials(ctx, WithOrganizationID(orgID))
+func (c *Credentials) GetUserPermissionWithOrgID(ctx context.Context, orgID int64, opts ...Option) (OrgUser, error) {
+	opts = append(opts, WithOrganizationID(orgID))
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return OrgUser{}, errors.Wrap(err, "failed to get credentials")
 	}
@@ -203,8 +192,8 @@ func (c *Credentials) GetUserPermissionWithOrgID(ctx context.Context, orgID int6
 }
 
 // Username returns the name of the user
-func (c *Credentials) Username(ctx context.Context) (string, error) {
-	cred, err := c.getCredentials(ctx)
+func (c *Credentials) Username(ctx context.Context, opts ...Option) (string, error) {
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get credentials")
 	}
@@ -213,8 +202,8 @@ func (c *Credentials) Username(ctx context.Context) (string, error) {
 }
 
 // UserID returns user id of the user
-func (c *Credentials) UserID(ctx context.Context) (int64, error) {
-	cred, err := c.getCredentials(ctx)
+func (c *Credentials) UserID(ctx context.Context, opts ...Option) (int64, error) {
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to get credentials")
 	}
@@ -223,8 +212,8 @@ func (c *Credentials) UserID(ctx context.Context) (int64, error) {
 
 // IsGlobalAdmin checks that the user is a global admin and returns an error if
 // he's not
-func (c *Credentials) IsGlobalAdmin(ctx context.Context) (bool, error) {
-	cred, err := c.getCredentials(ctx)
+func (c *Credentials) IsGlobalAdmin(ctx context.Context, opts ...Option) (bool, error) {
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to get credentials")
 	}
@@ -234,8 +223,9 @@ func (c *Credentials) IsGlobalAdmin(ctx context.Context) (bool, error) {
 
 // IsOrgUser checks that the user belongs to the organisation, if not it
 // returns an error
-func (c *Credentials) IsOrgUser(ctx context.Context, orgID int64) (bool, error) {
-	cred, err := c.getCredentials(ctx, WithOrganizationID(orgID))
+func (c *Credentials) IsOrgUser(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+	opts = append(opts, WithOrganizationID(orgID))
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to get credentials")
 	}
@@ -249,8 +239,9 @@ func (c *Credentials) IsOrgUser(ctx context.Context, orgID int64) (bool, error) 
 
 // IsOrgAdmin checks that the user is admin for the organisation, if not it
 // returns an error
-func (c *Credentials) IsOrgAdmin(ctx context.Context, orgID int64) (bool, error) {
-	cred, err := c.getCredentials(ctx, WithOrganizationID(orgID))
+func (c *Credentials) IsOrgAdmin(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+	opts = append(opts, WithOrganizationID(orgID))
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to get credentials")
 	}
@@ -264,8 +255,9 @@ func (c *Credentials) IsOrgAdmin(ctx context.Context, orgID int64) (bool, error)
 
 // IsDeviceAdmin checks that the user is device admin for the organisation, if
 // not it returns an error
-func (c *Credentials) IsDeviceAdmin(ctx context.Context, orgID int64) (bool, error) {
-	cred, err := c.getCredentials(ctx, WithOrganizationID(orgID))
+func (c *Credentials) IsDeviceAdmin(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+	opts = append(opts, WithOrganizationID(orgID))
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to get credentials")
 	}
@@ -279,8 +271,9 @@ func (c *Credentials) IsDeviceAdmin(ctx context.Context, orgID int64) (bool, err
 
 // IsGatewayAdmin checks that the user is gateway admin for the organisation,
 // if not it returns an error
-func (c *Credentials) IsGatewayAdmin(ctx context.Context, orgID int64) (bool, error) {
-	cred, err := c.getCredentials(ctx, WithOrganizationID(orgID))
+func (c *Credentials) IsGatewayAdmin(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+	opts = append(opts, WithOrganizationID(orgID))
+	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
 		return false, errors.Wrap(err, "failed to get credentials")
 	}
@@ -289,4 +282,40 @@ func (c *Credentials) IsGatewayAdmin(ctx context.Context, orgID int64) (bool, er
 	}
 
 	return false, nil
+}
+
+// Is2FAEnabled requires username, since ctx does not contain user info at this point
+func (c *Credentials) Is2FAEnabled(ctx context.Context, username string) (bool, error) {
+	return c.h.otpValidator.IsEnabled(ctx, username)
+}
+
+// SignJWToken requires username, since ctx does not contain user info at this point
+func (c *Credentials) SignJWToken(username string, ttl int64, audience []string) (string, error) {
+	return c.h.jwtValidator.SignToken(username, ttl, audience)
+}
+
+// NewConfiguration generates a new TOTP configuration for the user
+func (c *Credentials) NewConfiguration(ctx context.Context, username string) (*otp.Configuration, error) {
+	return c.h.otpValidator.NewConfiguration(ctx, username)
+}
+
+func (c *Credentials) GetOTP(ctx context.Context) (string, error) {
+	otpClaims, err := c.h.otpValidator.GetClaims(ctx)
+	if err != nil {
+		return "", errors.Wrap(err, "fail to get otp from ctx")
+	}
+
+	return otpClaims.OTP, nil
+}
+
+func (c *Credentials) EnableOTP(ctx context.Context, username, otp string) error {
+	return c.h.otpValidator.Enable(ctx, username, otp)
+}
+
+func (c *Credentials) DisableOTP(ctx context.Context, username string) error {
+	return c.h.otpValidator.Disable(ctx, username)
+}
+
+func (c *Credentials) OTPGetRecoveryCodes(ctx context.Context, username string, regenerate bool) ([]string, error) {
+	return c.h.otpValidator.GetRecoveryCodes(ctx, username, regenerate)
 }

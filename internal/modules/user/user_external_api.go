@@ -1,23 +1,7 @@
 package user
 
 import (
-	"bytes"
 	"context"
-	"crypto/rand"
-	"crypto/sha512"
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
-
-	"github.com/apex/log"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
@@ -25,12 +9,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/pkg/errors"
-	"golang.org/x/crypto/pbkdf2"
-
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
@@ -40,18 +20,31 @@ type UserStore interface {
 	CreateUser(ctx context.Context, user *User) error
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByExternalID(ctx context.Context, externalID string) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserCount(ctx context.Context) (int, error)
 	GetUsers(ctx context.Context, limit, offset int) ([]User, error)
 	UpdateUser(ctx context.Context, u *User) error
 	DeleteUser(ctx context.Context, id int64) error
-	LoginUserByPassword(ctx context.Context, email string, password string) (string, error)
+	LoginUserByPassword(ctx context.Context, email string, password string) error
 	GetProfile(ctx context.Context, id int64) (UserProfile, error)
 	GetUserToken(u User) (string, error)
 	RegisterUser(user *User, token string) error
 	GetUserByToken(token string) (User, error)
 	GetTokenByUsername(ctx context.Context, username string) (string, error)
-	FinishRegistration(userID int64, pwdHash string) error
+	FinishRegistration(userID int64, password string) error
+	UpdatePassword(ctx context.Context, id int64, newpassword string) error
+
+	// validator
+	CheckAvtiveUser(username string, userID int64) (bool, error)
+
+	CheckCreateUserAcess(username string, userID int64) (bool, error)
+	CheckListUserAcess(username string, userID int64) (bool, error)
+
+	CheckReadUserAccess(username string, userID, operatorUserID int64) (bool, error)
+	CheckUpdateDeleteUserAccess(username string, userID, operatorUserID int64) (bool, error)
+	CheckUpdateProfileUserAccess(username string, userID, operatorUserID int64) (bool, error)
+	CheckUpdatePasswordUserAccess(username string, userID, operatorUserID int64) (bool, error)
 }
 
 // UserAPI exports the User related functions.
@@ -84,8 +77,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateUsersAccess(Create)); err != nil {
+	if valid, err := a.Validator.ValidateUsersGlobalAccess(ctx, Create); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -96,10 +88,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		IsActive:   req.User.IsActive,
 		Email:      req.User.Email,
 		Note:       req.User.Note,
-	}
-
-	if err := user.SetPasswordHash(req.Password); err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		Password:   req.Password,
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -125,8 +114,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 
 // Get returns the user matching the given ID.
 func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUserResponse, error) {
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateUserAccess(req.Id, Read)); err != nil {
+	if valid, err := a.Validator.ValidateUserAccess(ctx, Read, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -177,8 +165,7 @@ func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailReques
 
 // List lists the users.
 func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.ListUserResponse, error) {
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateUsersAccess(List)); err != nil {
+	if valid, err := a.Validator.ValidateUsersGlobalAccess(ctx, List); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -225,8 +212,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateUserAccess(req.User.Id, Update)); err != nil {
+	if valid, err := a.Validator.ValidateUserAccess(ctx, Update, req.User.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -257,8 +243,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 
 // Delete deletes the user matching the given ID.
 func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empty.Empty, error) {
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateUserAccess(req.Id, Delete)); err != nil {
+	if valid, err := a.Validator.ValidateUserAccess(ctx, Delete, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -278,71 +263,16 @@ func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*emp
 
 // UpdatePassword updates the password for the user matching the given ID.
 func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswordRequest) (*empty.Empty, error) {
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx,
-		validateUserAccess(req.UserId, UpdateProfile)); err != nil {
+	if valid, err := a.Validator.ValidateUserAccess(ctx, UpdatePassword, req.UserId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.Store.GetUser(ctx, req.UserId)
+	err := a.Store.UpdatePassword(ctx, req.UserId, req.Password)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	if err := user.SetPasswordHash(req.Password); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	return &empty.Empty{}, nil
-}
-
-// IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
-func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*inpb.GoogleRecaptchaResponse, error) {
-	secret := config.C.Recaptcha.Secret
-	postURL := config.C.Recaptcha.HostServer
-
-	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
-	/* #nosec */
-	responsePost, err := http.PostForm(postURL, postStr)
-
-	if err != nil {
-		log.Warn(err.Error())
-		return &inpb.GoogleRecaptchaResponse{}, err
-	}
-
-	defer func() {
-		err := responsePost.Body.Close()
-		if err != nil {
-			log.WithError(err).Error("cannot close the responsePost body.")
-		}
-	}()
-
-	body, err := ioutil.ReadAll(responsePost.Body)
-
-	if err != nil {
-		log.Warn(err.Error())
-		return &inpb.GoogleRecaptchaResponse{}, err
-	}
-
-	gresponse := &inpb.GoogleRecaptchaResponse{}
-	err = json.Unmarshal(body, &gresponse)
-	if err != nil {
-		fmt.Println("unmarshal response", err)
-	}
-
-	return gresponse, nil
-}
-
-func OTPgen() string {
-	var table = [...]byte{'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'}
-	otp := make([]byte, 6)
-	n, err := io.ReadAtLeast(rand.Reader, otp, 6)
-	if n != 6 {
-		panic(err)
-	}
-	for i := 0; i < len(otp); i++ {
-		otp[i] = table[int(otp[i])%len(table)]
-	}
-	return string(otp)
 }
 
 func (a *UserAPI) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
@@ -352,97 +282,4 @@ func (a *UserAPI) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (
 	}
 
 	return &inpb.GetOTPCodeResponse{OtpCode: otp}, nil
-}
-
-const (
-	// saltSize defines the salt size
-	saltSize = 16
-	//  defines the default session TTL
-	DefaultSessionTTL = time.Hour * 24
-)
-
-var (
-	// Any printable characters, at least 6 characters.
-	passwordValidator = regexp.MustCompile(`^.{6,}$`)
-
-	// Must contain @ (this is far from perfect)
-	emailValidator = regexp.MustCompile(`.+@.+`)
-)
-
-// Validate validates the user data.
-func (u *User) Validate() error {
-	if !emailValidator.MatchString(u.Email) {
-		return errors.New("invalid email")
-	}
-
-	return nil
-}
-
-// SetPasswordHash hashes the given password and sets it.
-func (u *User) SetPasswordHash(pw string) error {
-	if !passwordValidator.MatchString(pw) {
-		return errors.New("invalid user password length")
-	}
-
-	pwHash, err := hash(pw, saltSize, config.C.General.PasswordHashIterations)
-	if err != nil {
-		return err
-	}
-
-	u.PasswordHash = pwHash
-
-	return nil
-}
-
-// hashCompare verifies that passed password hashes to the same value as the
-// passed passwordHash.
-func (u *User) HashCompare(password string, passwordHash string) bool {
-	// SPlit the hash string into its parts.
-	hashSplit := strings.Split(passwordHash, "$")
-
-	// Get the iterations and the salt and use them to encode the password
-	// being compared.cre
-	iterations, _ := strconv.Atoi(hashSplit[2])
-	salt, _ := base64.StdEncoding.DecodeString(hashSplit[3])
-	newHash := hashWithSalt(password, salt, iterations)
-	return newHash == passwordHash
-}
-
-// Generate the hash of a password for storage in the database.
-// NOTE: We Store the details of the hashing algorithm with the hash itself,
-// making it easy to recreate the hash for password checking, even if we change
-// the default criteria here.
-func hash(password string, saltSize int, iterations int) (string, error) {
-	// Generate a random salt value, 128 bits.
-	salt := make([]byte, saltSize)
-	_, err := rand.Read(salt)
-	if err != nil {
-		return "", errors.Wrap(err, "read random bytes error")
-	}
-
-	return hashWithSalt(password, salt, iterations), nil
-}
-
-func hashWithSalt(password string, salt []byte, iterations int) string {
-	// Generate the hash.  This should be a little painful, adjust ITERATIONS
-	// if it needs performance tweeking.  Greatly depends on the hardware.
-	// NOTE: We Store these details with the returned hash, so changes will not
-	// affect our ability to do password compares.
-	hash := pbkdf2.Key([]byte(password), salt, iterations, sha512.Size, sha512.New)
-
-	// Build up the parameters and hash into a single string so we can compare
-	// other string to the same hash.  Note that the hash algorithm is hard-
-	// coded here, as it is above.  Introducing alternate encodings must support
-	// old encodings as well, and build this string appropriately.
-	var buffer bytes.Buffer
-
-	buffer.WriteString("PBKDF2$")
-	buffer.WriteString("sha512$")
-	buffer.WriteString(strconv.Itoa(iterations))
-	buffer.WriteString("$")
-	buffer.WriteString(base64.StdEncoding.EncodeToString(salt))
-	buffer.WriteString("$")
-	buffer.WriteString(base64.StdEncoding.EncodeToString(hash))
-
-	return buffer.String()
 }
