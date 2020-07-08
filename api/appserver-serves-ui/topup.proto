@@ -1,14 +1,16 @@
 syntax = "proto3";
 
 package appserver_serves_ui;
-
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
 service TopUpService {
     rpc GetTopUpHistory(GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse){
         option(google.api.http) = {
-			get: "/api/top-up/history"
+			post: "/api/top-up/history"
+                        body: "*"
 		};
     }
 
@@ -19,31 +21,26 @@ service TopUpService {
     }
 }
 
-enum Money {
-    ETH = 0;
-    ETH_MXC = 1;
-    TETH = 2;
-}
-
 message GetTopUpHistoryRequest {
     int64 org_id = 1;
-    int64 offset = 2;
-    int64 limit = 3;
+    string currency = 4;
+    google.protobuf.Timestamp from = 5;
+    google.protobuf.Timestamp till = 6;
 }
 
 message TopUpHistory {
-    double amount = 1;
-    string created_at = 2;
-	string tx_hash = 3;
+    string tx_hash = 3;
+    google.protobuf.Timestamp timestamp = 4;
+    string amount = 5;
 }
 
 message GetTopUpHistoryResponse {
-    int64 count = 1;
     repeated TopUpHistory topup_history = 2;
 }
 
 message GetTopUpDestinationRequest {
     int64 org_id = 1;
+    string currency = 2;
 }
 
 message GetTopUpDestinationResponse {

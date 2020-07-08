@@ -1,9 +1,11 @@
 syntax = "proto3";
 
 package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
 import "internal.proto";
+import "google/protobuf/timestamp.proto";
 
 service StakingService {
     rpc Stake (StakeRequest) returns (StakeResponse) {
@@ -41,7 +43,8 @@ service StakingService {
 
 message StakeRequest {
     int64 org_id = 1;
-    double amount = 2;
+    string amount = 2;
+    string currency = 3;
 }
 
 message StakeResponse {
@@ -51,6 +54,7 @@ message StakeResponse {
 
 message UnstakeRequest {
     int64 org_id = 1;
+    string currency = 2;
 }
 
 message UnstakeResponse {
@@ -60,15 +64,15 @@ message UnstakeResponse {
 
 message GetActiveStakesRequest {
     int64 org_id = 1;
+    string currency = 2;
 }
 
 message ActiveStake {
-    int64 Id = 1;
-    int64 FkWallet = 2;
-    double Amount = 3;
-    string StakeStatus = 4;
-    string StartStakeTime = 5;
-    string UnstakeTime = 6;
+    int64 id = 1;
+    string amount = 3;
+    string stake_status = 4;
+    google.protobuf.Timestamp start_time = 5;
+    google.protobuf.Timestamp end_time = 6;
 }
 
 message GetActiveStakesResponse {
@@ -78,29 +82,26 @@ message GetActiveStakesResponse {
 
 message StakingHistoryRequest {
     int64 org_id = 1;
-    int64 offset = 2;
-    int64 limit = 3;
+    string currency = 4;
+    google.protobuf.Timestamp from = 5;
+    google.protobuf.Timestamp till = 6;
 }
 
-message GetStakingHistory {
-    double stake_amount = 1;
-    string start = 2;
-    string end = 3;
-    string rev_month = 4;
-    double network_income = 5;
-    double monthly_rate = 6;
-    double revenue = 7;
-    double balance = 8;
+message StakingHistory {
+    google.protobuf.Timestamp timestamp = 1;
+    string amount = 2;
+    string type = 3;
 }
 
 message StakingHistoryResponse {
     ProfileResponse user_profile = 1;
-    repeated GetStakingHistory staking_hist = 2;
+    repeated StakingHistory staking_hist = 2;
     int64 count = 3;
 }
 
 message StakingPercentageRequest {
     int64 org_id = 1;
+    string currency = 2;
 }
 
 message StakingPercentageResponse {

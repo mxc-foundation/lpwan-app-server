@@ -193,12 +193,11 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 
 	return &api.GetActiveStakesResponse{
 		ActStake: &api.ActiveStake{
-			Id:             resp.ActStake.Id,
-			FkWallet:       resp.ActStake.FkWallet,
-			Amount:         resp.ActStake.Amount,
-			StakeStatus:    resp.ActStake.StakeStatus,
-			StartStakeTime: resp.ActStake.StartStakeTime,
-			UnstakeTime:    resp.ActStake.UnstakeTime,
+			Id:          resp.ActStake.Id,
+			Amount:      resp.ActStake.Amount,
+			StakeStatus: resp.ActStake.StakeStatus,
+			StartTime:   resp.ActStake.StartTime,
+			EndTime:     resp.ActStake.EndTime,
 		},
 	}, status.Error(codes.OK, "")
 }
@@ -231,26 +230,22 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
 
 	resp, err := stakeClient.GetStakingHistory(ctx, &m2mServer.StakingHistoryRequest{
-		OrgId:  req.OrgId,
-		Offset: req.Offset,
-		Limit:  req.Limit,
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
+		From:     req.From,
+		Till:     req.Till,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	var stakeHistoryList []*api.GetStakingHistory
+	var stakeHistoryList []*api.StakingHistory
 	for _, item := range resp.StakingHist {
-		stakeHistory := &api.GetStakingHistory{
-			StakeAmount:   item.StakeAmount,
-			Start:         item.Start,
-			End:           item.End,
-			RevMonth:      item.RevMonth,
-			NetworkIncome: item.NetworkIncome,
-			MonthlyRate:   item.MonthlyRate,
-			Revenue:       item.Revenue,
-			Balance:       item.Balance,
+		stakeHistory := &api.StakingHistory{
+			Timestamp: item.Timestamp,
+			Amount:    item.Amount,
+			Type:      item.Type,
 		}
 
 		stakeHistoryList = append(stakeHistoryList, stakeHistory)
@@ -258,6 +253,5 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 
 	return &api.StakingHistoryResponse{
 		StakingHist: stakeHistoryList,
-		Count:       resp.Count,
 	}, status.Error(codes.OK, "")
 }
