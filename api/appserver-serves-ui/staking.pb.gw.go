@@ -171,6 +171,10 @@ func local_request_StakingService_Unstake_0(ctx context.Context, marshaler runti
 
 }
 
+var (
+	filter_StakingService_GetActiveStakes_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+)
+
 func request_StakingService_GetActiveStakes_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetActiveStakesRequest
 	var metadata runtime.ServerMetadata
@@ -191,6 +195,13 @@ func request_StakingService_GetActiveStakes_0(ctx context.Context, marshaler run
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StakingService_GetActiveStakes_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := client.GetActiveStakes(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -218,6 +229,13 @@ func local_request_StakingService_GetActiveStakes_0(ctx context.Context, marshal
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StakingService_GetActiveStakes_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := server.GetActiveStakes(ctx, &protoReq)
@@ -285,7 +303,10 @@ func local_request_StakingService_GetStakingHistory_0(ctx context.Context, marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_StakingService_GetStakingHistory_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StakingService_GetStakingHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -293,6 +314,10 @@ func local_request_StakingService_GetStakingHistory_0(ctx context.Context, marsh
 	return msg, metadata, err
 
 }
+
+var (
+	filter_StakingService_GetStakingPercentage_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+)
 
 func request_StakingService_GetStakingPercentage_0(ctx context.Context, marshaler runtime.Marshaler, client StakingServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq StakingPercentageRequest
@@ -314,6 +339,13 @@ func request_StakingService_GetStakingPercentage_0(ctx context.Context, marshale
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StakingService_GetStakingPercentage_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := client.GetStakingPercentage(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -341,6 +373,13 @@ func local_request_StakingService_GetStakingPercentage_0(ctx context.Context, ma
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
+	}
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_StakingService_GetStakingPercentage_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := server.GetStakingPercentage(ctx, &protoReq)

@@ -117,8 +117,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
 	resp, err := walletClient.GetMiningInfo(ctx, &m2mServer.GetMiningInfoRequest{
-		UserId: req.UserId,
-		OrgId:  req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -197,7 +196,7 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 }
 
 // GetWalletUsageHist gets the walllet usage history
-func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWalletUsageHistRequest) (*api.GetWalletUsageHistResponse, error) {
+func (s *WalletServerAPI) GetNetworkUsageHist(ctx context.Context, req *api.GetNetworkUsageHistRequest) (*api.GetNetworkUsageHistResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWalletUsageHist org=" + strconv.FormatInt(req.OrgId, 10)
 
 	cred, err := s.validator.GetCredentials(ctx)
@@ -212,45 +211,42 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
-	resp, err := walletClient.GetWalletUsageHist(ctx, &m2mServer.GetWalletUsageHistRequest{
-		OrgId:  req.OrgId,
-		Offset: req.Offset,
-		Limit:  req.Limit,
+	resp, err := walletClient.GetNetworkUsageHist(ctx, &m2mServer.GetNetworkUsageHistRequest{
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
+		From:     req.From,
+		Till:     req.Till,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	var walletUsageHistoryList []*api.GetWalletUsageHist
-	for _, item := range resp.WalletUsageHis {
-		walletUsageHist := &api.GetWalletUsageHist{
-			StartAt:         item.StartAt,
-			DurationMinutes: item.DurationMinutes,
-			DlCntDv:         item.DlCntDv,
-			DlCntDvFree:     item.DlCntDvFree,
-			UlCntDv:         item.UlCntDv,
-			UlCntDvFree:     item.UlCntDvFree,
-			DlCntGw:         item.DlCntGw,
-			DlCntGwFree:     item.DlCntDvFree,
-			UlCntGw:         item.UlCntGw,
-			UlCntGwFree:     item.UlCntGwFree,
-			Spend:           item.Spend,
-			Income:          item.Income,
-			UpdatedBalance:  item.UpdatedBalance,
+	var walletUsageHistoryList []*api.NetworkUsage
+	for _, item := range resp.NetworkUsage {
+		walletUsageHist := &api.NetworkUsage{
+			Timestamp:    item.Timestamp,
+			DlCntDev:     item.DlCntDev,
+			DlCntDevFree: item.DlCntDevFree,
+			UlCntDev:     item.UlCntDev,
+			UlCntDevFree: item.UlCntDevFree,
+			DlCntGw:      item.DlCntGw,
+			DlCntGwFree:  item.DlCntGwFree,
+			UlCntGw:      item.UlCntGw,
+			UlCntGwFree:  item.UlCntGwFree,
+			Amount:       item.Amount,
 		}
 
 		walletUsageHistoryList = append(walletUsageHistoryList, walletUsageHist)
 	}
 
-	return &api.GetWalletUsageHistResponse{
-		WalletUsageHis: walletUsageHistoryList,
-		Count:          resp.Count,
+	return &api.GetNetworkUsageHistResponse{
+		NetworkUsage: walletUsageHistoryList,
 	}, status.Error(codes.OK, "")
 }
 
