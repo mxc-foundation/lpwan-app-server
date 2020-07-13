@@ -8,22 +8,20 @@ import (
 )
 
 type Validator struct {
-	Store       ApplicationStore
 	Credentials *authcus.Credentials
 }
 
-func NewValidator(v Validator) *Validator {
-	return &Validator{
-		Store:       v.Store,
-		Credentials: v.Credentials,
-	}
+type Validate interface {
+	ValidateGlobalApplicationsAccess(ctx context.Context, flag Flag, organizationID int64) (bool, error)
+	ValidateApplicationAccess(ctx context.Context, flag Flag, applicationID int64) (bool, error)
+	GetUser(ctx context.Context) (authcus.User, error)
 }
 
-// API key subjects.
-const (
-	SubjectUser   = "user"
-	SubjectAPIKey = "api_key"
-)
+func NewValidator() Validate {
+	return &Validator{
+		Credentials: authcus.NewCredentials(),
+	}
+}
 
 // Flag defines the authorization flag.
 type Flag int
@@ -35,9 +33,11 @@ const (
 	Update
 	Delete
 	List
-	UpdateProfile
-	FinishRegistration
 )
+
+func (v *Validator) GetUser(ctx context.Context) (authcus.User, error) {
+	return v.Credentials.GetUser(ctx)
+}
 
 // ValidateGlobalApplicationsAccess validates if the client has access to the
 // global applications resource.
@@ -49,11 +49,11 @@ func (v *Validator) ValidateGlobalApplicationsAccess(ctx context.Context, flag F
 
 	switch flag {
 	case Create:
-		return v.Store.CheckCreateApplicationAccess(u.Username, u.ID, organizationID)
+		return Service.St.CheckCreateApplicationAccess(ctx, u.Username, u.ID, organizationID)
 	case List:
-		return v.Store.CheckListApplicationAccess(u.Username, u.ID, organizationID)
+		return Service.St.CheckListApplicationAccess(ctx, u.Username, u.ID, organizationID)
 	default:
-		panic("ValidateGlobalApplicationsAccess: unsupported flag")
+		panic("unsupported flag")
 	}
 }
 
@@ -62,17 +62,17 @@ func (v *Validator) ValidateGlobalApplicationsAccess(ctx context.Context, flag F
 func (v *Validator) ValidateApplicationAccess(ctx context.Context, flag Flag, applicationID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
-		return false, errors.Wrap(err, "ValidateApplicationAccess: failed to get username ")
+		return false, errors.Wrap(err, "ValidateApplicationAccess")
 	}
 
 	switch flag {
 	case Read:
-		return v.Store.CheckReadApplicationAccess(u.Username, u.ID, applicationID)
+		return Service.St.CheckReadApplicationAccess(ctx, u.Username, u.ID, applicationID)
 	case Update:
-		return v.Store.CheckUpdateApplicationAccess(u.Username, u.ID, applicationID)
+		return Service.St.CheckUpdateApplicationAccess(ctx, u.Username, u.ID, applicationID)
 	case Delete:
-		return v.Store.CheckDeleteApplicationAccess(u.Username, u.ID, applicationID)
+		return Service.St.CheckDeleteApplicationAccess(ctx, u.Username, u.ID, applicationID)
 	default:
-		panic("ValidateApplicationAccess: unsupported flag")
+		panic("unsupported flag")
 	}
 }

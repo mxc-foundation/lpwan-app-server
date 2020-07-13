@@ -1,4 +1,4 @@
-package pgstore
+package store
 
 import (
 	"context"
@@ -29,19 +29,183 @@ import (
 	networkServerPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver/pgstore"
 )
 
-type GWHandler struct {
-	tx *sqlx.Tx
-	db *sqlx.DB
-}
-
-func New(tx *sqlx.Tx, db *sqlx.DB) *GWHandler {
-	return &GWHandler{
-		tx: tx,
-		db: db,
+func (ps *pgstore) CheckCreateGatewayAccess(username string, organizationID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+	`
+	// global admin
+	// organization admin
+	// gateway admin
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2", "ou.is_admin = true", "o.can_have_gateways = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2", "ou.is_gateway_admin = true", "o.can_have_gateways = true"},
 	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
 }
 
-func (h *GWHandler) AddGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model string, err error) {
+func (ps *pgstore) CheckListGatewayAccess(username string, organizationID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+	`
+	// global admin
+	// organization user
+	// any active user (result filtered on user)
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 > 0", "o.id = $2"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 = 0"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckReadGatewayAccess(username string, mac lorawan.EUI64, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join gateway g
+			on o.id = g.organization_id
+	`
+	// global admin
+	// organization user
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "g.mac = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, mac, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckUpdateDeleteGatewayAccess(username string, mac lorawan.EUI64, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join gateway g
+			on o.id = g.organization_id
+	`
+	var userWhere = [][]string{
+		// global admin
+		// organization admin
+		// organization gateway admin
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "g.mac = $2", "ou.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "g.mac = $2", "ou.is_gateway_admin = true"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, mac, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckReadOrganizationNetworkServerAccess(username string, organizationID, networkserverID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join service_profile sp
+			on sp.organization_id = o.id
+		left join device_profile dp
+			on dp.organization_id = o.id
+		left join network_server ns
+			on ns.id = sp.network_server_id or ns.id = dp.network_server_id
+	`
+	// global admin
+	// organization user
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $4)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $4)", "u.is_active = true", "o.id = $2", "ns.id = $3"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, organizationID, networkserverID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) AddGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model string, err error) {
 	err = h.tx.QueryRowx(`
 		insert into gateway_firmware (
 			model, 
@@ -61,7 +225,7 @@ func (h *GWHandler) AddGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model strin
 	return model, nil
 }
 
-func (h *GWHandler) GetGatewayFirmware(model string, forUpdate bool) (gwFw gwmod.GatewayFirmware, err error) {
+func (ps *pgstore) GetGatewayFirmware(model string, forUpdate bool) (gwFw gwmod.GatewayFirmware, err error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -77,7 +241,7 @@ func (h *GWHandler) GetGatewayFirmware(model string, forUpdate bool) (gwFw gwmod
 	return gwFw, nil
 }
 
-func (h *GWHandler) GetGatewayFirmwareList() (list []gwmod.GatewayFirmware, err error) {
+func (ps *pgstore) GetGatewayFirmwareList() (list []gwmod.GatewayFirmware, err error) {
 	res, err := h.db.Query(`
 		select 
 			model, 
@@ -112,7 +276,7 @@ func (h *GWHandler) GetGatewayFirmwareList() (list []gwmod.GatewayFirmware, err 
 	return list, nil
 }
 
-func (h *GWHandler) UpdateGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model string, err error) {
+func (ps *pgstore) UpdateGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model string, err error) {
 	err = h.tx.QueryRowx(`
 		update 
 		    gateway_firmware 
@@ -133,7 +297,7 @@ func (h *GWHandler) UpdateGatewayFirmware(gwFw *gwmod.GatewayFirmware) (model st
 	return model, nil
 }
 
-func (h *GWHandler) UpdateGatewayConfigByGwId(ctx context.Context, config string, mac lorawan.EUI64) error {
+func (ps *pgstore) UpdateGatewayConfigByGwId(ctx context.Context, config string, mac lorawan.EUI64) error {
 	res, err := h.tx.Exec(`
 		update gateway
 			set config = $1
@@ -156,7 +320,7 @@ func (h *GWHandler) UpdateGatewayConfigByGwId(ctx context.Context, config string
 }
 
 // CreateGateway creates the given Gateway.
-func (h *GWHandler) CreateGateway(ctx context.Context, gw *gwmod.Gateway) error {
+func (ps *pgstore) CreateGateway(ctx context.Context, gw *gwmod.Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -250,7 +414,7 @@ func (h *GWHandler) CreateGateway(ctx context.Context, gw *gwmod.Gateway) error 
 }
 
 // UpdateGateway updates the given Gateway.
-func (h *GWHandler) UpdateGateway(ctx context.Context, gw *gwmod.Gateway) error {
+func (ps *pgstore) UpdateGateway(ctx context.Context, gw *gwmod.Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -321,7 +485,7 @@ func (h *GWHandler) UpdateGateway(ctx context.Context, gw *gwmod.Gateway) error 
 }
 
 // UpdateFirstHeartbeat updates the first heartbeat by mac
-func (h *GWHandler) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
+func (ps *pgstore) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
 	res, err := h.tx.Exec(`
 		update gateway
 			set first_heartbeat = $1
@@ -345,7 +509,7 @@ func (h *GWHandler) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64,
 }
 
 // UpdateLastHeartbeat updates the last heartbeat by mac
-func (h *GWHandler) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
+func (ps *pgstore) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
 	res, err := h.tx.Exec(`
 		update gateway
 			set last_heartbeat = $1
@@ -368,7 +532,7 @@ func (h *GWHandler) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, 
 	return nil
 }
 
-func (h *GWHandler) SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64, autoUpdateFirmware bool) error {
+func (ps *pgstore) SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64, autoUpdateFirmware bool) error {
 	res, err := h.tx.Exec(`
 		update gateway
 			set auto_update_firmware = $1
@@ -392,7 +556,7 @@ func (h *GWHandler) SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64
 }
 
 // DeleteGateway deletes the gateway matching the given MAC.
-func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
+func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 	n, err := networkServerPg.Handler().GetNetworkServerForGatewayMAC(ctx, mac)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
@@ -467,7 +631,7 @@ func (h *GWHandler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error 
 }
 
 // GetGateway returns the gateway for the given mac.
-func (h *GWHandler) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gwmod.Gateway, error) {
+func (ps *pgstore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gwmod.Gateway, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -485,7 +649,7 @@ func (h *GWHandler) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate
 }
 
 // GetGatewayCount returns the total number of gateways.
-func (h *GWHandler) GetGatewayCount(ctx context.Context, search string) (int, error) {
+func (ps *pgstore) GetGatewayCount(ctx context.Context, search string) (int, error) {
 	var count int
 	if search != "" {
 		search = "%" + search + "%"
@@ -514,7 +678,7 @@ func (h *GWHandler) GetGatewayCount(ctx context.Context, search string) (int, er
 }
 
 // GetGateways returns a slice of gateways sorted by name.
-func (h *GWHandler) GetGateways(ctx context.Context, limit, offset int32, search string) ([]gwmod.Gateway, error) {
+func (ps *pgstore) GetGateways(ctx context.Context, limit, offset int32, search string) ([]gwmod.Gateway, error) {
 	var gws []gwmod.Gateway
 	if search != "" {
 		search = "%" + search + "%"
@@ -546,7 +710,7 @@ func (h *GWHandler) GetGateways(ctx context.Context, limit, offset int32, search
 	return gws, nil
 }
 
-func (h *GWHandler) GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI64) (string, error) {
+func (ps *pgstore) GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI64) (string, error) {
 	var gwConfig string
 	err := sqlx.Get(h.db, &gwConfig, `
 		select
@@ -563,7 +727,7 @@ func (h *GWHandler) GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI6
 }
 
 // GetFirstHeartbeat returns the first heartbeat
-func (h *GWHandler) GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
+func (ps *pgstore) GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
 	var firstHeartbeat int64
 	err := sqlx.Get(h.db, &firstHeartbeat, `
 		select 
@@ -580,7 +744,7 @@ func (h *GWHandler) GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (i
 	return firstHeartbeat, nil
 }
 
-func (h *GWHandler) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error {
+func (ps *pgstore) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error {
 	res, err := h.tx.Exec(`
 		update gateway
 			set first_heartbeat = 0
@@ -603,7 +767,7 @@ func (h *GWHandler) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.
 }
 
 // GetLastHeartbeat returns the last heartbeat
-func (h *GWHandler) GetLastHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
+func (ps *pgstore) GetLastHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
 	var lastHeartbeat int64
 
 	err := sqlx.Get(h.db, &lastHeartbeat, `
@@ -621,7 +785,7 @@ func (h *GWHandler) GetLastHeartbeat(ctx context.Context, mac lorawan.EUI64) (in
 	return lastHeartbeat, nil
 }
 
-func (h *GWHandler) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error) {
+func (ps *pgstore) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error) {
 	var macs []lorawan.EUI64
 
 	err := sqlx.Select(h.db, &macs, `
@@ -640,7 +804,7 @@ func (h *GWHandler) GetGatewayMiningList(ctx context.Context, time, limit int64)
 }
 
 // GetGatewaysLoc returns a slice of gateways locations.
-func (h *GWHandler) GetGatewaysLoc(ctx context.Context, limit int) ([]gwmod.GatewayLocation, error) {
+func (ps *pgstore) GetGatewaysLoc(ctx context.Context, limit int) ([]gwmod.GatewayLocation, error) {
 	var gwsLoc []gwmod.GatewayLocation
 
 	err := sqlx.Select(h.db, &gwsLoc, `
@@ -660,7 +824,7 @@ func (h *GWHandler) GetGatewaysLoc(ctx context.Context, limit int) ([]gwmod.Gate
 }
 
 // GetGatewaysForMACs returns a map of gateways given a slice of MACs.
-func (h *GWHandler) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64) (map[lorawan.EUI64]gwmod.Gateway, error) {
+func (ps *pgstore) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64) (map[lorawan.EUI64]gwmod.Gateway, error) {
 	out := make(map[lorawan.EUI64]gwmod.Gateway)
 	var macsB [][]byte
 	for i := range macs {
@@ -690,7 +854,7 @@ func (h *GWHandler) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64
 
 // GetGatewayCountForOrganizationID returns the total number of gateways
 // given an organization ID.
-func (h *GWHandler) GetGatewayCountForOrganizationID(ctx context.Context, organizationID int64, search string) (int, error) {
+func (ps *pgstore) GetGatewayCountForOrganizationID(ctx context.Context, organizationID int64, search string) (int, error) {
 	var count int
 	if search != "" {
 		search = "%" + search + "%"
@@ -723,7 +887,7 @@ func (h *GWHandler) GetGatewayCountForOrganizationID(ctx context.Context, organi
 
 // GetGatewaysForOrganizationID returns a slice of gateways sorted by name
 // for the given organization ID.
-func (h *GWHandler) GetGatewaysForOrganizationID(ctx context.Context, organizationID int64, limit, offset int, search string) ([]gwmod.Gateway, error) {
+func (ps *pgstore) GetGatewaysForOrganizationID(ctx context.Context, organizationID int64, limit, offset int, search string) ([]gwmod.Gateway, error) {
 	var gws []gwmod.Gateway
 	if search != "" {
 		search = "%" + search + "%"
@@ -761,7 +925,7 @@ func (h *GWHandler) GetGatewaysForOrganizationID(ctx context.Context, organizati
 
 // GetGatewayCountForUser returns the total number of gateways to which the
 // given user has access.
-func (h *GWHandler) GetGatewayCountForUser(ctx context.Context, username string, search string) (int, error) {
+func (ps *pgstore) GetGatewayCountForUser(ctx context.Context, username string, search string) (int, error) {
 	var count int
 	if search != "" {
 		search = "%" + search + "%"
@@ -800,7 +964,7 @@ func (h *GWHandler) GetGatewayCountForUser(ctx context.Context, username string,
 
 // GetGatewaysForUser returns a slice of gateways sorted by name to which the
 // given user has access.
-func (h *GWHandler) GetGatewaysForUser(ctx context.Context, username string, limit, offset int, search string) ([]gwmod.Gateway, error) {
+func (ps *pgstore) GetGatewaysForUser(ctx context.Context, username string, limit, offset int, search string) ([]gwmod.Gateway, error) {
 	var gws []gwmod.Gateway
 	if search != "" {
 		search = "%" + search + "%"
@@ -843,7 +1007,7 @@ func (h *GWHandler) GetGatewaysForUser(ctx context.Context, username string, lim
 }
 
 // CreateGatewayPing creates the given gateway ping.
-func (h *GWHandler) CreateGatewayPing(ctx context.Context, ping *gwmod.GatewayPing) error {
+func (ps *pgstore) CreateGatewayPing(ctx context.Context, ping *gwmod.GatewayPing) error {
 	ping.CreatedAt = time.Now()
 
 	err := sqlx.Get(h.tx, &ping.ID, `
@@ -875,7 +1039,7 @@ func (h *GWHandler) CreateGatewayPing(ctx context.Context, ping *gwmod.GatewayPi
 }
 
 // GetGatewayPing returns the ping matching the given id.
-func (h *GWHandler) GetGatewayPing(ctx context.Context, id int64) (gwmod.GatewayPing, error) {
+func (ps *pgstore) GetGatewayPing(ctx context.Context, id int64) (gwmod.GatewayPing, error) {
 	var ping gwmod.GatewayPing
 	err := sqlx.Get(h.db, &ping, "select * from gateway_ping where id = $1", id)
 	if err != nil {
@@ -886,7 +1050,7 @@ func (h *GWHandler) GetGatewayPing(ctx context.Context, id int64) (gwmod.Gateway
 }
 
 // CreateGatewayPingRX creates the received ping.
-func (h *GWHandler) CreateGatewayPingRX(ctx context.Context, rx *gwmod.GatewayPingRX) error {
+func (ps *pgstore) CreateGatewayPingRX(ctx context.Context, rx *gwmod.GatewayPingRX) error {
 	rx.CreatedAt = time.Now()
 
 	err := sqlx.Get(h.tx, &rx.ID, `
@@ -919,7 +1083,7 @@ func (h *GWHandler) CreateGatewayPingRX(ctx context.Context, rx *gwmod.GatewayPi
 
 // DeleteAllGatewaysForOrganizationID deletes all gateways for a given
 // organization id.
-func (h *GWHandler) DeleteAllGatewaysForOrganizationID(ctx context.Context, organizationID int64) error {
+func (ps *pgstore) DeleteAllGatewaysForOrganizationID(ctx context.Context, organizationID int64) error {
 	var gws []gwmod.Gateway
 	err := sqlx.Select(h.db, &gws, "select * from gateway where organization_id = $1", organizationID)
 	if err != nil {
@@ -937,7 +1101,7 @@ func (h *GWHandler) DeleteAllGatewaysForOrganizationID(ctx context.Context, orga
 }
 
 // GetAllGatewayMacList get a list of all gateway mac
-func (h *GWHandler) GetAllGatewayMacList(ctx context.Context) ([]string, error) {
+func (ps *pgstore) GetAllGatewayMacList(ctx context.Context) ([]string, error) {
 	var gwMacList []string
 	var list []lorawan.EUI64
 	err := sqlx.Select(h.db, &list, `select mac from gateway order by created_at desc`)
@@ -953,7 +1117,7 @@ func (h *GWHandler) GetAllGatewayMacList(ctx context.Context) ([]string, error) 
 
 // GetGatewayPingRXForPingID returns the received gateway pings for the given
 // ping ID.
-func (h *GWHandler) GetGatewayPingRXForPingID(ctx context.Context, pingID int64) ([]gwmod.GatewayPingRX, error) {
+func (ps *pgstore) GetGatewayPingRXForPingID(ctx context.Context, pingID int64) ([]gwmod.GatewayPingRX, error) {
 	var rx []gwmod.GatewayPingRX
 
 	err := sqlx.Select(h.db, &rx, "select * from gateway_ping_rx where ping_id = $1", pingID)
@@ -966,7 +1130,7 @@ func (h *GWHandler) GetGatewayPingRXForPingID(ctx context.Context, pingID int64)
 
 // GetLastGatewayPingAndRX returns the last gateway ping and RX for the given
 // gateway MAC.
-func (h *GWHandler) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (gwmod.GatewayPing, []gwmod.GatewayPingRX, error) {
+func (ps *pgstore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (gwmod.GatewayPing, []gwmod.GatewayPingRX, error) {
 	gw, err := h.GetGateway(ctx, mac, false)
 	if err != nil {
 		return gwmod.GatewayPing{}, nil, errors.Wrap(err, "get gateway error")

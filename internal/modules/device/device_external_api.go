@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"strconv"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"google.golang.org/grpc/status"
 
 	"github.com/gofrs/uuid"
@@ -37,56 +39,21 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 )
 
-type DeviceStore interface {
-	CreateDevice(ctx context.Context, d *Device, applicationServerID uuid.UUID) error
-	GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate, localOnly bool) (Device, error)
-	GetDeviceCount(ctx context.Context, filters DeviceFilters) (int, error)
-	GetAllDeviceEuis(ctx context.Context) ([]string, error)
-	GetDevices(ctx context.Context, filters DeviceFilters) ([]DeviceListItem, error)
-	UpdateDevice(ctx context.Context, d *Device, localOnly bool) error
-	DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
-	CreateDeviceKeys(ctx context.Context, dc *DeviceKeys) error
-	GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (DeviceKeys, error)
-	UpdateDeviceKeys(ctx context.Context, dc *DeviceKeys) error
-	DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error
-	CreateDeviceActivation(ctx context.Context, da *DeviceActivation) error
-	GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error)
-	DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error
-	UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error
-
-	// validator
-	CheckCreateNodeAccess(username string, applicationID int64, userID int64) (bool, error)
-	CheckListNodeAccess(username string, applicationID int64, userID int64) (bool, error)
-
-	CheckReadNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error)
-	CheckUpdateNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error)
-	CheckDeleteNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error)
-}
-
 // DeviceAPI exports the Node related functions.
 type DeviceAPI struct {
-	Validator            *Validator
-	Store                DeviceStore
-	AppplicationServerID uuid.UUID
+	St                  DeviceStore
+	txSt                store.Store
+	ApplicationServerID uuid.UUID
 }
 
 // NewDeviceAPI creates a new NodeAPI.
-func NewDeviceAPI(api DeviceAPI) *DeviceAPI {
-	deviceAPI = DeviceAPI{
-		Validator:            api.Validator,
-		Store:                api.Store,
-		AppplicationServerID: api.AppplicationServerID,
+func NewDeviceAPI(applicationID uuid.UUID) *DeviceAPI {
+	st := store.New(storage.DB().DB)
+	return &DeviceAPI{
+		St:                  st,
+		txSt:                st,
+		ApplicationServerID: applicationID,
 	}
-
-	return &deviceAPI
-}
-
-var (
-	deviceAPI DeviceAPI
-)
-
-func GetDeviceAPI() *DeviceAPI {
-	return &deviceAPI
 }
 
 // Create creates the given device.
@@ -105,7 +72,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateGlobalNodesAccess(ctx, Create, req.Device.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateGlobalNodesAccess(ctx, authcus.Create, req.Device.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -116,7 +83,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 
 	// Validate that application and device-profile are under the same
 	// organization ID.
-	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, req.Device.ApplicationId)
+	app, err := application.Service.GetApplication(ctx, req.Device.ApplicationId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -166,7 +133,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 
 		// Validate max. device count when != 0.
 		if org.MaxDeviceCount != 0 {
-			count, err := a.Store.GetDeviceCount(ctx, DeviceFilters{ApplicationID: app.OrganizationID})
+			count, err := a.St.GetDeviceCount(ctx, DeviceFilters{ApplicationID: app.OrganizationID})
 			if err != nil {
 				return err
 			}
@@ -176,7 +143,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 			}
 		}
 
-		return a.Store.CreateDevice(ctx, &d, a.AppplicationServerID)
+		return a.St.CreateDevice(ctx, &d, a.ApplicationServerID)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -192,11 +159,11 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Read, eui); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Read, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.Store.GetDevice(ctx, eui, false, false)
+	d, err := a.St.GetDevice(ctx, eui, false, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -291,17 +258,16 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given application
-		if valid, err := application.GetApplicationAPI().Validator.ValidateApplicationAccess(ctx, application.Read, req.ApplicationId); !valid || err != nil {
+		if valid, err := application.NewValidator().ValidateApplicationAccess(ctx, application.Read, req.ApplicationId); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
-
 	}
 
 	if filters.MulticastGroupID != uuid.Nil {
 		idFilter = true
 
 		// validate that the client has access to the given multicast-group
-		if valid, err := a.Validator.Credentials.ValidateMulticastGroupAccess(ctx, authcus.Read, filters.MulticastGroupID); !valid || err != nil {
+		if valid, err := NewValidator().ValidateMulticastGroupAccess(ctx, authcus.Read, filters.MulticastGroupID); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -310,13 +276,13 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		idFilter = true
 
 		// validate that the client has access to the given service-profile
-		if valid, err := a.Validator.Credentials.ValidateServiceProfileAccess(ctx, authcus.Read, filters.ServiceProfileID); !valid || err != nil {
+		if valid, err := NewValidator().ValidateServiceProfileAccess(ctx, authcus.Read, filters.ServiceProfileID); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
 	if !idFilter {
-		u, err := a.Validator.Credentials.GetUser(ctx)
+		u, err := NewValidator().GetUser(ctx)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
@@ -326,12 +292,12 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 		}
 	}
 
-	count, err := a.Store.GetDeviceCount(ctx, filters)
+	count, err := a.St.GetDeviceCount(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	devices, err := a.Store.GetDevices(ctx, filters)
+	devices, err := a.St.GetDevices(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -355,11 +321,11 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, devEUI); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Update, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, req.Device.ApplicationId)
+	app, err := application.Service.GetApplication(ctx, req.Device.ApplicationId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -374,7 +340,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 	}
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err := a.Store.GetDevice(ctx, devEUI, true, false)
+		d, err := a.St.GetDevice(ctx, devEUI, true, false)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -384,12 +350,12 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		// This to guarantee that the new application is still on the same
 		// network-server and is not assigned to a different organization.
 		if req.Device.ApplicationId != d.ApplicationID {
-			appOld, err := application.GetApplicationAPI().Store.GetApplication(ctx, d.ApplicationID)
+			appOld, err := application.Service.GetApplication(ctx, d.ApplicationID)
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}
 
-			appNew, err := application.GetApplicationAPI().Store.GetApplication(ctx, req.Device.ApplicationId)
+			appNew, err := application.Service.GetApplication(ctx, req.Device.ApplicationId)
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}
@@ -420,7 +386,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 			d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
 		}
 
-		if err := a.Store.UpdateDevice(ctx, &d, false); err != nil {
+		if err := a.St.UpdateDevice(ctx, &d, false); err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
@@ -440,14 +406,14 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Delete, eui); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Delete, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// as this also performs a remote call to delete the node from the
 	// network-server, wrap it in a transaction
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		return a.Store.DeleteDevice(ctx, eui)
+		return a.St.DeleteDevice(ctx, eui)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -491,12 +457,12 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, eui); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Update, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.CreateDeviceKeys(ctx, &DeviceKeys{
+		err := a.St.CreateDeviceKeys(ctx, &DeviceKeys{
 			DevEUI:    eui,
 			NwkKey:    nwkKey,
 			AppKey:    appKey,
@@ -519,11 +485,11 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, eui); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Update, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	dk, err := a.Store.GetDeviceKeys(ctx, eui)
+	dk, err := a.St.GetDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -571,11 +537,11 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, eui); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Update, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	dk, err := a.Store.GetDeviceKeys(ctx, eui)
+	dk, err := a.St.GetDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -584,7 +550,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 	dk.GenAppKey = genAppKey
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.UpdateDeviceKeys(ctx, &dk)
+		err := a.St.UpdateDeviceKeys(ctx, &dk)
 		return errors.Wrap(err, "")
 	})
 	if err != nil {
@@ -601,12 +567,12 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Delete, eui); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Delete, eui); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.DeleteDeviceKeys(ctx, eui)
+		err := a.St.DeleteDeviceKeys(ctx, eui)
 		return errors.Wrap(err, "")
 	})
 	if err != nil {
@@ -623,11 +589,11 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, devEUI); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Update, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
+	d, err := a.St.GetDevice(ctx, devEUI, false, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -681,11 +647,11 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		return nil, status.Errorf(codes.InvalidArgument, "fNwkSIntKey: %s", err)
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Update, devEUI); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Update, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
+	d, err := a.St.GetDevice(ctx, devEUI, false, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -718,7 +684,7 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 	}
 
 	err = storage.Transaction(func(db sqlx.Ext) error {
-		if err := a.Store.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
+		if err := a.St.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
@@ -754,11 +720,11 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(ctx, Read, devEUI); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(ctx, authcus.Read, devEUI); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.Store.GetDevice(ctx, devEUI, false, true)
+	d, err := a.St.GetDevice(ctx, devEUI, false, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -809,7 +775,7 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 		return status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(srv.Context(), Read, devEUI); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(srv.Context(), authcus.Read, devEUI); !valid || err != nil {
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -875,7 +841,7 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 		return status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	if valid, err := a.Validator.ValidateNodeAccess(srv.Context(), Read, devEUI); !valid || err != nil {
+	if valid, err := NewValidator().ValidateNodeAccess(srv.Context(), authcus.Read, devEUI); !valid || err != nil {
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -1054,7 +1020,7 @@ func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequ
 	logInfo := "api/appserver_serves_ui/GetDeviceList org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -1112,7 +1078,7 @@ func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDevicePro
 	logInfo := "api/appserver_serves_ui/GetDeviceProfile org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -1161,7 +1127,7 @@ func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHisto
 	logInfo := "api/appserver_serves_ui/GetDeviceHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -1203,7 +1169,7 @@ func (a *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequ
 	logInfo := "api/appserver_serves_ui/SetDeviceMode org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())

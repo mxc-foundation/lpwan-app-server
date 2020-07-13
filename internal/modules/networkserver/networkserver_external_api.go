@@ -1,7 +1,6 @@
 package networkserver
 
 import (
-	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
@@ -11,58 +10,29 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-	"github.com/brocaar/lorawan"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
-type NetworkServerStore interface {
-	CreateNetworkServer(ctx context.Context, n *NetworkServer) error
-	GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error)
-	UpdateNetworkServer(ctx context.Context, n *NetworkServer) error
-	DeleteNetworkServer(ctx context.Context, id int64) error
-	GetNetworkServerCount(ctx context.Context) (int, error)
-	GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error)
-	GetNetworkServers(ctx context.Context, limit, offset int) ([]NetworkServer, error)
-	GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error)
-	GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error)
-	GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error)
-	GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error)
-}
-
 // NetworkServerAPI exports the NetworkServer related functions.
 type NetworkServerAPI struct {
-	Validator *Validator
-	Store     NetworkServerStore
+	st   NetworkServerStore
+	txSt store.Store
 }
 
 // NewNetworkServerAPI creates a new NetworkServerAPI.
-func NewNetworkServerAPI(api NetworkServerAPI) *NetworkServerAPI {
-	networkServerAPI = NetworkServerAPI{
-		Validator: api.Validator,
-		Store:     api.Store,
+func NewNetworkServerAPI() *NetworkServerAPI {
+	st := store.New(storage.DB().DB)
+	return &NetworkServerAPI{
+		st:   st,
+		txSt: st,
 	}
-
-	_ = networkServerAPI.SetupDefault()
-
-	return &networkServerAPI
-}
-
-var (
-	networkServerAPI NetworkServerAPI
-)
-
-func GetNetworkServerAPI() *NetworkServerAPI {
-	return &networkServerAPI
 }
 
 func (a *NetworkServerAPI) SetupDefault() error {
@@ -86,9 +56,15 @@ func (a *NetworkServerAPI) SetupDefault() error {
 		}
 	}
 
+	tx, err := a.txSt.TxBegin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.TxRollback(ctx)
+
 	// none default_gateway_profile exists, add one
 	var networkServer NetworkServer
-	n, err := a.Store.GetNetworkServers(ctx, 1, 0)
+	n, err := tx.GetNetworkServers(ctx, 1, 0)
 	if err != nil && err != storage.ErrDoesNotExist {
 		return errors.Wrap(err, "Load network server internal error")
 	}
@@ -97,20 +73,18 @@ func (a *NetworkServerAPI) SetupDefault() error {
 		networkServer = n[0]
 	} else {
 		// insert default one
-		err := storage.Transaction(func(tx sqlx.Ext) error {
-			return storage.CreateNetworkServer(ctx, storage.DB(), &storage.NetworkServer{
-				Name:                    "default_network_server",
-				Server:                  "network-server:8000",
-				GatewayDiscoveryEnabled: false,
-			})
+		err := tx.CreateNetworkServer(ctx, &NetworkServer{
+			Name:                    "default_network_server",
+			Server:                  "network-server:8000",
+			GatewayDiscoveryEnabled: false,
 		})
+
 		if err != nil {
 			return nil
 		}
 
 		// get network-server id
-
-		networkServer, err = a.Store.GetDefaultNetworkServer(ctx)
+		networkServer, err = tx.GetDefaultNetworkServer(ctx)
 		if err != nil {
 			return err
 		}

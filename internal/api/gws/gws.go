@@ -10,9 +10,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
-	gatewayPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/pgstore"
 )
 
 // Setup configures the package.
@@ -51,15 +48,7 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 		return errors.Wrap(err, "listenWithCredentials: get new server error")
 	}
 
-	tx, err := storage.DB().Beginx()
-	if err != nil {
-		return err
-	}
-
-	gwpb.RegisterHeartbeatServiceServer(gs, gateway.NewHeartbeatAPI(gateway.HeartbeatAPI{
-		BindPort: bind,
-		Store:    gatewayPg.New(tx.Tx, storage.DB().DB),
-	}))
+	gwpb.RegisterHeartbeatServiceServer(gs, gateway.NewHeartbeatAPI(bind))
 
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {

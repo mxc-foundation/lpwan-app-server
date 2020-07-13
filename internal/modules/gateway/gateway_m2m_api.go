@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes"
@@ -15,19 +16,23 @@ import (
 
 // GatewayM2MAPI exports the API for mxprotocol-server
 type GatewayM2MAPI struct {
-	Store GatewayStore
+	st   GatewayStore
+	txSt store.Store
 }
 
 // NewGatewayM2MAPI creates new GatewayM2MAPI
-func NewGatewayM2MAPI(api GatewayM2MAPI) *GatewayM2MAPI {
+func NewGatewayM2MAPI() *GatewayM2MAPI {
+	st := store.New(storage.DB().DB)
+
 	return &GatewayM2MAPI{
-		Store: api.Store,
+		st:   st,
+		txSt: st,
 	}
 }
 
 // GetGatewayMacList defines the response of the Gateway MAC list
 func (a *GatewayM2MAPI) GetGatewayMacList(ctx context.Context, req *empty.Empty) (*pb.GetGatewayMacListResponse, error) {
-	gwMacList, err := a.Store.GetAllGatewayMacList(ctx)
+	gwMacList, err := a.st.GetAllGatewayMacList(ctx)
 	if err != nil {
 		return &pb.GetGatewayMacListResponse{}, status.Errorf(codes.DataLoss, err.Error())
 	}
@@ -44,7 +49,7 @@ func (a *GatewayM2MAPI) GetGatewayByMac(ctx context.Context, req *pb.GetGatewayB
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	gateway, err := a.Store.GetGateway(ctx, mac, false)
+	gateway, err := a.st.GetGateway(ctx, mac, false)
 	if err == storage.ErrDoesNotExist {
 		return &resp, nil
 	} else if err != nil {

@@ -18,6 +18,7 @@ import (
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
@@ -25,14 +26,18 @@ import (
 // HeartbeatAPI exports the HeartbeatAPI related functions.
 type HeartbeatAPI struct {
 	BindPort string
-	Store    GatewayStore
+	st       GatewayStore
+	txSt     store.Store
 }
 
 // NewGatewayAPI creates new HeartbeatAPI
-func NewHeartbeatAPI(api HeartbeatAPI) *HeartbeatAPI {
+func NewHeartbeatAPI(bind string) *HeartbeatAPI {
+	st := store.New(storage.DB().DB)
+
 	return &HeartbeatAPI{
-		BindPort: api.BindPort,
-		Store:    api.Store,
+		BindPort: bind,
+		st:       st,
+		txSt:     st,
 	}
 }
 
@@ -57,7 +62,7 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		}
 		defer tx.Rollback()*/
 
-	gw, err := obj.Store.GetGateway(ctx, gatewayEUI, true)
+	gw, err := obj.st.GetGateway(ctx, gatewayEUI, true)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			return nil, status.Errorf(codes.Unauthenticated, "Object does not exist: %s", gatewayEUI.String())
@@ -84,13 +89,13 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		// if last heartbeat == 0 is a new gateway
 		if gw.LastHeartbeat == 0 {
 			log.Infof("updating heartbeat for the new gw")
-			err := obj.Store.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
+			err := obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 			}
 
-			err = obj.Store.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
+			err = obj.st.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
@@ -102,14 +107,14 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
 		//if current_heartbeat-last_heartbeat > 600 {
 		if currentHeartbeat-lastHeartbeat > config.C.ApplicationServer.MiningSetUp.HeartbeatOfflineLimit {
-			err := obj.Store.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
+			err := obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 			}
 
 			//err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
-			err = obj.Store.UpdateFirstHeartbeatToZero(ctx, gatewayEUI)
+			err = obj.st.UpdateFirstHeartbeatToZero(ctx, gatewayEUI)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat to zero error")
@@ -118,21 +123,21 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		}
 
 		// if first heartbeat != 0 and currentHeartbeat - lastHeart !> 600
-		firstHeartbeat, err := obj.Store.GetFirstHeartbeat(ctx, gatewayEUI)
+		firstHeartbeat, err := obj.st.GetFirstHeartbeat(ctx, gatewayEUI)
 		if err != nil {
 			log.WithError(err).Error("Heartbeat/Get first heartbeat error")
 			return nil, status.Errorf(codes.DataLoss, "Get firstHeartbeat from DB error")
 		}
 
 		if firstHeartbeat == 0 {
-			err = obj.Store.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
+			err = obj.st.UpdateFirstHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat error")
 				return nil, status.Errorf(codes.Unimplemented, "Update first heartbeat error")
 			}
 		}
 
-		err = obj.Store.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
+		err = obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 		if err != nil {
 			log.WithError(err).Error("Heartbeat/Update last heartbeat error")
 			return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
@@ -140,6 +145,12 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 	}
 
 Next:
+
+	tx, err := obj.txSt.TxBegin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't start transaction: %v", err)
+	}
+	defer tx.TxRollback(ctx)
 
 	// compare config hash
 	/* #nosec */
@@ -156,7 +167,7 @@ Next:
 
 	// check if firmware updated
 	if gw.AutoUpdateFirmware {
-		firmware, err := obj.Store.GetGatewayFirmware(gw.Model, false)
+		firmware, err := tx.GetGatewayFirmware(gw.Model, false)
 		if err != nil {
 			if err == storage.ErrDoesNotExist {
 				return nil, status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
@@ -195,14 +206,13 @@ Next:
 
 	gw.OsVersion = req.OsVersion
 	gw.Statistics = req.Statistics
-	if err := obj.Store.UpdateGateway(ctx, &gw); err != nil {
+	if err := tx.UpdateGateway(ctx, &gw); err != nil {
 		log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
-	}
-	/*	else {
-		if err := tx.Commit(); err != nil {
+	} else {
+		if err := tx.TxCommit(ctx); err != nil {
 			log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
 		}
-	}*/
+	}
 
 	return &response, status.Error(codes.OK, "")
 }

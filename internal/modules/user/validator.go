@@ -48,7 +48,7 @@ func (v *Validator) ValidateActiveUser(ctx context.Context) (bool, error) {
 		return false, errors.Wrap(err, "ValidateActiveUser")
 	}
 
-	return v.Store.CheckAvtiveUser(u.Username, u.ID)
+	return v.Store.CheckActiveUser(u.Username, u.ID)
 }
 
 // ValidateUsersAccess validates if the client has access to the global users

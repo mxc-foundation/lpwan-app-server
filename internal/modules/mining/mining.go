@@ -23,18 +23,12 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
-type MiningAPI struct {
+type Controller struct {
+	dailyMxcPrice    float64
+	totalMiningValue float64
 }
 
-var (
-	miningAPI MiningAPI
-
-	dailyMxcPrice, totalMiningValue float64
-)
-
-func GetMiningAPI() *MiningAPI {
-	return &miningAPI
-}
+var Service *Controller
 
 func Setup(conf config.Config) error {
 	log.Info("mining cron task begin...")
@@ -48,14 +42,14 @@ func Setup(conf config.Config) error {
 		log.Error(err)
 		return err
 	}
-	oneMxc, err := miningAPI.getUSDprice(conf)
+	oneMxc, err := Service.getUSDprice(conf)
 	if err != nil {
 		log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
 		return err
 	}
-	dailyMxcPrice = oneMxc
 
-	totalMiningValue = miningAPI.calcTotalMiningValue(conf, dailyMxcPrice)
+	Service.dailyMxcPrice = oneMxc
+	Service.totalMiningValue = Service.calcTotalMiningValue(conf, Service.dailyMxcPrice)
 
 	c := cron.New()
 	exeTime := config.C.ApplicationServer.MiningSetUp.ExecuteTime
@@ -63,7 +57,7 @@ func Setup(conf config.Config) error {
 	err = c.AddFunc(exeTime, func() {
 		log.Info("Start token mining")
 		go func() {
-			err := miningAPI.tokenMining(context.Background(), conf)
+			err := Service.tokenMining(context.Background(), conf)
 			if err != nil {
 				log.WithError(err).Error("tokenMining Error")
 			}
@@ -79,13 +73,13 @@ func Setup(conf config.Config) error {
 	err = priceCron.AddFunc("0 0 3 * * ?", func() {
 		log.Info("Get new MXC Price")
 		go func() {
-			oneMxc, err := miningAPI.getUSDprice(conf)
+			oneMxc, err := Service.getUSDprice(conf)
 			if err != nil {
 				log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
 			}
-			dailyMxcPrice = oneMxc
+			Service.dailyMxcPrice = oneMxc
 
-			totalMiningValue = miningAPI.calcTotalMiningValue(conf, dailyMxcPrice)
+			Service.totalMiningValue = Service.calcTotalMiningValue(conf, Service.dailyMxcPrice)
 		}()
 	})
 	if err != nil {
@@ -96,14 +90,14 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
-func (a *MiningAPI) calcTotalMiningValue(conf config.Config, mxcPrice float64) float64 {
+func (c *Controller) calcTotalMiningValue(conf config.Config, mxcPrice float64) float64 {
 	mconf := conf.ApplicationServer.MiningSetUp
 	randUSD := float64(rand.Int63n(mconf.MaxValue-mconf.MinValue) + mconf.MinValue)
 	return mxcPrice * randUSD
 }
 
 // getUSDprice returns 1 USD price in MXC
-func (a *MiningAPI) getUSDprice(conf config.Config) (float64, error) {
+func (c *Controller) getUSDprice(conf config.Config) (float64, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
 	if err != nil {
@@ -145,7 +139,7 @@ func (a *MiningAPI) getUSDprice(conf config.Config) (float64, error) {
 }
 
 // getMXCprice returns amount of MXC in USD
-func (a *MiningAPI) GetMXCprice(conf config.Config, amount string) (price float64, err error) {
+func (c *Controller) GetMXCprice(conf config.Config, amount string) (price float64, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
 	if err != nil {
@@ -185,11 +179,11 @@ func (a *MiningAPI) GetMXCprice(conf config.Config, amount string) (price float6
 	return 0, err
 }
 
-func (a *MiningAPI) tokenMining(ctx context.Context, conf config.Config) error {
+func (c *Controller) tokenMining(ctx context.Context, conf config.Config) error {
 	currentTime := time.Now().Unix()
 
 	// get the gateway list that should receive the mining tokens
-	miningGws, err := gateway.GetGatewayAPI().GetGatewayMiningList(ctx, currentTime, conf.ApplicationServer.MiningSetUp.GwOnlineLimit)
+	miningGws, err := gateway.Service.St.GetGatewayMiningList(ctx, currentTime, conf.ApplicationServer.MiningSetUp.GwOnlineLimit)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			log.Info("No gateway online longer than 24 hours")
@@ -209,7 +203,7 @@ func (a *MiningAPI) tokenMining(ctx context.Context, conf config.Config) error {
 	// update the first heartbeat = 0
 	for _, v := range miningGws {
 		//err := storage.UpdateFirstHeartbeat(ctx, storage.DB(), v, currentTime)
-		err := gateway.GetGatewayAPI().UpdateFirstHeartbeatToZero(ctx, v)
+		err := gateway.Service.St.UpdateFirstHeartbeatToZero(ctx, v)
 		if err != nil {
 			log.WithError(err).Error("tokenMining/update first heartbeat to zero error")
 		}
@@ -218,12 +212,12 @@ func (a *MiningAPI) tokenMining(ctx context.Context, conf config.Config) error {
 	}
 
 	// 24 hours = 1440 mins
-	amount := totalMiningValue / 1440 * 10
+	amount := c.totalMiningValue / 1440 * 10
 
 	miningSent := false
 	// if error, resend after one minute
 	for !miningSent {
-		err := a.sendMining(ctx, macs, dailyMxcPrice, amount)
+		err := c.sendMining(ctx, macs, c.dailyMxcPrice, amount)
 		if err != nil {
 			log.WithError(err).Error("send mining request to m2m error")
 			time.Sleep(60 * time.Second)
@@ -235,7 +229,7 @@ func (a *MiningAPI) tokenMining(ctx context.Context, conf config.Config) error {
 	return nil
 }
 
-func (a *MiningAPI) sendMining(ctx context.Context, macs []string, mxc_price, amount float64) error {
+func (c *Controller) sendMining(ctx context.Context, macs []string, mxc_price, amount float64) error {
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {

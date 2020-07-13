@@ -466,7 +466,8 @@ func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRec
 	}, nil
 }
 
-func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.PasswordResetReq) (*pb.PasswordResetResp, error) {
+func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.PasswordResetReq) (*inpb.PasswordResetResp, error) {
+
 	tx, err := storage.DB().BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
@@ -479,13 +480,13 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 			if err := email.SendInvite(req.Username, "", email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
 				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 			}
-			return &pb.PasswordResetResp{}, nil
+			return &inpb.PasswordResetResp{}, nil
 		}
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 	}
 	if !user.IsActive {
 		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", req.Username)
-		return &pb.PasswordResetResp{}, nil
+		return &inpb.PasswordResetResp{}, nil
 	}
 	pr, err := storage.GetPasswordResetRecord(tx, user.ID)
 	if err != nil {
@@ -503,10 +504,10 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 	if err := email.SendInvite(req.Username, pr.OTP, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 	}
-	return &pb.PasswordResetResp{}, nil
+	return &inpb.PasswordResetResp{}, nil
 }
 
-func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *pb.ConfirmPasswordResetReq) (*pb.PasswordResetResp, error) {
+func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
 	tx, err := storage.DB().BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
@@ -540,7 +541,7 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *pb.Conf
 		if err := tx.Commit(); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
 		}
-		return &pb.PasswordResetResp{}, nil
+		return &inpb.PasswordResetResp{}, nil
 	}
 	if err := tx.Commit(); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)

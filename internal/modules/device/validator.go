@@ -2,79 +2,79 @@ package device
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
 type Validator struct {
-	Store       DeviceStore
 	Credentials *authcus.Credentials
 }
 
-func NewValidator(v Validator) *Validator {
+type Validate interface {
+	ValidateGlobalNodesAccess(ctx context.Context, flag authcus.Flag, applicationID int64) (bool, error)
+	ValidateNodeAccess(ctx context.Context, flag authcus.Flag, devEUI lorawan.EUI64) (bool, error)
+	ValidateMulticastGroupAccess(ctx context.Context, flag authcus.Flag, multicastGroupID uuid.UUID) (bool, error)
+	ValidateServiceProfileAccess(ctx context.Context, flag authcus.Flag, id uuid.UUID) (bool, error)
+	GetUser(ctx context.Context) (authcus.User, error)
+}
+
+func NewValidator() Validate {
 	return &Validator{
-		Store:       v.Store,
-		Credentials: v.Credentials,
+		Credentials: authcus.NewCredentials(),
 	}
 }
 
-// API key subjects.
-const (
-	SubjectUser   = "user"
-	SubjectAPIKey = "api_key"
-)
+func (v *Validator) ValidateServiceProfileAccess(ctx context.Context, flag authcus.Flag, id uuid.UUID) (bool, error) {
+	return v.Credentials.ValidateServiceProfileAccess(ctx, flag, id)
+}
 
-// Flag defines the authorization flag.
-type Flag int
+func (v *Validator) ValidateMulticastGroupAccess(ctx context.Context, flag authcus.Flag, multicastGroupID uuid.UUID) (bool, error) {
+	return v.Credentials.ValidateMulticastGroupAccess(ctx, flag, multicastGroupID)
+}
 
-// Authorization flags.
-const (
-	Create Flag = iota
-	Read
-	Update
-	Delete
-	List
-	UpdateProfile
-	FinishRegistration
-)
+func (v *Validator) GetUser(ctx context.Context) (authcus.User, error) {
+	return v.Credentials.GetUser(ctx)
+}
 
 // ValidateNodesAccess validates if the client has access to the global nodes
 // resource.
-func (v *Validator) ValidateGlobalNodesAccess(ctx context.Context, flag Flag, applicationID int64) (bool, error) {
+func (v *Validator) ValidateGlobalNodesAccess(ctx context.Context, flag authcus.Flag, applicationID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
-		return false, errors.Wrap(err, "ValidateNodesAccess")
+		return false, errors.Wrap(err, "ValidateGlobalNodesAccess")
 	}
 
 	switch flag {
-	case Create:
-		return v.Store.CheckCreateNodeAccess(u.Username, applicationID, u.ID)
-	case List:
-		return v.Store.CheckListNodeAccess(u.Username, applicationID, u.ID)
+	case authcus.Create:
+		return Service.St.CheckCreateNodeAccess(u.Username, applicationID, u.ID)
+	case authcus.List:
+		return Service.St.CheckListNodeAccess(u.Username, applicationID, u.ID)
 	default:
-		panic("ValidateNodesAccess: unsupported flag")
+		panic("ValidateGlobalNodesAccess: unsupported flag")
 	}
 
 }
 
 // ValidateNodeAccess validates if the client has access to the given node.
-func (v *Validator) ValidateNodeAccess(ctx context.Context, flag Flag, devEUI lorawan.EUI64) (bool, error) {
+func (v *Validator) ValidateNodeAccess(ctx context.Context, flag authcus.Flag, devEUI lorawan.EUI64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
-		return false, errors.Wrap(err, "validateNodeAccess")
+		return false, errors.Wrap(err, "ValidateNodeAccess")
 	}
 
 	switch flag {
-	case Read:
-		return v.Store.CheckReadNodeAccess(u.Username, devEUI, u.ID)
-	case Update:
-		return v.Store.CheckUpdateNodeAccess(u.Username, devEUI, u.ID)
-	case Delete:
-		return v.Store.CheckDeleteNodeAccess(u.Username, devEUI, u.ID)
+	case authcus.Read:
+		return Service.St.CheckReadNodeAccess(u.Username, devEUI, u.ID)
+	case authcus.Update:
+		return Service.St.CheckUpdateNodeAccess(u.Username, devEUI, u.ID)
+	case authcus.Delete:
+		return Service.St.CheckDeleteNodeAccess(u.Username, devEUI, u.ID)
 	default:
-		panic("validateNodeAccess: unsupported flag")
+		panic("ValidateNodeAccess: unsupported flag")
 	}
 
 }

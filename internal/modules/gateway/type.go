@@ -1,12 +1,23 @@
 package gateway
 
 import (
+	"database/sql/driver"
+	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/types"
-
 	"github.com/brocaar/lorawan"
+	"github.com/pkg/errors"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/types"
+)
+
+var (
+	gatewayNameRegexp          = regexp.MustCompile(`^[\w-]+$`)
+	serialNumberOldGWValidator = regexp.MustCompile(`^MX([A-Z1-9]){7}$`)
+	serialNumberNewGWValidator = regexp.MustCompile(`^M2X([A-Z1-9]){8}$`)
 )
 
 type DefaultGatewayConfig struct {
@@ -121,4 +132,39 @@ func (f GatewayFilters) SQL() string {
 	}
 
 	return "where " + strings.Join(filters, " and ")
+}
+
+// Value implements the driver.Valuer interface.
+func (l GPSPoint) Value() (driver.Value, error) {
+	return fmt.Sprintf("(%s,%s)", strconv.FormatFloat(l.Latitude, 'f', -1, 64), strconv.FormatFloat(l.Longitude, 'f', -1, 64)), nil
+}
+
+// Scan implements the sql.Scanner interface.
+func (l *GPSPoint) Scan(src interface{}) error {
+	b, ok := src.([]byte)
+	if !ok {
+		return fmt.Errorf("expected []byte, got %T", src)
+	}
+
+	_, err := fmt.Sscanf(string(b), "(%f,%f)", &l.Latitude, &l.Longitude)
+	return err
+}
+
+// Validate validates the gateway data.
+func (g Gateway) Validate() error {
+	if !gatewayNameRegexp.MatchString(g.Name) {
+		return errors.New("invalid gateway name")
+	}
+
+	if strings.HasPrefix(g.Model, "MX19") {
+		if !serialNumberNewGWValidator.MatchString(g.SerialNumber) {
+			return errors.New("invalid gateway serial number")
+		}
+	} else if g.Model != "" {
+		if !serialNumberOldGWValidator.MatchString(g.SerialNumber) {
+			return errors.New("invalid gateway serial number")
+		}
+	}
+
+	return nil
 }

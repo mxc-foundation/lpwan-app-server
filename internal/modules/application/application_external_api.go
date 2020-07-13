@@ -1,16 +1,13 @@
 package application
 
 import (
+	"context"
 	"encoding/json"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"strings"
-
-	"github.com/pkg/errors"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"
-
-	"github.com/jmoiron/sqlx"
-	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -27,46 +24,19 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
-type ApplicationStore interface {
-	CreateApplication(ctx context.Context, item *Application) error
-	GetApplication(ctx context.Context, id int64) (Application, error)
-	GetApplicationCount(ctx context.Context, filters ApplicationFilters) (int, error)
-	GetApplications(ctx context.Context, filters ApplicationFilters) ([]ApplicationListItem, error)
-	UpdateApplication(ctx context.Context, item Application) error
-	DeleteApplication(ctx context.Context, id int64) error
-	DeleteAllApplicationsForOrganizationID(ctx context.Context, organizationID int64) error
-
-	// validator
-	CheckCreateApplicationAccess(username string, userID, organizationID int64) (bool, error)
-	CheckListApplicationAccess(username string, userID, organizationID int64) (bool, error)
-
-	CheckReadApplicationAccess(username string, userID, applicationID int64) (bool, error)
-	CheckUpdateApplicationAccess(username string, userID, applicationID int64) (bool, error)
-	CheckDeleteApplicationAccess(username string, userID, applicationID int64) (bool, error)
-}
-
 // ApplicationAPI exports the Application related functions.
 type ApplicationAPI struct {
-	Validator *Validator
-	Store     ApplicationStore
+	st   ApplicationStore
+	txSt store.Store
 }
 
 // NewApplicationAPI creates a new ApplicationAPI.
-func NewApplicationAPI(api ApplicationAPI) *ApplicationAPI {
-	applicationAPI = ApplicationAPI{
-		Validator: api.Validator,
-		Store:     api.Store,
+func NewApplicationAPI() *ApplicationAPI {
+	st := store.New(storage.DB().DB)
+	return &ApplicationAPI{
+		st:   st,
+		txSt: st,
 	}
-
-	return &applicationAPI
-}
-
-var (
-	applicationAPI ApplicationAPI
-)
-
-func GetApplicationAPI() *ApplicationAPI {
-	return &applicationAPI
 }
 
 // Create creates the given application.
@@ -75,7 +45,7 @@ func (a *ApplicationAPI) Create(ctx context.Context, req *pb.CreateApplicationRe
 		return nil, status.Errorf(codes.InvalidArgument, "application must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateGlobalApplicationsAccess(ctx, Create, req.Application.OrganizationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateGlobalApplicationsAccess(ctx, Create, req.Application.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -103,10 +73,7 @@ func (a *ApplicationAPI) Create(ctx context.Context, req *pb.CreateApplicationRe
 		PayloadDecoderScript: req.Application.PayloadDecoderScript,
 	}
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.CreateApplication(ctx, &app)
-		return errors.Wrap(err, "")
-	})
+	err = a.st.CreateApplication(ctx, &app)
 	if err != nil {
 		return nil, err
 	}
@@ -118,11 +85,11 @@ func (a *ApplicationAPI) Create(ctx context.Context, req *pb.CreateApplicationRe
 
 // Get returns the requested application.
 func (a *ApplicationAPI) Get(ctx context.Context, req *pb.GetApplicationRequest) (*pb.GetApplicationResponse, error) {
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Read, req.Id); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Read, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	app, err := a.Store.GetApplication(ctx, req.Id)
+	app, err := a.st.GetApplication(ctx, req.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -148,11 +115,11 @@ func (a *ApplicationAPI) Update(ctx context.Context, req *pb.UpdateApplicationRe
 		return nil, status.Errorf(codes.InvalidArgument, "application must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, req.Application.Id); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, req.Application.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	app, err := a.Store.GetApplication(ctx, req.Application.Id)
+	app, err := a.st.GetApplication(ctx, req.Application.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -179,10 +146,7 @@ func (a *ApplicationAPI) Update(ctx context.Context, req *pb.UpdateApplicationRe
 	app.PayloadEncoderScript = req.Application.PayloadEncoderScript
 	app.PayloadDecoderScript = req.Application.PayloadDecoderScript
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.UpdateApplication(ctx, app)
-		return errors.Wrap(err, "")
-	})
+	err = a.st.UpdateApplication(ctx, app)
 	if err != nil {
 		return nil, err
 	}
@@ -192,19 +156,23 @@ func (a *ApplicationAPI) Update(ctx context.Context, req *pb.UpdateApplicationRe
 
 // Delete deletes the given application.
 func (a *ApplicationAPI) Delete(ctx context.Context, req *pb.DeleteApplicationRequest) (*empty.Empty, error) {
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Delete, req.Id); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Delete, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.DeleteApplication(ctx, req.Id)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-		return nil
-	})
+	tx, err := a.txSt.TxBegin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't start transaction: %v", err)
+	}
+	defer tx.TxRollback(ctx)
+
+	err = tx.DeleteApplication(ctx, req.Id)
 	if err != nil {
 		return nil, err
+	}
+
+	if err := tx.TxCommit(ctx); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't commit transaction: %v", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -212,7 +180,7 @@ func (a *ApplicationAPI) Delete(ctx context.Context, req *pb.DeleteApplicationRe
 
 // List lists the available applications.
 func (a *ApplicationAPI) List(ctx context.Context, req *pb.ListApplicationRequest) (*pb.ListApplicationResponse, error) {
-	if valid, err := a.Validator.ValidateGlobalApplicationsAccess(ctx, List, req.OrganizationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateGlobalApplicationsAccess(ctx, List, req.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -223,7 +191,7 @@ func (a *ApplicationAPI) List(ctx context.Context, req *pb.ListApplicationReques
 		OrganizationID: req.OrganizationId,
 	}
 
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -233,12 +201,12 @@ func (a *ApplicationAPI) List(ctx context.Context, req *pb.ListApplicationReques
 		filters.UserID = u.ID
 	}
 
-	count, err := a.Store.GetApplicationCount(ctx, filters)
+	count, err := a.st.GetApplicationCount(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	apps, err := a.Store.GetApplications(ctx, filters)
+	apps, err := a.st.GetApplications(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -268,7 +236,7 @@ func (a *ApplicationAPI) CreateHTTPIntegration(ctx context.Context, in *pb.Creat
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -311,7 +279,7 @@ func (a *ApplicationAPI) CreateHTTPIntegration(ctx context.Context, in *pb.Creat
 
 // GetHTTPIntegration returns the HTTP application-itegration.
 func (a *ApplicationAPI) GetHTTPIntegration(ctx context.Context, in *pb.GetHTTPIntegrationRequest) (*pb.GetHTTPIntegrationResponse, error) {
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -356,7 +324,7 @@ func (a *ApplicationAPI) UpdateHTTPIntegration(ctx context.Context, in *pb.Updat
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -400,7 +368,7 @@ func (a *ApplicationAPI) UpdateHTTPIntegration(ctx context.Context, in *pb.Updat
 
 // DeleteHTTPIntegration deletes the application-integration of the given type.
 func (a *ApplicationAPI) DeleteHTTPIntegration(ctx context.Context, in *pb.DeleteHTTPIntegrationRequest) (*empty.Empty, error) {
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -422,7 +390,7 @@ func (a *ApplicationAPI) CreateInfluxDBIntegration(ctx context.Context, in *pb.C
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -457,7 +425,7 @@ func (a *ApplicationAPI) CreateInfluxDBIntegration(ctx context.Context, in *pb.C
 
 // GetInfluxDBIntegration returns the InfluxDB application-integration.
 func (a *ApplicationAPI) GetInfluxDBIntegration(ctx context.Context, in *pb.GetInfluxDBIntegrationRequest) (*pb.GetInfluxDBIntegrationResponse, error) {
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -492,7 +460,7 @@ func (a *ApplicationAPI) UpdateInfluxDBIntegration(ctx context.Context, in *pb.U
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -528,7 +496,7 @@ func (a *ApplicationAPI) UpdateInfluxDBIntegration(ctx context.Context, in *pb.U
 
 // DeleteInfluxDBIntegration deletes the InfluxDB application-integration.
 func (a *ApplicationAPI) DeleteInfluxDBIntegration(ctx context.Context, in *pb.DeleteInfluxDBIntegrationRequest) (*empty.Empty, error) {
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -550,7 +518,7 @@ func (a *ApplicationAPI) CreateThingsBoardIntegration(ctx context.Context, in *p
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -580,7 +548,7 @@ func (a *ApplicationAPI) CreateThingsBoardIntegration(ctx context.Context, in *p
 
 // GetThingsBoardIntegration returns the ThingsBoard application-integration.
 func (a *ApplicationAPI) GetThingsBoardIntegration(ctx context.Context, in *pb.GetThingsBoardIntegrationRequest) (*pb.GetThingsBoardIntegrationResponse, error) {
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -608,7 +576,7 @@ func (a *ApplicationAPI) UpdateThingsBoardIntegration(ctx context.Context, in *p
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -640,7 +608,7 @@ func (a *ApplicationAPI) UpdateThingsBoardIntegration(ctx context.Context, in *p
 // DeleteThingsBoardIntegration deletes the ThingsBoard application-integration.
 func (a *ApplicationAPI) DeleteThingsBoardIntegration(ctx context.Context, in *pb.DeleteThingsBoardIntegrationRequest) (*empty.Empty, error) {
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -662,7 +630,7 @@ func (a *ApplicationAPI) CreateMyDevicesIntegration(ctx context.Context, in *pb.
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -689,7 +657,7 @@ func (a *ApplicationAPI) CreateMyDevicesIntegration(ctx context.Context, in *pb.
 // GetMyDevicesIntegration returns the MyDevices application-integration.
 func (a *ApplicationAPI) GetMyDevicesIntegration(ctx context.Context, in *pb.GetMyDevicesIntegrationRequest) (*pb.GetMyDevicesIntegrationResponse, error) {
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -717,7 +685,7 @@ func (a *ApplicationAPI) UpdateMyDevicesIntegration(ctx context.Context, in *pb.
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -746,7 +714,7 @@ func (a *ApplicationAPI) UpdateMyDevicesIntegration(ctx context.Context, in *pb.
 // DeleteMyDevicesIntegration deletes the MyDevices application-integration.
 func (a *ApplicationAPI) DeleteMyDevicesIntegration(ctx context.Context, in *pb.DeleteMyDevicesIntegrationRequest) (*empty.Empty, error) {
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -768,7 +736,7 @@ func (a *ApplicationAPI) CreateLoRaCloudIntegration(ctx context.Context, in *pb.
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -808,7 +776,7 @@ func (a *ApplicationAPI) CreateLoRaCloudIntegration(ctx context.Context, in *pb.
 // GetLoRaCloudIntegration returns the LoRaCloud application-integration.
 func (a *ApplicationAPI) GetLoRaCloudIntegration(ctx context.Context, in *pb.GetLoRaCloudIntegrationRequest) (*pb.GetLoRaCloudIntegrationResponse, error) {
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -849,7 +817,7 @@ func (a *ApplicationAPI) UpdateLoRaCloudIntegration(ctx context.Context, in *pb.
 		return nil, status.Errorf(codes.InvalidArgument, "integration must not be nil")
 	}
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.Integration.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -890,7 +858,7 @@ func (a *ApplicationAPI) UpdateLoRaCloudIntegration(ctx context.Context, in *pb.
 // DeleteLoRaCloudIntegration deletes the LoRaCloud application-integration.
 func (a *ApplicationAPI) DeleteLoRaCloudIntegration(ctx context.Context, in *pb.DeleteLoRaCloudIntegrationRequest) (*empty.Empty, error) {
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -909,7 +877,7 @@ func (a *ApplicationAPI) DeleteLoRaCloudIntegration(ctx context.Context, in *pb.
 // ListIntegrations lists all configured integrations.
 func (a *ApplicationAPI) ListIntegrations(ctx context.Context, in *pb.ListIntegrationRequest) (*pb.ListIntegrationResponse, error) {
 
-	if valid, err := a.Validator.ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
+	if valid, err := NewValidator().ValidateApplicationAccess(ctx, Update, in.ApplicationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 

@@ -1,7 +1,8 @@
-package pgstore
+package store
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -18,27 +19,143 @@ import (
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 )
 
-type NetworkServerHandler struct {
-	tx *sqlx.Tx
-	db *sqlx.DB
-}
-
-func New(tx *sqlx.Tx, db *sqlx.DB) *NetworkServerHandler {
-	networkServerHandler = NetworkServerHandler{
-		tx: tx,
-		db: db,
+func (ps *pgstore) CheckCreateNetworkServersAccess(username string, organizationID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+	`
+	// global admin
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
 	}
-	return &networkServerHandler
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
 }
 
-var networkServerHandler NetworkServerHandler
+func (ps *pgstore) CheckListNetworkServersAccess(username string, organizationID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+	`
 
-func Handler() *NetworkServerHandler {
-	return &networkServerHandler
+	// global admin
+	// organization user
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckReadNetworkServerAccess(username string, networkserverID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join service_profile sp
+			on sp.organization_id = o.id
+		left join network_server ns
+			on ns.id = sp.network_server_id
+	`
+	// global admin
+	// organization admin
+	// organization gateway admin
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_admin = true", "ns.id = $2"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_gateway_admin = true", "ns.id = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, networkserverID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(username string, networkserverID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+		left join service_profile sp
+			on sp.organization_id = o.id
+		left join network_server ns
+			on ns.id = sp.network_server_id
+	`
+	// global admin
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.Get(ps.db, &count, userQuery, username, networkserverID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
 }
 
 // GetDefaultNetworkServer returns the network-server matching the given name.
-func (h *NetworkServerHandler) GetDefaultNetworkServer(ctx context.Context) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetDefaultNetworkServer(ctx context.Context) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
 	err := sqlx.Get(h.db, &n, "select * from network_server where name = 'default_network_server'")
 	if err != nil {
@@ -49,7 +166,7 @@ func (h *NetworkServerHandler) GetDefaultNetworkServer(ctx context.Context) (nsm
 }
 
 // CreateNetworkServer creates the given network-server.
-func (h *NetworkServerHandler) CreateNetworkServer(ctx context.Context, n *nsmod.NetworkServer) error {
+func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *nsmod.NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -128,7 +245,7 @@ func (h *NetworkServerHandler) CreateNetworkServer(ctx context.Context, n *nsmod
 }
 
 // GetNetworkServer returns the network-server matching the given id.
-func (h *NetworkServerHandler) GetNetworkServer(ctx context.Context, id int64) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (nsmod.NetworkServer, error) {
 	var ns nsmod.NetworkServer
 	err := sqlx.Get(h.db, &ns, "select * from network_server where id = $1", id)
 	if err != nil {
@@ -139,7 +256,7 @@ func (h *NetworkServerHandler) GetNetworkServer(ctx context.Context, id int64) (
 }
 
 // UpdateNetworkServer updates the given network-server.
-func (h *NetworkServerHandler) UpdateNetworkServer(ctx context.Context, n *nsmod.NetworkServer) error {
+func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *nsmod.NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -223,7 +340,7 @@ func (h *NetworkServerHandler) UpdateNetworkServer(ctx context.Context, n *nsmod
 }
 
 // DeleteNetworkServer deletes the network-server matching the given id.
-func (h *NetworkServerHandler) DeleteNetworkServer(ctx context.Context, id int64) error {
+func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 	n, err := h.GetNetworkServer(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
@@ -266,7 +383,7 @@ func (h *NetworkServerHandler) DeleteNetworkServer(ctx context.Context, id int64
 }
 
 // GetNetworkServerCount returns the total number of network-servers.
-func (h *NetworkServerHandler) GetNetworkServerCount(ctx context.Context) (int, error) {
+func (ps *pgstore) GetNetworkServerCount(ctx context.Context) (int, error) {
 	var count int
 	err := sqlx.Get(h.db, &count, "select count(*) from network_server")
 	if err != nil {
@@ -280,7 +397,7 @@ func (h *NetworkServerHandler) GetNetworkServerCount(ctx context.Context) (int, 
 // network-servers accessible for the given organization id.
 // A network-server is accessible for an organization when it is used by one
 // of its service-profiles.
-func (h *NetworkServerHandler) GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
+func (ps *pgstore) GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
 	var count int
 	err := sqlx.Get(h.db, &count, `
 		select
@@ -300,7 +417,7 @@ func (h *NetworkServerHandler) GetNetworkServerCountForOrganizationID(ctx contex
 }
 
 // GetNetworkServers returns a slice of network-servers.
-func (h *NetworkServerHandler) GetNetworkServers(ctx context.Context, limit, offset int) ([]nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]nsmod.NetworkServer, error) {
 	var nss []nsmod.NetworkServer
 	err := sqlx.Select(h.db, &nss, `
 		select *
@@ -321,7 +438,7 @@ func (h *NetworkServerHandler) GetNetworkServers(ctx context.Context, limit, off
 // accessible for the given organization id.
 // A network-server is accessible for an organization when it is used by one
 // of its service-profiles.
-func (h *NetworkServerHandler) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]nsmod.NetworkServer, error) {
 	var nss []nsmod.NetworkServer
 	err := sqlx.Select(h.db, &nss, `
 		select
@@ -347,7 +464,7 @@ func (h *NetworkServerHandler) GetNetworkServersForOrganizationID(ctx context.Co
 }
 
 // GetNetworkServerForDevEUI returns the network-server for the given DevEUI.
-func (h *NetworkServerHandler) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
 	err := sqlx.Get(h.db, &n, `
 		select
@@ -370,7 +487,7 @@ func (h *NetworkServerHandler) GetNetworkServerForDevEUI(ctx context.Context, de
 
 // GetNetworkServerForDeviceProfileID returns the network-server for the given
 // device-profile id.
-func (h *NetworkServerHandler) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
 	err := sqlx.Get(h.db, &n, `
 		select
@@ -391,7 +508,7 @@ func (h *NetworkServerHandler) GetNetworkServerForDeviceProfileID(ctx context.Co
 
 // GetNetworkServerForServiceProfileID returns the network-server for the given
 // service-profile id.
-func (h *NetworkServerHandler) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
 	err := sqlx.Get(h.db, &n, `
 		select
@@ -412,7 +529,7 @@ func (h *NetworkServerHandler) GetNetworkServerForServiceProfileID(ctx context.C
 
 // GetNetworkServerForGatewayMAC returns the network-server for a given
 // gateway mac.
-func (h *NetworkServerHandler) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
 	err := sqlx.Get(h.db, &n, `
 		select
@@ -432,7 +549,7 @@ func (h *NetworkServerHandler) GetNetworkServerForGatewayMAC(ctx context.Context
 
 // GetNetworkServerForGatewayProfileID returns the network-server for the given
 // gateway-profile id.
-func (h *NetworkServerHandler) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
 	err := sqlx.Get(h.db, &n, `
 		select
@@ -453,7 +570,7 @@ func (h *NetworkServerHandler) GetNetworkServerForGatewayProfileID(ctx context.C
 
 // GetNetworkServerForMulticastGroupID returns the network-server for the given
 // multicast-group id.
-func (h *NetworkServerHandler) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
+func (ps *pgstore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
 	err := sqlx.Get(h.db, &n, `
 		select

@@ -2,12 +2,12 @@ package user
 
 import (
 	"context"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/jmoiron/sqlx"
 
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -36,7 +36,7 @@ type UserStore interface {
 	UpdatePassword(ctx context.Context, id int64, newpassword string) error
 
 	// validator
-	CheckAvtiveUser(username string, userID int64) (bool, error)
+	CheckActiveUser(username string, userID int64) (bool, error)
 
 	CheckCreateUserAcess(username string, userID int64) (bool, error)
 	CheckListUserAcess(username string, userID int64) (bool, error)
@@ -91,7 +91,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		Password:   req.Password,
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
+	err := a.Store.Transaction(ctx, nil, func() error {
 		err := a.Store.CreateUser(ctx, &user)
 		if err != nil {
 			return err
