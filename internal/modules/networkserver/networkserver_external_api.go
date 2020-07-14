@@ -3,7 +3,7 @@ package networkserver
 import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -17,7 +17,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 // NetworkServerAPI exports the NetworkServer related functions.
@@ -99,11 +98,13 @@ func (a *NetworkServerAPI) SetupDefault() error {
 		},
 	}
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		return storage.CreateGatewayProfile(ctx, tx, &gp)
-	})
+	err = tx.CreateGatewayProfile(ctx, &gp)
 	if err != nil {
-		return errors.Wrap(err, "Failed to create default gateway profile")
+		return err
+	}
+
+	if err := tx.TxCommit(ctx); err != nil {
+		return err
 	}
 
 	return nil
@@ -115,7 +116,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		return nil, status.Errorf(codes.InvalidArgument, "network_server must not be nil")
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServersAccess(Create, 0)); err != nil {
+	if valid, err := NewValidator().ValidateGlobalNetworkServersAccess(ctx, authcus.Create, 0); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
@@ -134,10 +135,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		GatewayDiscoveryDR:          int(req.NetworkServer.GatewayDiscoveryDr),
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		return a.Store.CreateNetworkServer(ctx, &networkServer)
-	})
-	if err != nil {
+	if err := a.st.CreateNetworkServer(ctx, &networkServer); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -148,11 +146,11 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 
 // Get returns the network-server matching the given id.
 func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequest) (*pb.GetNetworkServerResponse, error) {
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServerAccess(Read, req.Id)); err != nil {
+	if valid, err := NewValidator().ValidateNetworkServerAccess(ctx, authcus.Read, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := a.Store.GetNetworkServer(ctx, req.Id)
+	n, err := a.st.GetNetworkServer(ctx, req.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -205,11 +203,11 @@ func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServ
 		return nil, status.Errorf(codes.InvalidArgument, "network_server must not be nil")
 	}
 
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServerAccess(Update, req.NetworkServer.Id)); err != nil {
+	if valid, err := NewValidator().ValidateNetworkServerAccess(ctx, authcus.Update, req.NetworkServer.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	networkServer, err := a.Store.GetNetworkServer(ctx, req.NetworkServer.Id)
+	networkServer, err := a.st.GetNetworkServer(ctx, req.NetworkServer.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -239,10 +237,7 @@ func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServ
 		networkServer.RoutingProfileTLSKey = ""
 	}
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		return a.Store.UpdateNetworkServer(ctx, &networkServer)
-	})
-	if err != nil {
+	if err := a.st.UpdateNetworkServer(ctx, &networkServer); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -251,14 +246,11 @@ func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServ
 
 // Delete deletes the network-server matching the given id.
 func (a *NetworkServerAPI) Delete(ctx context.Context, req *pb.DeleteNetworkServerRequest) (*empty.Empty, error) {
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServerAccess(Delete, req.Id)); err != nil {
+	if valid, err := NewValidator().ValidateNetworkServerAccess(ctx, authcus.Delete, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		return a.Store.DeleteNetworkServer(ctx, req.Id)
-	})
-	if err != nil {
+	if err := a.st.DeleteNetworkServer(ctx, req.Id); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -267,11 +259,11 @@ func (a *NetworkServerAPI) Delete(ctx context.Context, req *pb.DeleteNetworkServ
 
 // List lists the available network-servers.
 func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRequest) (*pb.ListNetworkServerResponse, error) {
-	if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, validateNetworkServersAccess(List, req.OrganizationId)); err != nil {
+	if valid, err := NewValidator().ValidateGlobalNetworkServersAccess(ctx, authcus.List, req.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	u, err := user.GetUserAPI().Validator.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -280,22 +272,22 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 	var nss []NetworkServer
 
 	if req.OrganizationId == 0 {
-		if u.IsAdmin {
-			count, err = a.Store.GetNetworkServerCount(ctx)
+		if u.IsGlobalAdmin {
+			count, err = a.st.GetNetworkServerCount(ctx)
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
-			nss, err = a.Store.GetNetworkServers(ctx, int(req.Limit), int(req.Offset))
+			nss, err = a.st.GetNetworkServers(ctx, int(req.Limit), int(req.Offset))
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
 		}
 	} else {
-		count, err = a.Store.GetNetworkServerCountForOrganizationID(ctx, req.OrganizationId)
+		count, err = a.st.GetNetworkServerCountForOrganizationID(ctx, req.OrganizationId)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
-		nss, err = a.Store.GetNetworkServersForOrganizationID(ctx, req.OrganizationId, int(req.Limit), int(req.Offset))
+		nss, err = a.st.GetNetworkServersForOrganizationID(ctx, req.OrganizationId, int(req.Limit), int(req.Offset))
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}

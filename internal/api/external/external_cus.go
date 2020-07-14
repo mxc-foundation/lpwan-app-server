@@ -29,7 +29,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 
 	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/pgstore"
-	organizationPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/pgstore"
 	userPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/pgstore"
 )
 
@@ -50,6 +49,8 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 	api.RegisterApplicationServiceServer(grpcServer, application.NewApplicationAPI())
 	// network server
 	api.RegisterNetworkServerServiceServer(grpcServer, networkserver.NewNetworkServerAPI())
+	// orgnization
+	api.RegisterOrganizationServiceServer(grpcServer, organization.NewOrganizationAPI())
 
 	// user
 	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(user.UserAPI{
@@ -84,11 +85,6 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 
 	api.RegisterWithdrawServiceServer(grpcServer, withdraw.NewWithdrawServerAPI(withdraw.WithdrawServerAPI{
 		Validator: withdraw.NewValidator(otpValidator),
-	}))
-
-	api.RegisterOrganizationServiceServer(grpcServer, organization.NewOrganizationAPI(organization.OrganizationAPI{
-		Validator: organization.NewValidator(otpValidator),
-		Store:     organizationPg.New(tx.Tx, storage.DB().DB),
 	}))
 
 	return nil

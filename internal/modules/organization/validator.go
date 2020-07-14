@@ -8,52 +8,42 @@ import (
 )
 
 type Validator struct {
-	Store       OrganizationStore
 	Credentials *authcus.Credentials
 }
 
-func NewValidator(v Validator) *Validator {
+type Validate interface {
+	ValidateOrganizationAccess(ctx context.Context, flag authcus.Flag, organizationID int64) (bool, error)
+	ValidateOrganizationsAccess(ctx context.Context, flag authcus.Flag) (bool, error)
+	ValidateOrganizationUsersAccess(ctx context.Context, flag authcus.Flag, organizationID int64) (bool, error)
+	ValidateOrganizationUserAccess(ctx context.Context, flag authcus.Flag, organizationID, userID int64) (bool, error)
+	GetUser(ctx context.Context) (authcus.User, error)
+}
+
+func NewValidator() Validate {
 	return &Validator{
-		Store:       v.Store,
-		Credentials: v.Credentials,
+		Credentials: authcus.NewCredentials(),
 	}
 }
 
-// API key subjects.
-const (
-	SubjectUser   = "user"
-	SubjectAPIKey = "api_key"
-)
-
-// Flag defines the authorization flag.
-type Flag int
-
-// Authorization flags.
-const (
-	Create Flag = iota
-	Read
-	Update
-	Delete
-	List
-	UpdateProfile
-	FinishRegistration
-)
+func (v *Validator) GetUser(ctx context.Context) (authcus.User, error) {
+	return v.Credentials.GetUser(ctx)
+}
 
 // ValidateOrganizationAccess validates if the client has access to the
 // given organization.
-func (v *Validator) ValidateOrganizationAccess(ctx context.Context, flag Flag, organizationID int64) (bool, error) {
+func (v *Validator) ValidateOrganizationAccess(ctx context.Context, flag authcus.Flag, organizationID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateOrganizationAccess")
 	}
 
 	switch flag {
-	case Read:
-		return v.Store.CheckReadOrganizationAccess(u.Username, u.ID, organizationID)
-	case Update:
-		return v.Store.CheckUpdateOrganizationAccess(u.Username, u.ID, organizationID)
-	case Delete:
-		return v.Store.CheckDeleteOrganizationAccess(u.Username, u.ID, organizationID)
+	case authcus.Read:
+		return Service.St.CheckReadOrganizationAccess(u.Username, u.ID, organizationID)
+	case authcus.Update:
+		return Service.St.CheckUpdateOrganizationAccess(u.Username, u.ID, organizationID)
+	case authcus.Delete:
+		return Service.St.CheckDeleteOrganizationAccess(u.Username, u.ID, organizationID)
 	default:
 		panic("unsupported flag")
 	}
@@ -61,17 +51,17 @@ func (v *Validator) ValidateOrganizationAccess(ctx context.Context, flag Flag, o
 
 // ValidateOrganizationsAccess validates if the client has access to the
 // organizations.
-func (v *Validator) ValidateOrganizationsAccess(ctx context.Context, flag Flag) (bool, error) {
+func (v *Validator) ValidateOrganizationsAccess(ctx context.Context, flag authcus.Flag) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateOrganizationsAccess")
 	}
 
 	switch flag {
-	case Create:
-		return v.Store.CheckCreateOrganizationAccess(u.Username, u.ID)
-	case List:
-		return v.Store.CheckListOrganizationAccess(u.Username, u.ID)
+	case authcus.Create:
+		return Service.St.CheckCreateOrganizationAccess(u.Username, u.ID)
+	case authcus.List:
+		return Service.St.CheckListOrganizationAccess(u.Username, u.ID)
 	default:
 		panic("unsupported flag")
 	}
@@ -79,17 +69,17 @@ func (v *Validator) ValidateOrganizationsAccess(ctx context.Context, flag Flag) 
 
 // ValidateOrganizationUsersAccess validates if the client has access to
 // the organization users.
-func (v *Validator) ValidateOrganizationUsersAccess(ctx context.Context, flag Flag, organizationID int64) (bool, error) {
+func (v *Validator) ValidateOrganizationUsersAccess(ctx context.Context, flag authcus.Flag, organizationID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateOrganizationUsersAccess")
 	}
 
 	switch flag {
-	case Create:
-		return v.Store.CheckCreateOrganizationUserAccess(u.Username, u.ID, organizationID)
-	case List:
-		return v.Store.CheckListOrganizationUserAccess(u.Username, u.ID, organizationID)
+	case authcus.Create:
+		return Service.St.CheckCreateOrganizationUserAccess(u.Username, u.ID, organizationID)
+	case authcus.List:
+		return Service.St.CheckListOrganizationUserAccess(u.Username, u.ID, organizationID)
 	default:
 		panic("unsupported flag")
 	}
@@ -97,19 +87,19 @@ func (v *Validator) ValidateOrganizationUsersAccess(ctx context.Context, flag Fl
 
 // ValidateOrganizationUserAccess validates if the client has access to the
 // given user of the given organization.
-func (v *Validator) ValidateOrganizationUserAccess(ctx context.Context, flag Flag, organizationID, userID int64) (bool, error) {
+func (v *Validator) ValidateOrganizationUserAccess(ctx context.Context, flag authcus.Flag, organizationID, userID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateOrganizationUsersAccess")
 	}
 
 	switch flag {
-	case Read:
-		return v.Store.CheckReadOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
-	case Update:
-		return v.Store.CheckUpdateOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
-	case Delete:
-		return v.Store.CheckDeleteOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
+	case authcus.Read:
+		return Service.St.CheckReadOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
+	case authcus.Update:
+		return Service.St.CheckUpdateOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
+	case authcus.Delete:
+		return Service.St.CheckDeleteOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
 	default:
 		panic("unsupported flag")
 	}

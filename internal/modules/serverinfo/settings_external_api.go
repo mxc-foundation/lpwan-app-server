@@ -11,8 +11,6 @@ import (
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 // SettingsServerAPI defines the settings of the Server API structure
@@ -37,7 +35,7 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 	logInfo := "api/appserver_serves_ui/GetSettings"
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -77,7 +75,7 @@ func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifyS
 	logInfo := "api/appserver_serves_ui/ModifySettings"
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())

@@ -1,33 +1,25 @@
 package wallet
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	"context"
+
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
 type Validator struct {
-	otpValidator *otp.Validator
+	Credentials *authcus.Credentials
 }
 
-func NewValidator(otpValidator *otp.Validator) *Validator {
-	return &Validator{otpValidator: otpValidator}
+type Validate interface {
+	GetIsAdmin(ctx context.Context) (bool, error)
 }
 
-// API key subjects.
-const (
-	SubjectUser   = "user"
-	SubjectAPIKey = "api_key"
-)
+func NewValidator() Validate {
+	return &Validator{
+		Credentials: authcus.NewCredentials(),
+	}
+}
 
-// Flag defines the authorization flag.
-type Flag int
-
-// Authorization flags.
-const (
-	Create Flag = iota
-	Read
-	Update
-	Delete
-	List
-	UpdateProfile
-	FinishRegistration
-)
+func (v *Validator) GetIsAdmin(ctx context.Context) (bool, error) {
+	return v.Credentials.IsGlobalAdmin(ctx)
+}

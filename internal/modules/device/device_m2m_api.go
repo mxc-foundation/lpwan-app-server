@@ -53,7 +53,7 @@ func (a *DeviceM2MAPI) GetDeviceByDevEui(ctx context.Context, req *pb.GetDeviceB
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, device.ApplicationID)
+	app, err := application.Service.St.GetApplication(ctx, device.ApplicationID)
 	if err != nil {
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}

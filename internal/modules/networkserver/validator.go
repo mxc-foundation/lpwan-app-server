@@ -14,12 +14,17 @@ type Validator struct {
 type Validate interface {
 	ValidateGlobalNetworkServersAccess(ctx context.Context, flag authcus.Flag, orginizationID int64) (bool, error)
 	ValidateNetworkServerAccess(ctx context.Context, flag authcus.Flag, id int64) (bool, error)
+	GetUser(ctx context.Context) (authcus.User, error)
 }
 
 func NewValidator() Validate {
 	return &Validator{
 		Credentials: authcus.NewCredentials(),
 	}
+}
+
+func (v *Validator) GetUser(ctx context.Context) (authcus.User, error) {
+	return v.Credentials.GetUser(ctx)
 }
 
 // validateNetworkServersAccess validates if the client has access to the

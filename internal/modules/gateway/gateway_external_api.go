@@ -180,14 +180,14 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb
 
 	if req.OrganizationList == "all" {
 		// reset for all organizations
-		count, err := organization.GetOrganizationAPI().Store.GetOrganizationCount(ctx, organization.OrganizationFilters{})
+		count, err := organization.Service.St.GetOrganizationCount(ctx, organization.OrganizationFilters{})
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		limit := 100
 		for offset := 0; offset <= count/limit; offset++ {
-			list, err := organization.GetOrganizationAPI().Store.GetOrganizationIDList(limit, offset, "")
+			list, err := organization.Service.St.GetOrganizationIDList(limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -529,7 +529,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 	}
 	defer tx.TxRollback(ctx)
 
-	org, err := organization.GetOrganizationAPI().Store.GetOrganization(ctx, req.OrganizationId, true)
+	org, err := organization.Service.St.GetOrganization(ctx, req.OrganizationId, true)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -1319,8 +1319,7 @@ func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !userIsAdmin {
-		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 	}
@@ -1380,8 +1379,7 @@ func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !userIsAdmin {
-		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 	}
@@ -1434,8 +1432,7 @@ func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayH
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !userIsAdmin {
-		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 	}
@@ -1477,8 +1474,7 @@ func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !userIsAdmin {
-		if err := a.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 	}

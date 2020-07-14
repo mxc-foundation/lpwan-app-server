@@ -126,7 +126,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 	//  * We want to lock the organization so that we can validate the
 	//    max device count.
 	err = storage.Transaction(func(tx sqlx.Ext) error {
-		org, err := organization.GetOrganizationAPI().Store.GetOrganization(ctx, app.OrganizationID, true)
+		org, err := organization.Service.St.GetOrganization(ctx, app.OrganizationID, true)
 		if err != nil {
 			return err
 		}
@@ -1027,7 +1027,7 @@ func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequ
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -1085,7 +1085,7 @@ func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDevicePro
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -1134,7 +1134,7 @@ func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHisto
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
@@ -1176,7 +1176,7 @@ func (a *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequ
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
-		if valid, err := organization.GetOrganizationAPI().Validator.ValidateOrganizationAccess(ctx, organization.Read, req.OrgId); !valid || err != nil {
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
