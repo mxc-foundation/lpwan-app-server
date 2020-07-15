@@ -8,7 +8,6 @@ import (
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -180,24 +179,18 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		user, err := a.st.GetUser(ctx, req.User.Id)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
+	user, err := a.st.GetUser(ctx, req.User.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
 
-		user.IsAdmin = req.User.IsAdmin
-		user.IsActive = req.User.IsActive
-		user.SessionTTL = req.User.SessionTtl
-		user.Email = req.User.Email
-		user.Note = req.User.Note
+	user.IsAdmin = req.User.IsAdmin
+	user.IsActive = req.User.IsActive
+	user.SessionTTL = req.User.SessionTtl
+	user.Email = req.User.Email
+	user.Note = req.User.Note
 
-		err = a.st.UpdateUser(ctx, &user)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-		return nil
-	})
+	err = a.st.UpdateUser(ctx, &user)
 	if err != nil {
 		return nil, err
 	}
@@ -211,13 +204,7 @@ func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*emp
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.st.DeleteUser(ctx, req.Id)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-		return nil
-	})
+	err := a.st.DeleteUser(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}

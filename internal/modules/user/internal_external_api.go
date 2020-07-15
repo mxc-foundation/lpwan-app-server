@@ -18,7 +18,6 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
-	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -318,29 +317,29 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 
 	obj, err := a.st.GetUserByEmail(ctx, user.Email)
 	if err == storage.ErrDoesNotExist {
-
-		err := storage.Transaction(func(tx sqlx.Ext) error {
-			// user has never been created yet
-			err = a.st.RegisterUser(&user, token)
-			if err != nil {
-				log.WithError(err).Error(logInfo)
-				return helpers.ErrToRPCError(err)
-			}
-
-			// get user again
-			obj, err = a.st.GetUserByEmail(ctx, user.Email)
-			if err != nil {
-				log.WithError(err).Error(logInfo)
-				// internal error
-				return helpers.ErrToRPCError(err)
-			}
-			if err != nil {
-				return helpers.ErrToRPCError(err)
-			}
-			return nil
-		})
+		tx, err := a.txSt.TxBegin(ctx)
 		if err != nil {
-			return nil, err
+			return nil, status.Errorf(codes.Internal, "%v", err)
+		}
+		defer tx.TxRollback(ctx)
+
+		// user has never been created yet
+		err = tx.RegisterUser(&user, token)
+		if err != nil {
+			log.WithError(err).Error(logInfo)
+			return nil, status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		// get user again
+		obj, err = tx.GetUserByEmail(ctx, user.Email)
+		if err != nil {
+			log.WithError(err).Error(logInfo)
+			// internal error
+			return nil, status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		if err := tx.TxCommit(ctx); err != nil {
+			return nil, status.Errorf(codes.Internal, "%v", err)
 		}
 
 	} else if err != nil && err != storage.ErrDoesNotExist {

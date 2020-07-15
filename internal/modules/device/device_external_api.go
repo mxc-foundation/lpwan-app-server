@@ -12,7 +12,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -125,28 +124,36 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 	//    rollback the transaction.
 	//  * We want to lock the organization so that we can validate the
 	//    max device count.
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		org, err := organization.Service.St.GetOrganization(ctx, app.OrganizationID, true)
-		if err != nil {
-			return err
-		}
-
-		// Validate max. device count when != 0.
-		if org.MaxDeviceCount != 0 {
-			count, err := a.St.GetDeviceCount(ctx, DeviceFilters{ApplicationID: app.OrganizationID})
-			if err != nil {
-				return err
-			}
-
-			if count >= org.MaxDeviceCount {
-				return storage.ErrOrganizationMaxDeviceCount
-			}
-		}
-
-		return a.St.CreateDevice(ctx, &d, a.ApplicationServerID)
-	})
+	tx, err := a.txSt.TxBegin(ctx)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	defer tx.TxRollback(ctx)
+
+	org, err := tx.GetOrganization(ctx, app.OrganizationID, true)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	// Validate max. device count when != 0.
+	if org.MaxDeviceCount != 0 {
+		count, err := tx.GetDeviceCount(ctx, DeviceFilters{ApplicationID: app.OrganizationID})
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		if count >= org.MaxDeviceCount {
+			return nil, status.Errorf(codes.Unknown, "%v", storage.ErrOrganizationMaxDeviceCount)
+		}
+	}
+
+	err = tx.CreateDevice(ctx, &d, a.ApplicationServerID)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	if err := tx.TxCommit(ctx); err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -339,61 +346,64 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
 	}
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err := a.St.GetDevice(ctx, devEUI, true, false)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		// If the device is moved to a different application, validate that
-		// the new application is assigned to the same service-profile.
-		// This to guarantee that the new application is still on the same
-		// network-server and is not assigned to a different organization.
-		if req.Device.ApplicationId != d.ApplicationID {
-			appOld, err := application.Service.GetApplication(ctx, d.ApplicationID)
-			if err != nil {
-				return helpers.ErrToRPCError(err)
-			}
-
-			appNew, err := application.Service.GetApplication(ctx, req.Device.ApplicationId)
-			if err != nil {
-				return helpers.ErrToRPCError(err)
-			}
-
-			if appOld.ServiceProfileID != appNew.ServiceProfileID {
-				return status.Errorf(codes.InvalidArgument, "when moving a device from application A to B, both A and B must share the same service-profile")
-			}
-		}
-
-		d.ApplicationID = req.Device.ApplicationId
-		d.DeviceProfileID = dpID
-		d.Name = req.Device.Name
-		d.Description = req.Device.Description
-		d.SkipFCntCheck = req.Device.SkipFCntCheck
-		d.ReferenceAltitude = req.Device.ReferenceAltitude
-		d.Variables = hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		}
-		d.Tags = hstore.Hstore{
-			Map: make(map[string]sql.NullString),
-		}
-
-		for k, v := range req.Device.Variables {
-			d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
-		}
-
-		for k, v := range req.Device.Tags {
-			d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
-		}
-
-		if err := a.St.UpdateDevice(ctx, &d, false); err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		return nil
-	})
+	tx, err := a.txSt.TxBegin(ctx)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	defer tx.TxRollback(ctx)
+
+	d, err := tx.GetDevice(ctx, devEUI, true, false)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	// If the device is moved to a different application, validate that
+	// the new application is assigned to the same service-profile.
+	// This to guarantee that the new application is still on the same
+	// network-server and is not assigned to a different organization.
+	if req.Device.ApplicationId != d.ApplicationID {
+		appOld, err := tx.GetApplication(ctx, d.ApplicationID)
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		appNew, err := tx.GetApplication(ctx, req.Device.ApplicationId)
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		if appOld.ServiceProfileID != appNew.ServiceProfileID {
+			return nil, status.Errorf(codes.InvalidArgument, "when moving a device from application A to B, both A and B must share the same service-profile")
+		}
+	}
+
+	d.ApplicationID = req.Device.ApplicationId
+	d.DeviceProfileID = dpID
+	d.Name = req.Device.Name
+	d.Description = req.Device.Description
+	d.SkipFCntCheck = req.Device.SkipFCntCheck
+	d.ReferenceAltitude = req.Device.ReferenceAltitude
+	d.Variables = hstore.Hstore{
+		Map: make(map[string]sql.NullString),
+	}
+	d.Tags = hstore.Hstore{
+		Map: make(map[string]sql.NullString),
+	}
+
+	for k, v := range req.Device.Variables {
+		d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
+	}
+
+	for k, v := range req.Device.Tags {
+		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
+	}
+
+	if err := tx.UpdateDevice(ctx, &d, false); err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	if err := tx.TxCommit(ctx); err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -412,9 +422,7 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 
 	// as this also performs a remote call to delete the node from the
 	// network-server, wrap it in a transaction
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		return a.St.DeleteDevice(ctx, eui)
-	})
+	err := a.St.DeleteDevice(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -461,15 +469,11 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.St.CreateDeviceKeys(ctx, &DeviceKeys{
-			DevEUI:    eui,
-			NwkKey:    nwkKey,
-			AppKey:    appKey,
-			GenAppKey: genAppKey,
-		})
-
-		return errors.Wrap(err, "")
+	err := a.St.CreateDeviceKeys(ctx, &DeviceKeys{
+		DevEUI:    eui,
+		NwkKey:    nwkKey,
+		AppKey:    appKey,
+		GenAppKey: genAppKey,
 	})
 	if err != nil {
 		return nil, err
@@ -549,10 +553,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 	dk.AppKey = appKey
 	dk.GenAppKey = genAppKey
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.St.UpdateDeviceKeys(ctx, &dk)
-		return errors.Wrap(err, "")
-	})
+	err = a.St.UpdateDeviceKeys(ctx, &dk)
 	if err != nil {
 		return nil, err
 	}
@@ -571,10 +572,7 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.St.DeleteDeviceKeys(ctx, eui)
-		return errors.Wrap(err, "")
-	})
+	err := a.St.DeleteDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, err
 	}
@@ -598,7 +596,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -651,12 +649,18 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.St.GetDevice(ctx, devEUI, false, true)
+	tx, err := a.txSt.TxBegin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	defer tx.TxRollback(ctx)
+
+	d, err := tx.GetDevice(ctx, devEUI, false, true)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := tx.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -683,20 +687,17 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		},
 	}
 
-	err = storage.Transaction(func(db sqlx.Ext) error {
-		if err := a.St.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
-			return helpers.ErrToRPCError(err)
-		}
+	if err := tx.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
 
-		_, err := client.ActivateDevice(ctx, &actReq)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		return nil
-	})
+	_, err = client.ActivateDevice(ctx, &actReq)
 	if err != nil {
-		return nil, err
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	if err := tx.TxCommit(ctx); err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
 	log.WithFields(log.Fields{
@@ -729,7 +730,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

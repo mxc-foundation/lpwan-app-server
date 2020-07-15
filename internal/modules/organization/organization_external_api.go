@@ -191,25 +191,27 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 // Delete deletes the organization matching the given ID.
 // Note: this should never happen, when there are still items in the organization, the organization should not be deleted
 func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganizationRequest) (*empty.Empty, error) {
-	/*	if err := NewValidator().otpValidator.jwtValidator.Validate(ctx,
-			ValidateOrganizationAccess(Delete, req.Id)); err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-		}
+	if valid, err := NewValidator().ValidateOrganizationAccess(ctx, authcus.Delete, req.Id); !valid || err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
 
-		err := storage.Transaction(func(tx sqlx.Ext) error {
-			if err := gateway.GetGatewayAPI().Store.DeleteAllGatewaysForOrganizationID(ctx, req.Id); err != nil {
-				return helpers.ErrToRPCError(err)
-			}
+	tx, err := a.txSt.TxBegin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	defer tx.TxRollback(ctx)
 
-			if err := a.Store.DeleteOrganization(ctx, req.Id); err != nil {
-				return helpers.ErrToRPCError(err)
-			}
+	if err := tx.DeleteAllGatewaysForOrganizationID(ctx, req.Id); err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
 
-			return nil
-		})
-		if err != nil {
-			return nil, err
-		}*/
+	if err := tx.DeleteOrganization(ctx, req.Id); err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	if err := tx.TxCommit(ctx); err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
 
 	return &empty.Empty{}, nil
 }
