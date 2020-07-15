@@ -3,6 +3,7 @@ package networkserver
 import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -37,14 +38,14 @@ func NewNetworkServerAPI() *NetworkServerAPI {
 
 func (a *NetworkServerAPI) SetupDefault() error {
 	ctx := context.Background()
-	count, err := storage.GetGatewayProfileCount(ctx, storage.DB())
+	count, err := gatewayprofile.Service.St.GetGatewayProfileCount(ctx)
 	if err != nil && err != storage.ErrDoesNotExist {
 		return errors.Wrap(err, "Failed to load gateway profiles")
 	}
 
 	if count != 0 {
 		// check if default gateway profile already exists
-		gpList, err := storage.GetGatewayProfiles(ctx, storage.DB(), count, 0)
+		gpList, err := gatewayprofile.Service.St.GetGatewayProfiles(ctx, count, 0)
 		if err != nil {
 			return errors.Wrap(err, "Failed to load gateway profiles")
 		}
@@ -90,7 +91,7 @@ func (a *NetworkServerAPI) SetupDefault() error {
 		}
 	}
 
-	gp := storage.GatewayProfile{
+	gp := gatewayprofile.GatewayProfile{
 		NetworkServerID: networkServer.ID,
 		Name:            "default_gateway_profile",
 		GatewayProfile: ns.GatewayProfile{

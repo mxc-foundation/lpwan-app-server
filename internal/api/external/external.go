@@ -89,7 +89,6 @@ func setupAPI(conf config.Config) error {
 	pb.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
 	pb.RegisterInternalServiceServer(grpcServer, NewInternalAPI(validator))
 	pb.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
-	pb.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(validator))
 	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(validator))
 	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(validator))
 	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
@@ -256,9 +255,6 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	}
 	if err := pb.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register gateway handler error")
-	}
-	if err := pb.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register gateway-profile handler error")
 	}
 	if err := pb.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register organization handler error")

@@ -2,6 +2,7 @@ package external
 
 import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -30,7 +31,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 
 	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/pgstore"
-	userPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/pgstore"
 )
 
 func SetupCusAPI(grpcServer *grpc.Server) error {
@@ -39,54 +39,30 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 	if err != nil {
 		return err
 	}
-
 	authcus.SetupCred(authPg.New(storage.DB().DB), jwtValidator, otpValidator)
 
 	// device
 	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(applicationServerID))
 	// gateway
 	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(applicationServerID))
+	// gateway profile
+	api.RegisterGatewayProfileServiceServer(grpcServer, gatewayprofile.NewGatewayProfileAPI())
 	// application
 	api.RegisterApplicationServiceServer(grpcServer, application.NewApplicationAPI())
 	// network server
 	api.RegisterNetworkServerServiceServer(grpcServer, networkserver.NewNetworkServerAPI())
 	// orgnization
 	api.RegisterOrganizationServiceServer(grpcServer, organization.NewOrganizationAPI())
-
 	// user
-	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI(user.UserAPI{
-		Validator: user.NewValidator(otpValidator),
-		Store:     userPg.New(storage.DB()),
-	}))
+	api.RegisterUserServiceServer(grpcServer, user.NewUserAPI())
+	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI())
 
-	api.RegisterInternalServiceServer(grpcServer, user.NewInternalUserAPI(user.InternalUserAPI{
-		Validator: user.NewValidator(otpValidator),
-		Store:     userPg.New(storage.DB()),
-	}))
-
-	api.RegisterServerInfoServiceServer(grpcServer, serverinfo.NewServerInfoAPI(serverinfo.ServerInfoAPI{
-		Validator: serverinfo.NewValidator(otpValidator),
-	}))
-
-	api.RegisterSettingsServiceServer(grpcServer, serverinfo.NewSettingsServerAPI(serverinfo.SettingsServerAPI{
-		Validator: serverinfo.NewValidator(otpValidator),
-	}))
-
-	api.RegisterStakingServiceServer(grpcServer, staking.NewStakingServerAPI(staking.StakingServerAPI{
-		Validator: staking.NewValidator(otpValidator),
-	}))
-
-	api.RegisterTopUpServiceServer(grpcServer, topup.NewTopUpServerAPI(topup.TopUpServerAPI{
-		Validator: topup.NewValidator(otpValidator),
-	}))
-
-	api.RegisterWalletServiceServer(grpcServer, wallet.NewWalletServerAPI(wallet.WalletServerAPI{
-		Validator: wallet.NewValidator(otpValidator),
-	}))
-
-	api.RegisterWithdrawServiceServer(grpcServer, withdraw.NewWithdrawServerAPI(withdraw.WithdrawServerAPI{
-		Validator: withdraw.NewValidator(otpValidator),
-	}))
+	api.RegisterServerInfoServiceServer(grpcServer, serverinfo.NewServerInfoAPI())
+	api.RegisterSettingsServiceServer(grpcServer, serverinfo.NewSettingsServerAPI())
+	api.RegisterStakingServiceServer(grpcServer, staking.NewStakingServerAPI())
+	api.RegisterTopUpServiceServer(grpcServer, topup.NewTopUpServerAPI())
+	api.RegisterWalletServiceServer(grpcServer, wallet.NewWalletServerAPI())
+	api.RegisterWithdrawServiceServer(grpcServer, withdraw.NewWithdrawServerAPI())
 
 	return nil
 }
@@ -122,6 +98,9 @@ func CusGetJSONGateway(ctx context.Context, mux *runtime.ServeMux, apiEndpoint s
 	}
 	if err := api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return errors.Wrap(err, "register proxy request handler error")
+	}
+	if err := api.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register gateway profile handler error")
 	}
 
 	return nil

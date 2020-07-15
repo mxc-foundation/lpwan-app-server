@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"os"
 	"strconv"
 	"strings"
@@ -1211,12 +1212,12 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	}
 
 	// get gateway profile id, always use the default one
-	count, err := storage.GetGatewayProfileCount(ctx, storage.DB())
+	count, err := gatewayprofile.Service.St.GetGatewayProfileCount(ctx)
 	if err != nil && err != storage.ErrDoesNotExist || count == 0 {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	gpList, err := storage.GetGatewayProfiles(ctx, storage.DB(), count, 0)
+	gpList, err := gatewayprofile.Service.St.GetGatewayProfiles(ctx, count, 0)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}

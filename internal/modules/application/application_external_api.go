@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
@@ -22,6 +20,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/loracloud"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mydevices"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/thingsboard"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
