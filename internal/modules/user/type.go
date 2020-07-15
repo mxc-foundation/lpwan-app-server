@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"regexp"
 	"time"
 
@@ -94,6 +95,32 @@ func (u *User) Validate() error {
 func ValidatePassword(password string) error {
 	if !passwordValidator.MatchString(password) {
 		return errors.New("invalid password")
+	}
+	return nil
+}
+
+type PasswordResetRecord struct {
+	UserID       int64
+	OTP          string
+	GeneratedAt  time.Time
+	AttemptsLeft int64
+}
+
+func (pr *PasswordResetRecord) SetOTP(ctx context.Context, otp string) error {
+	pr.OTP = otp
+	pr.GeneratedAt = time.Now()
+	pr.AttemptsLeft = 3
+
+	if err := Service.St.SetOTP(ctx, pr); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (pr *PasswordResetRecord) ReduceAttempts(ctx context.Context) error {
+	if err := Service.St.ReduceAttempts(ctx, pr); err != nil {
+		return err
 	}
 	return nil
 }

@@ -2,6 +2,7 @@ package pgstore
 
 import (
 	"context"
+
 	"github.com/jmoiron/sqlx"
 
 	authmod "github.com/mxc-foundation/lpwan-app-server/internal/authentication"

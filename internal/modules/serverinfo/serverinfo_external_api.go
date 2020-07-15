@@ -17,21 +17,12 @@ import (
 )
 
 // ServerInfoAPI defines the Server Info API structure
-type ServerInfoAPI struct {
-	Validator *Validator
-}
+type ServerInfoAPI struct{}
 
 // NewServerInfoAPI defines the Server Info API
-func NewServerInfoAPI(api ServerInfoAPI) *ServerInfoAPI {
-	serverInfoAPI = ServerInfoAPI{
-		Validator: api.Validator,
-	}
-	return &serverInfoAPI
+func NewServerInfoAPI() *ServerInfoAPI {
+	return &ServerInfoAPI{}
 }
-
-var (
-	serverInfoAPI ServerInfoAPI
-)
 
 // GetAppserverVersion defines the Appserver Version response
 func (s *ServerInfoAPI) GetAppserverVersion(ctx context.Context, req *empty.Empty) (*pb.GetAppserverVersionResponse, error) {

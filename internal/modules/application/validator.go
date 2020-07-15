@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"

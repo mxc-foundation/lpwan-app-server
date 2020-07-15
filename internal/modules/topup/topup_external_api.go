@@ -17,21 +17,12 @@ import (
 )
 
 // TopUpServerAPI defines the topup server api structure
-type TopUpServerAPI struct {
-	Validator *Validator
-}
+type TopUpServerAPI struct{}
 
 // NewTopUpServerAPI validates the topup server api
-func NewTopUpServerAPI(api TopUpServerAPI) *TopUpServerAPI {
-	topupServerAPI = TopUpServerAPI{
-		Validator: api.Validator,
-	}
-	return &topupServerAPI
+func NewTopUpServerAPI() *TopUpServerAPI {
+	return &TopUpServerAPI{}
 }
-
-var (
-	topupServerAPI TopUpServerAPI
-)
 
 // GetTopUpHistory defines the topup history request and response
 func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpHistoryRequest) (*api.GetTopUpHistoryResponse, error) {

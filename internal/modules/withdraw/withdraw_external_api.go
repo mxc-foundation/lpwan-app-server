@@ -4,7 +4,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -14,33 +14,23 @@ import (
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 )
 
 // WithdrawServerAPI validates the withdraw server api
-type WithdrawServerAPI struct {
-	Validator *Validator
-}
+type WithdrawServerAPI struct{}
 
 // NewWithdrawServerAPI defines the withdraw server api
-func NewWithdrawServerAPI(api WithdrawServerAPI) *WithdrawServerAPI {
-	withdrawServerAPI = WithdrawServerAPI{
-		Validator: api.Validator,
-	}
-	return &withdrawServerAPI
+func NewWithdrawServerAPI() *WithdrawServerAPI {
+	return &WithdrawServerAPI{}
 }
-
-var (
-	withdrawServerAPI WithdrawServerAPI
-)
 
 // ModifyWithdrawFee modifies the withdraw fee
 func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.ModifyWithdrawFeeRequest) (*api.ModifyWithdrawFeeResponse, error) {
 	logInfo := "api/appserver_serves_ui/ModifyWithdrawFee"
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.ModifyWithdrawFeeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -105,14 +95,14 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 	logInfo := "api/appserver_serves_ui/GetWithdrawHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !userIsAdmin {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.GetWithdrawHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
@@ -162,21 +152,16 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 	logInfo := "api/appserver_serves_ui/GetWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	isAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetWithdrawResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// if user is not global admin, user must have access to this organization
-	if !userIsAdmin {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	if !isAdmin {
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
+			return &api.GetWithdrawResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
 		}
-	}
-	// we require OTP for withdraw request
-	if err := s.Validator.otpValidator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -209,21 +194,17 @@ func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawRe
 	logInfo := "api/appserver_serves_ui/WithdrawReq org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.WithdrawReqResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// if user is not global admin, user must have access to this organization
 	if !userIsAdmin {
-		if err := s.Validator.otpValidator.JwtValidator.Validate(ctx, organization.ValidateOrganizationAccess(organization.Read, req.OrgId)); err != nil {
+		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
 			log.WithError(err).Error(logInfo)
 			return &api.WithdrawReqResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
-	}
-	// we require OTP for withdraw request
-	if err := s.Validator.otpValidator.ValidateOTP(ctx); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "OTP is not present or not valid")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -255,7 +236,7 @@ func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.Confir
 	logInfo := "api/appserver_serves_ui/ConfirmWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -294,7 +275,7 @@ func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.Confir
 func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api.GetWithdrawRequestListRequest) (*api.GetWithdrawRequestListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdrawRequestList"
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
@@ -348,7 +329,7 @@ func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api
 func (s *WithdrawServerAPI) GetWithdrawMonthly(ctx context.Context, req *api.GetWithdrawMonthlyRequest) (*api.GetWithdrawMonthlyResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdrawMonthly"
 	// verify if user is global admin
-	userIsAdmin, err := user.GetUserAPI().Validator.GetIsAdmin(ctx)
+	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())

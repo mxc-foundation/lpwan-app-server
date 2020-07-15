@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
 	"github.com/pkg/errors"
 

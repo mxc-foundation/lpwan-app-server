@@ -2,6 +2,7 @@ package organization
 
 import (
 	"context"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )

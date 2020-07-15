@@ -22,6 +22,7 @@ const (
 	Delete
 	List
 	UpdateProfile
+	UpdatePassword
 	FinishRegistration
 )
 

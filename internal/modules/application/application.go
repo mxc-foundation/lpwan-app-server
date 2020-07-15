@@ -1,9 +1,10 @@
 package application
 
 import (
+	"golang.org/x/net/context"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"golang.org/x/net/context"
 )
 
 type ApplicationStore interface {

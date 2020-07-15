@@ -3,8 +3,9 @@ package application
 import (
 	"context"
 	"encoding/json"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"strings"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"

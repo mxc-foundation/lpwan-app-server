@@ -3,11 +3,12 @@ package networkserver
 import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 

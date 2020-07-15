@@ -2,10 +2,11 @@ package external
 
 import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"

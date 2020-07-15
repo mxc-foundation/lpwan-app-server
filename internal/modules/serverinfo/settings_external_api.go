@@ -14,21 +14,12 @@ import (
 )
 
 // SettingsServerAPI defines the settings of the Server API structure
-type SettingsServerAPI struct {
-	Validator *Validator
-}
+type SettingsServerAPI struct{}
 
 // NewSettingsServerAPI defines the SettingsServerAPI Validator
-func NewSettingsServerAPI(api SettingsServerAPI) *SettingsServerAPI {
-	settingsServerAPI = SettingsServerAPI{
-		Validator: api.Validator,
-	}
-	return &settingsServerAPI
+func NewSettingsServerAPI() *SettingsServerAPI {
+	return &SettingsServerAPI{}
 }
-
-var (
-	settingsServerAPI SettingsServerAPI
-)
 
 // GetSettings defines the settings of the Server API request and response
 func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSettingsRequest) (*api.GetSettingsResponse, error) {

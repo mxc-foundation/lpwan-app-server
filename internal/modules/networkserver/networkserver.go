@@ -2,6 +2,7 @@ package networkserver
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
 

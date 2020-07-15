@@ -2,9 +2,11 @@ package user
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
 
 type Validator struct {
@@ -16,12 +18,69 @@ type Validate interface {
 	ValidateUsersGlobalAccess(ctx context.Context, flag authcus.Flag) (bool, error)
 	ValidateUserAccess(ctx context.Context, flag authcus.Flag, userID int64) (bool, error)
 	GetIsAdmin(ctx context.Context) (bool, error)
+	Is2FAEnabled(ctx context.Context, username string) (bool, error)
+	SignJWToken(username string, ttl int64, audience []string) (string, error)
+	GetUser(ctx context.Context, opts ...authcus.Option) (authcus.User, error)
+	NewConfiguration(ctx context.Context, username string) (*otp.Configuration, error)
+	Enable2FA(ctx context.Context) error
+	Disable2FA(ctx context.Context) error
+	OTPGetRecoveryCodes(ctx context.Context, username string, regenerate bool) ([]string, error)
 }
 
 func NewValidator() Validate {
 	return &Validator{
 		Credentials: authcus.NewCredentials(),
 	}
+}
+
+func (v *Validator) OTPGetRecoveryCodes(ctx context.Context, username string, regenerate bool) ([]string, error) {
+	return v.Credentials.OTPGetRecoveryCodes(ctx, username, regenerate)
+}
+
+func (v *Validator) Enable2FA(ctx context.Context) error {
+	u, err := v.Credentials.GetUser(ctx)
+	if err != nil {
+		return err
+	}
+
+	OTP, err := v.Credentials.GetOTP(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := v.Credentials.EnableOTP(ctx, u.Username, OTP); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *Validator) Disable2FA(ctx context.Context) error {
+	u, err := v.Credentials.GetUser(ctx, authcus.WithValidOTP())
+	if err != nil {
+		return err
+	}
+
+	if err := v.Credentials.DisableOTP(ctx, u.Username); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (v *Validator) NewConfiguration(ctx context.Context, username string) (*otp.Configuration, error) {
+	return v.Credentials.NewConfiguration(ctx, username)
+}
+
+func (v *Validator) GetUser(ctx context.Context, opts ...authcus.Option) (authcus.User, error) {
+	return v.Credentials.GetUser(ctx, opts...)
+}
+
+func (v *Validator) SignJWToken(username string, ttl int64, audience []string) (string, error) {
+	return v.Credentials.SignJWToken(username, ttl, audience)
+}
+
+func (v *Validator) Is2FAEnabled(ctx context.Context, username string) (bool, error) {
+	return v.Credentials.Is2FAEnabled(ctx, username)
 }
 
 func (v *Validator) GetIsAdmin(ctx context.Context) (bool, error) {
@@ -35,7 +94,7 @@ func (v *Validator) ValidateActiveUser(ctx context.Context) (bool, error) {
 		return false, errors.Wrap(err, "ValidateActiveUser")
 	}
 
-	return v.Store.CheckActiveUser(u.Username, u.ID)
+	return Service.St.CheckActiveUser(u.Username, u.ID)
 }
 
 // ValidateUsersAccess validates if the client has access to the global users
@@ -48,9 +107,9 @@ func (v *Validator) ValidateUsersGlobalAccess(ctx context.Context, flag authcus.
 
 	switch flag {
 	case authcus.Create:
-		return v.Store.CheckCreateUserAcess(u.Username, u.ID)
+		return Service.St.CheckCreateUserAcess(u.Username, u.ID)
 	case authcus.List:
-		return v.Store.CheckListUserAcess(u.Username, u.ID)
+		return Service.St.CheckListUserAcess(u.Username, u.ID)
 	default:
 		panic("unsupported flag")
 	}
@@ -66,13 +125,13 @@ func (v *Validator) ValidateUserAccess(ctx context.Context, flag authcus.Flag, u
 
 	switch flag {
 	case authcus.Read:
-		return v.Store.CheckReadUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckReadUserAccess(u.Username, userID, u.ID)
 	case authcus.Update, authcus.Delete:
-		return v.Store.CheckUpdateDeleteUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckUpdateDeleteUserAccess(u.Username, userID, u.ID)
 	case authcus.UpdateProfile:
-		return v.Store.CheckUpdateProfileUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckUpdateProfileUserAccess(u.Username, userID, u.ID)
 	case authcus.UpdatePassword:
-		return v.Store.CheckUpdatePasswordUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckUpdatePasswordUserAccess(u.Username, userID, u.ID)
 	default:
 		panic("unsupported flag")
 	}

@@ -10,10 +10,11 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"google.golang.org/grpc/metadata"
 	"image/png"
 	"strings"
 	"time"
+
+	"google.golang.org/grpc/metadata"
 
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp"

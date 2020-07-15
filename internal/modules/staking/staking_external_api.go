@@ -17,21 +17,12 @@ import (
 )
 
 // StakingServerAPI defines the Staking Server API structure
-type StakingServerAPI struct {
-	Validator *Validator
-}
+type StakingServerAPI struct{}
 
 // NewStakingServerAPI defines the Stagking Server API Validator
-func NewStakingServerAPI(api StakingServerAPI) *StakingServerAPI {
-	stakingServerAPI = StakingServerAPI{
-		Validator: api.Validator,
-	}
-	return &stakingServerAPI
+func NewStakingServerAPI() *StakingServerAPI {
+	return &StakingServerAPI{}
 }
-
-var (
-	stakingServerAPI StakingServerAPI
-)
 
 // GetStakingPercentage defines the request and response to get staking percentage
 func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {

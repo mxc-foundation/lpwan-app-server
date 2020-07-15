@@ -2,9 +2,10 @@ package device
 
 import (
 	"github.com/gofrs/uuid"
+	"golang.org/x/net/context"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"golang.org/x/net/context"
 
 	"github.com/brocaar/lorawan"
 )

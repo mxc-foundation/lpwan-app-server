@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/subtle"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +12,8 @@ import (
 	"net/url"
 	"os"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -34,26 +35,27 @@ import (
 
 // InternalUserAPI exports the internal User related functions.
 type InternalUserAPI struct {
-	Validator *Validator
-	Store     UserStore
+	st   UserStore
+	txSt store.Store
 }
 
 // NewInternalUserAPI creates a new InternalUserAPI.
-func NewInternalUserAPI(api InternalUserAPI) *InternalUserAPI {
+func NewInternalUserAPI() *InternalUserAPI {
+	st := store.New(storage.DB().DB)
 	return &InternalUserAPI{
-		Validator: api.Validator,
-		Store:     api.Store,
+		st:   st,
+		txSt: st,
 	}
 }
 
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
-	err := a.Store.LoginUserByPassword(ctx, req.Username, req.Password)
+	err := a.st.LoginUserByPassword(ctx, req.Username, req.Password)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	user, err := a.Store.GetUserByUsername(ctx, req.Username)
+	user, err := a.st.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "couldn't get info about the user")
 	}
@@ -65,7 +67,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 	ttl := 60 * int64(user.SessionTTL)
 	var audience []string
 
-	is2fa, err := a.Validator.Credentials.Is2FAEnabled(ctx, user.Username)
+	is2fa, err := NewValidator().Is2FAEnabled(ctx, user.Username)
 	if err != nil {
 		ctxlogrus.Extract(ctx).WithError(err).Error("couldn't get 2fa status")
 		return nil, status.Error(codes.Internal, "couldn't get 2fa status")
@@ -82,7 +84,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 		audience = []string{"login-2fa"}
 	}
 
-	jwt, err := a.Validator.Credentials.SignJWToken(user.Username, ttl, audience)
+	jwt, err := NewValidator().SignJWToken(user.Username, ttl, audience)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
@@ -95,17 +97,17 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 // already passed password check and checks if the OTP code is valid. If it is
 // it returns JWT with access to the api.
 func (a *InternalUserAPI) Login2FA(ctx context.Context, req *inpb.Login2FARequest) (*inpb.LoginResponse, error) {
-	u, err := a.Validator.Credentials.GetUser(ctx, authcus.WithAudience("login-2fa"), authcus.WithValidOTP())
+	u, err := NewValidator().GetUser(ctx, authcus.WithAudience("login-2fa"), authcus.WithValidOTP())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
 
-	user, err := a.Store.GetUserByUsername(ctx, u.Username)
+	user, err := a.st.GetUserByUsername(ctx, u.Username)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "couldn't get info about the user")
 	}
 
-	jwt, err := a.Validator.Credentials.SignJWToken(u.Username, 60*int64(user.SessionTTL), nil)
+	jwt, err := NewValidator().SignJWToken(u.Username, 60*int64(user.SessionTTL), nil)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Error(codes.Internal, "couldn't create a token")
@@ -177,16 +179,16 @@ func OTPgen() string {
 
 // Profile returns the user profile.
 func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileResponse, error) {
-	if valid, err := a.Validator.ValidateActiveUser(ctx); !valid || err != nil {
+	if valid, err := NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.Validator.Credentials.GetUser(ctx)
+	user, err := NewValidator().GetUser(ctx)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	prof, err := a.Store.GetProfile(ctx, user.ID)
+	prof, err := a.st.GetProfile(ctx, user.ID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -239,11 +241,11 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb
 
 // GlobalSearch performs a global search.
 func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *inpb.GlobalSearchRequest) (*inpb.GlobalSearchResponse, error) {
-	if valid, err := a.Validator.ValidateActiveUser(ctx); !valid || err != nil {
+	if valid, err := NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.Validator.Credentials.GetUser(ctx)
+	user, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -314,19 +316,19 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 
 	token := OTPgen()
 
-	obj, err := a.Store.GetUserByEmail(ctx, user.Email)
+	obj, err := a.st.GetUserByEmail(ctx, user.Email)
 	if err == storage.ErrDoesNotExist {
 
 		err := storage.Transaction(func(tx sqlx.Ext) error {
 			// user has never been created yet
-			err = a.Store.RegisterUser(&user, token)
+			err = a.st.RegisterUser(&user, token)
 			if err != nil {
 				log.WithError(err).Error(logInfo)
 				return helpers.ErrToRPCError(err)
 			}
 
 			// get user again
-			obj, err = a.Store.GetUserByEmail(ctx, user.Email)
+			obj, err = a.st.GetUserByEmail(ctx, user.Email)
 			if err != nil {
 				log.WithError(err).Error(logInfo)
 				// internal error
@@ -360,14 +362,14 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 
 // GetTOTPStatus returns info about TOTP status for the current user
 func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
-	if valid, err := a.Validator.ValidateActiveUser(ctx); !valid || err != nil {
+	if valid, err := NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	enabled, err := a.Validator.Credentials.Is2FAEnabled(ctx, u.Username)
+	enabled, err := NewValidator().Is2FAEnabled(ctx, u.Username)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -379,16 +381,16 @@ func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *inpb.TOTPStatu
 
 // GetTOTPConfiguration generates a new TOTP configuration for the user
 func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *inpb.GetTOTPConfigurationRequest) (*inpb.GetTOTPConfigurationResponse, error) {
-	if valid, err := a.Validator.ValidateActiveUser(ctx); !valid || err != nil {
+	if valid, err := NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
 
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	cfg, err := a.Validator.Credentials.NewConfiguration(ctx, u.Username)
+	cfg, err := NewValidator().NewConfiguration(ctx, u.Username)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -403,22 +405,13 @@ func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *inpb.Ge
 
 // EnableTOTP enables TOTP for the user
 func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
-	if valid, err := a.Validator.ValidateActiveUser(ctx); !valid || err != nil {
+	if valid, err := NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
 
-	u, err := a.Validator.Credentials.GetUser(ctx)
+	err := NewValidator().Enable2FA(ctx)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	otp, err := a.Validator.Credentials.GetOTP(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	if err := a.Validator.Credentials.EnableOTP(ctx, u.Username, otp); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
+		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
 
 	return &inpb.TOTPStatusResponse{
@@ -428,18 +421,14 @@ func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *inpb.TOTPStatusRe
 
 // DisableTOTP disables TOTP for the user
 func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
-	if valid, err := a.Validator.ValidateActiveUser(ctx); !valid || err != nil {
+	if valid, err := NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
 
-	u, err := a.Validator.Credentials.GetUser(ctx, authcus.WithValidOTP())
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+	if err := NewValidator().Disable2FA(ctx); err != nil {
+		return nil, status.Errorf(codes.Unknown, " %v", err)
 	}
 
-	if err := a.Validator.Credentials.DisableOTP(ctx, u.Username); err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
 	return &inpb.TOTPStatusResponse{
 		Enabled: false,
 	}, nil
@@ -447,16 +436,16 @@ func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *inpb.TOTPStatusR
 
 // GetRecoveryCodes returns the list of recovery codes for the user
 func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRecoveryCodesRequest) (*inpb.GetRecoveryCodesResponse, error) {
-	if valid, err := a.Validator.ValidateActiveUser(ctx); !valid || err != nil {
+	if valid, err := NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
 
-	u, err := a.Validator.Credentials.GetUser(ctx, authcus.WithValidOTP())
+	u, err := NewValidator().GetUser(ctx, authcus.WithValidOTP())
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	codes, err := a.Validator.Credentials.OTPGetRecoveryCodes(ctx, u.Username, req.Regenerate)
+	codes, err := NewValidator().OTPGetRecoveryCodes(ctx, u.Username, req.Regenerate)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -467,13 +456,13 @@ func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRec
 }
 
 func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.PasswordResetReq) (*inpb.PasswordResetResp, error) {
-
-	tx, err := storage.DB().BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, err := a.txSt.TxBegin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
 	}
-	defer tx.Rollback()
-	user, err := storage.GetUserByUsername(ctx, tx, req.Username)
+	defer tx.TxRollback(ctx)
+
+	user, err := tx.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
@@ -488,17 +477,17 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", req.Username)
 		return &inpb.PasswordResetResp{}, nil
 	}
-	pr, err := storage.GetPasswordResetRecord(tx, user.ID)
+	pr, err := tx.GetPasswordResetRecord(user.ID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
 	}
 	if pr.GeneratedAt.After(time.Now().Add(-30 * 24 * time.Hour)) {
 		return nil, status.Errorf(codes.PermissionDenied, "can't reset password more than once a month")
 	}
-	if err := pr.SetOTP(OTPgen()); err != nil {
+	if err := pr.SetOTP(ctx, OTPgen()); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
 	}
-	if err := tx.Commit(); err != nil {
+	if err := tx.TxCommit(ctx); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
 	}
 	if err := email.SendInvite(req.Username, pr.OTP, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
@@ -508,12 +497,13 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 }
 
 func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
-	tx, err := storage.DB().BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	tx, err := a.txSt.TxBegin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
 	}
-	defer tx.Rollback()
-	user, err := storage.GetUserByUsername(ctx, tx, req.Username)
+	defer tx.TxRollback(ctx)
+
+	user, err := tx.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
@@ -521,29 +511,29 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 		}
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 	}
-	pr, err := storage.GetPasswordResetRecord(tx, user.ID)
+	pr, err := tx.GetPasswordResetRecord(user.ID)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
 	}
 	if pr.AttemptsLeft < 1 {
 		return nil, status.Errorf(codes.PermissionDenied, "no match found")
 	}
-	if err := pr.ReduceAttempts(); err != nil {
+	if err := pr.ReduceAttempts(ctx); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
 	}
 	if subtle.ConstantTimeCompare([]byte(pr.OTP), []byte(req.Otp)) == 1 {
-		if err := pr.SetOTP(""); err != nil {
+		if err := pr.SetOTP(ctx, ""); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
 		}
-		if err := storage.UpdatePassword(ctx, tx, pr.UserID, req.NewPassword); err != nil {
+		if err := tx.UpdatePassword(ctx, pr.UserID, req.NewPassword); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
 		}
-		if err := tx.Commit(); err != nil {
+		if err := tx.TxCommit(ctx); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
 		}
 		return &inpb.PasswordResetResp{}, nil
 	}
-	if err := tx.Commit(); err != nil {
+	if err := tx.TxCommit(ctx); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
 	}
 	return nil, status.Errorf(codes.PermissionDenied, "no match found")
@@ -551,14 +541,14 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 
 // ConfirmRegistration checks provided security token and activates user
 func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegistrationRequest) (*inpb.ConfirmRegistrationResponse, error) {
-	user, err := storage.GetUserByToken(storage.DB(), req.Token)
+	user, err := a.st.GetUserByToken(req.Token)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	log.Println("Confirming GetJwt", user.Username)
 	// give user a token that is valid only to finish the registration process
-	jwt, err := a.validator.SignToken(user.Username, 86400, []string{"registration", "lora-app-server"})
+	jwt, err := NewValidator().SignJWToken(user.Username, 86400, []string{"registration", "lora-app-server"})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -574,17 +564,23 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.Con
 
 // FinishRegistration sets new user password and creates a new organization
 func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.FinishRegistrationRequest) (*empty.Empty, error) {
-	cred, err := a.validator.GetCredentials(ctx,
-		auth.WithLimitedCredentials(), // nolint: staticcheck
-		auth.WithAudience("registration"),
+	u, err := NewValidator().GetUser(ctx,
+		authcus.WithLimitedCredentials(), // nolint: staticcheck
+		authcus.WithAudience("registration"),
 	)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	tx, err := a.txSt.TxBegin(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
+	}
+	defer tx.TxRollback(ctx)
+
 	// Get the user id based on the username and check that it matches the one
 	// in the request and that user is not active
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), cred.Username())
+	user, err := tx.GetUserByUsername(ctx, u.Username)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -601,32 +597,19 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 		CanHaveGateways: true,
 	}
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		err := a.Store.FinishRegistration(req.UserId, req.Password)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		err = organization.GetOrganizationAPI().Store.CreateOrganization(ctx, &org)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		u, err := a.Store.GetUser(ctx, req.UserId)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		err = organization.GetOrganizationAPI().Store.CreateOrganizationUser(ctx, org.ID, u.Username, true, false, false)
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-
-		return nil
-	})
-
+	err = tx.FinishRegistration(req.UserId, req.Password)
 	if err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	err = tx.CreateOrganization(ctx, &org)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	err = tx.CreateOrganizationUser(ctx, org.ID, user.Username, true, false, false)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
 
 	return &empty.Empty{}, status.Errorf(codes.OK, "")

@@ -791,7 +791,44 @@ func (ps *pgstore) FinishRegistration(userID int64, password string) error {
 	return nil
 }
 
-func (ps *pgstore) GetPasswordResetRecord(userID int64) (*PasswordResetRecord, error) {
+func (ps *pgstore) SetOTP(ctx context.Context, pr *umod.PasswordResetRecord) error {
+	res, err := ps.db.ExecContext(ctx, `UPDATE password_reset
+						SET otp = $1, generated_at = $2, attempts_left = $3
+						WHERE user_id = $4`,
+		pr.OTP, pr.GeneratedAt, pr.AttemptsLeft, pr.UserID)
+	if err != nil {
+		return err
+	}
+	// we need to make sure that we've updated exactly one row
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowCnt != 1 {
+		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
+	}
+	return nil
+}
+
+func (ps *pgstore) ReduceAttempts(ctx context.Context, pr *umod.PasswordResetRecord) error {
+	pr.AttemptsLeft--
+	res, err := ps.db.ExecContext(ctx, `UPDATE password_reset SET attempts_left = $1 WHERE user_id = $2`,
+		pr.AttemptsLeft, pr.UserID)
+	if err != nil {
+		return err
+	}
+	// we need to make sure that we've updated exactly one row
+	rowCnt, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowCnt != 1 {
+		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
+	}
+	return nil
+}
+
+func (ps *pgstore) GetPasswordResetRecord(userID int64) (*umod.PasswordResetRecord, error) {
 	var db sqlx.Ext
 	if tx != nil {
 		db = tx
@@ -804,7 +841,7 @@ func (ps *pgstore) GetPasswordResetRecord(userID int64) (*PasswordResetRecord, e
 	if err != nil {
 		return nil, err
 	}
-	res := &PasswordResetRecord{db: db, UserID: userID}
+	res := &umod.PasswordResetRecord{db: db, UserID: userID}
 	var count int
 	defer rows.Close()
 	for rows.Next() {
@@ -826,52 +863,4 @@ func (ps *pgstore) GetPasswordResetRecord(userID int64) (*PasswordResetRecord, e
 		}
 	}
 	return res, nil
-}
-
-type PasswordResetRecord struct {
-	db           sqlx.Ext
-	UserID       int64
-	OTP          string
-	GeneratedAt  time.Time
-	AttemptsLeft int64
-}
-
-func (pr *PasswordResetRecord) SetOTP(otp string) error {
-	pr.OTP = otp
-	pr.GeneratedAt = time.Now()
-	pr.AttemptsLeft = 3
-	res, err := pr.db.Exec(`UPDATE password_reset
-						SET otp = $1, generated_at = $2, attempts_left = $3
-						WHERE user_id = $4`,
-		pr.OTP, pr.GeneratedAt, pr.AttemptsLeft, pr.UserID)
-	if err != nil {
-		return err
-	}
-	// we need to make sure that we've updated exactly one row
-	rowCnt, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowCnt != 1 {
-		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
-	}
-	return nil
-}
-
-func (pr *PasswordResetRecord) ReduceAttempts() error {
-	pr.AttemptsLeft--
-	res, err := pr.db.Exec(`UPDATE password_reset SET attempts_left = $1 WHERE user_id = $2`,
-		pr.AttemptsLeft, pr.UserID)
-	if err != nil {
-		return err
-	}
-	// we need to make sure that we've updated exactly one row
-	rowCnt, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowCnt != 1 {
-		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
-	}
-	return nil
 }
