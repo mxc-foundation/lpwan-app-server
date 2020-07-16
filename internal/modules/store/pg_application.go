@@ -12,7 +12,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
 	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 )
 
 // CheckCreateApplicationAccess validate validates if the client has access to the applications resource.
@@ -47,7 +46,7 @@ func (ps *pgstore) CheckCreateApplicationAccess(ctx context.Context, username st
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := ps.db.QueryRowContext(ctx, userQuery, username, organizationID, userID).Scan(&count); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -85,7 +84,7 @@ func (ps *pgstore) CheckListApplicationAccess(ctx context.Context, username stri
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -120,7 +119,7 @@ func (ps *pgstore) CheckReadApplicationAccess(ctx context.Context, username stri
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, applicationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, applicationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -157,7 +156,7 @@ func (ps *pgstore) CheckUpdateApplicationAccess(ctx context.Context, username st
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, applicationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, applicationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -194,7 +193,7 @@ func (ps *pgstore) CheckDeleteApplicationAccess(ctx context.Context, username st
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, applicationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, applicationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -206,7 +205,7 @@ func (ps *pgstore) CreateApplication(ctx context.Context, item *appmod.Applicati
 		return errors.Wrap(err, "validate error")
 	}
 
-	err := sqlx.Get(h.tx, &item.ID, `
+	err := sqlx.GetContext(ctx, ps.db, &item.ID, `
 		insert into application (
 			name,
 			description,
@@ -240,7 +239,7 @@ func (ps *pgstore) CreateApplication(ctx context.Context, item *appmod.Applicati
 // GetApplication returns the Application for the given id.
 func (ps *pgstore) GetApplication(ctx context.Context, id int64) (appmod.Application, error) {
 	var app appmod.Application
-	err := sqlx.Get(h.db, &app, "select * from application where id = $1", id)
+	err := sqlx.GetContext(ctx, ps.db, &app, "select * from application where id = $1", id)
 	if err != nil {
 		return app, errors.Wrap(err, "select error")
 	}
@@ -254,7 +253,7 @@ func (ps *pgstore) GetApplicationCount(ctx context.Context, filters appmod.Appli
 		filters.Search = "%" + filters.Search + "%"
 	}
 
-	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
+	query, args, err := sqlx.Named(`
 		select
 			count(distinct a.*)
 		from
@@ -269,7 +268,7 @@ func (ps *pgstore) GetApplicationCount(ctx context.Context, filters appmod.Appli
 	}
 
 	var count int
-	err = sqlx.Get(h.db, &count, query, args...)
+	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "select error")
 	}
@@ -310,7 +309,7 @@ func (ps *pgstore) GetApplications(ctx context.Context, filters appmod.Applicati
 	}
 
 	var apps []appmod.ApplicationListItem
-	err = sqlx.Select(h.db, &apps, query, args...)
+	err = sqlx.SelectContext(ctx, ps.db, &apps, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
 	}
@@ -324,7 +323,7 @@ func (ps *pgstore) UpdateApplication(ctx context.Context, item appmod.Applicatio
 		return fmt.Errorf("validate application error: %s", err)
 	}
 
-	res, err := h.tx.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		update application
 		set
 			name = $2,
@@ -366,11 +365,6 @@ func (ps *pgstore) UpdateApplication(ctx context.Context, item appmod.Applicatio
 
 // DeleteApplication deletes the Application matching the given ID.
 func (ps *pgstore) DeleteApplication(ctx context.Context, id int64) error {
-	err := device.GetDeviceAPI().Store.DeleteAllDevicesForApplicationID(ctx, id)
-	if err != nil {
-		return errors.Wrap(err, "delete all nodes error")
-	}
-
 	res, err := ps.db.ExecContext(ctx, "delete from application where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
@@ -395,13 +389,13 @@ func (ps *pgstore) DeleteApplication(ctx context.Context, id int64) error {
 // given an organization id.
 func (ps *pgstore) DeleteAllApplicationsForOrganizationID(ctx context.Context, organizationID int64) error {
 	var apps []appmod.Application
-	err := sqlx.Select(h.db, &apps, "select * from application where organization_id = $1", organizationID)
+	err := sqlx.SelectContext(ctx, ps.db, &apps, "select * from application where organization_id = $1", organizationID)
 	if err != nil {
 		return errors.Wrap(err, "select error")
 	}
 
 	for _, app := range apps {
-		err = h.DeleteApplication(ctx, app.ID)
+		err = ps.DeleteApplication(ctx, app.ID)
 		if err != nil {
 			return errors.Wrap(err, "delete application error")
 		}

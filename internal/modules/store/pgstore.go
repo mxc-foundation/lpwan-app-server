@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 )
 
 // DB represents database interface.
@@ -11,14 +12,17 @@ type DB interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
-	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+	BeginTxx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error)
+
+	QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error)
+	QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row
 }
 
 type ltx struct {
-	*sql.Tx
+	*sqlx.Tx
 }
 
-func (t ltx) BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error) {
+func (t ltx) BeginTxx(ctx context.Context, opts *sql.TxOptions) (*sqlx.Tx, error) {
 	return nil, fmt.Errorf("already in transaction")
 }
 
@@ -40,7 +44,7 @@ func New(db DB) Store {
 }
 
 func (ps *pgstore) TxBegin(ctx context.Context) (Store, error) {
-	tx, err := ps.db.BeginTx(ctx, &sql.TxOptions{
+	tx, err := ps.db.BeginTxx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	})
 	if err != nil {

@@ -84,7 +84,7 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 	gp.CreatedAt = now
 	gp.UpdatedAt = now
 
-	_, err = db.Exec(`
+	_, err = ps.db.ExecContext(ctx, `
 		insert into gateway_profile (
 			gateway_profile_id,
 			network_server_id,
@@ -100,10 +100,10 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 		gp.Name,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return err
 	}
 
-	n, err := GetNetworkServer(ctx, gp.NetworkServerID)
+	n, err := ps.GetNetworkServer(ctx, gp.NetworkServerID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -131,7 +131,7 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 // GetGatewayProfile returns the gateway-profile matching the given id.
 func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (gpmod.GatewayProfile, error) {
 	var gp gpmod.GatewayProfile
-	err := sqlx.Get(db, &gp, `
+	err := sqlx.GetContext(ctx, ps.db, &gp, `
 		select
 			network_server_id,
 			name,
@@ -143,10 +143,10 @@ func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (gpmod.G
 		id,
 	)
 	if err != nil {
-		return gp, handlePSQLError(Select, err, "select error")
+		return gp, err
 	}
 
-	n, err := GetNetworkServer(ctx, gp.NetworkServerID)
+	n, err := ps.GetNetworkServer(ctx, gp.NetworkServerID)
 	if err != nil {
 		return gp, errors.Wrap(err, "get network-server error")
 	}
@@ -180,7 +180,7 @@ func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 		return errors.Wrap(err, "uuid from bytes error")
 	}
 
-	res, err := db.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		update gateway_profile
 		set
 			updated_at = $2,
@@ -194,7 +194,7 @@ func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 		gp.Name,
 	)
 	if err != nil {
-		return handlePSQLError(Update, err, "update gateway-profile error")
+		return err
 	}
 
 	ra, err := res.RowsAffected()
@@ -202,10 +202,10 @@ func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
-	n, err := GetNetworkServer(ctx, gp.NetworkServerID)
+	n, err := ps.GetNetworkServer(ctx, gp.NetworkServerID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -232,14 +232,14 @@ func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	res, err := db.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		delete from gateway_profile
 		where
 			gateway_profile_id = $1`,
 		id,
 	)
 	if err != nil {
-		return handlePSQLError(Delete, err, "delete gateway-profile error")
+		return err
 	}
 
 	ra, err := res.RowsAffected()
@@ -247,7 +247,7 @@ func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errors.New("not exist")
 	}
 
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
@@ -268,12 +268,12 @@ func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
 // GetGatewayProfileCount returns the total number of gateway-profiles.
 func (ps *pgstore) GetGatewayProfileCount(ctx context.Context) (int, error) {
 	var count int
-	err := sqlx.Get(db, &count, `
+	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
 			count(*)
 		from gateway_profile`)
 	if err != nil {
-		return 0, handlePSQLError(Select, err, "select error")
+		return 0, err
 	}
 
 	return count, nil
@@ -283,7 +283,7 @@ func (ps *pgstore) GetGatewayProfileCount(ctx context.Context) (int, error) {
 // gateway-profiles given a network-server ID.
 func (ps *pgstore) GetGatewayProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error) {
 	var count int
-	err := sqlx.Get(db, &count, `
+	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
 			count(*)
 		from gateway_profile
@@ -292,7 +292,7 @@ func (ps *pgstore) GetGatewayProfileCountForNetworkServerID(ctx context.Context,
 		networkServerID,
 	)
 	if err != nil {
-		return 0, handlePSQLError(Select, err, "select error")
+		return 0, err
 	}
 
 	return count, nil
@@ -301,7 +301,7 @@ func (ps *pgstore) GetGatewayProfileCountForNetworkServerID(ctx context.Context,
 // GetGatewayProfiles returns a slice of gateway-profiles.
 func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]gpmod.GatewayProfileMeta, error) {
 	var gps []gpmod.GatewayProfileMeta
-	err := sqlx.Select(db, &gps, `
+	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select
 			gp.*,
 			n.name as network_server_name
@@ -318,7 +318,7 @@ func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([
 		offset,
 	)
 	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
+		return nil, err
 	}
 
 	return gps, nil
@@ -328,7 +328,7 @@ func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([
 // for the given network-server ID.
 func (ps *pgstore) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]gpmod.GatewayProfileMeta, error) {
 	var gps []gpmod.GatewayProfileMeta
-	err := sqlx.Select(db, &gps, `
+	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select
 			gp.*,
 			n.name as network_server_name
@@ -348,7 +348,7 @@ func (ps *pgstore) GetGatewayProfilesForNetworkServerID(ctx context.Context, net
 		offset,
 	)
 	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
+		return nil, err
 	}
 
 	return gps, nil

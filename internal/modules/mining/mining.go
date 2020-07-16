@@ -30,26 +30,26 @@ type Controller struct {
 
 var Service *Controller
 
-func Setup(conf config.Config) error {
+func Setup() error {
 	log.Info("mining cron task begin...")
 
 	// we need to seed it as we use it later
 	rand.Seed(time.Now().UnixNano())
 
-	mconf := conf.ApplicationServer.MiningSetUp
+	mconf := config.C.ApplicationServer.MiningSetUp
 	if mconf.MinValue <= 0 || mconf.MinValue > mconf.MaxValue {
 		err := fmt.Errorf("invalid mining configuration, min_value %d and max_value %d", mconf.MinValue, mconf.MaxValue)
 		log.Error(err)
 		return err
 	}
-	oneMxc, err := Service.getUSDprice(conf)
+	oneMxc, err := Service.getUSDprice()
 	if err != nil {
 		log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
 		return err
 	}
 
 	Service.dailyMxcPrice = oneMxc
-	Service.totalMiningValue = Service.calcTotalMiningValue(conf, Service.dailyMxcPrice)
+	Service.totalMiningValue = Service.calcTotalMiningValue(Service.dailyMxcPrice)
 
 	c := cron.New()
 	exeTime := config.C.ApplicationServer.MiningSetUp.ExecuteTime
@@ -57,7 +57,7 @@ func Setup(conf config.Config) error {
 	err = c.AddFunc(exeTime, func() {
 		log.Info("Start token mining")
 		go func() {
-			err := Service.tokenMining(context.Background(), conf)
+			err := Service.tokenMining(context.Background())
 			if err != nil {
 				log.WithError(err).Error("tokenMining Error")
 			}
@@ -73,13 +73,13 @@ func Setup(conf config.Config) error {
 	err = priceCron.AddFunc("0 0 3 * * ?", func() {
 		log.Info("Get new MXC Price")
 		go func() {
-			oneMxc, err := Service.getUSDprice(conf)
+			oneMxc, err := Service.getUSDprice()
 			if err != nil {
 				log.WithError(err).Error("tokenMining/Unable to get USD price from CMC")
 			}
 			Service.dailyMxcPrice = oneMxc
 
-			Service.totalMiningValue = Service.calcTotalMiningValue(conf, Service.dailyMxcPrice)
+			Service.totalMiningValue = Service.calcTotalMiningValue(Service.dailyMxcPrice)
 		}()
 	})
 	if err != nil {
@@ -90,14 +90,14 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
-func (c *Controller) calcTotalMiningValue(conf config.Config, mxcPrice float64) float64 {
-	mconf := conf.ApplicationServer.MiningSetUp
+func (c *Controller) calcTotalMiningValue(mxcPrice float64) float64 {
+	mconf := config.C.ApplicationServer.MiningSetUp
 	randUSD := float64(rand.Int63n(mconf.MaxValue-mconf.MinValue) + mconf.MinValue)
 	return mxcPrice * randUSD
 }
 
 // getUSDprice returns 1 USD price in MXC
-func (c *Controller) getUSDprice(conf config.Config) (float64, error) {
+func (c *Controller) getUSDprice() (float64, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://pro-api.coinmarketcap.com/v1/tools/price-conversion", nil)
 	if err != nil {
@@ -112,7 +112,7 @@ func (c *Controller) getUSDprice(conf config.Config) (float64, error) {
 	q.Add("convert", "MXC")
 
 	req.Header.Set("Accepts", "application/json")
-	req.Header.Add("X-CMC_PRO_API_KEY", conf.ApplicationServer.MiningSetUp.CMCKey)
+	req.Header.Add("X-CMC_PRO_API_KEY", config.C.ApplicationServer.MiningSetUp.CMCKey)
 	req.URL.RawQuery = q.Encode()
 
 	resp, err := client.Do(req)
@@ -179,11 +179,11 @@ func (c *Controller) GetMXCprice(conf config.Config, amount string) (price float
 	return 0, err
 }
 
-func (c *Controller) tokenMining(ctx context.Context, conf config.Config) error {
+func (c *Controller) tokenMining(ctx context.Context) error {
 	currentTime := time.Now().Unix()
 
 	// get the gateway list that should receive the mining tokens
-	miningGws, err := gateway.Service.St.GetGatewayMiningList(ctx, currentTime, conf.ApplicationServer.MiningSetUp.GwOnlineLimit)
+	miningGws, err := gateway.Service.St.GetGatewayMiningList(ctx, currentTime, config.C.ApplicationServer.MiningSetUp.GwOnlineLimit)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			log.Info("No gateway online longer than 24 hours")

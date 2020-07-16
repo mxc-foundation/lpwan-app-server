@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -24,11 +23,10 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 )
 
-func (ps *pgstore) CheckCreateNodeAccess(username string, applicationID int64, userID int64) (bool, error) {
+func (ps *pgstore) CheckCreateNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -59,13 +57,13 @@ func (ps *pgstore) CheckCreateNodeAccess(username string, applicationID int64, u
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, applicationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, applicationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListNodeAccess(username string, applicationID int64, userID int64) (bool, error) {
+func (ps *pgstore) CheckListNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -93,13 +91,13 @@ func (ps *pgstore) CheckListNodeAccess(username string, applicationID int64, use
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, applicationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, applicationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *pgstore) CheckReadNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -129,13 +127,13 @@ func (ps *pgstore) CheckReadNodeAccess(username string, devEUI lorawan.EUI64, us
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, devEUI[:], userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, devEUI[:], userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -167,13 +165,13 @@ func (ps *pgstore) CheckUpdateNodeAccess(username string, devEUI lorawan.EUI64, 
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, devEUI[:], userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, devEUI[:], userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckDeleteNodeAccess(username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *pgstore) CheckDeleteNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -205,7 +203,7 @@ func (ps *pgstore) CheckDeleteNodeAccess(username string, devEUI lorawan.EUI64, 
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, devEUI[:], userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, devEUI[:], userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -213,7 +211,7 @@ func (ps *pgstore) CheckDeleteNodeAccess(username string, devEUI lorawan.EUI64, 
 
 // UpdateDeviceActivation updates the device address and the AppSKey.
 func (ps *pgstore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error {
-	res, err := ps.tx.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		update device
 		set
 			dev_addr = $2,
@@ -250,13 +248,10 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *devmod.Device, applicati
 		return errors.Wrap(err, "validate error")
 	}
 
-	now := time.Now()
-	d.CreatedAt = now
-	timestampCreatedAt, _ := ptypes.TimestampProto(d.CreatedAt)
+	d.CreatedAt = time.Now()
+	d.UpdatedAt = time.Now()
 
-	d.UpdatedAt = now
-
-	_, err := ps.tx.Exec(`
+	_, err := ps.db.ExecContext(ctx, `
         insert into device (
             dev_eui,
             created_at,
@@ -298,58 +293,6 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *devmod.Device, applicati
 		return errors.Wrap(err, "insert error")
 	}
 
-	app, err := application.GetApplicationAPI().Store.GetApplication(ctx, d.ApplicationID)
-	if err != nil {
-		return errors.Wrap(err, "get application error")
-	}
-
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
-	if err != nil {
-		return errors.Wrap(err, "get network-server error")
-	}
-
-	// add this device to network server
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-	if err != nil {
-		return errors.Wrap(err, "get network-server client error")
-	}
-
-	_, err = client.CreateDevice(ctx, &ns.CreateDeviceRequest{
-		Device: &ns.Device{
-			DevEui:            d.DevEUI[:],
-			DeviceProfileId:   d.DeviceProfileID.Bytes(),
-			ServiceProfileId:  app.ServiceProfileID.Bytes(),
-			RoutingProfileId:  applicationServerID.Bytes(),
-			SkipFCntCheck:     d.SkipFCntCheck,
-			ReferenceAltitude: d.ReferenceAltitude,
-		},
-	})
-	if err != nil {
-		return errors.Wrap(err, "create device error")
-	}
-
-	// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
-	// network server successfully
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
-	if err == nil {
-		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
-			OrgId: app.OrganizationID,
-			DevProfile: &m2m_api.AppServerDeviceProfile{
-				DevEui:        d.DevEUI.String(),
-				ApplicationId: d.ApplicationID,
-				Name:          d.Name,
-				CreatedAt:     timestampCreatedAt,
-			},
-		})
-		if err != nil {
-			log.WithError(err).Error("m2m server create device api error")
-		}
-	} else {
-		log.WithError(err).Error("get m2m-server client error")
-	}
-
 	log.WithFields(log.Fields{
 		"dev_eui": d.DevEUI,
 		"ctx_id":  ctx.Value(logging.ContextIDKey),
@@ -362,42 +305,16 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *devmod.Device, applicati
 // When forUpdate is set to true, then tx must be a tx transaction.
 // When localOnly is set to true, no call to the network-server is made to
 // retrieve additional device data.
-func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate, localOnly bool) (devmod.Device, error) {
+func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (devmod.Device, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
 	var d devmod.Device
-	err := sqlx.Get(ps.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
+	err := sqlx.GetContext(ctx, ps.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
 	if err != nil {
 		return d, errors.Wrap(err, "select error")
-	}
-
-	if localOnly {
-		return d, nil
-	}
-
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
-	if err != nil {
-		return d, errors.Wrap(err, "get network-server error")
-	}
-
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-	if err != nil {
-		return d, errors.Wrap(err, "get network-server client error")
-	}
-
-	resp, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
-		DevEui: d.DevEUI[:],
-	})
-	if err != nil {
-		return d, err
-	}
-
-	if resp.Device != nil {
-		d.SkipFCntCheck = resp.Device.SkipFCntCheck
-		d.ReferenceAltitude = resp.Device.ReferenceAltitude
 	}
 
 	return d, nil
@@ -423,7 +340,7 @@ func (ps *pgstore) GetDeviceCount(ctx context.Context, filters devmod.DeviceFilt
 	}
 
 	var count int
-	err = sqlx.Get(ps.db, &count, query, args...)
+	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "select query error")
 	}
@@ -435,7 +352,7 @@ func (ps *pgstore) GetDeviceCount(ctx context.Context, filters devmod.DeviceFilt
 func (ps *pgstore) GetAllDeviceEuis(ctx context.Context) ([]string, error) {
 	var devEuiList []string
 	var list []lorawan.EUI64
-	err := sqlx.Select(ps.db, &list, "select dev_eui from device ORDER BY created_at DESC")
+	err := sqlx.SelectContext(ctx, ps.db, &list, "select dev_eui from device ORDER BY created_at DESC")
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
 	}
@@ -476,7 +393,7 @@ func (ps *pgstore) GetDevices(ctx context.Context, filters devmod.DeviceFilters)
 	}
 
 	var devices []devmod.DeviceListItem
-	err = sqlx.Select(ps.db, &devices, query, args...)
+	err = sqlx.SelectContext(ctx, ps.db, &devices, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
 	}
@@ -486,14 +403,14 @@ func (ps *pgstore) GetDevices(ctx context.Context, filters devmod.DeviceFilters)
 
 // UpdateDevice updates the given device.
 // When localOnly is set, it will not update the device on the network-server.
-func (ps *pgstore) UpdateDevice(ctx context.Context, d *devmod.Device, localOnly bool) error {
+func (ps *pgstore) UpdateDevice(ctx context.Context, d *devmod.Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
 
 	d.UpdatedAt = time.Now()
 
-	res, err := ps.tx.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
         update device
         set
             updated_at = $2,
@@ -541,43 +458,6 @@ func (ps *pgstore) UpdateDevice(ctx context.Context, d *devmod.Device, localOnly
 		return errors.New("not exist")
 	}
 
-	// update the device on the network-server
-	if !localOnly {
-		app, err := application.GetApplicationAPI().Store.GetApplication(ctx, d.ApplicationID)
-		if err != nil {
-			return errors.Wrap(err, "get application error")
-		}
-
-		n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, d.DevEUI)
-		if err != nil {
-			return errors.Wrap(err, "get network-server error")
-		}
-
-		client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-		if err != nil {
-			return errors.Wrap(err, "get network-server client error")
-		}
-
-		rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
-		if err != nil {
-			return errors.Wrap(err, "uuid from string error")
-		}
-
-		_, err = client.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
-			Device: &ns.Device{
-				DevEui:            d.DevEUI[:],
-				DeviceProfileId:   d.DeviceProfileID.Bytes(),
-				ServiceProfileId:  app.ServiceProfileID.Bytes(),
-				RoutingProfileId:  rpID.Bytes(),
-				SkipFCntCheck:     d.SkipFCntCheck,
-				ReferenceAltitude: d.ReferenceAltitude,
-			},
-		})
-		if err != nil {
-			return errors.Wrap(err, "update device error")
-		}
-	}
-
 	log.WithFields(log.Fields{
 		"dev_eui": d.DevEUI,
 		"ctx_id":  ctx.Value(logging.ContextIDKey),
@@ -588,12 +468,12 @@ func (ps *pgstore) UpdateDevice(ctx context.Context, d *devmod.Device, localOnly
 
 // DeleteDevice deletes the device matching the given DevEUI.
 func (ps *pgstore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	res, err := ps.tx.Exec("delete from device where dev_eui = $1", devEUI[:])
+	res, err := ps.db.ExecContext(ctx, "delete from device where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -648,7 +528,7 @@ func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) 
 	dc.CreatedAt = now
 	dc.UpdatedAt = now
 
-	_, err := ps.tx.Exec(`
+	_, err := ps.db.ExecContext(ctx, `
         insert into device_keys (
             created_at,
             updated_at,
@@ -682,7 +562,7 @@ func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) 
 func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (devmod.DeviceKeys, error) {
 	var dc devmod.DeviceKeys
 
-	err := sqlx.Get(ps.db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
+	err := sqlx.GetContext(ctx, ps.db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return dc, errors.Wrap(err, "select error")
 	}
@@ -694,7 +574,7 @@ func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (dev
 func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) error {
 	dc.UpdatedAt = time.Now()
 
-	res, err := ps.tx.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
         update device_keys
         set
             updated_at = $2,
@@ -732,7 +612,7 @@ func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) 
 
 // DeleteDeviceKeys deletes the device-keys for the given DevEUI.
 func (ps *pgstore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error {
-	res, err := ps.tx.Exec("delete from device_keys where dev_eui = $1", devEUI[:])
+	res, err := ps.db.ExecContext(ctx, "delete from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -756,7 +636,7 @@ func (ps *pgstore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) e
 func (ps *pgstore) CreateDeviceActivation(ctx context.Context, da *devmod.DeviceActivation) error {
 	da.CreatedAt = time.Now()
 
-	err := sqlx.Get(ps.txDB, &da.ID, `
+	err := sqlx.GetContext(ctx, ps.db, &da.ID, `
         insert into device_activation (
             created_at,
             dev_eui,
@@ -786,7 +666,7 @@ func (ps *pgstore) CreateDeviceActivation(ctx context.Context, da *devmod.Device
 func (ps *pgstore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (devmod.DeviceActivation, error) {
 	var da devmod.DeviceActivation
 
-	err := sqlx.Get(ps.db, &da, `
+	err := sqlx.GetContext(ctx, ps.db, &da, `
         select *
         from device_activation
         where
@@ -806,7 +686,7 @@ func (ps *pgstore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI 
 // DeleteAllDevicesForApplicationID deletes all devices given an application id.
 func (ps *pgstore) DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error {
 	var devs []devmod.Device
-	err := sqlx.Select(ps.db, &devs, "select * from device where application_id = $1", applicationID)
+	err := sqlx.SelectContext(ctx, ps.db, &devs, "select * from device where application_id = $1", applicationID)
 	if err != nil {
 		return errors.Wrap(err, "select error")
 	}

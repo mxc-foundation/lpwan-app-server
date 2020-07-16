@@ -20,7 +20,7 @@ import (
 const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
 const internalUserFields = "*"
 
-func (ps *pgstore) CheckActiveUser(username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckActiveUser(ctx context.Context, username string, userID int64) (bool, error) {
 	var userQuery = "select count(*) from " +
 		"(select 1 from user u where (u.email = $1 or u.id = $2) " +
 		"and u.is_active = true limit 1) count_only"
@@ -32,7 +32,7 @@ func (ps *pgstore) CheckActiveUser(username string, userID int64) (bool, error) 
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckCreateUserAcess(username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckCreateUserAcess(ctx context.Context, username string, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -60,7 +60,7 @@ func (ps *pgstore) CheckCreateUserAcess(username string, userID int64) (bool, er
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListUserAcess(username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckListUserAcess(ctx context.Context, username string, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -88,7 +88,7 @@ func (ps *pgstore) CheckListUserAcess(username string, userID int64) (bool, erro
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadUserAccess(username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckReadUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -116,7 +116,7 @@ func (ps *pgstore) CheckReadUserAccess(username string, userID, operatorUserID i
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateDeleteUserAccess(username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateDeleteUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -142,7 +142,7 @@ func (ps *pgstore) CheckUpdateDeleteUserAccess(username string, userID, operator
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdatePasswordUserAccess(username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdatePasswordUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
 	if userID != operatorUserID {
 		return false, errors.New("no permission to update other user's password")
 	}
@@ -173,7 +173,7 @@ func (ps *pgstore) CheckUpdatePasswordUserAccess(username string, userID, operat
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateProfileUserAccess(username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateProfileUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -632,7 +632,7 @@ func (ps *pgstore) GetProfile(ctx context.Context, id int64) (umod.UserProfile, 
 	return prof, nil
 }
 
-func (ps *pgstore) GetUserToken(u umod.User) (string, error) {
+func (ps *pgstore) GetUserToken(ctx context.Context, u umod.User) (string, error) {
 	// Generate the token.
 	now := time.Now()
 	nowSecondsSinceEpoch := now.Unix()
@@ -660,7 +660,7 @@ func (ps *pgstore) GetUserToken(u umod.User) (string, error) {
 }
 
 // RegisterUser ...
-func (ps *pgstore) RegisterUser(user *umod.User, token string) error {
+func (ps *pgstore) RegisterUser(ctx context.Context, user *umod.User, token string) error {
 	var db sqlx.Ext
 	if tx != nil {
 		db = tx
@@ -709,7 +709,7 @@ func (ps *pgstore) RegisterUser(user *umod.User, token string) error {
 }
 
 // GetUserByToken ...
-func (ps *pgstore) GetUserByToken(token string) (umod.User, error) {
+func (ps *pgstore) GetUserByToken(ctx context.Context, token string) (umod.User, error) {
 	var db sqlx.Ext
 	if tx != nil {
 		db = tx
@@ -752,7 +752,7 @@ func (ps *pgstore) GetTokenByUsername(ctx context.Context, username string) (str
 }
 
 // FinishRegistration ...
-func (ps *pgstore) FinishRegistration(userID int64, password string) error {
+func (ps *pgstore) FinishRegistration(ctx context.Context, userID int64, password string) error {
 	var db sqlx.Ext
 	if tx != nil {
 		db = tx
@@ -828,7 +828,7 @@ func (ps *pgstore) ReduceAttempts(ctx context.Context, pr *umod.PasswordResetRec
 	return nil
 }
 
-func (ps *pgstore) GetPasswordResetRecord(userID int64) (*umod.PasswordResetRecord, error) {
+func (ps *pgstore) GetPasswordResetRecord(ctx context.Context, userID int64) (*umod.PasswordResetRecord, error) {
 	var db sqlx.Ext
 	if tx != nil {
 		db = tx

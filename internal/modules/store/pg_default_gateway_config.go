@@ -1,13 +1,14 @@
 package store
 
 import (
+	"context"
 	"github.com/pkg/errors"
 
 	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 )
 
-func (ps *pgstore) AddNewDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewayConfig) error {
-	_, err := h.tx.Exec(`
+func (ps *pgstore) AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig *gwmod.DefaultGatewayConfig) error {
+	_, err := ps.db.ExecContext(ctx, `
 		insert into default_gateway_config (
 		    model, region, created_at, updated_at, default_config
 		) values (
@@ -24,8 +25,8 @@ func (ps *pgstore) AddNewDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewa
 	return errors.Wrap(err, "AddNewDefaultGatewayConfig")
 }
 
-func (ps *pgstore) UpdateDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewayConfig) error {
-	_, err := h.tx.Exec(`
+func (ps *pgstore) UpdateDefaultGatewayConfig(ctx context.Context, defaultConfig *gwmod.DefaultGatewayConfig) error {
+	_, err := ps.db.ExecContext(ctx, `
 		update 
 		    default_gateway_config 
 		set
@@ -43,8 +44,8 @@ func (ps *pgstore) UpdateDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewa
 	return errors.Wrap(err, "UpdateDefaultGatewayConfig")
 }
 
-func (ps *pgstore) GetDefaultGatewayConfig(defaultConfig *gwmod.DefaultGatewayConfig) error {
-	err := h.db.QueryRowx(`
+func (ps *pgstore) GetDefaultGatewayConfig(ctx context.Context, defaultConfig *gwmod.DefaultGatewayConfig) error {
+	err := ps.db.QueryRowxContext(ctx, `
 		select 
 		    id, model, region, created_at, updated_at, default_config 
 		from 

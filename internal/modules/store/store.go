@@ -6,7 +6,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
-	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"

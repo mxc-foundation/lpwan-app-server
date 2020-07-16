@@ -3,10 +3,9 @@ package gateway
 import (
 	"context"
 	"fmt"
-	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
-	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -15,7 +14,6 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
-	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -36,6 +34,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	gp "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 )
@@ -55,108 +54,6 @@ func NewGatewayAPI(applicationID uuid.UUID) *GatewayAPI {
 		txSt:                st,
 		ApplicationServerID: applicationID,
 	}
-}
-
-func (a *GatewayAPI) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error) {
-	return a.st.GetGatewayMiningList(ctx, time, limit)
-}
-
-func (a *GatewayAPI) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error {
-	return a.st.UpdateFirstHeartbeatToZero(ctx, mac)
-}
-
-func (a *GatewayAPI) UpdateFirmwareFromProvisioningServer(conf config.Config) error {
-	log.WithFields(log.Fields{
-		"provisioning-server": conf.ProvisionServer.ProvisionServer,
-		"caCert":              conf.ProvisionServer.CACert,
-		"tlsCert":             conf.ProvisionServer.TLSCert,
-		"tlsKey":              conf.ProvisionServer.TLSKey,
-		"schedule":            conf.ProvisionServer.UpdateSchedule,
-	}).Info("Start schedule to update gateway firmware...")
-	Service.SupernodeAddr = os.Getenv("APPSERVER")
-	if strings.HasPrefix(Service.SupernodeAddr, "https://") {
-		Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, "https://", "", -1)
-	}
-	if strings.HasPrefix(Service.SupernodeAddr, "http://") {
-		Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, "http://", "", -1)
-	}
-	if strings.HasSuffix(Service.SupernodeAddr, ":8080") {
-		Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, ":8080", "", -1)
-	}
-	Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, "/", "", -1)
-
-	var bindPortOldGateway string
-	var bindPortNewGateway string
-
-	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.OldGateway.Bind, ":"); len(strArray) != 2 {
-		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", conf.ApplicationServer.APIForGateway.OldGateway.Bind))
-	} else {
-		bindPortOldGateway = strArray[1]
-	}
-
-	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.NewGateway.Bind, ":"); len(strArray) != 2 {
-		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", conf.ApplicationServer.APIForGateway.NewGateway.Bind))
-	} else {
-		bindPortNewGateway = strArray[1]
-	}
-
-	c := cron.New()
-	err := c.AddFunc(conf.ProvisionServer.UpdateSchedule, func() {
-		log.Info("Check firmware update...")
-		gwFwList, err := a.st.GetGatewayFirmwareList()
-		if err != nil {
-			log.WithError(err).Errorf("Failed to get gateway firmware list.")
-			return
-		}
-
-		// send update
-		psClient, err := provisionserver.CreateClientWithCert(conf.ProvisionServer.ProvisionServer,
-			conf.ProvisionServer.CACert,
-			conf.ProvisionServer.TLSCert,
-			conf.ProvisionServer.TLSKey)
-		if err != nil {
-			log.WithError(err).Errorf("Create Provisioning server client error")
-			return
-		}
-
-		for _, v := range gwFwList {
-			res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
-				Model:          v.Model,
-				SuperNodeAddr:  Service.SupernodeAddr,
-				PortOldGateway: bindPortOldGateway,
-				PortNewGateway: bindPortNewGateway,
-			})
-			if err != nil {
-				log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
-				continue
-			}
-
-			var md5sum types.MD5SUM
-			if err := md5sum.UnmarshalText([]byte(res.FirmwareHash)); err != nil {
-				log.WithError(err).Errorf("Failed to unmarshal firmware hash: %s", res.FirmwareHash)
-				continue
-			}
-
-			gatewayFw := GatewayFirmware{
-				Model:        v.Model,
-				ResourceLink: res.ResourceLink,
-				FirmwareHash: md5sum,
-			}
-
-			model, _ := a.st.UpdateGatewayFirmware(&gatewayFw)
-			if model == "" {
-				log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
-			}
-
-		}
-	})
-	if err != nil {
-		log.Fatalf("Failed to set update schedule when set up provisioning server config: %s", err.Error())
-	}
-
-	go c.Start()
-
-	return nil
 }
 
 // BatchResetDefaultGatewatConfig reset gateways config to default config matching organization list
@@ -437,7 +334,7 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 		return nil
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServer(ctx, gw.NetworkServerID)
+	n, err := networkserver.Service.St.GetNetworkServer(ctx, gw.NetworkServerID)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get network server %d", gw.NetworkServerID)
 		return errors.Wrapf(err, "GetDefaultGatewayConfig")
@@ -530,7 +427,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 	}
 	defer tx.TxRollback(ctx)
 
-	org, err := organization.Service.St.GetOrganization(ctx, req.OrganizationId, true)
+	org, err := tx.GetOrganization(ctx, req.OrganizationId, true)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -547,7 +444,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 		}
 	}
 
-	err = tx.CreateGateway(ctx, &Gateway{
+	gw := Gateway{
 		MAC:             mac,
 		Name:            req.Name,
 		Description:     req.Description,
@@ -565,12 +462,36 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 		Statistics:      defaultGw.Statistics,
 		SerialNumber:    defaultGw.SerialNumber,
 		FirmwareHash:    types.MD5SUM{},
-	})
+	}
+	err = tx.CreateGateway(ctx, &gw)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServer(ctx, req.NetworkServerId)
+	timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
+	// add this gateway to m2m server
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	gwClient := m2mServer.NewM2MServerServiceClient(m2mClient)
+	if err == nil {
+		_, err = gwClient.AddGatewayInM2MServer(context.Background(), &m2mServer.AddGatewayInM2MServerRequest{
+			OrgId: gw.OrganizationID,
+			GwProfile: &m2mServer.AppServerGatewayProfile{
+				Mac:         gw.MAC.String(),
+				OrgId:       gw.OrganizationID,
+				Description: gw.Description,
+				Name:        gw.Name,
+				CreatedAt:   timestampCreatedAt,
+			},
+		})
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
+	} else {
+		return helpers.ErrToRPCError(err)
+	}
+
+	n, err := tx.GetNetworkServer(ctx, req.NetworkServerId)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -608,7 +529,7 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServer(ctx, gw.NetworkServerID)
+	n, err := networkserver.Service.St.GetNetworkServer(ctx, gw.NetworkServerID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -1212,12 +1133,12 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	}
 
 	// get gateway profile id, always use the default one
-	count, err := gatewayprofile.Service.St.GetGatewayProfileCount(ctx)
+	count, err := gp.Service.St.GetGatewayProfileCount(ctx)
 	if err != nil && err != storage.ErrDoesNotExist || count == 0 {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
 
-	gpList, err := gatewayprofile.Service.St.GetGatewayProfiles(ctx, count, 0)
+	gpList, err := gp.Service.St.GetGatewayProfiles(ctx, count, 0)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}

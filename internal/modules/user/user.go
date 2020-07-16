@@ -19,27 +19,27 @@ type UserStore interface {
 	DeleteUser(ctx context.Context, id int64) error
 	LoginUserByPassword(ctx context.Context, email string, password string) error
 	GetProfile(ctx context.Context, id int64) (UserProfile, error)
-	GetUserToken(u User) (string, error)
-	RegisterUser(user *User, token string) error
-	GetUserByToken(token string) (User, error)
+	GetUserToken(ctx context.Context, u User) (string, error)
+	RegisterUser(ctx context.Context, user *User, token string) error
+	GetUserByToken(ctx context.Context, token string) (User, error)
 	GetTokenByUsername(ctx context.Context, username string) (string, error)
-	FinishRegistration(userID int64, password string) error
+	FinishRegistration(ctx context.Context, userID int64, password string) error
 	UpdatePassword(ctx context.Context, id int64, newpassword string) error
-	GetPasswordResetRecord(userID int64) (*PasswordResetRecord, error)
+	GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error)
 
 	SetOTP(ctx context.Context, pr *PasswordResetRecord) error
 	ReduceAttempts(ctx context.Context, pr *PasswordResetRecord) error
 
 	// validator
-	CheckActiveUser(username string, userID int64) (bool, error)
+	CheckActiveUser(ctx context.Context, username string, userID int64) (bool, error)
 
-	CheckCreateUserAcess(username string, userID int64) (bool, error)
-	CheckListUserAcess(username string, userID int64) (bool, error)
+	CheckCreateUserAcess(ctx context.Context, username string, userID int64) (bool, error)
+	CheckListUserAcess(ctx context.Context, username string, userID int64) (bool, error)
 
-	CheckReadUserAccess(username string, userID, operatorUserID int64) (bool, error)
-	CheckUpdateDeleteUserAccess(username string, userID, operatorUserID int64) (bool, error)
-	CheckUpdateProfileUserAccess(username string, userID, operatorUserID int64) (bool, error)
-	CheckUpdatePasswordUserAccess(username string, userID, operatorUserID int64) (bool, error)
+	CheckReadUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error)
+	CheckUpdateDeleteUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error)
+	CheckUpdateProfileUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error)
+	CheckUpdatePasswordUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error)
 }
 
 type Controller struct {

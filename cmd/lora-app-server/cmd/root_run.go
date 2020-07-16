@@ -27,8 +27,14 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
+	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	gpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
+	miningmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
+	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
+	orgmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	usermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -43,7 +49,6 @@ func run(cmd *cobra.Command, args []string) error {
 		setupStorage,
 		setupClient,
 		setupUpdateFirmwareFromPs,
-		setupNetworkServer,
 		migrateGatewayStats,
 		migrateToClusterKeys,
 		setupIntegration,
@@ -55,7 +60,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFragmentation,
 		setupFUOTA,
 
-		setupMining,
+		setupModules,
 		setupAPI,
 		setupMonitoring,
 	}
@@ -130,33 +135,19 @@ func setupCodec() error {
 }
 
 func setupClient() error {
-	if err := setupNetworkServer(); err != nil {
-		return err
-	}
-
-	if err := setupM2MServer(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func setupM2MServer() error {
-	if err := m2m_client.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup m2m-server error")
-	}
-	return nil
-}
-
-func setupNetworkServer() error {
 	if err := networkserver.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup networkserver error")
 	}
+
+	if err := m2m_client.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup m2m-server error")
+	}
+
 	return nil
 }
 
 func setupUpdateFirmwareFromPs() error {
-	if err := gateway.GetGatewayAPI().UpdateFirmwareFromProvisioningServer(config.C); err != nil {
+	if err := gwmod.Service.UpdateFirmwareFromProvisioningServer(config.C); err != nil {
 		return errors.Wrap(err, "setup update firmware error")
 	}
 	return nil
@@ -179,13 +170,6 @@ func migrateToClusterKeys() error {
 func handleDataDownPayloads() error {
 	downChan := integration.ForApplicationID(0).DataDownChan()
 	go downlink.HandleDataDownPayloads(downChan)
-	return nil
-}
-
-func setupAPI() error {
-	if err := api.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup api error")
-	}
 	return nil
 }
 
@@ -216,16 +200,52 @@ func setupFUOTA() error {
 	return nil
 }
 
-func setupMonitoring() error {
-	if err := monitoring.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup monitoring error")
+func setupModules() error {
+	if err := gwmod.Setup(); err != nil {
+		return err
+	}
+
+	if err := devmod.Setup(); err != nil {
+		return err
+	}
+
+	if err := appmod.Setup(); err != nil {
+		return err
+	}
+
+	if err := gpmod.Setup(); err != nil {
+		return err
+	}
+
+	if err := miningmod.Setup(); err != nil {
+		return err
+	}
+
+	if err := nsmod.Setup(); err != nil {
+		return err
+	}
+
+	if err := orgmod.Setup(); err != nil {
+		return err
+	}
+
+	if err := usermod.Setup(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setupAPI() error {
+	if err := api.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup api error")
 	}
 	return nil
 }
 
-func setupMining() error {
-	if err := mining.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup mining error")
+func setupMonitoring() error {
+	if err := monitoring.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup monitoring error")
 	}
 	return nil
 }

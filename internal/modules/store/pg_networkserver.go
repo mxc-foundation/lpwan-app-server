@@ -19,7 +19,7 @@ import (
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 )
 
-func (ps *pgstore) CheckCreateNetworkServersAccess(username string, organizationID, userID int64) (bool, error) {
+func (ps *pgstore) CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -43,13 +43,13 @@ func (ps *pgstore) CheckCreateNetworkServersAccess(username string, organization
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListNetworkServersAccess(username string, organizationID, userID int64) (bool, error) {
+func (ps *pgstore) CheckListNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -76,13 +76,13 @@ func (ps *pgstore) CheckListNetworkServersAccess(username string, organizationID
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadNetworkServerAccess(username string, networkserverID, userID int64) (bool, error) {
+func (ps *pgstore) CheckReadNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -114,13 +114,13 @@ func (ps *pgstore) CheckReadNetworkServerAccess(username string, networkserverID
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, networkserverID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, networkserverID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(username string, networkserverID, userID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -148,7 +148,7 @@ func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(username string, network
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(ps.db, &count, userQuery, username, networkserverID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, networkserverID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -157,7 +157,7 @@ func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(username string, network
 // GetDefaultNetworkServer returns the network-server matching the given name.
 func (ps *pgstore) GetDefaultNetworkServer(ctx context.Context) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(h.db, &n, "select * from network_server where name = 'default_network_server'")
+	err := sqlx.GetContext(ctx, ps.db, &n, "select * from network_server where name = 'default_network_server'")
 	if err != nil {
 		return n, errors.Wrap(err, "select error")
 	}
@@ -175,7 +175,7 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *nsmod.NetworkServ
 	n.CreatedAt = now
 	n.UpdatedAt = now
 
-	err := sqlx.Get(h.tx, &n.ID, `
+	err := sqlx.GetContext(ctx, ps.db, &n.ID, `
 		insert into network_server (
 			created_at,
 			updated_at,
@@ -247,7 +247,7 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *nsmod.NetworkServ
 // GetNetworkServer returns the network-server matching the given id.
 func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (nsmod.NetworkServer, error) {
 	var ns nsmod.NetworkServer
-	err := sqlx.Get(h.db, &ns, "select * from network_server where id = $1", id)
+	err := sqlx.GetContext(ctx, ps.db, &ns, "select * from network_server where id = $1", id)
 	if err != nil {
 		return ns, errors.Wrap(err, "select error")
 	}
@@ -263,7 +263,7 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *nsmod.NetworkServ
 
 	n.UpdatedAt = time.Now()
 
-	res, err := h.tx.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		update network_server
 		set
 			updated_at = $2,
@@ -341,12 +341,12 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *nsmod.NetworkServ
 
 // DeleteNetworkServer deletes the network-server matching the given id.
 func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
-	n, err := h.GetNetworkServer(ctx, id)
+	n, err := ps.GetNetworkServer(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	res, err := h.tx.Exec("delete from network_server where id = $1", id)
+	res, err := ps.db.ExecContext(ctx, "delete from network_server where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -385,7 +385,7 @@ func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 // GetNetworkServerCount returns the total number of network-servers.
 func (ps *pgstore) GetNetworkServerCount(ctx context.Context) (int, error) {
 	var count int
-	err := sqlx.Get(h.db, &count, "select count(*) from network_server")
+	err := sqlx.GetContext(ctx, ps.db, &count, "select count(*) from network_server")
 	if err != nil {
 		return 0, errors.Wrap(err, "select error")
 	}
@@ -399,7 +399,7 @@ func (ps *pgstore) GetNetworkServerCount(ctx context.Context) (int, error) {
 // of its service-profiles.
 func (ps *pgstore) GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
 	var count int
-	err := sqlx.Get(h.db, &count, `
+	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
 			count (distinct ns.id)
 		from
@@ -419,7 +419,7 @@ func (ps *pgstore) GetNetworkServerCountForOrganizationID(ctx context.Context, o
 // GetNetworkServers returns a slice of network-servers.
 func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]nsmod.NetworkServer, error) {
 	var nss []nsmod.NetworkServer
-	err := sqlx.Select(h.db, &nss, `
+	err := sqlx.SelectContext(ctx, ps.db, &nss, `
 		select *
 		from network_server
 		order by name
@@ -440,7 +440,7 @@ func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]
 // of its service-profiles.
 func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]nsmod.NetworkServer, error) {
 	var nss []nsmod.NetworkServer
-	err := sqlx.Select(h.db, &nss, `
+	err := sqlx.SelectContext(ctx, ps.db, &nss, `
 		select
 			ns.*
 		from
@@ -466,7 +466,7 @@ func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organ
 // GetNetworkServerForDevEUI returns the network-server for the given DevEUI.
 func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(h.db, &n, `
+	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
 		from
@@ -489,7 +489,7 @@ func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan
 // device-profile id.
 func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(h.db, &n, `
+	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
 		from
@@ -510,7 +510,7 @@ func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uu
 // service-profile id.
 func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(h.db, &n, `
+	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
 		from
@@ -531,7 +531,7 @@ func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id u
 // gateway mac.
 func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(h.db, &n, `
+	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
 		from network_server ns
@@ -551,7 +551,7 @@ func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawa
 // gateway-profile id.
 func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(h.db, &n, `
+	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
 		from
@@ -572,7 +572,7 @@ func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id u
 // multicast-group id.
 func (ps *pgstore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
 	var n nsmod.NetworkServer
-	err := sqlx.Get(h.db, &n, `
+	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
 		from

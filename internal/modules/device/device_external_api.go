@@ -4,8 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"strconv"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"time"
 
 	"google.golang.org/grpc/status"
 
@@ -24,6 +23,7 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -36,6 +36,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // DeviceAPI exports the Node related functions.
@@ -152,6 +153,54 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
 
+	timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
+	n, err := tx.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	// add this device to network server
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	_, err = client.CreateDevice(ctx, &ns.CreateDeviceRequest{
+		Device: &ns.Device{
+			DevEui:            d.DevEUI[:],
+			DeviceProfileId:   d.DeviceProfileID.Bytes(),
+			ServiceProfileId:  app.ServiceProfileID.Bytes(),
+			RoutingProfileId:  a.ApplicationServerID.Bytes(),
+			SkipFCntCheck:     d.SkipFCntCheck,
+			ReferenceAltitude: d.ReferenceAltitude,
+		},
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
+	// network server successfully
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
+	if err == nil {
+		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
+			OrgId: app.OrganizationID,
+			DevProfile: &m2m_api.AppServerDeviceProfile{
+				DevEui:        d.DevEUI.String(),
+				ApplicationId: d.ApplicationID,
+				Name:          d.Name,
+				CreatedAt:     timestampCreatedAt,
+			},
+		})
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "m2m server create device api error: %v", err)
+		}
+	} else {
+		return nil, status.Errorf(codes.Unknown, "get m2m-server client error: %v", err)
+	}
+
 	if err := tx.TxCommit(ctx); err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
@@ -170,12 +219,34 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.St.GetDevice(ctx, eui, false, false)
+	d, err := a.St.GetDevice(ctx, eui, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	resp := pb.GetDeviceResponse{
+	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	res, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
+		DevEui: d.DevEUI[:],
+	})
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if res.Device != nil {
+		d.SkipFCntCheck = res.Device.SkipFCntCheck
+		d.ReferenceAltitude = res.Device.ReferenceAltitude
+	}
+
+	response := pb.GetDeviceResponse{
 		Device: &pb.Device{
 			DevEui:            d.DevEUI.String(),
 			Name:              d.Name,
@@ -193,20 +264,20 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 	}
 
 	if d.DeviceStatusBattery != nil {
-		resp.DeviceStatusBattery = uint32(*d.DeviceStatusBattery)
+		response.DeviceStatusBattery = uint32(*d.DeviceStatusBattery)
 	}
 	if d.DeviceStatusMargin != nil {
-		resp.DeviceStatusMargin = int32(*d.DeviceStatusMargin)
+		response.DeviceStatusMargin = int32(*d.DeviceStatusMargin)
 	}
 	if d.LastSeenAt != nil {
-		resp.LastSeenAt, err = ptypes.TimestampProto(*d.LastSeenAt)
+		response.LastSeenAt, err = ptypes.TimestampProto(*d.LastSeenAt)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 	}
 
 	if d.Latitude != nil && d.Longitude != nil && d.Altitude != nil {
-		resp.Location = &common.Location{
+		response.Location = &common.Location{
 			Latitude:  *d.Latitude,
 			Longitude: *d.Longitude,
 			Altitude:  *d.Altitude,
@@ -215,17 +286,17 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 
 	for k, v := range d.Variables.Map {
 		if v.Valid {
-			resp.Device.Variables[k] = v.String
+			response.Device.Variables[k] = v.String
 		}
 	}
 
 	for k, v := range d.Tags.Map {
 		if v.Valid {
-			resp.Device.Tags[k] = v.String
+			response.Device.Tags[k] = v.String
 		}
 	}
 
-	return &resp, nil
+	return &response, nil
 }
 
 // List lists the available applications.
@@ -352,9 +423,31 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 	}
 	defer tx.TxRollback(ctx)
 
-	d, err := tx.GetDevice(ctx, devEUI, true, false)
+	d, err := tx.GetDevice(ctx, devEUI, true)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	n, err := tx.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	res, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
+		DevEui: d.DevEUI[:],
+	})
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if res.Device != nil {
+		d.SkipFCntCheck = res.Device.SkipFCntCheck
+		d.ReferenceAltitude = res.Device.ReferenceAltitude
 	}
 
 	// If the device is moved to a different application, validate that
@@ -398,8 +491,27 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
 	}
 
-	if err := tx.UpdateDevice(ctx, &d, false); err != nil {
+	if err := tx.UpdateDevice(ctx, &d); err != nil {
 		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "uuid from string error: %v", err)
+	}
+
+	_, err = client.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
+		Device: &ns.Device{
+			DevEui:            d.DevEUI[:],
+			DeviceProfileId:   d.DeviceProfileID.Bytes(),
+			ServiceProfileId:  app.ServiceProfileID.Bytes(),
+			RoutingProfileId:  rpID.Bytes(),
+			SkipFCntCheck:     d.SkipFCntCheck,
+			ReferenceAltitude: d.ReferenceAltitude,
+		},
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "update device error: %v", err)
 	}
 
 	if err := tx.TxCommit(ctx); err != nil {
@@ -591,7 +703,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.St.GetDevice(ctx, devEUI, false, true)
+	d, err := a.St.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -655,7 +767,7 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 	}
 	defer tx.TxRollback(ctx)
 
-	d, err := tx.GetDevice(ctx, devEUI, false, true)
+	d, err := tx.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -725,7 +837,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.St.GetDevice(ctx, devEUI, false, true)
+	d, err := a.St.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

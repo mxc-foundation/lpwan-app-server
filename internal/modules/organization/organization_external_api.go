@@ -205,6 +205,21 @@ func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganization
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
 
+	err = tx.DeleteAllApplicationsForOrganizationID(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	err = tx.DeleteAllServiceProfilesForOrganizationID(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	err = tx.DeleteAllDeviceProfilesForOrganizationID(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
 	if err := tx.DeleteOrganization(ctx, req.Id); err != nil {
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}

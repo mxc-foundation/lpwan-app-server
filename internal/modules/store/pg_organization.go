@@ -10,14 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	orgmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
-
-	applicationPg "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/pgstore"
 )
 
-func (ps *pgstore) CheckReadOrganizationAccess(username string, userID int64, organizationID int64) (bool, error) {
+func (ps *pgstore) CheckReadOrganizationAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -43,13 +39,13 @@ func (ps *pgstore) CheckReadOrganizationAccess(username string, userID int64, or
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateOrganizationAccess(username string, userID int64, organizationID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateOrganizationAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -75,13 +71,13 @@ func (ps *pgstore) CheckUpdateOrganizationAccess(username string, userID int64, 
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckDeleteOrganizationAccess(username string, userID int64, organizationID int64) (bool, error) {
+func (ps *pgstore) CheckDeleteOrganizationAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -105,13 +101,13 @@ func (ps *pgstore) CheckDeleteOrganizationAccess(username string, userID int64, 
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckCreateOrganizationAccess(username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckCreateOrganizationAccess(ctx context.Context, username string, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -131,13 +127,13 @@ func (ps *pgstore) CheckCreateOrganizationAccess(username string, userID int64) 
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListOrganizationAccess(username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckListOrganizationAccess(ctx context.Context, username string, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -157,13 +153,13 @@ func (ps *pgstore) CheckListOrganizationAccess(username string, userID int64) (b
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckCreateOrganizationUserAccess(username string, userID int64, organizationID int64) (bool, error) {
+func (ps *pgstore) CheckCreateOrganizationUserAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -189,13 +185,13 @@ func (ps *pgstore) CheckCreateOrganizationUserAccess(username string, userID int
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListOrganizationUserAccess(username string, userID int64, organizationID int64) (bool, error) {
+func (ps *pgstore) CheckListOrganizationUserAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -221,13 +217,13 @@ func (ps *pgstore) CheckListOrganizationUserAccess(username string, userID int64
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadOrganizationUserAccess(username string, organizationID int64, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckReadOrganizationUserAccess(ctx context.Context, username string, organizationID int64, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -255,13 +251,13 @@ func (ps *pgstore) CheckReadOrganizationUserAccess(username string, organization
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID, operatorUserID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID, operatorUserID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateOrganizationUserAccess(username string, organizationID int64, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateOrganizationUserAccess(ctx context.Context, username string, organizationID int64, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -287,13 +283,13 @@ func (ps *pgstore) CheckUpdateOrganizationUserAccess(username string, organizati
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID, operatorUserID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID, operatorUserID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckDeleteOrganizationUserAccess(username string, organizationID int64, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckDeleteOrganizationUserAccess(ctx context.Context, username string, organizationID int64, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -319,7 +315,7 @@ func (ps *pgstore) CheckDeleteOrganizationUserAccess(username string, organizati
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(h.db, &count, userQuery, username, organizationID, userID, operatorUserID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID, operatorUserID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -327,14 +323,14 @@ func (ps *pgstore) CheckDeleteOrganizationUserAccess(username string, organizati
 
 // GetOrganizationIDList returns a slice of organizations id, sorted by name and
 // respecting the given limit and offset.
-func (ps *pgstore) GetOrganizationIDList(limit, offset int, search string) ([]int, error) {
+func (ps *pgstore) GetOrganizationIDList(ctx context.Context, limit, offset int, search string) ([]int, error) {
 	var orgIDList []int
 
 	if search != "" {
 		search = "%" + search + "%"
 	}
 
-	err := sqlx.Select(h.db, &orgIDList, `
+	err := sqlx.SelectContext(ctx, ps.db, &orgIDList, `
 		select id
 		from organization
 		where
@@ -356,7 +352,7 @@ func (ps *pgstore) CreateOrganization(ctx context.Context, org *orgmod.Organizat
 
 	now := time.Now()
 
-	err := sqlx.Get(h.tx, &org.ID, `
+	err := sqlx.GetContext(ctx, ps.db, &org.ID, `
 		insert into organization (
 			created_at,
 			updated_at,
@@ -396,7 +392,7 @@ func (ps *pgstore) GetOrganization(ctx context.Context, id int64, forUpdate bool
 	}
 
 	var org orgmod.Organization
-	err := sqlx.Get(h.db, &org, "select * from organization where id = $1"+fu, id)
+	err := sqlx.GetContext(ctx, ps.db, &org, "select * from organization where id = $1"+fu, id)
 	if err != nil {
 		return org, errors.Wrap(err, "select error")
 	}
@@ -420,7 +416,7 @@ func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters orgmod.Orga
 	}
 
 	var count int
-	err = sqlx.Get(h.db, &count, query, args...)
+	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
 	if err != nil {
 		return 0, errors.Wrap(err, "select error")
 	}
@@ -452,7 +448,7 @@ func (ps *pgstore) GetOrganizations(ctx context.Context, filters orgmod.Organiza
 	}
 
 	var orgs []orgmod.Organization
-	err = sqlx.Select(h.db, &orgs, query, args...)
+	err = sqlx.SelectContext(ctx, ps.db, &orgs, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
 	}
@@ -467,7 +463,7 @@ func (ps *pgstore) UpdateOrganization(ctx context.Context, org *orgmod.Organizat
 	}
 
 	now := time.Now()
-	res, err := h.tx.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		update organization
 		set
 			name = $2,
@@ -508,22 +504,7 @@ func (ps *pgstore) UpdateOrganization(ctx context.Context, org *orgmod.Organizat
 
 // DeleteOrganization deletes the organization matching the given id.
 func (ps *pgstore) DeleteOrganization(ctx context.Context, id int64) error {
-	err := applicationPg.Handler().DeleteAllApplicationsForOrganizationID(ctx, id)
-	if err != nil {
-		return errors.Wrap(err, "delete all applications error")
-	}
-
-	err = storage.DeleteAllServiceProfilesForOrganizationID(ctx, h.tx, id)
-	if err != nil {
-		return errors.Wrap(err, "delete all service-profiles error")
-	}
-
-	err = storage.DeleteAllDeviceProfilesForOrganizationID(ctx, h.tx, id)
-	if err != nil {
-		return errors.Wrap(err, "delete all device-profiles error")
-	}
-
-	res, err := h.tx.Exec("delete from organization where id = $1", id)
+	res, err := ps.db.ExecContext(ctx, "delete from organization where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -545,14 +526,14 @@ func (ps *pgstore) DeleteOrganization(ctx context.Context, id int64) error {
 // CreateOrganizationUser adds the given user to the organization.
 func (ps *pgstore) CreateOrganizationUser(ctx context.Context, organizationID int64, username string, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
 	var userID int64
-	err := h.db.QueryRow(`
+	err := ps.db.QueryRowContext(ctx, `
 		select id from user where username = $1;
 	`, username).Scan(&userID)
 	if err != nil {
 		return errors.Wrap(err, "select error")
 	}
 
-	_, err = h.tx.Exec(`
+	_, err = ps.db.ExecContext(ctx, `
 		insert into organization_user (
 			organization_id,
 			user_id,
@@ -586,7 +567,7 @@ func (ps *pgstore) CreateOrganizationUser(ctx context.Context, organizationID in
 
 // UpdateOrganizationUser updates the given user of the organization.
 func (ps *pgstore) UpdateOrganizationUser(ctx context.Context, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
-	res, err := h.tx.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		update organization_user
 		set
 			is_admin = $3,
@@ -621,7 +602,7 @@ func (ps *pgstore) UpdateOrganizationUser(ctx context.Context, organizationID, u
 
 // DeleteOrganizationUser deletes the given organization user.
 func (ps *pgstore) DeleteOrganizationUser(ctx context.Context, organizationID, userID int64) error {
-	res, err := h.tx.Exec(`delete from organization_user where organization_id = $1 and user_id = $2`, organizationID, userID)
+	res, err := ps.db.ExecContext(ctx, `delete from organization_user where organization_id = $1 and user_id = $2`, organizationID, userID)
 	if err != nil {
 		return errors.Wrap(err, "delete error")
 	}
@@ -644,7 +625,7 @@ func (ps *pgstore) DeleteOrganizationUser(ctx context.Context, organizationID, u
 // GetOrganizationUser gets the information of the given organization user.
 func (ps *pgstore) GetOrganizationUser(ctx context.Context, organizationID, userID int64) (orgmod.OrganizationUser, error) {
 	var u orgmod.OrganizationUser
-	err := sqlx.Get(h.db, &u, `
+	err := sqlx.GetContext(ctx, ps.db, &u, `
 		select
 			u.id as user_id,
 			u.email as email,
@@ -671,7 +652,7 @@ func (ps *pgstore) GetOrganizationUser(ctx context.Context, organizationID, user
 // GetOrganizationUserCount returns the number of users for the given organization.
 func (ps *pgstore) GetOrganizationUserCount(ctx context.Context, organizationID int64) (int, error) {
 	var count int
-	err := sqlx.Get(h.db, &count, `
+	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select count(*)
 		from organization_user
 		where
@@ -687,7 +668,7 @@ func (ps *pgstore) GetOrganizationUserCount(ctx context.Context, organizationID 
 // GetOrganizationUsers returns the users for the given organization.
 func (ps *pgstore) GetOrganizationUsers(ctx context.Context, organizationID int64, limit, offset int) ([]orgmod.OrganizationUser, error) {
 	var users []orgmod.OrganizationUser
-	err := sqlx.Select(h.db, &users, `
+	err := sqlx.SelectContext(ctx, ps.db, &users, `
 		select
 			u.id as user_id,
 			u.email as email,

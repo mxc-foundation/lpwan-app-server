@@ -28,11 +28,11 @@ type NetworkServerStore interface {
 	GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error)
 
 	// validator
-	CheckCreateNetworkServersAccess(username string, organizationID, userID int64) (bool, error)
-	CheckListNetworkServersAccess(username string, organizationID, userID int64) (bool, error)
+	CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
+	CheckListNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
 
-	CheckReadNetworkServerAccess(username string, networkserverID, userID int64) (bool, error)
-	CheckUpdateDeleteNetworkServerAccess(username string, networkserverID, userID int64) (bool, error)
+	CheckReadNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error)
+	CheckUpdateDeleteNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error)
 }
 
 type Controller struct {

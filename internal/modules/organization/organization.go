@@ -20,22 +20,22 @@ type OrganizationStore interface {
 	GetOrganizationUser(ctx context.Context, organizationID, userID int64) (OrganizationUser, error)
 	GetOrganizationUserCount(ctx context.Context, organizationID int64) (int, error)
 	GetOrganizationUsers(ctx context.Context, organizationID int64, limit, offset int) ([]OrganizationUser, error)
-	GetOrganizationIDList(limit, offset int, search string) ([]int, error)
+	GetOrganizationIDList(ctx context.Context, limit, offset int, search string) ([]int, error)
 
 	// validator
-	CheckReadOrganizationAccess(username string, userID int64, organizationID int64) (bool, error)
-	CheckUpdateOrganizationAccess(username string, userID int64, organizationID int64) (bool, error)
-	CheckDeleteOrganizationAccess(username string, userID int64, organizationID int64) (bool, error)
+	CheckReadOrganizationAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error)
+	CheckUpdateOrganizationAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error)
+	CheckDeleteOrganizationAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error)
 
-	CheckCreateOrganizationAccess(username string, userID int64) (bool, error)
-	CheckListOrganizationAccess(username string, userID int64) (bool, error)
+	CheckCreateOrganizationAccess(ctx context.Context, username string, userID int64) (bool, error)
+	CheckListOrganizationAccess(ctx context.Context, username string, userID int64) (bool, error)
 
-	CheckCreateOrganizationUserAccess(username string, userID int64, organizationID int64) (bool, error)
-	CheckListOrganizationUserAccess(username string, userID int64, organizationID int64) (bool, error)
+	CheckCreateOrganizationUserAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error)
+	CheckListOrganizationUserAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error)
 
-	CheckReadOrganizationUserAccess(username string, organizationID int64, userID, operatorUserID int64) (bool, error)
-	CheckUpdateOrganizationUserAccess(username string, organizationID int64, userID, operatorUserID int64) (bool, error)
-	CheckDeleteOrganizationUserAccess(username string, organizationID int64, userID, operatorUserID int64) (bool, error)
+	CheckReadOrganizationUserAccess(ctx context.Context, username string, organizationID int64, userID, operatorUserID int64) (bool, error)
+	CheckUpdateOrganizationUserAccess(ctx context.Context, username string, organizationID int64, userID, operatorUserID int64) (bool, error)
+	CheckDeleteOrganizationUserAccess(ctx context.Context, username string, organizationID int64, userID, operatorUserID int64) (bool, error)
 }
 
 type Controller struct {

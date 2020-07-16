@@ -166,6 +166,11 @@ func (a *ApplicationAPI) Delete(ctx context.Context, req *pb.DeleteApplicationRe
 	}
 	defer tx.TxRollback(ctx)
 
+	err = tx.DeleteAllDevicesForApplicationID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
 	err = tx.DeleteApplication(ctx, req.Id)
 	if err != nil {
 		return nil, err
