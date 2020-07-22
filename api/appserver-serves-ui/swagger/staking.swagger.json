@@ -99,6 +99,57 @@
         ]
       }
     },
+    "/api/staking/{orgId}/revenue": {
+      "get": {
+        "operationId": "GetStakingRevenue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakingRevenueResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
     "/api/staking/{orgId}/stake": {
       "post": {
         "operationId": "Stake",
@@ -385,6 +436,14 @@
         "stakingPercentage": {
           "type": "number",
           "format": "double"
+        }
+      }
+    },
+    "appserver_serves_uiStakingRevenueResponse": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string"
         }
       }
     },
