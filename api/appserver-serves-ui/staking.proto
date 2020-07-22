@@ -28,6 +28,12 @@ service StakingService {
         };
     };
 
+    rpc GetStakingRevenue (StakingRevenueRequest) returns (StakingRevenueResponse) {
+        option (google.api.http) = {
+            get: "/api/staking/{org_id}/revenue"
+        };
+    };
+
     rpc GetStakingHistory (StakingHistoryRequest) returns (StakingHistoryResponse) {
         option (google.api.http) = {
             get: "/api/staking/{org_id}/history"
@@ -39,6 +45,17 @@ service StakingService {
             get: "/api/staking/{org_id}/staking_percentage"
         };
     }
+}
+
+message StakingRevenueRequest {
+    int64 org_id = 1;
+    string currency = 2;
+    google.protobuf.Timestamp from = 3;
+    google.protobuf.Timestamp till = 4;
+}
+
+message StakingRevenueResponse {
+    string amount = 1;
 }
 
 message StakeRequest {
