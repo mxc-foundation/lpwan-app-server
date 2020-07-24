@@ -23,6 +23,9 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
 
+	"github.com/mxc-foundation/lpwan-server/api/as"
+	"github.com/mxc-foundation/lpwan-server/api/common"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
@@ -35,8 +38,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/as"
-	"github.com/mxc-foundation/lpwan-server/api/common"
 )
 
 var serviceName = "LPWAN service"

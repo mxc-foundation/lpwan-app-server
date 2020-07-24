@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
@@ -22,6 +21,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -29,7 +30,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // UserAPI exports the User related functions.
@@ -285,10 +285,6 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 		}
 	}
 
-	if user.Username == storage.DemoUser {
-		return nil, helpers.ErrToRPCError(fmt.Errorf("User %s can not change password", storage.DemoUser))
-	}
-
 	err = storage.UpdatePassword(ctx, storage.DB(), req.UserId, req.Password)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -481,7 +477,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*pb.B
 		Logo:         brandingHeader,
 		Registration: brandingRegistration,
 		Footer:       brandingFooter,
-		LogoPath:     os.Getenv("APPSERVER") + "/branding.png",
+		LogoPath:     brandingLogoPath,
 	}
 
 	return &resp, nil
@@ -607,7 +603,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
 	}
 
-	err = email.SendInvite(obj.Username, *obj.SecurityToken, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
+	err = email.SendInvite(obj.Username, email.Param{Token: *obj.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
@@ -718,7 +714,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
-			if err := email.SendInvite(req.Username, "", email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
+			if err := email.SendInvite(req.Username, email.Param{Token: ""}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
 				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 			}
 			return &pb.PasswordResetResp{}, nil
@@ -742,7 +738,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 	if err := tx.Commit(); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
 	}
-	if err := email.SendInvite(req.Username, pr.OTP, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
+	if err := email.SendInvite(req.Username, email.Param{Token: pr.OTP}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 	}
 	return &pb.PasswordResetResp{}, nil

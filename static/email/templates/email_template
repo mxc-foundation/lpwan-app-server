@@ -1,0 +1,31 @@
+From: {{ .From }}
+To: {{ .To }}
+Subject: {{ .Subject }}
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+    boundary="simple boundary"
+
+--simple boundary
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: text-body
+
+{{ .PlainText }}
+
+--simple boundary
+Content-Type: multipart/related; boundary="related boundary";
+    type=Text/HTML
+
+--related boundary
+Content-Type: text/html;charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-ID: html-body
+
+{{ $Name1 := "htmlBodyPartOne" }}
+{{ CallTemplate $Name1 . }}
+
+{{ $Name2 := "bodyTemplate" }}
+{{ CallTemplate $Name2 . }}
+
+{{ $Name3 := "htmlBodyPartTwo" }}
+{{ CallTemplate $Name3 . }}

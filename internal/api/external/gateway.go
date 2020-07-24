@@ -21,6 +21,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
@@ -31,8 +34,6 @@ import (
 	gwm "github.com/mxc-foundation/lpwan-app-server/internal/gateway-manager"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
-	"github.com/mxc-foundation/lpwan-server/api/common"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // GatewayLocationsRedisKey defines the gateway location based on redis key
