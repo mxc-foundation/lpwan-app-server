@@ -1009,6 +1009,7 @@
     "link": "M2M Wallet",
     "title": "MXC DataDash",
     "subtitle": "Manage your M2M Wallet in the DataDash App",
-    "description": "Introducing the most progressive step in the burgeoning global data economy. A step that is set to reform the data transmission market and significantly increase token . Data transaction speeds. Welcome to the new world of data, welcome to MXC Supernodes."
+    "description": "Introducing the most progressive step in the burgeoning global data economy. A step that is set to reform the data transmission market and significantly increase transaction speeds. Welcome to the new world of data, welcome to MXC Supernodes.",
+    "menu" : "M2M Wallet"
   }
 }
