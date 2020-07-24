@@ -6,11 +6,6 @@ import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
 import DataDash from "../../components/DataDash"
 
-
-
-
-
-
 class Topup extends Component {
   constructor(props) {
     super(props);
