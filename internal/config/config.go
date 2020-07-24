@@ -206,7 +206,7 @@ type Config struct {
 			EndpointEnabled    bool   `mapstructure:"endpoint_enabled"`
 			Bind               string `mapstructure:"bind"`
 			APITimingHistogram bool   `mapstructure:"api_timing_histogram"`
-		}
+		} `mapstructure:"prometheus"`
 	} `mapstructure:"metrics"`
 }
 

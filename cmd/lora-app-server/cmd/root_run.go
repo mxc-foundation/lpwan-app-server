@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -29,6 +28,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/multi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/metrics"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
