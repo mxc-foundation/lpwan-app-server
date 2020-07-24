@@ -12,13 +12,14 @@ import (
 
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // HandleDataDownPayloads handles received downlink payloads to be emitted to the

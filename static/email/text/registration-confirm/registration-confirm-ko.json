@@ -1,0 +1,12 @@
+{
+  "from": "%s Supernode",
+  "subject": "Please confirm the e-mail linked to your %s Supernode",
+  "plainText": "It looks like you want register your account on the %s Supernode. We want to help you with that. Here is your 2FA code: %s If this wasn't you, then someone is trying to register your email on this Supernode.",
+  "title": "%s E-mail",
+  "body1": "Your Two-Factor Authentication Code",
+  "body2": "It looks like you want to register your account on the %s Supernode.",
+  "body3": "We want to help you with that.",
+  "body4": "Here is your 2FA code:",
+  "body5": "If this wasn't you,",
+  "body6": "then someone is trying to register your email on this Supernode."
+}

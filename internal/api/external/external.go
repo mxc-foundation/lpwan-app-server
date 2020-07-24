@@ -54,10 +54,10 @@ func Setup(conf config.Config) error {
 		return errors.New("jwt_secret must be set")
 	}
 
-	brandingHeader = conf.ApplicationServer.Branding.Header
-	brandingRegistration = conf.ApplicationServer.Branding.Registration
-	brandingFooter = conf.ApplicationServer.Branding.Footer
-	brandingLogoPath = conf.ApplicationServer.Branding.LogoPath
+	brandingHeader = ""
+	brandingRegistration = ""
+	brandingFooter = ""
+	brandingLogoPath = conf.Operator.OperatorLogo
 
 	bind = conf.ApplicationServer.ExternalAPI.Bind
 	tlsCert = conf.ApplicationServer.ExternalAPI.TLSCert

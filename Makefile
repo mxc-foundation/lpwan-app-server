@@ -2,10 +2,6 @@
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags --always --long |sed -e "s/^v//")
 
-format:
-	goimports -w -local github.com/mxc-foundation ./..
-	gofmt ./..
-
 build: internal/statics internal/migrations
 	mkdir -p build cache
 	go build $(GO_EXTRA_BUILD_ARGS) -ldflags "-s -w -X main.version=$(VERSION)" -o build/lora-app-server cmd/lora-app-server/main.go

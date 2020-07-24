@@ -12,6 +12,8 @@ import (
 
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -19,7 +21,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // DeviceQueueAPI exposes the downlink queue methods.

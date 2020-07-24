@@ -13,18 +13,18 @@ import (
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	authstore "github.com/mxc-foundation/lpwan-app-server/internal/storage/auth"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // HashIterations configures the Hash iteration
 var (
 	pwh                 *pwhash.PasswordHasher
-	DemoUser            = ""
 	applicationServerID uuid.UUID
 )
 
@@ -37,8 +37,6 @@ func Setup(c config.Config) error {
 	if err != nil {
 		return err
 	}
-
-	DemoUser = c.General.DemoUser
 
 	if err := applicationServerID.UnmarshalText([]byte(c.ApplicationServer.ID)); err != nil {
 		return errors.Wrap(err, "decode application_server.id error")

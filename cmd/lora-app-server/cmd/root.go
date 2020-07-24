@@ -41,6 +41,7 @@ func init() {
 
 	// defaults
 	viper.SetDefault("general.password_hash_iterations", 100000)
+	viper.SetDefault("general.mxc_logo", "https://www.mxc.org/images/MXC-app-icon10242x.png")
 	viper.SetDefault("general.host_server", "lora.demo.cloud.mxc.org")
 	viper.SetDefault("postgresql.dsn", "postgres://localhost/loraserver_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
@@ -81,6 +82,8 @@ func init() {
 	viper.SetDefault("metrics.redis.hour_aggregation_ttl", time.Hour*48)
 	viper.SetDefault("metrics.redis.day_aggregation_ttl", time.Hour*24*90)
 	viper.SetDefault("metrics.redis.month_aggregation_ttl", time.Hour*24*730)
+
+	viper.SetDefault("operator.operator_logo", os.Getenv("APPSERVER")+"/branding.png")
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)

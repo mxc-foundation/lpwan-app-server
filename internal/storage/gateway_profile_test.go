@@ -8,11 +8,12 @@ import (
 	"github.com/gofrs/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/test"
-	"github.com/mxc-foundation/lpwan-server/api/common"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 func TestGatewayProfile(t *testing.T) {
