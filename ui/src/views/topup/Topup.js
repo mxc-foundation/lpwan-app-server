@@ -1,12 +1,10 @@
-import classNames from "classnames";
 import React, { Component } from "react";
 import { withRouter } from 'react-router-dom';
 import { Card, CardBody, Col, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
 import OrgBreadCumb from '../../components/OrgBreadcrumb';
 import TitleBar from "../../components/TitleBar";
 import i18n, { packageNS } from '../../i18n';
-import TopupCrypto from "./TopupCrypto";
-import TopupHistory from "./TopupHistory";
+import DataDash from "../../components/DataDash"
 
 
 
@@ -49,42 +47,11 @@ class Topup extends Component {
         <OrgBreadCumb orgListCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
           orgNameCallback={() => { this.props.switchToSidebarId('DEFAULT'); }}
           organizationID={currentOrgID} items={[
-            { label: i18n.t(`${packageNS}:menu.common.contour_payments`), active: false },
-            { label: i18n.t(`${packageNS}:menu.topup.topup`), active: true }]}></OrgBreadCumb>
+            { label: i18n.t(`${packageNS}:m2m_redirect.link`), active: true },]}></OrgBreadCumb>
       </TitleBar>
       <Row>
-        <Col>
-          <Card>
-            <CardBody className="pb-0">
-              <Nav tabs>
-                <NavItem>
-                  <NavLink
-                    className={classNames('nav-link', { active: this.state.activeTab === '0' })} href='#'
-                    onClick={(e) => this.onTabToggle("0")}
-                  >{i18n.t(`${packageNS}:menu.topup.crypto`)}</NavLink>
-                </NavItem>
-                <NavItem>
-                  <NavLink
-                    className={classNames('nav-link', { active: this.state.activeTab === '1' })} href='#'
-                    onClick={(e) => this.onTabToggle("1")} disabled
-                  >{i18n.t(`${packageNS}:menu.topup.otc`)}</NavLink>
-                </NavItem>
-              </Nav>
-
-              <TabContent activeTab={this.state.activeTab}>
-                <TabPane tabId="0">
-                  <TopupCrypto />
-                </TabPane>
-                <TabPane tabId="1">
-                </TabPane>
-              </TabContent>
-
-            </CardBody>
-          </Card>
-        </Col>
+          <DataDash />
       </Row>
-
-      <TopupHistory organizationID={currentOrgID} />
     </React.Fragment>
     );
   }
