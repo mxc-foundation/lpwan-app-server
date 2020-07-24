@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"syscall"
 
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,8 +27,9 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/multi"
 	"github.com/mxc-foundation/lpwan-app-server/internal/metrics"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -41,6 +41,7 @@ func run(cmd *cobra.Command, args []string) error {
 	tasks := []func() error{
 		setLogLevel,
 		printStartMessage,
+		startPProf,
 		setupStorage,
 		setupClient,
 		setupUpdateFirmwareFromPs,
@@ -82,6 +83,10 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func startPProf() error {
+	return pprof.Setup(config.C.PProf)
 }
 
 func setLogLevel() error {

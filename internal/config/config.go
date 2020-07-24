@@ -8,6 +8,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 )
 
 var AppserverVersion string
@@ -208,6 +209,8 @@ type Config struct {
 			APITimingHistogram bool   `mapstructure:"api_timing_histogram"`
 		} `mapstructure:"prometheus"`
 	} `mapstructure:"metrics"`
+
+	PProf pprof.Config `mapstructure:"pprof"`
 }
 
 // C holds the global configuration.
