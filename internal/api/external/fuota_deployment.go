@@ -12,12 +12,13 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/band"
 
+	"github.com/mxc-foundation/lpwan-server/api/common"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-server/api/common"
 )
 
 // FUOTADeploymentAPI exports the FUOTA deployment related functions.

@@ -1,8 +1,9 @@
 package mock
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-server/api/ns"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 )
 
 // Pool is a network-server pool for testing.

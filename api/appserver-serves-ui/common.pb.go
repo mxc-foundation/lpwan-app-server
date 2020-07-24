@@ -5,12 +5,13 @@ package appserver_serves_ui
 
 import (
 	fmt "fmt"
+	math "math"
+
 	proto "github.com/golang/protobuf/proto"
 	duration "github.com/golang/protobuf/ptypes/duration"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	common "github.com/mxc-foundation/lpwan-server/api/common"
 	gw "github.com/mxc-foundation/lpwan-server/api/gw"
-	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
