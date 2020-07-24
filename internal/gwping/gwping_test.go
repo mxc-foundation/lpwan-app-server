@@ -10,13 +10,14 @@ import (
 
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-server/api/as"
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	"github.com/mxc-foundation/lpwan-server/api/gw"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/test"
-	"github.com/mxc-foundation/lpwan-server/api/as"
-	"github.com/mxc-foundation/lpwan-server/api/common"
-	"github.com/mxc-foundation/lpwan-server/api/gw"
 )
 
 func TestGatewayPing(t *testing.T) {

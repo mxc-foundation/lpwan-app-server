@@ -12,9 +12,10 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 )
 
 // ServiceProfile defines the service-profile.

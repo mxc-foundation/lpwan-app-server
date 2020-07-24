@@ -1,0 +1,11 @@
+{
+  "from": "%s Supernode",
+  "subject": "Your login confirmation code",
+  "plainText": "You attempted to login to your %s Supernode account. Here's your one-time password: %s. If this wasn't you, we highly suggest that you change your password as soon as possible.",
+  "title": "%s Supernode - Login Attempt",
+  "body1": "Your login confirmation code",
+  "body2": "You attempted to login to your %s Supernode account.",
+  "body3": "Here's your one-time password:",
+  "body4": "If this wasn't you,",
+  "body5": "we highly suggest that you change your password as soon as possible."
+}

@@ -12,15 +12,38 @@ import (
 
 var AppserverVersion string
 
+type SMTPStruct struct {
+	Email    string `mapstructure:"email"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+	AuthType string `mapstructure:"auth_type"`
+	Host     string `mapstructure:"host"`
+	Port     string `mapstructure:"port"`
+}
+
+type OperatorStruct struct {
+	Operator         string `mapstructure:"name"`
+	PrimaryColor     string `mapstructure:"primary_color"`
+	SecondaryColor   string `mapstructure:"secondary_color"`
+	DownloadAppStore string `mapstructure:"download_appstore"`
+	DownloadGoogle   string `mapstructure:"download_google"`
+	AppStoreLogo     string `mapstructure:"appstore_logo"`
+	AndroidLogo      string `mapstructure:"android_logo"`
+	OperatorAddress  string `mapstructure:"operator_address"`
+	OperatorLegal    string `mapstructure:"operator_legal_name"`
+	OperatorLogo     string `mapstructure:"operator_logo"`
+	OperatorContact  string `mapstructure:"operator_contact"`
+	OperatorSupport  string `mapstructure:"operator_support"`
+}
+
 // Config defines the configuration structure.
 type Config struct {
 	General struct {
 		LogLevel               int    `mapstructure:"log_level"`
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
-		HostServer             string `mapstructure:"host_server"`
-		DemoUser               string `mapstructure:"demo_user"`
 		Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
-	}
+		MXCLogo                string `mapstructure:"mxc_logo"`
+	} `mapstructure:"general"`
 
 	PostgreSQL struct {
 		DSN                string `mapstructure:"dsn"`
@@ -35,14 +58,9 @@ type Config struct {
 		IdleTimeout time.Duration `mapstructure:"idle_timeout"`
 	}
 
-	SMTP struct {
-		Email    string `mapstructure:"email"`
-		Username string `mapstructure:"username"`
-		Password string `mapstructure:"password"`
-		AuthType string `mapstructure:"auth_type"`
-		Host     string `mapstructure:"host"`
-		Port     string `mapstructure:"port"`
-	} `mapstructure:"smtp"`
+	Operator OperatorStruct `mapstructure:"operator"`
+
+	SMTP SMTPStruct `mapstructure:"smtp"`
 
 	M2MServer struct {
 		M2MServer string `mapstructure:"m2m_server"`
@@ -147,13 +165,6 @@ type Config struct {
 			McGroupID int `mapstructure:"mc_group_id"`
 			FragIndex int `mapstructure:"frag_index"`
 		} `mapstructure:"fuota_deployment"`
-
-		Branding struct {
-			Header       string `mapstructure:"header"`
-			Footer       string `mapstructure:"footer"`
-			Registration string `mapstructure:"registration"`
-			LogoPath     string `mapstructure:"logo_path"`
-		} `mapstructure:"branding"`
 
 		MiningSetUp struct {
 			Mining                bool   `mapstructure:"mining"`

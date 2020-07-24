@@ -9,10 +9,11 @@ import (
 	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"

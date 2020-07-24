@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
@@ -19,7 +21,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
 
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes"
