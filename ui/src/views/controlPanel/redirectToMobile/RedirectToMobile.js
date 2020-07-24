@@ -1,13 +1,12 @@
 import React, { Component } from "react";
 import { Link, withRouter } from 'react-router-dom';
-import phone from '../../../assets/images/supernodeapp-min-p-500.png';
-import appStore from '../../../assets/images/appStore.png';
-import googlePlay from '../../../assets/images/playStore.png';
+import appStore from '../../../assets/images/Appstore@2x.png';
+import googlePlay from '../../../assets/images/Playstore@2x.png';
 import ExtLink from '../../../components/ExtLink';
-
 import { Breadcrumb, BreadcrumbItem, Card, CardHeader, CardBody, CardText, CardLink, Col, Row } from 'reactstrap';
 import TitleBar from "../../../components/TitleBar";
 import i18n, { packageNS } from '../../../i18n';
+import DataDash from "../../../components/DataDash"
 //import { CardHeader } from "material-ui";
 
 
@@ -43,43 +42,19 @@ class RedirectToMobile extends Component {
           <Breadcrumb>
             <BreadcrumbItem>
               <Link>
-                M2M Wallet Download                 
+                {i18n.t(`${packageNS}:m2m_redirect.link`)}             
               </Link>
             </BreadcrumbItem>
           </Breadcrumb>
         </TitleBar>
         <Row>
-          <Col>
-          <Card>
-            <Row>
-              <Col sm="12" md={{ size: 6, offset: 0.1 }}>
-                <Card>
-                  <CardHeader>
-                    Supernode
-                  </CardHeader>
-                  <CardBody style={{padding:'0px 15px 0px 15px'}}>
-                    <CardText>
-                    Introducing the most progressive step in the burgeoning global data economy. A step that is set to reform the data transmission market and significantly increase token / data transaction speeds. Welcome to the new world of data, welcome to MXC Supernodes.
-                    </CardText>
-                    {/* https://www.mxc.org/mxc-supernode */}
-                    { comp }
-                  </CardBody>
-                </Card>
-              </Col>
-              <Col sm="12" md={{ size: 6, offset: 0.1 }}>
-                <Card>
-                  <CardBody>
-                    <img src={phone} style={{width:'90%'}} alt={i18n.t(`${packageNS}:menu.lora_server`)} />
-                  </CardBody>
-                </Card>
-              </Col>
-            </Row>
-            </Card>
-          </Col>
+          <DataDash />
         </Row>
       </React.Fragment>
     );
   }
 }
+
+
 
 export default withRouter(RedirectToMobile);
