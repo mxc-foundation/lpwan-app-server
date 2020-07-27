@@ -68,8 +68,8 @@ func (s *twoFALoginEmailInterface) getEmailParam(user string, param Param, jsonD
 
 	emailData := twoFAParam{
 		FromText:         jsonStruct.FromText,
-		From:             email.operator.from,
-		Host:             email.operator.host,
+		From:             email.from,
+		Host:             email.host,
 		To:               user,
 		Subject:          jsonStruct.Subject,
 		MsgID:            param.messageID,
