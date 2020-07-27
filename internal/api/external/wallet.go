@@ -13,8 +13,8 @@ import (
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 )
 
 // WalletServerAPI is the structure that contains the validator
@@ -299,7 +299,7 @@ func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceR
 		return &api.GetMXCpriceResponse{MxcPrice: "0"}, nil
 	}
 
-	price, err := mining.GetMXCprice(config.C, req.MxcPrice)
+	price, err := coingecko.New().GetPrice("mxc", "usd")
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to get price from CMC")
