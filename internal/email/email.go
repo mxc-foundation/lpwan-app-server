@@ -19,21 +19,26 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
-var cli *Client
+type smtpServiceProvider string
+
+const (
+	AWS      smtpServiceProvider = "aws"
+	Sendgrid smtpServiceProvider = "sendgrid"
+	Aliyun   smtpServiceProvider = "aliyun"
+)
+
+var cli = map[smtpServiceProvider]*Client{}
 
 type Client struct {
 	senderID string
 	username string
 	password string
 	authType string
-	host     string
 	smtpHost string
 	smtpPort string
 }
 
 type operatorInfo struct {
-	from,
-	host,
 	MXCLogo,
 	operatorName,
 	downloadAppStore,
@@ -49,32 +54,34 @@ type operatorInfo struct {
 
 var email struct {
 	base32endocoding *base32.Encoding
+	from             string
+	host             string
 	operator         operatorInfo
 	mailTemplates    map[EmailOptions]*template.Template
 }
 
 // Setup configures the package.
 func Setup(c config.Config) error {
-	port := c.SMTP.Port
-	if port == "" {
-		port = "25"
-	}
-	cli = &Client{
-		senderID: c.SMTP.Email,
-		host:     os.Getenv("APPSERVER"),
+	for key, value := range c.SMTP {
+		port := value.Port
+		if port == "" {
+			port = "25"
+		}
 
-		username: c.SMTP.Username,
-		password: c.SMTP.Password,
-		authType: c.SMTP.AuthType,
-		smtpHost: c.SMTP.Host,
-		smtpPort: port,
+		cli[smtpServiceProvider(key)] = &Client{
+			senderID: value.Email,
+			username: value.Username,
+			password: value.Password,
+			authType: value.AuthType,
+			smtpHost: value.Host,
+			smtpPort: port,
+		}
 	}
 
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
-
+	email.host = os.Getenv("APPSERVER")
+	email.from = cli[AWS].senderID
 	email.operator = operatorInfo{
-		from:             cli.senderID,
-		host:             cli.host,
 		MXCLogo:          c.General.MXCLogo,
 		operatorName:     c.Operator.Operator,
 		downloadAppStore: c.Operator.DownloadAppStore,
@@ -166,14 +173,26 @@ func SendInvite(user string, param Param, language EmailLanguage, option EmailOp
 		return err
 	}
 
-	err = cli.send(user, msg)
-
-	if err != nil {
-		log.WithError(err).Error("Unable to send confirmation email")
-		return err
+	err = cli[AWS].send(user, msg)
+	if err == nil {
+		return nil
 	}
 
-	return nil
+	log.Warn("Failed to send email with aws, try with other provider")
+	err = cli[Sendgrid].send(user, msg)
+	if err == nil {
+		return nil
+	}
+
+	log.Warn("Failed to send email with sendgrid, try with other provider")
+	err = cli[Aliyun].send(user, msg)
+	if err == nil {
+		return nil
+	}
+
+	log.WithError(err).Error("Unable to send confirmation email")
+	return err
+
 }
 
 func (c *Client) send(user string, msg bytes.Buffer) error {
@@ -195,3 +214,28 @@ func (c *Client) send(user string, msg bytes.Buffer) error {
 
 	return nil
 }
+
+// only for debugging purpose
+/*func writeMsgToFile(filename string, msg bytes.Buffer) {
+	log.Infof("write msg to file %s", filename)
+
+	f, err := os.Create(filename)
+	if err != nil {
+		log.WithError(err).Error("deubg: writeMsgToFile")
+		return
+	}
+	defer f.Close()
+
+	_, err = f.Write(msg.Bytes())
+	if err != nil {
+		log.WithError(err).Error("deubg: writeMsgToFile")
+		return
+	}
+
+	err = f.Sync()
+	if err != nil {
+		log.WithError(err).Error("deubg: writeMsgToFile")
+		return
+	}
+
+}*/

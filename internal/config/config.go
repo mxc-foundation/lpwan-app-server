@@ -61,7 +61,7 @@ type Config struct {
 
 	Operator OperatorStruct `mapstructure:"operator"`
 
-	SMTP SMTPStruct `mapstructure:"smtp"`
+	SMTP map[string]SMTPStruct `mapstructure:"smtp"`
 
 	M2MServer struct {
 		M2MServer string `mapstructure:"m2m_server"`
