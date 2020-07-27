@@ -1,10 +1,8 @@
 package email
 
 import (
-	"testing"
-	"time"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"testing"
 )
 
 type testStore struct {
@@ -21,6 +19,12 @@ func newTestStore() *testStore {
 			AuthType: "PLAIN",
 			Host:     "email-smtp.eu-central-1.amazonaws.com",
 			Port:     "587",
+			/*			Email:    "do-not-reply@mxc.org",
+						Username: "apikey",
+						Password: "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",
+						AuthType: "PLAIN",
+						Host:     "smtp.sendgrid.net",
+						Port:     "587",*/
 		},
 		operator: config.OperatorStruct{
 			Operator:         "MatchX Test",
@@ -44,14 +48,15 @@ func TestSendInvite(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 
-	languageList := []string{"en", "zhCN"}
-	for _, language := range languageList {
+	/*	languageList := []string{"zhCN"}
+		for _, language := range languageList {
 
-		for option := range emailOptionsList {
-			time.Sleep(5 * time.Second)
-			if err := SendInvite("lixuan@mxc.org", Param{Token: "1234567890"}, EmailLanguage(language), option); err != nil {
-				continue
+			for option := range emailOptionsList {
+				time.Sleep(5 * time.Second)
+				if err := SendInvite("lixuan@mxc.org", Param{Token: "1234567890"}, EmailLanguage(language), option); err != nil {
+					continue
+				}
 			}
-		}
-	}
+		}*/
+	SendInvite("lixuan@mxc.org", Param{Token: "1234567890"}, "zhCN", RegistrationConfirmation)
 }
