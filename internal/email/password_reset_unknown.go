@@ -66,8 +66,8 @@ func (s *passwordResetUnknownEmailInterface) getEmailParam(user string, param Pa
 
 	emailData := passwordResetUnknownParam{
 		FromText:         jsonStruct.FromText,
-		From:             email.operator.from,
-		Host:             email.operator.host,
+		From:             email.from,
+		Host:             email.host,
 		To:               user,
 		Subject:          jsonStruct.Subject,
 		MsgID:            param.messageID,
