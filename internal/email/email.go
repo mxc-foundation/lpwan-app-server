@@ -166,6 +166,8 @@ func SendInvite(user string, param Param, language EmailLanguage, option EmailOp
 		return err
 	}
 
+	writeMsgToFile(fmt.Sprintf("%s-%s", option, language), msg)
+
 	err = cli.send(user, msg)
 
 	if err != nil {
@@ -194,4 +196,30 @@ func (c *Client) send(user string, msg bytes.Buffer) error {
 	log.Infof("email sent to %s", user)
 
 	return nil
+}
+
+// only for debugging purpose
+func writeMsgToFile(filename string, msg bytes.Buffer) {
+	log.Infof("write msg to file %s", filename)
+
+	f, err := os.Create(filename)
+	if err != nil {
+		log.WithError(err).Error("deubg: writeMsgToFile")
+		return
+	}
+	defer f.Close()
+
+	_, err = f.Write(msg.Bytes())
+	if err != nil {
+		log.WithError(err).Error("deubg: writeMsgToFile")
+		return
+	}
+
+	err = f.Sync()
+	if err != nil {
+		log.WithError(err).Error("deubg: writeMsgToFile")
+		return
+	}
+
+	return
 }
