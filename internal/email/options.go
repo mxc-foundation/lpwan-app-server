@@ -76,10 +76,8 @@ func loadEmailTemplates() error {
 
 	templatePath0 := EmailTemplatePath + "/" + "email_template"
 	templatePath1 := EmailTemplatePath + "/" + "email_template_1"
-	templatePath2 := EmailTemplatePath + "/" + "email_template_2"
 	_ = static.MustAsset(templatePath0)
 	_ = static.MustAsset(templatePath1)
-	_ = static.MustAsset(templatePath2)
 
 	// get list of existing templates
 	for option := range emailOptionsList {
@@ -105,7 +103,6 @@ func loadEmailTemplates() error {
 		email.mailTemplates[option] = template.Must(tpl.Parse(string(static.MustAsset(templatePath0))))
 		email.mailTemplates[option] = template.Must(tpl.New(EmailTemplateHead).Parse(string(static.MustAsset(templatePath1))))
 		email.mailTemplates[option] = template.Must(tpl.New(BodyTemplateName).Parse(string(static.MustAsset(bodyTemplatePath))))
-		email.mailTemplates[option] = template.Must(tpl.New(EmailTemplateTail).Parse(string(static.MustAsset(templatePath2))))
 	}
 
 	return nil

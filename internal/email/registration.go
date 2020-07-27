@@ -70,8 +70,8 @@ func (s *registrationEmailInterface) getEmailParam(user string, param Param, jso
 
 	emailData := registrationParam{
 		FromText:         jsonStruct.FromText,
-		From:             email.operator.from,
-		Host:             email.operator.host,
+		From:             email.from,
+		Host:             email.host,
 		To:               user,
 		Subject:          jsonStruct.Subject,
 		MsgID:            param.messageID,
