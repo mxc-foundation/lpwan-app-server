@@ -29,6 +29,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/ratelimiter"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
@@ -87,13 +88,15 @@ func setupAPI(conf config.Config) error {
 		return errors.Wrap(err, "application-server id to uuid error")
 	}
 
+	rateLimiter := ratelimiter.New(storage.RedisPool())
+
 	grpcOpts := helpers.GetgRPCServerOptions()
 	grpcServer := grpc.NewServer(grpcOpts...)
 	api.RegisterApplicationServiceServer(grpcServer, NewApplicationAPI(validator))
 	api.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(validator))
 	api.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(validator))
 	api.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
-	api.RegisterInternalServiceServer(grpcServer, NewInternalUserAPI(validator, otpValidator))
+	api.RegisterInternalServiceServer(grpcServer, NewInternalUserAPI(validator, otpValidator, rateLimiter))
 	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
 	api.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(validator))
 	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(validator))
