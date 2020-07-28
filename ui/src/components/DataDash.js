@@ -4,7 +4,10 @@ import i18n, { packageNS } from '../i18n';
 import phone from '../assets/images/appimage@2x.png';
 import dataDash from '../assets/images/dataDash.png'
 import appStore from '../assets/images/Appstore@2x.png';
-import googlePlay from '../assets/images/Playstore@2x.png';
+import googlePlay from '../assets/images/google-play.png';
+import testflight from '../assets/images/testflight.png';
+import downloadAPK from '../assets/images/download_apk.png';
+
 import { Card } from 'reactstrap';
 
 
@@ -22,7 +25,9 @@ const DataDash = () => {
             <FlexRow>
             <Buttons>
             <Button href="https://apps.apple.com/app/mxc-datadash/id1509218470"><img src={appStore} width="135"/></Button>
+            <BorderButton href="https://testflight.apple.com/join/NkXHEpf4"><img src={testflight} height="39.844"/>  Install with TestFlight</BorderButton>
             <Button href="https://play.google.com/store/apps/details?id=com.mxc.smartcity"><img src={googlePlay} width="135"/></Button>
+            <Button href="https://datadash.oss-accelerate.aliyuncs.com/app-prod-release.apk"><img src={downloadAPK} width="135"/></Button>
             </Buttons>
             </FlexRow>
             <Images>
@@ -56,7 +61,7 @@ const Title = styled.h2`
 
 const Subtitle = styled.p`
 justify-content: center;
-alight-items: center;
+align-items: center;
 text-align: center;
 font-size: 18px;
 font-weight: bold;
@@ -78,6 +83,18 @@ margin: 0 0 10vh 0;
 const Button = styled.a`
 align-items: space-around;
 margin: 3vw;
+color: black;
+
+`
+
+const BorderButton = styled.a`
+align-items: space-around;
+margin: 3vw;
+color: black;
+border: 2px solid black;
+border-radius: 11px;
+padding: 11px 5px 12px 0px;
+z-index: 5;
 `
 
 
