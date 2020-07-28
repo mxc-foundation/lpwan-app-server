@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -20,7 +19,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/status"
 
 	"github.com/mxc-foundation/lpwan-server/api/ns"
@@ -31,7 +29,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-	"github.com/mxc-foundation/lpwan-app-server/internal/ratelimiter"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -44,7 +41,6 @@ type UserAPI struct {
 type InternalUserAPI struct {
 	validator    auth.Validator
 	otpValidator *otp.Validator
-	rateLimiter  *ratelimiter.RateLimiter
 }
 
 // NewUserAPI creates a new UserAPI.
@@ -298,11 +294,10 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPassword
 }
 
 // NewInternalUserAPI creates a new InternalUserAPI.
-func NewInternalUserAPI(validator auth.Validator, otpValidator *otp.Validator, rateLimiter *ratelimiter.RateLimiter) *InternalUserAPI {
+func NewInternalUserAPI(validator auth.Validator, otpValidator *otp.Validator) *InternalUserAPI {
 	return &InternalUserAPI{
 		validator:    validator,
 		otpValidator: otpValidator,
-		rateLimiter:  rateLimiter,
 	}
 }
 
@@ -564,22 +559,6 @@ func OTPgen() string {
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
 	logInfo := "api/appserver_serves_ui/RegisterUser"
 
-	p, ok := peer.FromContext(ctx)
-	if ok {
-		addr, _, err := net.SplitHostPort(p.Addr.String())
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		if err := a.rateLimiter.Check("register-user", addr, 5*time.Minute, 72*time.Hour); err != nil {
-			log.WithField("address", addr).Warn("rate limited registration attempt")
-			return nil, status.Error(codes.Unavailable, "unavailable")
-		}
-	}
-	if err := a.rateLimiter.Check("register-user", req.Email, 5*time.Minute, 72*time.Hour); err != nil {
-		log.WithField("email", req.Email).Warn("rate limited registration attempt")
-		return nil, status.Error(codes.Unavailable, "unavailable")
-	}
-
 	log.WithFields(log.Fields{
 		"email":     req.Email,
 		"languange": req.Language,
@@ -731,23 +710,6 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
 	}
 	defer tx.Rollback()
-
-	p, ok := peer.FromContext(ctx)
-	if ok {
-		addr, _, err := net.SplitHostPort(p.Addr.String())
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		if err := a.rateLimiter.Check("reset-password", addr, 5*time.Minute, 72*time.Hour); err != nil {
-			log.WithField("address", addr).Warn("rate limited password-reset")
-			return nil, status.Error(codes.Unavailable, "unavailable")
-		}
-	}
-	if err := a.rateLimiter.Check("reset-password", req.Username, 5*time.Minute, 72*time.Hour); err != nil {
-		log.WithField("email", req.Username).Warn("rate limited registration password-reset")
-		return nil, status.Error(codes.Unavailable, "unavailable")
-	}
-
 	user, err := storage.GetUserByUsername(ctx, tx, req.Username)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
