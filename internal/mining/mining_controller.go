@@ -110,12 +110,6 @@ func Setup(conf config.Config) error {
 	return nil
 }
 
-func calcTotalMiningValue(conf config.Config, mxcPrice float64) float64 {
-	mconf := conf.ApplicationServer.MiningSetUp
-	randUSD := float64(rand.Int63n(mconf.MaxValue-mconf.MinValue) + mconf.MinValue)
-	return mxcPrice * randUSD
-}
-
 func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) error {
 	price, err := ctrl.priceFetcher.GetPrice(ctrl.crypto, ctrl.fiat)
 	if err != nil {
@@ -152,13 +146,13 @@ func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) err
 		macs = append(macs, mac)
 	}
 
-	amount := price + ctrl.minFiatValue + ctrl.rnd.Float64()*
-		(ctrl.maxFiatValue-ctrl.minFiatValue)
+	amount := (ctrl.minFiatValue + ctrl.rnd.Float64()*
+		(ctrl.maxFiatValue-ctrl.minFiatValue)) / price
 
 	miningSent := false
 	// if error, resend after one minute
 	for !miningSent {
-		err := sendMining(ctx, macs, price, amount)
+		err := sendMining(ctx, macs, 1/price, amount)
 		if err != nil {
 			log.WithError(err).Error("send mining request to m2m error")
 			time.Sleep(60 * time.Second)
