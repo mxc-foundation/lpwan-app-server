@@ -107,6 +107,7 @@ import StakeLayout from "./views/stake/StakeLayout";
 import SetStake from "./views/stake/SetStake";
 import SuperNodeEth from "./views/controlPanel/superNodeEth/superNodeEth"
 import SuperAdminWithdraw from "./views/controlPanel/withdraw/withdraw"
+import RedirectToMobile from "./views/controlPanel/redirectToMobile/RedirectToMobile"
 import SupernodeHistory from "./views/controlPanel/history/History"
 import SystemSettings from "./views/controlPanel/settings/Settings"
 
@@ -336,6 +337,14 @@ class LoggedInRoutes extends Component {
         <Route path="/control-panel/withdraw"
           render={props =>
             <SuperAdminWithdraw
+              {...props}
+              switchToSidebarId={this.props.switchToSidebarId}
+            />
+          }
+        />
+        <Route path="/control-panel/redirect"
+          render={props =>
+            <RedirectToMobile
               {...props}
               switchToSidebarId={this.props.switchToSidebarId}
             />

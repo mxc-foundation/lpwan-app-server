@@ -3,27 +3,24 @@
 GRPC_GW_PATH=`go list -f '{{ .Dir }}' github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway`
 GRPC_GW_PATH="${GRPC_GW_PATH}/../third_party/googleapis"
 
-LS_PATH_NS=`go list -f '{{ .Dir }}' github.com/mxc-foundation/lpwan-server/api/ns`
-LS_PATH_NS="${LS_PATH_NS}/../.."
-
 PROTOBUF_PATH=`go list -f '{{ .Dir }}' github.com/golang/protobuf/ptypes`
 
 # generate the gRPC code
-protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=plugins=grpc:. \
+protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=paths=source_relative,plugins=grpc:. \
     device.proto \
     application.proto \
     deviceQueue.proto \
-    common.proto \
+    as_common.proto \
     user.proto \
     gateway.proto \
     organization.proto \
-    profiles.proto \
+    as_profiles.proto \
     networkServer.proto \
     serviceProfile.proto \
     deviceProfile.proto \
     gatewayProfile.proto \
     multicastGroup.proto \
-	  fuotaDeployment.proto \
+    fuotaDeployment.proto \
     internal.proto \
     serverInfo.proto \
     topup.proto \
@@ -36,21 +33,21 @@ protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=plugins
     staking.proto
 
 # generate the JSON interface code
-protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=logtostderr=true:. \
+protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=paths=source_relative,logtostderr=true:. \
     device.proto \
     application.proto \
     deviceQueue.proto \
-    common.proto \
+    as_common.proto \
     user.proto \
     gateway.proto \
     organization.proto \
-    profiles.proto \
+    as_profiles.proto \
     networkServer.proto \
     serviceProfile.proto \
     deviceProfile.proto \
     gatewayProfile.proto \
     multicastGroup.proto \
-	  fuotaDeployment.proto \
+    fuotaDeployment.proto \
     internal.proto \
     serverInfo.proto \
     topup.proto \
@@ -63,21 +60,21 @@ protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_o
     staking.proto
 
 # generate the swagger definitions
-protoc -I. -I${LS_PATH_NS} -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_names_for_fields=true:./swagger \
+protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_names_for_fields=true,simple_operation_ids=true:./swagger \
     device.proto \
     application.proto \
     deviceQueue.proto \
-    common.proto \
+    as_common.proto \
     user.proto \
     gateway.proto \
     organization.proto \
-    profiles.proto \
+    as_profiles.proto \
     networkServer.proto \
     serviceProfile.proto \
     deviceProfile.proto \
     gatewayProfile.proto \
     multicastGroup.proto \
-	  fuotaDeployment.proto \
+    fuotaDeployment.proto \
     internal.proto \
     serverInfo.proto \
     topup.proto \

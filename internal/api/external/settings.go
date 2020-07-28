@@ -3,6 +3,7 @@ package external
 import (
 	"context"
 
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -56,13 +57,18 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
+	compensation, err := decimal.NewFromString(resp.Compensation)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't parse compensation: %v", err)
+	}
+	compFloat, _ := compensation.Float64()
 	return &api.GetSettingsResponse{
 		LowBalanceWarning:                resp.LowBalanceWarning,
 		DownlinkPrice:                    resp.DownlinkPrice,
 		SupernodeIncomeRatio:             resp.SupernodeIncomeRatio,
 		StakingPercentage:                resp.StakingPercentage,
 		StakingExpectedRevenuePercentage: resp.StakingExpectedRevenuePercentage,
-		Compensation:                     resp.Compensation,
+		Compensation:                     compFloat,
 	}, status.Error(codes.OK, "")
 }
 

@@ -21,6 +21,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiBrandingResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -36,6 +42,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiPasswordResetResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -64,6 +76,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiLoginResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -90,6 +108,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiLoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -118,6 +142,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiProfileResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -133,6 +163,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -160,6 +196,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiConfirmRegistrationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -185,6 +227,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -212,6 +260,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiPasswordResetResp"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -238,6 +292,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGlobalSearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -280,6 +340,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetTOTPConfigurationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -305,6 +371,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiTOTPStatusResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -332,6 +404,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiTOTPStatusResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -357,6 +435,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetRecoveryCodesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -384,6 +468,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiTOTPStatusResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -399,6 +489,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGoogleRecaptchaResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -831,6 +927,39 @@
         "note": {
           "type": "string",
           "description": "Optional note to store with the user."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }

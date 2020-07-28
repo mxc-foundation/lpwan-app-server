@@ -19,16 +19,6 @@ const SideNavSupernodeWalletContent = (props) => {
                             <span>{i18n.t(`${packageNS}:tr000450`)}</span>
                         </Link>
                     </li>
-
-                    <li>
-                        <Link to={`/control-panel/withdraw/`} className="waves-effect side-nav-link-ref">
-                            {/* <i className="ti-cloud-down"></i>
-                            <span> {i18n.t(`${packageNS}:menu.withdraw.withdraw`)} </span> */}
-                            <i className="mdi mdi-hammer"></i>
-                            <span> {i18n.t(`${packageNS}:menu.dashboard.coming_soon`)} </span>
-                        </Link>
-                    </li>
-                    
                 </Admin>
             </ul>
         </div>

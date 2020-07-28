@@ -49,7 +49,7 @@ func (s *WithdrawServerAPI) ModifyWithdrawFee(ctx context.Context, req *api.Modi
 	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
 
 	resp, err := withdrawClient.ModifyWithdrawFee(ctx, &m2mServer.ModifyWithdrawFeeRequest{
-		MoneyAbbr:   m2mServer.Money(req.MoneyAbbr),
+		Currency:    req.Currency,
 		WithdrawFee: req.WithdrawFee,
 		Password:    req.Password,
 	})
@@ -77,7 +77,7 @@ func (s *WithdrawServerAPI) GetWithdrawFee(ctx context.Context, req *api.GetWith
 	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
 
 	resp, err := withdrawClient.GetWithdrawFee(ctx, &m2mServer.GetWithdrawFeeRequest{
-		MoneyAbbr: m2mServer.Money(req.MoneyAbbr),
+		Currency: req.Currency,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -112,10 +112,10 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
 
 	resp, err := withdrawClient.GetWithdrawHistory(ctx, &m2mServer.GetWithdrawHistoryRequest{
-		OrgId:     req.OrgId,
-		Offset:    req.Offset,
-		Limit:     req.Limit,
-		MoneyAbbr: m2mServer.Money(req.MoneyAbbr),
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
+		From:     req.From,
+		Till:     req.Till,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -126,17 +126,17 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 	for _, item := range resp.WithdrawHistory {
 		withdrawHistory := &api.WithdrawHistory{
 			Amount:      item.Amount,
-			TxSentTime:  item.TxSentTime,
+			Timestamp:   item.Timestamp,
 			TxStatus:    item.TxStatus,
 			TxHash:      item.TxHash,
 			DenyComment: item.DenyComment,
+			WithdrawFee: item.WithdrawFee,
 		}
 
 		withdrawHistoryList = append(withdrawHistoryList, withdrawHistory)
 	}
 
 	return &api.GetWithdrawHistoryResponse{
-		Count:           resp.Count,
 		WithdrawHistory: withdrawHistoryList,
 	}, status.Error(codes.OK, "")
 }
@@ -164,10 +164,10 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
 
 	resp, err := withdrawClient.GetWithdraw(ctx, &m2mServer.GetWithdrawRequest{
-		OrgId:            req.OrgId,
-		Amount:           req.Amount,
-		EthAddress:       req.EthAddress,
-		AvailableBalance: req.AvailableBalance,
+		OrgId:      req.OrgId,
+		Currency:   req.Currency,
+		Amount:     req.Amount,
+		EthAddress: req.EthAddress,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -176,182 +176,5 @@ func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdra
 
 	return &api.GetWithdrawResponse{
 		Status: resp.Status,
-	}, status.Error(codes.OK, "")
-}
-
-// WithdrawReq defines request for withdraw
-func (s *WithdrawServerAPI) WithdrawReq(ctx context.Context, req *api.WithdrawReqRequest) (*api.WithdrawReqResponse, error) {
-	logInfo := "api/appserver_serves_ui/WithdrawReq org=" + strconv.FormatInt(req.OrgId, 10)
-
-	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, "must be an organization admin")
-	}
-
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
-
-	resp, err := withdrawClient.WithdrawReq(ctx, &m2mServer.WithdrawReqRequest{
-		OrgId:            req.OrgId,
-		Amount:           req.Amount,
-		EthAddress:       req.EthAddress,
-		AvailableBalance: req.AvailableBalance,
-	})
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.WithdrawReqResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	return &api.WithdrawReqResponse{
-		Status: resp.Status,
-	}, status.Error(codes.OK, "")
-}
-
-func (s *WithdrawServerAPI) ConfirmWithdraw(ctx context.Context, req *api.ConfirmWithdrawRequest) (*api.ConfirmWithdrawResponse, error) {
-	logInfo := "api/appserver_serves_ui/ConfirmWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
-
-	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsGlobalAdmin(ctx); err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
-	}
-
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
-
-	resp, err := withdrawClient.ConfirmWithdraw(ctx, &m2mServer.ConfirmWithdrawRequest{
-		OrgId:         req.OrgId,
-		ConfirmStatus: req.ConfirmStatus,
-		DenyComment:   req.DenyComment,
-		WithdrawId:    req.WithdrawId,
-	})
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.ConfirmWithdrawResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	return &api.ConfirmWithdrawResponse{
-		Status: resp.Status,
-	}, status.Error(codes.OK, "")
-}
-
-// GetWithdrawRequestList returns all users withdrawal requests to the front-end
-func (s *WithdrawServerAPI) GetWithdrawRequestList(ctx context.Context, req *api.GetWithdrawRequestListRequest) (*api.GetWithdrawRequestListResponse, error) {
-	logInfo := "api/appserver_serves_ui/GetWithdrawRequestList"
-
-	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsGlobalAdmin(ctx); err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
-	}
-
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
-
-	resp, err := withdrawClient.GetWithdrawRequestList(ctx, &m2mServer.GetWithdrawRequestListRequest{
-		Offset: req.Offset,
-		Limit:  req.Limit,
-	})
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawRequestListResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	// ToDo: Get the user name from DB
-	/*for _, v := range resp.WithdrawRequest {
-		v.UserName = ""
-	}*/
-
-	var withdrawRequestList []*api.WithdrawRequest
-	for _, item := range resp.WithdrawRequest {
-		withdrawRequest := &api.WithdrawRequest{
-			UserName:       item.UserName,
-			AvailableToken: item.AvailableToken,
-			Amount:         item.Amount,
-			WithdrawId:     item.WithdrawId,
-		}
-
-		withdrawRequestList = append(withdrawRequestList, withdrawRequest)
-	}
-
-	return &api.GetWithdrawRequestListResponse{
-		Count:           resp.Count,
-		WithdrawRequest: withdrawRequestList,
-	}, status.Error(codes.OK, "")
-}
-
-func (s *WithdrawServerAPI) GetWithdrawMonthly(ctx context.Context, req *api.GetWithdrawMonthlyRequest) (*api.GetWithdrawMonthlyResponse, error) {
-	logInfo := "api/appserver_serves_ui/GetWithdrawMonthly"
-
-	cred, err := s.validator.GetCredentials(ctx, auth.WithValidOTP())
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsGlobalAdmin(ctx); err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
-	}
-
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	withdrawClient := m2mServer.NewWithdrawServiceClient(m2mClient)
-
-	resp, err := withdrawClient.GetWithdrawMonthly(ctx, &m2mServer.GetWithdrawMonthlyRequest{
-		UserId: req.UserId,
-		OrgId:  req.OrgId,
-	})
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWithdrawMonthlyResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	var withdrawData []*api.MonthlyData
-	for _, item := range resp.MonthlyData {
-		monthlyWithdraw := &api.MonthlyData{
-			Month:  item.Month,
-			Amount: item.Amount,
-		}
-
-		withdrawData = append(withdrawData, monthlyWithdraw)
-	}
-
-	return &api.GetWithdrawMonthlyResponse{
-		MonthlyData: withdrawData,
 	}, status.Error(codes.OK, "")
 }
