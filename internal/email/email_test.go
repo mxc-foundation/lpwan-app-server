@@ -11,7 +11,7 @@ func TestSendInvite(t *testing.T) {
 	// setup settings and load templates
 	if err := Setup(config.Config{
 		SMTP: map[string]config.SMTPStruct{
-			string(AWS): {
+			"aws": {
 				Email:    "do-not-reply@mxc.org",
 				Username: "AKIAYLLLRKLATNOTY3F5",
 				Password: "BN3u+u/u2JLwF2rgY2zonMYfPQHz/D8ycAExRzTEJbDd",
@@ -19,7 +19,7 @@ func TestSendInvite(t *testing.T) {
 				Host:     "email-smtp.eu-central-1.amazonaws.com",
 				Port:     "587",
 			},
-			string(Sendgrid): {
+			"sendgrid": {
 				Email:    "do-not-reply@mxc.org",
 				Username: "apikey",
 				Password: "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",
@@ -27,7 +27,7 @@ func TestSendInvite(t *testing.T) {
 				Host:     "smtp.sendgrid.net",
 				Port:     "587",
 			},
-			string(Aliyun): {
+			"aliyun": {
 				Email:    "do-not-reply@mxc.org",
 				Username: "do-not-reply@mxcxy.com",
 				Password: "xGNY0JnBt2J3",

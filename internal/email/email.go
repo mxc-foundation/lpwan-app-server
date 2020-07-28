@@ -19,15 +19,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
-type smtpServiceProvider string
-
-const (
-	AWS      smtpServiceProvider = "aws"
-	Sendgrid smtpServiceProvider = "sendgrid"
-	Aliyun   smtpServiceProvider = "aliyun"
-)
-
-var cli = map[smtpServiceProvider]*Client{}
+var cli = map[string]*Client{}
 
 type Client struct {
 	senderID string
@@ -68,7 +60,7 @@ func Setup(c config.Config) error {
 			port = "25"
 		}
 
-		cli[smtpServiceProvider(key)] = &Client{
+		cli[key] = &Client{
 			senderID: value.Email,
 			username: value.Username,
 			password: value.Password,
@@ -76,11 +68,12 @@ func Setup(c config.Config) error {
 			smtpHost: value.Host,
 			smtpPort: port,
 		}
+
+		email.from = value.Email
 	}
 
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
 	email.host = os.Getenv("APPSERVER")
-	email.from = cli[AWS].senderID
 	email.operator = operatorInfo{
 		MXCLogo:          c.General.MXCLogo,
 		operatorName:     c.Operator.Operator,
@@ -173,25 +166,18 @@ func SendInvite(user string, param Param, language EmailLanguage, option EmailOp
 		return err
 	}
 
-	err = cli[AWS].send(user, msg)
-	if err == nil {
-		return nil
+	for k, v := range cli {
+		if v != nil {
+			err = v.send(user, msg)
+			if err == nil {
+				return nil
+			}
+			log.Warnf("Failed to send email with %s, try with other provider", k)
+		}
 	}
 
-	log.Warn("Failed to send email with aws, try with other provider")
-	err = cli[Sendgrid].send(user, msg)
-	if err == nil {
-		return nil
-	}
-
-	log.Warn("Failed to send email with sendgrid, try with other provider")
-	err = cli[Aliyun].send(user, msg)
-	if err == nil {
-		return nil
-	}
-
-	log.WithError(err).Error("Unable to send confirmation email")
-	return err
+	log.Error("Unable to send confirmation email")
+	return errors.New("SMTP server failed")
 
 }
 
