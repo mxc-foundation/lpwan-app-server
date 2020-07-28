@@ -1,13 +1,14 @@
 syntax = "proto3";
 
 package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
-import "timestamp/timestamp.proto";
-import "empty/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 // profiles
-import "profiles.proto";
+import "as_profiles.proto";
 
 // DeviceProfileService is the service managing device-profiles.
 service DeviceProfileService {

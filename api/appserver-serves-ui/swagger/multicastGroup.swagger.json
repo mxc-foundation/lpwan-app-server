@@ -21,6 +21,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListMulticastGroupResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -83,6 +89,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiCreateMulticastGroupResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -110,6 +122,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetMulticastGroupResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -133,6 +151,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -159,6 +183,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -194,6 +224,12 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -228,6 +264,12 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -261,6 +303,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListMulticastGroupQueueItemsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -285,6 +333,12 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -301,7 +355,7 @@
         ]
       }
     },
-    "/api/multicast-groups/{multicastQueueItem.multicastGroupId}/queue": {
+    "/api/multicast-groups/{multicastQueueItem.multicastGroupID}/queue": {
       "post": {
         "summary": "Enqueue adds the given item to the multicast-queue.",
         "operationId": "Enqueue",
@@ -311,11 +365,17 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiEnqueueMulticastQueueItemResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "multicastQueueItem.multicastGroupId",
+            "name": "multicastQueueItem.multicastGroupID",
             "description": "Multicast-group ID (string formatted UUID).",
             "in": "path",
             "required": true,
@@ -546,6 +606,39 @@
         "multicastGroup": {
           "$ref": "#/definitions/appserver_serves_uiMulticastGroup",
           "description": "Multicast-group object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }

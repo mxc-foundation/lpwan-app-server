@@ -21,6 +21,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListGatewayProfilesResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -62,6 +68,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiCreateGatewayProfileResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -88,6 +100,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -123,6 +141,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetGatewayProfileResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -146,6 +170,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -332,6 +362,39 @@
       ],
       "default": "LORA",
       "title": "- LORA: LoRa\n - FSK: FSK"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
     }
   }
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 )
 
 var AppserverVersion string
@@ -60,7 +61,7 @@ type Config struct {
 
 	Operator OperatorStruct `mapstructure:"operator"`
 
-	SMTP SMTPStruct `mapstructure:"smtp"`
+	SMTP map[string]SMTPStruct `mapstructure:"smtp"`
 
 	M2MServer struct {
 		M2MServer string `mapstructure:"m2m_server"`
@@ -206,8 +207,10 @@ type Config struct {
 			EndpointEnabled    bool   `mapstructure:"endpoint_enabled"`
 			Bind               string `mapstructure:"bind"`
 			APITimingHistogram bool   `mapstructure:"api_timing_histogram"`
-		}
+		} `mapstructure:"prometheus"`
 	} `mapstructure:"metrics"`
+
+	PProf pprof.Config `mapstructure:"pprof"`
 }
 
 // C holds the global configuration.

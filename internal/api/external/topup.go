@@ -55,9 +55,10 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	topupClient := m2mServer.NewTopUpServiceClient(m2mClient)
 
 	resp, err := topupClient.GetTopUpHistory(ctx, &m2mServer.GetTopUpHistoryRequest{
-		OrgId:  req.OrgId,
-		Offset: req.Offset,
-		Limit:  req.Limit,
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
+		From:     req.From,
+		Till:     req.Till,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -68,7 +69,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	for _, item := range resp.TopupHistory {
 		topUpHistory := &api.TopUpHistory{
 			Amount:    item.Amount,
-			CreatedAt: item.CreatedAt,
+			Timestamp: item.Timestamp,
 			TxHash:    item.TxHash,
 		}
 
@@ -76,7 +77,6 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	}
 
 	return &api.GetTopUpHistoryResponse{
-		Count:        resp.Count,
 		TopupHistory: topUpHistoryList,
 	}, status.Error(codes.OK, "")
 }

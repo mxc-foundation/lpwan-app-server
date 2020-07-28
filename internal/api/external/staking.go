@@ -193,14 +193,44 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 
 	return &api.GetActiveStakesResponse{
 		ActStake: &api.ActiveStake{
-			Id:             resp.ActStake.Id,
-			FkWallet:       resp.ActStake.FkWallet,
-			Amount:         resp.ActStake.Amount,
-			StakeStatus:    resp.ActStake.StakeStatus,
-			StartStakeTime: resp.ActStake.StartStakeTime,
-			UnstakeTime:    resp.ActStake.UnstakeTime,
+			Id:          resp.ActStake.Id,
+			Amount:      resp.ActStake.Amount,
+			StakeStatus: resp.ActStake.StakeStatus,
+			StartTime:   resp.ActStake.StartTime,
+			EndTime:     resp.ActStake.EndTime,
 		},
 	}, status.Error(codes.OK, "")
+}
+
+// GetStakingRevenue returns the amount earned from staking during the specified period
+func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueRequest) (*api.StakingRevenueResponse, error) {
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)
+	cred, err := s.validator.GetCredentials(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
+	}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be an organization admin")
+	}
+
+	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
+		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
+	resp, err := stakeClient.GetStakingRevenue(ctx, &m2mServer.StakingRevenueRequest{
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
+		From:     req.From,
+		Till:     req.Till,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Error(codes.Internal, "couldn't get response from m2m")
+	}
+	return &api.StakingRevenueResponse{Amount: resp.Amount}, nil
 }
 
 // GetStakingHistory defines the request and response to get staking history
@@ -231,26 +261,22 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
 
 	resp, err := stakeClient.GetStakingHistory(ctx, &m2mServer.StakingHistoryRequest{
-		OrgId:  req.OrgId,
-		Offset: req.Offset,
-		Limit:  req.Limit,
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
+		From:     req.From,
+		Till:     req.Till,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	var stakeHistoryList []*api.GetStakingHistory
+	var stakeHistoryList []*api.StakingHistory
 	for _, item := range resp.StakingHist {
-		stakeHistory := &api.GetStakingHistory{
-			StakeAmount:   item.StakeAmount,
-			Start:         item.Start,
-			End:           item.End,
-			RevMonth:      item.RevMonth,
-			NetworkIncome: item.NetworkIncome,
-			MonthlyRate:   item.MonthlyRate,
-			Revenue:       item.Revenue,
-			Balance:       item.Balance,
+		stakeHistory := &api.StakingHistory{
+			Timestamp: item.Timestamp,
+			Amount:    item.Amount,
+			Type:      item.Type,
 		}
 
 		stakeHistoryList = append(stakeHistoryList, stakeHistory)
@@ -258,6 +284,5 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 
 	return &api.StakingHistoryResponse{
 		StakingHist: stakeHistoryList,
-		Count:       resp.Count,
 	}, status.Error(codes.OK, "")
 }

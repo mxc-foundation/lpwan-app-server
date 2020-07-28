@@ -1,8 +1,10 @@
 syntax = "proto3";
 
 package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 import "internal.proto";
 
 service WalletService {
@@ -18,7 +20,7 @@ service WalletService {
 		};
     }
 
-    rpc GetWalletUsageHist (GetWalletUsageHistRequest) returns (GetWalletUsageHistResponse) {
+    rpc GetNetworkUsageHist (GetNetworkUsageHistRequest) returns (GetNetworkUsageHistResponse) {
         option (google.api.http) = {
     		get: "/api/wallet/{org_id}/usage-history"
     	};
@@ -52,35 +54,37 @@ service WalletService {
 message GetWalletBalanceRequest {
     int64 user_id = 1;
     int64 org_id = 2;
+    string currency = 3;
 }
 
 message GetWalletBalanceResponse {
-    double balance = 1;
+    string balance = 1;
     ProfileResponse user_profile = 2;
 }
 
 message GetWalletMiningIncomeRequest {
-    int64 user_id = 1;
     int64 org_id = 2;
+    string currency = 3;
+    google.protobuf.Timestamp from = 4;
+    google.protobuf.Timestamp till = 5;
 }
 
 message GetWalletMiningIncomeResponse {
-    double mining_income = 1;
+    string mining_income = 1;
     ProfileResponse user_profile = 2;
 }
 
 message MiningData {
     string month = 1;
-    double amount = 2;
+    string amount = 2;
 }
 
 message GetMiningInfoRequest {
-    int64 user_id = 1;
     int64 org_id = 2;
 }
 
 message GetMiningInfoResponse {
-    double todayRev = 1;
+    string todayRev = 1;
     repeated MiningData data = 2;
 }
 
@@ -104,32 +108,29 @@ message GetVmxcTxHistoryResponse {
     ProfileResponse user_profile = 3;
 }
 
-message GetWalletUsageHistRequest {
+message GetNetworkUsageHistRequest {
     int64 org_id = 1;
-    int64 offset = 2;
-    int64 limit = 3;
+    string currency = 2;
+    google.protobuf.Timestamp from = 3;
+    google.protobuf.Timestamp till = 4;
 }
 
-message GetWalletUsageHist {
-    string StartAt = 1;
-    int64 DurationMinutes = 2;
+message NetworkUsage {
+    google.protobuf.Timestamp timestamp = 1;
+    string amount = 2;
 
-    int64 DlCntDv = 3;
-    int64 DlCntDvFree = 4;
-    int64 UlCntDv = 5;
-    int64 UlCntDvFree = 6;
-    int64 DlCntGw = 7;
-    int64 DlCntGwFree = 8;
-    int64 UlCntGw = 9;
-    int64 UlCntGwFree = 10;
-
-    double Spend = 11;
-    double Income = 12;
-    double UpdatedBalance = 13;
+    int64 dl_cnt_dev = 3;
+    int64 dl_cnt_dev_free = 4;
+    int64 ul_cnt_dev = 5;
+    int64 ul_cnt_dev_free = 6;
+    int64 dl_cnt_gw = 7;
+    int64 dl_cnt_gw_free = 8;
+    int64 ul_cnt_gw = 9;
+    int64 ul_cnt_gw_free = 10;
 }
 
-message GetWalletUsageHistResponse {
-    repeated GetWalletUsageHist wallet_usage_his = 1;
+message GetNetworkUsageHistResponse {
+    repeated NetworkUsage network_usage = 1;
     ProfileResponse user_profile = 2;
     int64 count = 3;
 }
