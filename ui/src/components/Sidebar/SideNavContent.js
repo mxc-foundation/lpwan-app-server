@@ -100,15 +100,7 @@ const SideNavContent = (props) => {
                             <span> {i18n.t(`${packageNS}:tr000067`)} </span>
                         </Link>
                     </li>
-
-                    <li>
-                        <Link to={`/stake/${props.orgId}/set-stake`} className="waves-effect side-nav-link-ref">
-                            {/* <i className="mdi mdi-cloud-print-outline"></i> */}
-                            <i className="mdi mdi-vote"></i>
-                            <span> {i18n.t(`${packageNS}:menu.staking.staking`)} </span>
-                        </Link>
-                    </li>
-
+                    
                     <li>
                         <Link to={`/gateway-profiles`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-remote"></i>
