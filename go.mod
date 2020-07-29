@@ -3,77 +3,65 @@ module github.com/mxc-foundation/lpwan-app-server
 go 1.14
 
 require (
-	cloud.google.com/go v0.49.0 // indirect
-	cloud.google.com/go/pubsub v1.1.0
+	cloud.google.com/go/pubsub v1.2.0
 	github.com/Azure/azure-service-bus-go v0.9.1
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
 	github.com/apex/log v1.1.0
-	github.com/aws/aws-sdk-go v1.26.3
-	github.com/brocaar/chirpstack-api/go/v3 v3.6.10
-	github.com/brocaar/lorawan v0.0.0-20191115102621-6095d473cf60
-	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/aws/aws-sdk-go v1.19.19
+	github.com/brocaar/chirpstack-api/go/v3 v3.7.2
+	github.com/brocaar/lorawan v0.0.0-20190925120821-154a30dbdce2
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/elazarl/go-bindata-assetfs v1.0.0
-	github.com/go-redis/redis/v7 v7.2.0
+	github.com/go-redis/redis/v7 v7.4.0
+	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible
-	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
-	github.com/golang/protobuf v1.3.5
-	github.com/gopherjs/gopherjs v0.0.0-20190430165422-3e4dfb77656c // indirect
+	github.com/golang/protobuf v1.4.2
 	github.com/goreleaser/goreleaser v0.106.0
 	github.com/goreleaser/nfpm v0.11.0
-	github.com/gorilla/mux v1.7.3
-	github.com/gorilla/websocket v1.4.1 // indirect
-	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+	github.com/gorilla/mux v1.7.1
+	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/grpc-ecosystem/grpc-gateway v1.12.1
-	github.com/jacobsa/crypto v0.0.0-20190317225127-9f44e2d11115 // indirect
+	github.com/grpc-ecosystem/grpc-gateway v1.14.6
 	github.com/jmoiron/sqlx v1.2.0
-	github.com/jstemmer/go-junit-report v0.9.1 // indirect
 	github.com/jteeuwen/go-bindata v3.0.8-0.20180305030458-6025e8de665b+incompatible
 	github.com/lestrrat-go/jwx v1.0.2
 	github.com/lib/pq v1.2.0
 	github.com/mmcloughlin/geohash v0.9.0
-	github.com/pelletier/go-toml v1.6.0 // indirect
+	github.com/mxc-foundation/lpwan-server v1.0.0
+	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/pquerna/otp v1.2.0
-	github.com/prometheus/client_golang v1.2.1
-	github.com/prometheus/client_model v0.0.0-20191202183732-d1d2010b5bee // indirect
-	github.com/prometheus/procfs v0.0.8 // indirect
-	github.com/robertkrimen/otto v0.0.0-20191217063420-37f8e9a2460c
+	github.com/prometheus/client_golang v1.1.0
+	github.com/robertkrimen/otto v0.0.0-20180617131154-15f95af6e78d
 	github.com/robfig/cron v1.2.0
-	github.com/rubenv/sql-migrate v0.0.0-20191213152630-06338513c237
-	github.com/segmentio/kafka-go v0.3.6
+	github.com/rubenv/sql-migrate v0.0.0-20181213081019-5a8808c14925
+	github.com/segmentio/kafka-go v0.3.7
+	github.com/shopspring/decimal v1.2.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/smartystreets/assertions v1.0.0 // indirect
-	github.com/smartystreets/goconvey v1.6.4
+	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.6.2
-	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
+	github.com/spf13/viper v1.4.0
+	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.5.1
-	github.com/tmc/grpc-websocket-proxy v0.0.0-20200122045848-3419fae592fc
-	go.opencensus.io v0.22.2 // indirect
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/exp v0.0.0-20191129062945-2f5052295587 // indirect
-	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5
+	golang.org/x/crypto v0.0.0-20200204104054-c9f3fb736b72
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c // indirect
 	golang.org/x/tools v0.0.0-20200417140056-c07e33ef3290
-	google.golang.org/api v0.14.0
-	google.golang.org/genproto v0.0.0-20200218151345-dad8c97a84f5
-	google.golang.org/grpc v1.28.0
+	google.golang.org/api v0.28.0
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
+	google.golang.org/grpc v1.30.0
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
-	gopkg.in/yaml.v2 v2.2.7 // indirect
-	pack.ag/amqp v0.12.1 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
 
 // remove when https://github.com/tmc/grpc-websocket-proxy/pull/23 has been merged

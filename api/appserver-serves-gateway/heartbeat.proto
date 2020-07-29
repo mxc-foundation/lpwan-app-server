@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 package appserver_serves_gateway;
-option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway;appserver_serves_gateway";
 
 service HeartbeatService {
     rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);

@@ -10,11 +10,11 @@ protoc -I. -I.. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=plugins=grpc:. \
   device.proto \
   application.proto \
   deviceQueue.proto \
-  common.proto \
+    as_common.proto \
   user.proto \
   gateway.proto \
   organization.proto \
-  profiles.proto \
+    as_profiles.proto \
   networkServer.proto \
   serviceProfile.proto \
   deviceProfile.proto \
@@ -34,11 +34,11 @@ protoc -I. -I.. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=logtostd
   device.proto \
   application.proto \
   deviceQueue.proto \
-  common.proto \
+    as_common.proto \
   user.proto \
   gateway.proto \
   organization.proto \
-  profiles.proto \
+    as_profiles.proto \
   networkServer.proto \
   serviceProfile.proto \
   deviceProfile.proto \
@@ -58,11 +58,11 @@ protoc -I. -I.. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_names_fo
   device.proto \
   application.proto \
   deviceQueue.proto \
-  common.proto \
+    as_common.proto \
   user.proto \
   gateway.proto \
   organization.proto \
-  profiles.proto \
+    as_profiles.proto \
   networkServer.proto \
   serviceProfile.proto \
   deviceProfile.proto \

@@ -6,13 +6,13 @@ package appserver_serves_ui
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -28,7 +28,7 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type GetWithdrawFeeRequest struct {
 	// type of crypto currency
-	MoneyAbbr            Money    `protobuf:"varint,1,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver_serves_ui.Money" json:"money_abbr,omitempty"`
+	Currency             string   `protobuf:"bytes,1,opt,name=currency,proto3" json:"currency,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -59,16 +59,16 @@ func (m *GetWithdrawFeeRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetWithdrawFeeRequest proto.InternalMessageInfo
 
-func (m *GetWithdrawFeeRequest) GetMoneyAbbr() Money {
+func (m *GetWithdrawFeeRequest) GetCurrency() string {
 	if m != nil {
-		return m.MoneyAbbr
+		return m.Currency
 	}
-	return Money_ETH
+	return ""
 }
 
 type GetWithdrawFeeResponse struct {
 	// Withdraw object.
-	WithdrawFee          float64  `protobuf:"fixed64,1,opt,name=withdrawFee,proto3" json:"withdrawFee,omitempty"`
+	WithdrawFee          string   `protobuf:"bytes,1,opt,name=withdrawFee,proto3" json:"withdrawFee,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -99,232 +99,28 @@ func (m *GetWithdrawFeeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetWithdrawFeeResponse proto.InternalMessageInfo
 
-func (m *GetWithdrawFeeResponse) GetWithdrawFee() float64 {
+func (m *GetWithdrawFeeResponse) GetWithdrawFee() string {
 	if m != nil {
 		return m.WithdrawFee
 	}
-	return 0
-}
-
-type WithdrawReqRequest struct {
-	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Amount               float64  `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
-	EthAddress           string   `protobuf:"bytes,3,opt,name=eth_address,json=ethAddress,proto3" json:"eth_address,omitempty"`
-	AvailableBalance     float64  `protobuf:"fixed64,4,opt,name=available_balance,json=availableBalance,proto3" json:"available_balance,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *WithdrawReqRequest) Reset()         { *m = WithdrawReqRequest{} }
-func (m *WithdrawReqRequest) String() string { return proto.CompactTextString(m) }
-func (*WithdrawReqRequest) ProtoMessage()    {}
-func (*WithdrawReqRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{2}
-}
-
-func (m *WithdrawReqRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WithdrawReqRequest.Unmarshal(m, b)
-}
-func (m *WithdrawReqRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WithdrawReqRequest.Marshal(b, m, deterministic)
-}
-func (m *WithdrawReqRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WithdrawReqRequest.Merge(m, src)
-}
-func (m *WithdrawReqRequest) XXX_Size() int {
-	return xxx_messageInfo_WithdrawReqRequest.Size(m)
-}
-func (m *WithdrawReqRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_WithdrawReqRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_WithdrawReqRequest proto.InternalMessageInfo
-
-func (m *WithdrawReqRequest) GetOrgId() int64 {
-	if m != nil {
-		return m.OrgId
-	}
-	return 0
-}
-
-func (m *WithdrawReqRequest) GetAmount() float64 {
-	if m != nil {
-		return m.Amount
-	}
-	return 0
-}
-
-func (m *WithdrawReqRequest) GetEthAddress() string {
-	if m != nil {
-		return m.EthAddress
-	}
 	return ""
-}
-
-func (m *WithdrawReqRequest) GetAvailableBalance() float64 {
-	if m != nil {
-		return m.AvailableBalance
-	}
-	return 0
-}
-
-type WithdrawReqResponse struct {
-	Status               bool     `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *WithdrawReqResponse) Reset()         { *m = WithdrawReqResponse{} }
-func (m *WithdrawReqResponse) String() string { return proto.CompactTextString(m) }
-func (*WithdrawReqResponse) ProtoMessage()    {}
-func (*WithdrawReqResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{3}
-}
-
-func (m *WithdrawReqResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WithdrawReqResponse.Unmarshal(m, b)
-}
-func (m *WithdrawReqResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WithdrawReqResponse.Marshal(b, m, deterministic)
-}
-func (m *WithdrawReqResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WithdrawReqResponse.Merge(m, src)
-}
-func (m *WithdrawReqResponse) XXX_Size() int {
-	return xxx_messageInfo_WithdrawReqResponse.Size(m)
-}
-func (m *WithdrawReqResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_WithdrawReqResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_WithdrawReqResponse proto.InternalMessageInfo
-
-func (m *WithdrawReqResponse) GetStatus() bool {
-	if m != nil {
-		return m.Status
-	}
-	return false
-}
-
-type ConfirmWithdrawRequest struct {
-	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	ConfirmStatus        bool     `protobuf:"varint,2,opt,name=confirm_status,json=confirmStatus,proto3" json:"confirm_status,omitempty"`
-	DenyComment          string   `protobuf:"bytes,3,opt,name=deny_comment,json=denyComment,proto3" json:"deny_comment,omitempty"`
-	WithdrawId           int64    `protobuf:"varint,4,opt,name=withdraw_id,json=withdrawId,proto3" json:"withdraw_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ConfirmWithdrawRequest) Reset()         { *m = ConfirmWithdrawRequest{} }
-func (m *ConfirmWithdrawRequest) String() string { return proto.CompactTextString(m) }
-func (*ConfirmWithdrawRequest) ProtoMessage()    {}
-func (*ConfirmWithdrawRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{4}
-}
-
-func (m *ConfirmWithdrawRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ConfirmWithdrawRequest.Unmarshal(m, b)
-}
-func (m *ConfirmWithdrawRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ConfirmWithdrawRequest.Marshal(b, m, deterministic)
-}
-func (m *ConfirmWithdrawRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ConfirmWithdrawRequest.Merge(m, src)
-}
-func (m *ConfirmWithdrawRequest) XXX_Size() int {
-	return xxx_messageInfo_ConfirmWithdrawRequest.Size(m)
-}
-func (m *ConfirmWithdrawRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ConfirmWithdrawRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ConfirmWithdrawRequest proto.InternalMessageInfo
-
-func (m *ConfirmWithdrawRequest) GetOrgId() int64 {
-	if m != nil {
-		return m.OrgId
-	}
-	return 0
-}
-
-func (m *ConfirmWithdrawRequest) GetConfirmStatus() bool {
-	if m != nil {
-		return m.ConfirmStatus
-	}
-	return false
-}
-
-func (m *ConfirmWithdrawRequest) GetDenyComment() string {
-	if m != nil {
-		return m.DenyComment
-	}
-	return ""
-}
-
-func (m *ConfirmWithdrawRequest) GetWithdrawId() int64 {
-	if m != nil {
-		return m.WithdrawId
-	}
-	return 0
-}
-
-type ConfirmWithdrawResponse struct {
-	Status               bool     `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ConfirmWithdrawResponse) Reset()         { *m = ConfirmWithdrawResponse{} }
-func (m *ConfirmWithdrawResponse) String() string { return proto.CompactTextString(m) }
-func (*ConfirmWithdrawResponse) ProtoMessage()    {}
-func (*ConfirmWithdrawResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{5}
-}
-
-func (m *ConfirmWithdrawResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ConfirmWithdrawResponse.Unmarshal(m, b)
-}
-func (m *ConfirmWithdrawResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ConfirmWithdrawResponse.Marshal(b, m, deterministic)
-}
-func (m *ConfirmWithdrawResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ConfirmWithdrawResponse.Merge(m, src)
-}
-func (m *ConfirmWithdrawResponse) XXX_Size() int {
-	return xxx_messageInfo_ConfirmWithdrawResponse.Size(m)
-}
-func (m *ConfirmWithdrawResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_ConfirmWithdrawResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ConfirmWithdrawResponse proto.InternalMessageInfo
-
-func (m *ConfirmWithdrawResponse) GetStatus() bool {
-	if m != nil {
-		return m.Status
-	}
-	return false
 }
 
 type GetWithdrawHistoryRequest struct {
-	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
-	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
-	MoneyAbbr            Money    `protobuf:"varint,4,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver_serves_ui.Money" json:"money_abbr,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	OrgId                int64                `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string               `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
+	From                 *timestamp.Timestamp `protobuf:"bytes,6,opt,name=from,proto3" json:"from,omitempty"`
+	Till                 *timestamp.Timestamp `protobuf:"bytes,7,opt,name=till,proto3" json:"till,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *GetWithdrawHistoryRequest) Reset()         { *m = GetWithdrawHistoryRequest{} }
 func (m *GetWithdrawHistoryRequest) String() string { return proto.CompactTextString(m) }
 func (*GetWithdrawHistoryRequest) ProtoMessage()    {}
 func (*GetWithdrawHistoryRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{6}
+	return fileDescriptor_b0dd7acb611886fa, []int{2}
 }
 
 func (m *GetWithdrawHistoryRequest) XXX_Unmarshal(b []byte) error {
@@ -352,43 +148,44 @@ func (m *GetWithdrawHistoryRequest) GetOrgId() int64 {
 	return 0
 }
 
-func (m *GetWithdrawHistoryRequest) GetOffset() int64 {
+func (m *GetWithdrawHistoryRequest) GetCurrency() string {
 	if m != nil {
-		return m.Offset
+		return m.Currency
 	}
-	return 0
+	return ""
 }
 
-func (m *GetWithdrawHistoryRequest) GetLimit() int64 {
+func (m *GetWithdrawHistoryRequest) GetFrom() *timestamp.Timestamp {
 	if m != nil {
-		return m.Limit
+		return m.From
 	}
-	return 0
+	return nil
 }
 
-func (m *GetWithdrawHistoryRequest) GetMoneyAbbr() Money {
+func (m *GetWithdrawHistoryRequest) GetTill() *timestamp.Timestamp {
 	if m != nil {
-		return m.MoneyAbbr
+		return m.Till
 	}
-	return Money_ETH
+	return nil
 }
 
 type WithdrawHistory struct {
-	Amount               float64  `protobuf:"fixed64,1,opt,name=amount,proto3" json:"amount,omitempty"`
-	TxSentTime           string   `protobuf:"bytes,2,opt,name=tx_sent_time,json=txSentTime,proto3" json:"tx_sent_time,omitempty"`
-	TxStatus             string   `protobuf:"bytes,3,opt,name=tx_status,json=txStatus,proto3" json:"tx_status,omitempty"`
-	TxHash               string   `protobuf:"bytes,4,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
-	DenyComment          string   `protobuf:"bytes,5,opt,name=deny_comment,json=denyComment,proto3" json:"deny_comment,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	TxStatus             string               `protobuf:"bytes,3,opt,name=tx_status,json=txStatus,proto3" json:"tx_status,omitempty"`
+	TxHash               string               `protobuf:"bytes,4,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	DenyComment          string               `protobuf:"bytes,5,opt,name=deny_comment,json=denyComment,proto3" json:"deny_comment,omitempty"`
+	Amount               string               `protobuf:"bytes,6,opt,name=amount,proto3" json:"amount,omitempty"`
+	Timestamp            *timestamp.Timestamp `protobuf:"bytes,7,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	WithdrawFee          string               `protobuf:"bytes,8,opt,name=withdraw_fee,json=withdrawFee,proto3" json:"withdraw_fee,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *WithdrawHistory) Reset()         { *m = WithdrawHistory{} }
 func (m *WithdrawHistory) String() string { return proto.CompactTextString(m) }
 func (*WithdrawHistory) ProtoMessage()    {}
 func (*WithdrawHistory) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{7}
+	return fileDescriptor_b0dd7acb611886fa, []int{3}
 }
 
 func (m *WithdrawHistory) XXX_Unmarshal(b []byte) error {
@@ -408,20 +205,6 @@ func (m *WithdrawHistory) XXX_DiscardUnknown() {
 }
 
 var xxx_messageInfo_WithdrawHistory proto.InternalMessageInfo
-
-func (m *WithdrawHistory) GetAmount() float64 {
-	if m != nil {
-		return m.Amount
-	}
-	return 0
-}
-
-func (m *WithdrawHistory) GetTxSentTime() string {
-	if m != nil {
-		return m.TxSentTime
-	}
-	return ""
-}
 
 func (m *WithdrawHistory) GetTxStatus() string {
 	if m != nil {
@@ -444,8 +227,28 @@ func (m *WithdrawHistory) GetDenyComment() string {
 	return ""
 }
 
+func (m *WithdrawHistory) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *WithdrawHistory) GetTimestamp() *timestamp.Timestamp {
+	if m != nil {
+		return m.Timestamp
+	}
+	return nil
+}
+
+func (m *WithdrawHistory) GetWithdrawFee() string {
+	if m != nil {
+		return m.WithdrawFee
+	}
+	return ""
+}
+
 type GetWithdrawHistoryResponse struct {
-	Count                int64              `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
 	WithdrawHistory      []*WithdrawHistory `protobuf:"bytes,2,rep,name=withdraw_history,json=withdrawHistory,proto3" json:"withdraw_history,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
 	XXX_unrecognized     []byte             `json:"-"`
@@ -456,7 +259,7 @@ func (m *GetWithdrawHistoryResponse) Reset()         { *m = GetWithdrawHistoryRe
 func (m *GetWithdrawHistoryResponse) String() string { return proto.CompactTextString(m) }
 func (*GetWithdrawHistoryResponse) ProtoMessage()    {}
 func (*GetWithdrawHistoryResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{8}
+	return fileDescriptor_b0dd7acb611886fa, []int{4}
 }
 
 func (m *GetWithdrawHistoryResponse) XXX_Unmarshal(b []byte) error {
@@ -477,13 +280,6 @@ func (m *GetWithdrawHistoryResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetWithdrawHistoryResponse proto.InternalMessageInfo
 
-func (m *GetWithdrawHistoryResponse) GetCount() int64 {
-	if m != nil {
-		return m.Count
-	}
-	return 0
-}
-
 func (m *GetWithdrawHistoryResponse) GetWithdrawHistory() []*WithdrawHistory {
 	if m != nil {
 		return m.WithdrawHistory
@@ -492,8 +288,8 @@ func (m *GetWithdrawHistoryResponse) GetWithdrawHistory() []*WithdrawHistory {
 }
 
 type ModifyWithdrawFeeRequest struct {
-	MoneyAbbr            Money    `protobuf:"varint,1,opt,name=money_abbr,json=moneyAbbr,proto3,enum=appserver_serves_ui.Money" json:"money_abbr,omitempty"`
-	WithdrawFee          float64  `protobuf:"fixed64,2,opt,name=withdraw_fee,json=withdrawFee,proto3" json:"withdraw_fee,omitempty"`
+	Currency             string   `protobuf:"bytes,1,opt,name=currency,proto3" json:"currency,omitempty"`
+	WithdrawFee          string   `protobuf:"bytes,2,opt,name=withdraw_fee,json=withdrawFee,proto3" json:"withdraw_fee,omitempty"`
 	Password             string   `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -504,7 +300,7 @@ func (m *ModifyWithdrawFeeRequest) Reset()         { *m = ModifyWithdrawFeeReque
 func (m *ModifyWithdrawFeeRequest) String() string { return proto.CompactTextString(m) }
 func (*ModifyWithdrawFeeRequest) ProtoMessage()    {}
 func (*ModifyWithdrawFeeRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{9}
+	return fileDescriptor_b0dd7acb611886fa, []int{5}
 }
 
 func (m *ModifyWithdrawFeeRequest) XXX_Unmarshal(b []byte) error {
@@ -525,18 +321,18 @@ func (m *ModifyWithdrawFeeRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ModifyWithdrawFeeRequest proto.InternalMessageInfo
 
-func (m *ModifyWithdrawFeeRequest) GetMoneyAbbr() Money {
+func (m *ModifyWithdrawFeeRequest) GetCurrency() string {
 	if m != nil {
-		return m.MoneyAbbr
+		return m.Currency
 	}
-	return Money_ETH
+	return ""
 }
 
-func (m *ModifyWithdrawFeeRequest) GetWithdrawFee() float64 {
+func (m *ModifyWithdrawFeeRequest) GetWithdrawFee() string {
 	if m != nil {
 		return m.WithdrawFee
 	}
-	return 0
+	return ""
 }
 
 func (m *ModifyWithdrawFeeRequest) GetPassword() string {
@@ -557,7 +353,7 @@ func (m *ModifyWithdrawFeeResponse) Reset()         { *m = ModifyWithdrawFeeResp
 func (m *ModifyWithdrawFeeResponse) String() string { return proto.CompactTextString(m) }
 func (*ModifyWithdrawFeeResponse) ProtoMessage()    {}
 func (*ModifyWithdrawFeeResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{10}
+	return fileDescriptor_b0dd7acb611886fa, []int{6}
 }
 
 func (m *ModifyWithdrawFeeResponse) XXX_Unmarshal(b []byte) error {
@@ -585,168 +381,11 @@ func (m *ModifyWithdrawFeeResponse) GetStatus() bool {
 	return false
 }
 
-type GetWithdrawRequestListRequest struct {
-	Offset               int64    `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
-	Limit                int64    `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetWithdrawRequestListRequest) Reset()         { *m = GetWithdrawRequestListRequest{} }
-func (m *GetWithdrawRequestListRequest) String() string { return proto.CompactTextString(m) }
-func (*GetWithdrawRequestListRequest) ProtoMessage()    {}
-func (*GetWithdrawRequestListRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{11}
-}
-
-func (m *GetWithdrawRequestListRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetWithdrawRequestListRequest.Unmarshal(m, b)
-}
-func (m *GetWithdrawRequestListRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetWithdrawRequestListRequest.Marshal(b, m, deterministic)
-}
-func (m *GetWithdrawRequestListRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetWithdrawRequestListRequest.Merge(m, src)
-}
-func (m *GetWithdrawRequestListRequest) XXX_Size() int {
-	return xxx_messageInfo_GetWithdrawRequestListRequest.Size(m)
-}
-func (m *GetWithdrawRequestListRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetWithdrawRequestListRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetWithdrawRequestListRequest proto.InternalMessageInfo
-
-func (m *GetWithdrawRequestListRequest) GetOffset() int64 {
-	if m != nil {
-		return m.Offset
-	}
-	return 0
-}
-
-func (m *GetWithdrawRequestListRequest) GetLimit() int64 {
-	if m != nil {
-		return m.Limit
-	}
-	return 0
-}
-
-type WithdrawRequest struct {
-	UserName             string   `protobuf:"bytes,1,opt,name=user_name,json=userName,proto3" json:"user_name,omitempty"`
-	AvailableToken       float64  `protobuf:"fixed64,2,opt,name=available_token,json=availableToken,proto3" json:"available_token,omitempty"`
-	Amount               float64  `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"`
-	WithdrawId           int64    `protobuf:"varint,4,opt,name=withdraw_id,json=withdrawId,proto3" json:"withdraw_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *WithdrawRequest) Reset()         { *m = WithdrawRequest{} }
-func (m *WithdrawRequest) String() string { return proto.CompactTextString(m) }
-func (*WithdrawRequest) ProtoMessage()    {}
-func (*WithdrawRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{12}
-}
-
-func (m *WithdrawRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WithdrawRequest.Unmarshal(m, b)
-}
-func (m *WithdrawRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WithdrawRequest.Marshal(b, m, deterministic)
-}
-func (m *WithdrawRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WithdrawRequest.Merge(m, src)
-}
-func (m *WithdrawRequest) XXX_Size() int {
-	return xxx_messageInfo_WithdrawRequest.Size(m)
-}
-func (m *WithdrawRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_WithdrawRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_WithdrawRequest proto.InternalMessageInfo
-
-func (m *WithdrawRequest) GetUserName() string {
-	if m != nil {
-		return m.UserName
-	}
-	return ""
-}
-
-func (m *WithdrawRequest) GetAvailableToken() float64 {
-	if m != nil {
-		return m.AvailableToken
-	}
-	return 0
-}
-
-func (m *WithdrawRequest) GetAmount() float64 {
-	if m != nil {
-		return m.Amount
-	}
-	return 0
-}
-
-func (m *WithdrawRequest) GetWithdrawId() int64 {
-	if m != nil {
-		return m.WithdrawId
-	}
-	return 0
-}
-
-type GetWithdrawRequestListResponse struct {
-	Count                int64              `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
-	WithdrawRequest      []*WithdrawRequest `protobuf:"bytes,2,rep,name=withdraw_request,json=withdrawRequest,proto3" json:"withdraw_request,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
-}
-
-func (m *GetWithdrawRequestListResponse) Reset()         { *m = GetWithdrawRequestListResponse{} }
-func (m *GetWithdrawRequestListResponse) String() string { return proto.CompactTextString(m) }
-func (*GetWithdrawRequestListResponse) ProtoMessage()    {}
-func (*GetWithdrawRequestListResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{13}
-}
-
-func (m *GetWithdrawRequestListResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetWithdrawRequestListResponse.Unmarshal(m, b)
-}
-func (m *GetWithdrawRequestListResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetWithdrawRequestListResponse.Marshal(b, m, deterministic)
-}
-func (m *GetWithdrawRequestListResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetWithdrawRequestListResponse.Merge(m, src)
-}
-func (m *GetWithdrawRequestListResponse) XXX_Size() int {
-	return xxx_messageInfo_GetWithdrawRequestListResponse.Size(m)
-}
-func (m *GetWithdrawRequestListResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetWithdrawRequestListResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetWithdrawRequestListResponse proto.InternalMessageInfo
-
-func (m *GetWithdrawRequestListResponse) GetCount() int64 {
-	if m != nil {
-		return m.Count
-	}
-	return 0
-}
-
-func (m *GetWithdrawRequestListResponse) GetWithdrawRequest() []*WithdrawRequest {
-	if m != nil {
-		return m.WithdrawRequest
-	}
-	return nil
-}
-
 type GetWithdrawRequest struct {
 	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Amount               float64  `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
 	EthAddress           string   `protobuf:"bytes,3,opt,name=eth_address,json=ethAddress,proto3" json:"eth_address,omitempty"`
-	AvailableBalance     float64  `protobuf:"fixed64,4,opt,name=available_balance,json=availableBalance,proto3" json:"available_balance,omitempty"`
+	Currency             string   `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
+	Amount               string   `protobuf:"bytes,6,opt,name=amount,proto3" json:"amount,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -756,7 +395,7 @@ func (m *GetWithdrawRequest) Reset()         { *m = GetWithdrawRequest{} }
 func (m *GetWithdrawRequest) String() string { return proto.CompactTextString(m) }
 func (*GetWithdrawRequest) ProtoMessage()    {}
 func (*GetWithdrawRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{14}
+	return fileDescriptor_b0dd7acb611886fa, []int{7}
 }
 
 func (m *GetWithdrawRequest) XXX_Unmarshal(b []byte) error {
@@ -784,13 +423,6 @@ func (m *GetWithdrawRequest) GetOrgId() int64 {
 	return 0
 }
 
-func (m *GetWithdrawRequest) GetAmount() float64 {
-	if m != nil {
-		return m.Amount
-	}
-	return 0
-}
-
 func (m *GetWithdrawRequest) GetEthAddress() string {
 	if m != nil {
 		return m.EthAddress
@@ -798,11 +430,18 @@ func (m *GetWithdrawRequest) GetEthAddress() string {
 	return ""
 }
 
-func (m *GetWithdrawRequest) GetAvailableBalance() float64 {
+func (m *GetWithdrawRequest) GetCurrency() string {
 	if m != nil {
-		return m.AvailableBalance
+		return m.Currency
 	}
-	return 0
+	return ""
+}
+
+func (m *GetWithdrawRequest) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
 }
 
 type GetWithdrawResponse struct {
@@ -816,7 +455,7 @@ func (m *GetWithdrawResponse) Reset()         { *m = GetWithdrawResponse{} }
 func (m *GetWithdrawResponse) String() string { return proto.CompactTextString(m) }
 func (*GetWithdrawResponse) ProtoMessage()    {}
 func (*GetWithdrawResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{15}
+	return fileDescriptor_b0dd7acb611886fa, []int{8}
 }
 
 func (m *GetWithdrawResponse) XXX_Unmarshal(b []byte) error {
@@ -844,229 +483,62 @@ func (m *GetWithdrawResponse) GetStatus() bool {
 	return false
 }
 
-type MonthlyData struct {
-	Month                string   `protobuf:"bytes,1,opt,name=month,proto3" json:"month,omitempty"`
-	Amount               float64  `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *MonthlyData) Reset()         { *m = MonthlyData{} }
-func (m *MonthlyData) String() string { return proto.CompactTextString(m) }
-func (*MonthlyData) ProtoMessage()    {}
-func (*MonthlyData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{16}
-}
-
-func (m *MonthlyData) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_MonthlyData.Unmarshal(m, b)
-}
-func (m *MonthlyData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_MonthlyData.Marshal(b, m, deterministic)
-}
-func (m *MonthlyData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_MonthlyData.Merge(m, src)
-}
-func (m *MonthlyData) XXX_Size() int {
-	return xxx_messageInfo_MonthlyData.Size(m)
-}
-func (m *MonthlyData) XXX_DiscardUnknown() {
-	xxx_messageInfo_MonthlyData.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_MonthlyData proto.InternalMessageInfo
-
-func (m *MonthlyData) GetMonth() string {
-	if m != nil {
-		return m.Month
-	}
-	return ""
-}
-
-func (m *MonthlyData) GetAmount() float64 {
-	if m != nil {
-		return m.Amount
-	}
-	return 0
-}
-
-type GetWithdrawMonthlyRequest struct {
-	UserId               int64    `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	OrgId                int64    `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetWithdrawMonthlyRequest) Reset()         { *m = GetWithdrawMonthlyRequest{} }
-func (m *GetWithdrawMonthlyRequest) String() string { return proto.CompactTextString(m) }
-func (*GetWithdrawMonthlyRequest) ProtoMessage()    {}
-func (*GetWithdrawMonthlyRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{17}
-}
-
-func (m *GetWithdrawMonthlyRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetWithdrawMonthlyRequest.Unmarshal(m, b)
-}
-func (m *GetWithdrawMonthlyRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetWithdrawMonthlyRequest.Marshal(b, m, deterministic)
-}
-func (m *GetWithdrawMonthlyRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetWithdrawMonthlyRequest.Merge(m, src)
-}
-func (m *GetWithdrawMonthlyRequest) XXX_Size() int {
-	return xxx_messageInfo_GetWithdrawMonthlyRequest.Size(m)
-}
-func (m *GetWithdrawMonthlyRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetWithdrawMonthlyRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetWithdrawMonthlyRequest proto.InternalMessageInfo
-
-func (m *GetWithdrawMonthlyRequest) GetUserId() int64 {
-	if m != nil {
-		return m.UserId
-	}
-	return 0
-}
-
-func (m *GetWithdrawMonthlyRequest) GetOrgId() int64 {
-	if m != nil {
-		return m.OrgId
-	}
-	return 0
-}
-
-type GetWithdrawMonthlyResponse struct {
-	MonthlyData          []*MonthlyData `protobuf:"bytes,1,rep,name=monthly_data,json=monthlyData,proto3" json:"monthly_data,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
-}
-
-func (m *GetWithdrawMonthlyResponse) Reset()         { *m = GetWithdrawMonthlyResponse{} }
-func (m *GetWithdrawMonthlyResponse) String() string { return proto.CompactTextString(m) }
-func (*GetWithdrawMonthlyResponse) ProtoMessage()    {}
-func (*GetWithdrawMonthlyResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b0dd7acb611886fa, []int{18}
-}
-
-func (m *GetWithdrawMonthlyResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetWithdrawMonthlyResponse.Unmarshal(m, b)
-}
-func (m *GetWithdrawMonthlyResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetWithdrawMonthlyResponse.Marshal(b, m, deterministic)
-}
-func (m *GetWithdrawMonthlyResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetWithdrawMonthlyResponse.Merge(m, src)
-}
-func (m *GetWithdrawMonthlyResponse) XXX_Size() int {
-	return xxx_messageInfo_GetWithdrawMonthlyResponse.Size(m)
-}
-func (m *GetWithdrawMonthlyResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetWithdrawMonthlyResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetWithdrawMonthlyResponse proto.InternalMessageInfo
-
-func (m *GetWithdrawMonthlyResponse) GetMonthlyData() []*MonthlyData {
-	if m != nil {
-		return m.MonthlyData
-	}
-	return nil
-}
-
 func init() {
 	proto.RegisterType((*GetWithdrawFeeRequest)(nil), "appserver_serves_ui.GetWithdrawFeeRequest")
 	proto.RegisterType((*GetWithdrawFeeResponse)(nil), "appserver_serves_ui.GetWithdrawFeeResponse")
-	proto.RegisterType((*WithdrawReqRequest)(nil), "appserver_serves_ui.WithdrawReqRequest")
-	proto.RegisterType((*WithdrawReqResponse)(nil), "appserver_serves_ui.WithdrawReqResponse")
-	proto.RegisterType((*ConfirmWithdrawRequest)(nil), "appserver_serves_ui.ConfirmWithdrawRequest")
-	proto.RegisterType((*ConfirmWithdrawResponse)(nil), "appserver_serves_ui.ConfirmWithdrawResponse")
 	proto.RegisterType((*GetWithdrawHistoryRequest)(nil), "appserver_serves_ui.GetWithdrawHistoryRequest")
 	proto.RegisterType((*WithdrawHistory)(nil), "appserver_serves_ui.WithdrawHistory")
 	proto.RegisterType((*GetWithdrawHistoryResponse)(nil), "appserver_serves_ui.GetWithdrawHistoryResponse")
 	proto.RegisterType((*ModifyWithdrawFeeRequest)(nil), "appserver_serves_ui.ModifyWithdrawFeeRequest")
 	proto.RegisterType((*ModifyWithdrawFeeResponse)(nil), "appserver_serves_ui.ModifyWithdrawFeeResponse")
-	proto.RegisterType((*GetWithdrawRequestListRequest)(nil), "appserver_serves_ui.GetWithdrawRequestListRequest")
-	proto.RegisterType((*WithdrawRequest)(nil), "appserver_serves_ui.WithdrawRequest")
-	proto.RegisterType((*GetWithdrawRequestListResponse)(nil), "appserver_serves_ui.GetWithdrawRequestListResponse")
 	proto.RegisterType((*GetWithdrawRequest)(nil), "appserver_serves_ui.GetWithdrawRequest")
 	proto.RegisterType((*GetWithdrawResponse)(nil), "appserver_serves_ui.GetWithdrawResponse")
-	proto.RegisterType((*MonthlyData)(nil), "appserver_serves_ui.MonthlyData")
-	proto.RegisterType((*GetWithdrawMonthlyRequest)(nil), "appserver_serves_ui.GetWithdrawMonthlyRequest")
-	proto.RegisterType((*GetWithdrawMonthlyResponse)(nil), "appserver_serves_ui.GetWithdrawMonthlyResponse")
 }
 
 func init() { proto.RegisterFile("withdraw.proto", fileDescriptor_b0dd7acb611886fa) }
 
 var fileDescriptor_b0dd7acb611886fa = []byte{
-	// 1016 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x57, 0x41, 0x6f, 0x1b, 0x45,
-	0x14, 0xd6, 0xd8, 0x89, 0x1b, 0x3f, 0xa7, 0x4e, 0x33, 0x6d, 0x9c, 0xed, 0xb6, 0x0d, 0xee, 0x08,
-	0xda, 0xa8, 0x6d, 0x1c, 0x91, 0x9c, 0x28, 0xa7, 0x12, 0x04, 0x8d, 0x20, 0x20, 0x6d, 0x2a, 0x71,
-	0x5c, 0x8d, 0xbd, 0x63, 0x7b, 0x85, 0x77, 0xc7, 0xdd, 0x19, 0xc7, 0x36, 0x07, 0x0e, 0x70, 0xe0,
-	0x86, 0xa8, 0xe8, 0x09, 0x2e, 0x20, 0x21, 0xf1, 0x83, 0xf8, 0x0b, 0xfc, 0x10, 0xb4, 0x33, 0xb3,
-	0xf6, 0xae, 0xbd, 0xee, 0xba, 0x12, 0x52, 0x4f, 0xd1, 0x7b, 0x99, 0xf7, 0xe6, 0x7b, 0xdf, 0xfb,
-	0xe6, 0xbd, 0x35, 0xd4, 0xc7, 0xbe, 0xec, 0x7b, 0x11, 0x1d, 0xb7, 0x86, 0x11, 0x97, 0x1c, 0xdf,
-	0xa4, 0xc3, 0xa1, 0x60, 0xd1, 0x15, 0x8b, 0x5c, 0xf5, 0x47, 0xb8, 0x23, 0xdf, 0xbe, 0xdb, 0xe3,
-	0xbc, 0x37, 0x60, 0xc7, 0x74, 0xe8, 0x1f, 0xd3, 0x30, 0xe4, 0x92, 0x4a, 0x9f, 0x87, 0x42, 0x87,
-	0xd8, 0x35, 0xc9, 0x87, 0xa3, 0xa1, 0x36, 0x88, 0x03, 0x7b, 0x9f, 0x33, 0xf9, 0x8d, 0x49, 0xfa,
-	0x19, 0x63, 0x0e, 0x7b, 0x39, 0x62, 0x42, 0xe2, 0x8f, 0x00, 0x02, 0x1e, 0xb2, 0xa9, 0x4b, 0xdb,
-	0xed, 0xc8, 0x42, 0x4d, 0x74, 0x58, 0x3f, 0xb1, 0x5b, 0x39, 0xb7, 0xb5, 0x2e, 0xe2, 0x63, 0x4e,
-	0x55, 0x9d, 0x7e, 0xd6, 0x6e, 0x47, 0xe4, 0x29, 0x34, 0x16, 0x73, 0x8a, 0x21, 0x0f, 0x05, 0xc3,
-	0x4d, 0xa8, 0x8d, 0xe7, 0x6e, 0x95, 0x15, 0x39, 0x69, 0x17, 0x79, 0x85, 0x00, 0x27, 0x91, 0x0e,
-	0x7b, 0x99, 0xa0, 0xd9, 0x83, 0x0a, 0x8f, 0x7a, 0xae, 0xef, 0xa9, 0x98, 0xb2, 0xb3, 0xc9, 0xa3,
-	0xde, 0xb9, 0x87, 0x1b, 0x50, 0xa1, 0x01, 0x1f, 0x85, 0xd2, 0x2a, 0xa9, 0x54, 0xc6, 0xc2, 0xef,
-	0x41, 0x8d, 0xc9, 0xbe, 0x4b, 0x3d, 0x2f, 0x62, 0x42, 0x58, 0xe5, 0x26, 0x3a, 0xac, 0x3a, 0xc0,
-	0x64, 0xff, 0x99, 0xf6, 0xe0, 0xc7, 0xb0, 0x4b, 0xaf, 0xa8, 0x3f, 0xa0, 0xed, 0x01, 0x73, 0xdb,
-	0x74, 0x40, 0xc3, 0x0e, 0xb3, 0x36, 0x54, 0x8e, 0x1b, 0xb3, 0x7f, 0x7c, 0xa2, 0xfd, 0xe4, 0x08,
-	0x6e, 0x66, 0x20, 0x99, 0x62, 0x1a, 0x50, 0x11, 0x92, 0xca, 0x91, 0x50, 0x98, 0xb6, 0x1c, 0x63,
-	0x91, 0xdf, 0x10, 0x34, 0xce, 0x78, 0xd8, 0xf5, 0xa3, 0x20, 0x15, 0xf6, 0xa6, 0x32, 0x3e, 0x80,
-	0x7a, 0x47, 0x07, 0xb8, 0x26, 0x63, 0x49, 0x65, 0xbc, 0x6e, 0xbc, 0x97, 0xca, 0x89, 0xef, 0xc3,
-	0xb6, 0xc7, 0xc2, 0xa9, 0xdb, 0xe1, 0x41, 0xc0, 0x42, 0x69, 0xca, 0xaa, 0xc5, 0xbe, 0x33, 0xed,
-	0x8a, 0x0b, 0x4f, 0xd8, 0x8c, 0x6f, 0xd9, 0x50, 0xb7, 0x40, 0xe2, 0x3a, 0xf7, 0xc8, 0x87, 0xb0,
-	0xbf, 0x84, 0xad, 0xa0, 0x9e, 0xdf, 0x11, 0xdc, 0x4e, 0xf5, 0xf3, 0xb9, 0x2f, 0x24, 0x8f, 0xa6,
-	0xc5, 0x9d, 0xe1, 0xdd, 0xae, 0x60, 0xba, 0x33, 0x65, 0xc7, 0x58, 0xf8, 0x16, 0x6c, 0x0e, 0xfc,
-	0xc0, 0xd7, 0xe0, 0xcb, 0x8e, 0x36, 0x16, 0xc4, 0xb6, 0xf1, 0x36, 0x62, 0xfb, 0x0b, 0xc1, 0xce,
-	0x02, 0xb4, 0x94, 0x2c, 0x50, 0x46, 0x16, 0x4d, 0xd8, 0x96, 0x13, 0x57, 0xb0, 0x50, 0xba, 0xd2,
-	0x0f, 0x98, 0x82, 0x56, 0x75, 0x40, 0x4e, 0x2e, 0x59, 0x28, 0x5f, 0xf8, 0x01, 0xc3, 0x77, 0xa0,
-	0x1a, 0x9f, 0xd0, 0x34, 0x68, 0x7e, 0xb7, 0xe4, 0xc4, 0xf0, 0xbf, 0x0f, 0xd7, 0xe4, 0xc4, 0xed,
-	0x53, 0xd1, 0x57, 0x10, 0xab, 0x4e, 0x45, 0x4e, 0x9e, 0x53, 0xd1, 0x5f, 0x6a, 0xcc, 0xe6, 0x52,
-	0x63, 0xc8, 0x8f, 0x08, 0xec, 0x3c, 0x12, 0x0d, 0xf7, 0xb7, 0x60, 0xb3, 0x33, 0x03, 0x5c, 0x76,
-	0xb4, 0x81, 0xbf, 0x86, 0x1b, 0xb3, 0x6e, 0xf6, 0x75, 0x84, 0x55, 0x6a, 0x96, 0x0f, 0x6b, 0x27,
-	0xef, 0xe7, 0x92, 0xb3, 0x98, 0x7d, 0x67, 0x9c, 0x75, 0x90, 0xd7, 0x08, 0xac, 0x0b, 0xee, 0xf9,
-	0xdd, 0xe9, 0xff, 0xfa, 0xe2, 0x63, 0x02, 0x66, 0x40, 0xbb, 0x8c, 0x99, 0xd7, 0x98, 0x7e, 0xd8,
-	0xd8, 0x86, 0xad, 0x21, 0x15, 0x62, 0xcc, 0x23, 0x2f, 0x21, 0x36, 0xb1, 0xc9, 0x29, 0xdc, 0xce,
-	0x41, 0x55, 0x20, 0xcb, 0x0b, 0xb8, 0x97, 0x22, 0xd4, 0x14, 0xf1, 0xa5, 0x2f, 0x64, 0x52, 0xcf,
-	0x5c, 0x82, 0x28, 0x5f, 0x82, 0xa5, 0x94, 0x04, 0xc9, 0x2f, 0x29, 0x1d, 0x25, 0x19, 0xee, 0x40,
-	0x75, 0x24, 0x58, 0xe4, 0x86, 0x34, 0xd0, 0xc3, 0xaa, 0xea, 0x6c, 0xc5, 0x8e, 0xaf, 0x68, 0xc0,
-	0xf0, 0x43, 0xd8, 0x99, 0x8f, 0x10, 0xc9, 0xbf, 0x65, 0xa1, 0x29, 0xbb, 0x3e, 0x73, 0xbf, 0x88,
-	0xbd, 0x29, 0x35, 0x96, 0x17, 0x87, 0xd4, 0x9b, 0xdf, 0xea, 0x4f, 0x08, 0x0e, 0x56, 0x95, 0xb8,
-	0xb6, 0x6e, 0x22, 0x1d, 0xb5, 0x96, 0x6e, 0xcc, 0x0d, 0x73, 0xdd, 0x18, 0x87, 0x9a, 0xca, 0xcb,
-	0x48, 0xde, 0xf9, 0x54, 0xce, 0x40, 0x2a, 0x90, 0xcb, 0xc7, 0x50, 0xbb, 0xe0, 0xa1, 0xec, 0x0f,
-	0xa6, 0x9f, 0x52, 0x49, 0x63, 0xe2, 0x82, 0xd8, 0x34, 0x6d, 0xd5, 0xc6, 0x2a, 0xe4, 0xe4, 0x8b,
-	0xcc, 0x04, 0x34, 0x79, 0x12, 0x16, 0xf6, 0xe1, 0x9a, 0x52, 0xc9, 0x8c, 0x86, 0x4a, 0x6c, 0x9e,
-	0x7b, 0x29, 0x7a, 0x4a, 0x29, 0x7a, 0x08, 0xcd, 0x4c, 0x82, 0x59, 0x32, 0x83, 0xff, 0x0c, 0xb6,
-	0x03, 0xed, 0x72, 0x3d, 0x2a, 0xa9, 0x85, 0x54, 0xdf, 0x9a, 0xab, 0xde, 0x61, 0x52, 0x90, 0x53,
-	0x0b, 0xe6, 0xc6, 0xc9, 0xdf, 0xd5, 0xb9, 0x98, 0x2f, 0x59, 0x74, 0xe5, 0x77, 0x18, 0x7e, 0x85,
-	0xa0, 0x9e, 0x5d, 0xcb, 0xf8, 0x51, 0x6e, 0xd6, 0xdc, 0xef, 0x01, 0xfb, 0xf1, 0x5a, 0x67, 0x75,
-	0x11, 0xe4, 0xc1, 0x0f, 0xff, 0xfc, 0xfb, 0x6b, 0xa9, 0x89, 0x0f, 0xd4, 0x27, 0x48, 0xa2, 0xa6,
-	0xe3, 0x1e, 0x93, 0x47, 0x89, 0x71, 0xd4, 0x65, 0x0c, 0x7f, 0x07, 0xb5, 0x94, 0xa6, 0xf0, 0xc3,
-	0x22, 0x75, 0x26, 0x60, 0x0e, 0x8b, 0x0f, 0x1a, 0x24, 0x96, 0x42, 0x82, 0xc9, 0xf5, 0x0c, 0x92,
-	0xa7, 0xe8, 0x11, 0xfe, 0x19, 0xc1, 0xce, 0xc2, 0x2a, 0xc4, 0xf9, 0x45, 0xe6, 0x2f, 0x73, 0xfb,
-	0xc9, 0x7a, 0x87, 0x0d, 0x90, 0xa6, 0x02, 0x62, 0x93, 0xbd, 0x2c, 0x25, 0x66, 0xc3, 0xc7, 0x80,
-	0x5e, 0x67, 0x1f, 0x59, 0xb2, 0xcc, 0x5a, 0x45, 0xc4, 0x67, 0x17, 0xb2, 0x7d, 0xbc, 0xf6, 0x79,
-	0x83, 0xec, 0x9e, 0x42, 0xb6, 0x8f, 0x17, 0x90, 0x99, 0x85, 0x83, 0xff, 0x40, 0xb0, 0xbb, 0x34,
-	0x9d, 0xf1, 0xd1, 0x0a, 0x41, 0xe6, 0xef, 0x16, 0xbb, 0xb5, 0xee, 0x71, 0x83, 0xe9, 0x89, 0xc2,
-	0xf4, 0xc0, 0xbe, 0x9f, 0xc5, 0x14, 0xa8, 0x80, 0x8c, 0x86, 0x62, 0xe6, 0xfe, 0x44, 0x99, 0x2f,
-	0xce, 0xd4, 0xa0, 0xc4, 0x27, 0x45, 0x6c, 0x2c, 0x2f, 0x0e, 0xfb, 0xf4, 0xad, 0x62, 0x0c, 0xe2,
-	0x03, 0x85, 0xd8, 0xc2, 0x8d, 0x2c, 0x62, 0x33, 0x7e, 0x05, 0xfe, 0x1e, 0x6a, 0xa9, 0x0c, 0x2b,
-	0xa4, 0xbe, 0x7c, 0xc7, 0x0a, 0xa9, 0xe7, 0x4c, 0x3e, 0x72, 0x57, 0x21, 0x68, 0x90, 0xdd, 0x25,
-	0x04, 0x39, 0xea, 0x32, 0xa3, 0xa3, 0x58, 0x5d, 0xd9, 0x61, 0x57, 0xac, 0xae, 0x85, 0x79, 0xb6,
-	0x4a, 0x5d, 0x66, 0x5a, 0xb5, 0x2b, 0xea, 0x67, 0xc8, 0xe9, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff,
-	0x35, 0x4a, 0x76, 0x49, 0xd8, 0x0c, 0x00, 0x00,
+	// 629 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x94, 0xcf, 0x4e, 0xdb, 0x4e,
+	0x10, 0xc7, 0x65, 0xfe, 0x04, 0x32, 0xf9, 0x09, 0x7e, 0x2c, 0x22, 0x18, 0x97, 0x96, 0x60, 0x55,
+	0x34, 0xa2, 0x8d, 0x23, 0xc1, 0xa5, 0xe2, 0x56, 0x55, 0x6a, 0xe9, 0xa1, 0xaa, 0x64, 0x2a, 0xf5,
+	0x68, 0x2d, 0xf1, 0x24, 0xb6, 0x84, 0xbd, 0x66, 0x77, 0x4d, 0x92, 0x4b, 0x55, 0xf5, 0x0d, 0xaa,
+	0xf6, 0x01, 0xfa, 0x04, 0x7d, 0x99, 0x3e, 0x00, 0x97, 0x3e, 0x48, 0xe5, 0xf5, 0x1a, 0x62, 0x62,
+	0x48, 0x7a, 0xb2, 0x66, 0xf6, 0x3b, 0x9e, 0xcf, 0xfc, 0xd9, 0x85, 0xb5, 0x61, 0x28, 0x03, 0x9f,
+	0xd3, 0xa1, 0x93, 0x70, 0x26, 0x19, 0xd9, 0xa4, 0x49, 0x22, 0x90, 0x5f, 0x21, 0xf7, 0xd4, 0x47,
+	0x78, 0x69, 0x68, 0xed, 0x0e, 0x18, 0x1b, 0x5c, 0x60, 0x97, 0x26, 0x61, 0x97, 0xc6, 0x31, 0x93,
+	0x54, 0x86, 0x2c, 0x16, 0x79, 0x88, 0xb5, 0xa7, 0x4f, 0x95, 0x75, 0x9e, 0xf6, 0xbb, 0x32, 0x8c,
+	0x50, 0x48, 0x1a, 0x25, 0xb9, 0xc0, 0x3e, 0x86, 0xad, 0xb7, 0x28, 0x3f, 0xe9, 0x44, 0x6f, 0x10,
+	0x5d, 0xbc, 0x4c, 0x51, 0x48, 0x62, 0xc1, 0x6a, 0x2f, 0xe5, 0x1c, 0xe3, 0xde, 0xd8, 0x34, 0x5a,
+	0x46, 0xbb, 0xee, 0xde, 0xd8, 0xf6, 0x09, 0x34, 0xef, 0x06, 0x89, 0x84, 0xc5, 0x02, 0x49, 0x0b,
+	0x1a, 0xc3, 0x5b, 0xb7, 0x0e, 0x9c, 0x74, 0xd9, 0xbf, 0x0c, 0xd8, 0x99, 0x08, 0x3e, 0x0d, 0x85,
+	0x64, 0x7c, 0x5c, 0x64, 0xdd, 0x82, 0x1a, 0xe3, 0x03, 0x2f, 0xf4, 0x55, 0xe8, 0xa2, 0xbb, 0xcc,
+	0xf8, 0xe0, 0x9d, 0x5f, 0x82, 0x59, 0x2e, 0xc3, 0x10, 0x07, 0x96, 0xfa, 0x9c, 0x45, 0x66, 0xad,
+	0x65, 0xb4, 0x1b, 0x47, 0x96, 0x93, 0x57, 0xec, 0x14, 0x15, 0x3b, 0x1f, 0x8b, 0x8a, 0x5d, 0xa5,
+	0xcb, 0xf4, 0x32, 0xbc, 0xb8, 0x30, 0x57, 0x66, 0xeb, 0x33, 0x9d, 0x7d, 0x6d, 0xc0, 0xfa, 0x1d,
+	0x5a, 0xf2, 0x08, 0xea, 0x72, 0xe4, 0x09, 0x49, 0x65, 0x2a, 0xcc, 0xc5, 0x1c, 0x48, 0x8e, 0xce,
+	0x94, 0x4d, 0xb6, 0x61, 0x45, 0x8e, 0xbc, 0x80, 0x8a, 0xc0, 0x5c, 0x52, 0x47, 0x35, 0x39, 0x3a,
+	0xa5, 0x22, 0x20, 0xfb, 0xf0, 0x9f, 0x8f, 0xf1, 0xd8, 0xeb, 0xb1, 0x28, 0xc2, 0x58, 0xea, 0x4a,
+	0x1a, 0x99, 0xef, 0x75, 0xee, 0x22, 0x4d, 0xa8, 0xd1, 0x88, 0xa5, 0xb1, 0x54, 0xe5, 0xd4, 0x5d,
+	0x6d, 0x91, 0x97, 0x50, 0xbf, 0x99, 0xdc, 0x1c, 0xe4, 0xb7, 0xe2, 0x2c, 0x69, 0xd1, 0x7e, 0xaf,
+	0x8f, 0x68, 0xae, 0x4e, 0x8f, 0x24, 0x02, 0xab, 0x6a, 0x22, 0x7a, 0xa4, 0x1f, 0xe0, 0xff, 0x9b,
+	0x1f, 0x04, 0xf9, 0x99, 0xb9, 0xd0, 0x5a, 0x6c, 0x37, 0x8e, 0x9e, 0x3a, 0x15, 0x0b, 0xe9, 0xdc,
+	0xfd, 0xcf, 0xfa, 0xb0, 0xec, 0xb0, 0x53, 0x30, 0xdf, 0x33, 0x3f, 0xec, 0x8f, 0xff, 0x6d, 0xeb,
+	0xa6, 0x2a, 0x59, 0x98, 0xaa, 0x24, 0x0b, 0x4f, 0xa8, 0x10, 0x43, 0xc6, 0xfd, 0x62, 0x2c, 0x85,
+	0x6d, 0x1f, 0xc3, 0x4e, 0x45, 0x5a, 0x5d, 0x64, 0x13, 0x6a, 0x7a, 0x9a, 0x59, 0xd6, 0x55, 0x57,
+	0x5b, 0xf6, 0x17, 0x03, 0xc8, 0x44, 0x6f, 0x66, 0xac, 0xe9, 0x1e, 0x34, 0x50, 0x06, 0x1e, 0xf5,
+	0x7d, 0x8e, 0xa2, 0x58, 0x0c, 0x40, 0x19, 0xbc, 0xca, 0x3d, 0x0f, 0xee, 0xf1, 0x3d, 0xa3, 0xb7,
+	0x3b, 0xb0, 0x59, 0x22, 0x78, 0x98, 0xf8, 0xe8, 0x7a, 0xe9, 0x76, 0x5d, 0xcf, 0x90, 0x5f, 0x85,
+	0x3d, 0x24, 0xdf, 0x0c, 0x58, 0x2b, 0x5f, 0x58, 0x72, 0x58, 0x39, 0xbb, 0xca, 0xa7, 0xc0, 0x7a,
+	0x3e, 0x97, 0x36, 0xe7, 0xb2, 0x0f, 0xbe, 0xfe, 0xfe, 0xf3, 0x7d, 0xa1, 0x45, 0x9e, 0xa8, 0x17,
+	0xa9, 0x18, 0x4e, 0x77, 0x80, 0xb2, 0x53, 0x18, 0x9d, 0x3e, 0x22, 0xf9, 0x51, 0xee, 0x6c, 0x71,
+	0xb3, 0x9c, 0x59, 0xb9, 0xca, 0x0f, 0x86, 0xd5, 0x9d, 0x5b, 0xaf, 0xf9, 0x1e, 0x2b, 0xbe, 0x6d,
+	0xb2, 0x55, 0xe6, 0xd3, 0x9b, 0x4d, 0x7e, 0x1a, 0xb0, 0x31, 0xb5, 0x26, 0xa4, 0x53, 0x99, 0xe5,
+	0xbe, 0x2d, 0xb6, 0x9c, 0x79, 0xe5, 0x9a, 0xe9, 0x85, 0x62, 0x3a, 0xb0, 0xf6, 0xcb, 0x4c, 0x91,
+	0x0a, 0x28, 0xb5, 0xed, 0xc4, 0x38, 0x24, 0x9f, 0xa1, 0x31, 0x51, 0x1f, 0x79, 0x36, 0xab, 0x03,
+	0x05, 0x55, 0x7b, 0xb6, 0x50, 0xf3, 0xec, 0x2a, 0x9e, 0xa6, 0xbd, 0x51, 0xe6, 0xe1, 0x78, 0x79,
+	0x62, 0x1c, 0x9e, 0xd7, 0xd4, 0x83, 0x73, 0xfc, 0x37, 0x00, 0x00, 0xff, 0xff, 0x04, 0xf6, 0xf3,
+	0xe2, 0x9f, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1083,18 +555,10 @@ const _ = grpc.SupportPackageIsVersion6
 type WithdrawServiceClient interface {
 	// GetWithdrawFee data for current withdraw fee
 	GetWithdrawFee(ctx context.Context, in *GetWithdrawFeeRequest, opts ...grpc.CallOption) (*GetWithdrawFeeResponse, error)
-	// WithdrawReq when the user clicks the withdraw
-	WithdrawReq(ctx context.Context, in *WithdrawReqRequest, opts ...grpc.CallOption) (*WithdrawReqResponse, error)
-	// ConfirmWithdraw is after supernode owner clicks the confirm or deny.
-	ConfirmWithdraw(ctx context.Context, in *ConfirmWithdrawRequest, opts ...grpc.CallOption) (*ConfirmWithdrawResponse, error)
 	GetWithdrawHistory(ctx context.Context, in *GetWithdrawHistoryRequest, opts ...grpc.CallOption) (*GetWithdrawHistoryResponse, error)
 	ModifyWithdrawFee(ctx context.Context, in *ModifyWithdrawFeeRequest, opts ...grpc.CallOption) (*ModifyWithdrawFeeResponse, error)
-	// show the pending withdrawal list on the supernode
-	GetWithdrawRequestList(ctx context.Context, in *GetWithdrawRequestListRequest, opts ...grpc.CallOption) (*GetWithdrawRequestListResponse, error)
 	// after user clicks withdraw, send withdraw request to cobo directly
 	GetWithdraw(ctx context.Context, in *GetWithdrawRequest, opts ...grpc.CallOption) (*GetWithdrawResponse, error)
-	// get withdrawal history monthly
-	GetWithdrawMonthly(ctx context.Context, in *GetWithdrawMonthlyRequest, opts ...grpc.CallOption) (*GetWithdrawMonthlyResponse, error)
 }
 
 type withdrawServiceClient struct {
@@ -1108,24 +572,6 @@ func NewWithdrawServiceClient(cc grpc.ClientConnInterface) WithdrawServiceClient
 func (c *withdrawServiceClient) GetWithdrawFee(ctx context.Context, in *GetWithdrawFeeRequest, opts ...grpc.CallOption) (*GetWithdrawFeeResponse, error) {
 	out := new(GetWithdrawFeeResponse)
 	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WithdrawService/GetWithdrawFee", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *withdrawServiceClient) WithdrawReq(ctx context.Context, in *WithdrawReqRequest, opts ...grpc.CallOption) (*WithdrawReqResponse, error) {
-	out := new(WithdrawReqResponse)
-	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WithdrawService/WithdrawReq", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *withdrawServiceClient) ConfirmWithdraw(ctx context.Context, in *ConfirmWithdrawRequest, opts ...grpc.CallOption) (*ConfirmWithdrawResponse, error) {
-	out := new(ConfirmWithdrawResponse)
-	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WithdrawService/ConfirmWithdraw", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1150,27 +596,9 @@ func (c *withdrawServiceClient) ModifyWithdrawFee(ctx context.Context, in *Modif
 	return out, nil
 }
 
-func (c *withdrawServiceClient) GetWithdrawRequestList(ctx context.Context, in *GetWithdrawRequestListRequest, opts ...grpc.CallOption) (*GetWithdrawRequestListResponse, error) {
-	out := new(GetWithdrawRequestListResponse)
-	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WithdrawService/GetWithdrawRequestList", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *withdrawServiceClient) GetWithdraw(ctx context.Context, in *GetWithdrawRequest, opts ...grpc.CallOption) (*GetWithdrawResponse, error) {
 	out := new(GetWithdrawResponse)
 	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WithdrawService/GetWithdraw", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *withdrawServiceClient) GetWithdrawMonthly(ctx context.Context, in *GetWithdrawMonthlyRequest, opts ...grpc.CallOption) (*GetWithdrawMonthlyResponse, error) {
-	out := new(GetWithdrawMonthlyResponse)
-	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WithdrawService/GetWithdrawMonthly", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1181,18 +609,10 @@ func (c *withdrawServiceClient) GetWithdrawMonthly(ctx context.Context, in *GetW
 type WithdrawServiceServer interface {
 	// GetWithdrawFee data for current withdraw fee
 	GetWithdrawFee(context.Context, *GetWithdrawFeeRequest) (*GetWithdrawFeeResponse, error)
-	// WithdrawReq when the user clicks the withdraw
-	WithdrawReq(context.Context, *WithdrawReqRequest) (*WithdrawReqResponse, error)
-	// ConfirmWithdraw is after supernode owner clicks the confirm or deny.
-	ConfirmWithdraw(context.Context, *ConfirmWithdrawRequest) (*ConfirmWithdrawResponse, error)
 	GetWithdrawHistory(context.Context, *GetWithdrawHistoryRequest) (*GetWithdrawHistoryResponse, error)
 	ModifyWithdrawFee(context.Context, *ModifyWithdrawFeeRequest) (*ModifyWithdrawFeeResponse, error)
-	// show the pending withdrawal list on the supernode
-	GetWithdrawRequestList(context.Context, *GetWithdrawRequestListRequest) (*GetWithdrawRequestListResponse, error)
 	// after user clicks withdraw, send withdraw request to cobo directly
 	GetWithdraw(context.Context, *GetWithdrawRequest) (*GetWithdrawResponse, error)
-	// get withdrawal history monthly
-	GetWithdrawMonthly(context.Context, *GetWithdrawMonthlyRequest) (*GetWithdrawMonthlyResponse, error)
 }
 
 // UnimplementedWithdrawServiceServer can be embedded to have forward compatible implementations.
@@ -1202,26 +622,14 @@ type UnimplementedWithdrawServiceServer struct {
 func (*UnimplementedWithdrawServiceServer) GetWithdrawFee(ctx context.Context, req *GetWithdrawFeeRequest) (*GetWithdrawFeeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWithdrawFee not implemented")
 }
-func (*UnimplementedWithdrawServiceServer) WithdrawReq(ctx context.Context, req *WithdrawReqRequest) (*WithdrawReqResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WithdrawReq not implemented")
-}
-func (*UnimplementedWithdrawServiceServer) ConfirmWithdraw(ctx context.Context, req *ConfirmWithdrawRequest) (*ConfirmWithdrawResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConfirmWithdraw not implemented")
-}
 func (*UnimplementedWithdrawServiceServer) GetWithdrawHistory(ctx context.Context, req *GetWithdrawHistoryRequest) (*GetWithdrawHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWithdrawHistory not implemented")
 }
 func (*UnimplementedWithdrawServiceServer) ModifyWithdrawFee(ctx context.Context, req *ModifyWithdrawFeeRequest) (*ModifyWithdrawFeeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ModifyWithdrawFee not implemented")
 }
-func (*UnimplementedWithdrawServiceServer) GetWithdrawRequestList(ctx context.Context, req *GetWithdrawRequestListRequest) (*GetWithdrawRequestListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWithdrawRequestList not implemented")
-}
 func (*UnimplementedWithdrawServiceServer) GetWithdraw(ctx context.Context, req *GetWithdrawRequest) (*GetWithdrawResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetWithdraw not implemented")
-}
-func (*UnimplementedWithdrawServiceServer) GetWithdrawMonthly(ctx context.Context, req *GetWithdrawMonthlyRequest) (*GetWithdrawMonthlyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWithdrawMonthly not implemented")
 }
 
 func RegisterWithdrawServiceServer(s *grpc.Server, srv WithdrawServiceServer) {
@@ -1242,42 +650,6 @@ func _WithdrawService_GetWithdrawFee_Handler(srv interface{}, ctx context.Contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(WithdrawServiceServer).GetWithdrawFee(ctx, req.(*GetWithdrawFeeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _WithdrawService_WithdrawReq_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WithdrawReqRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WithdrawServiceServer).WithdrawReq(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/appserver_serves_ui.WithdrawService/WithdrawReq",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WithdrawServiceServer).WithdrawReq(ctx, req.(*WithdrawReqRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _WithdrawService_ConfirmWithdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConfirmWithdrawRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WithdrawServiceServer).ConfirmWithdraw(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/appserver_serves_ui.WithdrawService/ConfirmWithdraw",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WithdrawServiceServer).ConfirmWithdraw(ctx, req.(*ConfirmWithdrawRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1318,24 +690,6 @@ func _WithdrawService_ModifyWithdrawFee_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WithdrawService_GetWithdrawRequestList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWithdrawRequestListRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WithdrawServiceServer).GetWithdrawRequestList(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/appserver_serves_ui.WithdrawService/GetWithdrawRequestList",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WithdrawServiceServer).GetWithdrawRequestList(ctx, req.(*GetWithdrawRequestListRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _WithdrawService_GetWithdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetWithdrawRequest)
 	if err := dec(in); err != nil {
@@ -1354,24 +708,6 @@ func _WithdrawService_GetWithdraw_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WithdrawService_GetWithdrawMonthly_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWithdrawMonthlyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(WithdrawServiceServer).GetWithdrawMonthly(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/appserver_serves_ui.WithdrawService/GetWithdrawMonthly",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WithdrawServiceServer).GetWithdrawMonthly(ctx, req.(*GetWithdrawMonthlyRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _WithdrawService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "appserver_serves_ui.WithdrawService",
 	HandlerType: (*WithdrawServiceServer)(nil),
@@ -1379,14 +715,6 @@ var _WithdrawService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetWithdrawFee",
 			Handler:    _WithdrawService_GetWithdrawFee_Handler,
-		},
-		{
-			MethodName: "WithdrawReq",
-			Handler:    _WithdrawService_WithdrawReq_Handler,
-		},
-		{
-			MethodName: "ConfirmWithdraw",
-			Handler:    _WithdrawService_ConfirmWithdraw_Handler,
 		},
 		{
 			MethodName: "GetWithdrawHistory",
@@ -1397,16 +725,8 @@ var _WithdrawService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _WithdrawService_ModifyWithdrawFee_Handler,
 		},
 		{
-			MethodName: "GetWithdrawRequestList",
-			Handler:    _WithdrawService_GetWithdrawRequestList_Handler,
-		},
-		{
 			MethodName: "GetWithdraw",
 			Handler:    _WithdrawService_GetWithdraw_Handler,
-		},
-		{
-			MethodName: "GetWithdrawMonthly",
-			Handler:    _WithdrawService_GetWithdrawMonthly_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

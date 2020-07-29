@@ -5,8 +5,8 @@ package appserver_serves_ui;
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "as_common.proto";
 
-import "common.proto";
 // from loraserver
 import "common/common.proto";
 

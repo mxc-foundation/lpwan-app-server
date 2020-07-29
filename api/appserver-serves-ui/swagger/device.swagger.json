@@ -178,12 +178,6 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListDeviceResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -246,12 +240,6 @@
             "schema": {
               "properties": {}
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -279,12 +267,6 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetDeviceResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -308,12 +290,6 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -341,12 +317,6 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetDeviceActivationResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -370,12 +340,6 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -412,12 +376,6 @@
               },
               "title": "Stream result of appserver_serves_uiStreamDeviceEventLogsResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -453,12 +411,6 @@
               },
               "title": "Stream result of appserver_serves_uiStreamDeviceFrameLogsResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -484,12 +436,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetRandomDevAddrResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -517,12 +463,6 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetDeviceKeysResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -547,12 +487,6 @@
             "schema": {
               "properties": {}
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
@@ -569,7 +503,7 @@
         ]
       }
     },
-    "/api/devices/{device.devEUI}": {
+    "/api/devices/{device.devEui}": {
       "put": {
         "summary": "Update updates the device matching the given DevEUI.",
         "operationId": "Update",
@@ -579,17 +513,11 @@
             "schema": {
               "properties": {}
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
           {
-            "name": "device.devEUI",
+            "name": "device.devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -609,7 +537,7 @@
         ]
       }
     },
-    "/api/devices/{deviceActivation.devEUI}/activate": {
+    "/api/devices/{deviceActivation.devEui}/activate": {
       "post": {
         "summary": "Activate (re)activates the device (only when ABP is set to true).",
         "operationId": "Activate",
@@ -619,17 +547,11 @@
             "schema": {
               "properties": {}
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
           {
-            "name": "deviceActivation.devEUI",
+            "name": "deviceActivation.devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -649,7 +571,7 @@
         ]
       }
     },
-    "/api/devices/{deviceKeys.devEUI}/keys": {
+    "/api/devices/{deviceKeys.devEui}/keys": {
       "post": {
         "summary": "CreateKeys creates the given device-keys.",
         "operationId": "CreateKeys",
@@ -659,17 +581,11 @@
             "schema": {
               "properties": {}
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
           {
-            "name": "deviceKeys.devEUI",
+            "name": "deviceKeys.devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -697,17 +613,11 @@
             "schema": {
               "properties": {}
             }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
           }
         },
         "parameters": [
           {
-            "name": "deviceKeys.devEUI",
+            "name": "deviceKeys.devEui",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -1527,27 +1437,6 @@
         "value": {
           "type": "string",
           "format": "byte"
-        }
-      }
-    },
-    "runtimeError": {
-      "type": "object",
-      "properties": {
-        "error": {
-          "type": "string"
-        },
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
         }
       }
     },

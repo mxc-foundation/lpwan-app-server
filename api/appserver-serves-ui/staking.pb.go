@@ -6,13 +6,13 @@ package appserver_serves_ui
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -26,9 +26,112 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type StakingRevenueRequest struct {
+	OrgId                int64                `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string               `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
+	From                 *timestamp.Timestamp `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
+	Till                 *timestamp.Timestamp `protobuf:"bytes,4,opt,name=till,proto3" json:"till,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *StakingRevenueRequest) Reset()         { *m = StakingRevenueRequest{} }
+func (m *StakingRevenueRequest) String() string { return proto.CompactTextString(m) }
+func (*StakingRevenueRequest) ProtoMessage()    {}
+func (*StakingRevenueRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{0}
+}
+
+func (m *StakingRevenueRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakingRevenueRequest.Unmarshal(m, b)
+}
+func (m *StakingRevenueRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakingRevenueRequest.Marshal(b, m, deterministic)
+}
+func (m *StakingRevenueRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakingRevenueRequest.Merge(m, src)
+}
+func (m *StakingRevenueRequest) XXX_Size() int {
+	return xxx_messageInfo_StakingRevenueRequest.Size(m)
+}
+func (m *StakingRevenueRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakingRevenueRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakingRevenueRequest proto.InternalMessageInfo
+
+func (m *StakingRevenueRequest) GetOrgId() int64 {
+	if m != nil {
+		return m.OrgId
+	}
+	return 0
+}
+
+func (m *StakingRevenueRequest) GetCurrency() string {
+	if m != nil {
+		return m.Currency
+	}
+	return ""
+}
+
+func (m *StakingRevenueRequest) GetFrom() *timestamp.Timestamp {
+	if m != nil {
+		return m.From
+	}
+	return nil
+}
+
+func (m *StakingRevenueRequest) GetTill() *timestamp.Timestamp {
+	if m != nil {
+		return m.Till
+	}
+	return nil
+}
+
+type StakingRevenueResponse struct {
+	Amount               string   `protobuf:"bytes,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StakingRevenueResponse) Reset()         { *m = StakingRevenueResponse{} }
+func (m *StakingRevenueResponse) String() string { return proto.CompactTextString(m) }
+func (*StakingRevenueResponse) ProtoMessage()    {}
+func (*StakingRevenueResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{1}
+}
+
+func (m *StakingRevenueResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakingRevenueResponse.Unmarshal(m, b)
+}
+func (m *StakingRevenueResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakingRevenueResponse.Marshal(b, m, deterministic)
+}
+func (m *StakingRevenueResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakingRevenueResponse.Merge(m, src)
+}
+func (m *StakingRevenueResponse) XXX_Size() int {
+	return xxx_messageInfo_StakingRevenueResponse.Size(m)
+}
+func (m *StakingRevenueResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakingRevenueResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakingRevenueResponse proto.InternalMessageInfo
+
+func (m *StakingRevenueResponse) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
 type StakeRequest struct {
 	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Amount               float64  `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	Amount               string   `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	Currency             string   `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -38,7 +141,7 @@ func (m *StakeRequest) Reset()         { *m = StakeRequest{} }
 func (m *StakeRequest) String() string { return proto.CompactTextString(m) }
 func (*StakeRequest) ProtoMessage()    {}
 func (*StakeRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{0}
+	return fileDescriptor_289e7c8aea278311, []int{2}
 }
 
 func (m *StakeRequest) XXX_Unmarshal(b []byte) error {
@@ -66,11 +169,18 @@ func (m *StakeRequest) GetOrgId() int64 {
 	return 0
 }
 
-func (m *StakeRequest) GetAmount() float64 {
+func (m *StakeRequest) GetAmount() string {
 	if m != nil {
 		return m.Amount
 	}
-	return 0
+	return ""
+}
+
+func (m *StakeRequest) GetCurrency() string {
+	if m != nil {
+		return m.Currency
+	}
+	return ""
 }
 
 type StakeResponse struct {
@@ -85,7 +195,7 @@ func (m *StakeResponse) Reset()         { *m = StakeResponse{} }
 func (m *StakeResponse) String() string { return proto.CompactTextString(m) }
 func (*StakeResponse) ProtoMessage()    {}
 func (*StakeResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{1}
+	return fileDescriptor_289e7c8aea278311, []int{3}
 }
 
 func (m *StakeResponse) XXX_Unmarshal(b []byte) error {
@@ -122,6 +232,7 @@ func (m *StakeResponse) GetUserProfile() *ProfileResponse {
 
 type UnstakeRequest struct {
 	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string   `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -131,7 +242,7 @@ func (m *UnstakeRequest) Reset()         { *m = UnstakeRequest{} }
 func (m *UnstakeRequest) String() string { return proto.CompactTextString(m) }
 func (*UnstakeRequest) ProtoMessage()    {}
 func (*UnstakeRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{2}
+	return fileDescriptor_289e7c8aea278311, []int{4}
 }
 
 func (m *UnstakeRequest) XXX_Unmarshal(b []byte) error {
@@ -159,6 +270,13 @@ func (m *UnstakeRequest) GetOrgId() int64 {
 	return 0
 }
 
+func (m *UnstakeRequest) GetCurrency() string {
+	if m != nil {
+		return m.Currency
+	}
+	return ""
+}
+
 type UnstakeResponse struct {
 	Status               string           `protobuf:"bytes,1,opt,name=status,proto3" json:"status,omitempty"`
 	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
@@ -171,7 +289,7 @@ func (m *UnstakeResponse) Reset()         { *m = UnstakeResponse{} }
 func (m *UnstakeResponse) String() string { return proto.CompactTextString(m) }
 func (*UnstakeResponse) ProtoMessage()    {}
 func (*UnstakeResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{3}
+	return fileDescriptor_289e7c8aea278311, []int{5}
 }
 
 func (m *UnstakeResponse) XXX_Unmarshal(b []byte) error {
@@ -208,6 +326,7 @@ func (m *UnstakeResponse) GetUserProfile() *ProfileResponse {
 
 type GetActiveStakesRequest struct {
 	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string   `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -217,7 +336,7 @@ func (m *GetActiveStakesRequest) Reset()         { *m = GetActiveStakesRequest{}
 func (m *GetActiveStakesRequest) String() string { return proto.CompactTextString(m) }
 func (*GetActiveStakesRequest) ProtoMessage()    {}
 func (*GetActiveStakesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{4}
+	return fileDescriptor_289e7c8aea278311, []int{6}
 }
 
 func (m *GetActiveStakesRequest) XXX_Unmarshal(b []byte) error {
@@ -245,23 +364,29 @@ func (m *GetActiveStakesRequest) GetOrgId() int64 {
 	return 0
 }
 
+func (m *GetActiveStakesRequest) GetCurrency() string {
+	if m != nil {
+		return m.Currency
+	}
+	return ""
+}
+
 type ActiveStake struct {
-	Id                   int64    `protobuf:"varint,1,opt,name=Id,proto3" json:"Id,omitempty"`
-	FkWallet             int64    `protobuf:"varint,2,opt,name=FkWallet,proto3" json:"FkWallet,omitempty"`
-	Amount               float64  `protobuf:"fixed64,3,opt,name=Amount,proto3" json:"Amount,omitempty"`
-	StakeStatus          string   `protobuf:"bytes,4,opt,name=StakeStatus,proto3" json:"StakeStatus,omitempty"`
-	StartStakeTime       string   `protobuf:"bytes,5,opt,name=StartStakeTime,proto3" json:"StartStakeTime,omitempty"`
-	UnstakeTime          string   `protobuf:"bytes,6,opt,name=UnstakeTime,proto3" json:"UnstakeTime,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	Id                   int64                `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Amount               string               `protobuf:"bytes,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	StakeStatus          string               `protobuf:"bytes,4,opt,name=stake_status,json=stakeStatus,proto3" json:"stake_status,omitempty"`
+	StartTime            *timestamp.Timestamp `protobuf:"bytes,5,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime              *timestamp.Timestamp `protobuf:"bytes,6,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *ActiveStake) Reset()         { *m = ActiveStake{} }
 func (m *ActiveStake) String() string { return proto.CompactTextString(m) }
 func (*ActiveStake) ProtoMessage()    {}
 func (*ActiveStake) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{5}
+	return fileDescriptor_289e7c8aea278311, []int{7}
 }
 
 func (m *ActiveStake) XXX_Unmarshal(b []byte) error {
@@ -289,18 +414,11 @@ func (m *ActiveStake) GetId() int64 {
 	return 0
 }
 
-func (m *ActiveStake) GetFkWallet() int64 {
-	if m != nil {
-		return m.FkWallet
-	}
-	return 0
-}
-
-func (m *ActiveStake) GetAmount() float64 {
+func (m *ActiveStake) GetAmount() string {
 	if m != nil {
 		return m.Amount
 	}
-	return 0
+	return ""
 }
 
 func (m *ActiveStake) GetStakeStatus() string {
@@ -310,18 +428,18 @@ func (m *ActiveStake) GetStakeStatus() string {
 	return ""
 }
 
-func (m *ActiveStake) GetStartStakeTime() string {
+func (m *ActiveStake) GetStartTime() *timestamp.Timestamp {
 	if m != nil {
-		return m.StartStakeTime
+		return m.StartTime
 	}
-	return ""
+	return nil
 }
 
-func (m *ActiveStake) GetUnstakeTime() string {
+func (m *ActiveStake) GetEndTime() *timestamp.Timestamp {
 	if m != nil {
-		return m.UnstakeTime
+		return m.EndTime
 	}
-	return ""
+	return nil
 }
 
 type GetActiveStakesResponse struct {
@@ -336,7 +454,7 @@ func (m *GetActiveStakesResponse) Reset()         { *m = GetActiveStakesResponse
 func (m *GetActiveStakesResponse) String() string { return proto.CompactTextString(m) }
 func (*GetActiveStakesResponse) ProtoMessage()    {}
 func (*GetActiveStakesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{6}
+	return fileDescriptor_289e7c8aea278311, []int{8}
 }
 
 func (m *GetActiveStakesResponse) XXX_Unmarshal(b []byte) error {
@@ -372,19 +490,20 @@ func (m *GetActiveStakesResponse) GetUserProfile() *ProfileResponse {
 }
 
 type StakingHistoryRequest struct {
-	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
-	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	OrgId                int64                `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string               `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
+	From                 *timestamp.Timestamp `protobuf:"bytes,5,opt,name=from,proto3" json:"from,omitempty"`
+	Till                 *timestamp.Timestamp `protobuf:"bytes,6,opt,name=till,proto3" json:"till,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *StakingHistoryRequest) Reset()         { *m = StakingHistoryRequest{} }
 func (m *StakingHistoryRequest) String() string { return proto.CompactTextString(m) }
 func (*StakingHistoryRequest) ProtoMessage()    {}
 func (*StakingHistoryRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{7}
+	return fileDescriptor_289e7c8aea278311, []int{9}
 }
 
 func (m *StakingHistoryRequest) XXX_Unmarshal(b []byte) error {
@@ -412,129 +531,96 @@ func (m *StakingHistoryRequest) GetOrgId() int64 {
 	return 0
 }
 
-func (m *StakingHistoryRequest) GetOffset() int64 {
+func (m *StakingHistoryRequest) GetCurrency() string {
 	if m != nil {
-		return m.Offset
-	}
-	return 0
-}
-
-func (m *StakingHistoryRequest) GetLimit() int64 {
-	if m != nil {
-		return m.Limit
-	}
-	return 0
-}
-
-type GetStakingHistory struct {
-	StakeAmount          float64  `protobuf:"fixed64,1,opt,name=stake_amount,json=stakeAmount,proto3" json:"stake_amount,omitempty"`
-	Start                string   `protobuf:"bytes,2,opt,name=start,proto3" json:"start,omitempty"`
-	End                  string   `protobuf:"bytes,3,opt,name=end,proto3" json:"end,omitempty"`
-	RevMonth             string   `protobuf:"bytes,4,opt,name=rev_month,json=revMonth,proto3" json:"rev_month,omitempty"`
-	NetworkIncome        float64  `protobuf:"fixed64,5,opt,name=network_income,json=networkIncome,proto3" json:"network_income,omitempty"`
-	MonthlyRate          float64  `protobuf:"fixed64,6,opt,name=monthly_rate,json=monthlyRate,proto3" json:"monthly_rate,omitempty"`
-	Revenue              float64  `protobuf:"fixed64,7,opt,name=revenue,proto3" json:"revenue,omitempty"`
-	Balance              float64  `protobuf:"fixed64,8,opt,name=balance,proto3" json:"balance,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetStakingHistory) Reset()         { *m = GetStakingHistory{} }
-func (m *GetStakingHistory) String() string { return proto.CompactTextString(m) }
-func (*GetStakingHistory) ProtoMessage()    {}
-func (*GetStakingHistory) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{8}
-}
-
-func (m *GetStakingHistory) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetStakingHistory.Unmarshal(m, b)
-}
-func (m *GetStakingHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetStakingHistory.Marshal(b, m, deterministic)
-}
-func (m *GetStakingHistory) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetStakingHistory.Merge(m, src)
-}
-func (m *GetStakingHistory) XXX_Size() int {
-	return xxx_messageInfo_GetStakingHistory.Size(m)
-}
-func (m *GetStakingHistory) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetStakingHistory.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetStakingHistory proto.InternalMessageInfo
-
-func (m *GetStakingHistory) GetStakeAmount() float64 {
-	if m != nil {
-		return m.StakeAmount
-	}
-	return 0
-}
-
-func (m *GetStakingHistory) GetStart() string {
-	if m != nil {
-		return m.Start
+		return m.Currency
 	}
 	return ""
 }
 
-func (m *GetStakingHistory) GetEnd() string {
+func (m *StakingHistoryRequest) GetFrom() *timestamp.Timestamp {
 	if m != nil {
-		return m.End
+		return m.From
 	}
-	return ""
+	return nil
 }
 
-func (m *GetStakingHistory) GetRevMonth() string {
+func (m *StakingHistoryRequest) GetTill() *timestamp.Timestamp {
 	if m != nil {
-		return m.RevMonth
+		return m.Till
 	}
-	return ""
+	return nil
 }
 
-func (m *GetStakingHistory) GetNetworkIncome() float64 {
-	if m != nil {
-		return m.NetworkIncome
-	}
-	return 0
-}
-
-func (m *GetStakingHistory) GetMonthlyRate() float64 {
-	if m != nil {
-		return m.MonthlyRate
-	}
-	return 0
-}
-
-func (m *GetStakingHistory) GetRevenue() float64 {
-	if m != nil {
-		return m.Revenue
-	}
-	return 0
-}
-
-func (m *GetStakingHistory) GetBalance() float64 {
-	if m != nil {
-		return m.Balance
-	}
-	return 0
-}
-
-type StakingHistoryResponse struct {
-	UserProfile          *ProfileResponse     `protobuf:"bytes,1,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
-	StakingHist          []*GetStakingHistory `protobuf:"bytes,2,rep,name=staking_hist,json=stakingHist,proto3" json:"staking_hist,omitempty"`
-	Count                int64                `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+type StakingHistory struct {
+	Timestamp            *timestamp.Timestamp `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Amount               string               `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	Type                 string               `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
 	XXX_unrecognized     []byte               `json:"-"`
 	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *StakingHistory) Reset()         { *m = StakingHistory{} }
+func (m *StakingHistory) String() string { return proto.CompactTextString(m) }
+func (*StakingHistory) ProtoMessage()    {}
+func (*StakingHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{10}
+}
+
+func (m *StakingHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StakingHistory.Unmarshal(m, b)
+}
+func (m *StakingHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StakingHistory.Marshal(b, m, deterministic)
+}
+func (m *StakingHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StakingHistory.Merge(m, src)
+}
+func (m *StakingHistory) XXX_Size() int {
+	return xxx_messageInfo_StakingHistory.Size(m)
+}
+func (m *StakingHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_StakingHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StakingHistory proto.InternalMessageInfo
+
+func (m *StakingHistory) GetTimestamp() *timestamp.Timestamp {
+	if m != nil {
+		return m.Timestamp
+	}
+	return nil
+}
+
+func (m *StakingHistory) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *StakingHistory) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
+type StakingHistoryResponse struct {
+	UserProfile          *ProfileResponse  `protobuf:"bytes,1,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	StakingHist          []*StakingHistory `protobuf:"bytes,2,rep,name=staking_hist,json=stakingHist,proto3" json:"staking_hist,omitempty"`
+	Count                int64             `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
 }
 
 func (m *StakingHistoryResponse) Reset()         { *m = StakingHistoryResponse{} }
 func (m *StakingHistoryResponse) String() string { return proto.CompactTextString(m) }
 func (*StakingHistoryResponse) ProtoMessage()    {}
 func (*StakingHistoryResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{9}
+	return fileDescriptor_289e7c8aea278311, []int{11}
 }
 
 func (m *StakingHistoryResponse) XXX_Unmarshal(b []byte) error {
@@ -562,7 +648,7 @@ func (m *StakingHistoryResponse) GetUserProfile() *ProfileResponse {
 	return nil
 }
 
-func (m *StakingHistoryResponse) GetStakingHist() []*GetStakingHistory {
+func (m *StakingHistoryResponse) GetStakingHist() []*StakingHistory {
 	if m != nil {
 		return m.StakingHist
 	}
@@ -578,6 +664,7 @@ func (m *StakingHistoryResponse) GetCount() int64 {
 
 type StakingPercentageRequest struct {
 	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string   `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -587,7 +674,7 @@ func (m *StakingPercentageRequest) Reset()         { *m = StakingPercentageReque
 func (m *StakingPercentageRequest) String() string { return proto.CompactTextString(m) }
 func (*StakingPercentageRequest) ProtoMessage()    {}
 func (*StakingPercentageRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{10}
+	return fileDescriptor_289e7c8aea278311, []int{12}
 }
 
 func (m *StakingPercentageRequest) XXX_Unmarshal(b []byte) error {
@@ -615,6 +702,13 @@ func (m *StakingPercentageRequest) GetOrgId() int64 {
 	return 0
 }
 
+func (m *StakingPercentageRequest) GetCurrency() string {
+	if m != nil {
+		return m.Currency
+	}
+	return ""
+}
+
 type StakingPercentageResponse struct {
 	StakingPercentage    float64  `protobuf:"fixed64,1,opt,name=staking_percentage,json=stakingPercentage,proto3" json:"staking_percentage,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -626,7 +720,7 @@ func (m *StakingPercentageResponse) Reset()         { *m = StakingPercentageResp
 func (m *StakingPercentageResponse) String() string { return proto.CompactTextString(m) }
 func (*StakingPercentageResponse) ProtoMessage()    {}
 func (*StakingPercentageResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{11}
+	return fileDescriptor_289e7c8aea278311, []int{13}
 }
 
 func (m *StakingPercentageResponse) XXX_Unmarshal(b []byte) error {
@@ -655,6 +749,8 @@ func (m *StakingPercentageResponse) GetStakingPercentage() float64 {
 }
 
 func init() {
+	proto.RegisterType((*StakingRevenueRequest)(nil), "appserver_serves_ui.StakingRevenueRequest")
+	proto.RegisterType((*StakingRevenueResponse)(nil), "appserver_serves_ui.StakingRevenueResponse")
 	proto.RegisterType((*StakeRequest)(nil), "appserver_serves_ui.StakeRequest")
 	proto.RegisterType((*StakeResponse)(nil), "appserver_serves_ui.StakeResponse")
 	proto.RegisterType((*UnstakeRequest)(nil), "appserver_serves_ui.UnstakeRequest")
@@ -663,7 +759,7 @@ func init() {
 	proto.RegisterType((*ActiveStake)(nil), "appserver_serves_ui.ActiveStake")
 	proto.RegisterType((*GetActiveStakesResponse)(nil), "appserver_serves_ui.GetActiveStakesResponse")
 	proto.RegisterType((*StakingHistoryRequest)(nil), "appserver_serves_ui.StakingHistoryRequest")
-	proto.RegisterType((*GetStakingHistory)(nil), "appserver_serves_ui.GetStakingHistory")
+	proto.RegisterType((*StakingHistory)(nil), "appserver_serves_ui.StakingHistory")
 	proto.RegisterType((*StakingHistoryResponse)(nil), "appserver_serves_ui.StakingHistoryResponse")
 	proto.RegisterType((*StakingPercentageRequest)(nil), "appserver_serves_ui.StakingPercentageRequest")
 	proto.RegisterType((*StakingPercentageResponse)(nil), "appserver_serves_ui.StakingPercentageResponse")
@@ -673,56 +769,56 @@ func init() { proto.RegisterFile("staking.proto", fileDescriptor_289e7c8aea27831
 
 var fileDescriptor_289e7c8aea278311 = []byte{
 	// 797 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0x4f, 0x6f, 0x22, 0x37,
-	0x14, 0xd7, 0x40, 0x21, 0xf0, 0x26, 0x21, 0x8d, 0x9b, 0xa4, 0x74, 0xd2, 0xaa, 0x64, 0x9a, 0xa4,
-	0x88, 0x34, 0xd0, 0xd2, 0x5b, 0xa5, 0x1c, 0x72, 0x69, 0x4a, 0xa5, 0x4a, 0xd1, 0xd0, 0xaa, 0x97,
-	0x4a, 0x23, 0x67, 0x70, 0x88, 0xc5, 0x60, 0x4f, 0x6d, 0x43, 0x15, 0x55, 0xed, 0x61, 0xbf, 0x42,
-	0x2e, 0x7b, 0xdd, 0xd3, 0x7e, 0x8a, 0xbd, 0xec, 0x57, 0xd8, 0x8f, 0xb0, 0xfb, 0x25, 0xf6, 0xb6,
-	0x1a, 0xdb, 0x10, 0x02, 0x43, 0x88, 0x56, 0xab, 0x3d, 0xc1, 0x7b, 0x7e, 0x7f, 0x7e, 0xef, 0xf7,
-	0xf3, 0x33, 0xc0, 0x86, 0x54, 0x78, 0x40, 0x59, 0xbf, 0x99, 0x08, 0xae, 0x38, 0xfa, 0x0c, 0x27,
-	0x89, 0x24, 0x62, 0x4c, 0x44, 0xa8, 0x3f, 0x64, 0x38, 0xa2, 0xde, 0x97, 0x7d, 0xce, 0xfb, 0x31,
-	0x69, 0xe1, 0x84, 0xb6, 0x30, 0x63, 0x5c, 0x61, 0x45, 0x39, 0x93, 0x26, 0xc5, 0xab, 0x50, 0xa6,
-	0x88, 0x60, 0x38, 0x36, 0xb6, 0x7f, 0x0a, 0xeb, 0x5d, 0x85, 0x07, 0x24, 0x20, 0x7f, 0x8f, 0x88,
-	0x54, 0x68, 0x07, 0x8a, 0x5c, 0xf4, 0x43, 0xda, 0xab, 0x3a, 0x35, 0xa7, 0x9e, 0x0f, 0x0a, 0x5c,
-	0xf4, 0x3b, 0x3d, 0xb4, 0x0b, 0x45, 0x3c, 0xe4, 0x23, 0xa6, 0xaa, 0xb9, 0x9a, 0x53, 0x77, 0x02,
-	0x6b, 0xf9, 0x09, 0x6c, 0xd8, 0x74, 0x99, 0x70, 0x26, 0x49, 0x1a, 0x28, 0x15, 0x56, 0x23, 0xa9,
-	0xf3, 0xcb, 0x81, 0xb5, 0xd0, 0x39, 0xac, 0x8f, 0x24, 0x11, 0x61, 0x22, 0xf8, 0x15, 0x8d, 0x89,
-	0x2e, 0xe3, 0xb6, 0x0f, 0x9a, 0x19, 0x13, 0x34, 0x2f, 0x4c, 0xcc, 0xa4, 0x66, 0xe0, 0xa6, 0x99,
-	0xd6, 0xe9, 0x7f, 0x0b, 0x95, 0x3f, 0x98, 0x5c, 0x0d, 0xd9, 0x17, 0xb0, 0x39, 0x0d, 0xfc, 0x58,
-	0xe0, 0x5a, 0xb0, 0x7b, 0x4e, 0xd4, 0x59, 0xa4, 0xe8, 0x98, 0x68, 0x5e, 0xe4, 0x0a, 0x90, 0x2f,
-	0x1c, 0x70, 0x67, 0xc2, 0x51, 0x05, 0x72, 0x9d, 0x49, 0x48, 0xae, 0xd3, 0x43, 0x1e, 0x94, 0x7e,
-	0x1e, 0xfc, 0x89, 0xe3, 0x98, 0x18, 0xe6, 0xf3, 0xc1, 0xd4, 0x4e, 0xa7, 0x39, 0x33, 0x9a, 0xe4,
-	0x8d, 0x26, 0xc6, 0x42, 0x35, 0x70, 0x75, 0xb1, 0xae, 0x19, 0xf5, 0x13, 0x3d, 0xea, 0xac, 0x0b,
-	0x1d, 0x41, 0xa5, 0xab, 0xb0, 0x50, 0xda, 0xf7, 0x3b, 0x1d, 0x92, 0x6a, 0x41, 0x07, 0xcd, 0x79,
-	0xd3, 0x4a, 0x96, 0x42, 0x1d, 0x54, 0x34, 0x95, 0x66, 0x5c, 0xfe, 0x33, 0x07, 0x3e, 0x5f, 0x98,
-	0xd8, 0xb2, 0x7d, 0x0a, 0x65, 0x1c, 0xa9, 0x50, 0x07, 0xeb, 0x91, 0xdc, 0x76, 0x2d, 0x93, 0xd2,
-	0x99, 0xec, 0xa0, 0x84, 0x23, 0x03, 0xe0, 0xc3, 0x89, 0xf2, 0x17, 0xec, 0x74, 0xcd, 0xda, 0xfc,
-	0x42, 0xa5, 0xe2, 0xe2, 0x66, 0xf5, 0x5d, 0xe7, 0x57, 0x57, 0x72, 0xca, 0xb8, 0xb5, 0xd0, 0x36,
-	0x14, 0x62, 0x3a, 0xa4, 0x86, 0xee, 0x7c, 0x60, 0x0c, 0xff, 0xad, 0x03, 0x5b, 0xe7, 0x44, 0xdd,
-	0xef, 0x80, 0xf6, 0x61, 0x5d, 0xcf, 0x1d, 0xda, 0xad, 0x71, 0xb4, 0x42, 0xae, 0xf6, 0x59, 0x99,
-	0xb6, 0xa1, 0x20, 0x53, 0xba, 0x75, 0x97, 0x72, 0x60, 0x0c, 0xf4, 0x29, 0xe4, 0x09, 0xeb, 0xe9,
-	0x16, 0xe5, 0x20, 0xfd, 0x8a, 0xf6, 0xa0, 0x2c, 0xc8, 0x38, 0x1c, 0x72, 0xa6, 0xae, 0xad, 0x98,
-	0x25, 0x41, 0xc6, 0xbf, 0xa5, 0x36, 0x3a, 0x84, 0x0a, 0x23, 0xea, 0x1f, 0x2e, 0x06, 0x21, 0x65,
-	0x11, 0xb7, 0x4a, 0x3a, 0xc1, 0x86, 0xf5, 0x76, 0xb4, 0x33, 0x85, 0xa3, 0xf3, 0xe3, 0x9b, 0x50,
-	0x60, 0x65, 0x94, 0x74, 0x02, 0xd7, 0xfa, 0x02, 0xac, 0x08, 0xaa, 0xc2, 0x9a, 0x20, 0x63, 0xc2,
-	0x46, 0xa4, 0xba, 0xa6, 0x4f, 0x27, 0x66, 0x7a, 0x72, 0x89, 0x63, 0xcc, 0x22, 0x52, 0x2d, 0x99,
-	0x13, 0x6b, 0xfa, 0x2f, 0x1d, 0xd8, 0x9d, 0xa7, 0xd6, 0x8a, 0x3f, 0xaf, 0x9e, 0xf3, 0x9e, 0xea,
-	0xa1, 0x8e, 0x61, 0x92, 0xb2, 0x7e, 0x78, 0x4d, 0x65, 0xca, 0x56, 0xbe, 0xee, 0xb6, 0x8f, 0x32,
-	0x0b, 0x2d, 0xe8, 0x60, 0x18, 0xb7, 0x76, 0xca, 0x78, 0x34, 0xdd, 0x97, 0x7c, 0x60, 0x0c, 0xff,
-	0x07, 0xa8, 0xda, 0xa4, 0x0b, 0x22, 0x22, 0xc2, 0x14, 0xee, 0xaf, 0x7a, 0x5a, 0x7e, 0x85, 0x2f,
-	0x32, 0x52, 0xec, 0xe4, 0x27, 0x80, 0x26, 0x80, 0x93, 0xe9, 0xa9, 0xbd, 0x00, 0x5b, 0x72, 0x3e,
-	0xad, 0xfd, 0xba, 0xa0, 0x97, 0x31, 0xf5, 0x76, 0x89, 0x18, 0xd3, 0x88, 0xa0, 0x31, 0x14, 0xcc,
-	0x0a, 0xec, 0x67, 0x4e, 0x39, 0xfb, 0x5e, 0x7b, 0xfe, 0x43, 0x21, 0x06, 0x91, 0x7f, 0xf4, 0xe4,
-	0xd5, 0x9b, 0xdb, 0x5c, 0xcd, 0xdf, 0xd3, 0xbf, 0x09, 0x16, 0x42, 0xeb, 0x5f, 0x33, 0xd9, 0x7f,
-	0xda, 0x41, 0x7e, 0x72, 0x1a, 0xe8, 0x7f, 0x58, 0xb3, 0xbb, 0x8d, 0xbe, 0xc9, 0x2c, 0x7b, 0xff,
-	0xe1, 0xf5, 0x0e, 0x1e, 0x0e, 0xb2, 0xdd, 0xeb, 0xba, 0xbb, 0xef, 0x7f, 0x95, 0xdd, 0x7d, 0xc4,
-	0xa6, 0xfd, 0x9f, 0x3a, 0xb0, 0x39, 0xf7, 0x98, 0xa0, 0xe3, 0x65, 0x42, 0x67, 0x3c, 0xb2, 0xde,
-	0x77, 0x8f, 0x0b, 0xb6, 0xc0, 0x1a, 0x1a, 0xd8, 0x01, 0xf2, 0xb3, 0x81, 0x61, 0x9d, 0x23, 0x0d,
-	0x8c, 0xdb, 0xcc, 0x2d, 0x6f, 0x2c, 0x25, 0x7f, 0xe1, 0xb1, 0xf1, 0x8e, 0x1f, 0x15, 0x6b, 0xa1,
-	0x1d, 0x6a, 0x68, 0x5f, 0xa3, 0x25, 0x9c, 0x5d, 0xdb, 0xfe, 0xcf, 0x1d, 0xd8, 0xbe, 0x43, 0x75,
-	0x77, 0xa9, 0xd0, 0xc9, 0x43, 0xcd, 0x16, 0xae, 0xb9, 0xd7, 0x7c, 0x6c, 0xb8, 0x85, 0xf7, 0xbd,
-	0x86, 0xd7, 0x40, 0xf5, 0xe5, 0x17, 0xea, 0xfe, 0xf5, 0xbf, 0x2c, 0xea, 0x7f, 0x1b, 0x3f, 0xbe,
-	0x0b, 0x00, 0x00, 0xff, 0xff, 0x66, 0x92, 0x5b, 0xaa, 0xc1, 0x08, 0x00, 0x00,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0xcb, 0x6e, 0xd3, 0x4a,
+	0x18, 0x96, 0x73, 0x6b, 0xf3, 0xbb, 0x4d, 0xd5, 0x39, 0x6d, 0x4f, 0x8e, 0x0f, 0xa8, 0xa9, 0x29,
+	0x28, 0x4a, 0xa9, 0x53, 0x05, 0x21, 0x01, 0x12, 0x0b, 0x84, 0x44, 0xb9, 0x08, 0xa9, 0x72, 0x61,
+	0xc1, 0xca, 0x72, 0x9d, 0x69, 0x6a, 0x91, 0x8c, 0xcd, 0xcc, 0x38, 0x52, 0x85, 0x60, 0xc1, 0x2b,
+	0x74, 0xc3, 0x96, 0x15, 0x12, 0x2f, 0xc1, 0x9e, 0x2d, 0xaf, 0xc0, 0x4b, 0xb0, 0x43, 0x9e, 0x99,
+	0x38, 0x71, 0xea, 0x5c, 0x4a, 0x11, 0xab, 0xf6, 0xb7, 0xbf, 0x7f, 0xbe, 0xef, 0xbf, 0xcc, 0xe7,
+	0xc0, 0x32, 0xe3, 0xee, 0x6b, 0x9f, 0x74, 0xac, 0x90, 0x06, 0x3c, 0x40, 0xff, 0xb8, 0x61, 0xc8,
+	0x30, 0xed, 0x63, 0xea, 0x88, 0x3f, 0xcc, 0x89, 0x7c, 0xe3, 0x4a, 0x27, 0x08, 0x3a, 0x5d, 0xdc,
+	0x74, 0x43, 0xbf, 0xe9, 0x12, 0x12, 0x70, 0x97, 0xfb, 0x01, 0x61, 0x32, 0xc5, 0xa8, 0xf8, 0x84,
+	0x63, 0x4a, 0xdc, 0xae, 0x8a, 0x37, 0x15, 0x5a, 0x44, 0x47, 0xd1, 0x71, 0x93, 0xfb, 0x3d, 0xcc,
+	0xb8, 0xdb, 0x0b, 0x25, 0xc0, 0xfc, 0xa2, 0xc1, 0xfa, 0xa1, 0x64, 0xb5, 0x71, 0x1f, 0x93, 0x08,
+	0xdb, 0xf8, 0x4d, 0x84, 0x19, 0x47, 0xeb, 0x50, 0x0a, 0x68, 0xc7, 0xf1, 0xdb, 0x55, 0xad, 0xa6,
+	0xd5, 0xf3, 0x76, 0x31, 0xa0, 0x9d, 0x27, 0x6d, 0x64, 0xc0, 0xa2, 0x17, 0x51, 0x8a, 0x89, 0x77,
+	0x5a, 0xcd, 0xd5, 0xb4, 0x7a, 0xd9, 0x4e, 0x62, 0x64, 0x41, 0xe1, 0x98, 0x06, 0xbd, 0x6a, 0xbe,
+	0xa6, 0xd5, 0xf5, 0x96, 0x61, 0x49, 0x72, 0x6b, 0x40, 0x6e, 0xbd, 0x18, 0x90, 0xdb, 0x02, 0x17,
+	0xe3, 0xb9, 0xdf, 0xed, 0x56, 0x0b, 0xb3, 0xf1, 0x31, 0xce, 0xdc, 0x83, 0x8d, 0x71, 0xad, 0x2c,
+	0x0c, 0x08, 0xc3, 0x68, 0x03, 0x4a, 0x6e, 0x2f, 0x88, 0x08, 0x17, 0x62, 0xcb, 0xb6, 0x8a, 0xcc,
+	0x57, 0xb0, 0x14, 0x67, 0xcc, 0x2a, 0x6a, 0x98, 0x9e, 0x1b, 0x4d, 0x4f, 0x15, 0x9b, 0x4f, 0x17,
+	0x6b, 0x86, 0xb0, 0xac, 0x8e, 0x1e, 0x6a, 0x60, 0xdc, 0xe5, 0x11, 0x1b, 0x68, 0x90, 0x11, 0xda,
+	0x87, 0xa5, 0x88, 0x61, 0xea, 0x84, 0x34, 0x38, 0xf6, 0xbb, 0x58, 0x50, 0xe8, 0xad, 0x6d, 0x2b,
+	0x63, 0xba, 0xd6, 0x81, 0xc4, 0x0c, 0xce, 0xb4, 0xf5, 0x38, 0x53, 0x3d, 0x34, 0x1f, 0x42, 0xe5,
+	0x25, 0x61, 0x73, 0x94, 0x33, 0x65, 0x46, 0x26, 0x85, 0x95, 0xe4, 0x90, 0xbf, 0x25, 0xfc, 0x19,
+	0x6c, 0xec, 0x63, 0xfe, 0xc0, 0xe3, 0x7e, 0x1f, 0x8b, 0x9e, 0xb1, 0x4b, 0x14, 0xf0, 0x4d, 0x03,
+	0x7d, 0xe4, 0x28, 0x54, 0x81, 0x5c, 0x92, 0x9e, 0xf3, 0x47, 0x67, 0x99, 0x4f, 0xcd, 0x72, 0x0b,
+	0x96, 0x44, 0xd9, 0x8e, 0xaa, 0xb5, 0x20, 0xde, 0xea, 0xe2, 0xd9, 0xa1, 0x2c, 0xf8, 0x2e, 0x00,
+	0xe3, 0x2e, 0xe5, 0x4e, 0x7c, 0x4b, 0xaa, 0xc5, 0x99, 0x5b, 0x59, 0x16, 0xe8, 0x38, 0x46, 0xb7,
+	0x61, 0x11, 0x93, 0xb6, 0x4c, 0x2c, 0xcd, 0x4c, 0x5c, 0xc0, 0xa4, 0x1d, 0x47, 0xe6, 0x27, 0x0d,
+	0xfe, 0x3d, 0xd7, 0x1a, 0x35, 0x96, 0xfb, 0x50, 0x76, 0x3d, 0xee, 0x08, 0x81, 0xa2, 0x3e, 0xbd,
+	0x55, 0xcb, 0xec, 0xfd, 0x48, 0xb6, 0xbd, 0xe8, 0x7a, 0x5c, 0xf6, 0xe5, 0x8f, 0x4d, 0x6f, 0xc4,
+	0x22, 0x1e, 0xfb, 0x8c, 0x07, 0xf4, 0xf4, 0x02, 0xd3, 0x2b, 0x4c, 0xb0, 0x88, 0xe2, 0x05, 0x2d,
+	0xa2, 0x34, 0xa7, 0x45, 0xf4, 0xa1, 0x92, 0xd6, 0x8a, 0xee, 0x40, 0x39, 0x31, 0x3d, 0xd5, 0xc6,
+	0xa9, 0x33, 0x4d, 0xc0, 0x13, 0x5d, 0x01, 0x41, 0x81, 0x9f, 0x86, 0x58, 0xed, 0x97, 0xf8, 0xdf,
+	0xfc, 0xaa, 0x25, 0xde, 0x94, 0x34, 0x49, 0xcd, 0x71, 0x7c, 0x10, 0xda, 0x6f, 0x0e, 0x02, 0x3d,
+	0x92, 0x1b, 0xec, 0x93, 0x8e, 0x73, 0xe2, 0xb3, 0x58, 0x55, 0xbe, 0xae, 0xb7, 0xae, 0x65, 0x1e,
+	0x34, 0xa6, 0x45, 0x67, 0xc3, 0x18, 0xad, 0x41, 0xd1, 0x4b, 0x2e, 0x48, 0xde, 0x96, 0x81, 0xf9,
+	0x1c, 0xaa, 0x2a, 0xe9, 0x00, 0x53, 0x0f, 0x13, 0xee, 0x76, 0x2e, 0xe3, 0x33, 0x4f, 0xe1, 0xbf,
+	0x8c, 0xe3, 0x54, 0x4b, 0x76, 0x01, 0x0d, 0x2a, 0x09, 0x93, 0xb7, 0xe2, 0x6c, 0xcd, 0x5e, 0x65,
+	0xe3, 0x69, 0xad, 0x9f, 0xa5, 0x64, 0xaa, 0x87, 0x98, 0xf6, 0x7d, 0x0f, 0xa3, 0x3e, 0x14, 0xe5,
+	0x9a, 0x6f, 0x4d, 0x2c, 0x7f, 0xa0, 0xde, 0x30, 0xa7, 0x41, 0xa4, 0x22, 0xf3, 0xc6, 0x87, 0xef,
+	0x3f, 0xce, 0x72, 0x35, 0xf3, 0x7f, 0xf1, 0x61, 0x55, 0x12, 0x9a, 0x6f, 0x65, 0xd5, 0xef, 0xc4,
+	0x03, 0x7c, 0x4f, 0x6b, 0xa0, 0xf7, 0xb0, 0xa0, 0xec, 0x13, 0x65, 0x37, 0x3e, 0xed, 0xd0, 0xc6,
+	0xf6, 0x74, 0x90, 0x62, 0xaf, 0x0b, 0x76, 0xd3, 0xbc, 0x9a, 0xcd, 0x1e, 0x91, 0x84, 0xff, 0xa3,
+	0x06, 0x2b, 0x63, 0x86, 0x81, 0x76, 0x32, 0x39, 0xb2, 0x1d, 0xd7, 0xb8, 0x39, 0x1f, 0x58, 0x09,
+	0x6b, 0x08, 0x61, 0xdb, 0xc8, 0xcc, 0x16, 0xe6, 0x8a, 0x1c, 0x26, 0x65, 0x9c, 0x69, 0xb0, 0xba,
+	0x8f, 0x79, 0xfa, 0x0b, 0x8d, 0x1a, 0xd3, 0xd6, 0x33, 0xfd, 0x93, 0xc3, 0xd8, 0x99, 0x0b, 0xab,
+	0xa4, 0x5d, 0x17, 0xd2, 0x36, 0xd1, 0x84, 0x9e, 0x51, 0xc5, 0x9f, 0x56, 0x35, 0x30, 0x85, 0xc6,
+	0x3c, 0x97, 0x66, 0x1e, 0x55, 0x63, 0x97, 0x7d, 0x96, 0xaa, 0x13, 0xc5, 0xff, 0x59, 0x83, 0xb5,
+	0xa1, 0xaa, 0xe1, 0xaa, 0xa3, 0xdd, 0x69, 0x64, 0xe7, 0x2e, 0xa6, 0x61, 0xcd, 0x0b, 0x57, 0xf2,
+	0xf6, 0x84, 0xbc, 0x06, 0xaa, 0x4f, 0x5e, 0xf3, 0xf4, 0xa5, 0x3c, 0x2a, 0x09, 0x8f, 0xbc, 0xf5,
+	0x2b, 0x00, 0x00, 0xff, 0xff, 0x1c, 0x16, 0x4f, 0x24, 0x9c, 0x0a, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -740,6 +836,7 @@ type StakingServiceClient interface {
 	Stake(ctx context.Context, in *StakeRequest, opts ...grpc.CallOption) (*StakeResponse, error)
 	Unstake(ctx context.Context, in *UnstakeRequest, opts ...grpc.CallOption) (*UnstakeResponse, error)
 	GetActiveStakes(ctx context.Context, in *GetActiveStakesRequest, opts ...grpc.CallOption) (*GetActiveStakesResponse, error)
+	GetStakingRevenue(ctx context.Context, in *StakingRevenueRequest, opts ...grpc.CallOption) (*StakingRevenueResponse, error)
 	GetStakingHistory(ctx context.Context, in *StakingHistoryRequest, opts ...grpc.CallOption) (*StakingHistoryResponse, error)
 	GetStakingPercentage(ctx context.Context, in *StakingPercentageRequest, opts ...grpc.CallOption) (*StakingPercentageResponse, error)
 }
@@ -779,6 +876,15 @@ func (c *stakingServiceClient) GetActiveStakes(ctx context.Context, in *GetActiv
 	return out, nil
 }
 
+func (c *stakingServiceClient) GetStakingRevenue(ctx context.Context, in *StakingRevenueRequest, opts ...grpc.CallOption) (*StakingRevenueResponse, error) {
+	out := new(StakingRevenueResponse)
+	err := c.cc.Invoke(ctx, "/appserver_serves_ui.StakingService/GetStakingRevenue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *stakingServiceClient) GetStakingHistory(ctx context.Context, in *StakingHistoryRequest, opts ...grpc.CallOption) (*StakingHistoryResponse, error) {
 	out := new(StakingHistoryResponse)
 	err := c.cc.Invoke(ctx, "/appserver_serves_ui.StakingService/GetStakingHistory", in, out, opts...)
@@ -802,6 +908,7 @@ type StakingServiceServer interface {
 	Stake(context.Context, *StakeRequest) (*StakeResponse, error)
 	Unstake(context.Context, *UnstakeRequest) (*UnstakeResponse, error)
 	GetActiveStakes(context.Context, *GetActiveStakesRequest) (*GetActiveStakesResponse, error)
+	GetStakingRevenue(context.Context, *StakingRevenueRequest) (*StakingRevenueResponse, error)
 	GetStakingHistory(context.Context, *StakingHistoryRequest) (*StakingHistoryResponse, error)
 	GetStakingPercentage(context.Context, *StakingPercentageRequest) (*StakingPercentageResponse, error)
 }
@@ -818,6 +925,9 @@ func (*UnimplementedStakingServiceServer) Unstake(ctx context.Context, req *Unst
 }
 func (*UnimplementedStakingServiceServer) GetActiveStakes(ctx context.Context, req *GetActiveStakesRequest) (*GetActiveStakesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActiveStakes not implemented")
+}
+func (*UnimplementedStakingServiceServer) GetStakingRevenue(ctx context.Context, req *StakingRevenueRequest) (*StakingRevenueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStakingRevenue not implemented")
 }
 func (*UnimplementedStakingServiceServer) GetStakingHistory(ctx context.Context, req *StakingHistoryRequest) (*StakingHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStakingHistory not implemented")
@@ -884,6 +994,24 @@ func _StakingService_GetActiveStakes_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StakingService_GetStakingRevenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StakingRevenueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakingServiceServer).GetStakingRevenue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/appserver_serves_ui.StakingService/GetStakingRevenue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakingServiceServer).GetStakingRevenue(ctx, req.(*StakingRevenueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StakingService_GetStakingHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StakingHistoryRequest)
 	if err := dec(in); err != nil {
@@ -935,6 +1063,10 @@ var _StakingService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetActiveStakes",
 			Handler:    _StakingService_GetActiveStakes_Handler,
+		},
+		{
+			MethodName: "GetStakingRevenue",
+			Handler:    _StakingService_GetStakingRevenue_Handler,
 		},
 		{
 			MethodName: "GetStakingHistory",

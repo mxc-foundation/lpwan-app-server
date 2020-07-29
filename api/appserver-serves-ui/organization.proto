@@ -1,12 +1,10 @@
 syntax = "proto3";
 
 package appserver_serves_ui;
-option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
-
 
 // OrganizationService is the service managing the organization access.
 service OrganizationService {
@@ -95,8 +93,8 @@ message Organization {
     // Organization display name.
     string display_name = 3;
 
-	// Can the organization create and "own" Gateways?
-	bool can_have_gateways = 4;
+    // Can the organization create and "own" Gateways?
+    bool can_have_gateways = 4;
 
     // Max. gateway count for organization.
     // When set to 0, the organization can have unlimited gateways.

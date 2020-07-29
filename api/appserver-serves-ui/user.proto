@@ -1,12 +1,10 @@
 syntax = "proto3";
 
 package appserver_serves_ui;
-option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
-
 
 // UserService is the service managing the user access.
 service UserService {
@@ -178,8 +176,8 @@ message ListUserRequest {
     // Max number of user to return in the result-set.
     int64 limit = 1;
 
-	// Offset in the result-set (for pagination).
-	int64 offset = 2;
+    // Offset in the result-set (for pagination).
+    int64 offset = 2;
 }
 
 message ListUserResponse {

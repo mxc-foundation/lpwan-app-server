@@ -6,13 +6,13 @@ package appserver_serves_ui
 import (
 	context "context"
 	fmt "fmt"
-	math "math"
-
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -29,6 +29,7 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 type GetWalletBalanceRequest struct {
 	UserId               int64    `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	OrgId                int64    `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string   `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -73,8 +74,15 @@ func (m *GetWalletBalanceRequest) GetOrgId() int64 {
 	return 0
 }
 
+func (m *GetWalletBalanceRequest) GetCurrency() string {
+	if m != nil {
+		return m.Currency
+	}
+	return ""
+}
+
 type GetWalletBalanceResponse struct {
-	Balance              float64          `protobuf:"fixed64,1,opt,name=balance,proto3" json:"balance,omitempty"`
+	Balance              string           `protobuf:"bytes,1,opt,name=balance,proto3" json:"balance,omitempty"`
 	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
@@ -106,11 +114,11 @@ func (m *GetWalletBalanceResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetWalletBalanceResponse proto.InternalMessageInfo
 
-func (m *GetWalletBalanceResponse) GetBalance() float64 {
+func (m *GetWalletBalanceResponse) GetBalance() string {
 	if m != nil {
 		return m.Balance
 	}
-	return 0
+	return ""
 }
 
 func (m *GetWalletBalanceResponse) GetUserProfile() *ProfileResponse {
@@ -121,11 +129,13 @@ func (m *GetWalletBalanceResponse) GetUserProfile() *ProfileResponse {
 }
 
 type GetWalletMiningIncomeRequest struct {
-	UserId               int64    `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	OrgId                int64    `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	OrgId                int64                `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string               `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
+	From                 *timestamp.Timestamp `protobuf:"bytes,4,opt,name=from,proto3" json:"from,omitempty"`
+	Till                 *timestamp.Timestamp `protobuf:"bytes,5,opt,name=till,proto3" json:"till,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *GetWalletMiningIncomeRequest) Reset()         { *m = GetWalletMiningIncomeRequest{} }
@@ -153,13 +163,6 @@ func (m *GetWalletMiningIncomeRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetWalletMiningIncomeRequest proto.InternalMessageInfo
 
-func (m *GetWalletMiningIncomeRequest) GetUserId() int64 {
-	if m != nil {
-		return m.UserId
-	}
-	return 0
-}
-
 func (m *GetWalletMiningIncomeRequest) GetOrgId() int64 {
 	if m != nil {
 		return m.OrgId
@@ -167,8 +170,29 @@ func (m *GetWalletMiningIncomeRequest) GetOrgId() int64 {
 	return 0
 }
 
+func (m *GetWalletMiningIncomeRequest) GetCurrency() string {
+	if m != nil {
+		return m.Currency
+	}
+	return ""
+}
+
+func (m *GetWalletMiningIncomeRequest) GetFrom() *timestamp.Timestamp {
+	if m != nil {
+		return m.From
+	}
+	return nil
+}
+
+func (m *GetWalletMiningIncomeRequest) GetTill() *timestamp.Timestamp {
+	if m != nil {
+		return m.Till
+	}
+	return nil
+}
+
 type GetWalletMiningIncomeResponse struct {
-	MiningIncome         float64          `protobuf:"fixed64,1,opt,name=mining_income,json=miningIncome,proto3" json:"mining_income,omitempty"`
+	MiningIncome         string           `protobuf:"bytes,1,opt,name=mining_income,json=miningIncome,proto3" json:"mining_income,omitempty"`
 	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
@@ -200,11 +224,11 @@ func (m *GetWalletMiningIncomeResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetWalletMiningIncomeResponse proto.InternalMessageInfo
 
-func (m *GetWalletMiningIncomeResponse) GetMiningIncome() float64 {
+func (m *GetWalletMiningIncomeResponse) GetMiningIncome() string {
 	if m != nil {
 		return m.MiningIncome
 	}
-	return 0
+	return ""
 }
 
 func (m *GetWalletMiningIncomeResponse) GetUserProfile() *ProfileResponse {
@@ -216,7 +240,7 @@ func (m *GetWalletMiningIncomeResponse) GetUserProfile() *ProfileResponse {
 
 type MiningData struct {
 	Month                string   `protobuf:"bytes,1,opt,name=month,proto3" json:"month,omitempty"`
-	Amount               float64  `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	Amount               string   `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -254,15 +278,14 @@ func (m *MiningData) GetMonth() string {
 	return ""
 }
 
-func (m *MiningData) GetAmount() float64 {
+func (m *MiningData) GetAmount() string {
 	if m != nil {
 		return m.Amount
 	}
-	return 0
+	return ""
 }
 
 type GetMiningInfoRequest struct {
-	UserId               int64    `protobuf:"varint,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	OrgId                int64    `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
@@ -294,13 +317,6 @@ func (m *GetMiningInfoRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetMiningInfoRequest proto.InternalMessageInfo
 
-func (m *GetMiningInfoRequest) GetUserId() int64 {
-	if m != nil {
-		return m.UserId
-	}
-	return 0
-}
-
 func (m *GetMiningInfoRequest) GetOrgId() int64 {
 	if m != nil {
 		return m.OrgId
@@ -309,7 +325,7 @@ func (m *GetMiningInfoRequest) GetOrgId() int64 {
 }
 
 type GetMiningInfoResponse struct {
-	TodayRev             float64       `protobuf:"fixed64,1,opt,name=todayRev,proto3" json:"todayRev,omitempty"`
+	TodayRev             string        `protobuf:"bytes,1,opt,name=todayRev,proto3" json:"todayRev,omitempty"`
 	Data                 []*MiningData `protobuf:"bytes,2,rep,name=data,proto3" json:"data,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
 	XXX_unrecognized     []byte        `json:"-"`
@@ -341,11 +357,11 @@ func (m *GetMiningInfoResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetMiningInfoResponse proto.InternalMessageInfo
 
-func (m *GetMiningInfoResponse) GetTodayRev() float64 {
+func (m *GetMiningInfoResponse) GetTodayRev() string {
 	if m != nil {
 		return m.TodayRev
 	}
-	return 0
+	return ""
 }
 
 func (m *GetMiningInfoResponse) GetData() []*MiningData {
@@ -536,245 +552,229 @@ func (m *GetVmxcTxHistoryResponse) GetUserProfile() *ProfileResponse {
 	return nil
 }
 
-type GetWalletUsageHistRequest struct {
-	OrgId                int64    `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	Offset               int64    `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
-	Limit                int64    `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+type GetNetworkUsageHistRequest struct {
+	OrgId                int64                `protobuf:"varint,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	Currency             string               `protobuf:"bytes,2,opt,name=currency,proto3" json:"currency,omitempty"`
+	From                 *timestamp.Timestamp `protobuf:"bytes,3,opt,name=from,proto3" json:"from,omitempty"`
+	Till                 *timestamp.Timestamp `protobuf:"bytes,4,opt,name=till,proto3" json:"till,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
-func (m *GetWalletUsageHistRequest) Reset()         { *m = GetWalletUsageHistRequest{} }
-func (m *GetWalletUsageHistRequest) String() string { return proto.CompactTextString(m) }
-func (*GetWalletUsageHistRequest) ProtoMessage()    {}
-func (*GetWalletUsageHistRequest) Descriptor() ([]byte, []int) {
+func (m *GetNetworkUsageHistRequest) Reset()         { *m = GetNetworkUsageHistRequest{} }
+func (m *GetNetworkUsageHistRequest) String() string { return proto.CompactTextString(m) }
+func (*GetNetworkUsageHistRequest) ProtoMessage()    {}
+func (*GetNetworkUsageHistRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_b88fd140af4deb6f, []int{10}
 }
 
-func (m *GetWalletUsageHistRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetWalletUsageHistRequest.Unmarshal(m, b)
+func (m *GetNetworkUsageHistRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetNetworkUsageHistRequest.Unmarshal(m, b)
 }
-func (m *GetWalletUsageHistRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetWalletUsageHistRequest.Marshal(b, m, deterministic)
+func (m *GetNetworkUsageHistRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetNetworkUsageHistRequest.Marshal(b, m, deterministic)
 }
-func (m *GetWalletUsageHistRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetWalletUsageHistRequest.Merge(m, src)
+func (m *GetNetworkUsageHistRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetNetworkUsageHistRequest.Merge(m, src)
 }
-func (m *GetWalletUsageHistRequest) XXX_Size() int {
-	return xxx_messageInfo_GetWalletUsageHistRequest.Size(m)
+func (m *GetNetworkUsageHistRequest) XXX_Size() int {
+	return xxx_messageInfo_GetNetworkUsageHistRequest.Size(m)
 }
-func (m *GetWalletUsageHistRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetWalletUsageHistRequest.DiscardUnknown(m)
+func (m *GetNetworkUsageHistRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetNetworkUsageHistRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetWalletUsageHistRequest proto.InternalMessageInfo
+var xxx_messageInfo_GetNetworkUsageHistRequest proto.InternalMessageInfo
 
-func (m *GetWalletUsageHistRequest) GetOrgId() int64 {
+func (m *GetNetworkUsageHistRequest) GetOrgId() int64 {
 	if m != nil {
 		return m.OrgId
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHistRequest) GetOffset() int64 {
+func (m *GetNetworkUsageHistRequest) GetCurrency() string {
 	if m != nil {
-		return m.Offset
-	}
-	return 0
-}
-
-func (m *GetWalletUsageHistRequest) GetLimit() int64 {
-	if m != nil {
-		return m.Limit
-	}
-	return 0
-}
-
-type GetWalletUsageHist struct {
-	StartAt              string   `protobuf:"bytes,1,opt,name=StartAt,proto3" json:"StartAt,omitempty"`
-	DurationMinutes      int64    `protobuf:"varint,2,opt,name=DurationMinutes,proto3" json:"DurationMinutes,omitempty"`
-	DlCntDv              int64    `protobuf:"varint,3,opt,name=DlCntDv,proto3" json:"DlCntDv,omitempty"`
-	DlCntDvFree          int64    `protobuf:"varint,4,opt,name=DlCntDvFree,proto3" json:"DlCntDvFree,omitempty"`
-	UlCntDv              int64    `protobuf:"varint,5,opt,name=UlCntDv,proto3" json:"UlCntDv,omitempty"`
-	UlCntDvFree          int64    `protobuf:"varint,6,opt,name=UlCntDvFree,proto3" json:"UlCntDvFree,omitempty"`
-	DlCntGw              int64    `protobuf:"varint,7,opt,name=DlCntGw,proto3" json:"DlCntGw,omitempty"`
-	DlCntGwFree          int64    `protobuf:"varint,8,opt,name=DlCntGwFree,proto3" json:"DlCntGwFree,omitempty"`
-	UlCntGw              int64    `protobuf:"varint,9,opt,name=UlCntGw,proto3" json:"UlCntGw,omitempty"`
-	UlCntGwFree          int64    `protobuf:"varint,10,opt,name=UlCntGwFree,proto3" json:"UlCntGwFree,omitempty"`
-	Spend                float64  `protobuf:"fixed64,11,opt,name=Spend,proto3" json:"Spend,omitempty"`
-	Income               float64  `protobuf:"fixed64,12,opt,name=Income,proto3" json:"Income,omitempty"`
-	UpdatedBalance       float64  `protobuf:"fixed64,13,opt,name=UpdatedBalance,proto3" json:"UpdatedBalance,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *GetWalletUsageHist) Reset()         { *m = GetWalletUsageHist{} }
-func (m *GetWalletUsageHist) String() string { return proto.CompactTextString(m) }
-func (*GetWalletUsageHist) ProtoMessage()    {}
-func (*GetWalletUsageHist) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b88fd140af4deb6f, []int{11}
-}
-
-func (m *GetWalletUsageHist) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetWalletUsageHist.Unmarshal(m, b)
-}
-func (m *GetWalletUsageHist) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetWalletUsageHist.Marshal(b, m, deterministic)
-}
-func (m *GetWalletUsageHist) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetWalletUsageHist.Merge(m, src)
-}
-func (m *GetWalletUsageHist) XXX_Size() int {
-	return xxx_messageInfo_GetWalletUsageHist.Size(m)
-}
-func (m *GetWalletUsageHist) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetWalletUsageHist.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_GetWalletUsageHist proto.InternalMessageInfo
-
-func (m *GetWalletUsageHist) GetStartAt() string {
-	if m != nil {
-		return m.StartAt
+		return m.Currency
 	}
 	return ""
 }
 
-func (m *GetWalletUsageHist) GetDurationMinutes() int64 {
+func (m *GetNetworkUsageHistRequest) GetFrom() *timestamp.Timestamp {
 	if m != nil {
-		return m.DurationMinutes
+		return m.From
+	}
+	return nil
+}
+
+func (m *GetNetworkUsageHistRequest) GetTill() *timestamp.Timestamp {
+	if m != nil {
+		return m.Till
+	}
+	return nil
+}
+
+type NetworkUsage struct {
+	Timestamp            *timestamp.Timestamp `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Amount               string               `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	DlCntDev             int64                `protobuf:"varint,3,opt,name=dl_cnt_dev,json=dlCntDev,proto3" json:"dl_cnt_dev,omitempty"`
+	DlCntDevFree         int64                `protobuf:"varint,4,opt,name=dl_cnt_dev_free,json=dlCntDevFree,proto3" json:"dl_cnt_dev_free,omitempty"`
+	UlCntDev             int64                `protobuf:"varint,5,opt,name=ul_cnt_dev,json=ulCntDev,proto3" json:"ul_cnt_dev,omitempty"`
+	UlCntDevFree         int64                `protobuf:"varint,6,opt,name=ul_cnt_dev_free,json=ulCntDevFree,proto3" json:"ul_cnt_dev_free,omitempty"`
+	DlCntGw              int64                `protobuf:"varint,7,opt,name=dl_cnt_gw,json=dlCntGw,proto3" json:"dl_cnt_gw,omitempty"`
+	DlCntGwFree          int64                `protobuf:"varint,8,opt,name=dl_cnt_gw_free,json=dlCntGwFree,proto3" json:"dl_cnt_gw_free,omitempty"`
+	UlCntGw              int64                `protobuf:"varint,9,opt,name=ul_cnt_gw,json=ulCntGw,proto3" json:"ul_cnt_gw,omitempty"`
+	UlCntGwFree          int64                `protobuf:"varint,10,opt,name=ul_cnt_gw_free,json=ulCntGwFree,proto3" json:"ul_cnt_gw_free,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *NetworkUsage) Reset()         { *m = NetworkUsage{} }
+func (m *NetworkUsage) String() string { return proto.CompactTextString(m) }
+func (*NetworkUsage) ProtoMessage()    {}
+func (*NetworkUsage) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b88fd140af4deb6f, []int{11}
+}
+
+func (m *NetworkUsage) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NetworkUsage.Unmarshal(m, b)
+}
+func (m *NetworkUsage) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NetworkUsage.Marshal(b, m, deterministic)
+}
+func (m *NetworkUsage) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NetworkUsage.Merge(m, src)
+}
+func (m *NetworkUsage) XXX_Size() int {
+	return xxx_messageInfo_NetworkUsage.Size(m)
+}
+func (m *NetworkUsage) XXX_DiscardUnknown() {
+	xxx_messageInfo_NetworkUsage.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NetworkUsage proto.InternalMessageInfo
+
+func (m *NetworkUsage) GetTimestamp() *timestamp.Timestamp {
+	if m != nil {
+		return m.Timestamp
+	}
+	return nil
+}
+
+func (m *NetworkUsage) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *NetworkUsage) GetDlCntDev() int64 {
+	if m != nil {
+		return m.DlCntDev
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetDlCntDv() int64 {
+func (m *NetworkUsage) GetDlCntDevFree() int64 {
 	if m != nil {
-		return m.DlCntDv
+		return m.DlCntDevFree
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetDlCntDvFree() int64 {
+func (m *NetworkUsage) GetUlCntDev() int64 {
 	if m != nil {
-		return m.DlCntDvFree
+		return m.UlCntDev
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetUlCntDv() int64 {
+func (m *NetworkUsage) GetUlCntDevFree() int64 {
 	if m != nil {
-		return m.UlCntDv
+		return m.UlCntDevFree
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetUlCntDvFree() int64 {
-	if m != nil {
-		return m.UlCntDvFree
-	}
-	return 0
-}
-
-func (m *GetWalletUsageHist) GetDlCntGw() int64 {
+func (m *NetworkUsage) GetDlCntGw() int64 {
 	if m != nil {
 		return m.DlCntGw
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetDlCntGwFree() int64 {
+func (m *NetworkUsage) GetDlCntGwFree() int64 {
 	if m != nil {
 		return m.DlCntGwFree
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetUlCntGw() int64 {
+func (m *NetworkUsage) GetUlCntGw() int64 {
 	if m != nil {
 		return m.UlCntGw
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetUlCntGwFree() int64 {
+func (m *NetworkUsage) GetUlCntGwFree() int64 {
 	if m != nil {
 		return m.UlCntGwFree
 	}
 	return 0
 }
 
-func (m *GetWalletUsageHist) GetSpend() float64 {
-	if m != nil {
-		return m.Spend
-	}
-	return 0
+type GetNetworkUsageHistResponse struct {
+	NetworkUsage         []*NetworkUsage  `protobuf:"bytes,1,rep,name=network_usage,json=networkUsage,proto3" json:"network_usage,omitempty"`
+	UserProfile          *ProfileResponse `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
+	Count                int64            `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
+	XXX_unrecognized     []byte           `json:"-"`
+	XXX_sizecache        int32            `json:"-"`
 }
 
-func (m *GetWalletUsageHist) GetIncome() float64 {
-	if m != nil {
-		return m.Income
-	}
-	return 0
-}
-
-func (m *GetWalletUsageHist) GetUpdatedBalance() float64 {
-	if m != nil {
-		return m.UpdatedBalance
-	}
-	return 0
-}
-
-type GetWalletUsageHistResponse struct {
-	WalletUsageHis       []*GetWalletUsageHist `protobuf:"bytes,1,rep,name=wallet_usage_his,json=walletUsageHis,proto3" json:"wallet_usage_his,omitempty"`
-	UserProfile          *ProfileResponse      `protobuf:"bytes,2,opt,name=user_profile,json=userProfile,proto3" json:"user_profile,omitempty"`
-	Count                int64                 `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
-	XXX_unrecognized     []byte                `json:"-"`
-	XXX_sizecache        int32                 `json:"-"`
-}
-
-func (m *GetWalletUsageHistResponse) Reset()         { *m = GetWalletUsageHistResponse{} }
-func (m *GetWalletUsageHistResponse) String() string { return proto.CompactTextString(m) }
-func (*GetWalletUsageHistResponse) ProtoMessage()    {}
-func (*GetWalletUsageHistResponse) Descriptor() ([]byte, []int) {
+func (m *GetNetworkUsageHistResponse) Reset()         { *m = GetNetworkUsageHistResponse{} }
+func (m *GetNetworkUsageHistResponse) String() string { return proto.CompactTextString(m) }
+func (*GetNetworkUsageHistResponse) ProtoMessage()    {}
+func (*GetNetworkUsageHistResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_b88fd140af4deb6f, []int{12}
 }
 
-func (m *GetWalletUsageHistResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_GetWalletUsageHistResponse.Unmarshal(m, b)
+func (m *GetNetworkUsageHistResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetNetworkUsageHistResponse.Unmarshal(m, b)
 }
-func (m *GetWalletUsageHistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_GetWalletUsageHistResponse.Marshal(b, m, deterministic)
+func (m *GetNetworkUsageHistResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetNetworkUsageHistResponse.Marshal(b, m, deterministic)
 }
-func (m *GetWalletUsageHistResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GetWalletUsageHistResponse.Merge(m, src)
+func (m *GetNetworkUsageHistResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetNetworkUsageHistResponse.Merge(m, src)
 }
-func (m *GetWalletUsageHistResponse) XXX_Size() int {
-	return xxx_messageInfo_GetWalletUsageHistResponse.Size(m)
+func (m *GetNetworkUsageHistResponse) XXX_Size() int {
+	return xxx_messageInfo_GetNetworkUsageHistResponse.Size(m)
 }
-func (m *GetWalletUsageHistResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GetWalletUsageHistResponse.DiscardUnknown(m)
+func (m *GetNetworkUsageHistResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetNetworkUsageHistResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GetWalletUsageHistResponse proto.InternalMessageInfo
+var xxx_messageInfo_GetNetworkUsageHistResponse proto.InternalMessageInfo
 
-func (m *GetWalletUsageHistResponse) GetWalletUsageHis() []*GetWalletUsageHist {
+func (m *GetNetworkUsageHistResponse) GetNetworkUsage() []*NetworkUsage {
 	if m != nil {
-		return m.WalletUsageHis
+		return m.NetworkUsage
 	}
 	return nil
 }
 
-func (m *GetWalletUsageHistResponse) GetUserProfile() *ProfileResponse {
+func (m *GetNetworkUsageHistResponse) GetUserProfile() *ProfileResponse {
 	if m != nil {
 		return m.UserProfile
 	}
 	return nil
 }
 
-func (m *GetWalletUsageHistResponse) GetCount() int64 {
+func (m *GetNetworkUsageHistResponse) GetCount() int64 {
 	if m != nil {
 		return m.Count
 	}
@@ -972,9 +972,9 @@ func init() {
 	proto.RegisterType((*GetVmxcTxHistoryRequest)(nil), "appserver_serves_ui.GetVmxcTxHistoryRequest")
 	proto.RegisterType((*VmxcTxHistory)(nil), "appserver_serves_ui.VmxcTxHistory")
 	proto.RegisterType((*GetVmxcTxHistoryResponse)(nil), "appserver_serves_ui.GetVmxcTxHistoryResponse")
-	proto.RegisterType((*GetWalletUsageHistRequest)(nil), "appserver_serves_ui.GetWalletUsageHistRequest")
-	proto.RegisterType((*GetWalletUsageHist)(nil), "appserver_serves_ui.GetWalletUsageHist")
-	proto.RegisterType((*GetWalletUsageHistResponse)(nil), "appserver_serves_ui.GetWalletUsageHistResponse")
+	proto.RegisterType((*GetNetworkUsageHistRequest)(nil), "appserver_serves_ui.GetNetworkUsageHistRequest")
+	proto.RegisterType((*NetworkUsage)(nil), "appserver_serves_ui.NetworkUsage")
+	proto.RegisterType((*GetNetworkUsageHistResponse)(nil), "appserver_serves_ui.GetNetworkUsageHistResponse")
 	proto.RegisterType((*GetDownLinkPriceRequest)(nil), "appserver_serves_ui.GetDownLinkPriceRequest")
 	proto.RegisterType((*GetDownLinkPriceResponse)(nil), "appserver_serves_ui.GetDownLinkPriceResponse")
 	proto.RegisterType((*GetMXCpriceRequest)(nil), "appserver_serves_ui.GetMXCpriceRequest")
@@ -984,73 +984,77 @@ func init() {
 func init() { proto.RegisterFile("wallet.proto", fileDescriptor_b88fd140af4deb6f) }
 
 var fileDescriptor_b88fd140af4deb6f = []byte{
-	// 1052 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x57, 0x51, 0x6f, 0x1b, 0x45,
-	0x10, 0xd6, 0xd9, 0xb1, 0x13, 0x8f, 0xe3, 0xb4, 0xda, 0xc4, 0xe4, 0xe2, 0x34, 0x4a, 0x7a, 0x2d,
-	0x6d, 0x28, 0x34, 0x06, 0xf7, 0x8d, 0xb7, 0x50, 0xab, 0x26, 0x12, 0x41, 0xe5, 0x52, 0x03, 0x4f,
-	0x1c, 0x57, 0xdf, 0xda, 0x39, 0xf5, 0x6e, 0xf7, 0xb8, 0x5b, 0xc7, 0x8e, 0x50, 0x85, 0x04, 0x0f,
-	0x3c, 0x00, 0x4f, 0x48, 0x88, 0x27, 0x24, 0x1e, 0xf8, 0x17, 0xfc, 0x06, 0x5e, 0xf8, 0x0b, 0xfc,
-	0x10, 0xb4, 0xb3, 0x6b, 0xfb, 0xce, 0x39, 0xb7, 0x69, 0x94, 0xa7, 0x78, 0xe6, 0xe6, 0x9b, 0xf9,
-	0x66, 0x76, 0x66, 0x76, 0x03, 0xab, 0x23, 0x37, 0x08, 0xa8, 0x38, 0x88, 0x62, 0x2e, 0x38, 0x59,
-	0x77, 0xa3, 0x28, 0xa1, 0xf1, 0x19, 0x8d, 0x1d, 0xfc, 0x93, 0x38, 0x43, 0xbf, 0x71, 0x6b, 0xc0,
-	0xf9, 0x20, 0xa0, 0x4d, 0x37, 0xf2, 0x9b, 0x2e, 0x63, 0x5c, 0xb8, 0xc2, 0xe7, 0x2c, 0x51, 0x90,
-	0xc6, 0x9a, 0xcf, 0x04, 0x8d, 0x99, 0x1b, 0x28, 0xd9, 0x3a, 0x82, 0xcd, 0x0e, 0x15, 0x5f, 0xa0,
-	0xd7, 0x8f, 0xdc, 0xc0, 0x65, 0x3d, 0x6a, 0xd3, 0x6f, 0x86, 0x34, 0x11, 0x64, 0x13, 0x96, 0x87,
-	0x09, 0x8d, 0x1d, 0xdf, 0x33, 0x8d, 0x3d, 0x63, 0xbf, 0x68, 0x97, 0xa5, 0x78, 0xe4, 0x91, 0x3a,
-	0x94, 0x79, 0x3c, 0x90, 0xfa, 0x02, 0xea, 0x4b, 0x3c, 0x1e, 0x1c, 0x79, 0xd6, 0x4b, 0x30, 0x2f,
-	0xba, 0x4a, 0x22, 0xce, 0x12, 0x4a, 0x4c, 0x58, 0x7e, 0xae, 0x54, 0xe8, 0xcb, 0xb0, 0x27, 0x22,
-	0xe9, 0xc0, 0x2a, 0x46, 0x89, 0x62, 0xde, 0xf7, 0x03, 0x8a, 0x2e, 0xab, 0xad, 0xbb, 0x07, 0x39,
-	0xa9, 0x1d, 0x3c, 0x55, 0x36, 0x13, 0xaf, 0x76, 0x55, 0x22, 0xb5, 0xd2, 0xfa, 0x14, 0x6e, 0x4d,
-	0xc3, 0x1f, 0xfb, 0xcc, 0x67, 0x83, 0x23, 0xd6, 0xe3, 0xe1, 0x95, 0xd3, 0xf9, 0xc5, 0x80, 0x9d,
-	0x05, 0x0e, 0x75, 0x52, 0x77, 0xa0, 0x16, 0xa2, 0xde, 0xf1, 0xf1, 0x83, 0x4e, 0x6d, 0x35, 0x4c,
-	0x19, 0x5f, 0x5f, 0x7e, 0x1f, 0x02, 0x28, 0x16, 0x6d, 0x57, 0xb8, 0x64, 0x03, 0x4a, 0x21, 0x67,
-	0xe2, 0x14, 0x63, 0x56, 0x6c, 0x25, 0x90, 0xb7, 0xa0, 0xec, 0x86, 0x7c, 0xc8, 0x04, 0x86, 0x31,
-	0x6c, 0x2d, 0x59, 0x4f, 0x60, 0xa3, 0x33, 0x4b, 0xa2, 0xcf, 0xaf, 0x5a, 0x93, 0x53, 0xa8, 0xcf,
-	0xf9, 0xd1, 0xa5, 0x68, 0xc0, 0x8a, 0xe0, 0x9e, 0x7b, 0x6e, 0xd3, 0x33, 0x5d, 0x85, 0xa9, 0x4c,
-	0x1e, 0xc1, 0x92, 0xe7, 0x0a, 0xd7, 0x2c, 0xec, 0x15, 0xf7, 0xab, 0xad, 0xdd, 0xdc, 0xcc, 0x67,
-	0x99, 0xd9, 0x68, 0x6c, 0x7d, 0x85, 0x7d, 0xf9, 0x79, 0x38, 0xee, 0x3d, 0x1b, 0x7f, 0xec, 0x27,
-	0x82, 0xc7, 0xe7, 0x13, 0xd2, 0x33, 0x6e, 0x46, 0x8a, 0x9b, 0xcc, 0x9d, 0xf7, 0xfb, 0x09, 0x15,
-	0x9a, 0xb2, 0x96, 0x64, 0xa5, 0x02, 0x3f, 0xf4, 0x85, 0x59, 0x54, 0xd6, 0x28, 0x58, 0x3f, 0x18,
-	0x50, 0xcb, 0x78, 0x27, 0x04, 0x96, 0xfa, 0x31, 0x0f, 0x75, 0x41, 0xf1, 0x37, 0x59, 0x83, 0x82,
-	0xe0, 0xe8, 0xaf, 0x62, 0x17, 0x04, 0x97, 0xf5, 0x12, 0x63, 0x47, 0x9c, 0x47, 0x14, 0xbd, 0x55,
-	0xec, 0xb2, 0x18, 0x3f, 0x3b, 0x8f, 0x68, 0xaa, 0xf0, 0x4b, 0xe9, 0xc2, 0x93, 0x1d, 0x80, 0x5e,
-	0x4c, 0x5d, 0x41, 0x3d, 0xc7, 0x15, 0x66, 0x09, 0x31, 0x15, 0xad, 0x39, 0x14, 0xd6, 0xdf, 0x06,
-	0xce, 0xcc, 0x5c, 0x9a, 0xba, 0xa6, 0x1b, 0x50, 0xea, 0xa1, 0x4b, 0x9d, 0x26, 0x0a, 0xe4, 0x10,
-	0x40, 0x8c, 0x9d, 0x53, 0x65, 0xab, 0x6b, 0x6a, 0xe5, 0xd6, 0x34, 0xeb, 0xb5, 0x22, 0xa6, 0x99,
-	0xce, 0xb7, 0x64, 0xf1, 0xaa, 0x2d, 0xf9, 0x35, 0x6c, 0x4d, 0x27, 0xa4, 0x9b, 0xb8, 0x03, 0x2a,
-	0x23, 0x5c, 0xeb, 0x31, 0xfd, 0x51, 0x04, 0x72, 0x31, 0x84, 0x5c, 0x27, 0x27, 0xc2, 0x8d, 0xc5,
-	0xa1, 0xd0, 0xc7, 0x35, 0x11, 0xc9, 0x3e, 0xdc, 0x68, 0x0f, 0x63, 0x5c, 0x79, 0xc7, 0x3e, 0x1b,
-	0x0a, 0x9a, 0xe8, 0x38, 0xf3, 0x6a, 0xe9, 0xa3, 0x1d, 0x3c, 0x66, 0xa2, 0x7d, 0xa6, 0x43, 0x4e,
-	0x44, 0xb2, 0x07, 0x55, 0xfd, 0xf3, 0x49, 0x4c, 0x29, 0x9e, 0x68, 0xd1, 0x4e, 0xab, 0x24, 0xb6,
-	0xab, 0xb1, 0x25, 0x85, 0xed, 0xce, 0xb0, 0xdd, 0x14, 0xb6, 0xac, 0xb0, 0xdd, 0x2c, 0x16, 0x5d,
-	0x75, 0x46, 0xe6, 0x72, 0x2a, 0x6e, 0x67, 0x34, 0x8d, 0xdb, 0x19, 0x21, 0x76, 0x25, 0x15, 0x57,
-	0xa9, 0xa6, 0x71, 0x3b, 0x23, 0xb3, 0x92, 0x8a, 0xab, 0xb0, 0xdd, 0x14, 0x16, 0x52, 0x71, 0x35,
-	0x76, 0x03, 0x4a, 0x27, 0x11, 0x65, 0x9e, 0x59, 0xc5, 0x0e, 0x55, 0x82, 0x3c, 0x0e, 0xb5, 0xa8,
-	0xcc, 0x55, 0xd5, 0xb8, 0x7a, 0x6d, 0xdd, 0x83, 0xb5, 0x6e, 0xe4, 0xc9, 0x36, 0xd5, 0xab, 0xdc,
-	0xac, 0xe1, 0xf7, 0x39, 0xad, 0xf5, 0x8f, 0x01, 0x8d, 0xbc, 0x1e, 0xd0, 0x3d, 0xfc, 0x19, 0xdc,
-	0x54, 0x37, 0x96, 0x33, 0x94, 0xdf, 0x64, 0xdf, 0x9a, 0x06, 0xf6, 0xec, 0xfd, 0xdc, 0x76, 0xcb,
-	0x71, 0xb5, 0x36, 0xca, 0x28, 0xae, 0x6d, 0xa1, 0xce, 0xe6, 0xab, 0x98, 0x9a, 0x2f, 0xeb, 0x7d,
-	0x5c, 0x3c, 0x6d, 0x3e, 0x62, 0x9f, 0xf8, 0xec, 0xc5, 0xd3, 0xd8, 0x9f, 0x5d, 0x88, 0xf9, 0x1d,
-	0x6d, 0xfd, 0xa4, 0x86, 0x78, 0x0e, 0xa2, 0x0b, 0x70, 0x0f, 0x6e, 0x78, 0x7c, 0xc4, 0x9c, 0xc0,
-	0x67, 0x2f, 0x9c, 0x48, 0x7e, 0xd2, 0xfb, 0xb1, 0xe6, 0xa5, 0xed, 0xaf, 0xef, 0x9a, 0x70, 0x71,
-	0x60, 0x8e, 0xbf, 0x7c, 0x1c, 0xa5, 0xa9, 0xbf, 0xe1, 0xa2, 0x27, 0xdb, 0x50, 0x09, 0xc7, 0x3d,
-	0x4d, 0x58, 0xad, 0xba, 0x95, 0x70, 0xdc, 0x43, 0xae, 0x56, 0x0b, 0xd6, 0x33, 0x21, 0x74, 0xaa,
-	0x19, 0x8c, 0x91, 0xc5, 0xb4, 0xfe, 0x5a, 0x81, 0x9a, 0x3a, 0xd9, 0x13, 0x1a, 0x9f, 0xc9, 0x8c,
-	0x7f, 0x36, 0xe0, 0xe6, 0xfc, 0x7b, 0x81, 0xbc, 0xf7, 0xea, 0xae, 0xc8, 0xbe, 0x50, 0x1a, 0x0f,
-	0x2f, 0x69, 0xad, 0x08, 0x5a, 0xdb, 0xdf, 0xff, 0xfb, 0xdf, 0xaf, 0x85, 0x3a, 0x59, 0xc7, 0xb7,
-	0x91, 0x6a, 0xab, 0xe6, 0xe4, 0x1d, 0xf2, 0xbb, 0xa2, 0x93, 0xbd, 0x13, 0x16, 0xd2, 0xc9, 0xbb,
-	0x98, 0x16, 0xd3, 0xc9, 0xdd, 0xef, 0xd6, 0x7d, 0xa4, 0x73, 0x9b, 0xec, 0xa6, 0xe9, 0x7c, 0xab,
-	0x4e, 0xe3, 0x65, 0x53, 0x8c, 0x1f, 0xea, 0x25, 0x4f, 0xfe, 0x34, 0x72, 0x97, 0xe0, 0xc1, 0x65,
-	0x27, 0x48, 0xd3, 0x6b, 0x5e, 0xda, 0x5e, 0x13, 0x7c, 0x80, 0x04, 0xef, 0x12, 0x2b, 0x97, 0x20,
-	0x0e, 0xf4, 0x94, 0xe3, 0x6f, 0x06, 0x80, 0x1c, 0x82, 0x40, 0xb5, 0xf3, 0xc2, 0xc2, 0xe5, 0x0d,
-	0xd6, 0xe2, 0xc2, 0xe5, 0xce, 0x94, 0xf5, 0x2e, 0xf2, 0x7a, 0x9b, 0xdc, 0xc9, 0xe5, 0x25, 0xe7,
-	0x6a, 0x36, 0x6d, 0xb2, 0x78, 0xf5, 0xdc, 0x67, 0x1c, 0xf9, 0xe0, 0xd5, 0xf5, 0xc8, 0x79, 0x43,
-	0x36, 0x5a, 0x6f, 0x02, 0xd1, 0x6c, 0x6f, 0x23, 0xdb, 0x6d, 0xb2, 0x95, 0x66, 0x9b, 0x79, 0x37,
-	0x92, 0x1f, 0x0d, 0xa8, 0x65, 0xde, 0x55, 0xe4, 0x9d, 0x45, 0x81, 0x2e, 0xbc, 0xe1, 0x1a, 0x0f,
-	0x2e, 0x63, 0xaa, 0xb9, 0xec, 0x22, 0x97, 0x2d, 0xb2, 0x99, 0xcb, 0xa5, 0xcf, 0xc9, 0x77, 0x50,
-	0x4d, 0x8d, 0x36, 0x59, 0xb8, 0xa4, 0xe7, 0xf6, 0x4b, 0x63, 0xff, 0xf5, 0x86, 0x9a, 0xc2, 0x0e,
-	0x52, 0xd8, 0x24, 0xf5, 0x0c, 0x85, 0xc9, 0xde, 0x78, 0x5e, 0xc6, 0x7f, 0x4b, 0x1e, 0xfd, 0x1f,
-	0x00, 0x00, 0xff, 0xff, 0xfc, 0x57, 0xc7, 0x65, 0xe9, 0x0c, 0x00, 0x00,
+	// 1112 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0x4f, 0x6f, 0xe3, 0x44,
+	0x14, 0x97, 0x93, 0x26, 0x8d, 0x5f, 0x92, 0x2e, 0x9a, 0xb6, 0xdb, 0xac, 0xdb, 0xaa, 0xad, 0xbb,
+	0xcb, 0x96, 0x85, 0x26, 0x4b, 0xf6, 0x82, 0xb8, 0x2d, 0x5b, 0x6d, 0xa8, 0x04, 0x68, 0x65, 0xca,
+	0x9f, 0x13, 0x96, 0x6b, 0x4f, 0x52, 0xab, 0xf6, 0x8c, 0xb1, 0xc7, 0xf9, 0x23, 0xb4, 0x42, 0x82,
+	0x03, 0x07, 0xe0, 0x84, 0x84, 0xb8, 0x22, 0x71, 0xe0, 0x86, 0xb8, 0x73, 0xe4, 0x1b, 0xf0, 0x15,
+	0x38, 0xf2, 0x21, 0x90, 0x67, 0x26, 0x89, 0x9d, 0xda, 0xfd, 0xb3, 0xea, 0xc9, 0x7a, 0x33, 0xbf,
+	0xf9, 0xbd, 0xdf, 0x7b, 0x7e, 0x6f, 0xe6, 0x41, 0x63, 0x64, 0x79, 0x1e, 0x66, 0xed, 0x20, 0xa4,
+	0x8c, 0xa2, 0x55, 0x2b, 0x08, 0x22, 0x1c, 0x0e, 0x71, 0x68, 0xf2, 0x4f, 0x64, 0xc6, 0xae, 0xb6,
+	0x35, 0xa0, 0x74, 0xe0, 0xe1, 0x8e, 0x15, 0xb8, 0x1d, 0x8b, 0x10, 0xca, 0x2c, 0xe6, 0x52, 0x12,
+	0x89, 0x23, 0xda, 0x8e, 0xdc, 0xe5, 0xd6, 0x69, 0xdc, 0xef, 0x30, 0xd7, 0xc7, 0x11, 0xb3, 0xfc,
+	0x40, 0x02, 0x56, 0x5c, 0xc2, 0x70, 0x48, 0x2c, 0x4f, 0xd8, 0x3a, 0x86, 0x8d, 0x1e, 0x66, 0x9f,
+	0x71, 0xb7, 0xef, 0x59, 0x9e, 0x45, 0x6c, 0x6c, 0xe0, 0x2f, 0x63, 0x1c, 0x31, 0xb4, 0x01, 0xcb,
+	0x71, 0x84, 0x43, 0xd3, 0x75, 0x5a, 0xca, 0xae, 0x72, 0x50, 0x36, 0xaa, 0x89, 0x79, 0xec, 0xa0,
+	0x75, 0xa8, 0xd2, 0x70, 0x90, 0xac, 0x97, 0xf8, 0x7a, 0x85, 0x86, 0x83, 0x63, 0x07, 0x69, 0x50,
+	0xb3, 0xe3, 0x30, 0xc4, 0xc4, 0x9e, 0xb4, 0xca, 0xbb, 0xca, 0x81, 0x6a, 0xcc, 0x6c, 0xfd, 0x25,
+	0xb4, 0x2e, 0xba, 0x89, 0x02, 0x4a, 0x22, 0x8c, 0x5a, 0xb0, 0x7c, 0x2a, 0x96, 0xb8, 0x1f, 0xd5,
+	0x98, 0x9a, 0xa8, 0x07, 0x0d, 0xae, 0x20, 0x08, 0x69, 0xdf, 0xf5, 0x30, 0x77, 0x57, 0xef, 0xde,
+	0x6f, 0xe7, 0xe4, 0xa5, 0xfd, 0x42, 0x60, 0xa6, 0xac, 0x46, 0x3d, 0x39, 0x29, 0x17, 0xf5, 0x3f,
+	0x15, 0xd8, 0x9a, 0xf9, 0xff, 0xd0, 0x25, 0x2e, 0x19, 0x1c, 0x13, 0x9b, 0xfa, 0xb3, 0x58, 0x6f,
+	0x1e, 0x12, 0x6a, 0xc3, 0x52, 0x3f, 0xa4, 0x7e, 0x6b, 0x89, 0x8b, 0xd2, 0xda, 0x22, 0xf3, 0xed,
+	0x69, 0xe6, 0xdb, 0x27, 0xd3, 0xcc, 0x1b, 0x1c, 0x97, 0xe0, 0x99, 0xeb, 0x79, 0xad, 0xca, 0xd5,
+	0xf8, 0x04, 0xa7, 0xff, 0xa8, 0xc0, 0x76, 0x81, 0x66, 0x99, 0xb8, 0x7d, 0x68, 0xfa, 0x7c, 0xdd,
+	0x74, 0xf9, 0x86, 0x4c, 0x5f, 0xc3, 0x4f, 0x81, 0x6f, 0x2f, 0x87, 0xef, 0x02, 0x08, 0x15, 0x47,
+	0x16, 0xb3, 0xd0, 0x1a, 0x54, 0x7c, 0x4a, 0xd8, 0x99, 0xf4, 0x29, 0x0c, 0x74, 0x17, 0xaa, 0x96,
+	0x4f, 0x63, 0xc2, 0xb8, 0x1b, 0xd5, 0x90, 0x96, 0x7e, 0x08, 0x6b, 0xbd, 0x79, 0x10, 0x7d, 0x7a,
+	0x79, 0xda, 0xf5, 0x33, 0x58, 0x5f, 0x80, 0xcb, 0x88, 0x35, 0xa8, 0x31, 0xea, 0x58, 0x13, 0x03,
+	0x0f, 0xa5, 0xe3, 0x99, 0x8d, 0x9e, 0xc0, 0x92, 0x63, 0x31, 0xab, 0x55, 0xda, 0x2d, 0x1f, 0xd4,
+	0xbb, 0x3b, 0xb9, 0x01, 0xce, 0x03, 0x30, 0x38, 0x58, 0xff, 0x82, 0x97, 0xff, 0xa7, 0xfe, 0xd8,
+	0x3e, 0x19, 0xbf, 0xef, 0x46, 0x8c, 0x86, 0x93, 0x8b, 0xda, 0x94, 0x74, 0x49, 0xdc, 0x85, 0x2a,
+	0xed, 0xf7, 0x23, 0xcc, 0xa4, 0x64, 0x69, 0x25, 0x09, 0xf1, 0x5c, 0xdf, 0x65, 0xbc, 0x4e, 0xca,
+	0x86, 0x30, 0xf4, 0x6f, 0x15, 0x68, 0x66, 0xd8, 0x11, 0x92, 0x65, 0x23, 0xe4, 0x8b, 0xd2, 0x58,
+	0x81, 0x12, 0xa3, 0x32, 0x65, 0x25, 0x46, 0x93, 0xce, 0x63, 0x63, 0x93, 0x4d, 0x02, 0x2c, 0xab,
+	0xae, 0xca, 0xc6, 0x27, 0x93, 0x00, 0xa7, 0xf2, 0x9b, 0x54, 0x9d, 0x32, 0xcd, 0x2f, 0xda, 0x06,
+	0xb0, 0x43, 0x6c, 0x31, 0xec, 0x98, 0x16, 0xe3, 0x15, 0xa6, 0x1a, 0xaa, 0x5c, 0x79, 0xca, 0xf4,
+	0xbf, 0x14, 0xde, 0x7e, 0x0b, 0x61, 0xca, 0x9c, 0xae, 0x41, 0xc5, 0xe6, 0x94, 0x32, 0x4c, 0x6e,
+	0xa0, 0xa7, 0x00, 0x6c, 0x6c, 0x9e, 0x09, 0xac, 0xcc, 0xa9, 0x9e, 0x9b, 0xd3, 0x2c, 0xab, 0xca,
+	0x66, 0x91, 0x2e, 0x56, 0x5e, 0xf9, 0x55, 0x2b, 0xef, 0x0f, 0x05, 0xb4, 0x1e, 0x66, 0x1f, 0x61,
+	0x36, 0xa2, 0xe1, 0xf9, 0x27, 0x91, 0x35, 0xc0, 0x89, 0x8f, 0x2b, 0x7e, 0x54, 0xba, 0x77, 0x4b,
+	0x05, 0xbd, 0x5b, 0xbe, 0x61, 0xef, 0x2e, 0x5d, 0xb3, 0x77, 0xff, 0x2b, 0x41, 0x23, 0x2d, 0x17,
+	0xbd, 0x03, 0xea, 0xec, 0x26, 0xe6, 0x32, 0x2f, 0x67, 0x99, 0x83, 0x8b, 0x5a, 0x0a, 0x6d, 0x01,
+	0x38, 0x9e, 0x69, 0x13, 0x66, 0x3a, 0x78, 0x28, 0x8b, 0xae, 0xe6, 0x78, 0xcf, 0x08, 0x3b, 0xc2,
+	0x43, 0xf4, 0x00, 0xee, 0xcc, 0x77, 0xcd, 0x7e, 0x88, 0x31, 0xd7, 0x5e, 0x36, 0x1a, 0x53, 0xc8,
+	0xf3, 0x10, 0xe3, 0x84, 0x24, 0x9e, 0x93, 0x54, 0x04, 0x49, 0x9c, 0x22, 0x89, 0x17, 0x48, 0xaa,
+	0x82, 0x24, 0x4e, 0x93, 0x68, 0xa0, 0x4a, 0x5f, 0x83, 0x51, 0x6b, 0x99, 0x03, 0x96, 0xb9, 0x97,
+	0xde, 0x08, 0xed, 0xc3, 0xca, 0x6c, 0x4f, 0x30, 0xd4, 0x38, 0xa0, 0x2e, 0x01, 0x53, 0x82, 0x78,
+	0x46, 0xa0, 0x0a, 0x82, 0x78, 0x4e, 0x10, 0x67, 0x09, 0x40, 0x10, 0xc4, 0x73, 0x02, 0xfd, 0x6f,
+	0x05, 0x36, 0x73, 0x0b, 0x44, 0x96, 0xf8, 0x73, 0x68, 0x12, 0xb1, 0x67, 0xc6, 0xc9, 0x66, 0x4b,
+	0xe1, 0xf5, 0xbc, 0x97, 0x5b, 0x8a, 0x69, 0x16, 0xa3, 0x41, 0xd2, 0x7f, 0xf1, 0xb6, 0xee, 0xd2,
+	0x79, 0xcf, 0x95, 0x53, 0x3d, 0xa7, 0x3f, 0xe6, 0x97, 0xd1, 0x11, 0x1d, 0x91, 0x0f, 0x5c, 0x72,
+	0xfe, 0x22, 0x74, 0x6d, 0x7c, 0x79, 0x8d, 0xeb, 0xdf, 0x8b, 0xc6, 0x5e, 0x38, 0x22, 0xa3, 0x7e,
+	0x1d, 0xee, 0x38, 0x74, 0x44, 0x4c, 0xcf, 0x25, 0xe7, 0x66, 0x90, 0x6c, 0xf1, 0xc3, 0x8a, 0xd1,
+	0x74, 0xd2, 0xf8, 0xdb, 0x7b, 0x21, 0x2c, 0x40, 0xc9, 0xb5, 0xfd, 0xf9, 0xb3, 0x20, 0x2d, 0xfd,
+	0xa6, 0x63, 0xc4, 0x26, 0xa8, 0xfe, 0xd8, 0x96, 0x82, 0xe5, 0xa3, 0xeb, 0x8f, 0x6d, 0xae, 0x55,
+	0xef, 0xc2, 0x6a, 0xc6, 0x85, 0x0c, 0x35, 0x73, 0x46, 0xc9, 0x9e, 0xe9, 0xfe, 0x5e, 0x83, 0xa6,
+	0x78, 0x45, 0x3f, 0xc6, 0xe1, 0x30, 0x89, 0xf8, 0x07, 0x05, 0x5e, 0x5b, 0x1c, 0x47, 0xd0, 0x5b,
+	0xb9, 0x01, 0x17, 0x0c, 0x47, 0xda, 0xe1, 0x35, 0xd1, 0x42, 0xa0, 0xbe, 0xf9, 0xcd, 0x3f, 0xff,
+	0xfe, 0x54, 0x5a, 0x47, 0xab, 0x7c, 0x6e, 0x13, 0x53, 0x5e, 0x67, 0x3a, 0xe6, 0xfc, 0x22, 0xe4,
+	0x64, 0xdf, 0x89, 0x42, 0x39, 0x79, 0x8f, 0x55, 0xb1, 0x9c, 0xdc, 0x3b, 0x5f, 0x7f, 0xc8, 0xe5,
+	0xec, 0xa1, 0x9d, 0xb4, 0x9c, 0xaf, 0xc4, 0xdf, 0x78, 0xd9, 0x61, 0xe3, 0x43, 0x79, 0xf1, 0xa3,
+	0xdf, 0x14, 0x9e, 0xf0, 0xc5, 0xce, 0x42, 0x9d, 0x22, 0x7f, 0x05, 0x97, 0xb4, 0xf6, 0xf8, 0xfa,
+	0x07, 0xa4, 0xc6, 0x47, 0x5c, 0xe3, 0x7d, 0xa4, 0xe7, 0x6a, 0xe4, 0x7d, 0x3c, 0x93, 0xf9, 0xb3,
+	0x02, 0x90, 0xf4, 0x81, 0x27, 0x2a, 0xba, 0x30, 0x77, 0x79, 0xbd, 0x55, 0x9c, 0xbb, 0xdc, 0xb6,
+	0xd2, 0xdf, 0xe4, 0xba, 0x1e, 0xa0, 0xfd, 0x5c, 0x5d, 0x49, 0x6b, 0xcd, 0x1b, 0x0e, 0xfd, 0xaa,
+	0xf0, 0x51, 0xe6, 0xe2, 0x10, 0x87, 0xde, 0xbe, 0xbc, 0x80, 0x72, 0x86, 0x54, 0xad, 0x7b, 0x93,
+	0x23, 0x52, 0xed, 0x1e, 0x57, 0xbb, 0x89, 0xee, 0xa5, 0xd5, 0x66, 0xa6, 0x46, 0xf4, 0x9d, 0x02,
+	0xcd, 0xcc, 0xb8, 0x85, 0xde, 0x28, 0x72, 0x74, 0x61, 0x82, 0xd3, 0x1e, 0x5d, 0x07, 0x2a, 0xb5,
+	0xec, 0x70, 0x2d, 0xf7, 0xd0, 0x46, 0xae, 0x96, 0x3e, 0x45, 0x5f, 0x43, 0x3d, 0xd5, 0xdd, 0xe8,
+	0x61, 0x21, 0x77, 0xf6, 0x8a, 0xd1, 0x0e, 0xae, 0x06, 0x4a, 0x09, 0xdb, 0x5c, 0xc2, 0x06, 0x5a,
+	0xcf, 0x48, 0x98, 0x5e, 0x1d, 0xa7, 0x55, 0xfe, 0x16, 0x3f, 0xf9, 0x3f, 0x00, 0x00, 0xff, 0xff,
+	0xd6, 0xec, 0x22, 0x8d, 0x88, 0x0d, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -1067,7 +1071,7 @@ const _ = grpc.SupportPackageIsVersion6
 type WalletServiceClient interface {
 	GetWalletBalance(ctx context.Context, in *GetWalletBalanceRequest, opts ...grpc.CallOption) (*GetWalletBalanceResponse, error)
 	GetVmxcTxHistory(ctx context.Context, in *GetVmxcTxHistoryRequest, opts ...grpc.CallOption) (*GetVmxcTxHistoryResponse, error)
-	GetWalletUsageHist(ctx context.Context, in *GetWalletUsageHistRequest, opts ...grpc.CallOption) (*GetWalletUsageHistResponse, error)
+	GetNetworkUsageHist(ctx context.Context, in *GetNetworkUsageHistRequest, opts ...grpc.CallOption) (*GetNetworkUsageHistResponse, error)
 	GetDlPrice(ctx context.Context, in *GetDownLinkPriceRequest, opts ...grpc.CallOption) (*GetDownLinkPriceResponse, error)
 	GetWalletMiningIncome(ctx context.Context, in *GetWalletMiningIncomeRequest, opts ...grpc.CallOption) (*GetWalletMiningIncomeResponse, error)
 	GetMiningInfo(ctx context.Context, in *GetMiningInfoRequest, opts ...grpc.CallOption) (*GetMiningInfoResponse, error)
@@ -1100,9 +1104,9 @@ func (c *walletServiceClient) GetVmxcTxHistory(ctx context.Context, in *GetVmxcT
 	return out, nil
 }
 
-func (c *walletServiceClient) GetWalletUsageHist(ctx context.Context, in *GetWalletUsageHistRequest, opts ...grpc.CallOption) (*GetWalletUsageHistResponse, error) {
-	out := new(GetWalletUsageHistResponse)
-	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WalletService/GetWalletUsageHist", in, out, opts...)
+func (c *walletServiceClient) GetNetworkUsageHist(ctx context.Context, in *GetNetworkUsageHistRequest, opts ...grpc.CallOption) (*GetNetworkUsageHistResponse, error) {
+	out := new(GetNetworkUsageHistResponse)
+	err := c.cc.Invoke(ctx, "/appserver_serves_ui.WalletService/GetNetworkUsageHist", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1149,7 +1153,7 @@ func (c *walletServiceClient) GetMXCprice(ctx context.Context, in *GetMXCpriceRe
 type WalletServiceServer interface {
 	GetWalletBalance(context.Context, *GetWalletBalanceRequest) (*GetWalletBalanceResponse, error)
 	GetVmxcTxHistory(context.Context, *GetVmxcTxHistoryRequest) (*GetVmxcTxHistoryResponse, error)
-	GetWalletUsageHist(context.Context, *GetWalletUsageHistRequest) (*GetWalletUsageHistResponse, error)
+	GetNetworkUsageHist(context.Context, *GetNetworkUsageHistRequest) (*GetNetworkUsageHistResponse, error)
 	GetDlPrice(context.Context, *GetDownLinkPriceRequest) (*GetDownLinkPriceResponse, error)
 	GetWalletMiningIncome(context.Context, *GetWalletMiningIncomeRequest) (*GetWalletMiningIncomeResponse, error)
 	GetMiningInfo(context.Context, *GetMiningInfoRequest) (*GetMiningInfoResponse, error)
@@ -1166,8 +1170,8 @@ func (*UnimplementedWalletServiceServer) GetWalletBalance(ctx context.Context, r
 func (*UnimplementedWalletServiceServer) GetVmxcTxHistory(ctx context.Context, req *GetVmxcTxHistoryRequest) (*GetVmxcTxHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetVmxcTxHistory not implemented")
 }
-func (*UnimplementedWalletServiceServer) GetWalletUsageHist(ctx context.Context, req *GetWalletUsageHistRequest) (*GetWalletUsageHistResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetWalletUsageHist not implemented")
+func (*UnimplementedWalletServiceServer) GetNetworkUsageHist(ctx context.Context, req *GetNetworkUsageHistRequest) (*GetNetworkUsageHistResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNetworkUsageHist not implemented")
 }
 func (*UnimplementedWalletServiceServer) GetDlPrice(ctx context.Context, req *GetDownLinkPriceRequest) (*GetDownLinkPriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDlPrice not implemented")
@@ -1222,20 +1226,20 @@ func _WalletService_GetVmxcTxHistory_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _WalletService_GetWalletUsageHist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetWalletUsageHistRequest)
+func _WalletService_GetNetworkUsageHist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNetworkUsageHistRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(WalletServiceServer).GetWalletUsageHist(ctx, in)
+		return srv.(WalletServiceServer).GetNetworkUsageHist(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/appserver_serves_ui.WalletService/GetWalletUsageHist",
+		FullMethod: "/appserver_serves_ui.WalletService/GetNetworkUsageHist",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(WalletServiceServer).GetWalletUsageHist(ctx, req.(*GetWalletUsageHistRequest))
+		return srv.(WalletServiceServer).GetNetworkUsageHist(ctx, req.(*GetNetworkUsageHistRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1325,8 +1329,8 @@ var _WalletService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _WalletService_GetVmxcTxHistory_Handler,
 		},
 		{
-			MethodName: "GetWalletUsageHist",
-			Handler:    _WalletService_GetWalletUsageHist_Handler,
+			MethodName: "GetNetworkUsageHist",
+			Handler:    _WalletService_GetNetworkUsageHist_Handler,
 		},
 		{
 			MethodName: "GetDlPrice",
