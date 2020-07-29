@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"net/smtp"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
@@ -166,13 +167,16 @@ func SendInvite(user string, param Param, language EmailLanguage, option EmailOp
 		return err
 	}
 
+	str := strings.Replace(msg.String(), "=\"", "=3D\"", -1)
+	out := bytes.NewBufferString(str)
+
 	for k, v := range cli {
 		if v != nil {
-			err = v.send(user, msg)
+			err = v.send(user, *out)
 			if err == nil {
 				return nil
 			}
-			log.Warnf("Failed to send email with %s, try with other provider", k)
+			log.WithError(err).Warnf("Failed to send email with %s, try with other provider", k)
 		}
 	}
 
