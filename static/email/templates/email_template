@@ -2,7 +2,7 @@ From: {{ .From }}
 To: {{ .To }}
 Subject: {{ .Subject }}
 MIME-Version: 1.0
-Content-Type: multipart/alternative;boundary="simple boundary"
+Content-Type: multipart/alternative;boundary= "simple boundary"
 
 --simple boundary
 Content-Type: text/plain; charset=UTF-8
@@ -12,9 +12,6 @@ Content-ID: text-body
 {{ .PlainText }}
 
 --simple boundary
-Content-Type: multipart/related; boundary="related boundary"
-
---related boundary
 Content-Type: text/html;charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 Content-ID: html-body
@@ -22,6 +19,4 @@ Content-ID: html-body
 {{ $Name1 := "htmlBodyPartOne" }}
 {{ CallTemplate $Name1 . }}
 
-
---related boundary--
 --simple boundary--
