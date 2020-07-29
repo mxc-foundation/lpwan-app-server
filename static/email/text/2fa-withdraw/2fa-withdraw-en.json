@@ -1,0 +1,11 @@
+{
+  "from": "%s Supernode",
+  "subject": "%s Supernode Withdraw Request",
+  "plainText": "You requested to withdraw %s MXC from your %s Supernode Wallet. If you didn't, you'll probably want to change your password.",
+  "title": "%s Supernode",
+  "body1": "Supernode Withdraw Request",
+  "body2": "You requested to withdraw",
+  "body3": "from your %s Supernode Wallet.",
+  "body4": "Use this code to confirm your withdrawal: ",
+  "body5": "If you didn't request this code, please change your password and contact us immediately at: %s "
+}

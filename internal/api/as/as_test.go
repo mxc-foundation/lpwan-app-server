@@ -19,6 +19,11 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-server/api/as"
+	"github.com/mxc-foundation/lpwan-server/api/common"
+	gwPB "github.com/mxc-foundation/lpwan-server/api/gw"
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"

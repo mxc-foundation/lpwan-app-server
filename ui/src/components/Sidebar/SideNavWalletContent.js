@@ -22,29 +22,6 @@ const SideNavWalletContent = (props) => {
                 <li>
                     <DropdownMenu2 default={props.default} onChange={props.onChange} />
                 </li>
-
-                <li>
-                    <Link to={`/topup/${props.orgId}`} className="waves-effect side-nav-link-ref">
-                        {/* <i className="mdi mdi-inbox-arrow-down"></i>
-                        <i className="mdi mdi-basket-fill"></i> */}
-                        <i className="ti-cloud-up"></i>
-                        <span> {i18n.t(`${packageNS}:menu.topup.topup`)} </span>
-                    </Link>
-                </li>
-
-                <li>
-                    <Link to={`/withdraw/${props.orgId}`} className="waves-effect side-nav-link-ref">
-                        <i className="ti-cloud-down"></i>
-                        <span> {i18n.t(`${packageNS}:menu.withdraw.withdraw`)} </span>
-                    </Link>
-                </li>
-
-                <li>
-                    <Link to={`/history/${props.orgId}`} className="waves-effect side-nav-link-ref">
-                        <i className="mdi mdi-history"></i>
-                        <span> {i18n.t(`${packageNS}:menu.history.history`)} </span>
-                    </Link>
-                </li>
             </ul>
         </div>
         <div className="clearfix"></div>

@@ -20,6 +20,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetWalletBalanceResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -36,6 +42,12 @@
             "required": false,
             "type": "string",
             "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -52,22 +64,41 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetWalletMiningIncomeResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
           {
             "name": "orgId",
             "in": "query",
             "required": false,
             "type": "string",
             "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
           }
         ],
         "tags": [
@@ -84,16 +115,15 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetMiningInfoResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
           {
             "name": "orgId",
             "in": "query",
@@ -115,6 +145,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetMXCpriceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -154,6 +190,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetDownLinkPriceResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -178,6 +220,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetVmxcTxHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -211,12 +259,18 @@
     },
     "/api/wallet/{orgId}/usage-history": {
       "get": {
-        "operationId": "GetWalletUsageHist",
+        "operationId": "GetNetworkUsageHist",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetWalletUsageHistResponse"
+              "$ref": "#/definitions/appserver_serves_uiGetNetworkUsageHistResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -229,18 +283,24 @@
             "format": "int64"
           },
           {
-            "name": "offset",
+            "name": "currency",
             "in": "query",
             "required": false,
-            "type": "string",
-            "format": "int64"
+            "type": "string"
           },
           {
-            "name": "limit",
+            "name": "from",
             "in": "query",
             "required": false,
             "type": "string",
-            "format": "int64"
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
           }
         ],
         "tags": [
@@ -274,14 +334,31 @@
       "type": "object",
       "properties": {
         "todayRev": {
-          "type": "number",
-          "format": "double"
+          "type": "string"
         },
         "data": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/appserver_serves_uiMiningData"
           }
+        }
+      }
+    },
+    "appserver_serves_uiGetNetworkUsageHistResponse": {
+      "type": "object",
+      "properties": {
+        "networkUsage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiNetworkUsage"
+          }
+        },
+        "userProfile": {
+          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
+        },
+        "count": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -307,8 +384,7 @@
       "type": "object",
       "properties": {
         "balance": {
-          "type": "number",
-          "format": "double"
+          "type": "string"
         },
         "userProfile": {
           "$ref": "#/definitions/appserver_serves_uiProfileResponse"
@@ -319,85 +395,10 @@
       "type": "object",
       "properties": {
         "miningIncome": {
-          "type": "number",
-          "format": "double"
-        },
-        "userProfile": {
-          "$ref": "#/definitions/appserver_serves_uiProfileResponse"
-        }
-      }
-    },
-    "appserver_serves_uiGetWalletUsageHist": {
-      "type": "object",
-      "properties": {
-        "StartAt": {
           "type": "string"
         },
-        "DurationMinutes": {
-          "type": "string",
-          "format": "int64"
-        },
-        "DlCntDv": {
-          "type": "string",
-          "format": "int64"
-        },
-        "DlCntDvFree": {
-          "type": "string",
-          "format": "int64"
-        },
-        "UlCntDv": {
-          "type": "string",
-          "format": "int64"
-        },
-        "UlCntDvFree": {
-          "type": "string",
-          "format": "int64"
-        },
-        "DlCntGw": {
-          "type": "string",
-          "format": "int64"
-        },
-        "DlCntGwFree": {
-          "type": "string",
-          "format": "int64"
-        },
-        "UlCntGw": {
-          "type": "string",
-          "format": "int64"
-        },
-        "UlCntGwFree": {
-          "type": "string",
-          "format": "int64"
-        },
-        "Spend": {
-          "type": "number",
-          "format": "double"
-        },
-        "Income": {
-          "type": "number",
-          "format": "double"
-        },
-        "UpdatedBalance": {
-          "type": "number",
-          "format": "double"
-        }
-      }
-    },
-    "appserver_serves_uiGetWalletUsageHistResponse": {
-      "type": "object",
-      "properties": {
-        "walletUsageHis": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/appserver_serves_uiGetWalletUsageHist"
-          }
-        },
         "userProfile": {
           "$ref": "#/definitions/appserver_serves_uiProfileResponse"
-        },
-        "count": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -408,8 +409,51 @@
           "type": "string"
         },
         "amount": {
-          "type": "number",
-          "format": "double"
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiNetworkUsage": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "dlCntDev": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dlCntDevFree": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntDev": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntDevFree": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dlCntGw": {
+          "type": "string",
+          "format": "int64"
+        },
+        "dlCntGwFree": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntGw": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ulCntGwFree": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -524,6 +568,39 @@
         },
         "createdAt": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }

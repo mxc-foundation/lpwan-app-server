@@ -24,7 +24,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
-	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
@@ -46,6 +47,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setLogLevel,
 		setSyslog,
 		printStartMessage,
+		startPProf,
 		setupStorage,
 		setupClient,
 		setupUpdateFirmwareFromPs,
@@ -87,6 +89,10 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+func startPProf() error {
+	return pprof.Setup(config.C.PProf)
 }
 
 func setLogLevel() error {

@@ -14,6 +14,8 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
+	"github.com/mxc-foundation/lpwan-server/api/ns"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )

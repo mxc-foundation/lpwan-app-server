@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
@@ -9,21 +10,21 @@ import "user.proto";
 
 // InternalService is the service providing API endpoints for internal usage.
 service InternalService {
-    // Log the user in, returns JWT
-    rpc Login (LoginRequest) returns (LoginResponse) {
-        option (google.api.http) = {
+	// Log the user in, returns JWT
+	rpc Login(LoginRequest) returns (LoginResponse) {
+		option(google.api.http) = {
 			post: "/api/internal/login"
 			body: "*"
 		};
-    }
+	}
 
-    // Validate OTP, returns JWT
-    rpc Login2FA (Login2FARequest) returns (LoginResponse) {
-        option (google.api.http) = {
-                    post: "/api/internal/login-2fa"
-                    body: "*"
-            };
-    }
+        // Validate OTP, returns JWT
+        rpc Login2FA(Login2FARequest) returns (LoginResponse) {
+                option(google.api.http) = {
+                        post: "/api/internal/login-2fa"
+                        body: "*"
+                };
+        }
 
     // Get the current user's profile
     rpc Profile (google.protobuf.Empty) returns (ProfileResponse) {
@@ -106,22 +107,21 @@ service InternalService {
 			post: "/api/internal/totp-recovery-codes"
                         body: "*"
 		};
-    }
+	}
 
-
-    rpc RequestPasswordReset (PasswordResetReq) returns (PasswordResetResp) {
-        option (google.api.http) = {
+        rpc RequestPasswordReset (PasswordResetReq) returns (PasswordResetResp) {
+                option (google.api.http) = {
                         post: "/api/internal/request-password-reset"
                         body: "*"
                 };
-    }
+        }
 
-    rpc ConfirmPasswordReset (ConfirmPasswordResetReq) returns (PasswordResetResp) {
-        option (google.api.http) = {
+        rpc ConfirmPasswordReset (ConfirmPasswordResetReq) returns (PasswordResetResp) {
+                option (google.api.http) = {
                         post: "/api/internal/confirm-password-reset"
                         body: "*"
                 };
-    }
+        }
 }
 
 message GoogleRecaptchaRequest {
@@ -178,10 +178,10 @@ message LoginRequest {
 }
 
 message LoginResponse {
-    // The JWT token to be used to access lora-app-server interfaces.
-    string jwt = 1;
-    // Two-factor authentication is required to finish the process
-    bool is_2fa_required = 2;
+	// The JWT token to be used to access lora-app-server interfaces.
+	string jwt = 1;
+        // Two-factor authentication is required to finish the process
+        bool is_2fa_required = 2;
 }
 
 message Login2FARequest {

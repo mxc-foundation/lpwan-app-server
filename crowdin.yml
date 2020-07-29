@@ -1,31 +1,23 @@
 files:
   - source: /ui/src/i18n/locales/en.json
     translation: /ui/src/i18n/locales/%two_letters_code%.json
-  - source: /static/templates/email/2fa-login/2fa-login-en
-    dest: /static/2fa-login/2fa-login-en.html
-    type: html
-    translation: /static/templates/email/2fa-login/2fa-login-%two_letters_code%
-  - source: /static/templates/email/topup-change-en
-    dest: /static/top-up/topup-change-en.html
-    type: html
-    translation: /static/templates/email/topup-change-%two_letters_code%
-  - source: /static/templates/email/2fa-withdraw/2fa-withdraw-en
-    dest: /static/2fa-withdraw/2fa-withdraw-en.html
-    type: html
-    translation: /static/templates/email/2fa-withdraw/2fa-withdraw-%two_letters_code%
-  - source: /static/templates/email/registration-confirm/registration-confirm-en
-    dest: /static/registration-confirm/registration-confirm-en.html
-    type: html
-    translation: /static/registration-confirm/registration-confirm-%two_letters_code%
-  - source: /static/templates/email/staking-income/staking-income-en
-    dest: /static/staking-income/staking-income-en.html
-    type: html
-    translation: /static/templates/email/staking-income/staking-income-%two_letters_code%
-  - source: /static/templates/email/topup-confirm/topup-confirm-en
-    dest: /static/topup-confirm/topup-confirm-en.html
-    type: html
-    translation: /static/topup-confirm/topup-confirm-%two_letters_code%
-  - source: /static/templates/email/withdraw-success/withdraw-success-en
-    dest: /static/withdraw-success/withdraw-success-en.html
-    type: html
-    translation: /static/templates/email/withdraw-success/withdraw-success-%two_letters_code%
+  - source: /static/email/text/2fa-login/2fa-login-en.json
+    translation: /static/email/text/2fa-login/2fa-login-%two_letters_code%.json
+  - source: /static/email/text/2fa-withdraw/2fa-withdraw-en.json
+    translation: /static/email/text/2fa-withdraw/2fa-withdraw-%two_letters_code%.json
+  - source: /static/email/text/main-template/main-template-en.json
+    translation: /static/email/text/main-template/main-template-%two_letters_code%.json
+  - source: /static/email/text/password-reset-unknown/password-reset-unknown-en.json
+    translation: /static/email/text/password-reset-unknown/password-reset-unknown-%two_letters_code%.json
+  - source: /static/email/text/password-reset/password-reset-en.json
+    translation: /static/email/text/password-reset/password-reset-%two_letters_code%.json
+  - source: /static/email/text/registration-confirm/registration-confirm-en.json
+    translation: /static/email/text/registration-confirm/registration-confirm-%two_letters_code%.json
+  - source: /static/email/text/staking-income/staking-income-en.json
+    translation: /static/email/text/rstaking-income/staking-income-%two_letters_code%.json
+  - source: /static/email/text/topup-confirm/topup-confirm-en.json
+    translation: /static/email/text/topup-confirm/topup-confirm-%two_letters_code%.json
+  - source: /static/email/text/withdraw-denied/withdraw-denied-en.json
+    translation: /static/email/text/withdraw-denied/withdraw-denied-%two_letters_code%.json
+  - source: /static/email/text/withdraw-success/withdraw-success-en.json
+    translation: /static/email/text/withdraw-success/withdraw-success-%two_letters_code%.json

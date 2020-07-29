@@ -192,6 +192,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListGatewayResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -240,6 +246,12 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -267,6 +279,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListGatewayLocationsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "tags": [
@@ -282,6 +300,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiInsertNewDefaultGatewayConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -309,6 +333,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiBatchResetDefaultGatewatConfigResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -334,6 +364,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetDefaultGatewayConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -365,6 +401,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiResetDefaultGatewatConfigByIDResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -390,6 +432,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiUpdateDefaultGatewayConfigResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -417,6 +465,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetGwConfigResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -440,6 +494,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetGwPwdResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -471,6 +531,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiRegisterResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -496,6 +562,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiSetAutoUpdateFirmwareResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -529,6 +601,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiUpdateGwConfigResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -561,6 +639,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -605,6 +689,12 @@
               },
               "title": "Stream result of appserver_serves_uiStreamGatewayFrameLogsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -631,6 +721,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetLastPingResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -656,6 +752,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetGatewayStatsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -706,6 +808,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetGatewayResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -729,6 +837,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -1735,6 +1849,27 @@
         "value": {
           "type": "string",
           "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     },

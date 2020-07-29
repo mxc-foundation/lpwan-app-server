@@ -2,9 +2,40 @@ package config
 
 import (
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/awssns"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 )
 
 var AppserverVersion string
+
+type SMTPStruct struct {
+	Email    string `mapstructure:"email"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+	AuthType string `mapstructure:"auth_type"`
+	Host     string `mapstructure:"host"`
+	Port     string `mapstructure:"port"`
+}
+
+type OperatorStruct struct {
+	Operator         string `mapstructure:"name"`
+	PrimaryColor     string `mapstructure:"primary_color"`
+	SecondaryColor   string `mapstructure:"secondary_color"`
+	DownloadAppStore string `mapstructure:"download_appstore"`
+	DownloadGoogle   string `mapstructure:"download_google"`
+	AppStoreLogo     string `mapstructure:"appstore_logo"`
+	AndroidLogo      string `mapstructure:"android_logo"`
+	OperatorAddress  string `mapstructure:"operator_address"`
+	OperatorLegal    string `mapstructure:"operator_legal_name"`
+	OperatorLogo     string `mapstructure:"operator_logo"`
+	OperatorContact  string `mapstructure:"operator_contact"`
+	OperatorSupport  string `mapstructure:"operator_support"`
+}
 
 // Config defines the configuration structure.
 type Config struct {
@@ -13,6 +44,7 @@ type Config struct {
 		LogToSyslog            bool `mapstructure:"log_to_syslog"`
 		PasswordHashIterations int  `mapstructure:"password_hash_iterations"`
 		Enable2FALogin         bool `mapstructure:"enable_2fa_login"`
+		MXCLogo                string `mapstructure:"mxc_logo"`
 	} `mapstructure:"general"`
 
 	PostgreSQL struct {
@@ -29,14 +61,9 @@ type Config struct {
 		PoolSize   int    `mapstructure:"pool_size"`
 	} `mapstructure:"redis"`
 
-	SMTP struct {
-		Email    string `mapstructure:"email"`
-		Username string `mapstructure:"username"`
-		Password string `mapstructure:"password"`
-		AuthType string `mapstructure:"auth_type"`
-		Host     string `mapstructure:"host"`
-		Port     string `mapstructure:"port"`
-	} `mapstructure:"smtp"`
+	Operator OperatorStruct `mapstructure:"operator"`
+
+	SMTP map[string]SMTPStruct `mapstructure:"smtp"`
 
 	M2MServer struct {
 		M2MServer string `mapstructure:"m2m_server"`
@@ -151,13 +178,6 @@ type Config struct {
 			FragIndex int `mapstructure:"frag_index"`
 		} `mapstructure:"fuota_deployment"`
 
-		Branding struct {
-			Header       string `mapstructure:"header"`
-			Footer       string `mapstructure:"footer"`
-			Registration string `mapstructure:"registration"`
-			LogoPath     string `mapstructure:"logo_path"`
-		} `mapstructure:"branding"`
-
 		MiningSetUp struct {
 			Mining                bool   `mapstructure:"mining"`
 			CMCKey                string `mapstructure:"cmc_key"`
@@ -200,6 +220,8 @@ type Config struct {
 			APITimingHistogram bool   `mapstructure:"api_timing_histogram"`
 		} `mapstructure:"prometheus"`
 	} `mapstructure:"metrics"`
+
+	PProf pprof.Config `mapstructure:"pprof"`
 
 	Monitoring struct {
 		Bind                         string `mapstructure:"bind"`

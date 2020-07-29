@@ -21,6 +21,9 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
 
+	"github.com/mxc-foundation/lpwan-server/api/as"
+	"github.com/mxc-foundation/lpwan-server/api/common"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/events/uplink"

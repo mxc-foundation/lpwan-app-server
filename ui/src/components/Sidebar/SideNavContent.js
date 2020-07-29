@@ -24,7 +24,7 @@ const SideNavContent = (props) => {
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.control_panel`)}</li>
 
                     <li>
-                        <Link to="/control-panel/withdraw/" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_WALLET)}>
+                        <Link to="/control-panel/redirect" className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(SUPERNODE_WALLET)}>
                             <i className="mdi mdi-wallet"></i>
                             <span> {i18n.t(`${packageNS}:tr000084`)} </span>
                             <span className="menu-arrow"></span>
@@ -87,7 +87,7 @@ const SideNavContent = (props) => {
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.lpwan_management`)}</li>
 
                     <li>
-                        <Link to={`/topup/${props.orgId}`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
+                        <Link to={`/control-panel/redirect`} className="waves-effect" aria-expanded="false" onClick={() => props.switchSidebar(WALLET)}>
                             <i className="mdi mdi-wallet"></i>
                             <span> {i18n.t(`${packageNS}:tr000084`)} </span>
                             <span className="menu-arrow"></span>
@@ -100,15 +100,7 @@ const SideNavContent = (props) => {
                             <span> {i18n.t(`${packageNS}:tr000067`)} </span>
                         </Link>
                     </li>
-
-                    <li>
-                        <Link to={`/stake/${props.orgId}/set-stake`} className="waves-effect side-nav-link-ref">
-                            {/* <i className="mdi mdi-cloud-print-outline"></i> */}
-                            <i className="mdi mdi-vote"></i>
-                            <span> {i18n.t(`${packageNS}:menu.staking.staking`)} </span>
-                        </Link>
-                    </li>
-
+                    
                     <li>
                         <Link to={`/gateway-profiles`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-remote"></i>

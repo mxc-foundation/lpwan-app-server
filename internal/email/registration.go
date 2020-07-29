@@ -1,59 +1,100 @@
 package email
 
 import (
-	"bytes"
-	"math/rand"
-	"time"
+	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
 
-type registrationEmailInterface struct {
-	option EmailOptions
+type registrationJSON struct {
+	FromText  string `json:"from"`
+	Subject   string `json:"subject"`
+	PlainText string `json:"plainText"`
+	Title     string `json:"title"`
+	Body1     string `json:"body1"`
+	Body2     string `json:"body2"`
+	Body3     string `json:"body3"`
+	Body4     string `json:"body4"`
+	Body5     string `json:"body5"`
+	Body6     string `json:"body6"`
 }
 
-var registrationEmail = registrationEmailInterface{option: RegistrationConfirmation}
+type registrationParam struct {
+	// common
+	FromText         string
+	From             string
+	Host             string
+	To               string
+	Subject          string
+	MsgID            string
+	PlainText        string
+	Title            string
+	OperatorLogo     string
+	DownloadAppStore string
+	DownloadGoogle   string
+	OperatorLegal    string
+	OperatorAddress  string
+	OperatorContact  string
+	// body
+	B1, B2, B3, B4, Token, B5, B6 string
+	// footer
+	Str1, Str2, Str3, Str4 string
+}
 
-var passwordReset = &registrationEmailInterface{option: PasswordReset}
-var passwordResetUnknown = &registrationEmailInterface{option: PasswordResetUnknown}
+type registrationEmailInterface struct {
+	JSON registrationJSON
+}
 
-func (s *registrationEmailInterface) sendEmail(user, token string, language EmailLanguage) error {
-	mailTemplate := mailTemplates[s.option][language]
-	if mailTemplate == nil {
-		mailTemplate = mailTemplates[s.option]["en"]
+var registrationEmail registrationEmailInterface
+
+func (s *registrationEmailInterface) getEmailParam(user string, param Param, jsonData []byte) (interface{}, error) {
+	err := json.Unmarshal(jsonData, &s.JSON)
+	if err != nil {
+		log.WithError(err).Errorf("Parse json data error")
+		return nil, err
 	}
 
-	link := host + mailTemplateNames[s.option][language].url + token
-
-	logo := host + "/branding.png"
-
-	b := make([]byte, 20)
-	if _, err := rand.Read(b); err != nil {
-		return err
-	}
-	messageID := time.Now().Format("20060102150405.") + base32endocoding.EncodeToString(b)
-
-	var msg bytes.Buffer
-	if err := mailTemplate.Execute(&msg, struct {
-		From, To, Host, MsgID, Token, Boundary, Link, Logo, Operator, PrimaryColor, SecondaryColor string
-	}{
-		From:           senderID,
-		To:             user,
-		Host:           host,
-		MsgID:          messageID + "@" + host,
-		Token:          token,
-		Boundary:       "----=_Part_" + messageID,
-		Link:           link,
-		Logo:           logo,
-		Operator:       "MXC",
-		PrimaryColor:   "#71B6F9",
-		SecondaryColor: "#10c469",
-	}); err != nil {
-		log.Error(err)
-		return err
+	jsonStruct := registrationJSON{
+		FromText:  fmt.Sprintf(s.JSON.FromText, email.operator.operatorName),
+		Subject:   fmt.Sprintf(s.JSON.Subject, email.operator.operatorName),
+		PlainText: fmt.Sprintf(s.JSON.PlainText, email.operator.operatorName, param.Token),
+		Title:     fmt.Sprintf(s.JSON.Title, email.operator.operatorName),
+		Body1:     s.JSON.Body1,
+		Body2:     fmt.Sprintf(s.JSON.Body2, email.operator.operatorName),
+		Body3:     s.JSON.Body3,
+		Body4:     s.JSON.Body4,
+		Body5:     s.JSON.Body5,
+		Body6:     s.JSON.Body6,
 	}
 
-	err := cli.sendEmail(user, msg)
+	emailData := registrationParam{
+		FromText:         jsonStruct.FromText,
+		From:             email.from,
+		Host:             email.host,
+		To:               user,
+		Subject:          jsonStruct.Subject,
+		MsgID:            param.messageID,
+		PlainText:        jsonStruct.PlainText,
+		Title:            jsonStruct.Title,
+		OperatorLogo:     email.operator.operatorLogo,
+		DownloadAppStore: email.operator.downloadAppStore,
+		DownloadGoogle:   email.operator.downloadGoogle,
+		OperatorLegal:    email.operator.operatorLegal,
+		OperatorAddress:  email.operator.operatorAddress,
+		OperatorContact:  email.operator.operatorContact,
+		B1:               jsonStruct.Body1,
+		B2:               jsonStruct.Body2,
+		B3:               jsonStruct.Body3,
+		B4:               jsonStruct.Body4,
+		Token:            param.Token,
+		B5:               jsonStruct.Body5,
+		B6:               jsonStruct.Body6,
+		Str1:             param.commonJSON.Str1,
+		Str2:             param.commonJSON.Str2,
+		Str3:             param.commonJSON.Str3,
+		Str4:             param.commonJSON.Str4,
+	}
 
-	return err
+	return emailData, err
 }

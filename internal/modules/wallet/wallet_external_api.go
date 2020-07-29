@@ -1,13 +1,9 @@
-package wallet
+package external
 
 import (
 	"context"
 	"fmt"
 	"strconv"
-
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -15,36 +11,34 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 )
 
-// WalletServerAPI is the structure that contains the Validator
-type WalletServerAPI struct{}
+// WalletServerAPI is the structure that contains the validator
+type WalletServerAPI struct {
+	validator auth.Validator
+}
 
 // NewWalletServerAPI validates the new wallet server api
-func NewWalletServerAPI() *WalletServerAPI {
-	return &WalletServerAPI{}
+func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
+	return &WalletServerAPI{
+		validator: validator,
+	}
 }
 
 // GetWalletBalance gets the wallet balance
 func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWalletBalanceRequest) (*api.GetWalletBalanceResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWalletBalance org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetWalletBalanceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -72,18 +66,12 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.GetWalletMiningIncomeRequest) (*api.GetWalletMiningIncomeResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWalletMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetWalletMiningIncomeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -111,18 +99,12 @@ func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.Ge
 func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningInfoRequest) (*api.GetMiningInfoResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetMiningInfo org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetMiningInfoResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetMiningInfoResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -135,8 +117,7 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
 	resp, err := walletClient.GetMiningInfo(ctx, &m2mServer.GetMiningInfoRequest{
-		UserId: req.UserId,
-		OrgId:  req.OrgId,
+		OrgId: req.OrgId,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -168,18 +149,12 @@ func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningI
 func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxcTxHistoryRequest) (*api.GetVmxcTxHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetVmxcTxHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetVmxcTxHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -221,66 +196,57 @@ func (s *WalletServerAPI) GetVmxcTxHistory(ctx context.Context, req *api.GetVmxc
 }
 
 // GetWalletUsageHist gets the walllet usage history
-func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWalletUsageHistRequest) (*api.GetWalletUsageHistResponse, error) {
+func (s *WalletServerAPI) GetNetworkUsageHist(ctx context.Context, req *api.GetNetworkUsageHistRequest) (*api.GetNetworkUsageHistResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWalletUsageHist org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	walletClient := m2mServer.NewWalletServiceClient(m2mClient)
 
-	resp, err := walletClient.GetWalletUsageHist(ctx, &m2mServer.GetWalletUsageHistRequest{
-		OrgId:  req.OrgId,
-		Offset: req.Offset,
-		Limit:  req.Limit,
+	resp, err := walletClient.GetNetworkUsageHist(ctx, &m2mServer.GetNetworkUsageHistRequest{
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
+		From:     req.From,
+		Till:     req.Till,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetWalletUsageHistResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	var walletUsageHistoryList []*api.GetWalletUsageHist
-	for _, item := range resp.WalletUsageHis {
-		walletUsageHist := &api.GetWalletUsageHist{
-			StartAt:         item.StartAt,
-			DurationMinutes: item.DurationMinutes,
-			DlCntDv:         item.DlCntDv,
-			DlCntDvFree:     item.DlCntDvFree,
-			UlCntDv:         item.UlCntDv,
-			UlCntDvFree:     item.UlCntDvFree,
-			DlCntGw:         item.DlCntGw,
-			DlCntGwFree:     item.DlCntDvFree,
-			UlCntGw:         item.UlCntGw,
-			UlCntGwFree:     item.UlCntGwFree,
-			Spend:           item.Spend,
-			Income:          item.Income,
-			UpdatedBalance:  item.UpdatedBalance,
+	var walletUsageHistoryList []*api.NetworkUsage
+	for _, item := range resp.NetworkUsage {
+		walletUsageHist := &api.NetworkUsage{
+			Timestamp:    item.Timestamp,
+			DlCntDev:     item.DlCntDev,
+			DlCntDevFree: item.DlCntDevFree,
+			UlCntDev:     item.UlCntDev,
+			UlCntDevFree: item.UlCntDevFree,
+			DlCntGw:      item.DlCntGw,
+			DlCntGwFree:  item.DlCntGwFree,
+			UlCntGw:      item.UlCntGw,
+			UlCntGwFree:  item.UlCntGwFree,
+			Amount:       item.Amount,
 		}
 
 		walletUsageHistoryList = append(walletUsageHistoryList, walletUsageHist)
 	}
 
-	return &api.GetWalletUsageHistResponse{
-		WalletUsageHis: walletUsageHistoryList,
-		Count:          resp.Count,
+	return &api.GetNetworkUsageHistResponse{
+		NetworkUsage: walletUsageHistoryList,
 	}, status.Error(codes.OK, "")
 }
 
@@ -288,18 +254,12 @@ func (s *WalletServerAPI) GetWalletUsageHist(ctx context.Context, req *api.GetWa
 func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPriceRequest) (*api.GetDownLinkPriceResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDlPrice org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetDownLinkPriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
@@ -327,25 +287,19 @@ func (s *WalletServerAPI) GetDlPrice(ctx context.Context, req *api.GetDownLinkPr
 func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceRequest) (*api.GetMXCpriceResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetMXCprice org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
+	cred, err := s.validator.GetCredentials(ctx)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return nil, status.Error(codes.Unauthenticated, "not authenticated")
 	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.GetMXCpriceResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
 	if req.MxcPrice == "0" {
 		return &api.GetMXCpriceResponse{MxcPrice: "0"}, nil
 	}
 
-	price, err := mining.Service.GetMXCprice(config.C, req.MxcPrice)
+	price, err := coingecko.New().GetPrice("mxc", "usd")
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to get price from CMC")
