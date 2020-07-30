@@ -36,8 +36,8 @@ type operatorInfo struct {
 	operatorName,
 	downloadAppStore,
 	downloadGoogle,
-	appStoreLogo,
-	androidLogo,
+	downloadTestFlight,
+	downloadAPK,
 	operatorAddress,
 	operatorLegal,
 	operatorLogo,
@@ -76,17 +76,17 @@ func Setup(c config.Config) error {
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
 	email.host = os.Getenv("APPSERVER")
 	email.operator = operatorInfo{
-		MXCLogo:          c.General.MXCLogo,
-		operatorName:     c.Operator.Operator,
-		downloadAppStore: c.Operator.DownloadAppStore,
-		downloadGoogle:   c.Operator.DownloadGoogle,
-		appStoreLogo:     c.Operator.AppStoreLogo,
-		androidLogo:      c.Operator.AndroidLogo,
-		operatorAddress:  c.Operator.OperatorAddress,
-		operatorLegal:    c.Operator.OperatorLegal,
-		operatorLogo:     c.Operator.OperatorLogo,
-		operatorContact:  c.Operator.OperatorContact,
-		operatorSupport:  c.Operator.OperatorSupport,
+		MXCLogo:            c.General.MXCLogo,
+		operatorName:       c.Operator.Operator,
+		downloadAppStore:   c.Operator.DownloadAppStore,
+		downloadGoogle:     c.Operator.DownloadGoogle,
+		downloadTestFlight: c.Operator.DownloadTestFlight,
+		downloadAPK:        c.Operator.DownloadAPK,
+		operatorAddress:    c.Operator.OperatorAddress,
+		operatorLegal:      c.Operator.OperatorLegal,
+		operatorLogo:       c.Operator.OperatorLogo,
+		operatorContact:    c.Operator.OperatorContact,
+		operatorSupport:    c.Operator.OperatorSupport,
 	}
 
 	if err := loadEmailTemplates(); err != nil {
