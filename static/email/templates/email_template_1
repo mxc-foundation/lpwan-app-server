@@ -53,8 +53,9 @@
               <td style="padding-bottom: 6px; padding-top: 16px; " valign="top" align="center">
               <table cellspacing="0" cellpadding="0" border="0" align="center">
                   <tbody><tr>
-                   <td style="font-family: 'Open Sans', Arial, sans-serif; font-size: 13px; line-height: 18px; color: #999999; " valign="top" align="center">
-                        <p class="paragraph-4">{{ .Str1 }} <br>{{ .Str2 }}</p>
+                   <td style="text-align: center; font: Regular 16px/19px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         <img src="cid:datadashApp" alt="" style="height: 100%">
+                         <p>{{ .Str1 }} <br>{{ .Str2 }}</p>
                    </td>
                    </tr>
                   </tbody>
@@ -67,18 +68,69 @@
           <tr>
             <td style="padding-bottom: 6px; " valign="top" align="center">
             <table cellspacing="0" cellpadding="0" border="0" align="center">
-                <tbody><tr>
-                  <td style="font-family: 'Open Sans', Arial, sans-serif; font-size: 11px; line-height: 18px; color: #999999; " valign="top" align="center">
-                    <a href="{{ .DownloadAppStore }}" target="_blank" style="color: #999999; text-decoration: underline; ">
-                        <p>{{ .Str3 }}</p>
+                <tbody>
+                <tr>
+                <!--Download on the App Store-->
+                  <td>
+                    <a href="{{ .DownloadAppStore }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         <img src="cid:appStore" alt="" style="height: 100%">
                     </a>
                   </td>
-                  <td style="width: 6px; " width="6">&nbsp;</td>
-                  <td style="font-family: 'Open Sans', Arial, sans-serif; font-size: 11px; line-height: 18px; color: #999999; " valign="top" align="center">
-                    <a href="{{ .DownloadGoogle }}" target="_blank" style="color: #999999; text-decoration: underline; ">
-                        <p>{{ .Str4 }}</p>
+                  <td style="width: 6px; ">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                  <td>
+                    <a href="{{ .DownloadAppStore }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         {{ .Str3 }}
                     </a>
                   </td>
+                <!--/Download on the App Store-->
+
+                  <td style="width: 6px; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+                <!--iOS Beta Version on TestFlight-->
+                  <td>
+                    <a href="{{ .DownloadTestFlight }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         <img src="cid:appStore" alt="" style="height: 100%">
+                    </a>
+                  </td>
+                  <td style="width: 6px; ">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                  <td>
+                    <a href="{{ .DownloadTestFlight }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         {{ .Str4 }}
+                    </a>
+                  </td>
+                <!--/iOS Beta Version on TestFlight-->
+                </tr>
+
+                <tr>
+                <!--Download on Google Play-->
+                  <td>
+                    <a href="{{ .DownloadGoogle }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         <img src="cid:googlePlay" alt="" style="height: 100%">
+                    </a>
+                  </td>
+                  <td style="width: 6px; ">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                  <td>
+                    <a href="{{ .DownloadGoogle }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         {{ .Str5 }}
+                    </a>
+                  </td>
+                <!--/Download on Google Play-->
+
+                  <td style="width: 6px; ">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+
+                <!--Direct Download .APK file-->
+                  <td>
+                    <a href="{{ .DownloadAPK }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         <img src="cid:android" alt="" style="height: 100%">
+                    </a>
+                  </td>
+                  <td style="width: 6px; ">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                  <td>
+                    <a href="{{ .DownloadAPK }}" target="_blank" style="text-align: left; text-decoration: underline; font: Regular 14px/16px Roboto; letter-spacing: 0px; color: #666666; opacity: 1;">
+                         {{ .Str6 }}
+                    </a>
+                  </td>
+                <!--/Direct Download .APK file-->
                 </tr>
                 </tbody>
             </table>
@@ -105,3 +157,145 @@
 </body>
 
 </html>
+
+
+--related boundary
+Content-ID: <googlePlay>
+Content-Type: IMAGE/GIF
+Content-Transfer-Encoding: BASE64
+
+iVBORw0KGgoAAAANSUhEUgAAABYAAAAYCAYAAAD+vg1LAAAAAXNSR0IArs4c6QAAADhlWElmTU0A
+KgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAFqADAAQAAAABAAAAGAAAAACA2a8B
+AAAB4UlEQVRIDaWVTW7CMBCFE4hQd+0RuAASAsS29CQ1EiCWHCHcgO4QIDWcoL0BdI9EuEG5Ad1V
+/KXvAYNcEicBRgKPx57P8RvHsVqtlttsNt+tkymlnsS/p80guWPbthK44zhF+OoeKHMJfqQj8NFo
+NGUf8Gmj0ajRv8Wy5XLZlUTAi6VSKT8cDruIW5lM5oP9arW6mM1mK5mXpv0HZoIOB3SJvrvf71Wl
+UnkoFAoL3/d/04ApRcgAO2iOJ/eCIKijz4K6uVxujmK/hhIiApFgzruEn3LzaD3oP0nS3wgmyABn
+vAb9JzxJ7Xabi4UsFszZJriM7Xa7ToiKQCJYAHw60VwDjRHrYIw1mevy2ChGoE2MdVFID6A6QZRj
+MBgQSP/85gLwuV6v61eBuarA6UdAGaZ1U0lxnHv8x9PZet/kO6YBQ3ws28f480kWFvgsBXb0tdls
+eteAz1ABQQpL4FjIBVTJXZNW4xBUdgTYG0+G9KVNo7ERCsg4m832BKa3SVJEQqkjfq5sWweKHwcO
+QQFbItHF1j0BmFoT+BL6A0CP1fY8b2WC6fEo8CV0jAvH7ff733pikn8JPkORqHDBv8TpGAcnmNvk
+d+8AlYsEOtYQu9kI5nHJ840iZbvd+tBxSv8e+wNIfwYR+dMnKwAAAABJRU5ErkJggg==
+
+--related boundary
+Content-ID: <appStore>
+Content-Type: IMAGE/GIF
+Content-Transfer-Encoding: BASE64
+
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAYCAYAAAD6S912AAAAAXNSR0IArs4c6QAAADhlWElmTU0A
+KgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAFKADAAQAAAABAAAAGAAAAABU5T/G
+AAABuUlEQVQ4EaWUMW7CMBSGsRuxNr0BnKCEqSNHgBNgJGAFjtAbMCIFqe4JSk9QurGA6NZu4QZl
+ZYD+P7EjNwIlIZaM3/N778sf+xFRKTCUUn61Wh2dTqc25mQ+ny/T5V5645o/GAwaQog3xGtYKwBe
+TM0FJAzVH5i+pXieF1nbXXMBoUijKIFB3edsNotckLWlNa6tw+GwjdhjKj5O+YmbCYSaVpINA34v
+DMOtu+faeV65wQKAdpjq0s26QOE6/X6/JaVkW/jcx9ltj8fjCusPVZmb7iJ+fghSItiv7kMSIM5K
+I6GLWXgAqvHAHgvv+FMGxnq8QT0IgtVms4mEeU322M0DCgN7UTgyqW4mxYXPFkaXbWMPOA4X/IW6
+hVtCYLpp3Xim7apjcmZjZxHN/zxJk5C8S7wbDNxw2y2T2Fi6G0VtCBq5KqmwFBCCfIh4YftRjDBf
+4Qj2PTdKjP3hcKhJrfUvINMSIFs6Jet8yyATuLeRoisv1jDitjEqVVGQzQdQGUb8cWBgvV5/N5vN
+Bxzyk03MswLWw+drYXP/NTa6fozABPOLCUh+x9LB/73OSdvsMcycDmo0HTv+ACMltpuSh+YqAAAA
+AElFTkSuQmCC
+
+--related boundary
+Content-ID: <android>
+Content-Type: IMAGE/GIF
+Content-Transfer-Encoding: BASE64
+
+iVBORw0KGgoAAAANSUhEUgAAABUAAAAYCAYAAAAVibZIAAAAAXNSR0IArs4c6QAAADhlWElmTU0A
+KgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAFaADAAQAAAABAAAAGAAAAADTQ/SF
+AAABpklEQVQ4Ee1Uy3HCMBS0PTZnSnAHcQchJVBBnBnwcAt0QDpIbozhoA5IKkhSQewOKMG+Ggay
+61gZSbaAhMktmpHf0759a+np4ziWliTJ1BJy4jjuj8fj2Bb3bYHD4VAgMXJd9wqcUPKAv8CPttvt
+s8RMaxWFWB/kDzMB+BzCWRAEGWLsrea2EABYuoC57Yqp2H6/v1mtVm8qRt8zAQjOgVEwRx+im21D
+MYKY9Zr1NQmaKAlY2n1DYi3XZgLGoed5r8RZol6vNzU5mqjv+9yY1p/NJHWMSQzUMf16o0aj0YC1
+gWAB7MEkHRsjpw5PJpOQzmKx2Lg4NhS75o6iz+TSauaZH9ZYyRt6FGQubHSmRosGwYECRlpNlcBF
+7r/oReXrTP6bmuJs3uF3JexT52/PAHGkBGh8K3L6X9ehSeTNUg5xg540ZZqm2tXWlo+7v4FEeVJG
+IWCFQhnWribKe1tVVdg8bVyObDMbtlwup5IkrSZKUAhR8HHBDPi41A2CmQ2THNW2RNXgb/1jot8z
+/am4VRSvloAYNy3f7XYZhYE9EkNp3iVG3GyfctagrzbYyY4AAAAASUVORK5CYII=
+
+--related boundary
+Content-ID: <datadashApp>
+Content-Type: IMAGE/GIF
+Content-Transfer-Encoding: BASE64
+
+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
+AABJRU5ErkJggg==
