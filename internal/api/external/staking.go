@@ -273,10 +273,21 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 
 	var stakeHistoryList []*api.StakingHistory
 	for _, item := range resp.StakingHist {
+		var stake *api.Stake
+		if st := item.Stake; st != nil {
+			stake = &api.Stake{
+				Id:        st.Id,
+				Amount:    st.Amount,
+				Active:    st.Active,
+				StartTime: st.StartTime,
+				EndTime:   st.EndTime,
+			}
+		}
 		stakeHistory := &api.StakingHistory{
 			Timestamp: item.Timestamp,
 			Amount:    item.Amount,
 			Type:      item.Type,
+			Stake:     stake,
 		}
 
 		stakeHistoryList = append(stakeHistoryList, stakeHistory)
