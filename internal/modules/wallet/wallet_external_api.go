@@ -2,9 +2,9 @@ package external
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -295,17 +295,20 @@ func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceR
 		return nil, status.Error(codes.PermissionDenied, "must be organisation admin")
 	}
 
-	if req.MxcPrice == "0" {
+	if req.MxcPrice == "" {
 		return &api.GetMXCpriceResponse{MxcPrice: "0"}, nil
 	}
-
+	mxc, err := decimal.NewFromString(req.MxcPrice)
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "mxcPrice must be a number")
+	}
 	price, err := coingecko.New().GetPrice("mxc", "usd")
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to get price from CMC")
 	}
+	rate := decimal.NewFromFloat(price)
+	usd := mxc.Mul(rate).Round(18)
 
-	strPrice := fmt.Sprintf("%f", price)
-
-	return &api.GetMXCpriceResponse{MxcPrice: strPrice}, nil
+	return &api.GetMXCpriceResponse{MxcPrice: usd.String()}, nil
 }
