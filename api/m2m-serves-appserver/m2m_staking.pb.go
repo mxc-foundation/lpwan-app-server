@@ -8,6 +8,9 @@ package m2m_serves_appserver
 
 import (
 	context "context"
+	reflect "reflect"
+	sync "sync"
+
 	proto "github.com/golang/protobuf/proto"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
@@ -15,8 +18,6 @@ import (
 	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -612,6 +613,85 @@ func (x *StakingHistoryRequest) GetTill() *timestamp.Timestamp {
 	return nil
 }
 
+type Stake struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id        int64                `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	StartTime *timestamp.Timestamp `protobuf:"bytes,2,opt,name=start_time,json=startTime,proto3" json:"start_time,omitempty"`
+	EndTime   *timestamp.Timestamp `protobuf:"bytes,3,opt,name=end_time,json=endTime,proto3" json:"end_time,omitempty"`
+	Amount    string               `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	Active    bool                 `protobuf:"varint,5,opt,name=active,proto3" json:"active,omitempty"`
+}
+
+func (x *Stake) Reset() {
+	*x = Stake{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_m2m_staking_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Stake) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Stake) ProtoMessage() {}
+
+func (x *Stake) ProtoReflect() protoreflect.Message {
+	mi := &file_m2m_staking_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Stake.ProtoReflect.Descriptor instead.
+func (*Stake) Descriptor() ([]byte, []int) {
+	return file_m2m_staking_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *Stake) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *Stake) GetStartTime() *timestamp.Timestamp {
+	if x != nil {
+		return x.StartTime
+	}
+	return nil
+}
+
+func (x *Stake) GetEndTime() *timestamp.Timestamp {
+	if x != nil {
+		return x.EndTime
+	}
+	return nil
+}
+
+func (x *Stake) GetAmount() string {
+	if x != nil {
+		return x.Amount
+	}
+	return ""
+}
+
+func (x *Stake) GetActive() bool {
+	if x != nil {
+		return x.Active
+	}
+	return false
+}
+
 type StakingHistory struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -620,12 +700,13 @@ type StakingHistory struct {
 	Timestamp *timestamp.Timestamp `protobuf:"bytes,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	Amount    string               `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
 	Type      string               `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
+	Stake     *Stake               `protobuf:"bytes,4,opt,name=stake,proto3" json:"stake,omitempty"`
 }
 
 func (x *StakingHistory) Reset() {
 	*x = StakingHistory{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_staking_proto_msgTypes[10]
+		mi := &file_m2m_staking_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -638,7 +719,7 @@ func (x *StakingHistory) String() string {
 func (*StakingHistory) ProtoMessage() {}
 
 func (x *StakingHistory) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_staking_proto_msgTypes[10]
+	mi := &file_m2m_staking_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -651,7 +732,7 @@ func (x *StakingHistory) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StakingHistory.ProtoReflect.Descriptor instead.
 func (*StakingHistory) Descriptor() ([]byte, []int) {
-	return file_m2m_staking_proto_rawDescGZIP(), []int{10}
+	return file_m2m_staking_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *StakingHistory) GetTimestamp() *timestamp.Timestamp {
@@ -675,6 +756,13 @@ func (x *StakingHistory) GetType() string {
 	return ""
 }
 
+func (x *StakingHistory) GetStake() *Stake {
+	if x != nil {
+		return x.Stake
+	}
+	return nil
+}
+
 type StakingHistoryResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -686,7 +774,7 @@ type StakingHistoryResponse struct {
 func (x *StakingHistoryResponse) Reset() {
 	*x = StakingHistoryResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_staking_proto_msgTypes[11]
+		mi := &file_m2m_staking_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -699,7 +787,7 @@ func (x *StakingHistoryResponse) String() string {
 func (*StakingHistoryResponse) ProtoMessage() {}
 
 func (x *StakingHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_staking_proto_msgTypes[11]
+	mi := &file_m2m_staking_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -712,7 +800,7 @@ func (x *StakingHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StakingHistoryResponse.ProtoReflect.Descriptor instead.
 func (*StakingHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_staking_proto_rawDescGZIP(), []int{11}
+	return file_m2m_staking_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *StakingHistoryResponse) GetStakingHist() []*StakingHistory {
@@ -734,7 +822,7 @@ type StakingPercentageRequest struct {
 func (x *StakingPercentageRequest) Reset() {
 	*x = StakingPercentageRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_staking_proto_msgTypes[12]
+		mi := &file_m2m_staking_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -747,7 +835,7 @@ func (x *StakingPercentageRequest) String() string {
 func (*StakingPercentageRequest) ProtoMessage() {}
 
 func (x *StakingPercentageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_staking_proto_msgTypes[12]
+	mi := &file_m2m_staking_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +848,7 @@ func (x *StakingPercentageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StakingPercentageRequest.ProtoReflect.Descriptor instead.
 func (*StakingPercentageRequest) Descriptor() ([]byte, []int) {
-	return file_m2m_staking_proto_rawDescGZIP(), []int{12}
+	return file_m2m_staking_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *StakingPercentageRequest) GetOrgId() int64 {
@@ -788,7 +876,7 @@ type StakingPercentageResponse struct {
 func (x *StakingPercentageResponse) Reset() {
 	*x = StakingPercentageResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_m2m_staking_proto_msgTypes[13]
+		mi := &file_m2m_staking_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -801,7 +889,7 @@ func (x *StakingPercentageResponse) String() string {
 func (*StakingPercentageResponse) ProtoMessage() {}
 
 func (x *StakingPercentageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_m2m_staking_proto_msgTypes[13]
+	mi := &file_m2m_staking_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -814,7 +902,7 @@ func (x *StakingPercentageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StakingPercentageResponse.ProtoReflect.Descriptor instead.
 func (*StakingPercentageResponse) Descriptor() ([]byte, []int) {
-	return file_m2m_staking_proto_rawDescGZIP(), []int{13}
+	return file_m2m_staking_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *StakingPercentageResponse) GetStakingPercentage() float64 {
@@ -895,14 +983,29 @@ var file_m2m_staking_proto_rawDesc = []byte{
 	0x2e, 0x0a, 0x04, 0x74, 0x69, 0x6c, 0x6c, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
 	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
 	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x04, 0x74, 0x69, 0x6c, 0x6c, 0x22,
-	0x76, 0x0a, 0x0e, 0x53, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72,
-	0x79, 0x12, 0x38, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70,
-	0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x16, 0x0a, 0x06, 0x61,
-	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f,
-	0x75, 0x6e, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x22, 0x61, 0x0a, 0x16, 0x53, 0x74, 0x61, 0x6b, 0x69,
+	0xb9, 0x01, 0x0a, 0x05, 0x53, 0x74, 0x61, 0x6b, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x39, 0x0a, 0x0a, 0x73, 0x74, 0x61,
+	0x72, 0x74, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
+	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x73, 0x74, 0x61, 0x72, 0x74,
+	0x54, 0x69, 0x6d, 0x65, 0x12, 0x35, 0x0a, 0x08, 0x65, 0x6e, 0x64, 0x5f, 0x74, 0x69, 0x6d, 0x65,
+	0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
+	0x6d, 0x70, 0x52, 0x07, 0x65, 0x6e, 0x64, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x61,
+	0x6d, 0x6f, 0x75, 0x6e, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f,
+	0x75, 0x6e, 0x74, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x08, 0x52, 0x06, 0x61, 0x63, 0x74, 0x69, 0x76, 0x65, 0x22, 0xa9, 0x01, 0x0a, 0x0e,
+	0x53, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x12, 0x38,
+	0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x52, 0x09, 0x74,
+	0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x12, 0x16, 0x0a, 0x06, 0x61, 0x6d, 0x6f, 0x75,
+	0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x61, 0x6d, 0x6f, 0x75, 0x6e, 0x74,
+	0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x74, 0x79, 0x70, 0x65, 0x12, 0x31, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x73,
+	0x5f, 0x61, 0x70, 0x70, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x53, 0x74, 0x61, 0x6b, 0x65,
+	0x52, 0x05, 0x73, 0x74, 0x61, 0x6b, 0x65, 0x22, 0x61, 0x0a, 0x16, 0x53, 0x74, 0x61, 0x6b, 0x69,
 	0x6e, 0x67, 0x48, 0x69, 0x73, 0x74, 0x6f, 0x72, 0x79, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x12, 0x47, 0x0a, 0x0c, 0x73, 0x74, 0x61, 0x6b, 0x69, 0x6e, 0x67, 0x5f, 0x68, 0x69, 0x73,
 	0x74, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x6d, 0x32, 0x6d, 0x5f, 0x73, 0x65,
@@ -978,7 +1081,7 @@ func file_m2m_staking_proto_rawDescGZIP() []byte {
 	return file_m2m_staking_proto_rawDescData
 }
 
-var file_m2m_staking_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_m2m_staking_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_m2m_staking_proto_goTypes = []interface{}{
 	(*StakingRevenueRequest)(nil),     // 0: m2m_serves_appserver.StakingRevenueRequest
 	(*StakingRevenueResponse)(nil),    // 1: m2m_serves_appserver.StakingRevenueResponse
@@ -990,39 +1093,43 @@ var file_m2m_staking_proto_goTypes = []interface{}{
 	(*ActiveStake)(nil),               // 7: m2m_serves_appserver.ActiveStake
 	(*GetActiveStakesResponse)(nil),   // 8: m2m_serves_appserver.GetActiveStakesResponse
 	(*StakingHistoryRequest)(nil),     // 9: m2m_serves_appserver.StakingHistoryRequest
-	(*StakingHistory)(nil),            // 10: m2m_serves_appserver.StakingHistory
-	(*StakingHistoryResponse)(nil),    // 11: m2m_serves_appserver.StakingHistoryResponse
-	(*StakingPercentageRequest)(nil),  // 12: m2m_serves_appserver.StakingPercentageRequest
-	(*StakingPercentageResponse)(nil), // 13: m2m_serves_appserver.StakingPercentageResponse
-	(*timestamp.Timestamp)(nil),       // 14: google.protobuf.Timestamp
+	(*Stake)(nil),                     // 10: m2m_serves_appserver.Stake
+	(*StakingHistory)(nil),            // 11: m2m_serves_appserver.StakingHistory
+	(*StakingHistoryResponse)(nil),    // 12: m2m_serves_appserver.StakingHistoryResponse
+	(*StakingPercentageRequest)(nil),  // 13: m2m_serves_appserver.StakingPercentageRequest
+	(*StakingPercentageResponse)(nil), // 14: m2m_serves_appserver.StakingPercentageResponse
+	(*timestamp.Timestamp)(nil),       // 15: google.protobuf.Timestamp
 }
 var file_m2m_staking_proto_depIdxs = []int32{
-	14, // 0: m2m_serves_appserver.StakingRevenueRequest.from:type_name -> google.protobuf.Timestamp
-	14, // 1: m2m_serves_appserver.StakingRevenueRequest.till:type_name -> google.protobuf.Timestamp
-	14, // 2: m2m_serves_appserver.ActiveStake.start_time:type_name -> google.protobuf.Timestamp
-	14, // 3: m2m_serves_appserver.ActiveStake.end_time:type_name -> google.protobuf.Timestamp
+	15, // 0: m2m_serves_appserver.StakingRevenueRequest.from:type_name -> google.protobuf.Timestamp
+	15, // 1: m2m_serves_appserver.StakingRevenueRequest.till:type_name -> google.protobuf.Timestamp
+	15, // 2: m2m_serves_appserver.ActiveStake.start_time:type_name -> google.protobuf.Timestamp
+	15, // 3: m2m_serves_appserver.ActiveStake.end_time:type_name -> google.protobuf.Timestamp
 	7,  // 4: m2m_serves_appserver.GetActiveStakesResponse.act_stake:type_name -> m2m_serves_appserver.ActiveStake
-	14, // 5: m2m_serves_appserver.StakingHistoryRequest.from:type_name -> google.protobuf.Timestamp
-	14, // 6: m2m_serves_appserver.StakingHistoryRequest.till:type_name -> google.protobuf.Timestamp
-	14, // 7: m2m_serves_appserver.StakingHistory.timestamp:type_name -> google.protobuf.Timestamp
-	10, // 8: m2m_serves_appserver.StakingHistoryResponse.staking_hist:type_name -> m2m_serves_appserver.StakingHistory
-	2,  // 9: m2m_serves_appserver.StakingService.Stake:input_type -> m2m_serves_appserver.StakeRequest
-	4,  // 10: m2m_serves_appserver.StakingService.Unstake:input_type -> m2m_serves_appserver.UnstakeRequest
-	6,  // 11: m2m_serves_appserver.StakingService.GetActiveStakes:input_type -> m2m_serves_appserver.GetActiveStakesRequest
-	0,  // 12: m2m_serves_appserver.StakingService.GetStakingRevenue:input_type -> m2m_serves_appserver.StakingRevenueRequest
-	9,  // 13: m2m_serves_appserver.StakingService.GetStakingHistory:input_type -> m2m_serves_appserver.StakingHistoryRequest
-	12, // 14: m2m_serves_appserver.StakingService.GetStakingPercentage:input_type -> m2m_serves_appserver.StakingPercentageRequest
-	3,  // 15: m2m_serves_appserver.StakingService.Stake:output_type -> m2m_serves_appserver.StakeResponse
-	5,  // 16: m2m_serves_appserver.StakingService.Unstake:output_type -> m2m_serves_appserver.UnstakeResponse
-	8,  // 17: m2m_serves_appserver.StakingService.GetActiveStakes:output_type -> m2m_serves_appserver.GetActiveStakesResponse
-	1,  // 18: m2m_serves_appserver.StakingService.GetStakingRevenue:output_type -> m2m_serves_appserver.StakingRevenueResponse
-	11, // 19: m2m_serves_appserver.StakingService.GetStakingHistory:output_type -> m2m_serves_appserver.StakingHistoryResponse
-	13, // 20: m2m_serves_appserver.StakingService.GetStakingPercentage:output_type -> m2m_serves_appserver.StakingPercentageResponse
-	15, // [15:21] is the sub-list for method output_type
-	9,  // [9:15] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	15, // 5: m2m_serves_appserver.StakingHistoryRequest.from:type_name -> google.protobuf.Timestamp
+	15, // 6: m2m_serves_appserver.StakingHistoryRequest.till:type_name -> google.protobuf.Timestamp
+	15, // 7: m2m_serves_appserver.Stake.start_time:type_name -> google.protobuf.Timestamp
+	15, // 8: m2m_serves_appserver.Stake.end_time:type_name -> google.protobuf.Timestamp
+	15, // 9: m2m_serves_appserver.StakingHistory.timestamp:type_name -> google.protobuf.Timestamp
+	10, // 10: m2m_serves_appserver.StakingHistory.stake:type_name -> m2m_serves_appserver.Stake
+	11, // 11: m2m_serves_appserver.StakingHistoryResponse.staking_hist:type_name -> m2m_serves_appserver.StakingHistory
+	2,  // 12: m2m_serves_appserver.StakingService.Stake:input_type -> m2m_serves_appserver.StakeRequest
+	4,  // 13: m2m_serves_appserver.StakingService.Unstake:input_type -> m2m_serves_appserver.UnstakeRequest
+	6,  // 14: m2m_serves_appserver.StakingService.GetActiveStakes:input_type -> m2m_serves_appserver.GetActiveStakesRequest
+	0,  // 15: m2m_serves_appserver.StakingService.GetStakingRevenue:input_type -> m2m_serves_appserver.StakingRevenueRequest
+	9,  // 16: m2m_serves_appserver.StakingService.GetStakingHistory:input_type -> m2m_serves_appserver.StakingHistoryRequest
+	13, // 17: m2m_serves_appserver.StakingService.GetStakingPercentage:input_type -> m2m_serves_appserver.StakingPercentageRequest
+	3,  // 18: m2m_serves_appserver.StakingService.Stake:output_type -> m2m_serves_appserver.StakeResponse
+	5,  // 19: m2m_serves_appserver.StakingService.Unstake:output_type -> m2m_serves_appserver.UnstakeResponse
+	8,  // 20: m2m_serves_appserver.StakingService.GetActiveStakes:output_type -> m2m_serves_appserver.GetActiveStakesResponse
+	1,  // 21: m2m_serves_appserver.StakingService.GetStakingRevenue:output_type -> m2m_serves_appserver.StakingRevenueResponse
+	12, // 22: m2m_serves_appserver.StakingService.GetStakingHistory:output_type -> m2m_serves_appserver.StakingHistoryResponse
+	14, // 23: m2m_serves_appserver.StakingService.GetStakingPercentage:output_type -> m2m_serves_appserver.StakingPercentageResponse
+	18, // [18:24] is the sub-list for method output_type
+	12, // [12:18] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_m2m_staking_proto_init() }
@@ -1152,7 +1259,7 @@ func file_m2m_staking_proto_init() {
 			}
 		}
 		file_m2m_staking_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakingHistory); i {
+			switch v := v.(*Stake); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1164,7 +1271,7 @@ func file_m2m_staking_proto_init() {
 			}
 		}
 		file_m2m_staking_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakingHistoryResponse); i {
+			switch v := v.(*StakingHistory); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1176,7 +1283,7 @@ func file_m2m_staking_proto_init() {
 			}
 		}
 		file_m2m_staking_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StakingPercentageRequest); i {
+			switch v := v.(*StakingHistoryResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1188,6 +1295,18 @@ func file_m2m_staking_proto_init() {
 			}
 		}
 		file_m2m_staking_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*StakingPercentageRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_m2m_staking_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*StakingPercentageResponse); i {
 			case 0:
 				return &v.state
@@ -1206,7 +1325,7 @@ func file_m2m_staking_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_m2m_staking_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -39,6 +39,8 @@ type Param struct {
 		Str2 string `json:"str2"`
 		Str3 string `json:"str3"`
 		Str4 string `json:"str4"`
+		Str5 string `json:"str5"`
+		Str6 string `json:"str6"`
 	}
 }
 

@@ -321,6 +321,30 @@
         }
       }
     },
+    "appserver_serves_uiStake": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "active": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "appserver_serves_uiStakeRequest": {
       "type": "object",
       "properties": {
@@ -359,6 +383,9 @@
         },
         "type": {
           "type": "string"
+        },
+        "stake": {
+          "$ref": "#/definitions/appserver_serves_uiStake"
         }
       }
     },

@@ -21,24 +21,26 @@ type twoFAWithdrawJSON struct {
 
 type twoFAWithdrawParam struct {
 	// common
-	FromText         string
-	From             string
-	Host             string
-	To               string
-	Subject          string
-	MsgID            string
-	PlainText        string
-	Title            string
-	OperatorLogo     string
-	DownloadAppStore string
-	DownloadGoogle   string
-	OperatorLegal    string
-	OperatorAddress  string
-	OperatorContact  string
+	FromText           string
+	From               string
+	Host               string
+	To                 string
+	Subject            string
+	MsgID              string
+	PlainText          string
+	Title              string
+	OperatorLogo       string
+	DownloadAppStore   string
+	DownloadAPK        string
+	DownloadGoogle     string
+	DownloadTestFlight string
+	OperatorLegal      string
+	OperatorAddress    string
+	OperatorContact    string
 	// body
 	B1, B2, AmountStr, B3, B4, Token, B5 string
 	// footer
-	Str1, Str2, Str3, Str4 string
+	Str1, Str2, Str3, Str4, Str5, Str6 string
 }
 
 type twoFAWithdrawEmailInterface struct {
@@ -67,31 +69,35 @@ func (s *twoFAWithdrawEmailInterface) getEmailParam(user string, param Param, js
 	}
 
 	emailData := twoFAWithdrawParam{
-		FromText:         jsonStruct.FromText,
-		From:             email.from,
-		Host:             email.host,
-		To:               user,
-		Subject:          jsonStruct.Subject,
-		MsgID:            param.messageID,
-		PlainText:        jsonStruct.PlainText,
-		Title:            jsonStruct.Title,
-		OperatorLogo:     email.operator.operatorLogo,
-		DownloadAppStore: email.operator.downloadAppStore,
-		DownloadGoogle:   email.operator.downloadGoogle,
-		OperatorLegal:    email.operator.operatorLegal,
-		OperatorAddress:  email.operator.operatorAddress,
-		OperatorContact:  email.operator.operatorContact,
-		B1:               jsonStruct.Body1,
-		B2:               jsonStruct.Body2,
-		AmountStr:        fmt.Sprintf("%s MXC", param.Amount),
-		B3:               jsonStruct.Body3,
-		B4:               jsonStruct.Body4,
-		Token:            param.Token,
-		B5:               jsonStruct.Body5,
-		Str1:             param.commonJSON.Str1,
-		Str2:             param.commonJSON.Str2,
-		Str3:             param.commonJSON.Str3,
-		Str4:             param.commonJSON.Str4,
+		FromText:           jsonStruct.FromText,
+		From:               email.from,
+		Host:               email.host,
+		To:                 user,
+		Subject:            jsonStruct.Subject,
+		MsgID:              param.messageID,
+		PlainText:          jsonStruct.PlainText,
+		Title:              jsonStruct.Title,
+		OperatorLogo:       email.operator.operatorLogo,
+		DownloadAppStore:   email.operator.downloadAppStore,
+		DownloadGoogle:     email.operator.downloadGoogle,
+		DownloadTestFlight: email.operator.downloadTestFlight,
+		DownloadAPK:        email.operator.downloadAPK,
+		OperatorLegal:      email.operator.operatorLegal,
+		OperatorAddress:    email.operator.operatorAddress,
+		OperatorContact:    email.operator.operatorContact,
+		B1:                 jsonStruct.Body1,
+		B2:                 jsonStruct.Body2,
+		AmountStr:          fmt.Sprintf("%s MXC", param.Amount),
+		B3:                 jsonStruct.Body3,
+		B4:                 jsonStruct.Body4,
+		Token:              param.Token,
+		B5:                 jsonStruct.Body5,
+		Str1:               param.commonJSON.Str1,
+		Str2:               param.commonJSON.Str2,
+		Str3:               param.commonJSON.Str3,
+		Str4:               param.commonJSON.Str4,
+		Str5:               param.commonJSON.Str5,
+		Str6:               param.commonJSON.Str6,
 	}
 
 	return emailData, nil

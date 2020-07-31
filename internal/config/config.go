@@ -23,18 +23,18 @@ type SMTPStruct struct {
 }
 
 type OperatorStruct struct {
-	Operator         string `mapstructure:"name"`
-	PrimaryColor     string `mapstructure:"primary_color"`
-	SecondaryColor   string `mapstructure:"secondary_color"`
-	DownloadAppStore string `mapstructure:"download_appstore"`
-	DownloadGoogle   string `mapstructure:"download_google"`
-	AppStoreLogo     string `mapstructure:"appstore_logo"`
-	AndroidLogo      string `mapstructure:"android_logo"`
-	OperatorAddress  string `mapstructure:"operator_address"`
-	OperatorLegal    string `mapstructure:"operator_legal_name"`
-	OperatorLogo     string `mapstructure:"operator_logo"`
-	OperatorContact  string `mapstructure:"operator_contact"`
-	OperatorSupport  string `mapstructure:"operator_support"`
+	Operator           string `mapstructure:"name"`
+	PrimaryColor       string `mapstructure:"primary_color"`
+	SecondaryColor     string `mapstructure:"secondary_color"`
+	DownloadAppStore   string `mapstructure:"download_appstore"`
+	DownloadGoogle     string `mapstructure:"download_google"`
+	DownloadTestFlight string `mapstructure:"download_testflight"`
+	DownloadAPK        string `mapstructure:"download_apk"`
+	OperatorAddress    string `mapstructure:"operator_address"`
+	OperatorLegal      string `mapstructure:"operator_legal_name"`
+	OperatorLogo       string `mapstructure:"operator_logo"`
+	OperatorContact    string `mapstructure:"operator_contact"`
+	OperatorSupport    string `mapstructure:"operator_support"`
 }
 
 // Config defines the configuration structure.
