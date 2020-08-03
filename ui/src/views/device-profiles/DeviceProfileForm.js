@@ -942,13 +942,13 @@ function Decode(fPort, bytes) {
                         }
                         <br />
 
-                        {this.state.object.payloadCodec === "CUSTOM_JS" &&
+                        {values.object.payloadCodec === "CUSTOM_JS" &&
                           <>
-                            <Label for="payloadDecoderScript">
+                            <Label for="payloadDecoderScript" style={{ marginTop: "50px" }}>
                               {i18n.t(`${packageNS}:tr000551`)}
                             </Label>
                             <CodeMirror
-                              value={object.payloadDecoderScript}
+                              value={payloadDecoderScript}
                               options={codeMirrorOptions}
                               onBeforeChange={this.onCodeChange.bind(this, 'payloadDecoderScript')}
                               className={this.props.classes.codeMirror}
@@ -957,11 +957,11 @@ function Decode(fPort, bytes) {
                               {i18n.t(`${packageNS}:tr000215`)}
                             </FormHelperText>
 
-                            <Label for="payloadEncoderScript">
+                            <Label for="payloadEncoderScript" style={{ marginTop: "20px" }}>
                             {i18n.t(`${packageNS}:tr000552`)}
                             </Label>
                             <CodeMirror
-                              value={object.payloadEncoderScript}
+                              value={payloadEncoderScript}
                               options={codeMirrorOptions}
                               onBeforeChange={this.onCodeChange.bind(this, 'payloadEncoderScript')}
                               className={this.props.classes.codeMirror}
