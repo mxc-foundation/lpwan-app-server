@@ -1,0 +1,16 @@
+{
+  "from": "%s Supernode",
+  "subject": "Staking Monthly Revenue",
+  "plainText": "Thanks for Staking! User #%s. It is time to see how much you made this month. Payment #%s on %s, staking income is %s MXC. Up till now, your total staking income is %s MXC. ",
+  "title": "%s E-mail",
+  "body1": "Staking Monthly Revenue",
+  "body2": "Thanks for Staking!",
+  "body3": "User #%s",
+  "body4": "It is time to see how much you made this month.",
+  "body5": "Payment #%s",
+  "body6": "Staking Income : ",
+  "body7": "Total",
+  "body8": "Stake #%s",
+  "body9": "%s started",
+  "body10": "Interest"
+}
