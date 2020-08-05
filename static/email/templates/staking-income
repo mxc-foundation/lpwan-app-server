@@ -4,65 +4,41 @@
         <p style="margin-top: 54px; line-height: 30px; text-align: center; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px; color: #333333; opacity: 1;">
             {{ .B2 }} <b>{{ .B3 }}</b> <br> {{ .B4 }}
         </p>
-        <table style="margin-top: 54px; margin-bottom: 54px; width: 80%">
+        <table style="margin-top: 54px; margin-bottom: 24px; width: 80%">
+            <!--Stake Overview-->
             <tbody>
-                <tr style="margin-top: 24px; line-height: 21px; ">
-                    <td>
-                    <p style="text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;"><b>{{ .B5 }}</b></p>
-                    </td>
+                <tr>
+                    <td style="padding-bottom: 10px; padding-top: 16px; text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333; border-bottom: 1px solid #ebeff2; "><b>{{ .B5 }}</b></td>
+                    <td style="padding-bottom: 10px; padding-top: 16px; text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333; border-bottom: 1px solid #ebeff2; ">{{ .B6 }}</td>
+                </tr>
 
-                    <td>
-                    <p style="text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .StakeRevenueDate }}</p>
-                    </td>
+                <tr>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  line-height: 21px; text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .B7 }}</td>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  line-height: 21px; text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .StakeAmount }} MXC</td>
+                </tr>
+
+                <tr>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .B8 }}</td>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .StakingInterest }}</td>
                 </tr>
             </tbody>
+            <!--/Stake Overview-->
+        </table>
 
+        <table style="margin-top: 24px; margin-bottom: 94px; width: 80%">
+            <!--Latest Stake Reward-->
             <tbody>
-                <tr style="margin-top: 24px; line-height: 21px; ">
-                    <td>
-                    <p style="text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;"><b>{{ .B6 }}</b></p>
-                    </td>
+                <tr>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333; border-bottom: 1px solid #ebeff2; "><b>{{ .B9 }}</b></td>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333; border-bottom: 1px solid #ebeff2; "></td>
+                </tr>
 
-                    <td>
-                    <p style="text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .StakeIncomeAmount }} MXC</p>
-                    </td>
+                <tr>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .B10 }}</td>
+                    <td style="padding-bottom: 10px; padding-top: 16px;  text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .StakeIncomeAmount }} MXC</td>
                 </tr>
             </tbody>
-
-            <tbody>
-                <td style="height: 1px; border: 1px none #fff; background-color: #ebeff2; color: #ebeff2; "></td>
-                <td style="height: 1px; border: 1px none #fff; background-color: #ebeff2; color: #ebeff2; "></td>
-
-                <tr style="margin-top: 24px; line-height: 21px; ">
-                    <td>
-                    <p style="text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;"><b>{{ .B7 }}</b></p>
-                    </td>
-
-                    <td>
-                    <p style="text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .StakeTotalIncome }} MXC</p>
-                    </td>
-                </tr>
-
-                <tr style="margin-top: 4px; line-height: 21px; ">
-                    <td>
-                    <p style="text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;"><b>{{ .B8 }}</b></p>
-                    </td>
-
-                    <td>
-                    <p style="text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .B9 }}</p>
-                    </td>
-                </tr>
-
-                <tr style="margin-top: 4px; line-height: 21px; ">
-                    <td>
-                    <p style="text-align: left; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;"><b>{{ .B10 }}</b></p>
-                    </td>
-                    <td>
-                    <p style="text-align: right; font-size: 18px; font-family: Roboto, sans-serif; letter-spacing: 0px;color: #333333;">{{ .StakingInterest }}</p>
-                    </td>
-                </tr>
-            </tbody>
-
+            <!--/Latest Stake Reward-->
         </table>
 
     </td>

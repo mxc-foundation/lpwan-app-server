@@ -45,7 +45,7 @@ type stakingIncomeParam struct {
 	OperatorAddress    string
 	OperatorContact    string
 	// body
-	B1, B2, B3, B4, B5, StakeRevenueDate, B6, StakeIncomeAmount, B7, StakeTotalIncome, B8, B9, B10, StakingInterest string
+	B1, B2, B3, B4, B5, B6, B7, StakeAmount, B8, StakingInterest, B9, B10, StakeIncomeAmount string
 	// footer
 	Str1, Str2, Str3, Str4, Str5, Str6 string
 }
@@ -57,9 +57,9 @@ type stakingIncomeEmailInterface struct {
 var stakingIncomeEmail stakingIncomeEmailInterface
 
 const (
-	StakeIncomeAmount      string = "stakeIncomeAmount"
-	StakeIncomeTotalAmount string = "stakeIncomeTotalAmount"
-	StakeIncomeInterest    string = "stakeIncomeInterest"
+	StakeIncomeAmount   string = "stakeIncomeAmount"
+	StakeAmount         string = "stakeAmount"
+	StakeIncomeInterest string = "stakeIncomeInterest"
 
 	UserID         string = "userID"
 	StakeID        string = "stakeID"
@@ -73,8 +73,8 @@ func paramCheck(param Param) error {
 	if param.Amount[StakeIncomeAmount] == "" {
 		return errors.New("StakeIncomeAmount")
 	}
-	if param.Amount[StakeIncomeTotalAmount] == "" {
-		return errors.New("StakeIncomeTotalAmount")
+	if param.Amount[StakeAmount] == "" {
+		return errors.New("StakeAmount")
 	}
 	if param.Amount[StakeIncomeInterest] == "" {
 		return errors.New("StakeIncomeInterest")
@@ -112,19 +112,19 @@ func (s *stakingIncomeEmailInterface) getEmailParam(user string, param Param, js
 	jsonStruct := stakingIncomeJSON{
 		FromText: fmt.Sprintf(s.JSON.FromText, email.operator.operatorName),
 		Subject:  s.JSON.Subject,
-		PlainText: fmt.Sprintf(s.JSON.PlainText, param.ItemID[UserID], param.ItemID[StakeRevenueID],
-			param.Date[StakeRevenueDate], param.Amount[StakeIncomeAmount], param.Amount[StakeIncomeTotalAmount]),
+		PlainText: fmt.Sprintf(s.JSON.PlainText, param.ItemID[UserID], param.Amount[StakeIncomeAmount],
+			param.Date[StakeRevenueDate], param.ItemID[StakeRevenueID]),
 		Title:  fmt.Sprintf(s.JSON.Title, email.operator.operatorName),
 		Body1:  s.JSON.Body1,
 		Body2:  s.JSON.Body2,
 		Body3:  fmt.Sprintf(s.JSON.Body3, param.ItemID[UserID]),
 		Body4:  s.JSON.Body4,
-		Body5:  fmt.Sprintf(s.JSON.Body5, param.ItemID[StakeRevenueID]),
-		Body6:  s.JSON.Body6,
+		Body5:  fmt.Sprintf(s.JSON.Body5, param.ItemID[StakeID]),
+		Body6:  fmt.Sprintf(s.JSON.Body6, param.Date[StakeStartDate]),
 		Body7:  s.JSON.Body7,
-		Body8:  fmt.Sprintf(s.JSON.Body8, param.ItemID[StakeID]),
-		Body9:  fmt.Sprintf(s.JSON.Body9, param.Date[StakeStartDate]),
-		Body10: s.JSON.Body10,
+		Body8:  s.JSON.Body8,
+		Body9:  fmt.Sprintf(s.JSON.Body9, param.ItemID[StakeRevenueID]),
+		Body10: fmt.Sprintf(s.JSON.Body10, param.Date[StakeRevenueDate]),
 	}
 
 	emailData := stakingIncomeParam{
@@ -149,15 +149,14 @@ func (s *stakingIncomeEmailInterface) getEmailParam(user string, param Param, js
 		B3:                 jsonStruct.Body3,
 		B4:                 jsonStruct.Body4,
 		B5:                 jsonStruct.Body5,
-		StakeRevenueDate:   param.Date[StakeRevenueDate],
 		B6:                 jsonStruct.Body6,
-		StakeIncomeAmount:  param.Amount[StakeIncomeAmount],
 		B7:                 jsonStruct.Body7,
-		StakeTotalIncome:   param.Amount[StakeIncomeTotalAmount],
+		StakeAmount:        param.Amount[StakeAmount],
 		B8:                 jsonStruct.Body8,
+		StakingInterest:    param.Amount[StakeIncomeInterest],
 		B9:                 jsonStruct.Body9,
 		B10:                jsonStruct.Body10,
-		StakingInterest:    param.Amount[StakeIncomeInterest],
+		StakeIncomeAmount:  param.Amount[StakeIncomeAmount],
 		Str1:               param.commonJSON.Str1,
 		Str2:               param.commonJSON.Str2,
 		Str3:               param.commonJSON.Str3,

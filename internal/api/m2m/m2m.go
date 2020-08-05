@@ -160,7 +160,7 @@ func (a *API) SendStakeIncomeNotification(ctx context.Context, req *pb.SendStake
 	for _, v := range users {
 		amountMap := make(map[string]string)
 		amountMap[email.StakeIncomeAmount] = req.StakeIncomeAmount
-		amountMap[email.StakeIncomeTotalAmount] = req.StakeIncomeTotalAmount
+		amountMap[email.StakeAmount] = req.StakeAmount
 		amountMap[email.StakeIncomeInterest] = req.StakeIncomeInterest
 
 		itemIDMap := make(map[string]string)
@@ -176,7 +176,7 @@ func (a *API) SendStakeIncomeNotification(ctx context.Context, req *pb.SendStake
 			Amount: amountMap,
 			ItemID: itemIDMap,
 			Date:   dateMap,
-		}, "en", email.StakingIncome)
+		}, email.EmailLanguage(config.C.General.DefaultLanguage), email.StakingIncome)
 
 	}
 
