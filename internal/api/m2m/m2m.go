@@ -2,7 +2,10 @@ package m2m
 
 import (
 	"context"
+	"fmt"
 	"net"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -141,6 +144,41 @@ func (a *API) GetGatewayByMac(ctx context.Context, req *pb.GetGatewayByMacReques
 	resp.GwProfile.Name = gateway.Name
 	resp.GwProfile.Description = gateway.Description
 	resp.GwProfile.CreatedAt, _ = ptypes.TimestampProto(gateway.CreatedAt)
+
+	return &resp, nil
+}
+
+// SendStakeIncomeNotification is called to send email to user when stake revenue is applied
+func (a *API) SendStakeIncomeNotification(ctx context.Context, req *pb.SendStakeIncomeNotificationRequest) (*pb.SendStakeIncomeNotificationResponse, error) {
+	resp := pb.SendStakeIncomeNotificationResponse{}
+	// get user id from organization id
+	users, err := storage.GetOrganizationUsers(ctx, storage.DB(), req.OrganizationId, 999, 0)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "failed to get users for organization")
+	}
+
+	for _, v := range users {
+		amountMap := make(map[string]string)
+		amountMap[email.StakeIncomeAmount] = req.StakeIncomeAmount
+		amountMap[email.StakeAmount] = req.StakeAmount
+		amountMap[email.StakeIncomeInterest] = req.StakeIncomeInterest
+
+		itemIDMap := make(map[string]string)
+		itemIDMap[email.UserID] = fmt.Sprintf("%d", v.UserID)
+		itemIDMap[email.StakeID] = req.StakeId
+		itemIDMap[email.StakeRevenueID] = req.StakeRevenueId
+
+		dateMap := make(map[string]string)
+		dateMap[email.StakeStartDate] = req.StakeStartDate
+		dateMap[email.StakeRevenueDate] = req.StakeRevenueDate
+
+		_ = email.SendInvite(v.Username, email.Param{
+			Amount: amountMap,
+			ItemID: itemIDMap,
+			Date:   dateMap,
+		}, email.EmailLanguage(config.C.General.DefaultLanguage), email.StakingIncome)
+
+	}
 
 	return &resp, nil
 }

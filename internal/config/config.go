@@ -43,7 +43,7 @@ type Config struct {
 		LogLevel               int    `mapstructure:"log_level"`
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
 		Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
-		MXCLogo                string `mapstructure:"mxc_logo"`
+		DefaultLanguage        string `mapstructure:"defualt_language"`
 	} `mapstructure:"general"`
 
 	PostgreSQL struct {
