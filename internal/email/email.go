@@ -32,7 +32,6 @@ type Client struct {
 }
 
 type operatorInfo struct {
-	MXCLogo,
 	operatorName,
 	downloadAppStore,
 	downloadGoogle,
@@ -76,7 +75,6 @@ func Setup(c config.Config) error {
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
 	email.host = os.Getenv("APPSERVER")
 	email.operator = operatorInfo{
-		MXCLogo:            c.General.MXCLogo,
 		operatorName:       c.Operator.Operator,
 		downloadAppStore:   c.Operator.DownloadAppStore,
 		downloadGoogle:     c.Operator.DownloadGoogle,

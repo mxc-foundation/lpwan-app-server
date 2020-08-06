@@ -17,7 +17,6 @@ const (
 	EmailTemplateMain string = "mainTemplate"
 	EmailTemplateHead string = "htmlBodyPartOne"
 	BodyTemplateName  string = "bodyTemplate"
-	EmailTemplateTail string = "htmlBodyPartTwo"
 
 	RegistrationConfirmation EmailOptions = "registration-confirm"
 	PasswordReset            EmailOptions = "password-reset"
@@ -32,8 +31,10 @@ const (
 
 type Param struct {
 	Token      string
-	Amount     string
+	Amount     map[string]string
 	messageID  string
+	ItemID     map[string]string
+	Date       map[string]string
 	commonJSON struct {
 		Str1 string `json:"str1"`
 		Str2 string `json:"str2"`
@@ -55,8 +56,8 @@ var emailOptionsList = map[EmailOptions]emailInterface{
 	TwoFAWithdraw:            twoFAWithdraw,
 	PasswordReset:            passwordResetInterface,
 	PasswordResetUnknown:     passwordResetUnknownInterface,
-	/*		StakingIncome:            stakingIncome,
-			TopupConfirmation:        topupConfirmation,
+	StakingIncome:            stakingIncome,
+	/*		TopupConfirmation:        topupConfirmation,
 			WithdrawDenied:           withdrawDenied,
 			WithdrawSuccess:          withdrawSuccess,*/
 }
@@ -67,8 +68,8 @@ var (
 	twoFAWithdraw                 = emailInterface(&twoFAWithdrawEmail)
 	passwordResetInterface        = emailInterface(&passwordResetEmail)
 	passwordResetUnknownInterface = emailInterface(&passwordResetUnknownEmail)
-	/*	stakingIncome                 = emailInterface(&stakingIncomeEmail)
-		topupConfirmation             = emailInterface(&topupConfirmEmail)
+	stakingIncome                 = emailInterface(&stakingIncomeEmail)
+	/*	topupConfirmation             = emailInterface(&topupConfirmEmail)
 		withdrawDenied                = emailInterface(&withdrawDeniedEmail)
 		withdrawSuccess               = emailInterface(&withdrawSuccessEmail)*/
 )
