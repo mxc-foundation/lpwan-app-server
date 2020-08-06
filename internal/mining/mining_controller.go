@@ -67,6 +67,7 @@ type Controller struct {
 	minFiatValue  float64
 	maxFiatValue  float64
 	gwOnlineLimit int64
+	lastPrice     float64
 }
 
 func Setup(conf config.Config) error {
@@ -113,8 +114,13 @@ func Setup(conf config.Config) error {
 func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) error {
 	price, err := ctrl.priceFetcher.GetPrice(ctrl.crypto, ctrl.fiat)
 	if err != nil {
-		return fmt.Errorf("couldn't get price of %s: %v", ctrl.crypto, err)
+		log.WithError(err).Errorf("couldn't get the price of %s", ctrl.crypto)
+		if ctrl.lastPrice == 0 {
+			return fmt.Errorf("couldn't get the price of %s and don't have last price", ctrl.crypto)
+		}
+		price = ctrl.lastPrice
 	}
+	ctrl.lastPrice = price
 	current_time := time.Now().Unix()
 
 	// get the gateway list that should receive the mining tokens
