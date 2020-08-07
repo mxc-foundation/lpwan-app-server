@@ -31,6 +31,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/miningstore"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -168,7 +169,7 @@ func setupClient() error {
 }
 
 func setupM2MServer() error {
-	if err := m2m_client.Setup(config.C); err != nil {
+	if err := m2m_client.Setup(); err != nil {
 		return errors.Wrap(err, "setup m2m-server error")
 	}
 	return nil
@@ -257,12 +258,13 @@ func setupMetrics() error {
 }
 
 func setupMining() error {
-	if config.C.ApplicationServer.MiningSetUp.Mining == false {
-		log.Info("Stop mining function")
-		return nil
+	miningStore := miningstore.New(storage.DB().DB)
+	m2mClient, err := m2m_client.New(config.C.M2MServer)
+	if err != nil {
+		return fmt.Errorf("couldn't create m2m client: %v", err)
 	}
-
-	if err := mining.Setup(config.C); err != nil {
+	cfg := config.C.ApplicationServer.MiningSetUp
+	if err := mining.Setup(cfg, miningStore, m2mClient); err != nil {
 		return errors.Wrap(err, "setup service mining error")
 	}
 	return nil

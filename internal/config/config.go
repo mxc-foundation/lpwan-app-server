@@ -3,11 +3,13 @@ package config
 import (
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/awssns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 )
 
@@ -63,12 +65,7 @@ type Config struct {
 
 	SMTP map[string]SMTPStruct `mapstructure:"smtp"`
 
-	M2MServer struct {
-		M2MServer string `mapstructure:"m2m_server"`
-		CACert    string `mapstructure:"ca_cert"`
-		TLSCert   string `mapstructure:"tls_cert"`
-		TLSKey    string `mapstructure:"tls_key"`
-	} `mapstructure:"m2m_server"`
+	M2MServer m2m_client.M2MConfig `mapstructure:"m2m_server"`
 
 	ProvisionServer struct {
 		ProvisionServer string `mapstructure:"provision_server"`
@@ -167,15 +164,7 @@ type Config struct {
 			FragIndex int `mapstructure:"frag_index"`
 		} `mapstructure:"fuota_deployment"`
 
-		MiningSetUp struct {
-			Mining                bool   `mapstructure:"mining"`
-			CMCKey                string `mapstructure:"cmc_key"`
-			HeartbeatOfflineLimit int64  `mapstructure:"heartbeat_offline_limit"`
-			GwOnlineLimit         int64  `mapstructure:"gw_online_limit"`
-			ExecuteTime           string `mapstructure:"execute_time"`
-			MinValue              int64  `mapstructure:"min_value"`
-			MaxValue              int64  `mapstructure:"max_value"`
-		} `mapstructure:"mining_setup"`
+		MiningSetUp mining.Config `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
 
 	JoinServer struct {

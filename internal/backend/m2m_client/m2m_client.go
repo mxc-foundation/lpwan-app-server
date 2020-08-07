@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"sync"
 	"time"
 
@@ -14,8 +15,15 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 )
+
+type M2MConfig struct {
+	M2MServer string `mapstructure:"m2m_server"`
+	CACert    string `mapstructure:"ca_cert"`
+	TLSCert   string `mapstructure:"tls_cert"`
+	TLSKey    string `mapstructure:"tls_key"`
+}
 
 var p Pool
 
@@ -32,8 +40,16 @@ type m2mServiceClient struct {
 	tlsKey     []byte
 }
 
+func New(cfg M2MConfig) (api.MiningServiceClient, error) {
+	conn, err := createClient(cfg.M2MServer, []byte(cfg.CACert), []byte(cfg.TLSCert), []byte(cfg.TLSKey))
+	if err != nil {
+		return nil, fmt.Errorf("couldn't connect to m2m server")
+	}
+	return api.NewMiningServiceClient(conn), nil
+}
+
 // Setup configures m2mServiceClients
-func Setup(conf config.Config) error {
+func Setup() error {
 	p = &pool{
 		m2mServiceClients: make(map[string]m2mServiceClient),
 	}
@@ -75,7 +91,7 @@ func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.Clien
 	}
 
 	if connect {
-		clientConn, err := p.createClient(hostname, caCert, tlsCert, tlsKey)
+		clientConn, err := createClient(hostname, caCert, tlsCert, tlsKey)
 		if err != nil {
 			return nil, errors.Wrap(err, "create m2m-server api client error")
 		}
@@ -91,7 +107,7 @@ func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.Clien
 	return c.clientConn, nil
 }
 
-func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.ClientConn, error) {
+func createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.ClientConn, error) {
 	logrusEntry := log.NewEntry(log.StandardLogger())
 	logrusOpts := []grpc_logrus.Option{
 		grpc_logrus.WithLevels(grpc_logrus.DefaultCodeToLevel),

@@ -2,101 +2,81 @@ package mining
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/brocaar/lorawan"
-	"github.com/robfig/cron"
 	log "github.com/sirupsen/logrus"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
-// PriceFetcher provides method to fetch current crypto currency price
-type PriceFetcher interface {
-	// GetPrice returns price of the specified crypto currency against
-	// specified fiat currency
-	GetPrice(crypto, fiat string) (float64, error)
+// Config contains mining configuration
+type Config struct {
+	// If mining is enabled or not
+	Enabled bool `mapstructure:"enabled"`
+	// If we haven't got heartbeat for HeartbeatOfflineLimit seconds, we
+	// consider gateway to be offline
+	HeartbeatOfflineLimit int64 `mapstructure:"heartbeat_offline_limit"`
+	// Gateway must be online for at leasts GwOnlineLimit seconds to receive mining reward
+	GwOnlineLimit int64 `mapstructure:"gw_online_limit"`
+	// Period is the length of the mining period in seconds
+	Period int64 `mapstructure:"period"`
 }
 
+// Store is interface to DB that stores information about gateways and heartbeat times
+type Store interface {
+	// GetGatewayMiningList returns the list of gateways that were online for
+	// at least onlineLimit
+	GetGatewayMiningList(ctx context.Context, time, onlineLimit int64) ([]lorawan.EUI64, error)
+	UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error
+}
+
+// Controller regularly checks what gateways should be paid for mining and
+// sends request to m2m to pay them
 type Controller struct {
-	priceFetcher  PriceFetcher
-	rnd           *rand.Rand
-	crypto        string
-	fiat          string
-	minFiatValue  float64
-	maxFiatValue  float64
 	gwOnlineLimit int64
-	lastPrice     float64
+	period        int64
+	m2mClient     api.MiningServiceClient
+	store         Store
 }
 
-func Setup(conf config.Config) error {
+func Setup(conf Config, store Store, m2mClient api.MiningServiceClient) error {
+	if !conf.Enabled {
+		return nil
+	}
+
 	log.Info("mining cron task begin...")
 
-	mconf := conf.ApplicationServer.MiningSetUp
-	if mconf.MinValue <= 0 || mconf.MinValue > mconf.MaxValue {
-		err := fmt.Errorf("invalid mining configuration, min_value %d and max_value %d", mconf.MinValue, mconf.MaxValue)
-		log.Error(err)
-		return err
-	}
-
 	ctrl := &Controller{
-		priceFetcher: coingecko.New(),
-		rnd:          rand.New(rand.NewSource(time.Now().UnixNano())),
-		crypto:       "mxc",
-		fiat:         "usd",
-		// converting value/day to value/10 minutes
-		minFiatValue:  float64(mconf.MinValue) / 144,
-		maxFiatValue:  float64(mconf.MaxValue) / 144,
-		gwOnlineLimit: mconf.GwOnlineLimit,
+		gwOnlineLimit: conf.GwOnlineLimit,
+		period:        conf.Period,
+		store:         store,
+		m2mClient:     m2mClient,
 	}
 
-	c := cron.New()
-	exeTime := config.C.ApplicationServer.MiningSetUp.ExecuteTime
-
-	err := c.AddFunc(exeTime, func() {
-		log.Info("Start token mining")
-		go func() {
-			err := ctrl.tokenMining(context.Background(), conf)
-			if err != nil {
-				log.WithError(err).Error("tokenMining Error")
+	go func() {
+		period := time.Duration(ctrl.period) * time.Second
+		for {
+			nextRun := time.Now().Add(period).Truncate(period)
+			time.Sleep(time.Until(nextRun))
+			if err := ctrl.submitMining(context.Background()); err != nil {
+				log.WithError(err).Error("couldn't submit mining")
 			}
-		}()
-	})
-	if err != nil {
-		log.WithError(err).Error("Start mining cron task failed")
-	}
-	go c.Start()
+		}
+	}()
 
 	return nil
 }
 
-func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) error {
-	price, err := ctrl.priceFetcher.GetPrice(ctrl.crypto, ctrl.fiat)
-	if err != nil {
-		log.WithError(err).Errorf("couldn't get the price of %s", ctrl.crypto)
-		if ctrl.lastPrice == 0 {
-			return fmt.Errorf("couldn't get the price of %s and don't have last price", ctrl.crypto)
-		}
-		price = ctrl.lastPrice
-	}
-	ctrl.lastPrice = price
+func (ctrl *Controller) submitMining(ctx context.Context) error {
 	current_time := time.Now().Unix()
+	log.Infof("processing mining")
 
 	// get the gateway list that should receive the mining tokens
-	miningGws, err := storage.GetGatewayMiningList(
-		ctx, storage.DB(), current_time, ctrl.gwOnlineLimit)
+	miningGws, err := ctrl.store.GetGatewayMiningList(
+		ctx, current_time, ctrl.gwOnlineLimit,
+	)
 	if err != nil {
-		if err == storage.ErrDoesNotExist {
-			log.Info("No gateway online longer than 24 hours")
-			return nil
-		}
-
 		log.WithError(err).Error("Cannot get mining gateway list from DB.")
 		return err
 	}
@@ -109,7 +89,7 @@ func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) err
 
 	// update the first heartbeat = 0
 	for _, v := range miningGws {
-		err := storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), v)
+		err := ctrl.store.UpdateFirstHeartbeatToZero(ctx, v)
 		if err != nil {
 			log.WithError(err).Error("tokenMining/update first heartbeat to zero error")
 		}
@@ -117,59 +97,24 @@ func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) err
 		macs = append(macs, mac)
 	}
 
-	amount := (ctrl.minFiatValue + ctrl.rnd.Float64()*
-		(ctrl.maxFiatValue-ctrl.minFiatValue)) / price
-
-	miningSent := false
 	// if error, resend after one minute
-	for !miningSent {
-		err := sendMining(ctx, macs, 1/price, amount)
-		if err != nil {
+	for {
+		if err := ctrl.sendMining(ctx, macs); err != nil {
 			log.WithError(err).Error("send mining request to m2m error")
 			time.Sleep(60 * time.Second)
 			continue
 		}
-		miningSent = true
+		break
 	}
 
 	return nil
 }
 
-func sendMining(ctx context.Context, macs []string, mxc_price, amount float64) error {
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		log.WithError(err).Error("create m2mClient for mining error")
-
-		return err
-	}
-
-	miningClient := api.NewMiningServiceClient(m2mClient)
-
-	resp, err := miningClient.Mining(ctx, &api.MiningRequest{
+func (ctrl *Controller) sendMining(ctx context.Context, macs []string) error {
+	_, err := ctrl.m2mClient.Mining(ctx, &api.MiningRequest{
 		GatewayMac:    macs,
-		MiningRevenue: amount,
-		MxcPrice:      mxc_price,
+		PeriodSeconds: ctrl.period,
 	})
-	if err != nil {
-		log.WithError(err).Error("Mining API request error")
-		return err
-	}
 
-	// if response == false, resend the request to m2m
-	for !resp.Status {
-		time.Sleep(60 * time.Second)
-		log.Println("Resend mining request.......")
-		resp, err = miningClient.Mining(ctx, &api.MiningRequest{
-			GatewayMac:    macs,
-			MiningRevenue: amount,
-			MxcPrice:      mxc_price,
-		})
-		if err != nil {
-			log.WithError(err).Error("Mining API request error")
-			return err
-		}
-	}
-
-	return nil
+	return err
 }
