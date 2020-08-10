@@ -295,6 +295,7 @@ const ReactstrapRootPasswordInput = ({
 
     const handleClickShowPassword = async () => {
         if(values.showPassword){
+            values.password = '';
             setValues({ ...values, showPassword: !values.showPassword });
         }else{
             let result = await confirm({
@@ -331,7 +332,7 @@ const ReactstrapRootPasswordInput = ({
             <Label for={props.id}>{props.label}</Label>
             <InputGroup>
                 <Input {...props} {...fields} type={values.showPassword ? 'text' : 'password'} value={values.password} defaultValue={'11111111'}
-                    onChange={handleChange('password')} invalid={Boolean(touched[fields.name] && errors[fields.name])} readonly/>
+                     invalid={Boolean(touched[fields.name] && errors[fields.name])} readOnly={true}/>
 
                 {touched[fields.name] && errors[fields.name] ? <FormFeedback className="order-last">{errors[fields.name]}</FormFeedback> : null}
 
