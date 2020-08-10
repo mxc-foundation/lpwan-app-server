@@ -1,8 +1,9 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import classNames from 'classnames';
 import { withRouter } from "react-router-dom";
 import AsyncSelect from 'react-select/async';
 import confirm from "reactstrap-confirm";
+import GatewayStore from "../stores/GatewayStore";
 import { CustomInput, FormFeedback, FormGroup, Row, FormText, Input, InputGroup, InputGroupAddon, Label, Alert, Button } from "reactstrap";
 import i18n, { packageNS } from '../i18n';
 
@@ -285,7 +286,7 @@ const ReactstrapRootPasswordInput = ({
         modal: false,
         showPassword: false,
     });
-
+    
     const handleChange = prop => event => {
         setValues({ ...values, [prop]: event.target.value });
         if (props.onChange) props.onChange(event.target.valu);
@@ -293,36 +294,44 @@ const ReactstrapRootPasswordInput = ({
     };
 
     const handleClickShowPassword = async () => {
-        let result = await confirm({
-            title: (
-                <>
-                    <strong>{i18n.t(`${packageNS}:tr000620`)}</strong>!
-                </>
-            ),
-            message: (<><Row>{i18n.t(`${packageNS}:tr000621`)}</Row><Row style={{marginTop:10}}>{i18n.t(`${packageNS}:tr000622`)}</Row></>),
-            confirmText: i18n.t(`${packageNS}:tr000623`),
-            confirmColor: "danger",
-            cancelColor: "link text-primary"
-        });
-        
-        if(result){
+        if(values.showPassword){
             setValues({ ...values, showPassword: !values.showPassword });
         }else{
-            return;
+            let result = await confirm({
+                title: (
+                    <>
+                        <strong>{i18n.t(`${packageNS}:tr000620`)}</strong>!
+                    </>
+                ),
+                message: (<><Row>{i18n.t(`${packageNS}:tr000621`)}</Row><Row style={{marginTop:10}}>{i18n.t(`${packageNS}:tr000622`)}</Row></>),
+                confirmText: i18n.t(`${packageNS}:tr000623`),
+                confirmColor: "danger",
+                cancelColor: "link text-primary"
+            });
+            
+            const id = props["data-id"];
+            const sn = props["data-sn"].split("_")[1];
+            const rootpassword = await GatewayStore.getRootConfig(id, sn);
+            values.password = rootpassword.password;
+            
+            if(result){
+                setValues({ ...values, password: values.password , showPassword: !values.showPassword });
+            }else{
+                return;
+            }
         }
     };
 
     const handleMouseDownPassword = event => {
         event.preventDefault();
     };
-
     
     return (
         <FormGroup>
             <Label for={props.id}>{props.label}</Label>
             <InputGroup>
-                <Input {...props} {...fields} type={values.showPassword ? 'text' : 'password'} defaultValue={values.password}
-                    onChange={handleChange('password')} invalid={Boolean(touched[fields.name] && errors[fields.name])} />
+                <Input {...props} {...fields} type={values.showPassword ? 'text' : 'password'} value={values.password} defaultValue={'11111111'}
+                    onChange={handleChange('password')} invalid={Boolean(touched[fields.name] && errors[fields.name])} readonly/>
 
                 {touched[fields.name] && errors[fields.name] ? <FormFeedback className="order-last">{errors[fields.name]}</FormFeedback> : null}
 
