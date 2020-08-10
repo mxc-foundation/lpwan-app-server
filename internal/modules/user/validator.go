@@ -17,7 +17,7 @@ type Validate interface {
 	ValidateActiveUser(ctx context.Context) (bool, error)
 	ValidateUsersGlobalAccess(ctx context.Context, flag authcus.Flag) (bool, error)
 	ValidateUserAccess(ctx context.Context, flag authcus.Flag, userID int64) (bool, error)
-	GetIsAdmin(ctx context.Context) (bool, error)
+	IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error
 	Is2FAEnabled(ctx context.Context, username string) (bool, error)
 	SignJWToken(username string, ttl int64, audience []string) (string, error)
 	GetUser(ctx context.Context, opts ...authcus.Option) (authcus.User, error)
@@ -83,8 +83,8 @@ func (v *Validator) Is2FAEnabled(ctx context.Context, username string) (bool, er
 	return v.Credentials.Is2FAEnabled(ctx, username)
 }
 
-func (v *Validator) GetIsAdmin(ctx context.Context) (bool, error) {
-	return v.Credentials.IsGlobalAdmin(ctx)
+func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error {
+	return v.Credentials.IsGlobalAdmin(ctx, opts...)
 }
 
 // ValidateActiveUser validates if the user in the JWT claim is active.
@@ -94,7 +94,7 @@ func (v *Validator) ValidateActiveUser(ctx context.Context) (bool, error) {
 		return false, errors.Wrap(err, "ValidateActiveUser")
 	}
 
-	return Service.St.CheckActiveUser(u.Username, u.ID)
+	return Service.St.CheckActiveUser(ctx, u.Username, u.ID)
 }
 
 // ValidateUsersAccess validates if the client has access to the global users
@@ -107,9 +107,9 @@ func (v *Validator) ValidateUsersGlobalAccess(ctx context.Context, flag authcus.
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateUserAcess(u.Username, u.ID)
+		return Service.St.CheckCreateUserAcess(ctx, u.Username, u.ID)
 	case authcus.List:
-		return Service.St.CheckListUserAcess(u.Username, u.ID)
+		return Service.St.CheckListUserAcess(ctx, u.Username, u.ID)
 	default:
 		panic("unsupported flag")
 	}
@@ -125,13 +125,13 @@ func (v *Validator) ValidateUserAccess(ctx context.Context, flag authcus.Flag, u
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckReadUserAccess(ctx, u.Username, userID, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckUpdateDeleteUserAccess(ctx, u.Username, userID, u.ID)
 	case authcus.UpdateProfile:
-		return Service.St.CheckUpdateProfileUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckUpdateProfileUserAccess(ctx, u.Username, userID, u.ID)
 	case authcus.UpdatePassword:
-		return Service.St.CheckUpdatePasswordUserAccess(u.Username, userID, u.ID)
+		return Service.St.CheckUpdatePasswordUserAccess(ctx, u.Username, userID, u.ID)
 	default:
 		panic("unsupported flag")
 	}

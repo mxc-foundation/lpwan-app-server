@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/pkg/errors"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,7 +51,15 @@ type twoFAWithdrawEmailInterface struct {
 
 var twoFAWithdrawEmail twoFAWithdrawEmailInterface
 
+const (
+	WithdrawAmount string = "withdrawAmount"
+)
+
 func (s *twoFAWithdrawEmailInterface) getEmailParam(user string, param Param, jsonData []byte) (interface{}, error) {
+	if param.Amount[WithdrawAmount] == "" {
+		return nil, errors.New("Invalid parameter for twoFAWithdrawEmailInterface")
+	}
+
 	err := json.Unmarshal(jsonData, &s.JSON)
 	if err != nil {
 		log.WithError(err).Errorf("Parse json data error")
@@ -59,7 +69,7 @@ func (s *twoFAWithdrawEmailInterface) getEmailParam(user string, param Param, js
 	jsonStruct := twoFAWithdrawJSON{
 		FromText:  fmt.Sprintf(s.JSON.FromText, email.operator.operatorName),
 		Subject:   fmt.Sprintf(s.JSON.Subject, email.operator.operatorName),
-		PlainText: fmt.Sprintf(s.JSON.PlainText, param.Amount, email.operator.operatorName),
+		PlainText: fmt.Sprintf(s.JSON.PlainText, param.Amount[WithdrawAmount], email.operator.operatorName),
 		Title:     fmt.Sprintf(s.JSON.Title, email.operator.operatorName),
 		Body1:     s.JSON.Body1,
 		Body2:     s.JSON.Body2,
@@ -87,7 +97,7 @@ func (s *twoFAWithdrawEmailInterface) getEmailParam(user string, param Param, js
 		OperatorContact:    email.operator.operatorContact,
 		B1:                 jsonStruct.Body1,
 		B2:                 jsonStruct.Body2,
-		AmountStr:          fmt.Sprintf("%s MXC", param.Amount),
+		AmountStr:          fmt.Sprintf("%s MXC", param.Amount[WithdrawAmount]),
 		B3:                 jsonStruct.Body3,
 		B4:                 jsonStruct.Body4,
 		Token:              param.Token,

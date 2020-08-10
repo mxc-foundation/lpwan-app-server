@@ -11,7 +11,8 @@ type Validator struct {
 }
 
 type Validate interface {
-	GetIsAdmin(ctx context.Context) (bool, error)
+	IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error
+	IsOrgAdmin(ctx context.Context, orgID int64, opts ...authcus.Option) error
 }
 
 func NewValidator() Validate {
@@ -20,6 +21,10 @@ func NewValidator() Validate {
 	}
 }
 
-func (v *Validator) GetIsAdmin(ctx context.Context) (bool, error) {
-	return v.Credentials.IsGlobalAdmin(ctx)
+func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error {
+	return v.Credentials.IsGlobalAdmin(ctx, opts...)
+}
+
+func (v *Validator) IsOrgAdmin(ctx context.Context, orgID int64, opts ...authcus.Option) error {
+	return v.Credentials.IsOrgAdmin(ctx, orgID, opts...)
 }

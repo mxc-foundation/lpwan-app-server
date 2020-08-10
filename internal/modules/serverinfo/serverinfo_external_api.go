@@ -11,8 +11,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
@@ -48,13 +47,10 @@ func (s *ServerInfoAPI) GetServerRegion(ctx context.Context, req *empty.Empty) (
 func (s *ServerInfoAPI) GetMxprotocolServerVersion(ctx context.Context, req *empty.Empty) (*pb.GetMxprotocolServerVersionResponse, error) {
 	log.WithField("", "").Info("grpc_api/GetVersion")
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	verClient, err := m2mcli.GetServerServiceClient()
 	if err != nil {
-		return &pb.GetMxprotocolServerVersionResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
-
-	verClient := api.NewM2MServerInfoServiceClient(m2mClient)
 
 	resp, err := verClient.GetVersion(ctx, req)
 	if err != nil {

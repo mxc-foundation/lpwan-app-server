@@ -9,9 +9,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 )
 
 // SettingsServerAPI defines the settings of the Server API structure
@@ -26,27 +25,17 @@ func NewSettingsServerAPI() *SettingsServerAPI {
 func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSettingsRequest) (*api.GetSettingsResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetSettings"
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetSettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		return &api.GetSettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	if err := NewValidator().IsGlobalAdmin(ctx); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	settingClient, err := m2mcli.GetSettingsServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	settingClient := m2mServer.NewSettingsServiceClient(m2mClient)
-
-	resp, err := settingClient.GetSettings(ctx, &m2mServer.GetSettingsRequest{})
+	resp, err := settingClient.GetSettings(ctx, &pb.GetSettingsRequest{})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetSettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
@@ -71,27 +60,17 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 func (s *SettingsServerAPI) ModifySettings(ctx context.Context, req *api.ModifySettingsRequest) (*api.ModifySettingsResponse, error) {
 	logInfo := "api/appserver_serves_ui/ModifySettings"
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.ModifySettingsResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	if err := NewValidator().IsGlobalAdmin(ctx); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	settingClient, err := m2mcli.GetSettingsServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.ModifySettingsResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	settingClient := m2mServer.NewSettingsServiceClient(m2mClient)
-
-	resp, err := settingClient.ModifySettings(ctx, &m2mServer.ModifySettingsRequest{
+	resp, err := settingClient.ModifySettings(ctx, &pb.ModifySettingsRequest{
 		LowBalanceWarning:          req.LowBalanceWarning,
 		DownlinkFee:                req.DownlinkFee,
 		TransactionPercentageShare: req.TransactionPercentageShare,

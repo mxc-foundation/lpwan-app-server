@@ -9,11 +9,8 @@ import (
 	"google.golang.org/grpc/status"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 )
 
 // StakingServerAPI defines the Staking Server API structure
@@ -28,30 +25,17 @@ func NewStakingServerAPI() *StakingServerAPI {
 func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingPercentage org=%d", req.OrgId)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.StakingPercentageResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.StakingPercentageResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakingPercentageResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
-
-	resp, err := stakeClient.GetStakingPercentage(ctx, &m2mServer.StakingPercentageRequest{
+	resp, err := stakeClient.GetStakingPercentage(ctx, &pb.StakingPercentageRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
@@ -68,32 +52,17 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeResponse, error) {
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/Stake org=%d", req.OrgId)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.StakeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
-	} else {
-		return &api.StakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
-
-	resp, err := stakeClient.Stake(ctx, &m2mServer.StakeRequest{
+	resp, err := stakeClient.Stake(ctx, &pb.StakeRequest{
 		OrgId:  req.OrgId,
 		Amount: req.Amount,
 	})
@@ -111,32 +80,17 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.UnstakeResponse, error) {
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/Unstake org=%d", req.OrgId)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.UnstakeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			log.WithError(err).Error(logInfo)
-			return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
-	} else {
-		return &api.UnstakeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed")
+	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
-
-	resp, err := stakeClient.Unstake(ctx, &m2mServer.UnstakeRequest{
+	resp, err := stakeClient.Unstake(ctx, &pb.UnstakeRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
@@ -153,29 +107,17 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRequest) (*api.GetActiveStakesResponse, error) {
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetActiveStakes org=%d", req.OrgId)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
-
-	resp, err := stakeClient.GetActiveStakes(ctx, &m2mServer.GetActiveStakesRequest{
+	resp, err := stakeClient.GetActiveStakes(ctx, &pb.GetActiveStakesRequest{
 		OrgId: req.OrgId,
 	})
 	if err != nil {
@@ -201,22 +143,18 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 // GetStakingRevenue returns the amount earned from staking during the specified period
 func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueRequest) (*api.StakingRevenueResponse, error) {
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)
-	cred, err := s.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be an organization admin")
+
+	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unavailable, err.Error())
+		return &api.StakingRevenueResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
-	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
-	resp, err := stakeClient.GetStakingRevenue(ctx, &m2mServer.StakingRevenueRequest{
+
+	resp, err := stakeClient.GetStakingRevenue(ctx, &pb.StakingRevenueRequest{
 		OrgId:    req.OrgId,
 		Currency: req.Currency,
 		From:     req.From,
@@ -233,29 +171,17 @@ func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.Staki
 func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.StakingHistoryRequest) (*api.StakingHistoryResponse, error) {
 	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingHistory org=%d", req.OrgId)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().GetIsAdmin(ctx)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.StakingHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &api.StakingHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
-
-	resp, err := stakeClient.GetStakingHistory(ctx, &m2mServer.StakingHistoryRequest{
+	resp, err := stakeClient.GetStakingHistory(ctx, &pb.StakingHistoryRequest{
 		OrgId:    req.OrgId,
 		Currency: req.Currency,
 		From:     req.From,

@@ -113,7 +113,7 @@ class DeviceStore extends EventEmitter {
   update(device, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Update({
-        "device.devEui": device.devEUI,
+        "device.devEUI": device.devEUI,
         body: {
           device: device,
         },
@@ -170,7 +170,7 @@ class DeviceStore extends EventEmitter {
   createKeys(deviceKeys, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.CreateKeys({
-        "deviceKeys.devEui": deviceKeys.devEUI,
+        "deviceKeys.devEUI": deviceKeys.devEUI,
         body: {
           deviceKeys: deviceKeys,
         },
@@ -187,7 +187,7 @@ class DeviceStore extends EventEmitter {
   updateKeys(deviceKeys, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.UpdateKeys({
-        "deviceKeys.devEui": deviceKeys.devEUI,
+        "deviceKeys.devEUI": deviceKeys.devEUI, 
         body: {
           deviceKeys: deviceKeys,
         },
@@ -217,7 +217,7 @@ class DeviceStore extends EventEmitter {
   activate(deviceActivation, callbackFunc) {
     this.swagger.then(client => {
       client.apis.DeviceService.Activate({
-        "deviceActivation.devEui": deviceActivation.devEUI,
+        "deviceActivation.devEUI": deviceActivation.devEUI,
         body: {
           deviceActivation: deviceActivation,
         },

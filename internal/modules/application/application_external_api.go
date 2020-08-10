@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 	"encoding/json"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -20,22 +21,18 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/loracloud"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mydevices"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/thingsboard"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // ApplicationAPI exports the Application related functions.
 type ApplicationAPI struct {
-	st   ApplicationStore
-	txSt store.Store
+	st store.ApplicationStore
 }
 
 // NewApplicationAPI creates a new ApplicationAPI.
 func NewApplicationAPI() *ApplicationAPI {
-	st := store.New(storage.DB().DB)
 	return &ApplicationAPI{
-		st:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 
@@ -63,7 +60,7 @@ func (a *ApplicationAPI) Create(ctx context.Context, req *pb.CreateApplicationRe
 		return nil, status.Errorf(codes.InvalidArgument, "application and service-profile must be under the same organization")
 	}
 
-	app := Application{
+	app := store.Application{
 		Name:                 req.Application.Name,
 		Description:          req.Application.Description,
 		OrganizationID:       req.Application.OrganizationId,

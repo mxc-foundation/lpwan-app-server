@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,8 +15,9 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	jscodec "github.com/mxc-foundation/lpwan-app-server/internal/codec/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
@@ -24,7 +26,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
+	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
@@ -141,19 +143,23 @@ func setupCodec() error {
 }
 
 func setupClient() error {
-	if err := networkserver.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup networkserver error")
+	if err := nscli.Setup(); err != nil {
+		return errors.Wrap(err, "setup networkserver connection error")
 	}
 
-	if err := m2m_client.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup m2m-server error")
+	if err := m2mcli.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup m2m-server connection error")
+	}
+
+	if err := pscli.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup provisioning server connection error")
 	}
 
 	return nil
 }
 
 func setupUpdateFirmwareFromPs() error {
-	if err := gwmod.Service.UpdateFirmwareFromProvisioningServer(config.C); err != nil {
+	if err := gwmod.Service.UpdateFirmwareFromProvisioningServer(context.TODO(), config.C); err != nil {
 		return errors.Wrap(err, "setup update firmware error")
 	}
 	return nil
@@ -207,35 +213,35 @@ func setupFUOTA() error {
 }
 
 func setupModules() error {
-	if err := gwmod.Setup(); err != nil {
+	if err := gwmod.Setup(store.New(storage.DB().DB)); err != nil {
 		return err
 	}
 
-	if err := devmod.Setup(); err != nil {
+	if err := devmod.Setup(store.New(storage.DB().DB)); err != nil {
 		return err
 	}
 
-	if err := appmod.Setup(); err != nil {
+	if err := appmod.Setup(store.New(storage.DB().DB)); err != nil {
 		return err
 	}
 
-	if err := gpmod.Setup(); err != nil {
+	if err := gpmod.Setup(store.New(storage.DB().DB)); err != nil {
 		return err
 	}
 
-	if err := miningmod.Setup(); err != nil {
+	if err := miningmod.Setup(config.C); err != nil {
 		return err
 	}
 
-	if err := nsmod.Setup(); err != nil {
+	if err := nsmod.Setup(store.New(storage.DB().DB)); err != nil {
 		return err
 	}
 
-	if err := orgmod.Setup(); err != nil {
+	if err := orgmod.Setup(store.New(storage.DB().DB)); err != nil {
 		return err
 	}
 
-	if err := usermod.Setup(); err != nil {
+	if err := usermod.Setup(store.New(storage.DB().DB)); err != nil {
 		return err
 	}
 

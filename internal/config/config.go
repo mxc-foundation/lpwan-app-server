@@ -3,11 +3,6 @@ package config
 import (
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/awssns"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 )
 
@@ -40,11 +35,11 @@ type OperatorStruct struct {
 // Config defines the configuration structure.
 type Config struct {
 	General struct {
-		LogLevel               int  `mapstructure:"log_level"`
-		LogToSyslog            bool `mapstructure:"log_to_syslog"`
-		PasswordHashIterations int  `mapstructure:"password_hash_iterations"`
-		Enable2FALogin         bool `mapstructure:"enable_2fa_login"`
-		MXCLogo                string `mapstructure:"mxc_logo"`
+		LogLevel               int    `mapstructure:"log_level"`
+		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
+		Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
+		DefaultLanguage        string `mapstructure:"defualt_language"`
+		LogToSyslog            bool   `mapstructure:"log_to_syslog"`
 	} `mapstructure:"general"`
 
 	PostgreSQL struct {
@@ -121,7 +116,7 @@ type Config struct {
 		} `mapstructure:"integration"`
 
 		API struct {
-			Bind       string
+			Bind       string `mapstructure:"bind"`
 			CACert     string `mapstructure:"ca_cert"`
 			TLSCert    string `mapstructure:"tls_cert"`
 			TLSKey     string `mapstructure:"tls_key"`

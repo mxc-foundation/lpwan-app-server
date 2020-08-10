@@ -213,76 +213,80 @@ func (c *Credentials) UserID(ctx context.Context, opts ...Option) (int64, error)
 
 // IsGlobalAdmin checks that the user is a global admin and returns an error if
 // he's not
-func (c *Credentials) IsGlobalAdmin(ctx context.Context, opts ...Option) (bool, error) {
+func (c *Credentials) IsGlobalAdmin(ctx context.Context, opts ...Option) error {
 	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to get credentials")
+		return errors.Wrap(err, "failed to get credentials")
 	}
 
-	return cred.user.IsGlobalAdmin, nil
+	if !cred.user.IsGlobalAdmin {
+		return errors.New("user is not global admin")
+	}
+
+	return nil
 }
 
 // IsOrgUser checks that the user belongs to the organisation, if not it
 // returns an error
-func (c *Credentials) IsOrgUser(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+func (c *Credentials) IsOrgUser(ctx context.Context, orgID int64, opts ...Option) error {
 	opts = append(opts, WithOrganizationID(orgID))
 	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to get credentials")
+		return errors.Wrap(err, "failed to get credentials")
 	}
 
-	if cred.user.IsGlobalAdmin || cred.orgUser.IsOrgUser {
-		return true, nil
+	if !cred.user.IsGlobalAdmin && !cred.orgUser.IsOrgUser {
+		return errors.New("user is neither org user nor global admin")
 	}
 
-	return false, nil
+	return nil
 }
 
 // IsOrgAdmin checks that the user is admin for the organisation, if not it
 // returns an error
-func (c *Credentials) IsOrgAdmin(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+func (c *Credentials) IsOrgAdmin(ctx context.Context, orgID int64, opts ...Option) error {
 	opts = append(opts, WithOrganizationID(orgID))
 	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to get credentials")
+		return errors.Wrap(err, "failed to get credentials")
 	}
 
-	if cred.user.IsGlobalAdmin || cred.orgUser.IsOrgAdmin {
-		return true, nil
+	if !cred.user.IsGlobalAdmin && !cred.orgUser.IsOrgAdmin {
+		return errors.New("user is neither org admin nor global admin")
 	}
 
-	return false, nil
+	return nil
 }
 
 // IsDeviceAdmin checks that the user is device admin for the organisation, if
 // not it returns an error
-func (c *Credentials) IsDeviceAdmin(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+func (c *Credentials) IsDeviceAdmin(ctx context.Context, orgID int64, opts ...Option) error {
 	opts = append(opts, WithOrganizationID(orgID))
 	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to get credentials")
+		return errors.Wrap(err, "failed to get credentials")
 	}
 
-	if cred.user.IsGlobalAdmin || cred.orgUser.IsDeviceAdmin {
-		return true, nil
+	if !cred.user.IsGlobalAdmin && !cred.orgUser.IsDeviceAdmin {
+		return errors.New("user is neither device admin nor global admin")
 	}
 
-	return false, nil
+	return nil
 }
 
 // IsGatewayAdmin checks that the user is gateway admin for the organisation,
 // if not it returns an error
-func (c *Credentials) IsGatewayAdmin(ctx context.Context, orgID int64, opts ...Option) (bool, error) {
+func (c *Credentials) IsGatewayAdmin(ctx context.Context, orgID int64, opts ...Option) error {
 	opts = append(opts, WithOrganizationID(orgID))
 	cred, err := c.getCredentials(ctx, opts...)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to get credentials")
+		return errors.Wrap(err, "failed to get credentials")
 	}
-	if cred.user.IsGlobalAdmin || cred.orgUser.IsGatewayAdmin {
-		return true, nil
+	if !cred.user.IsGlobalAdmin && !cred.orgUser.IsGatewayAdmin {
+		return errors.New("user is neither gateway admin nor global admin")
 	}
 
-	return false, nil
+	return nil
 }
 
 // Is2FAEnabled requires username, since ctx does not contain user info at this point

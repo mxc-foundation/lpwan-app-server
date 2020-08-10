@@ -44,9 +44,9 @@ func (v *Validator) ValidateGlobalGatewaysAccess(ctx context.Context, flag authc
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateGatewayAccess(u.Username, organizationID, u.ID)
+		return Service.St.CheckCreateGatewayAccess(ctx, u.Username, organizationID, u.ID)
 	case authcus.List:
-		return Service.St.CheckListGatewayAccess(u.Username, organizationID, u.ID)
+		return Service.St.CheckListGatewayAccess(ctx, u.Username, organizationID, u.ID)
 	default:
 		panic("ValidateGlobalGatewaysAccess: unsupported flag")
 	}
@@ -61,9 +61,9 @@ func (v *Validator) ValidateGatewayAccess(ctx context.Context, flag authcus.Flag
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadGatewayAccess(u.Username, mac, u.ID)
+		return Service.St.CheckReadGatewayAccess(ctx, u.Username, mac, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteGatewayAccess(u.Username, mac, u.ID)
+		return Service.St.CheckUpdateDeleteGatewayAccess(ctx, u.Username, mac, u.ID)
 	default:
 		panic("ValidateGatewayAccess: unsupported flag")
 	}
@@ -79,7 +79,7 @@ func (v *Validator) ValidateOrganizationNetworkServerAccess(ctx context.Context,
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadOrganizationNetworkServerAccess(u.Username, organizationID, networkServerID, u.ID)
+		return Service.St.CheckReadOrganizationNetworkServerAccess(ctx, u.Username, organizationID, networkServerID, u.ID)
 	default:
 		panic("ValidateOrganizationNetworkServerAccess: unsupported flag")
 	}

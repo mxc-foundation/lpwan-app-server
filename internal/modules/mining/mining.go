@@ -3,6 +3,7 @@ package mining
 import (
 	"context"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	"math/rand"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -67,6 +68,7 @@ type Controller struct {
 	minFiatValue  float64
 	maxFiatValue  float64
 	gwOnlineLimit int64
+	lastPrice     float64
 }
 
 func Setup(conf config.Config) error {
@@ -113,13 +115,17 @@ func Setup(conf config.Config) error {
 func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) error {
 	price, err := ctrl.priceFetcher.GetPrice(ctrl.crypto, ctrl.fiat)
 	if err != nil {
-		return fmt.Errorf("couldn't get price of %s: %v", ctrl.crypto, err)
+		log.WithError(err).Errorf("couldn't get the price of %s", ctrl.crypto)
+		if ctrl.lastPrice == 0 {
+			return fmt.Errorf("couldn't get the price of %s and don't have last price", ctrl.crypto)
+		}
+		price = ctrl.lastPrice
 	}
+	ctrl.lastPrice = price
 	current_time := time.Now().Unix()
 
 	// get the gateway list that should receive the mining tokens
-	miningGws, err := storage.GetGatewayMiningList(
-		ctx, storage.DB(), current_time, ctrl.gwOnlineLimit)
+	miningGws, err := gateway.Service.St.GetGatewayMiningList(ctx, current_time, ctrl.gwOnlineLimit)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			log.Info("No gateway online longer than 24 hours")
@@ -138,7 +144,7 @@ func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) err
 
 	// update the first heartbeat = 0
 	for _, v := range miningGws {
-		err := storage.UpdateFirstHeartbeatToZero(ctx, storage.DB(), v)
+		err := gateway.Service.St.UpdateFirstHeartbeatToZero(ctx, v)
 		if err != nil {
 			log.WithError(err).Error("tokenMining/update first heartbeat to zero error")
 		}
@@ -165,15 +171,11 @@ func (ctrl *Controller) tokenMining(ctx context.Context, conf config.Config) err
 }
 
 func sendMining(ctx context.Context, macs []string, mxc_price, amount float64) error {
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	miningClient, err := m2mcli.GetMiningServiceClient()
 	if err != nil {
 		log.WithError(err).Error("create m2mClient for mining error")
-
 		return err
 	}
-
-	miningClient := api.NewMiningServiceClient(m2mClient)
 
 	resp, err := miningClient.Mining(ctx, &api.MiningRequest{
 		GatewayMac:    macs,

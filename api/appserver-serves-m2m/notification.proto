@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package appserver_serves_m2m;
+
+service NotificationService {
+    rpc SendStakeIncomeNotification (SendStakeIncomeNotificationRequest) returns (SendStakeIncomeNotificationResponse);
+}
+
+message SendStakeIncomeNotificationRequest {
+    string stake_income_amount = 1;
+    string stake_amount = 2;
+    string stake_income_interest = 3;
+    string stake_id = 4;
+    string stake_revenue_id = 5;
+    string stake_revenue_date = 6;
+    string stake_start_date = 7;
+    int64 organization_id = 8;
+}
+
+message SendStakeIncomeNotificationResponse {
+    string status = 1;
+}

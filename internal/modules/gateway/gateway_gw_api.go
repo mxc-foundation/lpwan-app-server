@@ -16,7 +16,7 @@ import (
 
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -167,7 +167,7 @@ Next:
 
 	// check if firmware updated
 	if gw.AutoUpdateFirmware {
-		firmware, err := tx.GetGatewayFirmware(gw.Model, false)
+		firmware, err := tx.GetGatewayFirmware(ctx, gw.Model, false)
 		if err != nil {
 			if err == storage.ErrDoesNotExist {
 				return nil, status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
@@ -186,10 +186,7 @@ Next:
 	// update gateway with osVersion and statistics
 	if gw.OsVersion != req.OsVersion {
 		// update provisioning server
-		client, err := provisionserver.CreateClientWithCert(config.C.ProvisionServer.ProvisionServer,
-			config.C.ProvisionServer.CACert,
-			config.C.ProvisionServer.TLSCert,
-			config.C.ProvisionServer.TLSKey)
+		client, err := pscli.CreateClientWithCert()
 		if err == nil {
 			_, err := client.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
 				Sn:        gw.SerialNumber,

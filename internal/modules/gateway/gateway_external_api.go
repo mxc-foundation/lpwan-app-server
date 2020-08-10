@@ -18,18 +18,15 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
@@ -37,6 +34,7 @@ import (
 	gp "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // GatewayAPI exports the Gateway related functions.
@@ -57,7 +55,7 @@ func NewGatewayAPI(applicationID uuid.UUID) *GatewayAPI {
 }
 
 // BatchResetDefaultGatewatConfig reset gateways config to default config matching organization list
-func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb.BatchResetDefaultGatewatConfigRequest) (*pb.BatchResetDefaultGatewatConfigResponse, error) {
+func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *api.BatchResetDefaultGatewatConfigRequest) (*api.BatchResetDefaultGatewatConfigResponse, error) {
 	log.WithFields(log.Fields{
 		"organization_list": req.OrganizationList,
 	}).Info("BatchResetDefaultGatewatConfig is called")
@@ -85,7 +83,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb
 
 		limit := 100
 		for offset := 0; offset <= count/limit; offset++ {
-			list, err := organization.Service.St.GetOrganizationIDList(limit, offset, "")
+			list, err := organization.Service.St.GetOrganizationIDList(ctx, limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -123,7 +121,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *pb
 		succeededList = append(succeededList, strconv.Itoa(v))
 	}
 
-	return &pb.BatchResetDefaultGatewatConfigResponse{
+	return &api.BatchResetDefaultGatewatConfigResponse{
 		Status: fmt.Sprintf("following organization failed: %s \n following organization succeeded: %s",
 			strings.Join(failedList, ","), strings.Join(succeededList, ",")),
 	}, status.Error(codes.OK, "")
@@ -163,7 +161,7 @@ func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Conte
 }
 
 // ResetDefaultGatewatConfigByID reste gateway config to default config matching gateway id
-func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *pb.ResetDefaultGatewatConfigByIDRequest) (*pb.ResetDefaultGatewatConfigByIDResponse, error) {
+func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *api.ResetDefaultGatewatConfigByIDRequest) (*api.ResetDefaultGatewatConfigByIDResponse, error) {
 	log.WithFields(log.Fields{
 		"gateway_id": req.Id,
 	}).Info("ResetDefaultGatewatConfigByID is called")
@@ -197,11 +195,11 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *pb.
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	return &pb.ResetDefaultGatewatConfigByIDResponse{}, status.Error(codes.OK, "")
+	return &api.ResetDefaultGatewatConfigByIDResponse{}, status.Error(codes.OK, "")
 }
 
 // InsertNewDefaultGatewayConfig insert given new default gateway config
-func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.InsertNewDefaultGatewayConfigRequest) (*pb.InsertNewDefaultGatewayConfigResponse, error) {
+func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *api.InsertNewDefaultGatewayConfigRequest) (*api.InsertNewDefaultGatewayConfigResponse, error) {
 	log.WithFields(log.Fields{
 		"model":  req.Model,
 		"region": req.Region,
@@ -222,7 +220,7 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.
 		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", Service.SupernodeAddr, -1),
 	}
 
-	err = a.st.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.st.GetDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err == nil {
 		// config already exist, no need to insert
 		return nil, status.Errorf(codes.AlreadyExists, "model=%s, region=%s", req.Model, req.Region)
@@ -230,16 +228,16 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *pb.
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	err = a.st.AddNewDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.st.AddNewDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	return &pb.InsertNewDefaultGatewayConfigResponse{}, status.Error(codes.OK, "")
+	return &api.InsertNewDefaultGatewayConfigResponse{}, status.Error(codes.OK, "")
 }
 
 // UpdateNewDefaultGatewayConfig update default gateway config matching model and region
-func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.UpdateDefaultGatewayConfigRequest) (*pb.UpdateDefaultGatewayConfigResponse, error) {
+func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *api.UpdateDefaultGatewayConfigRequest) (*api.UpdateDefaultGatewayConfigResponse, error) {
 	log.WithFields(log.Fields{
 		"model":  req.Model,
 		"region": req.Region,
@@ -259,22 +257,22 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *pb.Upd
 		Region: req.Region,
 	}
 
-	err = a.st.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.st.GetDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
 	defaultGatewayConfig.DefaultConfig = strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", Service.SupernodeAddr, -1)
-	err = a.st.UpdateDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.st.UpdateDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	return &pb.UpdateDefaultGatewayConfigResponse{}, status.Error(codes.OK, "")
+	return &api.UpdateDefaultGatewayConfigResponse{}, status.Error(codes.OK, "")
 }
 
 // GetDefaultGatewayConfig get content of default gateway config matching model and region
-func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *pb.GetDefaultGatewayConfigRequest) (*pb.GetDefaultGatewayConfigResponse, error) {
+func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *api.GetDefaultGatewayConfigRequest) (*api.GetDefaultGatewayConfigResponse, error) {
 	log.WithFields(log.Fields{
 		"model":  req.Model,
 		"region": req.Region,
@@ -294,16 +292,16 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *pb.GetDef
 		Region: req.Region,
 	}
 
-	err = a.st.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.st.GetDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
-	return &pb.GetDefaultGatewayConfigResponse{DefaultConfig: defaultGatewayConfig.DefaultConfig}, status.Error(codes.OK, "")
+	return &api.GetDefaultGatewayConfigResponse{DefaultConfig: defaultGatewayConfig.DefaultConfig}, status.Error(codes.OK, "")
 }
 
 // Create creates the given gateway.
-func (a *GatewayAPI) Create(ctx context.Context, req *pb.CreateGatewayRequest) (*empty.Empty, error) {
+func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) (*empty.Empty, error) {
 	if req.Gateway == nil {
 		return nil, status.Error(codes.InvalidArgument, "gateway must not be nil")
 	}
@@ -345,7 +343,7 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 		Region: n.Region,
 	}
 
-	err = a.st.GetDefaultGatewayConfig(&defaultGatewayConfig)
+	err = a.st.GetDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to get default gateway config for model= %s, region= %s", defaultGatewayConfig.Model, defaultGatewayConfig.Region)
 	}
@@ -354,7 +352,7 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 	return nil
 }
 
-func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultGw *Gateway) (err error) {
+func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, defaultGw *Gateway) (err error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -470,24 +468,22 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 
 	timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
 	// add this gateway to m2m server
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	gwClient := m2mServer.NewM2MServerServiceClient(m2mClient)
-	if err == nil {
-		_, err = gwClient.AddGatewayInM2MServer(context.Background(), &m2mServer.AddGatewayInM2MServerRequest{
-			OrgId: gw.OrganizationID,
-			GwProfile: &m2mServer.AppServerGatewayProfile{
-				Mac:         gw.MAC.String(),
-				OrgId:       gw.OrganizationID,
-				Description: gw.Description,
-				Name:        gw.Name,
-				CreatedAt:   timestampCreatedAt,
-			},
-		})
-		if err != nil {
-			return helpers.ErrToRPCError(err)
-		}
-	} else {
+	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
+	if err != nil {
+		return status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	_, err = gwClient.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
+		OrgId: gw.OrganizationID,
+		GwProfile: &pb.AppServerGatewayProfile{
+			Mac:         gw.MAC.String(),
+			OrgId:       gw.OrganizationID,
+			Description: gw.Description,
+			Name:        gw.Name,
+			CreatedAt:   timestampCreatedAt,
+		},
+	})
+	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
 
@@ -496,7 +492,13 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 		return helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -514,7 +516,7 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *pb.Gateway, defaultG
 }
 
 // Get returns the gateway matching the given Mac.
-func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.GetGatewayResponse, error) {
+func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.GetGatewayResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -534,7 +536,13 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -546,8 +554,8 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 		return nil, err
 	}
 
-	resp := pb.GetGatewayResponse{
-		Gateway: &pb.Gateway{
+	resp := api.GetGatewayResponse{
+		Gateway: &api.Gateway{
 			Id:               mac.String(),
 			Name:             gw.Name,
 			Description:      gw.Description,
@@ -597,7 +605,7 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 	}
 
 	for i := range getResp.Gateway.Boards {
-		var gwBoard pb.GatewayBoard
+		var gwBoard api.GatewayBoard
 
 		if len(getResp.Gateway.Boards[i].FpgaId) != 0 {
 			var fpgaID lorawan.EUI64
@@ -626,7 +634,7 @@ func (a *GatewayAPI) Get(ctx context.Context, req *pb.GetGatewayRequest) (*pb.Ge
 }
 
 // List lists the gateways.
-func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.ListGatewayResponse, error) {
+func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*api.ListGatewayResponse, error) {
 	if valid, err := NewValidator().ValidateGlobalGatewaysAccess(ctx, authcus.List, req.OrganizationId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -659,12 +667,12 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	resp := pb.ListGatewayResponse{
+	resp := api.ListGatewayResponse{
 		TotalCount: int64(count),
 	}
 
 	for _, gw := range gws {
-		row := pb.GatewayListItem{
+		row := api.GatewayListItem{
 			Id:              gw.MAC.String(),
 			Name:            gw.Name,
 			Description:     gw.Description,
@@ -706,8 +714,8 @@ func (a *GatewayAPI) List(ctx context.Context, req *pb.ListGatewayRequest) (*pb.
 }
 
 // ListLocations lists the gateway locations.
-func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocationsRequest) (*pb.ListGatewayLocationsResponse, error) {
-	var result []*pb.GatewayLocationListItem
+func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLocationsRequest) (*api.ListGatewayLocationsResponse, error) {
+	var result []*api.GatewayLocationListItem
 	/*
 		redisConn := storage.RedisPool().Get()
 		defer redisConn.Close()
@@ -724,8 +732,8 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocat
 			}
 
 			for _, loc := range gwsLoc {
-				result = append(result, &pb.GatewayLocationListItem{
-					Location: &pb.GatewayLocation{
+				result = append(result, &api.GatewayLocationListItem{
+					Location: &api.GatewayLocation{
 						Latitude:  loc.Latitude,
 						Longitude: loc.Longitude,
 						Altitude:  loc.Altitude,
@@ -739,7 +747,7 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocat
 			}
 		}
 	*/
-	resp := pb.ListGatewayLocationsResponse{
+	resp := api.ListGatewayLocationsResponse{
 		Result: result,
 	}
 
@@ -747,7 +755,7 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *pb.ListGatewayLocat
 }
 
 // Update updates the given gateway.
-func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (*empty.Empty, error) {
+func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) (*empty.Empty, error) {
 	if req.Gateway == nil {
 		return nil, status.Error(codes.InvalidArgument, "gateway must not be nil")
 	}
@@ -840,7 +848,13 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
@@ -858,7 +872,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *pb.UpdateGatewayRequest) (
 }
 
 // Delete deletes the gateway matching the given ID.
-func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (*empty.Empty, error) {
+func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) (*empty.Empty, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -877,7 +891,7 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *pb.DeleteGatewayRequest) (
 }
 
 // GetStats gets the gateway statistics for the gateway with the given Mac.
-func (a *GatewayAPI) GetStats(ctx context.Context, req *pb.GetGatewayStatsRequest) (*pb.GetGatewayStatsResponse, error) {
+func (a *GatewayAPI) GetStats(ctx context.Context, req *api.GetGatewayStatsRequest) (*api.GetGatewayStatsResponse, error) {
 	var gatewayID lorawan.EUI64
 	if err := gatewayID.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -907,9 +921,9 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *pb.GetGatewayStatsReques
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	result := make([]*pb.GatewayStats, len(metrics))
+	result := make([]*api.GatewayStats, len(metrics))
 	for i, m := range metrics {
-		result[i] = &pb.GatewayStats{
+		result[i] = &api.GatewayStats{
 			RxPacketsReceived:   int32(m.Metrics["rx_count"]),
 			RxPacketsReceivedOk: int32(m.Metrics["rx_ok_count"]),
 			TxPacketsReceived:   int32(m.Metrics["tx_count"]),
@@ -922,13 +936,13 @@ func (a *GatewayAPI) GetStats(ctx context.Context, req *pb.GetGatewayStatsReques
 		}
 	}
 
-	return &pb.GetGatewayStatsResponse{
+	return &api.GetGatewayStatsResponse{
 		Result: result,
 	}, nil
 }
 
 // GetLastPing returns the last emitted ping and gateways receiving this ping.
-func (a *GatewayAPI) GetLastPing(ctx context.Context, req *pb.GetLastPingRequest) (*pb.GetLastPingResponse, error) {
+func (a *GatewayAPI) GetLastPing(ctx context.Context, req *api.GetLastPingRequest) (*api.GetLastPingResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -943,7 +957,7 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *pb.GetLastPingRequest
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	resp := pb.GetLastPingResponse{
+	resp := api.GetLastPingResponse{
 		Frequency: uint32(ping.Frequency),
 		Dr:        uint32(ping.DR),
 	}
@@ -954,7 +968,7 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *pb.GetLastPingRequest
 	}
 
 	for _, rx := range pingRX {
-		resp.PingRx = append(resp.PingRx, &pb.PingRX{
+		resp.PingRx = append(resp.PingRx, &api.PingRX{
 			GatewayId: rx.GatewayMAC.String(),
 			Rssi:      int32(rx.RSSI),
 			LoraSnr:   rx.LoRaSNR,
@@ -969,7 +983,7 @@ func (a *GatewayAPI) GetLastPing(ctx context.Context, req *pb.GetLastPingRequest
 
 // StreamFrameLogs streams the uplink and downlink frame-logs for the given mac.
 // Note: these are the raw LoRaWAN frames and this endpoint is intended for debugging.
-func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv pb.GatewayService_StreamFrameLogsServer) error {
+func (a *GatewayAPI) StreamFrameLogs(req *api.StreamGatewayFrameLogsRequest, srv api.GatewayService_StreamFrameLogsServer) error {
 	var mac lorawan.EUI64
 
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
@@ -985,7 +999,13 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 		return helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -1008,15 +1028,15 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 			return helpers.ErrToRPCError(err)
 		}
 
-		var frameResp pb.StreamGatewayFrameLogsResponse
+		var frameResp api.StreamGatewayFrameLogsResponse
 		if up != nil {
-			frameResp.Frame = &pb.StreamGatewayFrameLogsResponse_UplinkFrame{
+			frameResp.Frame = &api.StreamGatewayFrameLogsResponse_UplinkFrame{
 				UplinkFrame: up,
 			}
 		}
 
 		if down != nil {
-			frameResp.Frame = &pb.StreamGatewayFrameLogsResponse_DownlinkFrame{
+			frameResp.Frame = &api.StreamGatewayFrameLogsResponse_DownlinkFrame{
 				DownlinkFrame: down,
 			}
 		}
@@ -1029,7 +1049,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *pb.StreamGatewayFrameLogsRequest, srv 
 }
 
 // GetGwConfig gets the gateway config file
-func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest) (*pb.GetGwConfigResponse, error) {
+func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *api.GetGwConfigRequest) (*api.GetGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1044,11 +1064,11 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *pb.GetGwConfigRequest
 		return nil, status.Errorf(codes.NotFound, "GetGwConfig/unable to get gateway config from DB %s", err)
 	}
 
-	return &pb.GetGwConfigResponse{Conf: gwConfig}, nil
+	return &api.GetGwConfigResponse{Conf: gwConfig}, nil
 }
 
 // UpdateGwConfig gateway configuration file
-func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigRequest) (*pb.UpdateGwConfigResponse, error) {
+func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *api.UpdateGwConfigRequest) (*api.UpdateGwConfigResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1060,17 +1080,17 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *pb.UpdateGwConfigR
 
 	if err := a.st.UpdateGatewayConfigByGwId(ctx, req.Conf, mac); err != nil {
 		log.WithError(err).Error("Update conf to gw failed")
-		return &pb.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
+		return &api.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
 			status.Errorf(codes.Internal, "cannot update gateway config: %s", err)
 	}
 
-	return &pb.UpdateGwConfigResponse{
+	return &api.UpdateGwConfigResponse{
 		Status: "Update gateway config file successful",
 	}, nil
 }
 
 // Register will first try to get the gateway from provision server
-func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*api.RegisterResponse, error) {
 	log.WithFields(log.Fields{
 		"Sn":             req.Sn,
 		"OrganizationID": req.OrganizationId,
@@ -1091,10 +1111,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		OrgId:         req.OrganizationId,
 	}
 
-	provConf := config.C.ProvisionServer
-
-	provClient, err := provisionserver.CreateClientWithCert(provConf.ProvisionServer, provConf.CACert,
-		provConf.TLSCert, provConf.TLSKey)
+	provClient, err := pscli.CreateClientWithCert()
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, err.Error())
 	}
@@ -1105,16 +1122,16 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 	}
 
 	// add new firmware if new model is registered
-	_, err = a.st.GetGatewayFirmware(resp.Model, true)
+	_, err = a.st.GetGatewayFirmware(ctx, resp.Model, true)
 	if err == storage.ErrDoesNotExist {
-		if _, err = a.st.AddGatewayFirmware(&GatewayFirmware{
+		if _, err = a.st.AddGatewayFirmware(ctx, &GatewayFirmware{
 			Model: resp.Model,
 		}); err != nil {
 			log.WithError(err).Errorf("Failed to add new firmware: %s", resp.Model)
 		}
 	}
 
-	gateway := pb.Gateway{
+	gateway := api.Gateway{
 		Id:          resp.Mac,
 		Name:        fmt.Sprintf("Gateway_%s", resp.Sn),
 		Description: fmt.Sprintf("Gateway Model: %s\nGateway OsVersion: %s\n", resp.Model, resp.OsVersion),
@@ -1129,7 +1146,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		DiscoveryEnabled: true,
 		NetworkServerId:  0,
 		GatewayProfileId: "",
-		Boards:           []*pb.GatewayBoard{},
+		Boards:           []*api.GatewayBoard{},
 	}
 
 	// get gateway profile id, always use the default one
@@ -1179,12 +1196,12 @@ func (a *GatewayAPI) Register(ctx context.Context, req *pb.RegisterRequest) (*pb
 		return nil, err
 	}
 
-	return &pb.RegisterResponse{
+	return &api.RegisterResponse{
 		Status: "Successful",
 	}, nil
 }
 
-func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb.GetGwPwdResponse, error) {
+func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *api.GetGwPwdRequest) (*api.GetGwPwdResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1194,9 +1211,7 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
-	provConf := config.C.ProvisionServer
-	provClient, err := provisionserver.CreateClientWithCert(provConf.ProvisionServer, provConf.CACert,
-		provConf.TLSCert, provConf.TLSKey)
+	provClient, err := pscli.CreateClientWithCert()
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "failed to connect to provisioning server")
 	}
@@ -1209,10 +1224,10 @@ func (a *GatewayAPI) GetGwPwd(ctx context.Context, req *pb.GetGwPwdRequest) (*pb
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	return &pb.GetGwPwdResponse{Password: resp.RootPassword}, nil
+	return &api.GetGwPwdResponse{Password: resp.RootPassword}, nil
 }
 
-func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoUpdateFirmwareRequest) (*pb.SetAutoUpdateFirmwareResponse, error) {
+func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *api.SetAutoUpdateFirmwareRequest) (*api.SetAutoUpdateFirmwareResponse, error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.GatewayId)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -1226,7 +1241,7 @@ func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *pb.SetAutoU
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	return &pb.SetAutoUpdateFirmwareResponse{Message: "Auto update firmware set successfully"}, nil
+	return &api.SetAutoUpdateFirmwareResponse{Message: "Auto update firmware set successfully"}, nil
 }
 
 // GetGatewayList defines the get Gateway list request and response
@@ -1246,16 +1261,13 @@ func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := m2mServer.NewGSGatewayServiceClient(m2mClient)
-
-	resp, err := gwClient.GetGatewayList(ctx, &m2mServer.GetGatewayListRequest{
+	resp, err := gwClient.GetGatewayList(ctx, &pb.GetGatewayListRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
@@ -1306,16 +1318,13 @@ func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := m2mServer.NewGSGatewayServiceClient(m2mClient)
-
-	resp, err := gwClient.GetGatewayProfile(ctx, &m2mServer.GetGSGatewayProfileRequest{
+	resp, err := gwClient.GetGatewayProfile(ctx, &pb.GetGSGatewayProfileRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
 		Offset: req.Offset,
@@ -1359,16 +1368,13 @@ func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayH
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := m2mServer.NewGSGatewayServiceClient(m2mClient)
-
-	resp, err := gwClient.GetGatewayHistory(ctx, &m2mServer.GetGatewayHistoryRequest{
+	resp, err := gwClient.GetGatewayHistory(ctx, &pb.GetGatewayHistoryRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
 		Offset: req.Offset,
@@ -1401,19 +1407,16 @@ func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	gwClient := m2mServer.NewGSGatewayServiceClient(m2mClient)
-
-	resp, err := gwClient.SetGatewayMode(ctx, &m2mServer.SetGatewayModeRequest{
+	resp, err := gwClient.SetGatewayMode(ctx, &pb.SetGatewayModeRequest{
 		OrgId:  req.OrgId,
 		GwId:   req.GwId,
-		GwMode: m2mServer.GatewayMode(req.GwMode),
+		GwMode: pb.GatewayMode(req.GwMode),
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)

@@ -21,13 +21,12 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	m2mServer "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
+	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -57,7 +56,7 @@ func NewDeviceAPI(applicationID uuid.UUID) *DeviceAPI {
 }
 
 // Create creates the given device.
-func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*empty.Empty, error) {
 	if req.Device == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device must not be nil")
 	}
@@ -160,7 +159,13 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 	}
 
 	// add this device to network server
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
@@ -181,24 +186,23 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 
 	// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
 	// network server successfully
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
-	if err == nil {
-		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &m2m_api.AddDeviceInM2MServerRequest{
-			OrgId: app.OrganizationID,
-			DevProfile: &m2m_api.AppServerDeviceProfile{
-				DevEui:        d.DevEUI.String(),
-				ApplicationId: d.ApplicationID,
-				Name:          d.Name,
-				CreatedAt:     timestampCreatedAt,
-			},
-		})
-		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "m2m server create device api error: %v", err)
-		}
-	} else {
-		return nil, status.Errorf(codes.Unknown, "get m2m-server client error: %v", err)
+	dvClient, err := m2mcli.GetM2MDeviceServiceClient()
+	if err != nil {
+		log.WithError(err).Error("Create device")
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	_, err = dvClient.AddDeviceInM2MServer(context.Background(), &pb.AddDeviceInM2MServerRequest{
+		OrgId: app.OrganizationID,
+		DevProfile: &pb.AppServerDeviceProfile{
+			DevEui:        d.DevEUI.String(),
+			ApplicationId: d.ApplicationID,
+			Name:          d.Name,
+			CreatedAt:     timestampCreatedAt,
+		},
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "m2m server create device api error: %v", err)
 	}
 
 	if err := tx.TxCommit(ctx); err != nil {
@@ -209,7 +213,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *pb.CreateDeviceRequest) (*e
 }
 
 // Get returns the device matching the given DevEUI.
-func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetDeviceResponse, error) {
+func (a *DeviceAPI) Get(ctx context.Context, req *api.GetDeviceRequest) (*api.GetDeviceResponse, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -229,7 +233,13 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -246,8 +256,8 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 		d.ReferenceAltitude = res.Device.ReferenceAltitude
 	}
 
-	response := pb.GetDeviceResponse{
-		Device: &pb.Device{
+	response := api.GetDeviceResponse{
+		Device: &api.Device{
 			DevEui:            d.DevEUI.String(),
 			Name:              d.Name,
 			ApplicationId:     d.ApplicationID,
@@ -300,7 +310,7 @@ func (a *DeviceAPI) Get(ctx context.Context, req *pb.GetDeviceRequest) (*pb.GetD
 }
 
 // List lists the available applications.
-func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.ListDeviceResponse, error) {
+func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.ListDeviceResponse, error) {
 	var err error
 	var idFilter bool
 
@@ -384,7 +394,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *pb.ListDeviceRequest) (*pb.Li
 }
 
 // Update updates the device matching the given DevEUI.
-func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*empty.Empty, error) {
 	if req.Device == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device must not be nil")
 	}
@@ -433,7 +443,13 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -522,7 +538,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *pb.UpdateDeviceRequest) (*e
 }
 
 // Delete deletes the node matching the given name.
-func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) Delete(ctx context.Context, req *api.DeleteDeviceRequest) (*empty.Empty, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -543,7 +559,7 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceRequest) (*e
 }
 
 // CreateKeys creates the given device-keys.
-func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) CreateKeys(ctx context.Context, req *api.CreateDeviceKeysRequest) (*empty.Empty, error) {
 	if req.DeviceKeys == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device_keys must not be nil")
 	}
@@ -595,7 +611,7 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *pb.CreateDeviceKeysRequ
 }
 
 // GetKeys returns the device-keys for the given DevEUI.
-func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (*pb.GetDeviceKeysResponse, error) {
+func (a *DeviceAPI) GetKeys(ctx context.Context, req *api.GetDeviceKeysRequest) (*api.GetDeviceKeysResponse, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -610,8 +626,8 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	return &pb.GetDeviceKeysResponse{
-		DeviceKeys: &pb.DeviceKeys{
+	return &api.GetDeviceKeysResponse{
+		DeviceKeys: &api.DeviceKeys{
 			DevEui:    eui.String(),
 			AppKey:    dk.AppKey.String(),
 			NwkKey:    dk.NwkKey.String(),
@@ -621,7 +637,7 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *pb.GetDeviceKeysRequest) (
 }
 
 // UpdateKeys updates the device-keys.
-func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *api.UpdateDeviceKeysRequest) (*empty.Empty, error) {
 	if req.DeviceKeys == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device_keys must not be nil")
 	}
@@ -674,7 +690,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *pb.UpdateDeviceKeysRequ
 }
 
 // DeleteKeys deletes the device-keys for the given DevEUI.
-func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *api.DeleteDeviceKeysRequest) (*empty.Empty, error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -693,7 +709,7 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *pb.DeleteDeviceKeysRequ
 }
 
 // Deactivate de-activates the device.
-func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) Deactivate(ctx context.Context, req *api.DeactivateDeviceRequest) (*empty.Empty, error) {
 	var devEUI lorawan.EUI64
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, err.Error())
@@ -713,7 +729,13 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -726,7 +748,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *pb.DeactivateDeviceRequ
 }
 
 // Activate activates the node (ABP only).
-func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest) (*empty.Empty, error) {
+func (a *DeviceAPI) Activate(ctx context.Context, req *api.ActivateDeviceRequest) (*empty.Empty, error) {
 	if req.DeviceActivation == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "device_activation must not be nil")
 	}
@@ -777,7 +799,13 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -822,7 +850,7 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *pb.ActivateDeviceRequest)
 }
 
 // GetActivation returns the device activation for the given DevEUI.
-func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivationRequest) (*pb.GetDeviceActivationResponse, error) {
+func (a *DeviceAPI) GetActivation(ctx context.Context, req *api.GetDeviceActivationRequest) (*api.GetDeviceActivationResponse, error) {
 	var devAddr lorawan.DevAddr
 	var devEUI lorawan.EUI64
 	var sNwkSIntKey lorawan.AES128Key
@@ -847,7 +875,13 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -864,8 +898,8 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 	copy(sNwkSIntKey[:], devAct.DeviceActivation.SNwkSIntKey)
 	copy(fNwkSIntKey[:], devAct.DeviceActivation.FNwkSIntKey)
 
-	return &pb.GetDeviceActivationResponse{
-		DeviceActivation: &pb.DeviceActivation{
+	return &api.GetDeviceActivationResponse{
+		DeviceActivation: &api.DeviceActivation{
 			DevEui:  d.DevEUI.String(),
 			DevAddr: devAddr.String(),
 			//AppSKey:     d.AppSKey.String(),
@@ -881,7 +915,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *pb.GetDeviceActivati
 
 // StreamFrameLogs streams the uplink and downlink frame-logs for the given DevEUI.
 // Note: these are the raw LoRaWAN frames and this endpoint is intended for debugging.
-func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb.DeviceService_StreamFrameLogsServer) error {
+func (a *DeviceAPI) StreamFrameLogs(req *api.StreamDeviceFrameLogsRequest, srv api.DeviceService_StreamFrameLogsServer) error {
 	var devEUI lorawan.EUI64
 
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
@@ -892,12 +926,18 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(srv.Context(), devEUI)
+	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(srv.Context(), devEUI)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -924,15 +964,15 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 			return helpers.ErrToRPCError(err)
 		}
 
-		var frameResp pb.StreamDeviceFrameLogsResponse
+		var frameResp api.StreamDeviceFrameLogsResponse
 		if up != nil {
-			frameResp.Frame = &pb.StreamDeviceFrameLogsResponse_UplinkFrame{
+			frameResp.Frame = &api.StreamDeviceFrameLogsResponse_UplinkFrame{
 				UplinkFrame: up,
 			}
 		}
 
 		if down != nil {
-			frameResp.Frame = &pb.StreamDeviceFrameLogsResponse_DownlinkFrame{
+			frameResp.Frame = &api.StreamDeviceFrameLogsResponse_DownlinkFrame{
 				DownlinkFrame: down,
 			}
 		}
@@ -947,7 +987,7 @@ func (a *DeviceAPI) StreamFrameLogs(req *pb.StreamDeviceFrameLogsRequest, srv pb
 // StreamEventLogs stream the device events (uplink payloads, ACKs, joins, errors).
 // Note: this endpoint is intended for debugging and should not be used for building
 // integrations.
-func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb.DeviceService_StreamEventLogsServer) error {
+func (a *DeviceAPI) StreamEventLogs(req *api.StreamDeviceEventLogsRequest, srv api.DeviceService_StreamEventLogsServer) error {
 	var devEUI lorawan.EUI64
 
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
@@ -973,7 +1013,7 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 			return status.Errorf(codes.Internal, "marshal json error: %s", err)
 		}
 
-		resp := pb.StreamDeviceEventLogsResponse{
+		resp := api.StreamDeviceEventLogsResponse{
 			Type:        el.Type,
 			PayloadJson: string(b),
 		}
@@ -988,19 +1028,25 @@ func (a *DeviceAPI) StreamEventLogs(req *pb.StreamDeviceEventLogsRequest, srv pb
 }
 
 // GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.
-func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *pb.GetRandomDevAddrRequest) (*pb.GetRandomDevAddrResponse, error) {
+func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *api.GetRandomDevAddrRequest) (*api.GetRandomDevAddrResponse, error) {
 	var devEUI lorawan.EUI64
 
 	if err := devEUI.UnmarshalText([]byte(req.DevEui)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	n, err := networkserver.GetNetworkServerAPI().Store.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -1013,17 +1059,17 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *pb.GetRandomDevAd
 	var devAddr lorawan.DevAddr
 	copy(devAddr[:], resp.DevAddr)
 
-	return &pb.GetRandomDevAddrResponse{
+	return &api.GetRandomDevAddrResponse{
 		DevAddr: devAddr.String(),
 	}, nil
 }
 
-func (a *DeviceAPI) returnList(count int, devices []DeviceListItem) (*pb.ListDeviceResponse, error) {
-	resp := pb.ListDeviceResponse{
+func (a *DeviceAPI) returnList(count int, devices []DeviceListItem) (*api.ListDeviceResponse, error) {
+	resp := api.ListDeviceResponse{
 		TotalCount: int64(count),
 	}
 	for _, device := range devices {
-		item := pb.DeviceListItem{
+		item := api.DeviceListItem{
 			DevEui:                          device.DevEUI.String(),
 			Name:                            device.Name,
 			Description:                     device.Description,
@@ -1068,7 +1114,7 @@ func (a *DeviceAPI) returnList(count int, devices []DeviceListItem) (*pb.ListDev
 	return &resp, nil
 }
 
-func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFrameLog, decodeMACCommands bool) (*pb.UplinkFrameLog, *pb.DownlinkFrameLog, error) {
+func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFrameLog, decodeMACCommands bool) (*api.UplinkFrameLog, *api.DownlinkFrameLog, error) {
 	var phy lorawan.PHYPayload
 
 	if up != nil {
@@ -1104,7 +1150,7 @@ func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFram
 	}
 
 	if up != nil {
-		uplinkFrameLog := pb.UplinkFrameLog{
+		uplinkFrameLog := api.UplinkFrameLog{
 			TxInfo:         up.TxInfo,
 			RxInfo:         up.RxInfo,
 			PhyPayloadJson: string(phyJSON),
@@ -1117,7 +1163,7 @@ func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFram
 		var gatewayID lorawan.EUI64
 		copy(gatewayID[:], down.GatewayId)
 
-		downlinkFrameLog := pb.DownlinkFrameLog{
+		downlinkFrameLog := api.DownlinkFrameLog{
 			TxInfo:         down.TxInfo,
 			PhyPayloadJson: string(phyJSON),
 		}
@@ -1129,48 +1175,45 @@ func ConvertUplinkAndDownlinkFrames(up *ns.UplinkFrameLog, down *ns.DownlinkFram
 }
 
 // GetDeviceList defines the get device list request and response
-func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequest) (*pb.GetDeviceListResponse, error) {
+func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *api.GetDeviceListRequest) (*api.GetDeviceListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceList org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return &api.GetDeviceListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
 		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return &api.GetDeviceListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	devClient, err := m2mcli.GetM2MDeviceServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
-
-	resp, err := devClient.GetDeviceList(ctx, &m2mServer.GetDeviceListRequest{
+	resp, err := devClient.GetDeviceList(ctx, &pb.GetDeviceListRequest{
 		OrgId:  req.OrgId,
 		Offset: req.Offset,
 		Limit:  req.Limit,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDeviceListResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	var deviceProfileList []*pb.DSDeviceProfile
+	var deviceProfileList []*api.DSDeviceProfile
 	for _, item := range resp.DevProfile {
-		deviceProfile := &pb.DSDeviceProfile{
+		deviceProfile := &api.DSDeviceProfile{
 			Id:            item.Id,
 			DevEui:        item.DevEui,
 			FkWallet:      item.Id,
-			Mode:          pb.DeviceMode(item.Mode),
+			Mode:          api.DeviceMode(item.Mode),
 			CreatedAt:     item.CreatedAt,
 			LastSeenAt:    item.LastSeenAt,
 			ApplicationId: item.ApplicationId,
@@ -1180,53 +1223,50 @@ func (a *DeviceAPI) GetDeviceList(ctx context.Context, req *pb.GetDeviceListRequ
 		deviceProfileList = append(deviceProfileList, deviceProfile)
 	}
 
-	return &pb.GetDeviceListResponse{
+	return &api.GetDeviceListResponse{
 		DevProfile: deviceProfileList,
 		Count:      resp.Count,
 	}, status.Error(codes.OK, "")
 }
 
 // GetDeviceProfile defines the function to get the device profile
-func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDeviceProfileRequest) (*pb.GetDSDeviceProfileResponse, error) {
+func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *api.GetDSDeviceProfileRequest) (*api.GetDSDeviceProfileResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceProfile org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
 		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	devClient, err := m2mcli.GetM2MDeviceServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
-
-	resp, err := devClient.GetDeviceProfile(ctx, &m2mServer.GetDSDeviceProfileRequest{
+	resp, err := devClient.GetDeviceProfile(ctx, &pb.GetDSDeviceProfileRequest{
 		OrgId: req.OrgId,
 		DevId: req.DevId,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDSDeviceProfileResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &pb.GetDSDeviceProfileResponse{
-		DevProfile: &pb.DSDeviceProfile{
+	return &api.GetDSDeviceProfileResponse{
+		DevProfile: &api.DSDeviceProfile{
 			Id:            resp.DevProfile.Id,
 			DevEui:        resp.DevProfile.DevEui,
 			FkWallet:      resp.DevProfile.FkWallet,
-			Mode:          pb.DeviceMode(resp.DevProfile.Mode),
+			Mode:          api.DeviceMode(resp.DevProfile.Mode),
 			CreatedAt:     resp.DevProfile.CreatedAt,
 			LastSeenAt:    resp.DevProfile.LastSeenAt,
 			ApplicationId: resp.DevProfile.ApplicationId,
@@ -1236,32 +1276,29 @@ func (a *DeviceAPI) GetDeviceProfile(ctx context.Context, req *pb.GetDSDevicePro
 }
 
 // GetDeviceHistory defines the get device history request and response
-func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHistoryRequest) (*pb.GetDeviceHistoryResponse, error) {
+func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *api.GetDeviceHistoryRequest) (*api.GetDeviceHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetDeviceHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
 		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	devClient, err := m2mcli.GetM2MDeviceServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
-
-	resp, err := devClient.GetDeviceHistory(ctx, &m2mServer.GetDeviceHistoryRequest{
+	resp, err := devClient.GetDeviceHistory(ctx, &pb.GetDeviceHistoryRequest{
 		OrgId:  req.OrgId,
 		DevId:  req.DevId,
 		Offset: req.Offset,
@@ -1269,51 +1306,48 @@ func (a *DeviceAPI) GetDeviceHistory(ctx context.Context, req *pb.GetDeviceHisto
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.GetDeviceHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &pb.GetDeviceHistoryResponse{
+	return &api.GetDeviceHistoryResponse{
 		DevHistory: resp.DevHistory,
 	}, status.Error(codes.OK, "")
 }
 
 // SetDeviceMode defines the set device mode request and response
-func (a *DeviceAPI) SetDeviceMode(ctx context.Context, req *pb.SetDeviceModeRequest) (*pb.SetDeviceModeResponse, error) {
+func (a *DeviceAPI) SetDeviceMode(ctx context.Context, req *api.SetDeviceModeRequest) (*api.SetDeviceModeResponse, error) {
 	logInfo := "api/appserver_serves_ui/SetDeviceMode org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
 	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
+		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
 	}
 	// is user is not global admin, user must have accesss to this organization
 	if !u.IsGlobalAdmin {
 		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
+	devClient, err := m2mcli.GetM2MDeviceServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	devClient := m2mServer.NewDSDeviceServiceClient(m2mClient)
-
-	resp, err := devClient.SetDeviceMode(ctx, &m2mServer.SetDeviceModeRequest{
+	resp, err := devClient.SetDeviceMode(ctx, &pb.SetDeviceModeRequest{
 		OrgId:   req.OrgId,
 		DevId:   req.DevId,
-		DevMode: m2mServer.DeviceMode(req.DevMode),
+		DevMode: pb.DeviceMode(req.DevMode),
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &pb.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return &api.SetDeviceModeResponse{}, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &pb.SetDeviceModeResponse{
+	return &api.SetDeviceModeResponse{
 		Status: resp.Status,
 	}, status.Error(codes.OK, "")
 }
