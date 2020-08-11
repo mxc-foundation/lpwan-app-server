@@ -124,9 +124,6 @@ tag_dockerhub_image:
 deploy_review: 
   stage: deploy
   image: alpine
-  environment:
-    name: staging
-    url: $STAGINGURL
   before_script: 
     - apk add --no-cache curl
   script:
@@ -139,9 +136,6 @@ deploy_review:
 deploy_test_cloud: 
   stage: deploy
   image: alpine
-  environment:
-    name: preprod
-    url: $PREPRODURL
   before_script: 
     - apk add --no-cache curl
   script:
@@ -154,9 +148,6 @@ deploy_test_cloud:
 deploy_test_china: 
   stage: deploy
   image: alpine
-  environment:
-    name: preprodcn
-    url: $PREPRODCNURL
   before_script: 
     - apk add --no-cache curl
   script:
