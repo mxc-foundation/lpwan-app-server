@@ -331,7 +331,7 @@ const ReactstrapRootPasswordInput = ({
         <FormGroup>
             <Label for={props.id}>{props.label}</Label>
             <InputGroup>
-                <Input {...props} {...fields} type={values.showPassword ? 'text' : 'password'} value={values.password} defaultValue={'11111111'}
+                <Input {...props} {...fields} type={values.showPassword ? 'text' : 'password'} value={values.password}
                      invalid={Boolean(touched[fields.name] && errors[fields.name])} readOnly={true}/>
 
                 {touched[fields.name] && errors[fields.name] ? <FormFeedback className="order-last">{errors[fields.name]}</FormFeedback> : null}
