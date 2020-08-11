@@ -40,11 +40,11 @@ func (v *Validator) ValidateOrganizationAccess(ctx context.Context, flag authcus
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadOrganizationAccess(u.Username, u.ID, organizationID)
+		return Service.St.CheckReadOrganizationAccess(ctx, u.Username, u.ID, organizationID)
 	case authcus.Update:
-		return Service.St.CheckUpdateOrganizationAccess(u.Username, u.ID, organizationID)
+		return Service.St.CheckUpdateOrganizationAccess(ctx, u.Username, u.ID, organizationID)
 	case authcus.Delete:
-		return Service.St.CheckDeleteOrganizationAccess(u.Username, u.ID, organizationID)
+		return Service.St.CheckDeleteOrganizationAccess(ctx, u.Username, u.ID, organizationID)
 	default:
 		panic("unsupported flag")
 	}
@@ -60,9 +60,9 @@ func (v *Validator) ValidateOrganizationsAccess(ctx context.Context, flag authcu
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateOrganizationAccess(u.Username, u.ID)
+		return Service.St.CheckCreateOrganizationAccess(ctx, u.Username, u.ID)
 	case authcus.List:
-		return Service.St.CheckListOrganizationAccess(u.Username, u.ID)
+		return Service.St.CheckListOrganizationAccess(ctx, u.Username, u.ID)
 	default:
 		panic("unsupported flag")
 	}
@@ -78,9 +78,9 @@ func (v *Validator) ValidateOrganizationUsersAccess(ctx context.Context, flag au
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateOrganizationUserAccess(u.Username, u.ID, organizationID)
+		return Service.St.CheckCreateOrganizationUserAccess(ctx, u.Username, u.ID, organizationID)
 	case authcus.List:
-		return Service.St.CheckListOrganizationUserAccess(u.Username, u.ID, organizationID)
+		return Service.St.CheckListOrganizationUserAccess(ctx, u.Username, u.ID, organizationID)
 	default:
 		panic("unsupported flag")
 	}
@@ -96,11 +96,11 @@ func (v *Validator) ValidateOrganizationUserAccess(ctx context.Context, flag aut
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
+		return Service.St.CheckReadOrganizationUserAccess(ctx, u.Username, organizationID, userID, u.ID)
 	case authcus.Update:
-		return Service.St.CheckUpdateOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
+		return Service.St.CheckUpdateOrganizationUserAccess(ctx, u.Username, organizationID, userID, u.ID)
 	case authcus.Delete:
-		return Service.St.CheckDeleteOrganizationUserAccess(u.Username, organizationID, userID, u.ID)
+		return Service.St.CheckDeleteOrganizationUserAccess(ctx, u.Username, organizationID, userID, u.ID)
 	default:
 		panic("unsupported flag")
 	}

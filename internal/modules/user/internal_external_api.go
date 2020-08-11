@@ -28,22 +28,17 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 )
 
 // InternalUserAPI exports the internal User related functions.
 type InternalUserAPI struct {
-	st   UserStore
-	txSt store.Store
+	st *store.Handler
 }
 
 // NewInternalUserAPI creates a new InternalUserAPI.
 func NewInternalUserAPI() *InternalUserAPI {
-	st := store.New(storage.DB().DB)
 	return &InternalUserAPI{
-		st:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 
@@ -230,9 +225,7 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 // Branding returns UI branding.
 func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
 	resp := inpb.BrandingResponse{
-		Registration: config.C.ApplicationServer.Branding.Registration,
-		Footer:       config.C.ApplicationServer.Branding.Footer,
-		LogoPath:     os.Getenv("APPSERVER") + "/branding.png",
+		LogoPath: os.Getenv("APPSERVER") + "/branding.png",
 	}
 
 	return &resp, nil
@@ -305,7 +298,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 		"languange": req.Language,
 	}).Info(logInfo)
 
-	user := User{
+	user := store.User{
 		Username:   req.Email,
 		Email:      req.Email,
 		SessionTTL: 0,
@@ -317,29 +310,31 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 
 	obj, err := a.st.GetUserByEmail(ctx, user.Email)
 	if err == storage.ErrDoesNotExist {
-		tx, err := a.txSt.TxBegin(ctx)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "%v", err)
-		}
-		defer tx.TxRollback(ctx)
+		if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+			// user has never been created yet
+			err = handler.RegisterUser(ctx, &user, token)
+			if err != nil {
+				log.WithError(err).Error(logInfo)
+				return status.Errorf(codes.Unknown, "%v", err)
+			}
 
-		// user has never been created yet
-		err = tx.RegisterUser(&user, token)
-		if err != nil {
-			log.WithError(err).Error(logInfo)
-			return nil, status.Errorf(codes.Unknown, "%v", err)
-		}
+			// get user again
+			obj, err = handler.GetUserByEmail(ctx, user.Email)
+			if err != nil {
+				log.WithError(err).Error(logInfo)
+				// internal error
+				return status.Errorf(codes.Unknown, "%v", err)
+			}
 
-		// get user again
-		obj, err = tx.GetUserByEmail(ctx, user.Email)
-		if err != nil {
-			log.WithError(err).Error(logInfo)
-			// internal error
-			return nil, status.Errorf(codes.Unknown, "%v", err)
-		}
+			err = email.SendInvite(obj.Email, email.Param{Token: *obj.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
+			if err != nil {
+				log.WithError(err).Error(logInfo)
+				return helpers.ErrToRPCError(err)
+			}
 
-		if err := tx.TxCommit(ctx); err != nil {
-			return nil, status.Errorf(codes.Internal, "%v", err)
+			return nil
+		}); err != nil {
+			return nil, status.Errorf(codes.Unknown, err.Error())
 		}
 
 	} else if err != nil && err != storage.ErrDoesNotExist {
@@ -348,12 +343,6 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 	} else if err == nil && obj.SecurityToken == nil {
 		// user exists and finished registration
 		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
-	}
-
-	err = email.SendInvite(obj.Email, *obj.SecurityToken, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, helpers.ErrToRPCError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -455,92 +444,86 @@ func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRec
 }
 
 func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.PasswordResetReq) (*inpb.PasswordResetResp, error) {
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
-	}
-	defer tx.TxRollback(ctx)
-
-	user, err := tx.GetUserByUsername(ctx, req.Username)
-	if err != nil {
-		if err == storage.ErrDoesNotExist {
-			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
-			if err := email.SendInvite(req.Username, "", email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
-				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		user, err := handler.GetUserByUsername(ctx, req.Username)
+		if err != nil {
+			if err == storage.ErrDoesNotExist {
+				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
+				if err := email.SendInvite(req.Username, email.Param{}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
+					return status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
+				}
+				return nil
 			}
-			return &inpb.PasswordResetResp{}, nil
+			return status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 		}
-		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
+		if !user.IsActive {
+			ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", req.Username)
+			return nil
+		}
+		pr, err := handler.GetPasswordResetRecord(ctx, user.ID)
+		if err != nil {
+			return status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
+		}
+		if pr.GeneratedAt.After(time.Now().Add(-30 * 24 * time.Hour)) {
+			return status.Errorf(codes.PermissionDenied, "can't reset password more than once a month")
+		}
+		if err := pr.SetOTP(ctx, OTPgen()); err != nil {
+			return status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
+		}
+
+		if err := email.SendInvite(req.Username, email.Param{Token: pr.OTP}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
+			return status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
-	if !user.IsActive {
-		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", req.Username)
-		return &inpb.PasswordResetResp{}, nil
-	}
-	pr, err := tx.GetPasswordResetRecord(user.ID)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
-	}
-	if pr.GeneratedAt.After(time.Now().Add(-30 * 24 * time.Hour)) {
-		return nil, status.Errorf(codes.PermissionDenied, "can't reset password more than once a month")
-	}
-	if err := pr.SetOTP(ctx, OTPgen()); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
-	}
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
-	}
-	if err := email.SendInvite(req.Username, pr.OTP, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
-	}
+
 	return &inpb.PasswordResetResp{}, nil
 }
 
 func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		user, err := handler.GetUserByUsername(ctx, req.Username)
+		if err != nil {
+			if err == storage.ErrDoesNotExist {
+				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
+				return status.Errorf(codes.PermissionDenied, "no match found")
+			}
+			return status.Errorf(codes.Internal, "couldn't get user info: %v", err)
+		}
+		pr, err := handler.GetPasswordResetRecord(ctx, user.ID)
+		if err != nil {
+			return status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
+		}
+		if pr.AttemptsLeft < 1 {
+			return status.Errorf(codes.PermissionDenied, "no match found")
+		}
+		if err := pr.ReduceAttempts(ctx); err != nil {
+			return status.Errorf(codes.Internal, "couldn't update db: %v", err)
+		}
+		if subtle.ConstantTimeCompare([]byte(pr.OTP), []byte(req.Otp)) == 1 {
+			if err := pr.SetOTP(ctx, ""); err != nil {
+				return status.Errorf(codes.Internal, "couldn't update db: %v", err)
+			}
+			if err := handler.UpdatePassword(ctx, pr.UserID, req.NewPassword); err != nil {
+				return status.Errorf(codes.Internal, "couldn't update db: %v", err)
+			}
+			return nil
+		}
 
-	user, err := tx.GetUserByUsername(ctx, req.Username)
-	if err != nil {
-		if err == storage.ErrDoesNotExist {
-			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
-			return nil, status.Errorf(codes.PermissionDenied, "no match found")
-		}
-		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
-	pr, err := tx.GetPasswordResetRecord(user.ID)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't get password reset record: %v", err)
-	}
-	if pr.AttemptsLeft < 1 {
-		return nil, status.Errorf(codes.PermissionDenied, "no match found")
-	}
-	if err := pr.ReduceAttempts(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
-	}
-	if subtle.ConstantTimeCompare([]byte(pr.OTP), []byte(req.Otp)) == 1 {
-		if err := pr.SetOTP(ctx, ""); err != nil {
-			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
-		}
-		if err := tx.UpdatePassword(ctx, pr.UserID, req.NewPassword); err != nil {
-			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
-		}
-		if err := tx.TxCommit(ctx); err != nil {
-			return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
-		}
-		return &inpb.PasswordResetResp{}, nil
-	}
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't update db: %v", err)
-	}
+
 	return nil, status.Errorf(codes.PermissionDenied, "no match found")
 }
 
 // ConfirmRegistration checks provided security token and activates user
 func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegistrationRequest) (*inpb.ConfirmRegistrationResponse, error) {
-	user, err := a.st.GetUserByToken(req.Token)
+	user, err := a.st.GetUserByToken(ctx, req.Token)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
@@ -571,44 +554,44 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		// Get the user id based on the username and check that it matches the one
+		// in the request and that user is not active
+		user, err := handler.GetUserByUsername(ctx, u.Username)
+		if nil != err {
+			return helpers.ErrToRPCError(err)
+		}
+		if user.ID != req.UserId {
+			return status.Errorf(codes.PermissionDenied, "user id mismatch")
+		}
+		if user.IsActive {
+			return status.Error(codes.PermissionDenied, "user has been registered already")
+		}
 
-	// Get the user id based on the username and check that it matches the one
-	// in the request and that user is not active
-	user, err := tx.GetUserByUsername(ctx, u.Username)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	if user.ID != req.UserId {
-		return nil, status.Errorf(codes.PermissionDenied, "user id mismatch")
-	}
-	if user.IsActive {
-		return nil, status.Error(codes.PermissionDenied, "user has been registered already")
-	}
+		org := store.Organization{
+			Name:            req.OrganizationName,
+			DisplayName:     req.OrganizationDisplayName,
+			CanHaveGateways: true,
+		}
 
-	org := organization.Organization{
-		Name:            req.OrganizationName,
-		DisplayName:     req.OrganizationDisplayName,
-		CanHaveGateways: true,
-	}
+		err = handler.FinishRegistration(ctx, req.UserId, req.Password)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	err = tx.FinishRegistration(req.UserId, req.Password)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		err = handler.CreateOrganization(ctx, &org)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	err = tx.CreateOrganization(ctx, &org)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		err = handler.CreateOrganizationUser(ctx, org.ID, user.Username, true, false, false)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	err = tx.CreateOrganizationUser(ctx, org.ID, user.Username, true, false, false)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, status.Errorf(codes.OK, "")

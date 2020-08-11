@@ -18,7 +18,8 @@ type Validate interface {
 	ValidateGatewayAccess(ctx context.Context, flag authcus.Flag, mac lorawan.EUI64) (bool, error)
 	ValidateOrganizationNetworkServerAccess(ctx context.Context, flag authcus.Flag, organizationID, networkServerID int64) (bool, error)
 	GetUser(ctx context.Context) (authcus.User, error)
-	IsGlobalAdmin(ctx context.Context) (bool, error)
+	IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error
+	IsOrgAdmin(ctx context.Context, organizationID int64, opts ...authcus.Option) error
 }
 
 func NewValidator() Validate {
@@ -31,8 +32,12 @@ func (v *Validator) GetUser(ctx context.Context) (authcus.User, error) {
 	return v.Credentials.GetUser(ctx)
 }
 
-func (v *Validator) IsGlobalAdmin(ctx context.Context) (bool, error) {
-	return v.Credentials.IsGlobalAdmin(ctx)
+func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error {
+	return v.Credentials.IsGlobalAdmin(ctx, opts...)
+}
+
+func (v *Validator) IsOrgAdmin(ctx context.Context, organizationID int64, opts ...authcus.Option) error {
+	return v.Credentials.IsOrgAdmin(ctx, organizationID, opts...)
 }
 
 // ValidateGatewaysAccess validates if the client has access to the gateways.

@@ -15,21 +15,17 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // GatewayProfileAPI exports the GatewayProfile related functions.
 type GatewayProfileAPI struct {
-	st   GatewayProfileStore
-	txSt store.Store
+	st *store.Handler
 }
 
 // NewGatewayProfileAPI creates a new GatewayProfileAPI.
 func NewGatewayProfileAPI() *GatewayProfileAPI {
-	st := store.New(storage.DB().DB)
 	return &GatewayProfileAPI{
-		st:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 
@@ -43,7 +39,7 @@ func (a *GatewayProfileAPI) Create(ctx context.Context, req *pb.CreateGatewayPro
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	gp := GatewayProfile{
+	gp := store.GatewayProfile{
 		NetworkServerID: req.GatewayProfile.NetworkServerId,
 		Name:            req.GatewayProfile.Name,
 		GatewayProfile: ns.GatewayProfile{
@@ -61,18 +57,15 @@ func (a *GatewayProfileAPI) Create(ctx context.Context, req *pb.CreateGatewayPro
 		})
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		err := handler.CreateGatewayProfile(ctx, &gp)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	err = tx.CreateGatewayProfile(ctx, &gp)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	gpID, err := uuid.FromBytes(gp.GatewayProfile.Id)
@@ -166,18 +159,15 @@ func (a *GatewayProfileAPI) Update(ctx context.Context, req *pb.UpdateGatewayPro
 		})
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		err = handler.UpdateGatewayProfile(ctx, &gp)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	err = tx.UpdateGatewayProfile(ctx, &gp)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, nil
@@ -210,7 +200,7 @@ func (a *GatewayProfileAPI) List(ctx context.Context, req *pb.ListGatewayProfile
 
 	var err error
 	var count int
-	var gps []GatewayProfileMeta
+	var gps []store.GatewayProfileMeta
 
 	if req.NetworkServerId == 0 {
 		count, err = a.st.GetGatewayProfileCount(ctx)

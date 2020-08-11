@@ -26,18 +26,14 @@ import (
 // HeartbeatAPI exports the HeartbeatAPI related functions.
 type HeartbeatAPI struct {
 	BindPort string
-	st       GatewayStore
-	txSt     store.Store
+	st       *store.Handler
 }
 
 // NewGatewayAPI creates new HeartbeatAPI
 func NewHeartbeatAPI(bind string) *HeartbeatAPI {
-	st := store.New(storage.DB().DB)
-
 	return &HeartbeatAPI{
 		BindPort: bind,
-		st:       st,
-		txSt:     st,
+		st:       Service.St,
 	}
 }
 
@@ -146,69 +142,67 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 
 Next:
 
-	tx, err := obj.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't start transaction: %v", err)
-	}
-	defer tx.TxRollback(ctx)
-
-	// compare config hash
-	/* #nosec */
-	configHash := md5.Sum([]byte(gw.Config))
-	b := types.MD5SUM{}
-	if err := b.UnmarshalText([]byte(req.ConfigHash)); err != nil {
-		log.WithError(err).Errorf("Failed to unmarshal config hash: %s", req.ConfigHash)
-		return nil, status.Errorf(codes.DataLoss, "Failed to unmarshal config hash: %s", req.ConfigHash)
-	}
-
-	if bytes.Equal(configHash[:], b[:]) == false {
-		response.Config = gw.Config
-	}
-
-	// check if firmware updated
-	if gw.AutoUpdateFirmware {
-		firmware, err := tx.GetGatewayFirmware(ctx, gw.Model, false)
-		if err != nil {
-			if err == storage.ErrDoesNotExist {
-				return nil, status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
-			}
-			log.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)
-			return nil, status.Errorf(codes.Unknown, "Failed to get firmware information for model: %s", gw.Model)
+	if err := obj.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		// compare config hash
+		/* #nosec */
+		configHash := md5.Sum([]byte(gw.Config))
+		b := types.MD5SUM{}
+		if err := b.UnmarshalText([]byte(req.ConfigHash)); err != nil {
+			log.WithError(err).Errorf("Failed to unmarshal config hash: %s", req.ConfigHash)
+			return status.Errorf(codes.DataLoss, "Failed to unmarshal config hash: %s", req.ConfigHash)
 		}
 
-		if bytes.Equal(firmware.FirmwareHash[:], gw.FirmwareHash[:]) == false {
-			response.NewFirmwareLink = firmware.ResourceLink
-			// update gateway firmware hash as well
-			copy(gw.FirmwareHash[:], firmware.FirmwareHash[:])
+		if bytes.Equal(configHash[:], b[:]) == false {
+			response.Config = gw.Config
 		}
-	}
 
-	// update gateway with osVersion and statistics
-	if gw.OsVersion != req.OsVersion {
-		// update provisioning server
-		client, err := pscli.CreateClientWithCert()
-		if err == nil {
-			_, err := client.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
-				Sn:        gw.SerialNumber,
-				Mac:       gw.MAC.String(),
-				OsVersion: req.OsVersion,
-			})
+		// check if firmware updated
+		if gw.AutoUpdateFirmware {
+			firmware, err := handler.GetGatewayFirmware(ctx, gw.Model, false)
 			if err != nil {
-				log.WithError(err).Error("Failed to call HeartbeatAPI: UpdateGateway")
+				if err == storage.ErrDoesNotExist {
+					return status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
+				}
+				log.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)
+				return status.Errorf(codes.Unknown, "Failed to get firmware information for model: %s", gw.Model)
 			}
-		} else {
-			log.WithError(err).Error("Failed to create provisioning server client.")
-		}
-	}
 
-	gw.OsVersion = req.OsVersion
-	gw.Statistics = req.Statistics
-	if err := tx.UpdateGateway(ctx, &gw); err != nil {
-		log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
-	} else {
-		if err := tx.TxCommit(ctx); err != nil {
-			log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
+			if bytes.Equal(firmware.FirmwareHash[:], gw.FirmwareHash[:]) == false {
+				response.NewFirmwareLink = firmware.ResourceLink
+				// update gateway firmware hash as well
+				copy(gw.FirmwareHash[:], firmware.FirmwareHash[:])
+			}
 		}
+
+		// update gateway with osVersion and statistics
+		if gw.OsVersion != req.OsVersion {
+			// update provisioning server
+			client, err := pscli.CreateClientWithCert()
+			if err == nil {
+				_, err := client.UpdateGateway(context.Background(), &pspb.UpdateGatewayRequest{
+					Sn:        gw.SerialNumber,
+					Mac:       gw.MAC.String(),
+					OsVersion: req.OsVersion,
+				})
+				if err != nil {
+					log.WithError(err).Error("Failed to call HeartbeatAPI: UpdateGateway")
+				}
+			} else {
+				log.WithError(err).Error("Failed to create provisioning server client.")
+			}
+		}
+
+		gw.OsVersion = req.OsVersion
+		gw.Statistics = req.Statistics
+
+		if err := handler.UpdateGateway(ctx, &gw); err != nil {
+			log.WithError(err).Errorf("Failed to update gateway: %s", gw.MAC.String())
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &response, status.Error(codes.OK, "")

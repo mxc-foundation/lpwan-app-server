@@ -13,10 +13,10 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 func (ps *pgstore) CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
@@ -155,8 +155,8 @@ func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, use
 }
 
 // GetDefaultNetworkServer returns the network-server matching the given name.
-func (ps *pgstore) GetDefaultNetworkServer(ctx context.Context) (nsmod.NetworkServer, error) {
-	var n nsmod.NetworkServer
+func (ps *pgstore) GetDefaultNetworkServer(ctx context.Context) (store.NetworkServer, error) {
+	var n store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, "select * from network_server where name = 'default_network_server'")
 	if err != nil {
 		return n, errors.Wrap(err, "select error")
@@ -166,7 +166,7 @@ func (ps *pgstore) GetDefaultNetworkServer(ctx context.Context) (nsmod.NetworkSe
 }
 
 // CreateNetworkServer creates the given network-server.
-func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *nsmod.NetworkServer) error {
+func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *store.NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -212,7 +212,13 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *nsmod.NetworkServ
 		return errors.Wrap(err, "insert error")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -245,8 +251,8 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *nsmod.NetworkServ
 }
 
 // GetNetworkServer returns the network-server matching the given id.
-func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (nsmod.NetworkServer, error) {
-	var ns nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (store.NetworkServer, error) {
+	var ns store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &ns, "select * from network_server where id = $1", id)
 	if err != nil {
 		return ns, errors.Wrap(err, "select error")
@@ -256,7 +262,7 @@ func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (nsmod.Networ
 }
 
 // UpdateNetworkServer updates the given network-server.
-func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *nsmod.NetworkServer) error {
+func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *store.NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -307,7 +313,13 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *nsmod.NetworkServ
 		return errors.New("ErrDoesNotExist")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -358,7 +370,13 @@ func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 		return errors.New("ErrDoesNotExist")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -417,8 +435,8 @@ func (ps *pgstore) GetNetworkServerCountForOrganizationID(ctx context.Context, o
 }
 
 // GetNetworkServers returns a slice of network-servers.
-func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]nsmod.NetworkServer, error) {
-	var nss []nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]store.NetworkServer, error) {
+	var nss []store.NetworkServer
 	err := sqlx.SelectContext(ctx, ps.db, &nss, `
 		select *
 		from network_server
@@ -438,8 +456,8 @@ func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]
 // accessible for the given organization id.
 // A network-server is accessible for an organization when it is used by one
 // of its service-profiles.
-func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]nsmod.NetworkServer, error) {
-	var nss []nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]store.NetworkServer, error) {
+	var nss []store.NetworkServer
 	err := sqlx.SelectContext(ctx, ps.db, &nss, `
 		select
 			ns.*
@@ -464,8 +482,8 @@ func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organ
 }
 
 // GetNetworkServerForDevEUI returns the network-server for the given DevEUI.
-func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (nsmod.NetworkServer, error) {
-	var n nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (store.NetworkServer, error) {
+	var n store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -487,8 +505,8 @@ func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan
 
 // GetNetworkServerForDeviceProfileID returns the network-server for the given
 // device-profile id.
-func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
-	var n nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (store.NetworkServer, error) {
+	var n store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -508,8 +526,8 @@ func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uu
 
 // GetNetworkServerForServiceProfileID returns the network-server for the given
 // service-profile id.
-func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
-	var n nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (store.NetworkServer, error) {
+	var n store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -529,8 +547,8 @@ func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id u
 
 // GetNetworkServerForGatewayMAC returns the network-server for a given
 // gateway mac.
-func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (nsmod.NetworkServer, error) {
-	var n nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (store.NetworkServer, error) {
+	var n store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -549,8 +567,8 @@ func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawa
 
 // GetNetworkServerForGatewayProfileID returns the network-server for the given
 // gateway-profile id.
-func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
-	var n nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (store.NetworkServer, error) {
+	var n store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*
@@ -570,8 +588,8 @@ func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id u
 
 // GetNetworkServerForMulticastGroupID returns the network-server for the given
 // multicast-group id.
-func (ps *pgstore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (nsmod.NetworkServer, error) {
-	var n nsmod.NetworkServer
+func (ps *pgstore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (store.NetworkServer, error) {
+	var n store.NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
 			ns.*

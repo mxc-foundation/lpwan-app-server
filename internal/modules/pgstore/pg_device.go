@@ -17,11 +17,10 @@ import (
 
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 )
@@ -243,7 +242,7 @@ func (ps *pgstore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EU
 }
 
 // CreateDevice creates the given device.
-func (ps *pgstore) CreateDevice(ctx context.Context, d *devmod.Device, applicationServerID uuid.UUID) error {
+func (ps *pgstore) CreateDevice(ctx context.Context, d *store.Device, applicationServerID uuid.UUID) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -305,13 +304,13 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *devmod.Device, applicati
 // When forUpdate is set to true, then tx must be a tx transaction.
 // When localOnly is set to true, no call to the network-server is made to
 // retrieve additional device data.
-func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (devmod.Device, error) {
+func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (store.Device, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
-	var d devmod.Device
+	var d store.Device
 	err := sqlx.GetContext(ctx, ps.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
 	if err != nil {
 		return d, errors.Wrap(err, "select error")
@@ -321,7 +320,7 @@ func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdat
 }
 
 // GetDeviceCount returns the number of devices.
-func (ps *pgstore) GetDeviceCount(ctx context.Context, filters devmod.DeviceFilters) (int, error) {
+func (ps *pgstore) GetDeviceCount(ctx context.Context, filters store.DeviceFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -365,7 +364,7 @@ func (ps *pgstore) GetAllDeviceEuis(ctx context.Context) ([]string, error) {
 }
 
 // GetDevices returns a slice of devices.
-func (ps *pgstore) GetDevices(ctx context.Context, filters devmod.DeviceFilters) ([]devmod.DeviceListItem, error) {
+func (ps *pgstore) GetDevices(ctx context.Context, filters store.DeviceFilters) ([]store.DeviceListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -392,7 +391,7 @@ func (ps *pgstore) GetDevices(ctx context.Context, filters devmod.DeviceFilters)
 		return nil, errors.Wrap(err, "named query error")
 	}
 
-	var devices []devmod.DeviceListItem
+	var devices []store.DeviceListItem
 	err = sqlx.SelectContext(ctx, ps.db, &devices, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
@@ -403,7 +402,7 @@ func (ps *pgstore) GetDevices(ctx context.Context, filters devmod.DeviceFilters)
 
 // UpdateDevice updates the given device.
 // When localOnly is set, it will not update the device on the network-server.
-func (ps *pgstore) UpdateDevice(ctx context.Context, d *devmod.Device) error {
+func (ps *pgstore) UpdateDevice(ctx context.Context, d *store.Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -486,7 +485,13 @@ func (ps *pgstore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
 	}
 
 	// delete device from networkserver
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -500,9 +505,7 @@ func (ps *pgstore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
 
 	// delete device from m2m server, this procedure should not block delete device from appserver once it's deleted from
 	// network server successfully
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	dvClient := m2m_api.NewM2MServerServiceClient(m2mClient)
+	dvClient, err := m2mcli.GetM2MDeviceServiceClient()
 	if err == nil {
 		_, err = dvClient.DeleteDeviceInM2MServer(context.Background(), &m2m_api.DeleteDeviceInM2MServerRequest{
 			DevEui: devEUI.String(),
@@ -523,7 +526,7 @@ func (ps *pgstore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
 }
 
 // CreateDeviceKeys creates the keys for the given device.
-func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) error {
+func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *store.DeviceKeys) error {
 	now := time.Now()
 	dc.CreatedAt = now
 	dc.UpdatedAt = now
@@ -559,8 +562,8 @@ func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) 
 }
 
 // GetDeviceKeys returns the device-keys for the given DevEUI.
-func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (devmod.DeviceKeys, error) {
-	var dc devmod.DeviceKeys
+func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (store.DeviceKeys, error) {
+	var dc store.DeviceKeys
 
 	err := sqlx.GetContext(ctx, ps.db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
@@ -571,7 +574,7 @@ func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (dev
 }
 
 // UpdateDeviceKeys updates the given device-keys.
-func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *devmod.DeviceKeys) error {
+func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *store.DeviceKeys) error {
 	dc.UpdatedAt = time.Now()
 
 	res, err := ps.db.ExecContext(ctx, `
@@ -633,7 +636,7 @@ func (ps *pgstore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) e
 }
 
 // CreateDeviceActivation creates the given device-activation.
-func (ps *pgstore) CreateDeviceActivation(ctx context.Context, da *devmod.DeviceActivation) error {
+func (ps *pgstore) CreateDeviceActivation(ctx context.Context, da *store.DeviceActivation) error {
 	da.CreatedAt = time.Now()
 
 	err := sqlx.GetContext(ctx, ps.db, &da.ID, `
@@ -663,8 +666,8 @@ func (ps *pgstore) CreateDeviceActivation(ctx context.Context, da *devmod.Device
 }
 
 // GetLastDeviceActivationForDevEUI returns the most recent device-activation for the given DevEUI.
-func (ps *pgstore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (devmod.DeviceActivation, error) {
-	var da devmod.DeviceActivation
+func (ps *pgstore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (store.DeviceActivation, error) {
+	var da store.DeviceActivation
 
 	err := sqlx.GetContext(ctx, ps.db, &da, `
         select *
@@ -685,7 +688,7 @@ func (ps *pgstore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI 
 
 // DeleteAllDevicesForApplicationID deletes all devices given an application id.
 func (ps *pgstore) DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error {
-	var devs []devmod.Device
+	var devs []store.Device
 	err := sqlx.SelectContext(ctx, ps.db, &devs, "select * from device where application_id = $1", applicationID)
 	if err != nil {
 		return errors.Wrap(err, "select error")

@@ -39,17 +39,14 @@ import (
 
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
-	st                  GatewayStore
-	txSt                store.Store
+	st                  *store.Handler
 	ApplicationServerID uuid.UUID
 }
 
 // NewGatewayAPI creates a new GatewayAPI.
 func NewGatewayAPI(applicationID uuid.UUID) *GatewayAPI {
-	st := store.New(storage.DB().DB)
 	return &GatewayAPI{
-		st:                  st,
-		txSt:                st,
+		st:                  Service.St,
 		ApplicationServerID: applicationID,
 	}
 }
@@ -61,12 +58,9 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 	}).Info("BatchResetDefaultGatewatConfig is called")
 
 	// check user permission, only global admin allowed
-	isAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsGlobalAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-	if !isAdmin {
-		return nil, status.Error(codes.PermissionDenied, "not authorized for this operation")
 	}
 
 	// if process for any organizaiton failed, return this error message to user for retry
@@ -76,7 +70,7 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 
 	if req.OrganizationList == "all" {
 		// reset for all organizations
-		count, err := organization.Service.St.GetOrganizationCount(ctx, organization.OrganizationFilters{})
+		count, err := organization.Service.St.GetOrganizationCount(ctx, store.OrganizationFilters{})
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
@@ -167,12 +161,9 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *api
 	}).Info("ResetDefaultGatewatConfigByID is called")
 
 	// check user permission, only global admin allowed
-	isAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsGlobalAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-	if !isAdmin {
-		return nil, status.Error(codes.PermissionDenied, "not authorized for this operation")
 	}
 
 	var mac lorawan.EUI64
@@ -206,15 +197,12 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *api
 	}).Info("InsertNewDefaultGatewayConfig is called")
 
 	// check user permission, only global admin allowed
-	isAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsGlobalAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	if !isAdmin {
-		return nil, status.Error(codes.PermissionDenied, "not authorized for this operation")
-	}
 
-	defaultGatewayConfig := DefaultGatewayConfig{
+	defaultGatewayConfig := store.DefaultGatewayConfig{
 		Model:         req.Model,
 		Region:        req.Region,
 		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", Service.SupernodeAddr, -1),
@@ -244,15 +232,12 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *api.Up
 	}).Info("UpdateDefaultGatewayConfig is called")
 
 	// check user permission
-	isAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsGlobalAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	if !isAdmin {
-		return nil, status.Error(codes.PermissionDenied, "not authorized for this operation")
-	}
 
-	defaultGatewayConfig := DefaultGatewayConfig{
+	defaultGatewayConfig := store.DefaultGatewayConfig{
 		Model:  req.Model,
 		Region: req.Region,
 	}
@@ -278,16 +263,13 @@ func (a *GatewayAPI) GetDefaultGatewayConfig(ctx context.Context, req *api.GetDe
 		"region": req.Region,
 	}).Info("GetDefaultGatewayConfig is called")
 
-	// check user permission
-	isAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	// check user permission, only global admin allowed
+	err := NewValidator().IsGlobalAdmin(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	if !isAdmin {
-		return nil, status.Error(codes.PermissionDenied, "not authorized for this operation")
-	}
 
-	defaultGatewayConfig := DefaultGatewayConfig{
+	defaultGatewayConfig := store.DefaultGatewayConfig{
 		Model:  req.Model,
 		Region: req.Region,
 	}
@@ -320,14 +302,14 @@ func (a *GatewayAPI) Create(ctx context.Context, req *api.CreateGatewayRequest) 
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err := a.storeGateway(ctx, req.Gateway, &Gateway{}); err != nil {
+	if err := a.storeGateway(ctx, req.Gateway, &store.Gateway{}); err != nil {
 		return nil, err
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) error {
+func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *store.Gateway) error {
 	if !strings.HasPrefix(gw.Model, "MX19") {
 		return nil
 	}
@@ -338,7 +320,7 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 		return errors.Wrapf(err, "GetDefaultGatewayConfig")
 	}
 
-	defaultGatewayConfig := DefaultGatewayConfig{
+	defaultGatewayConfig := store.DefaultGatewayConfig{
 		Model:  gw.Model,
 		Region: n.Region,
 	}
@@ -352,7 +334,7 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *Gateway) e
 	return nil
 }
 
-func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, defaultGw *Gateway) (err error) {
+func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, defaultGw *store.Gateway) (err error) {
 	var mac lorawan.EUI64
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
@@ -418,98 +400,93 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 	//    rollback the transaction.
 	//  * We want to lock the organization so that we can validate the
 	//    max gateway count.
-
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.TxRollback(ctx)
-
-	org, err := tx.GetOrganization(ctx, req.OrganizationId, true)
-	if err != nil {
-		return helpers.ErrToRPCError(err)
-	}
-
-	// Validate max. gateway count when != 0.
-	if org.MaxGatewayCount != 0 {
-		count, err := tx.GetGatewayCount(ctx, "")
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		org, err := handler.GetOrganization(ctx, req.OrganizationId, true)
 		if err != nil {
 			return helpers.ErrToRPCError(err)
 		}
 
-		if count >= org.MaxGatewayCount {
-			return helpers.ErrToRPCError(storage.ErrOrganizationMaxGatewayCount)
+		// Validate max. gateway count when != 0.
+		if org.MaxGatewayCount != 0 {
+			count, err := handler.GetGatewayCount(ctx, "")
+			if err != nil {
+				return helpers.ErrToRPCError(err)
+			}
+
+			if count >= org.MaxGatewayCount {
+				return helpers.ErrToRPCError(storage.ErrOrganizationMaxGatewayCount)
+			}
 		}
-	}
 
-	gw := Gateway{
-		MAC:             mac,
-		Name:            req.Name,
-		Description:     req.Description,
-		OrganizationID:  req.OrganizationId,
-		Ping:            req.DiscoveryEnabled,
-		NetworkServerID: req.NetworkServerId,
-		Latitude:        req.Location.Latitude,
-		Longitude:       req.Location.Longitude,
-		Altitude:        req.Location.Altitude,
-		Model:           defaultGw.Model,
-		FirstHeartbeat:  0,
-		LastHeartbeat:   0,
-		Config:          defaultGw.Config,
-		OsVersion:       defaultGw.OsVersion,
-		Statistics:      defaultGw.Statistics,
-		SerialNumber:    defaultGw.SerialNumber,
-		FirmwareHash:    types.MD5SUM{},
-	}
-	err = tx.CreateGateway(ctx, &gw)
-	if err != nil {
-		return helpers.ErrToRPCError(err)
-	}
+		gw := store.Gateway{
+			MAC:             mac,
+			Name:            req.Name,
+			Description:     req.Description,
+			OrganizationID:  req.OrganizationId,
+			Ping:            req.DiscoveryEnabled,
+			NetworkServerID: req.NetworkServerId,
+			Latitude:        req.Location.Latitude,
+			Longitude:       req.Location.Longitude,
+			Altitude:        req.Location.Altitude,
+			Model:           defaultGw.Model,
+			FirstHeartbeat:  0,
+			LastHeartbeat:   0,
+			Config:          defaultGw.Config,
+			OsVersion:       defaultGw.OsVersion,
+			Statistics:      defaultGw.Statistics,
+			SerialNumber:    defaultGw.SerialNumber,
+			FirmwareHash:    types.MD5SUM{},
+		}
+		err = handler.CreateGateway(ctx, &gw)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
-	// add this gateway to m2m server
-	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
-	if err != nil {
-		return status.Errorf(codes.Unavailable, err.Error())
-	}
+		timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
+		// add this gateway to m2m server
+		gwClient, err := m2mcli.GetM2MGatewayServiceClient()
+		if err != nil {
+			return status.Errorf(codes.Unavailable, err.Error())
+		}
 
-	_, err = gwClient.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
-		OrgId: gw.OrganizationID,
-		GwProfile: &pb.AppServerGatewayProfile{
-			Mac:         gw.MAC.String(),
-			OrgId:       gw.OrganizationID,
-			Description: gw.Description,
-			Name:        gw.Name,
-			CreatedAt:   timestampCreatedAt,
-		},
-	})
-	if err != nil {
-		return helpers.ErrToRPCError(err)
-	}
+		_, err = gwClient.AddGatewayInM2MServer(context.Background(), &pb.AddGatewayInM2MServerRequest{
+			OrgId: gw.OrganizationID,
+			GwProfile: &pb.AppServerGatewayProfile{
+				Mac:         gw.MAC.String(),
+				OrgId:       gw.OrganizationID,
+				Description: gw.Description,
+				Name:        gw.Name,
+				CreatedAt:   timestampCreatedAt,
+			},
+		})
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	n, err := tx.GetNetworkServer(ctx, req.NetworkServerId)
-	if err != nil {
-		return helpers.ErrToRPCError(err)
-	}
+		n, err := handler.GetNetworkServer(ctx, req.NetworkServerId)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
-	if err != nil {
-		return helpers.ErrToRPCError(err)
-	}
+		nStruct := &nscli.NSStruct{
+			Server:  n.Server,
+			CACert:  n.CACert,
+			TLSCert: n.TLSCert,
+			TLSKey:  n.TLSKey,
+		}
+		client, err := nStruct.GetNetworkServiceClient()
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	_, err = client.CreateGateway(ctx, &createReq)
-	if err != nil && status.Code(err) != codes.AlreadyExists {
-		return err
-	}
+		_, err = client.CreateGateway(ctx, &createReq)
+		if err != nil && status.Code(err) != codes.AlreadyExists {
+			return err
+		}
 
-	if err := tx.TxCommit(ctx); err != nil {
-		return err
+		return nil
+	}); err != nil {
+		return status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return nil
@@ -639,7 +616,7 @@ func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*ap
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	filters := GatewayFilters{
+	filters := store.GatewayFilters{
 		Search:         req.Search,
 		Limit:          int(req.Limit),
 		Offset:         int(req.Offset),
@@ -782,90 +759,88 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 				tags.Map[k] = sql.NullString{Valid: true, String: v}
 			}
 	*/
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't start transaction: %v", err)
-	}
-	defer tx.TxRollback(ctx)
 
-	gw, err := tx.GetGateway(ctx, mac, true)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 
-	gw.Name = req.Gateway.Name
-	gw.Description = req.Gateway.Description
-	gw.Ping = req.Gateway.DiscoveryEnabled
-	gw.Latitude = req.Gateway.Location.Latitude
-	gw.Longitude = req.Gateway.Location.Longitude
-	gw.Altitude = req.Gateway.Location.Altitude
-	//gw.Tags = tags
-
-	err = tx.UpdateGateway(ctx, &gw)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	updateReq := ns.UpdateGatewayRequest{
-		Gateway: &ns.Gateway{
-			Id:       mac[:],
-			Location: req.Gateway.Location,
-		},
-	}
-
-	if req.Gateway.GatewayProfileId != "" {
-		gpID, err := uuid.FromString(req.Gateway.GatewayProfileId)
+		gw, err := handler.GetGateway(ctx, mac, true)
 		if err != nil {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			return status.Errorf(codes.Unknown, "%v", err)
 		}
-		updateReq.Gateway.GatewayProfileId = gpID.Bytes()
-	}
 
-	for _, board := range req.Gateway.Boards {
-		var gwBoard ns.GatewayBoard
+		gw.Name = req.Gateway.Name
+		gw.Description = req.Gateway.Description
+		gw.Ping = req.Gateway.DiscoveryEnabled
+		gw.Latitude = req.Gateway.Location.Latitude
+		gw.Longitude = req.Gateway.Location.Longitude
+		gw.Altitude = req.Gateway.Location.Altitude
+		//gw.Tags = tags
 
-		if board.FpgaId != "" {
-			var fpgaID lorawan.EUI64
-			if err := fpgaID.UnmarshalText([]byte(board.FpgaId)); err != nil {
-				return nil, status.Errorf(codes.InvalidArgument, "fpga_id: %s", err)
+		err = handler.UpdateGateway(ctx, &gw)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		updateReq := ns.UpdateGatewayRequest{
+			Gateway: &ns.Gateway{
+				Id:       mac[:],
+				Location: req.Gateway.Location,
+			},
+		}
+
+		if req.Gateway.GatewayProfileId != "" {
+			gpID, err := uuid.FromString(req.Gateway.GatewayProfileId)
+			if err != nil {
+				return status.Error(codes.InvalidArgument, err.Error())
 			}
-			gwBoard.FpgaId = fpgaID[:]
+			updateReq.Gateway.GatewayProfileId = gpID.Bytes()
 		}
 
-		if board.FineTimestampKey != "" {
-			var key lorawan.AES128Key
-			if err := key.UnmarshalText([]byte(board.FineTimestampKey)); err != nil {
-				return nil, status.Errorf(codes.InvalidArgument, "fine_timestamp_key: %s", err)
+		for _, board := range req.Gateway.Boards {
+			var gwBoard ns.GatewayBoard
+
+			if board.FpgaId != "" {
+				var fpgaID lorawan.EUI64
+				if err := fpgaID.UnmarshalText([]byte(board.FpgaId)); err != nil {
+					return status.Errorf(codes.InvalidArgument, "fpga_id: %s", err)
+				}
+				gwBoard.FpgaId = fpgaID[:]
 			}
-			gwBoard.FineTimestampKey = key[:]
+
+			if board.FineTimestampKey != "" {
+				var key lorawan.AES128Key
+				if err := key.UnmarshalText([]byte(board.FineTimestampKey)); err != nil {
+					return status.Errorf(codes.InvalidArgument, "fine_timestamp_key: %s", err)
+				}
+				gwBoard.FineTimestampKey = key[:]
+			}
+
+			updateReq.Gateway.Boards = append(updateReq.Gateway.Boards, &gwBoard)
 		}
 
-		updateReq.Gateway.Boards = append(updateReq.Gateway.Boards, &gwBoard)
-	}
+		n, err := networkserver.Service.St.GetNetworkServer(ctx, gw.NetworkServerID)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	n, err := networkserver.Service.St.GetNetworkServer(ctx, gw.NetworkServerID)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		nStruct := &nscli.NSStruct{
+			Server:  n.Server,
+			CACert:  n.CACert,
+			TLSCert: n.TLSCert,
+			TLSKey:  n.TLSKey,
+		}
+		client, err := nStruct.GetNetworkServiceClient()
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		_, err = client.UpdateGateway(ctx, &updateReq)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	_, err = client.UpdateGateway(ctx, &updateReq)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't commit transaction: %v", err)
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, nil
@@ -1124,7 +1099,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 	// add new firmware if new model is registered
 	_, err = a.st.GetGatewayFirmware(ctx, resp.Model, true)
 	if err == storage.ErrDoesNotExist {
-		if _, err = a.st.AddGatewayFirmware(ctx, &GatewayFirmware{
+		if _, err = a.st.AddGatewayFirmware(ctx, &store.GatewayFirmware{
 			Model: resp.Model,
 		}); err != nil {
 			log.WithError(err).Errorf("Failed to add new firmware: %s", resp.Model)
@@ -1187,7 +1162,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 	gateway.NetworkServerId = nServers.ID
 
 	// create gateway
-	if err := a.storeGateway(ctx, &gateway, &Gateway{
+	if err := a.storeGateway(ctx, &gateway, &store.Gateway{
 		Model:        resp.Model,
 		OsVersion:    resp.OsVersion,
 		Statistics:   "",
@@ -1248,17 +1223,9 @@ func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *api.SetAuto
 func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayList org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsOrgAdmin(ctx, req.OrgId)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGatewayListResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
 	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
@@ -1305,17 +1272,9 @@ func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayList
 func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewayProfileRequest) (*api.GetGSGatewayProfileResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayProfile org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsOrgAdmin(ctx, req.OrgId)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+		return &api.GetGSGatewayProfileResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
 	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
@@ -1355,17 +1314,9 @@ func (a *GatewayAPI) GetGatewayProfile(ctx context.Context, req *api.GetGSGatewa
 func (a *GatewayAPI) GetGatewayHistory(ctx context.Context, req *api.GetGatewayHistoryRequest) (*api.GetGatewayHistoryResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayHistory org=" + strconv.FormatInt(req.OrgId, 10)
 
-	// verify if user is global admin
-	userIsAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsOrgAdmin(ctx, req.OrgId)
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+		return &api.GetGatewayHistoryResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
 	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
@@ -1395,16 +1346,10 @@ func (a *GatewayAPI) SetGatewayMode(ctx context.Context, req *api.SetGatewayMode
 	logInfo := "api/appserver_serves_ui/SetGatewayMode org=" + strconv.FormatInt(req.OrgId, 10)
 
 	// verify if user is global admin
-	userIsAdmin, err := NewValidator().IsGlobalAdmin(ctx)
+	err := NewValidator().IsGlobalAdmin(ctx)
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Internal, "unable to verify user: %s", err.Error())
-	}
-	// is user is not global admin, user must have accesss to this organization
-	if !userIsAdmin {
-		if valid, err := organization.NewValidator().ValidateOrganizationAccess(ctx, authcus.Read, req.OrgId); !valid || err != nil {
-			return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
+		return &api.SetGatewayModeResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
 	gwClient, err := m2mcli.GetM2MGatewayServiceClient()

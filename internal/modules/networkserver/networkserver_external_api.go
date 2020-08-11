@@ -15,7 +15,7 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
@@ -23,16 +23,13 @@ import (
 
 // NetworkServerAPI exports the NetworkServer related functions.
 type NetworkServerAPI struct {
-	st   NetworkServerStore
-	txSt store.Store
+	st *store.Handler
 }
 
 // NewNetworkServerAPI creates a new NetworkServerAPI.
 func NewNetworkServerAPI() *NetworkServerAPI {
-	st := store.New(storage.DB().DB)
 	return &NetworkServerAPI{
-		st:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 
@@ -57,56 +54,52 @@ func (a *NetworkServerAPI) SetupDefault() error {
 		}
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.TxRollback(ctx)
-
-	// none default_gateway_profile exists, add one
-	var networkServer NetworkServer
-	n, err := tx.GetNetworkServers(ctx, 1, 0)
-	if err != nil && err != storage.ErrDoesNotExist {
-		return errors.Wrap(err, "Load network server internal error")
-	}
-
-	if len(n) >= 1 {
-		networkServer = n[0]
-	} else {
-		// insert default one
-		err := tx.CreateNetworkServer(ctx, &NetworkServer{
-			Name:                    "default_network_server",
-			Server:                  "network-server:8000",
-			GatewayDiscoveryEnabled: false,
-		})
-
-		if err != nil {
-			return nil
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		// none default_gateway_profile exists, add one
+		var networkServer store.NetworkServer
+		n, err := handler.GetNetworkServers(ctx, 1, 0)
+		if err != nil && err != storage.ErrDoesNotExist {
+			return errors.Wrap(err, "Load network server internal error")
 		}
 
-		// get network-server id
-		networkServer, err = tx.GetDefaultNetworkServer(ctx)
+		if len(n) >= 1 {
+			networkServer = n[0]
+		} else {
+			// insert default one
+			err := handler.CreateNetworkServer(ctx, &store.NetworkServer{
+				Name:                    "default_network_server",
+				Server:                  "network-server:8000",
+				GatewayDiscoveryEnabled: false,
+			})
+
+			if err != nil {
+				return nil
+			}
+
+			// get network-server id
+			networkServer, err = handler.GetDefaultNetworkServer(ctx)
+			if err != nil {
+				return err
+			}
+		}
+
+		gp := store.GatewayProfile{
+			NetworkServerID: networkServer.ID,
+			Name:            "default_gateway_profile",
+			GatewayProfile: ns.GatewayProfile{
+				Channels:      []uint32{0, 1, 2},
+				ExtraChannels: []*ns.GatewayProfileExtraChannel{},
+			},
+		}
+
+		err = handler.CreateGatewayProfile(ctx, &gp)
 		if err != nil {
 			return err
 		}
-	}
 
-	gp := gatewayprofile.GatewayProfile{
-		NetworkServerID: networkServer.ID,
-		Name:            "default_gateway_profile",
-		GatewayProfile: ns.GatewayProfile{
-			Channels:      []uint32{0, 1, 2},
-			ExtraChannels: []*ns.GatewayProfileExtraChannel{},
-		},
-	}
-
-	err = tx.CreateGatewayProfile(ctx, &gp)
-	if err != nil {
-		return err
-	}
-
-	if err := tx.TxCommit(ctx); err != nil {
-		return err
+		return nil
+	}); err != nil {
+		return status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return nil
@@ -122,7 +115,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	networkServer := NetworkServer{
+	networkServer := store.NetworkServer{
 		Name:                        req.NetworkServer.Name,
 		Server:                      req.NetworkServer.Server,
 		CACert:                      req.NetworkServer.CaCert,
@@ -160,16 +153,24 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 	var region string
 	var version string
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-	if err == nil {
-		resp, err := nsClient.GetVersion(ctx, &empty.Empty{})
-		if err == nil {
-			region = resp.Region.String()
-			version = resp.Version
-		}
+	nStruct := &nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nStruct.GetNetworkServiceClient()
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	resp := pb.GetNetworkServerResponse{
+	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
+	if err == nil {
+		region = res.Region.String()
+		version = res.Version
+	}
+
+	response := pb.GetNetworkServerResponse{
 		NetworkServer: &pb.NetworkServer{
 			Id:                          n.ID,
 			Name:                        n.Name,
@@ -187,16 +188,16 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 		Version: version,
 	}
 
-	resp.CreatedAt, err = ptypes.TimestampProto(n.CreatedAt)
+	response.CreatedAt, err = ptypes.TimestampProto(n.CreatedAt)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(n.UpdatedAt)
+	response.UpdatedAt, err = ptypes.TimestampProto(n.UpdatedAt)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	return &resp, nil
+	return &response, nil
 }
 
 // Update updates the given network-server.
@@ -271,7 +272,7 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 	}
 
 	var count int
-	var nss []NetworkServer
+	var nss []store.NetworkServer
 
 	if req.OrganizationId == 0 {
 		if u.IsGlobalAdmin {

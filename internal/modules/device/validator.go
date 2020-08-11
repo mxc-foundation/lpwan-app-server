@@ -50,9 +50,9 @@ func (v *Validator) ValidateGlobalNodesAccess(ctx context.Context, flag authcus.
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateNodeAccess(u.Username, applicationID, u.ID)
+		return Service.St.CheckCreateNodeAccess(ctx, u.Username, applicationID, u.ID)
 	case authcus.List:
-		return Service.St.CheckListNodeAccess(u.Username, applicationID, u.ID)
+		return Service.St.CheckListNodeAccess(ctx, u.Username, applicationID, u.ID)
 	default:
 		panic("ValidateGlobalNodesAccess: unsupported flag")
 	}
@@ -68,11 +68,11 @@ func (v *Validator) ValidateNodeAccess(ctx context.Context, flag authcus.Flag, d
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadNodeAccess(u.Username, devEUI, u.ID)
+		return Service.St.CheckReadNodeAccess(ctx, u.Username, devEUI, u.ID)
 	case authcus.Update:
-		return Service.St.CheckUpdateNodeAccess(u.Username, devEUI, u.ID)
+		return Service.St.CheckUpdateNodeAccess(ctx, u.Username, devEUI, u.ID)
 	case authcus.Delete:
-		return Service.St.CheckDeleteNodeAccess(u.Username, devEUI, u.ID)
+		return Service.St.CheckDeleteNodeAccess(ctx, u.Username, devEUI, u.ID)
 	default:
 		panic("ValidateNodeAccess: unsupported flag")
 	}

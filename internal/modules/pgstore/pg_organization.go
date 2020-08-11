@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	orgmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 func (ps *pgstore) CheckReadOrganizationAccess(ctx context.Context, username string, userID int64, organizationID int64) (bool, error) {
@@ -345,7 +345,7 @@ func (ps *pgstore) GetOrganizationIDList(ctx context.Context, limit, offset int,
 }
 
 // CreateOrganization creates the given Organization.
-func (ps *pgstore) CreateOrganization(ctx context.Context, org *orgmod.Organization) error {
+func (ps *pgstore) CreateOrganization(ctx context.Context, org *store.Organization) error {
 	if err := org.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -383,15 +383,15 @@ func (ps *pgstore) CreateOrganization(ctx context.Context, org *orgmod.Organizat
 	return nil
 }
 
-// GetOrganization returns the orgmod.Organization for the given id.
+// GetOrganization returns the store.Organization for the given id.
 // When forUpdate is set to true, then tx must be a tx transaction.
-func (ps *pgstore) GetOrganization(ctx context.Context, id int64, forUpdate bool) (orgmod.Organization, error) {
+func (ps *pgstore) GetOrganization(ctx context.Context, id int64, forUpdate bool) (store.Organization, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
-	var org orgmod.Organization
+	var org store.Organization
 	err := sqlx.GetContext(ctx, ps.db, &org, "select * from organization where id = $1"+fu, id)
 	if err != nil {
 		return org, errors.Wrap(err, "select error")
@@ -400,7 +400,7 @@ func (ps *pgstore) GetOrganization(ctx context.Context, id int64, forUpdate bool
 }
 
 // GetOrganizationCount returns the total number of organizations.
-func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters orgmod.OrganizationFilters) (int, error) {
+func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters store.OrganizationFilters) (int, error) {
 	query, args, err := sqlx.Named(`
 		select
 			count(distinct o.*)
@@ -425,7 +425,7 @@ func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters orgmod.Orga
 }
 
 // GetOrganizations returns a slice of organizations, sorted by name.
-func (ps *pgstore) GetOrganizations(ctx context.Context, filters orgmod.OrganizationFilters) ([]orgmod.Organization, error) {
+func (ps *pgstore) GetOrganizations(ctx context.Context, filters store.OrganizationFilters) ([]store.Organization, error) {
 	query, args, err := sqlx.Named(`
 		select
 			o.*
@@ -447,7 +447,7 @@ func (ps *pgstore) GetOrganizations(ctx context.Context, filters orgmod.Organiza
 		return nil, errors.Wrap(err, "named query error")
 	}
 
-	var orgs []orgmod.Organization
+	var orgs []store.Organization
 	err = sqlx.SelectContext(ctx, ps.db, &orgs, query, args...)
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
@@ -457,7 +457,7 @@ func (ps *pgstore) GetOrganizations(ctx context.Context, filters orgmod.Organiza
 }
 
 // UpdateOrganization updates the given organization.
-func (ps *pgstore) UpdateOrganization(ctx context.Context, org *orgmod.Organization) error {
+func (ps *pgstore) UpdateOrganization(ctx context.Context, org *store.Organization) error {
 	if err := org.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -623,8 +623,8 @@ func (ps *pgstore) DeleteOrganizationUser(ctx context.Context, organizationID, u
 }
 
 // GetOrganizationUser gets the information of the given organization user.
-func (ps *pgstore) GetOrganizationUser(ctx context.Context, organizationID, userID int64) (orgmod.OrganizationUser, error) {
-	var u orgmod.OrganizationUser
+func (ps *pgstore) GetOrganizationUser(ctx context.Context, organizationID, userID int64) (store.OrganizationUser, error) {
+	var u store.OrganizationUser
 	err := sqlx.GetContext(ctx, ps.db, &u, `
 		select
 			u.id as user_id,
@@ -666,8 +666,8 @@ func (ps *pgstore) GetOrganizationUserCount(ctx context.Context, organizationID 
 }
 
 // GetOrganizationUsers returns the users for the given organization.
-func (ps *pgstore) GetOrganizationUsers(ctx context.Context, organizationID int64, limit, offset int) ([]orgmod.OrganizationUser, error) {
-	var users []orgmod.OrganizationUser
+func (ps *pgstore) GetOrganizationUsers(ctx context.Context, organizationID int64, limit, offset int) ([]store.OrganizationUser, error) {
+	var users []store.OrganizationUser
 	err := sqlx.SelectContext(ctx, ps.db, &users, `
 		select
 			u.id as user_id,

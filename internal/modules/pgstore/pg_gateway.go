@@ -18,12 +18,12 @@ import (
 
 	m2m_api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	nsClient "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/provisionserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 )
 
 func (ps *pgstore) CheckCreateGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
@@ -202,7 +202,7 @@ func (ps *pgstore) CheckReadOrganizationNetworkServerAccess(ctx context.Context,
 	return count > 0, nil
 }
 
-func (ps *pgstore) AddGatewayFirmware(ctx context.Context, gwFw *gwmod.GatewayFirmware) (model string, err error) {
+func (ps *pgstore) AddGatewayFirmware(ctx context.Context, gwFw *store.GatewayFirmware) (model string, err error) {
 	err = sqlx.GetContext(ctx, ps.db, &model, `
 		insert into gateway_firmware (
 			model, 
@@ -222,7 +222,7 @@ func (ps *pgstore) AddGatewayFirmware(ctx context.Context, gwFw *gwmod.GatewayFi
 	return model, nil
 }
 
-func (ps *pgstore) GetGatewayFirmware(ctx context.Context, model string, forUpdate bool) (gwFw gwmod.GatewayFirmware, err error) {
+func (ps *pgstore) GetGatewayFirmware(ctx context.Context, model string, forUpdate bool) (gwFw store.GatewayFirmware, err error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -238,7 +238,7 @@ func (ps *pgstore) GetGatewayFirmware(ctx context.Context, model string, forUpda
 	return gwFw, nil
 }
 
-func (ps *pgstore) GetGatewayFirmwareList(ctx context.Context) (list []gwmod.GatewayFirmware, err error) {
+func (ps *pgstore) GetGatewayFirmwareList(ctx context.Context) (list []store.GatewayFirmware, err error) {
 	err = sqlx.SelectContext(ctx, ps.db, &list, `
 		select 
 			model, 
@@ -254,7 +254,7 @@ func (ps *pgstore) GetGatewayFirmwareList(ctx context.Context) (list []gwmod.Gat
 	return list, nil
 }
 
-func (ps *pgstore) UpdateGatewayFirmware(ctx context.Context, gwFw *gwmod.GatewayFirmware) (model string, err error) {
+func (ps *pgstore) UpdateGatewayFirmware(ctx context.Context, gwFw *store.GatewayFirmware) (model string, err error) {
 	err = sqlx.GetContext(ctx, ps.db, &model, `
 		update 
 		    gateway_firmware 
@@ -298,7 +298,7 @@ func (ps *pgstore) UpdateGatewayConfigByGwId(ctx context.Context, config string,
 }
 
 // CreateGateway creates the given Gateway.
-func (ps *pgstore) CreateGateway(ctx context.Context, gw *gwmod.Gateway) error {
+func (ps *pgstore) CreateGateway(ctx context.Context, gw *store.Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -368,7 +368,7 @@ func (ps *pgstore) CreateGateway(ctx context.Context, gw *gwmod.Gateway) error {
 }
 
 // UpdateGateway updates the given Gateway.
-func (ps *pgstore) UpdateGateway(ctx context.Context, gw *gwmod.Gateway) error {
+func (ps *pgstore) UpdateGateway(ctx context.Context, gw *store.Gateway) error {
 	if err := gw.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -517,9 +517,7 @@ func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 		return errors.Wrap(err, "get gateway error")
 	}
 	if strings.HasPrefix(obj.Model, "MX") {
-		provConf := config.C.ProvisionServer
-		provClient, err := provisionserver.CreateClientWithCert(provConf.ProvisionServer, provConf.CACert,
-			provConf.TLSCert, provConf.TLSKey)
+		provClient, err := pscli.CreateClientWithCert()
 		if err != nil {
 			return errors.Wrap(err, "failed to connect to provisioning server")
 		}
@@ -550,7 +548,13 @@ func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	client, err := nsClient.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	client, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -563,18 +567,16 @@ func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 	}
 
 	// delete this gateway from m2m-server
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	gwClient := m2m_api.NewM2MServerServiceClient(m2mClient)
-	if err == nil {
-		_, err = gwClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
-			MacAddress: mac.String(),
-		})
-		if err != nil && status.Code(err) != codes.NotFound {
-			log.WithError(err).Error("delete gateway from m2m-server error")
-		}
-	} else {
-		log.WithError(err).Error("get m2m-server client error")
+	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
+	if err != nil {
+		return err
+	}
+
+	_, err = gwClient.DeleteGatewayInM2MServer(context.Background(), &m2m_api.DeleteGatewayInM2MServerRequest{
+		MacAddress: mac.String(),
+	})
+	if err != nil && status.Code(err) != codes.NotFound {
+		log.WithError(err).Error("delete gateway from m2m-server error")
 	}
 
 	log.WithFields(log.Fields{
@@ -585,13 +587,13 @@ func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 }
 
 // GetGateway returns the gateway for the given mac.
-func (ps *pgstore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gwmod.Gateway, error) {
+func (ps *pgstore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (store.Gateway, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
-	var gw gwmod.Gateway
+	var gw store.Gateway
 	err := sqlx.GetContext(ctx, ps.db, &gw, "select * from gateway where mac = $1"+fu, mac[:])
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -632,8 +634,8 @@ func (ps *pgstore) GetGatewayCount(ctx context.Context, search string) (int, err
 }
 
 // GetGateways returns a slice of gateways sorted by name.
-func (ps *pgstore) GetGateways(ctx context.Context, limit, offset int32, search string) ([]gwmod.Gateway, error) {
-	var gws []gwmod.Gateway
+func (ps *pgstore) GetGateways(ctx context.Context, limit, offset int32, search string) ([]store.Gateway, error) {
+	var gws []store.Gateway
 	if search != "" {
 		search = "%" + search + "%"
 	}
@@ -758,8 +760,8 @@ func (ps *pgstore) GetGatewayMiningList(ctx context.Context, time, limit int64) 
 }
 
 // GetGatewaysLoc returns a slice of gateways locations.
-func (ps *pgstore) GetGatewaysLoc(ctx context.Context, limit int) ([]gwmod.GatewayLocation, error) {
-	var gwsLoc []gwmod.GatewayLocation
+func (ps *pgstore) GetGatewaysLoc(ctx context.Context, limit int) ([]store.GatewayLocation, error) {
+	var gwsLoc []store.GatewayLocation
 
 	err := sqlx.SelectContext(ctx, ps.db, &gwsLoc, `
 		select
@@ -778,14 +780,14 @@ func (ps *pgstore) GetGatewaysLoc(ctx context.Context, limit int) ([]gwmod.Gatew
 }
 
 // GetGatewaysForMACs returns a map of gateways given a slice of MACs.
-func (ps *pgstore) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64) (map[lorawan.EUI64]gwmod.Gateway, error) {
-	out := make(map[lorawan.EUI64]gwmod.Gateway)
+func (ps *pgstore) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64) (map[lorawan.EUI64]store.Gateway, error) {
+	out := make(map[lorawan.EUI64]store.Gateway)
 	var macsB [][]byte
 	for i := range macs {
 		macsB = append(macsB, macs[i][:])
 	}
 
-	var gws []gwmod.Gateway
+	var gws []store.Gateway
 	err := sqlx.SelectContext(ctx, ps.db, &gws, "select * from gateway where mac = any($1)", pq.ByteaArray(macsB))
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
@@ -841,8 +843,8 @@ func (ps *pgstore) GetGatewayCountForOrganizationID(ctx context.Context, organiz
 
 // GetGatewaysForOrganizationID returns a slice of gateways sorted by name
 // for the given organization ID.
-func (ps *pgstore) GetGatewaysForOrganizationID(ctx context.Context, organizationID int64, limit, offset int, search string) ([]gwmod.Gateway, error) {
-	var gws []gwmod.Gateway
+func (ps *pgstore) GetGatewaysForOrganizationID(ctx context.Context, organizationID int64, limit, offset int, search string) ([]store.Gateway, error) {
+	var gws []store.Gateway
 	if search != "" {
 		search = "%" + search + "%"
 	}
@@ -918,8 +920,8 @@ func (ps *pgstore) GetGatewayCountForUser(ctx context.Context, username string, 
 
 // GetGatewaysForUser returns a slice of gateways sorted by name to which the
 // given user has access.
-func (ps *pgstore) GetGatewaysForUser(ctx context.Context, username string, limit, offset int, search string) ([]gwmod.Gateway, error) {
-	var gws []gwmod.Gateway
+func (ps *pgstore) GetGatewaysForUser(ctx context.Context, username string, limit, offset int, search string) ([]store.Gateway, error) {
+	var gws []store.Gateway
 	if search != "" {
 		search = "%" + search + "%"
 	}
@@ -961,7 +963,7 @@ func (ps *pgstore) GetGatewaysForUser(ctx context.Context, username string, limi
 }
 
 // CreateGatewayPing creates the given gateway ping.
-func (ps *pgstore) CreateGatewayPing(ctx context.Context, ping *gwmod.GatewayPing) error {
+func (ps *pgstore) CreateGatewayPing(ctx context.Context, ping *store.GatewayPing) error {
 	ping.CreatedAt = time.Now()
 
 	err := sqlx.GetContext(ctx, ps.db, &ping.ID, `
@@ -993,8 +995,8 @@ func (ps *pgstore) CreateGatewayPing(ctx context.Context, ping *gwmod.GatewayPin
 }
 
 // GetGatewayPing returns the ping matching the given id.
-func (ps *pgstore) GetGatewayPing(ctx context.Context, id int64) (gwmod.GatewayPing, error) {
-	var ping gwmod.GatewayPing
+func (ps *pgstore) GetGatewayPing(ctx context.Context, id int64) (store.GatewayPing, error) {
+	var ping store.GatewayPing
 	err := sqlx.GetContext(ctx, ps.db, &ping, "select * from gateway_ping where id = $1", id)
 	if err != nil {
 		return ping, errors.Wrap(err, "select error")
@@ -1004,7 +1006,7 @@ func (ps *pgstore) GetGatewayPing(ctx context.Context, id int64) (gwmod.GatewayP
 }
 
 // CreateGatewayPingRX creates the received ping.
-func (ps *pgstore) CreateGatewayPingRX(ctx context.Context, rx *gwmod.GatewayPingRX) error {
+func (ps *pgstore) CreateGatewayPingRX(ctx context.Context, rx *store.GatewayPingRX) error {
 	rx.CreatedAt = time.Now()
 
 	err := sqlx.GetContext(ctx, ps.db, &rx.ID, `
@@ -1038,7 +1040,7 @@ func (ps *pgstore) CreateGatewayPingRX(ctx context.Context, rx *gwmod.GatewayPin
 // DeleteAllGatewaysForOrganizationID deletes all gateways for a given
 // organization id.
 func (ps *pgstore) DeleteAllGatewaysForOrganizationID(ctx context.Context, organizationID int64) error {
-	var gws []gwmod.Gateway
+	var gws []store.Gateway
 	err := sqlx.SelectContext(ctx, ps.db, &gws, "select * from gateway where organization_id = $1", organizationID)
 	if err != nil {
 		return errors.Wrap(err, "select error")
@@ -1071,8 +1073,8 @@ func (ps *pgstore) GetAllGatewayMacList(ctx context.Context) ([]string, error) {
 
 // GetGatewayPingRXForPingID returns the received gateway pings for the given
 // ping ID.
-func (ps *pgstore) GetGatewayPingRXForPingID(ctx context.Context, pingID int64) ([]gwmod.GatewayPingRX, error) {
-	var rx []gwmod.GatewayPingRX
+func (ps *pgstore) GetGatewayPingRXForPingID(ctx context.Context, pingID int64) ([]store.GatewayPingRX, error) {
+	var rx []store.GatewayPingRX
 
 	err := sqlx.SelectContext(ctx, ps.db, &rx, "select * from gateway_ping_rx where ping_id = $1", pingID)
 	if err != nil {
@@ -1084,24 +1086,24 @@ func (ps *pgstore) GetGatewayPingRXForPingID(ctx context.Context, pingID int64) 
 
 // GetLastGatewayPingAndRX returns the last gateway ping and RX for the given
 // gateway MAC.
-func (ps *pgstore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (gwmod.GatewayPing, []gwmod.GatewayPingRX, error) {
+func (ps *pgstore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (store.GatewayPing, []store.GatewayPingRX, error) {
 	gw, err := ps.GetGateway(ctx, mac, false)
 	if err != nil {
-		return gwmod.GatewayPing{}, nil, errors.Wrap(err, "get gateway error")
+		return store.GatewayPing{}, nil, errors.Wrap(err, "get gateway error")
 	}
 
 	if gw.LastPingID == nil {
-		return gwmod.GatewayPing{}, nil, errors.New("not exist")
+		return store.GatewayPing{}, nil, errors.New("not exist")
 	}
 
 	ping, err := ps.GetGatewayPing(ctx, *gw.LastPingID)
 	if err != nil {
-		return gwmod.GatewayPing{}, nil, errors.Wrap(err, "get gateway ping error")
+		return store.GatewayPing{}, nil, errors.Wrap(err, "get gateway ping error")
 	}
 
 	rx, err := ps.GetGatewayPingRXForPingID(ctx, ping.ID)
 	if err != nil {
-		return gwmod.GatewayPing{}, nil, errors.Wrap(err, "get gateway ping rx for ping id error")
+		return store.GatewayPing{}, nil, errors.Wrap(err, "get gateway ping rx for ping id error")
 	}
 
 	return ping, rx, nil

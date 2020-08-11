@@ -18,16 +18,13 @@ import (
 
 // UserAPI exports the User related functions.
 type UserAPI struct {
-	st   UserStore
-	txSt store.Store
+	st *store.Handler
 }
 
 // NewUserAPI creates a new UserAPI.
 func NewUserAPI() *UserAPI {
-	st := store.New(storage.DB().DB)
 	return &UserAPI{
-		st:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 
@@ -41,7 +38,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user := User{
+	user := store.User{
 		Username:   req.User.Username,
 		SessionTTL: req.User.SessionTtl,
 		IsAdmin:    req.User.IsAdmin,
@@ -51,25 +48,22 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		Password:   req.Password,
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't start transaction: %v", err)
-	}
-	defer tx.TxRollback(ctx)
-
-	err = tx.CreateUser(ctx, &user)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	for _, org := range req.Organizations {
-		if err := tx.CreateOrganizationUser(ctx, org.OrganizationId, user.Username, org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
-			return nil, status.Errorf(codes.Unknown, "%v", err)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		err := handler.CreateUser(ctx, &user)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
 		}
-	}
 
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't commit transaction: %v", err)
+		for _, org := range req.Organizations {
+			if err := handler.CreateOrganizationUser(ctx, org.OrganizationId, user.Username,
+				org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
+				return status.Errorf(codes.Unknown, "%v", err)
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &inpb.CreateUserResponse{Id: user.ID}, nil

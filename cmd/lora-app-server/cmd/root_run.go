@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"os"
 	"os/signal"
 	"syscall"
@@ -213,19 +214,24 @@ func setupFUOTA() error {
 }
 
 func setupModules() error {
-	if err := gwmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	pwh, err := pwhash.New(16, config.C.General.PasswordHashIterations)
+	if err != nil {
 		return err
 	}
 
-	if err := devmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err := gwmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := appmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err := devmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := gpmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err := appmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
+		return err
+	}
+
+	if err := gpmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
@@ -233,15 +239,15 @@ func setupModules() error {
 		return err
 	}
 
-	if err := nsmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err := nsmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := orgmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err := orgmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := usermod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err := usermod.Setup(pgstore.New(storage.DB().DB, pwh), config.C); err != nil {
 		return err
 	}
 

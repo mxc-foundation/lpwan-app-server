@@ -17,17 +17,13 @@ import (
 
 // GatewayM2MAPI exports the API for mxprotocol-server
 type GatewayM2MAPI struct {
-	st   GatewayStore
-	txSt store.Store
+	st *store.Handler
 }
 
 // NewGatewayM2MAPI creates new GatewayM2MAPI
 func NewGatewayM2MAPI() *GatewayM2MAPI {
-	st := store.New(storage.DB().DB)
-
 	return &GatewayM2MAPI{
-		st:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 

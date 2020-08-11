@@ -29,6 +29,8 @@ type Store interface {
 	NetworkServerStore
 	OrganizationStore
 	UserStore
+	ServiceProfileStore
+	DeviceProfileStore
 }
 
 type Handler struct {

@@ -12,9 +12,9 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	gpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 func (ps *pgstore) CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {
@@ -72,7 +72,7 @@ func (ps *pgstore) CheckReadListGatewayProfileAccess(ctx context.Context, userna
 // CreateGatewayProfile creates the given gateway-profile.
 // This will create the gateway-profile at the network-server side and will
 // create a local reference record.
-func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *gpmod.GatewayProfile) error {
+func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *store.GatewayProfile) error {
 	gpID, err := uuid.NewV4()
 	if err != nil {
 		return errors.Wrap(err, "new uuid v4 error")
@@ -108,7 +108,13 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -129,8 +135,8 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 }
 
 // GetGatewayProfile returns the gateway-profile matching the given id.
-func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (gpmod.GatewayProfile, error) {
-	var gp gpmod.GatewayProfile
+func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (store.GatewayProfile, error) {
+	var gp store.GatewayProfile
 	err := sqlx.GetContext(ctx, ps.db, &gp, `
 		select
 			network_server_id,
@@ -151,7 +157,13 @@ func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (gpmod.G
 		return gp, errors.Wrap(err, "get network-server error")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return gp, errors.Wrap(err, "get network-server client error")
 	}
@@ -173,7 +185,7 @@ func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (gpmod.G
 }
 
 // UpdateGatewayProfile updates the given gateway-profile.
-func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *gpmod.GatewayProfile) error {
+func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *store.GatewayProfile) error {
 	gp.UpdatedAt = time.Now()
 	gpID, err := uuid.FromBytes(gp.GatewayProfile.Id)
 	if err != nil {
@@ -210,7 +222,13 @@ func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *gpmod.GatewayPr
 		return errors.Wrap(err, "get network-server error")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
@@ -250,11 +268,16 @@ func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
 		return errors.New("not exist")
 	}
 
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
-
 	_, err = nsClient.DeleteGatewayProfile(ctx, &ns.DeleteGatewayProfileRequest{
 		Id: id.Bytes(),
 	})
@@ -299,8 +322,8 @@ func (ps *pgstore) GetGatewayProfileCountForNetworkServerID(ctx context.Context,
 }
 
 // GetGatewayProfiles returns a slice of gateway-profiles.
-func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]gpmod.GatewayProfileMeta, error) {
-	var gps []gpmod.GatewayProfileMeta
+func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]store.GatewayProfileMeta, error) {
+	var gps []store.GatewayProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select
 			gp.*,
@@ -326,8 +349,8 @@ func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([
 
 // GetGatewayProfilesForNetworkServerID returns a slice of gateway-profiles
 // for the given network-server ID.
-func (ps *pgstore) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]gpmod.GatewayProfileMeta, error) {
-	var gps []gpmod.GatewayProfileMeta
+func (ps *pgstore) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]store.GatewayProfileMeta, error) {
+	var gps []store.GatewayProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select
 			gp.*,

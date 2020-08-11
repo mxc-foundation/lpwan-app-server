@@ -18,22 +18,19 @@ import (
 
 // DeviceM2MAPI exports the API to mxprotocol client
 type DeviceM2MAPI struct {
-	St   DeviceStore
-	txSt store.Store
+	st *store.Handler
 }
 
 // NewDeviceM2MAPI creates new DeviceM2MAPI
 func NewDeviceM2MAPI() *DeviceM2MAPI {
-	st := store.New(storage.DB().DB)
 	return &DeviceM2MAPI{
-		St:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 
 // GetDeviceDevEuiList defines the response of the Device DevEui list
 func (a *DeviceM2MAPI) GetDeviceDevEuiList(ctx context.Context, req *empty.Empty) (*pb.GetDeviceDevEuiListResponse, error) {
-	devEuiList, err := a.St.GetAllDeviceEuis(ctx)
+	devEuiList, err := a.st.GetAllDeviceEuis(ctx)
 	if err != nil {
 		return &pb.GetDeviceDevEuiListResponse{}, status.Errorf(codes.DataLoss, err.Error())
 	}
@@ -50,7 +47,7 @@ func (a *DeviceM2MAPI) GetDeviceByDevEui(ctx context.Context, req *pb.GetDeviceB
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())
 	}
 
-	device, err := a.St.GetDevice(ctx, devEui, false)
+	device, err := a.st.GetDevice(ctx, devEui, false)
 	if err == storage.ErrDoesNotExist {
 		return &resp, nil
 	} else if err != nil {

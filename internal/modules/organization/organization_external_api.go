@@ -11,22 +11,17 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // OrganizationAPI exports the organization related functions.
 type OrganizationAPI struct {
-	st   OrganizationStore
-	txSt store.Store
+	st *store.Handler
 }
 
 // NewOrganizationAPI creates a new OrganizationAPI.
 func NewOrganizationAPI() *OrganizationAPI {
-	st := store.New(storage.DB().DB)
-
 	return &OrganizationAPI{
-		st:   st,
-		txSt: st,
+		st: Service.St,
 	}
 }
 
@@ -40,7 +35,7 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	org := Organization{
+	org := store.Organization{
 		Name:            req.Organization.Name,
 		DisplayName:     req.Organization.DisplayName,
 		CanHaveGateways: req.Organization.CanHaveGateways,
@@ -98,7 +93,7 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	filters := OrganizationFilters{
+	filters := store.OrganizationFilters{
 		Search: req.Search,
 		Limit:  int(req.Limit),
 		Offset: int(req.Offset),
@@ -195,37 +190,33 @@ func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganization
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		if err := handler.DeleteAllGatewaysForOrganizationID(ctx, req.Id); err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	if err := tx.DeleteAllGatewaysForOrganizationID(ctx, req.Id); err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		err := handler.DeleteAllApplicationsForOrganizationID(ctx, req.Id)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	err = tx.DeleteAllApplicationsForOrganizationID(ctx, req.Id)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		err = handler.DeleteAllServiceProfilesForOrganizationID(ctx, req.Id)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	err = tx.DeleteAllServiceProfilesForOrganizationID(ctx, req.Id)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		err = handler.DeleteAllDeviceProfilesForOrganizationID(ctx, req.Id)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	err = tx.DeleteAllDeviceProfilesForOrganizationID(ctx, req.Id)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		if err := handler.DeleteOrganization(ctx, req.Id); err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	if err := tx.DeleteOrganization(ctx, req.Id); err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, nil

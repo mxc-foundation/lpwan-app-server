@@ -3,8 +3,9 @@ package pgstore
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"strings"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"

@@ -40,17 +40,14 @@ import (
 
 // DeviceAPI exports the Node related functions.
 type DeviceAPI struct {
-	St                  DeviceStore
-	txSt                store.Store
+	st                  *store.Handler
 	ApplicationServerID uuid.UUID
 }
 
 // NewDeviceAPI creates a new NodeAPI.
 func NewDeviceAPI(applicationID uuid.UUID) *DeviceAPI {
-	st := store.New(storage.DB().DB)
 	return &DeviceAPI{
-		St:                  st,
-		txSt:                st,
+		st:                  Service.St,
 		ApplicationServerID: applicationID,
 	}
 }
@@ -95,7 +92,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 	}
 
 	// Set Device struct.
-	d := Device{
+	d := store.Device{
 		DevEUI:            devEUI,
 		ApplicationID:     req.Device.ApplicationId,
 		DeviceProfileID:   dpID,
@@ -124,89 +121,87 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 	//    rollback the transaction.
 	//  * We want to lock the organization so that we can validate the
 	//    max device count.
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 
-	org, err := tx.GetOrganization(ctx, app.OrganizationID, true)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	// Validate max. device count when != 0.
-	if org.MaxDeviceCount != 0 {
-		count, err := tx.GetDeviceCount(ctx, DeviceFilters{ApplicationID: app.OrganizationID})
+		org, err := handler.GetOrganization(ctx, app.OrganizationID, true)
 		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%v", err)
+			return status.Errorf(codes.Unknown, "%v", err)
 		}
 
-		if count >= org.MaxDeviceCount {
-			return nil, status.Errorf(codes.Unknown, "%v", storage.ErrOrganizationMaxDeviceCount)
+		// Validate max. device count when != 0.
+		if org.MaxDeviceCount != 0 {
+			count, err := handler.GetDeviceCount(ctx, store.DeviceFilters{ApplicationID: app.OrganizationID})
+			if err != nil {
+				return status.Errorf(codes.Unknown, "%v", err)
+			}
+
+			if count >= org.MaxDeviceCount {
+				return status.Errorf(codes.Unknown, "%v", storage.ErrOrganizationMaxDeviceCount)
+			}
 		}
-	}
 
-	err = tx.CreateDevice(ctx, &d, a.ApplicationServerID)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		err = handler.CreateDevice(ctx, &d, a.ApplicationServerID)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
-	n, err := tx.GetNetworkServerForDevEUI(ctx, d.DevEUI)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		timestampCreatedAt, _ := ptypes.TimestampProto(time.Now())
+		n, err := handler.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	// add this device to network server
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		// add this device to network server
+		nStruct := &nscli.NSStruct{
+			Server:  n.Server,
+			CACert:  n.CACert,
+			TLSCert: n.TLSCert,
+			TLSKey:  n.TLSKey,
+		}
+		client, err := nStruct.GetNetworkServiceClient()
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	_, err = client.CreateDevice(ctx, &ns.CreateDeviceRequest{
-		Device: &ns.Device{
-			DevEui:            d.DevEUI[:],
-			DeviceProfileId:   d.DeviceProfileID.Bytes(),
-			ServiceProfileId:  app.ServiceProfileID.Bytes(),
-			RoutingProfileId:  a.ApplicationServerID.Bytes(),
-			SkipFCntCheck:     d.SkipFCntCheck,
-			ReferenceAltitude: d.ReferenceAltitude,
-		},
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		_, err = client.CreateDevice(ctx, &ns.CreateDeviceRequest{
+			Device: &ns.Device{
+				DevEui:            d.DevEUI[:],
+				DeviceProfileId:   d.DeviceProfileID.Bytes(),
+				ServiceProfileId:  app.ServiceProfileID.Bytes(),
+				RoutingProfileId:  a.ApplicationServerID.Bytes(),
+				SkipFCntCheck:     d.SkipFCntCheck,
+				ReferenceAltitude: d.ReferenceAltitude,
+			},
+		})
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
-	// network server successfully
-	dvClient, err := m2mcli.GetM2MDeviceServiceClient()
-	if err != nil {
-		log.WithError(err).Error("Create device")
-		return nil, status.Errorf(codes.Unavailable, err.Error())
-	}
+		// add this device to m2m server, this procedure should not block insert device into appserver once it's added to
+		// network server successfully
+		dvClient, err := m2mcli.GetM2MDeviceServiceClient()
+		if err != nil {
+			log.WithError(err).Error("Create device")
+			return status.Errorf(codes.Unavailable, err.Error())
+		}
 
-	_, err = dvClient.AddDeviceInM2MServer(context.Background(), &pb.AddDeviceInM2MServerRequest{
-		OrgId: app.OrganizationID,
-		DevProfile: &pb.AppServerDeviceProfile{
-			DevEui:        d.DevEUI.String(),
-			ApplicationId: d.ApplicationID,
-			Name:          d.Name,
-			CreatedAt:     timestampCreatedAt,
-		},
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "m2m server create device api error: %v", err)
-	}
+		_, err = dvClient.AddDeviceInM2MServer(context.Background(), &pb.AddDeviceInM2MServerRequest{
+			OrgId: app.OrganizationID,
+			DevProfile: &pb.AppServerDeviceProfile{
+				DevEui:        d.DevEUI.String(),
+				ApplicationId: d.ApplicationID,
+				Name:          d.Name,
+				CreatedAt:     timestampCreatedAt,
+			},
+		})
+		if err != nil {
+			return status.Errorf(codes.Unknown, "m2m server create device api error: %v", err)
+		}
 
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil
+
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, nil
@@ -223,7 +218,7 @@ func (a *DeviceAPI) Get(ctx context.Context, req *api.GetDeviceRequest) (*api.Ge
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.St.GetDevice(ctx, eui, false)
+	d, err := a.st.GetDevice(ctx, eui, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -314,7 +309,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 	var err error
 	var idFilter bool
 
-	filters := DeviceFilters{
+	filters := store.DeviceFilters{
 		ApplicationID: req.ApplicationId,
 		Search:        req.Search,
 		/*		Tags: hstore.Hstore{
@@ -380,12 +375,12 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 		}
 	}
 
-	count, err := a.St.GetDeviceCount(ctx, filters)
+	count, err := a.st.GetDeviceCount(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	devices, err := a.St.GetDevices(ctx, filters)
+	devices, err := a.st.GetDevices(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -427,111 +422,108 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 		return nil, status.Errorf(codes.InvalidArgument, "device-profile and application must be under the same organization")
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 
-	d, err := tx.GetDevice(ctx, devEUI, true)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	n, err := tx.GetNetworkServerForDevEUI(ctx, d.DevEUI)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	res, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
-		DevEui: d.DevEUI[:],
-	})
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	if res.Device != nil {
-		d.SkipFCntCheck = res.Device.SkipFCntCheck
-		d.ReferenceAltitude = res.Device.ReferenceAltitude
-	}
-
-	// If the device is moved to a different application, validate that
-	// the new application is assigned to the same service-profile.
-	// This to guarantee that the new application is still on the same
-	// network-server and is not assigned to a different organization.
-	if req.Device.ApplicationId != d.ApplicationID {
-		appOld, err := tx.GetApplication(ctx, d.ApplicationID)
+		d, err := handler.GetDevice(ctx, devEUI, true)
 		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%v", err)
+			return status.Errorf(codes.Unknown, "%v", err)
 		}
 
-		appNew, err := tx.GetApplication(ctx, req.Device.ApplicationId)
+		n, err := handler.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%v", err)
+			return helpers.ErrToRPCError(err)
 		}
 
-		if appOld.ServiceProfileID != appNew.ServiceProfileID {
-			return nil, status.Errorf(codes.InvalidArgument, "when moving a device from application A to B, both A and B must share the same service-profile")
+		nStruct := &nscli.NSStruct{
+			Server:  n.Server,
+			CACert:  n.CACert,
+			TLSCert: n.TLSCert,
+			TLSKey:  n.TLSKey,
 		}
-	}
+		client, err := nStruct.GetNetworkServiceClient()
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	d.ApplicationID = req.Device.ApplicationId
-	d.DeviceProfileID = dpID
-	d.Name = req.Device.Name
-	d.Description = req.Device.Description
-	d.SkipFCntCheck = req.Device.SkipFCntCheck
-	d.ReferenceAltitude = req.Device.ReferenceAltitude
-	d.Variables = hstore.Hstore{
-		Map: make(map[string]sql.NullString),
-	}
-	d.Tags = hstore.Hstore{
-		Map: make(map[string]sql.NullString),
-	}
+		res, err := client.GetDevice(ctx, &ns.GetDeviceRequest{
+			DevEui: d.DevEUI[:],
+		})
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	for k, v := range req.Device.Variables {
-		d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
-	}
+		if res.Device != nil {
+			d.SkipFCntCheck = res.Device.SkipFCntCheck
+			d.ReferenceAltitude = res.Device.ReferenceAltitude
+		}
 
-	for k, v := range req.Device.Tags {
-		d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
-	}
+		// If the device is moved to a different application, validate that
+		// the new application is assigned to the same service-profile.
+		// This to guarantee that the new application is still on the same
+		// network-server and is not assigned to a different organization.
+		if req.Device.ApplicationId != d.ApplicationID {
+			appOld, err := handler.GetApplication(ctx, d.ApplicationID)
+			if err != nil {
+				return status.Errorf(codes.Unknown, "%v", err)
+			}
 
-	if err := tx.UpdateDevice(ctx, &d); err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+			appNew, err := handler.GetApplication(ctx, req.Device.ApplicationId)
+			if err != nil {
+				return status.Errorf(codes.Unknown, "%v", err)
+			}
 
-	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "uuid from string error: %v", err)
-	}
+			if appOld.ServiceProfileID != appNew.ServiceProfileID {
+				return status.Errorf(codes.InvalidArgument, "when moving a device from application A to B, both A and B must share the same service-profile")
+			}
+		}
 
-	_, err = client.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
-		Device: &ns.Device{
-			DevEui:            d.DevEUI[:],
-			DeviceProfileId:   d.DeviceProfileID.Bytes(),
-			ServiceProfileId:  app.ServiceProfileID.Bytes(),
-			RoutingProfileId:  rpID.Bytes(),
-			SkipFCntCheck:     d.SkipFCntCheck,
-			ReferenceAltitude: d.ReferenceAltitude,
-		},
-	})
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "update device error: %v", err)
-	}
+		d.ApplicationID = req.Device.ApplicationId
+		d.DeviceProfileID = dpID
+		d.Name = req.Device.Name
+		d.Description = req.Device.Description
+		d.SkipFCntCheck = req.Device.SkipFCntCheck
+		d.ReferenceAltitude = req.Device.ReferenceAltitude
+		d.Variables = hstore.Hstore{
+			Map: make(map[string]sql.NullString),
+		}
+		d.Tags = hstore.Hstore{
+			Map: make(map[string]sql.NullString),
+		}
 
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		for k, v := range req.Device.Variables {
+			d.Variables.Map[k] = sql.NullString{String: v, Valid: true}
+		}
+
+		for k, v := range req.Device.Tags {
+			d.Tags.Map[k] = sql.NullString{String: v, Valid: true}
+		}
+
+		if err := handler.UpdateDevice(ctx, &d); err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "uuid from string error: %v", err)
+		}
+
+		_, err = client.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
+			Device: &ns.Device{
+				DevEui:            d.DevEUI[:],
+				DeviceProfileId:   d.DeviceProfileID.Bytes(),
+				ServiceProfileId:  app.ServiceProfileID.Bytes(),
+				RoutingProfileId:  rpID.Bytes(),
+				SkipFCntCheck:     d.SkipFCntCheck,
+				ReferenceAltitude: d.ReferenceAltitude,
+			},
+		})
+		if err != nil {
+			return status.Errorf(codes.Unknown, "update device error: %v", err)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, nil
@@ -550,7 +542,7 @@ func (a *DeviceAPI) Delete(ctx context.Context, req *api.DeleteDeviceRequest) (*
 
 	// as this also performs a remote call to delete the node from the
 	// network-server, wrap it in a transaction
-	err := a.St.DeleteDevice(ctx, eui)
+	err := a.st.DeleteDevice(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -597,7 +589,7 @@ func (a *DeviceAPI) CreateKeys(ctx context.Context, req *api.CreateDeviceKeysReq
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.St.CreateDeviceKeys(ctx, &DeviceKeys{
+	err := a.st.CreateDeviceKeys(ctx, &store.DeviceKeys{
 		DevEUI:    eui,
 		NwkKey:    nwkKey,
 		AppKey:    appKey,
@@ -621,7 +613,7 @@ func (a *DeviceAPI) GetKeys(ctx context.Context, req *api.GetDeviceKeysRequest) 
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	dk, err := a.St.GetDeviceKeys(ctx, eui)
+	dk, err := a.st.GetDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -673,7 +665,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *api.UpdateDeviceKeysReq
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	dk, err := a.St.GetDeviceKeys(ctx, eui)
+	dk, err := a.st.GetDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -681,7 +673,7 @@ func (a *DeviceAPI) UpdateKeys(ctx context.Context, req *api.UpdateDeviceKeysReq
 	dk.AppKey = appKey
 	dk.GenAppKey = genAppKey
 
-	err = a.St.UpdateDeviceKeys(ctx, &dk)
+	err = a.st.UpdateDeviceKeys(ctx, &dk)
 	if err != nil {
 		return nil, err
 	}
@@ -700,7 +692,7 @@ func (a *DeviceAPI) DeleteKeys(ctx context.Context, req *api.DeleteDeviceKeysReq
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.St.DeleteDeviceKeys(ctx, eui)
+	err := a.st.DeleteDeviceKeys(ctx, eui)
 	if err != nil {
 		return nil, err
 	}
@@ -719,7 +711,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *api.DeactivateDeviceReq
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.St.GetDevice(ctx, devEUI, false)
+	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -783,68 +775,63 @@ func (a *DeviceAPI) Activate(ctx context.Context, req *api.ActivateDeviceRequest
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		d, err := handler.GetDevice(ctx, devEUI, false)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	d, err := tx.GetDevice(ctx, devEUI, false)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+		n, err := handler.GetNetworkServerForDevEUI(ctx, devEUI)
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	n, err := tx.GetNetworkServerForDevEUI(ctx, devEUI)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+		nStruct := &nscli.NSStruct{
+			Server:  n.Server,
+			CACert:  n.CACert,
+			TLSCert: n.TLSCert,
+			TLSKey:  n.TLSKey,
+		}
+		client, err := nStruct.GetNetworkServiceClient()
+		if err != nil {
+			return helpers.ErrToRPCError(err)
+		}
 
-	nStruct := &nscli.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	client, err := nStruct.GetNetworkServiceClient()
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
+		_, _ = client.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
+			DevEui: d.DevEUI[:],
+		})
 
-	_, _ = client.DeactivateDevice(ctx, &ns.DeactivateDeviceRequest{
-		DevEui: d.DevEUI[:],
-	})
+		actReq := ns.ActivateDeviceRequest{
+			DeviceActivation: &ns.DeviceActivation{
+				DevEui:      d.DevEUI[:],
+				DevAddr:     devAddr[:],
+				NwkSEncKey:  nwkSEncKey[:],
+				SNwkSIntKey: sNwkSIntKey[:],
+				FNwkSIntKey: fNwkSIntKey[:],
+				FCntUp:      req.DeviceActivation.FCntUp,
+				NFCntDown:   req.DeviceActivation.NFCntDown,
+				AFCntDown:   req.DeviceActivation.AFCntDown,
+			},
+		}
 
-	actReq := ns.ActivateDeviceRequest{
-		DeviceActivation: &ns.DeviceActivation{
-			DevEui:      d.DevEUI[:],
-			DevAddr:     devAddr[:],
-			NwkSEncKey:  nwkSEncKey[:],
-			SNwkSIntKey: sNwkSIntKey[:],
-			FNwkSIntKey: fNwkSIntKey[:],
-			FCntUp:      req.DeviceActivation.FCntUp,
-			NFCntDown:   req.DeviceActivation.NFCntDown,
-			AFCntDown:   req.DeviceActivation.AFCntDown,
-		},
+		if err := handler.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		_, err = client.ActivateDevice(ctx, &actReq)
+		if err != nil {
+			return status.Errorf(codes.Unknown, "%v", err)
+		}
+
+		log.WithFields(log.Fields{
+			"dev_addr": devAddr,
+			"dev_eui":  d.DevEUI,
+			"ctx_id":   ctx.Value(logging.ContextIDKey),
+		}).Info("device activated")
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
-
-	if err := tx.UpdateDeviceActivation(ctx, d.DevEUI, devAddr, appSKey); err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	_, err = client.ActivateDevice(ctx, &actReq)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
-
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-
-	log.WithFields(log.Fields{
-		"dev_addr": devAddr,
-		"dev_eui":  d.DevEUI,
-		"ctx_id":   ctx.Value(logging.ContextIDKey),
-	}).Info("device activated")
 
 	return &empty.Empty{}, nil
 }
@@ -865,7 +852,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *api.GetDeviceActivat
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := a.St.GetDevice(ctx, devEUI, false)
+	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -1064,7 +1051,7 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *api.GetRandomDevA
 	}, nil
 }
 
-func (a *DeviceAPI) returnList(count int, devices []DeviceListItem) (*api.ListDeviceResponse, error) {
+func (a *DeviceAPI) returnList(count int, devices []store.DeviceListItem) (*api.ListDeviceResponse, error) {
 	resp := api.ListDeviceResponse{
 		TotalCount: int64(count),
 	}
