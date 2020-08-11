@@ -23,6 +23,39 @@ type GatewayProfileStore interface {
 	CheckReadListGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error)
 }
 
+func (h *Handler) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+	return h.store.CreateGatewayProfile(ctx, gp)
+}
+func (h *Handler) GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error) {
+	return h.store.GetGatewayProfile(ctx, id)
+}
+func (h *Handler) UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+	return h.store.UpdateGatewayProfile(ctx, gp)
+}
+func (h *Handler) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error {
+	return h.store.DeleteGatewayProfile(ctx, id)
+}
+func (h *Handler) GetGatewayProfileCount(ctx context.Context) (int, error) {
+	return h.store.GetGatewayProfileCount(ctx)
+}
+func (h *Handler) GetGatewayProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error) {
+	return h.store.GetGatewayProfileCountForNetworkServerID(ctx, networkServerID)
+}
+func (h *Handler) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]GatewayProfileMeta, error) {
+	return h.store.GetGatewayProfiles(ctx, limit, offset)
+}
+func (h *Handler) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]GatewayProfileMeta, error) {
+	return h.store.GetGatewayProfilesForNetworkServerID(ctx, networkServerID, limit, offset)
+}
+
+// validator
+func (h *Handler) CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {
+	return h.store.CheckCreateUpdateDeleteGatewayProfileAccess(ctx, username, userID)
+}
+func (h *Handler) CheckReadListGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {
+	return h.store.CheckReadListGatewayProfileAccess(ctx, username, userID)
+}
+
 // Modulations
 const (
 	ModulationFSK  = "FSK"

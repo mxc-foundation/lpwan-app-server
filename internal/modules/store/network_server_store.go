@@ -34,6 +34,67 @@ type NetworkServerStore interface {
 	CheckUpdateDeleteNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error)
 }
 
+func (h *Handler) CreateNetworkServer(ctx context.Context, n *NetworkServer) error {
+	return h.store.CreateNetworkServer(ctx, n)
+}
+func (h *Handler) GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error) {
+	return h.store.GetNetworkServer(ctx, id)
+}
+func (h *Handler) UpdateNetworkServer(ctx context.Context, n *NetworkServer) error {
+	return h.store.UpdateNetworkServer(ctx, n)
+}
+func (h *Handler) DeleteNetworkServer(ctx context.Context, id int64) error {
+	return h.store.DeleteNetworkServer(ctx, id)
+}
+func (h *Handler) GetNetworkServerCount(ctx context.Context) (int, error) {
+	return h.store.GetNetworkServerCount(ctx)
+}
+func (h *Handler) GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
+	return h.store.GetNetworkServerCountForOrganizationID(ctx, organizationID)
+}
+func (h *Handler) GetNetworkServers(ctx context.Context, limit, offset int) ([]NetworkServer, error) {
+	return h.store.GetNetworkServers(ctx, limit, offset)
+}
+func (h *Handler) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error) {
+	return h.store.GetNetworkServersForOrganizationID(ctx, organizationID, limit, offset)
+}
+func (h *Handler) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error) {
+	return h.store.GetNetworkServerForDevEUI(ctx, devEUI)
+}
+func (h *Handler) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+	return h.store.GetNetworkServerForDeviceProfileID(ctx, id)
+}
+func (h *Handler) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+	return h.store.GetNetworkServerForServiceProfileID(ctx, id)
+}
+func (h *Handler) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error) {
+	return h.store.GetNetworkServerForGatewayMAC(ctx, mac)
+}
+func (h *Handler) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+	return h.store.GetNetworkServerForGatewayProfileID(ctx, id)
+}
+func (h *Handler) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+	return h.store.GetNetworkServerForMulticastGroupID(ctx, id)
+}
+func (h *Handler) GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error) {
+	return h.store.GetDefaultNetworkServer(ctx)
+}
+
+// validator
+func (h *Handler) CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	return h.store.CheckCreateNetworkServersAccess(ctx, username, organizationID, userID)
+}
+func (h *Handler) CheckListNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	return h.store.CheckListNetworkServersAccess(ctx, username, organizationID, userID)
+}
+
+func (h *Handler) CheckReadNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
+	return h.store.CheckReadNetworkServerAccess(ctx, username, networkserverID, userID)
+}
+func (h *Handler) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
+	return h.store.CheckUpdateDeleteNetworkServerAccess(ctx, username, networkserverID, userID)
+}
+
 // NetworkServer defines the information to connect to a network-server.
 type NetworkServer struct {
 	ID                          int64     `db:"id"`

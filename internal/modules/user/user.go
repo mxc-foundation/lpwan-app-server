@@ -5,13 +5,13 @@ import (
 )
 
 type Controller struct {
-	St        store.UserStore
+	St        *store.Handler
 	Validator Validator
 }
 
 var Service *Controller
 
-func Setup(store store.UserStore) error {
-	Service.St = store
+func Setup(s store.Store) error {
+	Service.St, _ = store.New(s)
 	return nil
 }

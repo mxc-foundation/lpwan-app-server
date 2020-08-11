@@ -18,15 +18,15 @@ import (
 )
 
 type Controller struct {
-	St            store.GatewayStore
+	St            *store.Handler
 	Validator     Validator
 	SupernodeAddr string
 }
 
 var Service *Controller
 
-func Setup(store store.GatewayStore) error {
-	Service.St = store
+func Setup(s store.Store) error {
+	Service.St, _ = store.New(s)
 	return nil
 }
 

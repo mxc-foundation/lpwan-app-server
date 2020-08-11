@@ -29,6 +29,43 @@ type ApplicationStore interface {
 	CheckDeleteApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error)
 }
 
+func (h *Handler) CreateApplication(ctx context.Context, item *Application) error {
+	return h.store.CreateApplication(ctx, item)
+}
+func (h *Handler) GetApplication(ctx context.Context, id int64) (Application, error) {
+	return h.store.GetApplication(ctx, id)
+}
+func (h *Handler) GetApplicationCount(ctx context.Context, filters ApplicationFilters) (int, error) {
+	return h.store.GetApplicationCount(ctx, filters)
+}
+func (h *Handler) GetApplications(ctx context.Context, filters ApplicationFilters) ([]ApplicationListItem, error) {
+	return h.store.GetApplications(ctx, filters)
+}
+func (h *Handler) UpdateApplication(ctx context.Context, item Application) error {
+	return h.store.UpdateApplication(ctx, item)
+}
+func (h *Handler) DeleteApplication(ctx context.Context, id int64) error {
+	return h.store.DeleteApplication(ctx, id)
+}
+func (h *Handler) DeleteAllApplicationsForOrganizationID(ctx context.Context, organizationID int64) error {
+	return h.store.DeleteAllApplicationsForOrganizationID(ctx, organizationID)
+}
+func (h *Handler) CheckCreateApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error) {
+	return h.store.CheckCreateApplicationAccess(ctx, username, userID, organizationID)
+}
+func (h *Handler) CheckListApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error) {
+	return h.store.CheckListApplicationAccess(ctx, username, userID, organizationID)
+}
+func (h *Handler) CheckReadApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
+	return h.store.CheckReadApplicationAccess(ctx, username, userID, applicationID)
+}
+func (h *Handler) CheckUpdateApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
+	return h.store.CheckUpdateApplicationAccess(ctx, username, userID, applicationID)
+}
+func (h *Handler) CheckDeleteApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
+	return h.store.CheckDeleteApplicationAccess(ctx, username, userID, applicationID)
+}
+
 var applicationNameRegexp = regexp.MustCompile(`^[\w-]+$`)
 
 // Application represents an application.

@@ -63,6 +63,132 @@ type GatewayStore interface {
 	CheckReadOrganizationNetworkServerAccess(ctx context.Context, username string, organizationID, networkserverID, userID int64) (bool, error)
 }
 
+func (h *Handler) AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
+	return h.store.AddNewDefaultGatewayConfig(ctx, defaultConfig)
+}
+func (h *Handler) UpdateDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
+	return h.store.AddNewDefaultGatewayConfig(ctx, defaultConfig)
+}
+func (h *Handler) GetDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
+	return h.store.AddNewDefaultGatewayConfig(ctx, defaultConfig)
+}
+
+func (h *Handler) AddGatewayFirmware(ctx context.Context, gwFw *GatewayFirmware) (model string, err error) {
+	return h.store.AddGatewayFirmware(ctx, gwFw)
+}
+func (h *Handler) GetGatewayFirmware(ctx context.Context, model string, forUpdate bool) (gwFw GatewayFirmware, err error) {
+	return h.store.GetGatewayFirmware(ctx, model, forUpdate)
+}
+func (h *Handler) GetGatewayFirmwareList(ctx context.Context) (list []GatewayFirmware, err error) {
+	return h.store.GetGatewayFirmwareList(ctx)
+}
+func (h *Handler) UpdateGatewayFirmware(ctx context.Context, gwFw *GatewayFirmware) (model string, err error) {
+	return h.store.UpdateGatewayFirmware(ctx, gwFw)
+}
+func (h *Handler) UpdateGatewayConfigByGwId(ctx context.Context, config string, mac lorawan.EUI64) error {
+	return h.store.UpdateGatewayConfigByGwId(ctx, config, mac)
+}
+func (h *Handler) CreateGateway(ctx context.Context, gw *Gateway) error {
+	return h.store.CreateGateway(ctx, gw)
+}
+func (h *Handler) UpdateGateway(ctx context.Context, gw *Gateway) error {
+	return h.store.UpdateGateway(ctx, gw)
+}
+func (h *Handler) UpdateFirstHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
+	return h.store.UpdateFirstHeartbeat(ctx, mac, time)
+}
+func (h *Handler) UpdateLastHeartbeat(ctx context.Context, mac lorawan.EUI64, time int64) error {
+	return h.store.UpdateLastHeartbeat(ctx, mac, time)
+}
+func (h *Handler) SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64, autoUpdateFirmware bool) error {
+	return h.store.SetAutoUpdateFirmware(ctx, mac, autoUpdateFirmware)
+}
+func (h *Handler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
+	return h.store.DeleteGateway(ctx, mac)
+}
+func (h *Handler) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (Gateway, error) {
+	return h.store.GetGateway(ctx, mac, forUpdate)
+}
+func (h *Handler) GetGatewayCount(ctx context.Context, search string) (int, error) {
+	return h.store.GetGatewayCount(ctx, search)
+}
+func (h *Handler) GetGateways(ctx context.Context, limit, offset int32, search string) ([]Gateway, error) {
+	return h.store.GetGateways(ctx, limit, offset, search)
+}
+func (h *Handler) GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI64) (string, error) {
+	return h.store.GetGatewayConfigByGwId(ctx, mac)
+}
+func (h *Handler) GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
+	return h.store.GetFirstHeartbeat(ctx, mac)
+}
+func (h *Handler) UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error {
+	return h.store.UpdateFirstHeartbeatToZero(ctx, mac)
+}
+func (h *Handler) GetLastHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error) {
+	return h.store.GetLastHeartbeat(ctx, mac)
+}
+func (h *Handler) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error) {
+	return h.store.GetGatewayMiningList(ctx, time, limit)
+}
+func (h *Handler) GetGatewaysLoc(ctx context.Context, limit int) ([]GatewayLocation, error) {
+	return h.store.GetGatewaysLoc(ctx, limit)
+}
+func (h *Handler) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64) (map[lorawan.EUI64]Gateway, error) {
+	return h.store.GetGatewaysForMACs(ctx, macs)
+}
+func (h *Handler) GetGatewayCountForOrganizationID(ctx context.Context, organizationID int64, search string) (int, error) {
+	return h.store.GetGatewayCountForOrganizationID(ctx, organizationID, search)
+}
+func (h *Handler) GetGatewaysForOrganizationID(ctx context.Context, organizationID int64, limit, offset int, search string) ([]Gateway, error) {
+	return h.store.GetGatewaysForOrganizationID(ctx, organizationID, limit, offset, search)
+}
+func (h *Handler) GetGatewayCountForUser(ctx context.Context, username string, search string) (int, error) {
+	return h.store.GetGatewayCountForUser(ctx, username, search)
+}
+func (h *Handler) GetGatewaysForUser(ctx context.Context, username string, limit, offset int, search string) ([]Gateway, error) {
+	return h.store.GetGatewaysForUser(ctx, username, limit, offset, search)
+}
+func (h *Handler) CreateGatewayPing(ctx context.Context, ping *GatewayPing) error {
+	return h.store.CreateGatewayPing(ctx, ping)
+}
+func (h *Handler) GetGatewayPing(ctx context.Context, id int64) (GatewayPing, error) {
+	return h.store.GetGatewayPing(ctx, id)
+}
+func (h *Handler) CreateGatewayPingRX(ctx context.Context, rx *GatewayPingRX) error {
+	return h.store.CreateGatewayPingRX(ctx, rx)
+}
+func (h *Handler) DeleteAllGatewaysForOrganizationID(ctx context.Context, organizationID int64) error {
+	return h.store.DeleteAllGatewaysForOrganizationID(ctx, organizationID)
+}
+func (h *Handler) GetAllGatewayMacList(ctx context.Context) ([]string, error) {
+	return h.store.GetAllGatewayMacList(ctx)
+}
+func (h *Handler) GetGatewayPingRXForPingID(ctx context.Context, pingID int64) ([]GatewayPingRX, error) {
+	return h.store.GetGatewayPingRXForPingID(ctx, pingID)
+}
+func (h *Handler) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (GatewayPing, []GatewayPingRX, error) {
+	return h.store.GetLastGatewayPingAndRX(ctx, mac)
+}
+
+// validator
+func (h *Handler) CheckCreateGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	return h.store.CheckCreateGatewayAccess(ctx, username, organizationID, userID)
+}
+func (h *Handler) CheckListGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	return h.store.CheckListGatewayAccess(ctx, username, organizationID, userID)
+}
+
+func (h *Handler) CheckReadGatewayAccess(ctx context.Context, username string, mac lorawan.EUI64, userID int64) (bool, error) {
+	return h.store.CheckReadGatewayAccess(ctx, username, mac, userID)
+}
+func (h *Handler) CheckUpdateDeleteGatewayAccess(ctx context.Context, username string, mac lorawan.EUI64, userID int64) (bool, error) {
+	return h.store.CheckUpdateDeleteGatewayAccess(ctx, username, mac, userID)
+}
+
+func (h *Handler) CheckReadOrganizationNetworkServerAccess(ctx context.Context, username string, organizationID, networkserverID, userID int64) (bool, error) {
+	return h.store.CheckReadOrganizationNetworkServerAccess(ctx, username, organizationID, networkserverID, userID)
+}
+
 var (
 	gatewayNameRegexp          = regexp.MustCompile(`^[\w-]+$`)
 	serialNumberOldGWValidator = regexp.MustCompile(`^MX([A-Z1-9]){7}$`)

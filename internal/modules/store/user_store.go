@@ -42,6 +42,93 @@ type UserStore interface {
 	CheckUpdatePasswordUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error)
 }
 
+func (h *Handler) CreateUser(ctx context.Context, user *User) error {
+	return h.store.CreateUser(ctx, user)
+}
+func (h *Handler) GetUser(ctx context.Context, id int64) (User, error) {
+	return h.store.GetUser(ctx, id)
+}
+func (h *Handler) GetUserByExternalID(ctx context.Context, externalID string) (User, error) {
+	return h.store.GetUserByExternalID(ctx, externalID)
+}
+func (h *Handler) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	return h.store.GetUserByUsername(ctx, username)
+}
+func (h *Handler) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	return h.store.GetUserByEmail(ctx, email)
+}
+func (h *Handler) GetUserCount(ctx context.Context) (int, error) {
+	return h.store.GetUserCount(ctx)
+}
+func (h *Handler) GetUsers(ctx context.Context, limit, offset int) ([]User, error) {
+	return h.store.GetUsers(ctx, limit, offset)
+}
+func (h *Handler) UpdateUser(ctx context.Context, u *User) error {
+	return h.store.UpdateUser(ctx, u)
+}
+func (h *Handler) DeleteUser(ctx context.Context, id int64) error {
+	return h.store.DeleteUser(ctx, id)
+}
+func (h *Handler) LoginUserByPassword(ctx context.Context, email string, password string) error {
+	return h.store.LoginUserByPassword(ctx, email, password)
+}
+func (h *Handler) GetProfile(ctx context.Context, id int64) (UserProfile, error) {
+	return h.store.GetProfile(ctx, id)
+}
+func (h *Handler) GetUserToken(ctx context.Context, u User) (string, error) {
+	return h.store.GetUserToken(ctx, u)
+}
+func (h *Handler) RegisterUser(ctx context.Context, user *User, token string) error {
+	return h.store.RegisterUser(ctx, user, token)
+}
+func (h *Handler) GetUserByToken(ctx context.Context, token string) (User, error) {
+	return h.store.GetUserByToken(ctx, token)
+}
+func (h *Handler) GetTokenByUsername(ctx context.Context, username string) (string, error) {
+	return h.store.GetTokenByUsername(ctx, username)
+}
+func (h *Handler) FinishRegistration(ctx context.Context, userID int64, password string) error {
+	return h.store.FinishRegistration(ctx, userID, password)
+}
+func (h *Handler) UpdatePassword(ctx context.Context, id int64, newpassword string) error {
+	return h.store.UpdatePassword(ctx, id, newpassword)
+}
+func (h *Handler) GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error) {
+	return h.store.GetPasswordResetRecord(ctx, userID)
+}
+
+func (h *Handler) SetOTP(ctx context.Context, pr *PasswordResetRecord) error {
+	return h.store.SetOTP(ctx, pr)
+}
+func (h *Handler) ReduceAttempts(ctx context.Context, pr *PasswordResetRecord) error {
+	return h.store.ReduceAttempts(ctx, pr)
+}
+
+// validator
+func (h *Handler) CheckActiveUser(ctx context.Context, username string, userID int64) (bool, error) {
+	return h.store.CheckActiveUser(ctx, username, userID)
+}
+
+func (h *Handler) CheckCreateUserAcess(ctx context.Context, username string, userID int64) (bool, error) {
+	return h.store.CheckCreateUserAcess(ctx, username, userID)
+}
+func (h *Handler) CheckListUserAcess(ctx context.Context, username string, userID int64) (bool, error) {
+	return h.store.CheckListUserAcess(ctx, username, userID)
+}
+
+func (h *Handler) CheckReadUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+	return h.store.CheckReadUserAccess(ctx, username, userID, operatorUserID)
+}
+func (h *Handler) CheckUpdateDeleteUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+	return h.store.CheckUpdateDeleteUserAccess(ctx, username, userID, operatorUserID)
+}
+func (h *Handler) CheckUpdateProfileUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+	return h.store.CheckUpdateProfileUserAccess(ctx, username, userID, operatorUserID)
+}
+func (h *Handler) CheckUpdatePasswordUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+	return h.store.CheckUpdatePasswordUserAccess(ctx, username, userID, operatorUserID)
+}
+
 // UserProfile contains the profile of the user.
 type UserProfile struct {
 	User          UserProfileUser

@@ -26,7 +26,7 @@ import (
 
 // ApplicationAPI exports the Application related functions.
 type ApplicationAPI struct {
-	st store.ApplicationStore
+	st *store.Handler
 }
 
 // NewApplicationAPI creates a new ApplicationAPI.
@@ -157,24 +157,20 @@ func (a *ApplicationAPI) Delete(ctx context.Context, req *pb.DeleteApplicationRe
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	tx, err := a.txSt.TxBegin(ctx)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't start transaction: %v", err)
-	}
-	defer tx.TxRollback(ctx)
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		err := handler.DeleteAllDevicesForApplicationID(ctx, req.Id)
+		if err != nil {
+			return err
+		}
 
-	err = tx.DeleteAllDevicesForApplicationID(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
+		err = handler.DeleteApplication(ctx, req.Id)
+		if err != nil {
+			return err
+		}
 
-	err = tx.DeleteApplication(ctx, req.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := tx.TxCommit(ctx); err != nil {
-		return nil, status.Errorf(codes.Internal, "couldn't commit transaction: %v", err)
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, nil
@@ -186,7 +182,7 @@ func (a *ApplicationAPI) List(ctx context.Context, req *pb.ListApplicationReques
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	filters := ApplicationFilters{
+	filters := store.ApplicationFilters{
 		Search:         req.Search,
 		Limit:          int(req.Limit),
 		Offset:         int(req.Offset),
