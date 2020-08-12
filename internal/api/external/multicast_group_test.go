@@ -8,12 +8,11 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -148,7 +147,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 					Request: pb.ListMulticastGroupRequest{
 						Limit: 10,
 					},
-					ExpectedError: status.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request"),
+					ExpectedError: grpc.Errorf(codes.Unauthenticated, "client must be global admin for unfiltered request"),
 				},
 				{
 					Name: "admin, list all",
@@ -338,7 +337,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 					MulticastGroupId: createResp.Id,
 				})
 				assert.Error(err)
-				assert.Equal(codes.NotFound, status.Code(err))
+				assert.Equal(codes.NotFound, grpc.Code(err))
 			})
 		})
 
@@ -461,7 +460,7 @@ func (ts *APITestSuite) TestMulticastGroup() {
 				Id: createResp.Id,
 			})
 			assert.Error(err)
-			assert.Equal(codes.NotFound, status.Code(err))
+			assert.Equal(codes.NotFound, grpc.Code(err))
 		})
 	})
 }

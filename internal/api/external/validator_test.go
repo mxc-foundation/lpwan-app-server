@@ -2,10 +2,9 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
-	"golang.org/x/net/context"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"golang.org/x/net/context"
 )
 
 type TestValidator struct {

@@ -10,20 +10,15 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 )
 
 // WithdrawServerAPI validates the withdraw server api
-type WithdrawServerAPI struct {
-	validator auth.Validator
-}
+type WithdrawServerAPI struct{}
 
 // NewWithdrawServerAPI defines the withdraw server api
-func NewWithdrawServerAPI(validator auth.Validator) *WithdrawServerAPI {
-	return &WithdrawServerAPI{
-		validator: validator,
-	}
+func NewWithdrawServerAPI() *WithdrawServerAPI {
+	return &WithdrawServerAPI{}
 }
 
 // ModifyWithdrawFee modifies the withdraw fee

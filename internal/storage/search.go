@@ -31,8 +31,8 @@ type SearchResult struct {
 func GlobalSearch(ctx context.Context, db sqlx.Queryer, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error) {
 	var result []SearchResult
 
-	_, tags := parseSearchQuery(search)
-	query := "%" + search + "%"
+	query, tags := parseSearchQuery(search)
+	query = "%" + search + "%"
 
 	tagsHstore := hstore.Hstore{
 		Map: make(map[string]sql.NullString),

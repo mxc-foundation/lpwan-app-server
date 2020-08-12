@@ -15,17 +15,19 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 var gatewayNameRegexp = regexp.MustCompile(`^[\w-]+$`)
+var GatewayItems = "g.mac, g.created_at, g.updated_at, g.first_seen_at, g.last_seen_at, " +
+	"g.name, g.description, g.organization_id, g.ping, g.last_ping_id, g.last_ping_sent_at, g.network_server_id, " +
+	"g.gateway_profile_id, g.latitude, g.longitude, g.altitude, g.tags, g.metadata "
 
 // Gateway represents a gateway.
 type Gateway struct {
@@ -47,6 +49,23 @@ type Gateway struct {
 	Altitude         float64       `db:"altitude"`
 	Tags             hstore.Hstore `db:"tags"`
 	Metadata         hstore.Hstore `db:"metadata"`
+}
+
+// GatewayListItem defines the gateway as list item.
+type GatewayListItem struct {
+	MAC               lorawan.EUI64 `db:"mac"`
+	Name              string        `db:"name"`
+	Description       string        `db:"description"`
+	CreatedAt         time.Time     `db:"created_at"`
+	UpdatedAt         time.Time     `db:"updated_at"`
+	FirstSeenAt       *time.Time    `db:"first_seen_at"`
+	LastSeenAt        *time.Time    `db:"last_seen_at"`
+	OrganizationID    int64         `db:"organization_id"`
+	NetworkServerID   int64         `db:"network_server_id"`
+	Latitude          float64       `db:"latitude"`
+	Longitude         float64       `db:"longitude"`
+	Altitude          float64       `db:"altitude"`
+	NetworkServerName string        `db:"network_server_name"`
 }
 
 // GatewayPing represents a gateway ping.
@@ -75,6 +94,13 @@ type GatewayPingRX struct {
 type GPSPoint struct {
 	Latitude  float64
 	Longitude float64
+}
+
+// GatewaysActiveInactive holds the avtive and inactive counts.
+type GatewaysActiveInactive struct {
+	NeverSeenCount uint32 `db:"never_seen_count"`
+	ActiveCount    uint32 `db:"active_count"`
+	InactiveCount  uint32 `db:"inactive_count"`
 }
 
 // Value implements the driver.Valuer interface.
@@ -255,7 +281,7 @@ func DeleteGateway(ctx context.Context, db sqlx.Ext, mac lorawan.EUI64) error {
 	_, err = nsClient.DeleteGateway(ctx, &ns.DeleteGatewayRequest{
 		Id: mac[:],
 	})
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete gateway error")
 	}
 
@@ -351,33 +377,45 @@ func GetGatewayCount(ctx context.Context, db sqlx.Queryer, filters GatewayFilter
 }
 
 // GetGateways returns a slice of gateways sorted by name.
-func GetGateways(ctx context.Context, db sqlx.Queryer, filters GatewayFilters) ([]Gateway, error) {
+func GetGateways(ctx context.Context, db sqlx.Queryer, filters GatewayFilters) ([]GatewayListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
 
-	query, args, _ := sqlx.BindNamed(sqlx.DOLLAR, `
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
-			g.*
+			distinct g.mac,
+			g.name,
+			g.description,
+			g.created_at,
+			g.updated_at,
+			g.first_seen_at,
+			g.last_seen_at,
+			g.organization_id,
+			g.network_server_id,
+			g.latitude,
+			g.longitude,
+			g.altitude,
+			n.name as network_server_name
 		from
 			gateway g
 		inner join organization o
 			on o.id = g.organization_id
+		inner join network_server n
+			on n.id = g.network_server_id
 		left join organization_user ou
 			on o.id = ou.organization_id
 		left join "user" u
 			on ou.user_id = u.id
 	`+filters.SQL()+`
-		group by
-			g.mac
 		order by
 			g.name
 		limit :limit
 		offset :offset
 	`, filters)
 
-	var gws []Gateway
-	err := sqlx.Select(db, &gws, query, args...)
+	var gws []GatewayListItem
+	err = sqlx.Select(db, &gws, query, args...)
 	if err != nil {
 		return nil, handlePSQLError(Select, err, "select error")
 	}
@@ -544,4 +582,24 @@ func GetLastGatewayPingAndRX(ctx context.Context, db sqlx.Queryer, mac lorawan.E
 	}
 
 	return ping, rx, nil
+}
+
+// GetGatewaysActiveInactive returns the active / inactive gateways.
+func GetGatewaysActiveInactive(ctx context.Context, db sqlx.Queryer, organizationID int64) (GatewaysActiveInactive, error) {
+	var out GatewaysActiveInactive
+	err := sqlx.Get(db, &out, `
+		select
+			coalesce(sum(case when g.last_seen_at is null then 1 end), 0) as never_seen_count,
+			coalesce(sum(case when (now() - '1 minute'::interval) > g.last_seen_at then 1 end), 0) as inactive_count,
+			coalesce(sum(case when (now() - '1 minute'::interval) <= g.last_seen_at then 1 end), 0) as active_count
+		from
+			gateway g
+		where
+			$1 = 0 or g.organization_id = $1
+	`, organizationID)
+	if err != nil {
+		return out, errors.Wrap(err, "get gateway active/inactive count error")
+	}
+
+	return out, nil
 }

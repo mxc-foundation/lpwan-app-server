@@ -5,11 +5,10 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -30,12 +29,12 @@ func NewOrganizationAPI(validator auth.Validator) *OrganizationAPI {
 // Create creates the given organization.
 func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganizationRequest) (*pb.CreateOrganizationResponse, error) {
 	if req.Organization == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "organization must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationsAccess(auth.Create)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org := storage.Organization{
@@ -60,7 +59,7 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationRequest) (*pb.GetOrganizationResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationAccess(auth.Read, req.Id)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org, err := storage.GetOrganization(ctx, storage.DB(), req.Id, false)
@@ -95,7 +94,7 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequest) (*pb.ListOrganizationResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationsAccess(auth.List)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	filters := storage.OrganizationFilters{
@@ -123,7 +122,7 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 		// Nothing to do as the validator function already validated that the
 		// API key must be a global admin key.
 	default:
-		return nil, status.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
 	}
 
 	count, err := storage.GetOrganizationCount(ctx, storage.DB(), filters)
@@ -166,15 +165,15 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 // Update updates the given organization.
 func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganizationRequest) (*empty.Empty, error) {
 	if req.Organization == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "organization must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationAccess(auth.Update, req.Organization.Id)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	user, err := a.validator.GetUser(ctx)
+	sub, err := a.validator.GetSubject(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -186,7 +185,22 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 
 	org.Name = req.Organization.Name
 	org.DisplayName = req.Organization.DisplayName
-	if user.IsAdmin {
+
+	switch sub {
+	case auth.SubjectUser:
+		user, err := a.validator.GetUser(ctx)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		if user.IsAdmin {
+			org.CanHaveGateways = req.Organization.CanHaveGateways
+			org.MaxGatewayCount = int(req.Organization.MaxGatewayCount)
+			org.MaxDeviceCount = int(req.Organization.MaxDeviceCount)
+		}
+	case auth.SubjectAPIKey:
+		// The validator function already validated that the
+		// API key must be a global admin key.
 		org.CanHaveGateways = req.Organization.CanHaveGateways
 		org.MaxGatewayCount = int(req.Organization.MaxGatewayCount)
 		org.MaxDeviceCount = int(req.Organization.MaxDeviceCount)
@@ -204,7 +218,7 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganizationRequest) (*empty.Empty, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationAccess(auth.Delete, req.Id)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.Transaction(func(tx sqlx.Ext) error {
@@ -229,7 +243,7 @@ func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganization
 func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizationUsersRequest) (*pb.ListOrganizationUsersResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationUsersAccess(auth.List, req.OrganizationId)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	users, err := storage.GetOrganizationUsers(ctx, storage.DB(), req.OrganizationId, int(req.Limit), int(req.Offset))
@@ -273,12 +287,12 @@ func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizatio
 // AddUser creates the given organization-user link.
 func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUserRequest) (*empty.Empty, error) {
 	if req.OrganizationUser == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "organization_user must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationUsersAccess(auth.Create, req.OrganizationUser.OrganizationId)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := storage.GetUserByEmail(ctx, storage.DB(), req.OrganizationUser.Email)
@@ -304,12 +318,12 @@ func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUs
 // UpdateUser updates the given user.
 func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganizationUserRequest) (*empty.Empty, error) {
 	if req.OrganizationUser == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "organization_user must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationUserAccess(auth.Update, req.OrganizationUser.OrganizationId, req.OrganizationUser.UserId)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.UpdateOrganizationUser(ctx,
@@ -331,10 +345,26 @@ func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganiza
 func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganizationUserRequest) (*empty.Empty, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationUserAccess(auth.Delete, req.OrganizationId, req.UserId)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := storage.DeleteOrganizationUser(ctx, storage.DB(), req.OrganizationId, req.UserId)
+	sub, err := a.validator.GetSubject(ctx)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if sub == auth.SubjectUser {
+		user, err := a.validator.GetUser(ctx)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		if !user.IsAdmin && user.ID == req.UserId {
+			return nil, grpc.Errorf(codes.InvalidArgument, "you can not delete yourself from an organization")
+		}
+	}
+
+	err = storage.DeleteOrganizationUser(ctx, storage.DB(), req.OrganizationId, req.UserId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -346,7 +376,7 @@ func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganiza
 func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUserRequest) (*pb.GetOrganizationUserResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateOrganizationUserAccess(auth.Read, req.OrganizationId, req.UserId)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := storage.GetOrganizationUser(ctx, storage.DB(), req.OrganizationId, req.UserId)

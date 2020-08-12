@@ -13,16 +13,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/applayer/fragmentation"
-	"github.com/brocaar/lorawan/applayer/multicastsetup"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/multicast"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/brocaar/lorawan"
+	"github.com/brocaar/lorawan/applayer/fragmentation"
+	"github.com/brocaar/lorawan/applayer/multicastsetup"
 )
 
 var (

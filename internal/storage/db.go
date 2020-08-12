@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"context"
 	"database/sql"
 	"time"
 
@@ -29,12 +28,6 @@ type DBLogger struct {
 // Beginx returns a transaction with logging.
 func (db *DBLogger) Beginx() (*TxLogger, error) {
 	tx, err := db.DB.Beginx()
-	return &TxLogger{tx}, err
-}
-
-// Beginx returns a transaction with logging.
-func (db *DBLogger) BeginxWithCtx(ctx context.Context, opts *sql.TxOptions) (*TxLogger, error) {
-	tx, err := db.DB.BeginTxx(ctx, opts)
 	return &TxLogger{tx}, err
 }
 

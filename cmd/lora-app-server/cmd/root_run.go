@@ -53,7 +53,6 @@ func run(cmd *cobra.Command, args []string) error {
 		startPProf,
 		setupStorage,
 		setupClient,
-		setupUpdateFirmwareFromPs,
 		migrateGatewayStats,
 		migrateToClusterKeys,
 		setupIntegration,
@@ -66,6 +65,7 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFUOTA,
 
 		setupModules,
+		setupUpdateFirmwareFromPs,
 		setupAPI,
 		setupMonitoring,
 	}

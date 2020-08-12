@@ -10,10 +10,9 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/brocaar/lorawan"
 )
 
 const (

@@ -11,14 +11,12 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
@@ -188,7 +186,7 @@ func (ts *APITestSuite) TestDevice() {
 			},
 		}
 		_, err := api.Create(context.Background(), &createReq)
-		assert.Equal(codes.InvalidArgument, status.Code(err))
+		assert.Equal(codes.InvalidArgument, grpc.Code(err))
 	})
 
 	ts.T().Run("Create", func(t *testing.T) {
@@ -233,7 +231,7 @@ func (ts *APITestSuite) TestDevice() {
 				},
 			}
 			_, err := api.Create(context.Background(), &createReq)
-			assert.Equal(codes.FailedPrecondition, status.Code(err))
+			assert.Equal(codes.FailedPrecondition, grpc.Code(err))
 			assert.Equal("rpc error: code = FailedPrecondition desc = organization reached max. device count", err.Error())
 		})
 
@@ -417,7 +415,7 @@ func (ts *APITestSuite) TestDevice() {
 				}
 
 				_, err := api.Update(context.Background(), &updateReq)
-				assert.Equal(codes.InvalidArgument, status.Code(err))
+				assert.Equal(codes.InvalidArgument, grpc.Code(err))
 			})
 
 			t.Run("Update", func(t *testing.T) {
@@ -501,7 +499,7 @@ func (ts *APITestSuite) TestDevice() {
 					}
 
 					_, err := api.Update(context.Background(), &updateReq)
-					assert.Equal(codes.InvalidArgument, status.Code(err))
+					assert.Equal(codes.InvalidArgument, grpc.Code(err))
 					assert.Error(err, "rpc error: code = InvalidArgument desc = when moving a device from application A to B, both A and B must share the same service-profile")
 				})
 			})
@@ -570,7 +568,7 @@ func (ts *APITestSuite) TestDevice() {
 					_, err = api.GetKeys(context.Background(), &pb.GetDeviceKeysRequest{
 						DevEui: "0807060504030201",
 					})
-					assert.Equal(codes.NotFound, status.Code(err))
+					assert.Equal(codes.NotFound, grpc.Code(err))
 				})
 			})
 
@@ -682,7 +680,7 @@ func (ts *APITestSuite) TestDevice() {
 				_, err = api.Get(context.Background(), &pb.GetDeviceRequest{
 					DevEui: "0807060504030201",
 				})
-				assert.Equal(codes.NotFound, status.Code(err))
+				assert.Equal(codes.NotFound, grpc.Code(err))
 			})
 		})
 	})

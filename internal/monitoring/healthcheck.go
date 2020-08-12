@@ -3,9 +3,8 @@ package monitoring
 import (
 	"net/http"
 
-	"github.com/pkg/errors"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/pkg/errors"
 )
 
 func healthCheckHandlerFunc(w http.ResponseWriter, r *http.Request) {

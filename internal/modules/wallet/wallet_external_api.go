@@ -11,21 +11,17 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 	"github.com/mxc-foundation/lpwan-app-server/internal/coingecko"
 )
 
 // WalletServerAPI is the structure that contains the validator
 type WalletServerAPI struct {
-	validator auth.Validator
 }
 
 // NewWalletServerAPI validates the new wallet server api
-func NewWalletServerAPI(validator auth.Validator) *WalletServerAPI {
-	return &WalletServerAPI{
-		validator: validator,
-	}
+func NewWalletServerAPI() *WalletServerAPI {
+	return &WalletServerAPI{}
 }
 
 // GetWalletBalance gets the wallet balance

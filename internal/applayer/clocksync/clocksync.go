@@ -11,7 +11,6 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/clocksync"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 

@@ -2,7 +2,6 @@ package external
 
 import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -31,6 +30,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
 
 	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/pgstore"
+	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 )
 
 func SetupCusAPI(grpcServer *grpc.Server) error {
@@ -69,18 +69,6 @@ func SetupCusAPI(grpcServer *grpc.Server) error {
 
 func CusGetJSONGateway(ctx context.Context, mux *runtime.ServeMux, apiEndpoint string, grpcDialOpts []grpc.DialOption) error {
 
-	if err := api.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register node handler error")
-	}
-	if err := api.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register user handler error")
-	}
-	if err := api.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register internal handler error")
-	}
-	if err := api.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register gateway handler error")
-	}
 	if err := api.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return errors.Wrap(err, "register server info handler error")
 	}
@@ -98,9 +86,6 @@ func CusGetJSONGateway(ctx context.Context, mux *runtime.ServeMux, apiEndpoint s
 	}
 	if err := api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return errors.Wrap(err, "register proxy request handler error")
-	}
-	if err := api.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register gateway profile handler error")
 	}
 
 	return nil

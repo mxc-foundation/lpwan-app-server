@@ -7,14 +7,13 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -108,7 +107,7 @@ func (ts *APITestSuite) TestGateway() {
 				},
 			}
 			_, err := api.Create(ctx, &createReq)
-			assert.Equal(codes.FailedPrecondition, status.Code(err))
+			assert.Equal(codes.FailedPrecondition, grpc.Code(err))
 			assert.Equal("rpc error: code = FailedPrecondition desc = organization reached max. gateway count", err.Error())
 		})
 
@@ -196,8 +195,8 @@ func (ts *APITestSuite) TestGateway() {
 			assert := require.New(t)
 			updateReq := pb.UpdateGatewayRequest{
 				Gateway: &pb.Gateway{
-					Id:   "0807060504030201",
-					Name: "test-gateway-updated",
+					Id:          "0807060504030201",
+					Name:        "test-gateway-updated",
 					Description: "test gateway updated	",
 					Location: &common.Location{
 						Latitude:  2.1234,
@@ -368,6 +367,27 @@ func (ts *APITestSuite) TestGateway() {
 			}, pingResp.PingRx)
 		})
 
+		t.Run("GenerateGatewayClientCertificate", func(t *testing.T) {
+			assert := require.New(t)
+
+			nsClient.GenerateGatewayClientCertificateResponse = ns.GenerateGatewayClientCertificateResponse{
+				TlsCert: []byte("foo"),
+				TlsKey:  []byte("bar"),
+				CaCert:  []byte("test"),
+			}
+
+			resp, err := api.GenerateGatewayClientCertificate(ctx, &pb.GenerateGatewayClientCertificateRequest{
+				GatewayId: createReq.Gateway.Id,
+			})
+			assert.NoError(err)
+			assert.Equal(&pb.GenerateGatewayClientCertificateResponse{
+				TlsCert: "foo",
+				TlsKey:  "bar",
+				CaCert:  "test",
+			}, resp)
+
+		})
+
 		t.Run("Delete", func(t *testing.T) {
 			assert := require.New(t)
 
@@ -379,7 +399,7 @@ func (ts *APITestSuite) TestGateway() {
 			_, err = api.Get(ctx, &pb.GetGatewayRequest{
 				Id: createReq.Gateway.Id,
 			})
-			assert.Equal(codes.NotFound, status.Code(err))
+			assert.Equal(codes.NotFound, grpc.Code(err))
 		})
 	})
 }

@@ -23,7 +23,7 @@ type Controller struct {
 	SupernodeAddr string
 }
 
-var Service *Controller
+var Service = &Controller{}
 
 func Setup(s store.Store) error {
 	Service.St, _ = store.New(s)
@@ -38,17 +38,17 @@ func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context, c
 		"tlsKey":              conf.ProvisionServer.TLSKey,
 		"schedule":            conf.ProvisionServer.UpdateSchedule,
 	}).Info("Start schedule to update gateway firmware...")
-	Service.SupernodeAddr = os.Getenv("APPSERVER")
-	if strings.HasPrefix(Service.SupernodeAddr, "https://") {
-		Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, "https://", "", -1)
+	c.SupernodeAddr = os.Getenv("APPSERVER")
+	if strings.HasPrefix(c.SupernodeAddr, "https://") {
+		c.SupernodeAddr = strings.Replace(c.SupernodeAddr, "https://", "", -1)
 	}
-	if strings.HasPrefix(Service.SupernodeAddr, "http://") {
-		Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, "http://", "", -1)
+	if strings.HasPrefix(c.SupernodeAddr, "http://") {
+		c.SupernodeAddr = strings.Replace(c.SupernodeAddr, "http://", "", -1)
 	}
-	if strings.HasSuffix(Service.SupernodeAddr, ":8080") {
-		Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, ":8080", "", -1)
+	if strings.HasSuffix(c.SupernodeAddr, ":8080") {
+		c.SupernodeAddr = strings.Replace(c.SupernodeAddr, ":8080", "", -1)
 	}
-	Service.SupernodeAddr = strings.Replace(Service.SupernodeAddr, "/", "", -1)
+	c.SupernodeAddr = strings.Replace(c.SupernodeAddr, "/", "", -1)
 
 	var bindPortOldGateway string
 	var bindPortNewGateway string
@@ -84,7 +84,7 @@ func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context, c
 		for _, v := range gwFwList {
 			res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
 				Model:          v.Model,
-				SuperNodeAddr:  Service.SupernodeAddr,
+				SuperNodeAddr:  c.SupernodeAddr,
 				PortOldGateway: bindPortOldGateway,
 				PortNewGateway: bindPortNewGateway,
 			})

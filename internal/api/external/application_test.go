@@ -7,11 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -80,7 +79,7 @@ func (ts *APITestSuite) TestApplication() {
 				PayloadDecoderScript: "Decode() {}",
 			},
 		})
-		assert.Equal(codes.InvalidArgument, status.Code(err))
+		assert.Equal(codes.InvalidArgument, grpc.Code(err))
 	})
 
 	ts.T().Run("Create", func(t *testing.T) {
@@ -185,7 +184,7 @@ func (ts *APITestSuite) TestApplication() {
 					PayloadDecoderScript: "Decode2() {}",
 				},
 			})
-			assert.Equal(codes.InvalidArgument, status.Code(err))
+			assert.Equal(codes.InvalidArgument, grpc.Code(err))
 		})
 
 		t.Run("Update", func(t *testing.T) {
@@ -233,6 +232,9 @@ func (ts *APITestSuite) TestApplication() {
 						Headers: []*pb.HTTPIntegrationHeader{
 							{Key: "Foo", Value: "bar"},
 						},
+						EventEndpointUrl: "http://event",
+						Marshaler:        pb.Marshaler_PROTOBUF,
+
 						UplinkDataUrl:           "http://up",
 						JoinNotificationUrl:     "http://join",
 						AckNotificationUrl:      "http://ack",
@@ -271,6 +273,9 @@ func (ts *APITestSuite) TestApplication() {
 
 					req := pb.UpdateHTTPIntegrationRequest{
 						Integration: &pb.HTTPIntegration{
+							EventEndpointUrl: "http://event2",
+							Marshaler:        pb.Marshaler_JSON,
+
 							ApplicationId:           createResp.Id,
 							UplinkDataUrl:           "http://up2",
 							JoinNotificationUrl:     "http://join2",
@@ -296,7 +301,7 @@ func (ts *APITestSuite) TestApplication() {
 					assert.NoError(err)
 
 					_, err = api.GetHTTPIntegration(context.Background(), &pb.GetHTTPIntegrationRequest{ApplicationId: createResp.Id})
-					assert.Equal(codes.NotFound, status.Code(err))
+					assert.Equal(codes.NotFound, grpc.Code(err))
 				})
 			})
 		})
@@ -370,7 +375,7 @@ func (ts *APITestSuite) TestApplication() {
 					assert.NoError(err)
 
 					_, err = api.GetInfluxDBIntegration(context.Background(), &pb.GetInfluxDBIntegrationRequest{ApplicationId: createResp.Id})
-					assert.Equal(codes.NotFound, status.Code(err))
+					assert.Equal(codes.NotFound, grpc.Code(err))
 				})
 			})
 		})
@@ -434,7 +439,7 @@ func (ts *APITestSuite) TestApplication() {
 					assert.NoError(err)
 
 					_, err = api.GetThingsBoardIntegration(context.Background(), &pb.GetThingsBoardIntegrationRequest{ApplicationId: createResp.Id})
-					assert.Equal(codes.NotFound, status.Code(err))
+					assert.Equal(codes.NotFound, grpc.Code(err))
 				})
 			})
 		})
@@ -502,7 +507,7 @@ func (ts *APITestSuite) TestApplication() {
 					_, err = api.GetMyDevicesIntegration(context.Background(), &pb.GetMyDevicesIntegrationRequest{
 						ApplicationId: createResp.Id,
 					})
-					assert.Equal(codes.NotFound, status.Code(err))
+					assert.Equal(codes.NotFound, grpc.Code(err))
 				})
 			})
 		})
@@ -528,6 +533,8 @@ func (ts *APITestSuite) TestApplication() {
 						Das:                         true,
 						DasToken:                    "ba321",
 						DasModemPort:                199,
+						DasGnssPort:                 198,
+						DasGnssUseRxTime:            true,
 					},
 				}
 				_, err := api.CreateLoRaCloudIntegration(context.Background(), &createReq)
@@ -574,6 +581,8 @@ func (ts *APITestSuite) TestApplication() {
 							Das:                         true,
 							DasToken:                    "321ba",
 							DasModemPort:                189,
+							DasGnssPort:                 188,
+							DasGnssUseRxTime:            false,
 						},
 					}
 
@@ -598,7 +607,240 @@ func (ts *APITestSuite) TestApplication() {
 					_, err = api.GetLoRaCloudIntegration(context.Background(), &pb.GetLoRaCloudIntegrationRequest{
 						ApplicationId: createResp.Id,
 					})
-					assert.Equal(codes.NotFound, status.Code(err))
+					assert.Equal(codes.NotFound, grpc.Code(err))
+				})
+			})
+		})
+
+		t.Run("GCPPubSub", func(t *testing.T) {
+			t.Run("Create", func(t *testing.T) {
+				assert := require.New(t)
+
+				req := pb.CreateGCPPubSubIntegrationRequest{
+					Integration: &pb.GCPPubSubIntegration{
+						ApplicationId:   createResp.Id,
+						Marshaler:       pb.Marshaler_PROTOBUF,
+						CredentialsFile: "file",
+						ProjectId:       "test-project",
+						TopicName:       "test-topic",
+					},
+				}
+				_, err := api.CreateGCPPubSubIntegration(context.Background(), &req)
+				assert.NoError(err)
+
+				t.Run("Get", func(t *testing.T) {
+					assert := require.New(t)
+
+					i, err := api.GetGCPPubSubIntegration(context.Background(), &pb.GetGCPPubSubIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(req.Integration, i.Integration)
+				})
+
+				t.Run("List", func(t *testing.T) {
+					assert := require.New(t)
+
+					resp, err := api.ListIntegrations(context.Background(), &pb.ListIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.EqualValues(1, resp.TotalCount)
+					assert.Equal(&pb.IntegrationListItem{
+						Kind: pb.IntegrationKind_GCP_PUBSUB,
+					}, resp.Result[0])
+				})
+
+				t.Run("Update", func(t *testing.T) {
+					assert := require.New(t)
+
+					req := pb.UpdateGCPPubSubIntegrationRequest{
+						Integration: &pb.GCPPubSubIntegration{
+							ApplicationId:   createResp.Id,
+							Marshaler:       pb.Marshaler_JSON,
+							CredentialsFile: "file-update",
+							ProjectId:       "test-project-updated",
+							TopicName:       "test-topic-updated",
+						},
+					}
+					_, err := api.UpdateGCPPubSubIntegration(context.Background(), &req)
+					assert.NoError(err)
+
+					i, err := api.GetGCPPubSubIntegration(context.Background(), &pb.GetGCPPubSubIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(req.Integration, i.Integration)
+				})
+
+				t.Run("Delete", func(t *testing.T) {
+					assert := require.New(t)
+
+					_, err := api.DeleteGCPPubSubIntegration(context.Background(), &pb.DeleteGCPPubSubIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+
+					_, err = api.DeleteGCPPubSubIntegration(context.Background(), &pb.DeleteGCPPubSubIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.Equal(codes.NotFound, grpc.Code(err))
+				})
+			})
+		})
+
+		t.Run("AWSSNS", func(t *testing.T) {
+			t.Run("Create", func(t *testing.T) {
+				assert := require.New(t)
+
+				req := pb.CreateAWSSNSIntegrationRequest{
+					Integration: &pb.AWSSNSIntegration{
+						ApplicationId:   createResp.Id,
+						Marshaler:       pb.Marshaler_PROTOBUF,
+						Region:          "eu-west-1",
+						AccessKeyId:     "key-id-1",
+						SecretAccessKey: "secret-key",
+						TopicArn:        "test-topic",
+					},
+				}
+				_, err := api.CreateAWSSNSIntegration(context.Background(), &req)
+				assert.NoError(err)
+
+				t.Run("Get", func(t *testing.T) {
+					assert := require.New(t)
+
+					i, err := api.GetAWSSNSIntegration(context.Background(), &pb.GetAWSSNSIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(req.Integration, i.Integration)
+				})
+
+				t.Run("List", func(t *testing.T) {
+					assert := require.New(t)
+
+					resp, err := api.ListIntegrations(context.Background(), &pb.ListIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.EqualValues(1, resp.TotalCount)
+					assert.Equal(&pb.IntegrationListItem{
+						Kind: pb.IntegrationKind_AWS_SNS,
+					}, resp.Result[0])
+				})
+
+				t.Run("Update", func(t *testing.T) {
+					assert := require.New(t)
+
+					req := pb.UpdateAWSSNSIntegrationRequest{
+						Integration: &pb.AWSSNSIntegration{
+							ApplicationId:   createResp.Id,
+							Marshaler:       pb.Marshaler_JSON,
+							Region:          "eu-west-2",
+							AccessKeyId:     "key-id-2",
+							SecretAccessKey: "secret-key-updated",
+							TopicArn:        "test-topic-updated",
+						},
+					}
+					_, err := api.UpdateAWSSNSIntegration(context.Background(), &req)
+					assert.NoError(err)
+
+					i, err := api.GetAWSSNSIntegration(context.Background(), &pb.GetAWSSNSIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(req.Integration, i.Integration)
+				})
+
+				t.Run("Delete", func(t *testing.T) {
+					assert := require.New(t)
+
+					_, err := api.DeleteAWSSNSIntegration(context.Background(), &pb.DeleteAWSSNSIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+
+					_, err = api.DeleteAWSSNSIntegration(context.Background(), &pb.DeleteAWSSNSIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.Equal(codes.NotFound, grpc.Code(err))
+				})
+			})
+		})
+
+		t.Run("AzureServiceBus", func(t *testing.T) {
+			t.Run("Create", func(t *testing.T) {
+				assert := require.New(t)
+
+				req := pb.CreateAzureServiceBusIntegrationRequest{
+					Integration: &pb.AzureServiceBusIntegration{
+						ApplicationId:    createResp.Id,
+						Marshaler:        pb.Marshaler_PROTOBUF,
+						ConnectionString: "test-connection-string",
+						PublishName:      "test-queue",
+					},
+				}
+				_, err := api.CreateAzureServiceBusIntegration(context.Background(), &req)
+				assert.NoError(err)
+
+				t.Run("Get", func(t *testing.T) {
+					assert := require.New(t)
+
+					i, err := api.GetAzureServiceBusIntegration(context.Background(), &pb.GetAzureServiceBusIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(req.Integration, i.Integration)
+				})
+
+				t.Run("List", func(t *testing.T) {
+					assert := require.New(t)
+
+					resp, err := api.ListIntegrations(context.Background(), &pb.ListIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+
+					assert.EqualValues(1, resp.TotalCount)
+					assert.Equal(&pb.IntegrationListItem{
+						Kind: pb.IntegrationKind_AZURE_SERVICE_BUS,
+					}, resp.Result[0])
+				})
+
+				t.Run("Update", func(t *testing.T) {
+					assert := require.New(t)
+
+					req := pb.UpdateAzureServiceBusIntegrationRequest{
+						Integration: &pb.AzureServiceBusIntegration{
+							ApplicationId:    createResp.Id,
+							Marshaler:        pb.Marshaler_JSON,
+							ConnectionString: "test-connection-string-updated",
+							PublishName:      "test-queue-updated",
+						},
+					}
+
+					_, err := api.UpdateAzureServiceBusIntegration(context.Background(), &req)
+					assert.NoError(err)
+
+					i, err := api.GetAzureServiceBusIntegration(context.Background(), &pb.GetAzureServiceBusIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+					assert.Equal(req.Integration, i.Integration)
+				})
+
+				t.Run("Delete", func(t *testing.T) {
+					assert := require.New(t)
+
+					_, err := api.DeleteAzureServiceBusIntegration(context.Background(), &pb.DeleteAzureServiceBusIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.NoError(err)
+
+					_, err = api.DeleteAzureServiceBusIntegration(context.Background(), &pb.DeleteAzureServiceBusIntegrationRequest{
+						ApplicationId: createResp.Id,
+					})
+					assert.Equal(codes.NotFound, grpc.Code(err))
 				})
 			})
 		})
@@ -614,7 +856,7 @@ func (ts *APITestSuite) TestApplication() {
 			_, err = api.Get(context.Background(), &pb.GetApplicationRequest{
 				Id: createResp.Id,
 			})
-			assert.Equal(codes.NotFound, status.Code(err))
+			assert.Equal(codes.NotFound, grpc.Code(err))
 		})
 	})
 }

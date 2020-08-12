@@ -5,10 +5,9 @@ package loracloud
 
 import (
 	fmt "fmt"
-	math "math"
-
 	gw "github.com/brocaar/chirpstack-api/go/v3/gw"
 	proto "github.com/golang/protobuf/proto"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.

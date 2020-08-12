@@ -5,17 +5,15 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
@@ -43,7 +41,7 @@ type ServiceProfileMeta struct {
 
 // Validate validates the service-profile data.
 func (sp ServiceProfile) Validate() error {
-	if strings.TrimSpace(sp.Name) == "" {
+	if strings.TrimSpace(sp.Name) == "" || len(sp.Name) > 100 {
 		return ErrServiceProfileInvalidName
 	}
 	return nil
@@ -248,7 +246,7 @@ func DeleteServiceProfile(ctx context.Context, db sqlx.Ext, id uuid.UUID) error 
 	_, err = nsClient.DeleteServiceProfile(ctx, &ns.DeleteServiceProfileRequest{
 		Id: id.Bytes(),
 	})
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete service-profile error")
 	}
 

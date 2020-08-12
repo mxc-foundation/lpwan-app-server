@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"github.com/pkg/errors"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -28,6 +29,9 @@ var errToCode = map[error]codes.Code{
 	storage.ErrMulticastGroupInvalidName:       codes.InvalidArgument,
 	storage.ErrOrganizationMaxDeviceCount:      codes.FailedPrecondition,
 	storage.ErrOrganizationMaxGatewayCount:     codes.FailedPrecondition,
+	storage.ErrNetworkServerInvalidName:        codes.InvalidArgument,
+	storage.ErrFUOTADeploymentInvalidName:      codes.InvalidArgument,
+	storage.ErrFUOTADeploymentNullPayload:      codes.InvalidArgument,
 	http.ErrInvalidHeaderName:                  codes.InvalidArgument,
 	influxdb.ErrInvalidPrecision:               codes.InvalidArgument,
 }
@@ -46,5 +50,5 @@ func ErrToRPCError(err error) error {
 	if !ok {
 		code = codes.Unknown
 	}
-	return status.Errorf(code, cause.Error())
+	return grpc.Errorf(code, cause.Error())
 }

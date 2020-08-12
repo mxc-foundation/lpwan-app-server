@@ -19,7 +19,6 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/gw"
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/loracloud/client/das"
@@ -1375,6 +1374,13 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 		integrationB, err := json.Marshal(das.UplinkResponseResult{})
 		assert.NoError(err)
 
+		integrationLocB, err := json.Marshal(das.UplinkResponseResult{
+			PositionSolution: &das.PositionSolution{
+				LLH:      []float64{1.1, 2.2, 3.3},
+				Accuracy: 10,
+			},
+		})
+
 		integrationDownlinkB, err := json.Marshal(das.UplinkResponseResult{
 			Downlink: &das.LoRaDownlink{
 				Port:    10,
@@ -1393,6 +1399,7 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 			expectedDownlinkPayload  []byte
 			expectedDownlinkFPort    uint8
 			expectedIntegrationEvent *pb.IntegrationEvent
+			expectedLocationEvent    *pb.LocationEvent
 		}{
 			{
 				name: "modem uplink",
@@ -1435,7 +1442,7 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 				expectedIntegrationEvent: &pb.IntegrationEvent{
 					DevEui:          ts.device.DevEUI[:],
 					IntegrationName: "loracloud",
-					EventType:       "UplinkResponse",
+					EventType:       "DAS_UplinkResponse",
 					ObjectJson:      string(integrationB),
 				},
 			},
@@ -1487,7 +1494,7 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 				expectedIntegrationEvent: &pb.IntegrationEvent{
 					DevEui:          ts.device.DevEUI[:],
 					IntegrationName: "loracloud",
-					EventType:       "UplinkResponse",
+					EventType:       "DAS_UplinkResponse",
 					ObjectJson:      string(integrationDownlinkB),
 				},
 			},
@@ -1532,8 +1539,66 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 				expectedIntegrationEvent: &pb.IntegrationEvent{
 					DevEui:          ts.device.DevEUI[:],
 					IntegrationName: "loracloud",
-					EventType:       "UplinkResponse",
+					EventType:       "DAS_UplinkResponse",
 					ObjectJson:      string(integrationB),
+				},
+			},
+			{
+				name: "uplink gnss",
+				config: Config{
+					DAS:         true,
+					DASGNSSPort: 198,
+				},
+				uplinkEvent: pb.UplinkEvent{
+					DevEui: ts.device.DevEUI[:],
+					RxInfo: []*gw.UplinkRXInfo{
+						{
+							Time: nowPB,
+						},
+					},
+					TxInfo: &gw.UplinkTXInfo{
+						Frequency: 868100000,
+					},
+					Dr:    3,
+					FCnt:  10,
+					FPort: 198,
+					Data:  []byte{1, 2, 3},
+				},
+				dasResponse: &das.UplinkResponse{
+					Result: das.UplinkDeviceMapResponse{
+						helpers.EUI64(ts.device.DevEUI): das.UplinkResponseItem{
+							Result: das.UplinkResponseResult{
+								PositionSolution: &das.PositionSolution{
+									LLH:      []float64{1.1, 2.2, 3.3},
+									Accuracy: 10,
+								},
+							},
+						},
+					},
+				},
+				expectedDASRequest: &das.UplinkRequest{
+					helpers.EUI64(ts.device.DevEUI): &das.UplinkMsgGNSS{
+						MsgType:   "gnss",
+						Payload:   helpers.HEXBytes{1, 2, 3},
+						Timestamp: float64(now.Unix()),
+					},
+				},
+				expectedIntegrationEvent: &pb.IntegrationEvent{
+					DevEui:          ts.device.DevEUI[:],
+					IntegrationName: "loracloud",
+					EventType:       "DAS_UplinkResponse",
+					ObjectJson:      string(integrationLocB),
+				},
+				expectedLocationEvent: &pb.LocationEvent{
+					DevEui: ts.device.DevEUI[:],
+					Location: &common.Location{
+						Latitude:  1.1,
+						Longitude: 2.2,
+						Altitude:  3.3,
+						Source:    common.LocationSource_GEO_RESOLVER_GNSS,
+						Accuracy:  10,
+					},
+					FCnt: 10,
 				},
 			},
 		}
@@ -1584,6 +1649,14 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 					assert.Equal(*tst.expectedIntegrationEvent, pl)
 				} else {
 					assert.Len(ts.integration.SendIntegrationNotificationChan, 0)
+				}
+
+				// assert location event
+				if tst.expectedLocationEvent != nil {
+					pl := <-ts.integration.SendLocationNotificationChan
+					assert.Equal(*tst.expectedLocationEvent, pl)
+				} else {
+					assert.Len(ts.integration.SendLocationNotificationChan, 0)
 				}
 			})
 		}

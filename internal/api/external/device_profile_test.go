@@ -2,16 +2,17 @@ package external
 
 import (
 	"testing"
+	"time"
 
 	uuid "github.com/gofrs/uuid"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -77,6 +78,7 @@ func (ts *APITestSuite) TestDeviceProfile() {
 				Tags: map[string]string{
 					"foo": "bar",
 				},
+				UplinkInterval: ptypes.DurationProto(10 * time.Second),
 			},
 		}
 
@@ -134,6 +136,7 @@ func (ts *APITestSuite) TestDeviceProfile() {
 					Tags: map[string]string{
 						"alice": "bob",
 					},
+					UplinkInterval: ptypes.DurationProto(20 * time.Second),
 				},
 			}
 
@@ -305,7 +308,7 @@ func (ts *APITestSuite) TestDeviceProfile() {
 				Id: createResp.Id,
 			})
 			assert.NotNil(err)
-			assert.Equal(codes.NotFound, status.Code(err))
+			assert.Equal(codes.NotFound, grpc.Code(err))
 		})
 	})
 }

@@ -9,13 +9,12 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"golang.org/x/net/context"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 )
 
 // GatewayProfileAPI exports the GatewayProfile related functions.
@@ -33,13 +32,13 @@ func NewGatewayProfileAPI(validator auth.Validator) *GatewayProfileAPI {
 // Create creates the given gateway-profile.
 func (a *GatewayProfileAPI) Create(ctx context.Context, req *pb.CreateGatewayProfileRequest) (*pb.CreateGatewayProfileResponse, error) {
 	if req.GatewayProfile == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "gateway_profile must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "gateway_profile must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateGatewayProfileAccess(auth.Create),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	gp := storage.GatewayProfile{
@@ -82,12 +81,12 @@ func (a *GatewayProfileAPI) Get(ctx context.Context, req *pb.GetGatewayProfileRe
 	if err := a.validator.Validate(ctx,
 		auth.ValidateGatewayProfileAccess(auth.Read),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	gpID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	gp, err := storage.GetGatewayProfile(ctx, storage.DB(), gpID)
@@ -129,18 +128,18 @@ func (a *GatewayProfileAPI) Get(ctx context.Context, req *pb.GetGatewayProfileRe
 // Update updates the given gateway-profile.
 func (a *GatewayProfileAPI) Update(ctx context.Context, req *pb.UpdateGatewayProfileRequest) (*empty.Empty, error) {
 	if req.GatewayProfile == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "gateway_profile must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "gateway_profile must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateGatewayProfileAccess(auth.Update),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	gpID, err := uuid.FromString(req.GatewayProfile.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	gp, err := storage.GetGatewayProfile(ctx, storage.DB(), gpID)
@@ -177,12 +176,12 @@ func (a *GatewayProfileAPI) Delete(ctx context.Context, req *pb.DeleteGatewayPro
 	if err := a.validator.Validate(ctx,
 		auth.ValidateGatewayProfileAccess(auth.Delete),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	gpID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	err = storage.DeleteGatewayProfile(ctx, storage.DB(), gpID)
@@ -198,7 +197,7 @@ func (a *GatewayProfileAPI) List(ctx context.Context, req *pb.ListGatewayProfile
 	if err := a.validator.Validate(ctx,
 		auth.ValidateGatewayProfileAccess(auth.List),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	var err error

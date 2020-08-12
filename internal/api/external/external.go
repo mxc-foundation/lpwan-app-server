@@ -9,6 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/net/context"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
+
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
@@ -16,14 +22,8 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/tmc/grpc-websocket-proxy/wsproxy"
-	"golang.org/x/net/context"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
@@ -85,18 +85,24 @@ func setupAPI(conf config.Config) error {
 	grpcOpts := helpers.GetgRPCServerOptions()
 	grpcServer := grpc.NewServer(grpcOpts...)
 	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(validator))
-	pb.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(validator))
-	pb.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
-	pb.RegisterInternalServiceServer(grpcServer, NewInternalAPI(validator))
 	pb.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
 	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(validator))
 	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(validator))
 	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 
-	err = SetupCusAPI(grpcServer)
-	if err != nil {
-		return errors.Wrap(err, "failed to register customized external APIs ")
+	// API defined in external_cus.go
+	/*pb.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(validator))
+	pb.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
+	pb.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(validator))
+	pb.RegisterApplicationServiceServer(grpcServer, NewApplicationAPI(validator))
+	pb.RegisterNetworkServerServiceServer(grpcServer, NewNetworkServerAPI(validator))
+	pb.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(validator))
+	pb.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
+	pb.RegisterInternalServiceServer(grpcServer, NewInternalAPI(validator))*/
+
+	if err := SetupCusAPI(grpcServer); err != nil {
+		return err
 	}
 
 	// setup the client http interface variable
@@ -233,11 +239,6 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		},
 	))
 
-	err := CusGetJSONGateway(ctx, mux, apiEndpoint, grpcDialOpts)
-	if err != nil {
-		return nil, errors.Wrap(err, "register customized external service handler error")
-	}
-
 	if err := pb.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register application handler error")
 	}
@@ -256,6 +257,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	if err := pb.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register gateway handler error")
 	}
+	if err := pb.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register gateway-profile handler error")
+	}
 	if err := pb.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register organization handler error")
 	}
@@ -273,6 +277,10 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	}
 	if err := pb.RegisterFUOTADeploymentServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register fuota deployment handler error")
+	}
+
+	if err := CusGetJSONGateway(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, err
 	}
 
 	return mux, nil

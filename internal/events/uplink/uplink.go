@@ -18,13 +18,13 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -338,10 +338,17 @@ func handleIntegrations(ctx *uplinkContext) error {
 		}
 	}
 
-	err := integration.ForApplicationID(ctx.device.ApplicationID).HandleUplinkEvent(ctx.ctx, vars, pl)
-	if err != nil {
-		log.WithError(err).Error("send uplink event error")
-	}
+	bgCtx := context.Background()
+	bgCtx = context.WithValue(bgCtx, logging.ContextIDKey, ctx.ctx.Value(logging.ContextIDKey))
+
+	// Handle the actual integration handling in a Go-routine so that the
+	// as.HandleUplinkData api can return.
+	go func() {
+		err := integration.ForApplicationID(ctx.device.ApplicationID).HandleUplinkEvent(bgCtx, vars, pl)
+		if err != nil {
+			log.WithError(err).Error("send uplink event error")
+		}
+	}()
 
 	return nil
 }

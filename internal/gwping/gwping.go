@@ -16,10 +16,6 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/as"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
-	"github.com/mxc-foundation/lpwan-server/api/as"
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -175,19 +171,17 @@ func sendGatewayPing(ctx context.Context) error {
 func getGatewayForPing(tx sqlx.Ext) (*storage.Gateway, error) {
 	var gw storage.Gateway
 
-	err := sqlx.Get(tx, &gw, `
-		select
-			g.*
-		from gateway g
-		inner join network_server ns
-			on ns.id = g.network_server_id
-		where
-			ns.gateway_discovery_enabled = true
-			and g.ping = true
-			and (g.last_ping_sent_at is null or g.last_ping_sent_at <= (now() - (interval '24 hours' / ns.gateway_discovery_interval)))
-		order by last_ping_sent_at
-		limit 1
-		for update`,
+	err := sqlx.Get(tx, &gw, "select "+storage.GatewayItems+
+		" from gateway g "+
+		" inner join network_server ns "+
+		"	on ns.id = g.network_server_id "+
+		" where"+
+		"	ns.gateway_discovery_enabled = true"+
+		"	and g.ping = true"+
+		"	and (g.last_ping_sent_at is null or g.last_ping_sent_at <= (now() - (interval '24 hours' / ns.gateway_discovery_interval)))"+
+		" order by last_ping_sent_at"+
+		" limit 1"+
+		" for update",
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {

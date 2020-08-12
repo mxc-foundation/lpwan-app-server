@@ -11,7 +11,6 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/fragmentation"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -294,7 +293,8 @@ func (ts *FragmentationSessionTestSuite) TestFragSessionDeleteAns() {
 func (ts *FragmentationSessionTestSuite) TestFragSessionStatusAns() {
 	assert := require.New(ts.T())
 	fd := storage.FUOTADeployment{
-		Name: "test-deployment",
+		Name:    "test-deployment",
+		Payload: []byte{1, 2, 3},
 	}
 	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 	fdd, err := storage.GetPendingFUOTADeploymentDevice(context.Background(), ts.tx, ts.Device.DevEUI)

@@ -11,7 +11,7 @@ type Controller struct {
 	Validator Validator
 }
 
-var Service *Controller
+var Service = &Controller{}
 
 func Setup(s store.Store) error {
 	st, _ := store.New(s)

@@ -12,10 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-	"github.com/brocaar/lorawan/backend"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
+	"github.com/brocaar/lorawan/band"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 )
@@ -33,6 +30,17 @@ func TestDeviceProfileValidate(t *testing.T) {
 		{
 			DeviceProfile: DeviceProfile{
 				Name: "",
+			},
+			Error: ErrDeviceProfileInvalidName,
+		},
+		{
+			DeviceProfile: DeviceProfile{
+				Name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			},
+		},
+		{
+			DeviceProfile: DeviceProfile{
+				Name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 			},
 			Error: ErrDeviceProfileInvalidName,
 		},
@@ -86,6 +94,7 @@ func (ts *StorageTestSuite) TestDeviceProfile() {
 					"foo": sql.NullString{Valid: true, String: "bar"},
 				},
 			},
+			UplinkInterval: 10 * time.Minute,
 			DeviceProfile: ns.DeviceProfile{
 				SupportsClassB:     true,
 				ClassBTimeout:      10,
@@ -104,7 +113,7 @@ func (ts *StorageTestSuite) TestDeviceProfile() {
 				MaxEirp:            14,
 				MaxDutyCycle:       10,
 				SupportsJoin:       true,
-				RfRegion:           string(backend.EU868),
+				RfRegion:           string(band.EU868),
 				Supports_32BitFCnt: true,
 			},
 		}
@@ -289,6 +298,7 @@ func (ts *StorageTestSuite) TestDeviceProfile() {
 			assert := require.New(t)
 
 			dp.Name = "updated-device-profile"
+			dp.UplinkInterval = 20 * time.Minute
 			dp.DeviceProfile = ns.DeviceProfile{
 				Id:                 dp.DeviceProfile.Id,
 				SupportsClassB:     true,
@@ -308,7 +318,7 @@ func (ts *StorageTestSuite) TestDeviceProfile() {
 				MaxEirp:            17,
 				MaxDutyCycle:       1,
 				SupportsJoin:       true,
-				RfRegion:           string(backend.EU868),
+				RfRegion:           string(band.EU868),
 				Supports_32BitFCnt: true,
 			}
 			assert.NoError(UpdateDeviceProfile(context.Background(), ts.Tx(), &dp))

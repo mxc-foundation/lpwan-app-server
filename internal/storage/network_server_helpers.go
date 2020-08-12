@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 )
 

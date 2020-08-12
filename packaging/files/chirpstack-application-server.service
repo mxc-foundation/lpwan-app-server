@@ -7,7 +7,7 @@ After=network-online.target
 [Service]
 User=appserver
 Group=appserver
-ExecStart=/usr/bin/lpwan-app-server
+ExecStart=/usr/bin/chirpstack-application-server
 Restart=on-failure
 
 [Install]

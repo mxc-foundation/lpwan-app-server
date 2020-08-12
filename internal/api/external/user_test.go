@@ -8,7 +8,6 @@ import (
 	"golang.org/x/net/context"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"

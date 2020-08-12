@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 )
@@ -113,6 +112,48 @@ func (ts *StorageTestSuite) TestGateway() {
 			gw.LastSeenAt = &lastSeen
 
 			assert.Equal(gw, gwGet)
+		})
+
+		t.Run("GetGatewaysActiveInactive", func(t *testing.T) {
+			assert := require.New(t)
+			ls := time.Now()
+
+			// gateway is never seen
+			gw.LastSeenAt = nil
+			assert.NoError(UpdateGateway(context.Background(), ts.Tx(), &gw))
+
+			ga, err := GetGatewaysActiveInactive(context.Background(), ts.Tx(), gw.OrganizationID)
+			assert.NoError(err)
+			assert.Equal(GatewaysActiveInactive{
+				NeverSeenCount: 1,
+				ActiveCount:    0,
+				InactiveCount:  0,
+			}, ga)
+
+			// gateway is active
+			gw.LastSeenAt = &ls
+			assert.NoError(UpdateGateway(context.Background(), ts.Tx(), &gw))
+
+			ga, err = GetGatewaysActiveInactive(context.Background(), ts.Tx(), gw.OrganizationID)
+			assert.NoError(err)
+			assert.Equal(GatewaysActiveInactive{
+				NeverSeenCount: 0,
+				ActiveCount:    1,
+				InactiveCount:  0,
+			}, ga)
+
+			// gateway is inactive
+			ls = ls.Add(time.Second * -61)
+			gw.LastSeenAt = &ls
+			assert.NoError(UpdateGateway(context.Background(), ts.Tx(), &gw))
+
+			ga, err = GetGatewaysActiveInactive(context.Background(), ts.Tx(), gw.OrganizationID)
+			assert.NoError(err)
+			assert.Equal(GatewaysActiveInactive{
+				NeverSeenCount: 0,
+				ActiveCount:    1,
+				InactiveCount:  0,
+			}, ga)
 		})
 
 		t.Run("Get gateways", func(t *testing.T) {

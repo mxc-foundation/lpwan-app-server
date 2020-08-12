@@ -12,10 +12,7 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/backend"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
+	"github.com/brocaar/lorawan/band"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 )
@@ -70,6 +67,7 @@ func (ts *StorageTestSuite) TestDevice() {
 		NetworkServerID: n.ID,
 		OrganizationID:  org.ID,
 		Name:            "device-profile",
+		UplinkInterval:  time.Second * 10,
 		DeviceProfile: ns.DeviceProfile{
 			SupportsClassB:     true,
 			ClassBTimeout:      10,
@@ -88,7 +86,7 @@ func (ts *StorageTestSuite) TestDevice() {
 			MaxEirp:            14,
 			MaxDutyCycle:       10,
 			SupportsJoin:       true,
-			RfRegion:           string(backend.EU868),
+			RfRegion:           string(band.EU868),
 			Supports_32BitFCnt: true,
 		},
 	}
@@ -269,6 +267,70 @@ func (ts *StorageTestSuite) TestDevice() {
 			deviceGet.CreatedAt = deviceGet.CreatedAt.UTC().Truncate(time.Millisecond)
 			deviceGet.UpdatedAt = deviceGet.UpdatedAt.UTC().Truncate(time.Millisecond)
 			assert.Equal(d, deviceGet)
+		})
+
+		t.Run("GetDevicesActiveInactive", func(t *testing.T) {
+			assert := require.New(t)
+			ls := time.Now()
+
+			// device is never seen
+			d.LastSeenAt = nil
+			assert.NoError(UpdateDevice(context.Background(), ts.Tx(), &d, true))
+
+			ai, err := GetDevicesActiveInactive(context.Background(), ts.Tx(), org.ID)
+			assert.NoError(err)
+			assert.Equal(DevicesActiveInactive{
+				NeverSeenCount: 1,
+				ActiveCount:    0,
+				InactiveCount:  0,
+			}, ai)
+
+			// device is active
+			d.LastSeenAt = &ls
+			assert.NoError(UpdateDevice(context.Background(), ts.Tx(), &d, true))
+
+			ai, err = GetDevicesActiveInactive(context.Background(), ts.Tx(), org.ID)
+			assert.NoError(err)
+			assert.Equal(DevicesActiveInactive{
+				NeverSeenCount: 0,
+				ActiveCount:    1,
+				InactiveCount:  0,
+			}, ai)
+
+			// device is inactive
+			ls = ls.Add(time.Second * -11)
+			assert.NoError(UpdateDevice(context.Background(), ts.Tx(), &d, true))
+
+			ai, err = GetDevicesActiveInactive(context.Background(), ts.Tx(), org.ID)
+			assert.NoError(err)
+			assert.Equal(DevicesActiveInactive{
+				NeverSeenCount: 0,
+				ActiveCount:    0,
+				InactiveCount:  1,
+			}, ai)
+		})
+
+		t.Run("GetDevicesDataRates", func(t *testing.T) {
+			assert := require.New(t)
+
+			// no datarate set
+			d.DR = nil
+			assert.NoError(UpdateDevice(context.Background(), ts.Tx(), &d, true))
+
+			ddr, err := GetDevicesDataRates(context.Background(), ts.Tx(), org.ID)
+			assert.NoError(err)
+			assert.Equal(DevicesDataRates{}, ddr)
+
+			// dr 3
+			three := 3
+			d.DR = &three
+			assert.NoError(UpdateDevice(context.Background(), ts.Tx(), &d, true))
+
+			ddr, err = GetDevicesDataRates(context.Background(), ts.Tx(), org.ID)
+			assert.NoError(err)
+			assert.Equal(DevicesDataRates{
+				3: 1,
+			}, ddr)
 		})
 
 		t.Run("CreateDeviceKeys", func(t *testing.T) {

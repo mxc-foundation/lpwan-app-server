@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	uuid "github.com/gofrs/uuid"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -38,6 +38,10 @@ type NetworkServer struct {
 
 // Validate validates the network-server data.
 func (ns NetworkServer) Validate() error {
+	if strings.TrimSpace(ns.Name) == "" || len(ns.Name) > 100 {
+		return ErrNetworkServerInvalidName
+	}
+
 	if ns.GatewayDiscoveryEnabled && ns.GatewayDiscoveryInterval <= 0 {
 		return ErrInvalidGatewayDiscoveryInterval
 	}

@@ -7,10 +7,9 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v7"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // AggregationInterval defines the aggregation type.

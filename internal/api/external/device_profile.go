@@ -2,6 +2,7 @@ package external
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
@@ -12,11 +13,10 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
@@ -38,13 +38,22 @@ func NewDeviceProfileServiceAPI(validator auth.Validator) *DeviceProfileServiceA
 // Create creates the given device-profile.
 func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDeviceProfileRequest) (*pb.CreateDeviceProfileResponse, error) {
 	if req.DeviceProfile == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "deviceProfile expected")
+		return nil, grpc.Errorf(codes.InvalidArgument, "deviceProfile expected")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfilesAccess(auth.Create, req.DeviceProfile.OrganizationId, 0),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	var err error
+	var uplinkInterval time.Duration
+	if req.DeviceProfile.UplinkInterval != nil {
+		uplinkInterval, err = ptypes.Duration(req.DeviceProfile.UplinkInterval)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
 	}
 
 	dp := storage.DeviceProfile{
@@ -57,6 +66,7 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 		Tags: hstore.Hstore{
 			Map: make(map[string]sql.NullString),
 		},
+		UplinkInterval: uplinkInterval,
 		DeviceProfile: ns.DeviceProfile{
 			SupportsClassB:     req.DeviceProfile.SupportsClassB,
 			ClassBTimeout:      req.DeviceProfile.ClassBTimeout,
@@ -86,7 +96,7 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 
 	// as this also performs a remote call to create the device-profile
 	// on the network-server, wrap it in a transaction
-	err := storage.Transaction(func(tx sqlx.Ext) error {
+	err = storage.Transaction(func(tx sqlx.Ext) error {
 		return storage.CreateDeviceProfile(ctx, tx, &dp)
 	})
 	if err != nil {
@@ -107,13 +117,13 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProfileRequest) (*pb.GetDeviceProfileResponse, error) {
 	dpID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfileAccess(auth.Read, dpID),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	dp, err := storage.GetDeviceProfile(ctx, storage.DB(), dpID, false, false)
@@ -150,6 +160,7 @@ func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProf
 			Supports_32BitFCnt:   dp.DeviceProfile.Supports_32BitFCnt,
 			FactoryPresetFreqs:   dp.DeviceProfile.FactoryPresetFreqs,
 			Tags:                 make(map[string]string),
+			UplinkInterval:       ptypes.DurationProto(dp.UplinkInterval),
 		},
 	}
 
@@ -172,18 +183,18 @@ func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProf
 // Update updates the given device-profile.
 func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDeviceProfileRequest) (*empty.Empty, error) {
 	if req.DeviceProfile == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "deviceProfile expected")
+		return nil, grpc.Errorf(codes.InvalidArgument, "deviceProfile expected")
 	}
 
 	dpID, err := uuid.FromString(req.DeviceProfile.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfileAccess(auth.Update, dpID),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// As this also performs a remote call to update the device-profile
@@ -195,6 +206,14 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 			return err
 		}
 
+		var uplinkInterval time.Duration
+		if req.DeviceProfile.UplinkInterval != nil {
+			uplinkInterval, err = ptypes.Duration(req.DeviceProfile.UplinkInterval)
+			if err != nil {
+				return err
+			}
+		}
+
 		dp.Name = req.DeviceProfile.Name
 		dp.PayloadCodec = codec.Type(req.DeviceProfile.PayloadCodec)
 		dp.PayloadEncoderScript = req.DeviceProfile.PayloadEncoderScript
@@ -202,6 +221,7 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 		dp.Tags = hstore.Hstore{
 			Map: make(map[string]sql.NullString),
 		}
+		dp.UplinkInterval = uplinkInterval
 		dp.DeviceProfile = ns.DeviceProfile{
 			Id:                 dpID.Bytes(),
 			SupportsClassB:     req.DeviceProfile.SupportsClassB,
@@ -242,13 +262,13 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 func (a *DeviceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteDeviceProfileRequest) (*empty.Empty, error) {
 	dpID, err := uuid.FromString(req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "uuid error: %s", err)
+		return nil, grpc.Errorf(codes.InvalidArgument, "uuid error: %s", err)
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateDeviceProfileAccess(auth.Delete, dpID),
 	); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	// as this also performs a remote call to delete the device-profile
@@ -269,13 +289,13 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		if err := a.validator.Validate(ctx,
 			auth.ValidateDeviceProfilesAccess(auth.List, 0, req.ApplicationId),
 		); err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	} else {
 		if err := a.validator.Validate(ctx,
 			auth.ValidateDeviceProfilesAccess(auth.List, req.OrganizationId, 0),
 		); err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}
 
@@ -308,7 +328,7 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		// API key is either of type admin, org (for the req.OrganizationId) or
 		// app (for the req.ApplicationId).
 	default:
-		return nil, status.Errorf(codes.Unauthenticated, "invalid token subject: %s", sub)
+		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", sub)
 	}
 
 	count, err := storage.GetDeviceProfileCount(ctx, storage.DB(), filters)

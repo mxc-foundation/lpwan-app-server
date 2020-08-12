@@ -5,11 +5,10 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -30,12 +29,12 @@ func NewUserAPI(validator auth.Validator) *UserAPI {
 // Create creates the given user.
 func (a *UserAPI) Create(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	if req.User == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateUsersAccess(auth.Create)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user := storage.User{
@@ -75,7 +74,7 @@ func (a *UserAPI) Create(ctx context.Context, req *pb.CreateUserRequest) (*pb.Cr
 func (a *UserAPI) Get(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateUserAccess(req.Id, auth.Read)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := storage.GetUser(ctx, storage.DB(), req.Id)
@@ -110,7 +109,7 @@ func (a *UserAPI) Get(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserR
 func (a *UserAPI) List(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUserResponse, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateUsersAccess(auth.List)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	users, err := storage.GetUsers(ctx, storage.DB(), int(req.Limit), int(req.Offset))
@@ -154,12 +153,12 @@ func (a *UserAPI) List(ctx context.Context, req *pb.ListUserRequest) (*pb.ListUs
 // Update updates the given user.
 func (a *UserAPI) Update(ctx context.Context, req *pb.UpdateUserRequest) (*empty.Empty, error) {
 	if req.User == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
 
 	if err := a.validator.Validate(ctx,
 		auth.ValidateUserAccess(req.User.Id, auth.Update)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := storage.GetUser(ctx, storage.DB(), req.User.Id)
@@ -184,7 +183,7 @@ func (a *UserAPI) Update(ctx context.Context, req *pb.UpdateUserRequest) (*empty
 func (a *UserAPI) Delete(ctx context.Context, req *pb.DeleteUserRequest) (*empty.Empty, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateUserAccess(req.Id, auth.Delete)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	err := storage.DeleteUser(ctx, storage.DB(), req.Id)
@@ -199,7 +198,7 @@ func (a *UserAPI) Delete(ctx context.Context, req *pb.DeleteUserRequest) (*empty
 func (a *UserAPI) UpdatePassword(ctx context.Context, req *pb.UpdateUserPasswordRequest) (*empty.Empty, error) {
 	if err := a.validator.Validate(ctx,
 		auth.ValidateUserAccess(req.UserId, auth.UpdateProfile)); err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := storage.GetUser(ctx, storage.DB(), req.UserId)

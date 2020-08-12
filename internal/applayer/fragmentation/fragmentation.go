@@ -10,12 +10,11 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/applayer/fragmentation"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/brocaar/lorawan"
+	"github.com/brocaar/lorawan/applayer/fragmentation"
 )
 
 var (

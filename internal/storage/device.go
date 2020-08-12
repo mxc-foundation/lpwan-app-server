@@ -10,12 +10,11 @@ import (
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -68,6 +67,16 @@ type DeviceKeys struct {
 	GenAppKey lorawan.AES128Key `db:"gen_app_key"`
 	JoinNonce int               `db:"join_nonce"`
 }
+
+// DevicesActiveInactive holds the active and inactive counts.
+type DevicesActiveInactive struct {
+	NeverSeenCount uint32 `db:"never_seen_count"`
+	ActiveCount    uint32 `db:"active_count"`
+	InactiveCount  uint32 `db:"inactive_count"`
+}
+
+// DevicesDataRates holds the device counts by data-rate.
+type DevicesDataRates map[uint32]uint32
 
 // CreateDevice creates the given device.
 func CreateDevice(ctx context.Context, db sqlx.Ext, d *Device) error {
@@ -524,7 +533,7 @@ func DeleteDevice(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64) error 
 	_, err = nsClient.DeleteDevice(ctx, &ns.DeleteDeviceRequest{
 		DevEui: devEUI[:],
 	})
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete device error")
 	}
 
@@ -719,4 +728,69 @@ func EnqueueDownlinkPayload(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI
 	}).Info("downlink device-queue item handled")
 
 	return resp.FCnt, nil
+}
+
+// GetDevicesActiveInactive returns the active / inactive devices.
+func GetDevicesActiveInactive(ctx context.Context, db sqlx.Queryer, organizationID int64) (DevicesActiveInactive, error) {
+	var out DevicesActiveInactive
+	err := sqlx.Get(db, &out, `
+		with device_active_inactive as (
+			select
+				make_interval(secs => dp.uplink_interval / 1000000000) as uplink_interval,
+				d.last_seen_at as last_seen_at
+			from
+				device d
+			inner join device_profile dp
+				on d.device_profile_id = dp.device_profile_id
+			inner join application a
+				on d.application_id = a.id
+			where
+				$1 = 0 or a.organization_id = $1
+		)
+		select
+			coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
+			coalesce(sum(case when (now() - uplink_interval) > last_seen_at then 1 end), 0) as inactive_count,
+			coalesce(sum(case when (now() - uplink_interval) <= last_seen_at then 1 end), 0) as active_count
+		from
+			device_active_inactive
+	`, organizationID)
+	if err != nil {
+		return out, errors.Wrap(err, "get device active/inactive count error")
+	}
+
+	return out, nil
+}
+
+// GetDevicesDataRates returns the device counts by data-rate.
+func GetDevicesDataRates(ctx context.Context, db sqlx.Queryer, organizationID int64) (DevicesDataRates, error) {
+	out := make(DevicesDataRates)
+
+	rows, err := db.Queryx(`
+		select
+			d.dr,
+			count(1)
+		from
+			device d
+		inner join application a
+			on d.application_id = a.id
+		where
+			($1 = 0 or a.organization_id = $1)
+			and d.dr is not null
+		group by d.dr
+	`, organizationID)
+	if err != nil {
+		return out, errors.Wrap(err, "get device count per data-rate error")
+	}
+
+	for rows.Next() {
+		var dr, count uint32
+
+		if err := rows.Scan(&dr, &count); err != nil {
+			return out, errors.Wrap(err, "scan row error")
+		}
+
+		out[dr] = count
+	}
+
+	return out, nil
 }

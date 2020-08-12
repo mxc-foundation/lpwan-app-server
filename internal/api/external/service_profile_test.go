@@ -6,12 +6,11 @@ import (
 	uuid "github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -173,7 +172,7 @@ func (ts *APITestSuite) TestServiceProfile() {
 						Email:    "foo2@bar.com",
 					}
 
-					_ = storage.CreateUser(context.Background(), storage.DB(), &user)
+					err := storage.CreateUser(context.Background(), storage.DB(), &user)
 
 					validator.returnUser = user
 
@@ -243,7 +242,7 @@ func (ts *APITestSuite) TestServiceProfile() {
 			_, err = api.Delete(context.Background(), &pb.DeleteServiceProfileRequest{
 				Id: createResp.Id,
 			})
-			assert.Equal(codes.NotFound, status.Code(err))
+			assert.Equal(codes.NotFound, grpc.Code(err))
 		})
 	})
 }

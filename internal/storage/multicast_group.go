@@ -9,12 +9,11 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
@@ -41,7 +40,7 @@ type MulticastGroupListItem struct {
 
 // Validate validates the service-profile data.
 func (mg MulticastGroup) Validate() error {
-	if strings.TrimSpace(mg.Name) == "" {
+	if strings.TrimSpace(mg.Name) == "" || len(mg.Name) > 100 {
 		return ErrMulticastGroupInvalidName
 	}
 	return nil
@@ -245,7 +244,7 @@ func DeleteMulticastGroup(ctx context.Context, db sqlx.Ext, id uuid.UUID) error 
 	_, err = nsClient.DeleteMulticastGroup(ctx, &ns.DeleteMulticastGroupRequest{
 		Id: id.Bytes(),
 	})
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "delete multicast-group error")
 	}
 
@@ -437,7 +436,7 @@ func RemoveDeviceFromMulticastGroup(ctx context.Context, db sqlx.Ext, multicastG
 		DevEui:           devEUI[:],
 		MulticastGroupId: multicastGroupID.Bytes(),
 	})
-	if err != nil && status.Code(err) != codes.NotFound {
+	if err != nil && grpc.Code(err) != codes.NotFound {
 		return errors.Wrap(err, "remove device from multicast-group error")
 	}
 

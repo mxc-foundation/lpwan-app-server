@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/aes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,11 +12,11 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
+	"github.com/lib/pq/hstore"
 	"github.com/stretchr/testify/require"
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -80,6 +81,14 @@ func TestJoinServerAPI(t *testing.T) {
 		Name:            "test-device",
 		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
 		DeviceProfileID: dpID,
+		Variables: hstore.Hstore{
+			Map: map[string]sql.NullString{
+				"home_netid": sql.NullString{
+					String: "010203",
+					Valid:  true,
+				},
+			},
+		},
 	}
 	assert.NoError(storage.CreateDevice(context.Background(), storage.DB(), &d))
 
@@ -192,15 +201,17 @@ func TestJoinServerAPI(t *testing.T) {
 			var joinAnsPayload backend.JoinAnsPayload
 			assert.NoError(json.NewDecoder(resp.Body).Decode(&joinAnsPayload))
 			assert.Equal(joinAnsPayload, backend.JoinAnsPayload{
-				BasePayload: backend.BasePayload{
-					ProtocolVersion: backend.ProtocolVersion1_0,
-					SenderID:        "0807060504030201",
-					ReceiverID:      "010203",
-					TransactionID:   1234,
-					MessageType:     backend.JoinAns,
-				},
-				Result: backend.Result{
-					ResultCode: backend.Success,
+				BasePayloadResult: backend.BasePayloadResult{
+					BasePayload: backend.BasePayload{
+						ProtocolVersion: backend.ProtocolVersion1_0,
+						SenderID:        "0807060504030201",
+						ReceiverID:      "010203",
+						TransactionID:   1234,
+						MessageType:     backend.JoinAns,
+					},
+					Result: backend.Result{
+						ResultCode: backend.Success,
+					},
 				},
 				PHYPayload: backend.HEXBytes(jaPHYBytes),
 				NwkSKey: &backend.KeyEnvelope{
@@ -314,15 +325,17 @@ func TestJoinServerAPI(t *testing.T) {
 			var joinAnsPayload backend.JoinAnsPayload
 			assert.NoError(json.NewDecoder(resp.Body).Decode(&joinAnsPayload))
 			assert.Equal(backend.JoinAnsPayload{
-				BasePayload: backend.BasePayload{
-					ProtocolVersion: backend.ProtocolVersion1_0,
-					SenderID:        "0807060504030201",
-					ReceiverID:      "010203",
-					TransactionID:   1234,
-					MessageType:     backend.JoinAns,
-				},
-				Result: backend.Result{
-					ResultCode: backend.Success,
+				BasePayloadResult: backend.BasePayloadResult{
+					BasePayload: backend.BasePayload{
+						ProtocolVersion: backend.ProtocolVersion1_0,
+						SenderID:        "0807060504030201",
+						ReceiverID:      "010203",
+						TransactionID:   1234,
+						MessageType:     backend.JoinAns,
+					},
+					Result: backend.Result{
+						ResultCode: backend.Success,
+					},
 				},
 				PHYPayload: backend.HEXBytes(jaPHYBytes),
 				SNwkSIntKey: &backend.KeyEnvelope{
@@ -406,15 +419,17 @@ func TestJoinServerAPI(t *testing.T) {
 			var rejoinAnsPayload backend.RejoinAnsPayload
 			assert.NoError(json.NewDecoder(resp.Body).Decode(&rejoinAnsPayload))
 			assert.Equal(rejoinAnsPayload, backend.RejoinAnsPayload{
-				BasePayload: backend.BasePayload{
-					ProtocolVersion: backend.ProtocolVersion1_0,
-					SenderID:        "0807060504030201",
-					ReceiverID:      "010203",
-					TransactionID:   1234,
-					MessageType:     backend.RejoinAns,
-				},
-				Result: backend.Result{
-					ResultCode: backend.Success,
+				BasePayloadResult: backend.BasePayloadResult{
+					BasePayload: backend.BasePayload{
+						ProtocolVersion: backend.ProtocolVersion1_0,
+						SenderID:        "0807060504030201",
+						ReceiverID:      "010203",
+						TransactionID:   1234,
+						MessageType:     backend.RejoinAns,
+					},
+					Result: backend.Result{
+						ResultCode: backend.Success,
+					},
 				},
 				SNwkSIntKey: &backend.KeyEnvelope{
 					AESKey: []byte{84, 115, 118, 176, 7, 14, 169, 150, 78, 61, 226, 98, 252, 231, 85, 145},
@@ -430,6 +445,94 @@ func TestJoinServerAPI(t *testing.T) {
 				},
 				PHYPayload: backend.HEXBytes([]byte{32, 119, 168, 146, 89, 229, 41, 109, 112, 191, 64, 133, 175, 89, 101, 194, 76, 190, 109, 70, 29, 106, 9, 76, 214, 165, 255, 143, 250, 27, 248, 233, 75}),
 			})
+		})
+	})
+
+	t.Run("HomeNSReq", func(t *testing.T) {
+		t.Run("Known DevEUI", func(t *testing.T) {
+			assert := require.New(t)
+
+			homeNSReq := backend.HomeNSReqPayload{
+				BasePayload: backend.BasePayload{
+					ProtocolVersion: backend.ProtocolVersion1_0,
+					SenderID:        "010203",
+					ReceiverID:      "0807060504030201",
+					TransactionID:   1234,
+					MessageType:     backend.HomeNSReq,
+				},
+				DevEUI: d.DevEUI,
+			}
+			homeNSReqJSON, err := json.Marshal(homeNSReq)
+			assert.NoError(err)
+
+			req, err := http.NewRequest("POST", server.URL, bytes.NewReader(homeNSReqJSON))
+			assert.NoError(err)
+
+			resp, err := http.DefaultClient.Do(req)
+			assert.NoError(err)
+
+			var homeNSAns backend.HomeNSAnsPayload
+			assert.NoError(json.NewDecoder(resp.Body).Decode(&homeNSAns))
+			assert.Equal(backend.Success, homeNSAns.Result.ResultCode)
+			assert.Equal(lorawan.NetID{1, 2, 3}, homeNSAns.HNetID)
+		})
+
+		t.Run("Know DevEUI, no home_netid variable", func(t *testing.T) {
+			assert := require.New(t)
+
+			d.Variables = hstore.Hstore{}
+			assert.NoError(storage.UpdateDevice(context.Background(), storage.DB(), &d, true))
+
+			homeNSReq := backend.HomeNSReqPayload{
+				BasePayload: backend.BasePayload{
+					ProtocolVersion: backend.ProtocolVersion1_0,
+					SenderID:        "010203",
+					ReceiverID:      "0807060504030201",
+					TransactionID:   1234,
+					MessageType:     backend.HomeNSReq,
+				},
+				DevEUI: d.DevEUI,
+			}
+			homeNSReqJSON, err := json.Marshal(homeNSReq)
+			assert.NoError(err)
+
+			req, err := http.NewRequest("POST", server.URL, bytes.NewReader(homeNSReqJSON))
+			assert.NoError(err)
+
+			resp, err := http.DefaultClient.Do(req)
+			assert.NoError(err)
+
+			var homeNSAns backend.HomeNSAnsPayload
+			assert.NoError(json.NewDecoder(resp.Body).Decode(&homeNSAns))
+			assert.Equal(backend.Success, homeNSAns.Result.ResultCode)
+			assert.Equal(lorawan.NetID{0, 0, 0}, homeNSAns.HNetID)
+		})
+
+		t.Run("Unknown DevEUI", func(t *testing.T) {
+			assert := require.New(t)
+
+			homeNSReq := backend.HomeNSReqPayload{
+				BasePayload: backend.BasePayload{
+					ProtocolVersion: backend.ProtocolVersion1_0,
+					SenderID:        "010203",
+					ReceiverID:      "0807060504030201",
+					TransactionID:   1234,
+					MessageType:     backend.HomeNSReq,
+				},
+				DevEUI: lorawan.EUI64{3, 3, 3, 3, 3, 3, 3, 3},
+			}
+			homeNSReqJSON, err := json.Marshal(homeNSReq)
+			assert.NoError(err)
+
+			req, err := http.NewRequest("POST", server.URL, bytes.NewReader(homeNSReqJSON))
+			assert.NoError(err)
+
+			resp, err := http.DefaultClient.Do(req)
+			assert.NoError(err)
+
+			var homeNSAns backend.HomeNSAnsPayload
+			assert.NoError(json.NewDecoder(resp.Body).Decode(&homeNSAns))
+			assert.Equal(backend.UnknownDevEUI, homeNSAns.Result.ResultCode)
 		})
 	})
 }
