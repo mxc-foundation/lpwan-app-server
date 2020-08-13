@@ -106,6 +106,57 @@
         ]
       }
     },
+    "/api/wallet/mining_income_gw": {
+      "get": {
+        "operationId": "GetGatewayMiningIncome",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetGatewayMiningIncomeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayMac",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "tillDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/mining_info": {
       "get": {
         "operationId": "GetMiningInfo",
@@ -322,6 +373,20 @@
         }
       }
     },
+    "appserver_serves_uiGetGatewayMiningIncomeResponse": {
+      "type": "object",
+      "properties": {
+        "dailyStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiMiningStats"
+          }
+        },
+        "total": {
+          "type": "string"
+        }
+      }
+    },
     "appserver_serves_uiGetMXCpriceResponse": {
       "type": "object",
       "properties": {
@@ -407,6 +472,18 @@
       "properties": {
         "month": {
           "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiMiningStats": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time"
         },
         "amount": {
           "type": "string"
