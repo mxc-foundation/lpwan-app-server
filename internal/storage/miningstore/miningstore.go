@@ -5,6 +5,7 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/jmoiron/sqlx"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
