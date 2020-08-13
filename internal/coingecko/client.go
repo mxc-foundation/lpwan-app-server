@@ -1,3 +1,5 @@
+// Package congecko implements a client to coin gecko API, see details at
+// https://www.coingecko.com/en/api
 package coingecko
 
 import (
@@ -7,11 +9,13 @@ import (
 	"net/url"
 )
 
+// Client is the object that provides access to API
 type Client struct {
 	c       *http.Client
 	baseURL string
 }
 
+// New creates a new Client
 func New() *Client {
 	return &Client{
 		c:       http.DefaultClient,
@@ -22,7 +26,8 @@ func New() *Client {
 // map[crypto]map[fiat]price
 type simplePriceResponse map[string]map[string]float64
 
-// GetPrice returns price of the specified crypto currency vs specified fiat currency
+// GetPrice returns price of the specified crypto currency in the units of the
+// specified fiat currency
 func (c *Client) GetPrice(crypto, fiat string) (float64, error) {
 	u := c.baseURL + "/simple/price?"
 	v := url.Values{}
