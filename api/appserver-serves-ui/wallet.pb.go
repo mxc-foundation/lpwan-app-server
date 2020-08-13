@@ -280,10 +280,14 @@ type GetGatewayMiningIncomeRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	GatewayMac string               `protobuf:"bytes,1,opt,name=gateway_mac,json=gatewayMac,proto3" json:"gateway_mac,omitempty"`
-	OrgId      int64                `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
-	FromDate   *timestamp.Timestamp `protobuf:"bytes,3,opt,name=from_date,json=fromDate,proto3" json:"from_date,omitempty"`
-	TillDate   *timestamp.Timestamp `protobuf:"bytes,4,opt,name=till_date,json=tillDate,proto3" json:"till_date,omitempty"`
+	// MAC address of the gateway
+	GatewayMac string `protobuf:"bytes,1,opt,name=gateway_mac,json=gatewayMac,proto3" json:"gateway_mac,omitempty"`
+	// Organization ID
+	OrgId int64 `protobuf:"varint,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	// Return mining stats for the period starting at from_date and ending at
+	// till_date inclusive
+	FromDate *timestamp.Timestamp `protobuf:"bytes,3,opt,name=from_date,json=fromDate,proto3" json:"from_date,omitempty"`
+	TillDate *timestamp.Timestamp `protobuf:"bytes,4,opt,name=till_date,json=tillDate,proto3" json:"till_date,omitempty"`
 }
 
 func (x *GetGatewayMiningIncomeRequest) Reset() {
@@ -346,13 +350,16 @@ func (x *GetGatewayMiningIncomeRequest) GetTillDate() *timestamp.Timestamp {
 	return nil
 }
 
+// Mining stats for a single date
 type MiningStats struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Date   *timestamp.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
-	Amount string               `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	// date on which the mining happened
+	Date *timestamp.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	// amount mined on the specified day
+	Amount string `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
 }
 
 func (x *MiningStats) Reset() {
@@ -406,8 +413,10 @@ type GetGatewayMiningIncomeResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
+	// daily mining stats for each day the mining happened
 	DailyStats []*MiningStats `protobuf:"bytes,1,rep,name=daily_stats,json=dailyStats,proto3" json:"daily_stats,omitempty"`
-	Total      string         `protobuf:"bytes,2,opt,name=total,proto3" json:"total,omitempty"`
+	// total amount mined by gateway during the requested period
+	Total string `protobuf:"bytes,2,opt,name=total,proto3" json:"total,omitempty"`
 }
 
 func (x *GetGatewayMiningIncomeResponse) Reset() {
@@ -1910,6 +1919,7 @@ type WalletServiceClient interface {
 	GetNetworkUsageHist(ctx context.Context, in *GetNetworkUsageHistRequest, opts ...grpc.CallOption) (*GetNetworkUsageHistResponse, error)
 	GetDlPrice(ctx context.Context, in *GetDownLinkPriceRequest, opts ...grpc.CallOption) (*GetDownLinkPriceResponse, error)
 	GetWalletMiningIncome(ctx context.Context, in *GetWalletMiningIncomeRequest, opts ...grpc.CallOption) (*GetWalletMiningIncomeResponse, error)
+	// return daily and total mining amounts for the given gateway and period of time
 	GetGatewayMiningIncome(ctx context.Context, in *GetGatewayMiningIncomeRequest, opts ...grpc.CallOption) (*GetGatewayMiningIncomeResponse, error)
 	GetMiningInfo(ctx context.Context, in *GetMiningInfoRequest, opts ...grpc.CallOption) (*GetMiningInfoResponse, error)
 	GetMXCprice(ctx context.Context, in *GetMXCpriceRequest, opts ...grpc.CallOption) (*GetMXCpriceResponse, error)
@@ -2002,6 +2012,7 @@ type WalletServiceServer interface {
 	GetNetworkUsageHist(context.Context, *GetNetworkUsageHistRequest) (*GetNetworkUsageHistResponse, error)
 	GetDlPrice(context.Context, *GetDownLinkPriceRequest) (*GetDownLinkPriceResponse, error)
 	GetWalletMiningIncome(context.Context, *GetWalletMiningIncomeRequest) (*GetWalletMiningIncomeResponse, error)
+	// return daily and total mining amounts for the given gateway and period of time
 	GetGatewayMiningIncome(context.Context, *GetGatewayMiningIncomeRequest) (*GetGatewayMiningIncomeResponse, error)
 	GetMiningInfo(context.Context, *GetMiningInfoRequest) (*GetMiningInfoResponse, error)
 	GetMXCprice(context.Context, *GetMXCpriceRequest) (*GetMXCpriceResponse, error)
