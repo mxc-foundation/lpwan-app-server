@@ -8,26 +8,26 @@ import (
 	"sync"
 	"time"
 
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 type controller struct {
 	p                Pool
-	mxprotocolServer mxprotocolServerStruct
+	mxprotocolServer MxprotocolServerStruct
 }
 
 type Pool interface {
 	get(hostname string, caCert, tlsCert, tlsKey []byte) (*grpc.ClientConn, error)
 }
 
-type mxprotocolServerStruct struct {
+type MxprotocolServerStruct struct {
 	Server  string
 	CACert  string
 	TLSCert string
@@ -48,13 +48,13 @@ type pool struct {
 
 var ctrl *controller
 
-func Setup(conf config.Config) error {
+func Setup(conf MxprotocolServerStruct) error {
 	ctrl = &controller{
-		mxprotocolServer: mxprotocolServerStruct{
-			Server:  conf.M2MServer.M2MServer,
-			CACert:  conf.M2MServer.CACert,
-			TLSCert: conf.M2MServer.TLSCert,
-			TLSKey:  conf.M2MServer.TLSKey,
+		mxprotocolServer: MxprotocolServerStruct{
+			Server:  conf.Server,
+			CACert:  conf.CACert,
+			TLSCert: conf.TLSCert,
+			TLSKey:  conf.TLSKey,
 		},
 		p: &pool{
 			mxprotocolServiceClients: make(map[string]mxprotocolServiceClient),

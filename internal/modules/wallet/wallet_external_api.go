@@ -51,6 +51,40 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 	}, status.Error(codes.OK, "")
 }
 
+func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.GetGatewayMiningIncomeRequest) (*api.GetGatewayMiningIncomeResponse, error) {
+	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "must be organization admin")
+	}
+
+	logInfo := "api/appserver_serves_ui/GetGatewayMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)
+	walletClient, err := m2mcli.GetMiningServiceClient()
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	resp, err := walletClient.MiningStats(ctx, &pb.MiningStatsRequest{
+		GatewayMac:     req.GatewayMac,
+		OrganizationId: req.OrgId,
+		FromDate:       req.FromDate,
+		TillDate:       req.TillDate,
+	})
+	if err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+	stats := &api.GetGatewayMiningIncomeResponse{
+		Total: resp.Total,
+	}
+	for _, ds := range resp.DailyStats {
+		stats.DailyStats = append(stats.DailyStats, &api.MiningStats{
+			Date:   ds.Date,
+			Amount: ds.Amount,
+		})
+	}
+	return stats, nil
+}
+
 func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.GetWalletMiningIncomeRequest) (*api.GetWalletMiningIncomeResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWalletMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)
 

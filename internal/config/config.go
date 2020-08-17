@@ -3,6 +3,8 @@ package config
 import (
 	"time"
 
+	mxprotocolconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 )
 
@@ -63,12 +65,7 @@ type Config struct {
 
 	SMTP map[string]SMTPStruct `mapstructure:"smtp"`
 
-	M2MServer struct {
-		M2MServer string `mapstructure:"m2m_server"`
-		CACert    string `mapstructure:"ca_cert"`
-		TLSCert   string `mapstructure:"tls_cert"`
-		TLSKey    string `mapstructure:"tls_key"`
-	} `mapstructure:"m2m_server"`
+	M2MServer mxprotocolconn.MxprotocolServerStruct `mapstructure:"m2m_server"`
 
 	ProvisionServer struct {
 		ProvisionServer string `mapstructure:"provision_server"`
@@ -150,12 +147,12 @@ type Config struct {
 		} `mapstructure:"api_for_gateway"`
 
 		ExternalAPI struct {
-			Bind                       string
-			TLSCert                    string `mapstructure:"tls_cert"`
-			TLSKey                     string `mapstructure:"tls_key"`
-			JWTSecret                  string `mapstructure:"jwt_secret"`
-			OTPSecret                  string `mapstructure:"otp_secret"`
-			CORSAllowOrigin            string `mapstructure:"cors_allow_origin"`
+			Bind            string
+			TLSCert         string `mapstructure:"tls_cert"`
+			TLSKey          string `mapstructure:"tls_key"`
+			JWTSecret       string `mapstructure:"jwt_secret"`
+			OTPSecret       string `mapstructure:"otp_secret"`
+			CORSAllowOrigin string `mapstructure:"cors_allow_origin"`
 		} `mapstructure:"external_api"`
 
 		RemoteMulticastSetup struct {
@@ -179,16 +176,8 @@ type Config struct {
 			Footer       string
 			Registration string
 		} `mapstructure:"branding"`
-		
-		MiningSetUp struct {
-			Mining                bool   `mapstructure:"mining"`
-			CMCKey                string `mapstructure:"cmc_key"`
-			HeartbeatOfflineLimit int64  `mapstructure:"heartbeat_offline_limit"`
-			GwOnlineLimit         int64  `mapstructure:"gw_online_limit"`
-			ExecuteTime           string `mapstructure:"execute_time"`
-			MinValue              int64  `mapstructure:"min_value"`
-			MaxValue              int64  `mapstructure:"max_value"`
-		} `mapstructure:"mining_setup"`
+
+		MiningSetUp mining.Config `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
 
 	JoinServer struct {

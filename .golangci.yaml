@@ -12,16 +12,14 @@ linters-settings:
 linters:
   enable:
     - gosec
-    #- gocyclo
+    - gocyclo
     - goimports
-    #- golint
-    #- interfacer
-    #- varcheck
+    - golint
+    - interfacer
+    - varcheck
   disable:
     - errcheck
     - unused
-    - gosimple
-    - staticcheck
 issues:
   exclude-rules:
     - path: _test\.go

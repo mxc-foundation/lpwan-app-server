@@ -14,7 +14,6 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/influxdb"
@@ -65,7 +64,7 @@ func (a *ApplicationAPI) Create(ctx context.Context, req *pb.CreateApplicationRe
 		Description:          req.Application.Description,
 		OrganizationID:       req.Application.OrganizationId,
 		ServiceProfileID:     spID,
-		PayloadCodec:         codec.Type(req.Application.PayloadCodec),
+		PayloadCodec:         req.Application.PayloadCodec,
 		PayloadEncoderScript: req.Application.PayloadEncoderScript,
 		PayloadDecoderScript: req.Application.PayloadDecoderScript,
 	}
@@ -97,7 +96,7 @@ func (a *ApplicationAPI) Get(ctx context.Context, req *pb.GetApplicationRequest)
 			Description:          app.Description,
 			OrganizationId:       app.OrganizationID,
 			ServiceProfileId:     app.ServiceProfileID.String(),
-			PayloadCodec:         string(app.PayloadCodec),
+			PayloadCodec:         app.PayloadCodec,
 			PayloadEncoderScript: app.PayloadEncoderScript,
 			PayloadDecoderScript: app.PayloadDecoderScript,
 		},
@@ -139,7 +138,7 @@ func (a *ApplicationAPI) Update(ctx context.Context, req *pb.UpdateApplicationRe
 	app.Name = req.Application.Name
 	app.Description = req.Application.Description
 	app.ServiceProfileID = spID
-	app.PayloadCodec = codec.Type(req.Application.PayloadCodec)
+	app.PayloadCodec = req.Application.PayloadCodec
 	app.PayloadEncoderScript = req.Application.PayloadEncoderScript
 	app.PayloadDecoderScript = req.Application.PayloadDecoderScript
 

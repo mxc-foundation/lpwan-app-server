@@ -7,6 +7,7 @@ import (
 	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -24,11 +25,12 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-// MiningRequest sends gateway list to m2m
+// MiningRequest contains list of gateways that should be paid
 type MiningRequest struct {
 	GatewayMac           []string `protobuf:"bytes,1,rep,name=gateway_mac,json=gatewayMac,proto3" json:"gateway_mac,omitempty"`
 	MiningRevenue        float64  `protobuf:"fixed64,2,opt,name=mining_revenue,json=miningRevenue,proto3" json:"mining_revenue,omitempty"`
 	MxcPrice             float64  `protobuf:"fixed64,3,opt,name=mxc_price,json=mxcPrice,proto3" json:"mxc_price,omitempty"`
+	PeriodSeconds        int64    `protobuf:"varint,4,opt,name=period_seconds,json=periodSeconds,proto3" json:"period_seconds,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -80,6 +82,13 @@ func (m *MiningRequest) GetMxcPrice() float64 {
 	return 0
 }
 
+func (m *MiningRequest) GetPeriodSeconds() int64 {
+	if m != nil {
+		return m.PeriodSeconds
+	}
+	return 0
+}
+
 type MiningResponse struct {
 	Status               bool     `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -119,31 +128,207 @@ func (m *MiningResponse) GetStatus() bool {
 	return false
 }
 
+type MiningStatsRequest struct {
+	GatewayMac           string               `protobuf:"bytes,1,opt,name=gateway_mac,json=gatewayMac,proto3" json:"gateway_mac,omitempty"`
+	OrganizationId       int64                `protobuf:"varint,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	FromDate             *timestamp.Timestamp `protobuf:"bytes,3,opt,name=from_date,json=fromDate,proto3" json:"from_date,omitempty"`
+	TillDate             *timestamp.Timestamp `protobuf:"bytes,4,opt,name=till_date,json=tillDate,proto3" json:"till_date,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *MiningStatsRequest) Reset()         { *m = MiningStatsRequest{} }
+func (m *MiningStatsRequest) String() string { return proto.CompactTextString(m) }
+func (*MiningStatsRequest) ProtoMessage()    {}
+func (*MiningStatsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c43dd34fec1cc595, []int{2}
+}
+
+func (m *MiningStatsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MiningStatsRequest.Unmarshal(m, b)
+}
+func (m *MiningStatsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MiningStatsRequest.Marshal(b, m, deterministic)
+}
+func (m *MiningStatsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MiningStatsRequest.Merge(m, src)
+}
+func (m *MiningStatsRequest) XXX_Size() int {
+	return xxx_messageInfo_MiningStatsRequest.Size(m)
+}
+func (m *MiningStatsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_MiningStatsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MiningStatsRequest proto.InternalMessageInfo
+
+func (m *MiningStatsRequest) GetGatewayMac() string {
+	if m != nil {
+		return m.GatewayMac
+	}
+	return ""
+}
+
+func (m *MiningStatsRequest) GetOrganizationId() int64 {
+	if m != nil {
+		return m.OrganizationId
+	}
+	return 0
+}
+
+func (m *MiningStatsRequest) GetFromDate() *timestamp.Timestamp {
+	if m != nil {
+		return m.FromDate
+	}
+	return nil
+}
+
+func (m *MiningStatsRequest) GetTillDate() *timestamp.Timestamp {
+	if m != nil {
+		return m.TillDate
+	}
+	return nil
+}
+
+// MiningStats contains mined amount for the particular date
+type MiningStats struct {
+	Date                 *timestamp.Timestamp `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	Amount               string               `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *MiningStats) Reset()         { *m = MiningStats{} }
+func (m *MiningStats) String() string { return proto.CompactTextString(m) }
+func (*MiningStats) ProtoMessage()    {}
+func (*MiningStats) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c43dd34fec1cc595, []int{3}
+}
+
+func (m *MiningStats) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MiningStats.Unmarshal(m, b)
+}
+func (m *MiningStats) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MiningStats.Marshal(b, m, deterministic)
+}
+func (m *MiningStats) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MiningStats.Merge(m, src)
+}
+func (m *MiningStats) XXX_Size() int {
+	return xxx_messageInfo_MiningStats.Size(m)
+}
+func (m *MiningStats) XXX_DiscardUnknown() {
+	xxx_messageInfo_MiningStats.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MiningStats proto.InternalMessageInfo
+
+func (m *MiningStats) GetDate() *timestamp.Timestamp {
+	if m != nil {
+		return m.Date
+	}
+	return nil
+}
+
+func (m *MiningStats) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+type MiningStatsResponse struct {
+	DailyStats []*MiningStats `protobuf:"bytes,1,rep,name=daily_stats,json=dailyStats,proto3" json:"daily_stats,omitempty"`
+	// total amount mined by this gateway
+	Total                string   `protobuf:"bytes,2,opt,name=total,proto3" json:"total,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *MiningStatsResponse) Reset()         { *m = MiningStatsResponse{} }
+func (m *MiningStatsResponse) String() string { return proto.CompactTextString(m) }
+func (*MiningStatsResponse) ProtoMessage()    {}
+func (*MiningStatsResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_c43dd34fec1cc595, []int{4}
+}
+
+func (m *MiningStatsResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_MiningStatsResponse.Unmarshal(m, b)
+}
+func (m *MiningStatsResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_MiningStatsResponse.Marshal(b, m, deterministic)
+}
+func (m *MiningStatsResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MiningStatsResponse.Merge(m, src)
+}
+func (m *MiningStatsResponse) XXX_Size() int {
+	return xxx_messageInfo_MiningStatsResponse.Size(m)
+}
+func (m *MiningStatsResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MiningStatsResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MiningStatsResponse proto.InternalMessageInfo
+
+func (m *MiningStatsResponse) GetDailyStats() []*MiningStats {
+	if m != nil {
+		return m.DailyStats
+	}
+	return nil
+}
+
+func (m *MiningStatsResponse) GetTotal() string {
+	if m != nil {
+		return m.Total
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*MiningRequest)(nil), "m2m_serves_appserver.MiningRequest")
 	proto.RegisterType((*MiningResponse)(nil), "m2m_serves_appserver.MiningResponse")
+	proto.RegisterType((*MiningStatsRequest)(nil), "m2m_serves_appserver.MiningStatsRequest")
+	proto.RegisterType((*MiningStats)(nil), "m2m_serves_appserver.MiningStats")
+	proto.RegisterType((*MiningStatsResponse)(nil), "m2m_serves_appserver.MiningStatsResponse")
 }
 
 func init() { proto.RegisterFile("m2m_mining.proto", fileDescriptor_c43dd34fec1cc595) }
 
 var fileDescriptor_c43dd34fec1cc595 = []byte{
-	// 256 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x90, 0xcf, 0x4b, 0xc3, 0x30,
-	0x14, 0xc7, 0x89, 0x83, 0xb2, 0x45, 0x36, 0x24, 0x88, 0x14, 0x3d, 0x58, 0xa6, 0x42, 0x2f, 0x6b,
-	0x61, 0xfe, 0x07, 0x22, 0xde, 0x06, 0xd2, 0xdd, 0xbc, 0x84, 0x2c, 0x7b, 0xd6, 0x80, 0x2f, 0x89,
-	0xf9, 0x51, 0xeb, 0x7f, 0x2f, 0x4b, 0xbb, 0x83, 0x30, 0xbc, 0xe5, 0x7d, 0xf8, 0xe4, 0xfb, 0xf2,
-	0x0d, 0xbd, 0xc0, 0x35, 0x72, 0x54, 0x5a, 0xe9, 0xb6, 0xb2, 0xce, 0x04, 0xc3, 0x2e, 0x0f, 0xc4,
-	0x83, 0xeb, 0xc0, 0x73, 0x61, 0x6d, 0x3a, 0xb9, 0x65, 0xa0, 0xf3, 0x4d, 0xb2, 0x1a, 0xf8, 0x8a,
-	0xe0, 0x03, 0xbb, 0xa5, 0xe7, 0xad, 0x08, 0xf0, 0x2d, 0x7e, 0x38, 0x0a, 0x99, 0x93, 0x62, 0x52,
-	0xce, 0x1a, 0x3a, 0xa2, 0x8d, 0x90, 0xec, 0x81, 0x2e, 0x86, 0x5c, 0xee, 0xa0, 0x03, 0x1d, 0x21,
-	0x3f, 0x2b, 0x48, 0x49, 0x9a, 0x39, 0x8e, 0x39, 0x09, 0xb2, 0x1b, 0x3a, 0xc3, 0x5e, 0x72, 0xeb,
-	0x94, 0x84, 0x7c, 0x92, 0x8c, 0x29, 0xf6, 0xf2, 0xf5, 0x30, 0x2f, 0x4b, 0xba, 0x38, 0x6e, 0xf5,
-	0xd6, 0x68, 0x0f, 0xec, 0x8a, 0x66, 0x3e, 0x88, 0x10, 0x7d, 0x4e, 0x0a, 0x52, 0x4e, 0x9b, 0x71,
-	0x5a, 0xef, 0x8f, 0xef, 0xdb, 0x82, 0xeb, 0x94, 0x04, 0xb6, 0xa5, 0xd9, 0x00, 0xd8, 0x5d, 0x75,
-	0xaa, 0x51, 0xf5, 0xa7, 0xce, 0xf5, 0xfd, 0xff, 0xd2, 0xb0, 0xfd, 0xe9, 0xe5, 0xed, 0xb9, 0x55,
-	0xe1, 0x23, 0xee, 0x2a, 0x69, 0xb0, 0xc6, 0x5e, 0xae, 0xde, 0x4d, 0xd4, 0x7b, 0x11, 0x94, 0xd1,
-	0x35, 0xf6, 0xe9, 0x03, 0xa5, 0xf9, 0x5c, 0x0d, 0xb7, 0x6b, 0x61, 0x55, 0x7d, 0x2a, 0x76, 0x97,
-	0x25, 0xf3, 0xf1, 0x37, 0x00, 0x00, 0xff, 0xff, 0xdf, 0x1a, 0xe3, 0x67, 0x7e, 0x01, 0x00, 0x00,
+	// 468 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x52, 0x4d, 0x8f, 0xd3, 0x30,
+	0x14, 0x94, 0x69, 0xa9, 0xda, 0x17, 0xb5, 0xa0, 0xb0, 0x42, 0x51, 0x39, 0x6c, 0x09, 0x20, 0xc2,
+	0x61, 0x13, 0xa9, 0x1c, 0xb8, 0xaf, 0x56, 0x48, 0x1c, 0x56, 0x42, 0x29, 0x5c, 0xb8, 0x44, 0xae,
+	0xe3, 0x06, 0x4b, 0xb1, 0x1d, 0x6c, 0xa7, 0x74, 0xf9, 0x2b, 0xfc, 0x21, 0x8e, 0xfc, 0x24, 0xe4,
+	0x8f, 0xa2, 0x2e, 0x5a, 0xda, 0xbd, 0xe5, 0x8d, 0x66, 0xe6, 0x65, 0xe6, 0x19, 0x1e, 0xf3, 0x25,
+	0xaf, 0x38, 0x13, 0x4c, 0x34, 0x79, 0xa7, 0xa4, 0x91, 0xf1, 0x99, 0x45, 0x34, 0x55, 0x5b, 0xaa,
+	0x2b, 0xdc, 0x75, 0xee, 0x4b, 0xcd, 0xcf, 0x1b, 0x29, 0x9b, 0x96, 0x16, 0x8e, 0xb3, 0xee, 0x37,
+	0x85, 0x61, 0x9c, 0x6a, 0x83, 0x79, 0xe7, 0x65, 0xe9, 0x4f, 0x04, 0xd3, 0x6b, 0xe7, 0x53, 0xd2,
+	0x6f, 0x3d, 0xd5, 0x26, 0x3e, 0x87, 0xa8, 0xc1, 0x86, 0x7e, 0xc7, 0x37, 0x15, 0xc7, 0x24, 0x41,
+	0x8b, 0x41, 0x36, 0x29, 0x21, 0x40, 0xd7, 0x98, 0xc4, 0xaf, 0x60, 0xe6, 0x37, 0x57, 0x8a, 0x6e,
+	0xa9, 0xe8, 0x69, 0xf2, 0x60, 0x81, 0x32, 0x54, 0x4e, 0x79, 0xf0, 0x71, 0x60, 0xfc, 0x0c, 0x26,
+	0x7c, 0x47, 0xaa, 0x4e, 0x31, 0x42, 0x93, 0x81, 0x63, 0x8c, 0xf9, 0x8e, 0x7c, 0xb4, 0xb3, 0xf5,
+	0xe8, 0xa8, 0x62, 0xb2, 0xae, 0x34, 0x25, 0x52, 0xd4, 0x3a, 0x19, 0x2e, 0x50, 0x36, 0x28, 0xa7,
+	0x1e, 0x5d, 0x79, 0x30, 0xcd, 0x60, 0xb6, 0xff, 0x39, 0xdd, 0x49, 0xa1, 0x69, 0xfc, 0x14, 0x46,
+	0xda, 0x60, 0xd3, 0xeb, 0x04, 0x2d, 0x50, 0x36, 0x2e, 0xc3, 0x94, 0xfe, 0x46, 0x10, 0x7b, 0xea,
+	0xca, 0x60, 0xa3, 0xff, 0x1b, 0x06, 0xfd, 0x13, 0xe6, 0x35, 0x3c, 0x92, 0xaa, 0xc1, 0x82, 0xfd,
+	0xc0, 0x86, 0x49, 0x51, 0xb1, 0xda, 0xa5, 0x19, 0x94, 0xb3, 0x43, 0xf8, 0x43, 0x1d, 0xbf, 0x83,
+	0xc9, 0x46, 0x49, 0x5e, 0xd5, 0xd8, 0xf8, 0x38, 0xd1, 0x72, 0x9e, 0xfb, 0x76, 0xf3, 0x7d, 0xbb,
+	0xf9, 0xa7, 0x7d, 0xbb, 0xe5, 0xd8, 0x92, 0xaf, 0xb0, 0xa1, 0x56, 0x68, 0x58, 0xdb, 0x7a, 0xe1,
+	0xf0, 0xb4, 0xd0, 0x92, 0xad, 0x30, 0xfd, 0x0c, 0xd1, 0x41, 0xa2, 0x38, 0x87, 0xa1, 0xb3, 0x40,
+	0x27, 0x2d, 0x1c, 0xcf, 0x36, 0x85, 0xb9, 0xec, 0x85, 0x71, 0x81, 0x26, 0x65, 0x98, 0x52, 0x09,
+	0x4f, 0x6e, 0x15, 0x15, 0x8a, 0xbd, 0x84, 0xa8, 0xc6, 0xac, 0xbd, 0xa9, 0x6c, 0xa1, 0xda, 0x9d,
+	0x3d, 0x5a, 0x3e, 0xcf, 0xef, 0x7a, 0x55, 0xf9, 0xa1, 0x1e, 0x9c, 0xca, 0xff, 0xe2, 0x19, 0x3c,
+	0x34, 0xd2, 0xe0, 0x36, 0x6c, 0xf4, 0xc3, 0xf2, 0xd7, 0xdf, 0x27, 0xb6, 0xa2, 0x6a, 0x6b, 0xaf,
+	0xbf, 0x82, 0x91, 0x07, 0xe2, 0x17, 0xc7, 0x16, 0x84, 0x23, 0xce, 0x5f, 0x1e, 0x27, 0x85, 0x00,
+	0xeb, 0xdb, 0x75, 0x65, 0xa7, 0x7f, 0x3d, 0xd8, 0xbf, 0xb9, 0x07, 0xd3, 0xef, 0xb8, 0x7c, 0xff,
+	0xe5, 0xaa, 0x61, 0xe6, 0x6b, 0xbf, 0xce, 0x89, 0xe4, 0x05, 0xdf, 0x91, 0x8b, 0x8d, 0xec, 0x45,
+	0xed, 0xde, 0x48, 0xc1, 0x77, 0xee, 0x16, 0x44, 0xb6, 0x17, 0xde, 0xa2, 0xc0, 0x1d, 0x2b, 0xee,
+	0xf2, 0x5e, 0x8f, 0x1c, 0xf3, 0xed, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x2c, 0x0c, 0xf8, 0xdb,
+	0xc7, 0x03, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -158,7 +343,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type MiningServiceClient interface {
+	// Pay mining income to owners of the gateways specified in the request
 	Mining(ctx context.Context, in *MiningRequest, opts ...grpc.CallOption) (*MiningResponse, error)
+	// Get info about how much money the gateway has mined
+	MiningStats(ctx context.Context, in *MiningStatsRequest, opts ...grpc.CallOption) (*MiningStatsResponse, error)
 }
 
 type miningServiceClient struct {
@@ -178,9 +366,21 @@ func (c *miningServiceClient) Mining(ctx context.Context, in *MiningRequest, opt
 	return out, nil
 }
 
+func (c *miningServiceClient) MiningStats(ctx context.Context, in *MiningStatsRequest, opts ...grpc.CallOption) (*MiningStatsResponse, error) {
+	out := new(MiningStatsResponse)
+	err := c.cc.Invoke(ctx, "/m2m_serves_appserver.MiningService/MiningStats", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MiningServiceServer is the server API for MiningService service.
 type MiningServiceServer interface {
+	// Pay mining income to owners of the gateways specified in the request
 	Mining(context.Context, *MiningRequest) (*MiningResponse, error)
+	// Get info about how much money the gateway has mined
+	MiningStats(context.Context, *MiningStatsRequest) (*MiningStatsResponse, error)
 }
 
 // UnimplementedMiningServiceServer can be embedded to have forward compatible implementations.
@@ -189,6 +389,9 @@ type UnimplementedMiningServiceServer struct {
 
 func (*UnimplementedMiningServiceServer) Mining(ctx context.Context, req *MiningRequest) (*MiningResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Mining not implemented")
+}
+func (*UnimplementedMiningServiceServer) MiningStats(ctx context.Context, req *MiningStatsRequest) (*MiningStatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method MiningStats not implemented")
 }
 
 func RegisterMiningServiceServer(s *grpc.Server, srv MiningServiceServer) {
@@ -213,6 +416,24 @@ func _MiningService_Mining_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MiningService_MiningStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MiningStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MiningServiceServer).MiningStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/m2m_serves_appserver.MiningService/MiningStats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MiningServiceServer).MiningStats(ctx, req.(*MiningStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _MiningService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "m2m_serves_appserver.MiningService",
 	HandlerType: (*MiningServiceServer)(nil),
@@ -220,6 +441,10 @@ var _MiningService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Mining",
 			Handler:    _MiningService_Mining_Handler,
+		},
+		{
+			MethodName: "MiningStats",
+			Handler:    _MiningService_MiningStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

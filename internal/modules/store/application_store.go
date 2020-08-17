@@ -7,8 +7,6 @@ import (
 	"strings"
 
 	"github.com/gofrs/uuid"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 )
 
 type ApplicationStore interface {
@@ -70,14 +68,14 @@ var applicationNameRegexp = regexp.MustCompile(`^[\w-]+$`)
 
 // Application represents an application.
 type Application struct {
-	ID                   int64      `db:"id"`
-	Name                 string     `db:"name"`
-	Description          string     `db:"description"`
-	OrganizationID       int64      `db:"organization_id"`
-	ServiceProfileID     uuid.UUID  `db:"service_profile_id"`
-	PayloadCodec         codec.Type `db:"payload_codec"`
-	PayloadEncoderScript string     `db:"payload_encoder_script"`
-	PayloadDecoderScript string     `db:"payload_decoder_script"`
+	ID                   int64     `db:"id"`
+	Name                 string    `db:"name"`
+	Description          string    `db:"description"`
+	OrganizationID       int64     `db:"organization_id"`
+	ServiceProfileID     uuid.UUID `db:"service_profile_id"`
+	PayloadCodec         string    `db:"payload_codec"`
+	PayloadEncoderScript string    `db:"payload_encoder_script"`
+	PayloadDecoderScript string    `db:"payload_decoder_script"`
 }
 
 // ApplicationListItem devices the application as a list item.

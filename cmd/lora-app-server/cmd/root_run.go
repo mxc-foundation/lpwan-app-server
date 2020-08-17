@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -148,7 +149,7 @@ func setupClient() error {
 		return errors.Wrap(err, "setup networkserver connection error")
 	}
 
-	if err := m2mcli.Setup(config.C); err != nil {
+	if err := m2mcli.Setup(config.C.M2MServer); err != nil {
 		return errors.Wrap(err, "setup m2m-server connection error")
 	}
 
@@ -219,35 +220,35 @@ func setupModules() error {
 		return err
 	}
 
-	if err := gwmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
+	if err = gwmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := devmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
+	if err = devmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := appmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
+	if err = appmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := gpmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
+	if err = gpmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := miningmod.Setup(config.C); err != nil {
+	if err = miningmod.Setup(config.C.ApplicationServer.MiningSetUp, pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := nsmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
+	if err = nsmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := orgmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
+	if err = orgmod.Setup(pgstore.New(storage.DB().DB, pwh)); err != nil {
 		return err
 	}
 
-	if err := usermod.Setup(pgstore.New(storage.DB().DB, pwh), config.C); err != nil {
+	if err = usermod.Setup(pgstore.New(storage.DB().DB, pwh), config.C); err != nil {
 		return err
 	}
 

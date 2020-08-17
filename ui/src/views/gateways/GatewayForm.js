@@ -68,10 +68,11 @@ class GatewayForm extends Component {
     const sn = name.split("_")[1];
     
     let conf = await GatewayStore.getConfig(gatewayId);
-    const rootPassword = await GatewayStore.getRootConfig(gatewayId, sn);
+    const rootPassword = '';
+    
     const object = this.state.object;
     if(rootPassword !== undefined){
-      object.password = rootPassword.password;
+      object.password = rootPassword;
     }
 
     var json_conf = JSON.parse(conf.trim());
@@ -941,6 +942,8 @@ class GatewayForm extends Component {
                                 name="password"
                                 id="password"
                                 data-lpignore="true"
+                                data-id={this.props.object.id}
+                                data-sn={this.props.object.name}
                                 component={ReactstrapRootPasswordInput}
                                 onBlur={handleBlur}
                               />

@@ -94,6 +94,55 @@
         ]
       }
     },
+    "/api/wallet/mining_income_gw": {
+      "get": {
+        "summary": "return daily and total mining amounts for the given gateway and period of time",
+        "operationId": "GetGatewayMiningIncome",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetGatewayMiningIncomeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "gatewayMac",
+            "description": "MAC address of the gateway.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orgId",
+            "description": "Organization ID.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "fromDate",
+            "description": "Return mining stats for the period starting at from_date and ending at\ntill_date inclusive.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "tillDate",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "WalletService"
+        ]
+      }
+    },
     "/api/wallet/mining_info": {
       "get": {
         "operationId": "GetMiningInfo",
@@ -280,6 +329,22 @@
         }
       }
     },
+    "appserver_serves_uiGetGatewayMiningIncomeResponse": {
+      "type": "object",
+      "properties": {
+        "dailyStats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiMiningStats"
+          },
+          "title": "daily mining stats for each day the mining happened"
+        },
+        "total": {
+          "type": "string",
+          "title": "total amount mined by gateway during the requested period"
+        }
+      }
+    },
     "appserver_serves_uiGetMXCpriceResponse": {
       "type": "object",
       "properties": {
@@ -370,6 +435,21 @@
           "type": "string"
         }
       }
+    },
+    "appserver_serves_uiMiningStats": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "title": "date on which the mining happened"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount mined on the specified day"
+        }
+      },
+      "title": "Mining stats for a single date"
     },
     "appserver_serves_uiNetworkUsage": {
       "type": "object",

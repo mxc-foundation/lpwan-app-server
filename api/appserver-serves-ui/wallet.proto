@@ -37,6 +37,13 @@ service WalletService {
 		};
     }
 
+    // return daily and total mining amounts for the given gateway and period of time
+    rpc GetGatewayMiningIncome (GetGatewayMiningIncomeRequest) returns (GetGatewayMiningIncomeResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mining_income_gw"
+		};
+    }
+
     rpc GetMiningInfo (GetMiningInfoRequest) returns (GetMiningInfoResponse) {
         option (google.api.http) = {
 			get: "/api/wallet/mining_info"
@@ -71,6 +78,32 @@ message GetWalletMiningIncomeRequest {
 message GetWalletMiningIncomeResponse {
     string mining_income = 1;
     ProfileResponse user_profile = 2;
+}
+
+message GetGatewayMiningIncomeRequest {
+    // MAC address of the gateway
+    string gateway_mac = 1;
+    // Organization ID
+    int64 org_id = 2;
+    // Return mining stats for the period starting at from_date and ending at
+    // till_date inclusive
+    google.protobuf.Timestamp from_date = 3;
+    google.protobuf.Timestamp till_date = 4;
+}
+
+// Mining stats for a single date
+message MiningStats {
+    // date on which the mining happened
+    google.protobuf.Timestamp date = 1;
+    // amount mined on the specified day
+    string amount = 2;
+}
+
+message GetGatewayMiningIncomeResponse {
+    // daily mining stats for each day the mining happened
+    repeated MiningStats daily_stats = 1;
+    // total amount mined by gateway during the requested period
+    string total = 2;
 }
 
 message MiningData {
