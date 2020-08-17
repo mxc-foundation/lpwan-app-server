@@ -620,7 +620,8 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 }
 
 func (a *UserAPI) GetOTPCode(ctx context.Context, req *pb.GetOTPCodeRequest) (*pb.GetOTPCodeResponse, error) {
-	otp, err := storage.GetTokenByUsername(ctx, storage.DB(), req.UserEmail)
+	username := normalizeUsername(req.UserEmail)
+	otp, err := storage.GetTokenByUsername(ctx, storage.DB(), username)
 	if err != nil {
 		return nil, err
 	}
