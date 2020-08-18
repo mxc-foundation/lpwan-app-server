@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	
+
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
@@ -28,10 +28,10 @@ type Pool interface {
 }
 
 type MxprotocolServerStruct struct {
-	Server  string
-	CACert  string
-	TLSCert string
-	TLSKey  string
+	Server  string `mapstructure:"m2m_server"`
+	CACert  string `mapstructure:"ca_cert"`
+	TLSCert string `mapstructure:"tls_cert"`
+	TLSKey  string `mapstructure:"tls_key"`
 }
 
 type mxprotocolServiceClient struct {
