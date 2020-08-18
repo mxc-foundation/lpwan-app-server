@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
@@ -44,12 +45,13 @@ func NewInternalUserAPI() *InternalUserAPI {
 
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
-	err := a.st.LoginUserByPassword(ctx, req.Username, req.Password)
+	username := normalizeUsername(req.Username)
+	err := a.st.LoginUserByPassword(ctx, username, req.Password)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	user, err := a.st.GetUserByUsername(ctx, req.Username)
+	user, err := a.st.GetUserByUsername(ctx, username)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "couldn't get info about the user")
 	}
@@ -289,18 +291,24 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *inpb.GlobalSear
 	return &out, nil
 }
 
+func normalizeUsername(username string) string {
+	return strings.ToLower(username)
+}
+
 // RegisterUser adds new user and sends activation email
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest) (*empty.Empty, error) {
 	logInfo := "api/appserver_serves_ui/RegisterUser"
 
+	userEmail := normalizeUsername(req.Email)
+
 	log.WithFields(log.Fields{
-		"email":     req.Email,
+		"email":     userEmail,
 		"languange": req.Language,
 	}).Info(logInfo)
 
 	user := store.User{
-		Username:   req.Email,
-		Email:      req.Email,
+		Username:   userEmail,
+		Email:      userEmail,
 		SessionTTL: 0,
 		IsAdmin:    false,
 		IsActive:   false,
@@ -445,11 +453,12 @@ func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRec
 
 func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.PasswordResetReq) (*inpb.PasswordResetResp, error) {
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		user, err := handler.GetUserByUsername(ctx, req.Username)
+		username := normalizeUsername(req.Username)
+		user, err := handler.GetUserByUsername(ctx, username)
 		if err != nil {
 			if err == storage.ErrDoesNotExist {
-				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
-				if err := email.SendInvite(req.Username, email.Param{}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
+				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", username)
+				if err := email.SendInvite(username, email.Param{}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
 					return status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 				}
 				return nil
@@ -457,7 +466,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 			return status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 		}
 		if !user.IsActive {
-			ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", req.Username)
+			ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", username)
 			return nil
 		}
 		pr, err := handler.GetPasswordResetRecord(ctx, user.ID)
@@ -471,7 +480,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 			return status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
 		}
 
-		if err := email.SendInvite(req.Username, email.Param{Token: pr.OTP}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
+		if err := email.SendInvite(username, email.Param{Token: pr.OTP}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
 			return status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 		}
 
@@ -485,10 +494,11 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 
 func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		user, err := handler.GetUserByUsername(ctx, req.Username)
+		username := normalizeUsername(req.Username)
+		user, err := handler.GetUserByUsername(ctx, username)
 		if err != nil {
 			if err == storage.ErrDoesNotExist {
-				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
+				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", username)
 				return status.Errorf(codes.PermissionDenied, "no match found")
 			}
 			return status.Errorf(codes.Internal, "couldn't get user info: %v", err)

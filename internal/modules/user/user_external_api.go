@@ -105,7 +105,8 @@ func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetU
 
 // GetUserEmail returns true if user does not exist
 func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailRequest) (*inpb.GetUserEmailResponse, error) {
-	u, err := a.st.GetUserByEmail(ctx, req.UserEmail)
+	username := normalizeUsername(req.UserEmail)
+	u, err := a.st.GetUserByEmail(ctx, username)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			return &inpb.GetUserEmailResponse{Status: true}, nil
@@ -221,7 +222,8 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswo
 }
 
 func (a *UserAPI) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
-	otp, err := a.st.GetTokenByUsername(ctx, req.UserEmail)
+	userEmail := normalizeUsername(req.UserEmail)
+	otp, err := a.st.GetTokenByUsername(ctx, userEmail)
 	if err != nil {
 		return nil, err
 	}
