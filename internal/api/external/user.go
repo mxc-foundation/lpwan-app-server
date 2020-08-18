@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
@@ -303,10 +304,11 @@ func NewInternalUserAPI(validator auth.Validator, otpValidator *otp.Validator) *
 
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-	if err := storage.CheckPassword(ctx, storage.DB(), req.Username, req.Password); err != nil {
+	username := normalizeUsername(req.Username)
+	if err := storage.CheckPassword(ctx, storage.DB(), username, req.Password); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "invalid username or password")
 	}
-	user, err := storage.GetUserByUsername(ctx, storage.DB(), req.Username)
+	user, err := storage.GetUserByUsername(ctx, storage.DB(), username)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "couldn't get info about the user")
 	}
@@ -317,7 +319,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 	ttl := 60 * int64(user.SessionTTL)
 	var audience []string
 
-	is2fa, err := a.otpValidator.IsEnabled(ctx, req.Username)
+	is2fa, err := a.otpValidator.IsEnabled(ctx, username)
 	if err != nil {
 		ctxlogrus.Extract(ctx).WithError(err).Error("couldn't get 2fa status")
 		return nil, status.Error(codes.Internal, "couldn't get 2fa status")
@@ -334,7 +336,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *pb.LoginRequest) (*pb.
 		audience = []string{"login-2fa"}
 	}
 
-	jwt, err := a.validator.SignToken(req.Username, ttl, audience)
+	jwt, err := a.validator.SignToken(username, ttl, audience)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
@@ -555,6 +557,10 @@ func OTPgen() string {
 	return string(otp)
 }
 
+func normalizeUsername(username string) string {
+	return strings.ToLower(username)
+}
+
 // RegisterUser adds new user and sends activation email
 func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUserRequest) (*empty.Empty, error) {
 	logInfo := "api/appserver_serves_ui/RegisterUser"
@@ -564,8 +570,9 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 		"languange": req.Language,
 	}).Info(logInfo)
 
+	username := normalizeUsername(req.Email)
 	user := storage.User{
-		Username:   req.Email,
+		Username:   username,
 		SessionTTL: 0,
 		IsAdmin:    false,
 		IsActive:   false,
@@ -613,7 +620,8 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *pb.RegisterUser
 }
 
 func (a *UserAPI) GetOTPCode(ctx context.Context, req *pb.GetOTPCodeRequest) (*pb.GetOTPCodeResponse, error) {
-	otp, err := storage.GetTokenByUsername(ctx, storage.DB(), req.UserEmail)
+	username := normalizeUsername(req.UserEmail)
+	otp, err := storage.GetTokenByUsername(ctx, storage.DB(), username)
 	if err != nil {
 		return nil, err
 	}
