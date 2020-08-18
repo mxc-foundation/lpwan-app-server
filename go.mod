@@ -1,9 +1,9 @@
 module github.com/mxc-foundation/lpwan-app-server
 
-go 1.14
+go 1.15
 
 require (
-	cloud.google.com/go v0.49.0 // indirect
+	cloud.google.com/go v0.56.0 // indirect
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/NickBall/go-aes-key-wrap v0.0.0-20170929221519-1c3aa3e4dfc5
 	github.com/apex/log v1.1.0
@@ -14,7 +14,7 @@ require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/eclipse/paho.mqtt.golang v1.2.0
-	github.com/elazarl/go-bindata-assetfs v1.0.0
+	github.com/elazarl/go-bindata-assetfs v1.0.1
 	github.com/go-redis/redis/v7 v7.4.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/gogo/protobuf v1.3.1 // indirect
@@ -26,7 +26,7 @@ require (
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
-	github.com/grpc-ecosystem/grpc-gateway v1.12.1
+	github.com/grpc-ecosystem/grpc-gateway v1.14.7
 	github.com/jacobsa/crypto v0.0.0-20190317225127-9f44e2d11115 // indirect
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/jteeuwen/go-bindata v3.0.8-0.20180305030458-6025e8de665b+incompatible
@@ -57,13 +57,13 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20200122045848-3419fae592fc
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
-	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/net v0.0.0-20200520004742-59133d7f0dd7
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/tools v0.0.0-20200417140056-c07e33ef3290
-	google.golang.org/genproto v0.0.0-20200218151345-dad8c97a84f5
-	google.golang.org/grpc v1.28.0
-	google.golang.org/protobuf v1.23.0
+	google.golang.org/genproto v0.0.0-20200815001618-f69a88009b70
+	google.golang.org/grpc v1.31.0
+	google.golang.org/protobuf v1.25.0
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 )

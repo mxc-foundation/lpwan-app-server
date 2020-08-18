@@ -92,14 +92,6 @@ static/swagger/api.swagger.json:
 
 
 # shortcuts for development
-
-dev-requirements:
-	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-	go install github.com/golang/protobuf/protoc-gen-go
-	go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
-	go install github.com/jteeuwen/go-bindata/go-bindata
-
 ui-requirements:
 	@echo "Installing UI requirements"
 	@cd ui && npm install

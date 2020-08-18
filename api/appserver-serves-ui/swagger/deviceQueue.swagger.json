@@ -21,6 +21,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListDeviceQueueItemsResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -45,6 +51,12 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -61,7 +73,7 @@
         ]
       }
     },
-    "/api/devices/{deviceQueueItem.devEui}/queue": {
+    "/api/devices/{deviceQueueItem.devEUI}/queue": {
       "post": {
         "summary": "Enqueue adds the given item to the device-queue.",
         "operationId": "Enqueue",
@@ -71,11 +83,17 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiEnqueueDeviceQueueItemResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "deviceQueueItem.devEui",
+            "name": "deviceQueueItem.devEUI",
             "description": "Device EUI (HEX encoded).",
             "in": "path",
             "required": true,
@@ -156,6 +174,39 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/appserver_serves_uiDeviceQueueItem"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
           }
         }
       }

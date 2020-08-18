@@ -55,7 +55,10 @@ func local_request_WithdrawService_GetWithdrawFee_0(ctx context.Context, marshal
 	var protoReq GetWithdrawFeeRequest
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WithdrawService_GetWithdrawFee_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WithdrawService_GetWithdrawFee_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -88,7 +91,10 @@ func local_request_WithdrawService_GetWithdrawHistory_0(ctx context.Context, mar
 	var protoReq GetWithdrawHistoryRequest
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_WithdrawService_GetWithdrawHistory_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WithdrawService_GetWithdrawHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -168,6 +174,7 @@ func local_request_WithdrawService_GetWithdraw_0(ctx context.Context, marshaler 
 // RegisterWithdrawServiceHandlerServer registers the http handlers for service WithdrawService to "mux".
 // UnaryRPC     :call WithdrawServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterWithdrawServiceHandlerFromEndpoint instead.
 func RegisterWithdrawServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server WithdrawServiceServer) error {
 
 	mux.Handle("GET", pattern_WithdrawService_GetWithdrawFee_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

@@ -51,7 +51,7 @@ A few example commands that you can run:
 
 {{<highlight bash>}}
 # install all requirements
-make dev-requirements ui-requirements
+make ui-requirements
 
 # cleanup workspace
 make clean

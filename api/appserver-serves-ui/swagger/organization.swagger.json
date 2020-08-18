@@ -21,6 +21,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListOrganizationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -61,6 +67,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiCreateOrganizationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -88,6 +100,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetOrganizationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -112,6 +130,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -139,6 +163,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -174,6 +204,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListOrganizationUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -218,6 +254,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetOrganizationUserResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -251,6 +293,12 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -276,7 +324,7 @@
         ]
       }
     },
-    "/api/organizations/{organizationUser.organizationId}/users": {
+    "/api/organizations/{organizationUser.organizationID}/users": {
       "post": {
         "summary": "Add a new user to an organization.",
         "operationId": "AddUser",
@@ -286,11 +334,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "organizationUser.organizationId",
+            "name": "organizationUser.organizationID",
             "description": "Organization ID.",
             "in": "path",
             "required": true,
@@ -311,7 +365,7 @@
         ]
       }
     },
-    "/api/organizations/{organizationUser.organizationId}/users/{organizationUser.userId}": {
+    "/api/organizations/{organizationUser.organizationID}/users/{organizationUser.userID}": {
       "put": {
         "summary": "Update a user in an organization.",
         "operationId": "UpdateUser",
@@ -321,11 +375,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "organizationUser.organizationId",
+            "name": "organizationUser.organizationID",
             "description": "Organization ID.",
             "in": "path",
             "required": true,
@@ -333,7 +393,7 @@
             "format": "int64"
           },
           {
-            "name": "organizationUser.userId",
+            "name": "organizationUser.userID",
             "description": "User ID.",
             "in": "path",
             "required": true,
@@ -609,6 +669,39 @@
         "organizationUser": {
           "$ref": "#/definitions/appserver_serves_uiOrganizationUser",
           "description": "Organization-user object to update."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }

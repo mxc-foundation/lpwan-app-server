@@ -20,6 +20,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetWalletBalanceResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -57,6 +63,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetWalletMiningIncomeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -103,6 +115,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetGatewayMiningIncomeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -152,6 +170,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetMiningInfoResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -176,6 +200,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetMXCpriceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -215,6 +245,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetDownLinkPriceResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -239,6 +275,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetVmxcTxHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -278,6 +320,12 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetNetworkUsageHistResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -606,6 +654,39 @@
         },
         "createdAt": {
           "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }

@@ -21,6 +21,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListApplicationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -69,6 +75,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiCreateApplicationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -95,6 +107,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -131,6 +149,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiListIntegrationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -158,6 +182,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetHTTPIntegrationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -182,6 +212,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -210,6 +246,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetInfluxDBIntegrationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -234,6 +276,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -262,6 +310,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetLoRaCloudIntegrationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -286,6 +340,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -314,6 +374,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetMyDevicesIntegrationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -338,6 +404,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -366,6 +438,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetThingsBoardIntegrationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -390,6 +468,12 @@
             "description": "A successful response.",
             "schema": {
               "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
             }
           }
         },
@@ -418,6 +502,12 @@
             "schema": {
               "$ref": "#/definitions/appserver_serves_uiGetApplicationResponse"
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -443,6 +533,12 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
@@ -460,7 +556,7 @@
         ]
       }
     },
-    "/api/applications/{integration.applicationId}/integrations/http": {
+    "/api/applications/{integration.applicationID}/integrations/http": {
       "post": {
         "summary": "CreateHTTPIntegration creates a HTTP application-integration.",
         "operationId": "CreateHTTPIntegration",
@@ -470,11 +566,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -503,11 +605,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "The id of the application.",
             "in": "path",
             "required": true,
@@ -528,7 +636,7 @@
         ]
       }
     },
-    "/api/applications/{integration.applicationId}/integrations/influxdb": {
+    "/api/applications/{integration.applicationID}/integrations/influxdb": {
       "post": {
         "summary": "CreateInfluxDBIntegration create an InfluxDB application-integration.",
         "operationId": "CreateInfluxDBIntegration",
@@ -538,11 +646,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -571,11 +685,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -596,7 +716,7 @@
         ]
       }
     },
-    "/api/applications/{integration.applicationId}/integrations/loracloud": {
+    "/api/applications/{integration.applicationID}/integrations/loracloud": {
       "post": {
         "summary": "CreateLoRaCloudIntegration creates A LoRaCloud application-integration.",
         "operationId": "CreateLoRaCloudIntegration",
@@ -606,11 +726,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -639,11 +765,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -664,7 +796,7 @@
         ]
       }
     },
-    "/api/applications/{integration.applicationId}/integrations/mydevices": {
+    "/api/applications/{integration.applicationID}/integrations/mydevices": {
       "post": {
         "summary": "CreateMyDevicesIntegration creates a MyDevices application-integration.",
         "operationId": "CreateMyDevicesIntegration",
@@ -674,11 +806,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -707,11 +845,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -732,7 +876,7 @@
         ]
       }
     },
-    "/api/applications/{integration.applicationId}/integrations/thingsboard": {
+    "/api/applications/{integration.applicationID}/integrations/thingsboard": {
       "post": {
         "summary": "CreateThingsBoardIntegration creates a ThingsBoard application-integration.",
         "operationId": "CreateThingsBoardIntegration",
@@ -742,11 +886,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -775,11 +925,17 @@
             "schema": {
               "properties": {}
             }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
           }
         },
         "parameters": [
           {
-            "name": "integration.applicationId",
+            "name": "integration.applicationID",
             "description": "Application ID.",
             "in": "path",
             "required": true,
@@ -1307,6 +1463,39 @@
         "integration": {
           "$ref": "#/definitions/appserver_serves_uiThingsBoardIntegration",
           "description": "Integration object."
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
         }
       }
     }
