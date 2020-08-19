@@ -75,8 +75,9 @@ func (a *UserAPI) Create(ctx context.Context, req *pb.CreateUserRequest) (*pb.Cr
 		}
 	}
 
+	username := normalizeUsername(req.User.Username)
 	user := storage.User{
-		Username:   req.User.Username,
+		Username:   username,
 		SessionTTL: req.User.SessionTtl,
 		IsAdmin:    req.User.IsAdmin,
 		IsActive:   req.User.IsActive,
@@ -158,7 +159,7 @@ func (a *UserAPI) Get(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserR
 
 // GetUserEmail returns true if user does not exist
 func (a *UserAPI) GetUserEmail(ctx context.Context, req *pb.GetUserEmailRequest) (*pb.GetUserEmailResponse, error) {
-	u, err := storage.GetUserByEmail(ctx, storage.DB(), req.UserEmail)
+	u, err := storage.GetUserByEmail(ctx, storage.DB(), normalizeUsername(req.UserEmail))
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
 			return &pb.GetUserEmailResponse{Status: true}, nil
@@ -236,7 +237,7 @@ func (a *UserAPI) Update(ctx context.Context, req *pb.UpdateUserRequest) (*empty
 
 	userUpdate := storage.UserUpdate{
 		ID:         req.User.Id,
-		Username:   req.User.Username,
+		Username:   normalizeUsername(req.User.Username),
 		IsAdmin:    req.User.IsAdmin,
 		IsActive:   req.User.IsActive,
 		SessionTTL: req.User.SessionTtl,
@@ -718,11 +719,12 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
 	}
 	defer tx.Rollback()
-	user, err := storage.GetUserByUsername(ctx, tx, req.Username)
+	username := normalizeUsername(req.Username)
+	user, err := storage.GetUserByUsername(ctx, tx, username)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
-			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
-			if err := email.SendInvite(req.Username, email.Param{Token: ""}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
+			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", username)
+			if err := email.SendInvite(username, email.Param{Token: ""}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
 				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 			}
 			return &pb.PasswordResetResp{}, nil
@@ -730,7 +732,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 	}
 	if !user.IsActive {
-		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", req.Username)
+		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", username)
 		return &pb.PasswordResetResp{}, nil
 	}
 	pr, err := storage.GetPasswordResetRecord(tx, user.ID)
@@ -746,7 +748,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *pb.Pass
 	if err := tx.Commit(); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't store reset code: %v", err)
 	}
-	if err := email.SendInvite(req.Username, email.Param{Token: pr.OTP}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
+	if err := email.SendInvite(username, email.Param{Token: pr.OTP}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 	}
 	return &pb.PasswordResetResp{}, nil
@@ -758,10 +760,11 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *pb.Conf
 		return nil, status.Errorf(codes.Internal, "couldn't begin tx: %v", err)
 	}
 	defer tx.Rollback()
-	user, err := storage.GetUserByUsername(ctx, tx, req.Username)
+	username := normalizeUsername(req.Username)
+	user, err := storage.GetUserByUsername(ctx, tx, username)
 	if err != nil {
 		if err == storage.ErrDoesNotExist {
-			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", req.Username)
+			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", username)
 			return nil, status.Errorf(codes.PermissionDenied, "no match found")
 		}
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
