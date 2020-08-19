@@ -19,7 +19,7 @@ func New(db *sqlx.DB) *Handler {
 }
 
 func (h *Handler) GetUser(ctx context.Context, username string) (authmod.User, error) {
-	q := `SELECT id, is_admin FROM "user" WHERE username=$1 AND is_active=true`
+	q := `SELECT id, is_admin FROM "user" WHERE email=$1 AND is_active=true`
 	row := h.db.QueryRowContext(ctx, q, username)
 	var res authmod.User
 	if err := row.Scan(&res.ID, &res.IsGlobalAdmin); err != nil {

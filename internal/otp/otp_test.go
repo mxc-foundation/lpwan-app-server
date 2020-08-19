@@ -11,10 +11,6 @@ import (
 
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
-
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 type testStore struct {
@@ -114,7 +110,7 @@ func TestOTPConfigure(t *testing.T) {
 		t.Fatal("expected empty config for alice")
 	}
 
-	tv, err := NewValidator("test", testKey, ts, authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret))
+	tv, err := NewValidator("test", testKey, ts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,7 +162,7 @@ func TestOTPConfigure(t *testing.T) {
 func TestTOTP(t *testing.T) {
 	ctx := context.Background()
 	ts := newTestStore()
-	tv, err := NewValidator("test", testKey, ts, authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret))
+	tv, err := NewValidator("test", testKey, ts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -251,7 +247,7 @@ func TestTOTP(t *testing.T) {
 func TestRecoveryCodes(t *testing.T) {
 	ctx := context.Background()
 	ts := newTestStore()
-	tv, err := NewValidator("test", testKey, ts, authcus.NewJWTValidator(storage.DB(), "HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret))
+	tv, err := NewValidator("test", testKey, ts)
 	if err != nil {
 		t.Fatal(err)
 	}

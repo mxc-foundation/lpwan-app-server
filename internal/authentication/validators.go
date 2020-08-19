@@ -74,7 +74,7 @@ func (c *Credentials) ValidateMulticastGroupAccess(ctx context.Context, flag Fla
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(storage.DB().DB, &count, userQuery, u.Username, multicastGroupID, u.ID); err != nil {
+	if err := sqlx.Get(storage.DB().DB, &count, userQuery, u.UserEmail, multicastGroupID, u.ID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -124,7 +124,7 @@ func (c *Credentials) ValidateServiceProfileAccess(ctx context.Context, flag Fla
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.Get(storage.DB().DB, &count, userQuery, u.Username, id, u.ID); err != nil {
+	if err := sqlx.Get(storage.DB().DB, &count, userQuery, u.UserEmail, id, u.ID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil

@@ -63,18 +63,18 @@ func TestEnable(t *testing.T) {
 	}
 
 	// user without totp configuration
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("alice").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("alice").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}).AddRow(21),
 	)
 	mock.ExpectExec("UPDATE totp_configuration SET is_enabled = true.*").WithArgs(21).WillReturnResult(sqlmock.NewResult(0, 0))
 
 	// non-existing user
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("mallory").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("mallory").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}),
 	)
 
 	// successful path
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("bob").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("bob").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}).AddRow(42),
 	)
 	mock.ExpectExec("UPDATE totp_configuration SET is_enabled = true.*").WithArgs(42).WillReturnResult(sqlmock.NewResult(0, 1))
@@ -102,18 +102,18 @@ func TestDelete(t *testing.T) {
 		t.Fatal(err)
 	}
 	// user without totp configuration
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("alice").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("alice").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}).AddRow(21),
 	)
 	mock.ExpectExec("DELETE FROM totp_configuration.*").WithArgs(21).WillReturnResult(sqlmock.NewResult(0, 0))
 
 	// non-existing user
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("mallory").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("mallory").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}),
 	)
 
 	// user with configuration
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("bob").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("bob").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}).AddRow(42),
 	)
 	mock.ExpectExec("DELETE FROM totp_configuration.*").WithArgs(42).WillReturnResult(sqlmock.NewResult(0, 1))
@@ -196,12 +196,12 @@ func TestDeleteRecoveryCode(t *testing.T) {
 		t.Fatal(err)
 	}
 	// non-existing user
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("mallory").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("mallory").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}),
 	)
 
 	// existing user
-	mock.ExpectQuery("SELECT id FROM \"user\" WHERE username.*").WithArgs("bob").WillReturnRows(
+	mock.ExpectQuery("SELECT id FROM \"user\" WHERE email.*").WithArgs("bob").WillReturnRows(
 		sqlmock.NewRows([]string{"id"}).AddRow(42),
 	)
 	mock.ExpectExec("DELETE FROM totp_recovery_codes.*").WithArgs(42, 321).WillReturnResult(sqlmock.NewResult(0, 1))

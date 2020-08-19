@@ -20,8 +20,8 @@ type Store interface {
 
 /*// Credentials provides methods to assert the user's Credentials
 type Credentials interface {
-	// Username returns user's username
-	Username() string
+	// UserEmail returns user's username
+	UserEmail() string
 	// UserID returns id of the user
 	UserID() int64
 	// IsGlobalAdmin returns an error if user is not global admin
@@ -160,13 +160,13 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		// and user registration process should be fixed to not require this hack
 		cred.h = c.h
 		cred.user.ID = -1
-		cred.user.Username = jwtClaims.Username
+		cred.user.UserEmail = jwtClaims.Username
 		cred.user.IsGlobalAdmin = false
 
 	} else {
 		cred.h = c.h
 		cred.user.ID = u.ID
-		cred.user.Username = jwtClaims.Username
+		cred.user.UserEmail = jwtClaims.Username
 		cred.user.IsGlobalAdmin = u.IsGlobalAdmin
 	}
 
@@ -199,7 +199,7 @@ func (c *Credentials) Username(ctx context.Context, opts ...Option) (string, err
 		return "", errors.Wrap(err, "failed to get credentials")
 	}
 
-	return cred.user.Username, nil
+	return cred.user.UserEmail, nil
 }
 
 // UserID returns user id of the user

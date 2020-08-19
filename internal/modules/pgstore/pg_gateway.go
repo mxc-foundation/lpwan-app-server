@@ -898,7 +898,7 @@ func (ps *pgstore) GetGatewayCountForUser(ctx context.Context, username string, 
 		inner join "user" u
 			on u.id = ou.user_id
 		where
-			u.username = $1
+			u.email = $1
 			and (
 				$2 = ''
 				or (
@@ -937,7 +937,7 @@ func (ps *pgstore) GetGatewaysForUser(ctx context.Context, username string, limi
 		inner join "user" u
 			on u.id = ou.user_id
 		where
-			u.username = $1
+			u.email = $1
 			and (
 				$4 = ''
 				or (

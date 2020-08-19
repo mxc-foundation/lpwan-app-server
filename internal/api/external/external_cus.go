@@ -34,7 +34,7 @@ import (
 )
 
 func SetupCusAPI(grpcServer *grpc.Server) error {
-	jwtValidator := jwt.NewJWTValidator("HS256", config.C.ApplicationServer.ExternalAPI.JWTSecret)
+	jwtValidator := jwt.NewJWTValidator("HS256", []byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
 	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, pgstore.New(storage.DB().DB.DB))
 	if err != nil {
 		return err
@@ -86,6 +86,31 @@ func CusGetJSONGateway(ctx context.Context, mux *runtime.ServeMux, apiEndpoint s
 	}
 	if err := api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return errors.Wrap(err, "register proxy request handler error")
+	}
+
+	if err := api.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register application handler error")
+	}
+	if err := api.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register node handler error")
+	}
+	if err := api.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register user handler error")
+	}
+	if err := api.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register internal handler error")
+	}
+	if err := api.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register gateway handler error")
+	}
+	if err := api.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register gateway-profile handler error")
+	}
+	if err := api.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register organization handler error")
+	}
+	if err := api.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return errors.Wrap(err, "register network-server handler error")
 	}
 
 	return nil

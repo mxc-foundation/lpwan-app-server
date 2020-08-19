@@ -18,13 +18,13 @@ type Validate interface {
 	ValidateUsersGlobalAccess(ctx context.Context, flag authcus.Flag) (bool, error)
 	ValidateUserAccess(ctx context.Context, flag authcus.Flag, userID int64) (bool, error)
 	IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error
-	Is2FAEnabled(ctx context.Context, username string) (bool, error)
-	SignJWToken(username string, ttl int64, audience []string) (string, error)
+	Is2FAEnabled(ctx context.Context, userEmail string) (bool, error)
+	SignJWToken(userEmail string, ttl int64, audience []string) (string, error)
 	GetUser(ctx context.Context, opts ...authcus.Option) (authcus.User, error)
-	NewConfiguration(ctx context.Context, username string) (*otp.Configuration, error)
+	NewConfiguration(ctx context.Context, userEmail string) (*otp.Configuration, error)
 	Enable2FA(ctx context.Context) error
 	Disable2FA(ctx context.Context) error
-	OTPGetRecoveryCodes(ctx context.Context, username string, regenerate bool) ([]string, error)
+	OTPGetRecoveryCodes(ctx context.Context, userEmail string, regenerate bool) ([]string, error)
 }
 
 func NewValidator() Validate {
@@ -33,8 +33,8 @@ func NewValidator() Validate {
 	}
 }
 
-func (v *Validator) OTPGetRecoveryCodes(ctx context.Context, username string, regenerate bool) ([]string, error) {
-	return v.Credentials.OTPGetRecoveryCodes(ctx, username, regenerate)
+func (v *Validator) OTPGetRecoveryCodes(ctx context.Context, userEmail string, regenerate bool) ([]string, error) {
+	return v.Credentials.OTPGetRecoveryCodes(ctx, userEmail, regenerate)
 }
 
 func (v *Validator) Enable2FA(ctx context.Context) error {
@@ -48,7 +48,7 @@ func (v *Validator) Enable2FA(ctx context.Context) error {
 		return err
 	}
 
-	if err := v.Credentials.EnableOTP(ctx, u.Username, OTP); err != nil {
+	if err := v.Credentials.EnableOTP(ctx, u.UserEmail, OTP); err != nil {
 		return err
 	}
 
@@ -61,26 +61,26 @@ func (v *Validator) Disable2FA(ctx context.Context) error {
 		return err
 	}
 
-	if err := v.Credentials.DisableOTP(ctx, u.Username); err != nil {
+	if err := v.Credentials.DisableOTP(ctx, u.UserEmail); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (v *Validator) NewConfiguration(ctx context.Context, username string) (*otp.Configuration, error) {
-	return v.Credentials.NewConfiguration(ctx, username)
+func (v *Validator) NewConfiguration(ctx context.Context, userEmail string) (*otp.Configuration, error) {
+	return v.Credentials.NewConfiguration(ctx, userEmail)
 }
 
 func (v *Validator) GetUser(ctx context.Context, opts ...authcus.Option) (authcus.User, error) {
 	return v.Credentials.GetUser(ctx, opts...)
 }
 
-func (v *Validator) SignJWToken(username string, ttl int64, audience []string) (string, error) {
-	return v.Credentials.SignJWToken(username, ttl, audience)
+func (v *Validator) SignJWToken(userEmail string, ttl int64, audience []string) (string, error) {
+	return v.Credentials.SignJWToken(userEmail, ttl, audience)
 }
 
-func (v *Validator) Is2FAEnabled(ctx context.Context, username string) (bool, error) {
-	return v.Credentials.Is2FAEnabled(ctx, username)
+func (v *Validator) Is2FAEnabled(ctx context.Context, userEmail string) (bool, error) {
+	return v.Credentials.Is2FAEnabled(ctx, userEmail)
 }
 
 func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error {
@@ -94,10 +94,10 @@ func (v *Validator) ValidateActiveUser(ctx context.Context) (bool, error) {
 		return false, errors.Wrap(err, "ValidateActiveUser")
 	}
 
-	return Service.St.CheckActiveUser(ctx, u.Username, u.ID)
+	return Service.St.CheckActiveUser(ctx, u.UserEmail, u.ID)
 }
 
-// ValidateUsersAccess validates if the client has access to the global users
+// ValidateUsersGlobalAccess validates if the client has access to the global users
 // resource.
 func (v *Validator) ValidateUsersGlobalAccess(ctx context.Context, flag authcus.Flag) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
@@ -107,9 +107,9 @@ func (v *Validator) ValidateUsersGlobalAccess(ctx context.Context, flag authcus.
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateUserAcess(ctx, u.Username, u.ID)
+		return Service.St.CheckCreateUserAcess(ctx, u.UserEmail, u.ID)
 	case authcus.List:
-		return Service.St.CheckListUserAcess(ctx, u.Username, u.ID)
+		return Service.St.CheckListUserAcess(ctx, u.UserEmail, u.ID)
 	default:
 		panic("unsupported flag")
 	}
@@ -125,13 +125,13 @@ func (v *Validator) ValidateUserAccess(ctx context.Context, flag authcus.Flag, u
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadUserAccess(ctx, u.Username, userID, u.ID)
+		return Service.St.CheckReadUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteUserAccess(ctx, u.Username, userID, u.ID)
+		return Service.St.CheckUpdateDeleteUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.UpdateProfile:
-		return Service.St.CheckUpdateProfileUserAccess(ctx, u.Username, userID, u.ID)
+		return Service.St.CheckUpdateProfileUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.UpdatePassword:
-		return Service.St.CheckUpdatePasswordUserAccess(ctx, u.Username, userID, u.ID)
+		return Service.St.CheckUpdatePasswordUserAccess(ctx, u.UserEmail, userID, u.ID)
 	default:
 		panic("unsupported flag")
 	}

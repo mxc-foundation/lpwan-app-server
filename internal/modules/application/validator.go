@@ -50,9 +50,9 @@ func (v *Validator) ValidateGlobalApplicationsAccess(ctx context.Context, flag F
 
 	switch flag {
 	case Create:
-		return Service.St.CheckCreateApplicationAccess(ctx, u.Username, u.ID, organizationID)
+		return Service.St.CheckCreateApplicationAccess(ctx, u.UserEmail, u.ID, organizationID)
 	case List:
-		return Service.St.CheckListApplicationAccess(ctx, u.Username, u.ID, organizationID)
+		return Service.St.CheckListApplicationAccess(ctx, u.UserEmail, u.ID, organizationID)
 	default:
 		panic("unsupported flag")
 	}
@@ -68,11 +68,11 @@ func (v *Validator) ValidateApplicationAccess(ctx context.Context, flag Flag, ap
 
 	switch flag {
 	case Read:
-		return Service.St.CheckReadApplicationAccess(ctx, u.Username, u.ID, applicationID)
+		return Service.St.CheckReadApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
 	case Update:
-		return Service.St.CheckUpdateApplicationAccess(ctx, u.Username, u.ID, applicationID)
+		return Service.St.CheckUpdateApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
 	case Delete:
-		return Service.St.CheckDeleteApplicationAccess(ctx, u.Username, u.ID, applicationID)
+		return Service.St.CheckDeleteApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
 	default:
 		panic("unsupported flag")
 	}

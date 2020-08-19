@@ -17,22 +17,22 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
-const externalUserFields = "id, username, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
+const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
 const internalUserFields = "*"
 
-func (ps *pgstore) CheckActiveUser(ctx context.Context, username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckActiveUser(ctx context.Context, userEmail string, userID int64) (bool, error) {
 	var userQuery = "select count(*) from " +
-		"(select 1 from user u where (u.email = $1 or u.id = $2) " +
+		"(select 1 from public.user u where (u.email = $1 or u.id = $2) " +
 		"and u.is_active = true limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckCreateUserAcess(ctx context.Context, username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckCreateUserAcess(ctx context.Context, userEmail string, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -54,13 +54,13 @@ func (ps *pgstore) CheckCreateUserAcess(ctx context.Context, username string, us
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListUserAcess(ctx context.Context, username string, userID int64) (bool, error) {
+func (ps *pgstore) CheckListUserAcess(ctx context.Context, userEmail string, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -82,13 +82,13 @@ func (ps *pgstore) CheckListUserAcess(ctx context.Context, username string, user
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckReadUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -110,13 +110,13 @@ func (ps *pgstore) CheckReadUserAccess(ctx context.Context, username string, use
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID, operatorUserID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID, operatorUserID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateDeleteUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateDeleteUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -136,13 +136,13 @@ func (ps *pgstore) CheckUpdateDeleteUserAccess(ctx context.Context, username str
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID, operatorUserID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID, operatorUserID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdatePasswordUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdatePasswordUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
 	if userID != operatorUserID {
 		return false, errors.New("no permission to update other user's password")
 	}
@@ -167,13 +167,13 @@ func (ps *pgstore) CheckUpdatePasswordUserAccess(ctx context.Context, username s
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateProfileUserAccess(ctx context.Context, username string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateProfileUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -195,7 +195,7 @@ func (ps *pgstore) CheckUpdateProfileUserAccess(ctx context.Context, username st
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, userID, operatorUserID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID, operatorUserID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
@@ -239,7 +239,7 @@ func (ps *pgstore) CreateUser(ctx context.Context, user *store.User) error {
 		user.CreatedAt,
 		user.UpdatedAt,
 		user.PasswordHash,
-		user.Email,
+		user.UserEmail,
 		user.EmailVerified,
 		user.Note,
 		user.ExternalID,
@@ -256,7 +256,7 @@ func (ps *pgstore) CreateUser(ctx context.Context, user *store.User) error {
 	log.WithFields(log.Fields{
 		"id":          user.ID,
 		"external_id": externalID,
-		"email":       user.Email,
+		"email":       user.UserEmail,
 		"ctx_id":      ctx.Value(logging.ContextIDKey),
 	}).Info("storage: user created")
 
@@ -292,10 +292,10 @@ func (ps *pgstore) GetUserByExternalID(ctx context.Context, externalID string) (
 	return user, nil
 }
 
-// GetUserByUsername returns the User for the given username.
-func (ps *pgstore) GetUserByUsername(ctx context.Context, username string) (store.User, error) {
+// GetUserByUsername returns the User for the given email.
+func (ps *pgstore) GetUserByUsername(ctx context.Context, userEmail string) (store.User, error) {
 	var user store.User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where username = $1", username)
+	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return user, errors.New("not exist")
@@ -306,10 +306,10 @@ func (ps *pgstore) GetUserByUsername(ctx context.Context, username string) (stor
 	return user, nil
 }
 
-// GetUserByEmail returns the User for the given email.
-func (ps *pgstore) GetUserByEmail(ctx context.Context, email string) (store.User, error) {
+// GetUserByEmail returns the User for the given userEmail.
+func (ps *pgstore) GetUserByEmail(ctx context.Context, userEmail string) (store.User, error) {
 	var user store.User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where email = $1", email)
+	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where email = $1", userEmail)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -339,7 +339,7 @@ func (ps *pgstore) GetUserCount(ctx context.Context) (int, error) {
 func (ps *pgstore) GetUsers(ctx context.Context, limit, offset int) ([]store.User, error) {
 	var users []store.User
 	err := sqlx.SelectContext(ctx, ps.db, &users, "select "+externalUserFields+
-		" from user order by username limit $1 offset $2", limit, offset)
+		" from public.user order by email limit $1 offset $2", limit, offset)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "select error")
@@ -374,7 +374,7 @@ func (ps *pgstore) UpdateUser(ctx context.Context, u *store.User) error {
 		u.IsAdmin,
 		u.IsActive,
 		u.SessionTTL,
-		u.Email,
+		u.UserEmail,
 		u.EmailVerified,
 		u.Note,
 		u.ExternalID,
@@ -432,20 +432,20 @@ func (ps *pgstore) DeleteUser(ctx context.Context, id int64) error {
 }
 
 // CheckPassword returns an error if the password for the user is not valid
-func (ps *pgstore) CheckPassword(ctx context.Context, username string, password string) error {
-	// Find the user by username
+func (ps *pgstore) CheckPassword(ctx context.Context, userEmail string, password string) error {
+	// Find the user by userEmail
 	var user store.User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where username = $1", username)
+	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return errors.Wrap(err, "invalid username")
+			return errors.Wrap(err, "invalid email")
 		}
 		return errors.Wrap(err, "select error")
 	}
 
 	// Compare the passed in password with the hash in the database.
 	if err := ps.pwh.Validate(password, user.PasswordHash); err != nil {
-		return errors.Wrap(err, "password doesn't match username")
+		return errors.Wrap(err, "password doesn't match email")
 	}
 
 	return nil
@@ -478,20 +478,20 @@ func (ps *pgstore) UpdatePassword(ctx context.Context, id int64, newpassword str
 }
 
 // LoginUserByPassword checks the password for the user matching the given email
-func (ps *pgstore) LoginUserByPassword(ctx context.Context, email string, password string) error {
-	// get the user by email
+func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, password string) error {
+	// get the user by userEmail
 	var user store.User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", email)
+	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return errors.Wrap(err, "invalid username")
+			return errors.Wrap(err, "invalid email")
 		}
 		return errors.Wrap(err, "select error")
 	}
 
 	// Compare the passed in password with the hash in the database.
 	if err := ps.pwh.Validate(password, user.PasswordHash); err != nil {
-		return errors.Wrap(err, "password doesn't match username")
+		return errors.Wrap(err, "password doesn't match email")
 	}
 
 	return nil
@@ -508,8 +508,7 @@ func (ps *pgstore) GetProfile(ctx context.Context, id int64) (store.UserProfile,
 	}
 	prof.User = store.UserProfileUser{
 		ID:         user.ID,
-		Username:   user.Username,
-		Email:      user.Email,
+		UserEmail:  user.UserEmail,
 		SessionTTL: user.SessionTTL,
 		IsAdmin:    user.IsAdmin,
 		IsActive:   user.IsActive,
@@ -552,13 +551,13 @@ func (ps *pgstore) GetUserToken(ctx context.Context, u store.User) (string, erro
 		expSecondsSinceEpoch = nowSecondsSinceEpoch + int64(store.DefaultSessionTTL/time.Second)
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss":      "lpwan-app-server",
-		"aud":      "lpwan-app-server",
-		"nbf":      nowSecondsSinceEpoch,
-		"exp":      expSecondsSinceEpoch,
-		"sub":      "user",
-		"id":       u.ID,
-		"username": u.Email, // backwards compatibility
+		"iss":   "lpwan-app-server",
+		"aud":   "lpwan-app-server",
+		"nbf":   nowSecondsSinceEpoch,
+		"exp":   expSecondsSinceEpoch,
+		"sub":   "user",
+		"id":    u.ID,
+		"email": u.UserEmail, // backwards compatibility
 	})
 
 	jwt, err := token.SignedString([]byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
@@ -579,7 +578,6 @@ func (ps *pgstore) RegisterUser(ctx context.Context, user *store.User, token str
 	// Add the new user.
 	err := sqlx.GetContext(ctx, ps.db, &user.ID, `
 		insert into "user" (
-			username,
 			email,
 			is_admin,
 			is_active,
@@ -589,8 +587,7 @@ func (ps *pgstore) RegisterUser(ctx context.Context, user *store.User, token str
 	        security_token)
 		values (
 			$1, $2, $3, $4, $5, $6, $7, $8) returning id`,
-		user.Username,
-		user.Email,
+		user.UserEmail,
 		user.IsAdmin,
 		user.IsActive,
 		user.SessionTTL,
@@ -603,7 +600,7 @@ func (ps *pgstore) RegisterUser(ctx context.Context, user *store.User, token str
 	}
 
 	log.WithFields(log.Fields{
-		"email":       user.Email,
+		"email":       user.UserEmail,
 		"session_ttl": user.SessionTTL,
 		"is_admin":    user.IsAdmin,
 	}).Info("Registration: user created")
@@ -625,10 +622,10 @@ func (ps *pgstore) GetUserByToken(ctx context.Context, token string) (store.User
 }
 
 // GetTokenByUsername ...
-func (ps *pgstore) GetTokenByUsername(ctx context.Context, username string) (string, error) {
+func (ps *pgstore) GetTokenByUsername(ctx context.Context, userEmail string) (string, error) {
 	//var user User
 	var otp string
-	err := sqlx.GetContext(ctx, ps.db, &otp, "select security_token from \"user\" where username = $1", username)
+	err := sqlx.GetContext(ctx, ps.db, &otp, "select security_token from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return otp, errors.New("not exist")

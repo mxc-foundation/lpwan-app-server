@@ -21,7 +21,7 @@ func New(db *sql.DB) *OTPPgStore {
 }
 
 func (st *OTPPgStore) getUserID(ctx context.Context, username string) (int64, error) {
-	row := st.db.QueryRowContext(ctx, "SELECT id FROM \"user\" WHERE username = $1", username)
+	row := st.db.QueryRowContext(ctx, "SELECT id FROM \"user\" WHERE email = $1", username)
 	var userID int64
 	err := row.Scan(&userID)
 	return userID, err
@@ -32,7 +32,7 @@ func (st *OTPPgStore) GetTOTPInfo(ctx context.Context, username string) (otp.TOT
 	totpConfigQuery := `
 		SELECT utc.user_id, utc.is_enabled, utc.secret, utc.last_time_slot
 		FROM "user" u JOIN totp_configuration utc ON (u.id = utc.user_id)
-		WHERE u.username = $1
+		WHERE u.email = $1
 	`
 	row := st.db.QueryRowContext(ctx, totpConfigQuery, username)
 	var userID int64
@@ -114,7 +114,7 @@ func storeNewSecret(ctx context.Context, tx *sql.Tx, username, secret string) er
 	totpConfigQuery := `
 		SELECT u.id, utc.is_enabled
 		FROM "user" u LEFT JOIN totp_configuration utc ON (u.id = utc.user_id)
-		WHERE u.username = $1
+		WHERE u.email = $1
 	`
 	row := tx.QueryRowContext(ctx, totpConfigQuery, username)
 	var userID int64
@@ -182,7 +182,7 @@ func addRecoveryCodes(ctx context.Context, tx *sql.Tx, username string, codes []
 	totpConfigQuery := `
 		SELECT u.id, utc.last_time_slot
 		FROM "user" u LEFT JOIN totp_configuration utc ON (u.id = utc.user_id)
-		WHERE u.username = $1
+		WHERE u.email = $1
 	`
 	row := tx.QueryRowContext(ctx, totpConfigQuery, username)
 	var userID int64
@@ -241,7 +241,7 @@ func updateLastTimeSlot(ctx context.Context, tx *sql.Tx, username string, previo
 	totpConfigQuery := `
 		SELECT u.id, utc.last_time_slot
 		FROM "user" u LEFT JOIN totp_configuration utc ON (u.id = utc.user_id)
-		WHERE u.username = $1
+		WHERE u.email = $1
 	`
 	row := tx.QueryRowContext(ctx, totpConfigQuery, username)
 	var userID int64

@@ -3,7 +3,7 @@ package authentication
 // User contains information about the user
 type User struct {
 	ID            int64
-	Username      string
+	UserEmail     string
 	IsGlobalAdmin bool
 }
 

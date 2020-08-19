@@ -9,6 +9,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -24,12 +27,10 @@ import (
 	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 var (
@@ -75,7 +76,7 @@ func Setup(conf config.Config) error {
 	return setupAPI(conf)
 }
 
-func setupAPI(conf config.Config) error {
+func setupAPI(conf config.Config) (err error) {
 	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret)
 	rpID, err := uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
@@ -239,32 +240,8 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		},
 	))
 
-	if err := pb.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register application handler error")
-	}
 	if err := pb.RegisterDeviceQueueServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register downlink queue handler error")
-	}
-	if err := pb.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register node handler error")
-	}
-	if err := pb.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register user handler error")
-	}
-	if err := pb.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register internal handler error")
-	}
-	if err := pb.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register gateway handler error")
-	}
-	if err := pb.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register gateway-profile handler error")
-	}
-	if err := pb.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register organization handler error")
-	}
-	if err := pb.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, errors.Wrap(err, "register network-server handler error")
 	}
 	if err := pb.RegisterServiceProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register service-profile handler error")

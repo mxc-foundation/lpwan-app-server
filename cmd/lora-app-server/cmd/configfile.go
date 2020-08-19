@@ -248,7 +248,7 @@ id="{{ .ApplicationServer.ID }}"
   server="{{ .ApplicationServer.Integration.MQTT.Server }}"
 
   # Connect with the given username (optional)
-  username="{{ .ApplicationServer.Integration.MQTT.Username }}"
+  username="{{ .ApplicationServer.Integration.MQTT.UserEmail }}"
 
   # Connect with the given password (optional)
   password="{{ .ApplicationServer.Integration.MQTT.Password }}"

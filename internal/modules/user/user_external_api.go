@@ -39,11 +39,10 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 	}
 
 	user := store.User{
-		Username:   req.User.Username,
 		SessionTTL: req.User.SessionTtl,
 		IsAdmin:    req.User.IsAdmin,
 		IsActive:   req.User.IsActive,
-		Email:      req.User.Email,
+		UserEmail:  req.User.Email,
 		Note:       req.User.Note,
 		Password:   req.Password,
 	}
@@ -55,7 +54,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		}
 
 		for _, org := range req.Organizations {
-			if err := handler.CreateOrganizationUser(ctx, org.OrganizationId, user.Username,
+			if err := handler.CreateOrganizationUser(ctx, org.OrganizationId, user.UserEmail,
 				org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
 				return status.Errorf(codes.Unknown, "%v", err)
 			}
@@ -86,7 +85,7 @@ func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetU
 			SessionTtl: user.SessionTTL,
 			IsAdmin:    user.IsAdmin,
 			IsActive:   user.IsActive,
-			Email:      user.Email,
+			Email:      user.UserEmail,
 			Note:       user.Note,
 		},
 	}
@@ -182,7 +181,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 	user.IsAdmin = req.User.IsAdmin
 	user.IsActive = req.User.IsActive
 	user.SessionTTL = req.User.SessionTtl
-	user.Email = req.User.Email
+	user.UserEmail = req.User.Username
 	user.Note = req.User.Note
 
 	err = a.st.UpdateUser(ctx, &user)

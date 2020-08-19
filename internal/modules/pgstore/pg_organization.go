@@ -527,7 +527,7 @@ func (ps *pgstore) DeleteOrganization(ctx context.Context, id int64) error {
 func (ps *pgstore) CreateOrganizationUser(ctx context.Context, organizationID int64, username string, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
 	var userID int64
 	err := ps.db.QueryRowContext(ctx, `
-		select id from user where username = $1;
+		select id from public.user where email = $1;
 	`, username).Scan(&userID)
 	if err != nil {
 		return errors.Wrap(err, "select error")
@@ -554,7 +554,7 @@ func (ps *pgstore) CreateOrganizationUser(ctx context.Context, organizationID in
 	}
 
 	log.WithFields(log.Fields{
-		"username":         username,
+		"email":            username,
 		"user id":          userID,
 		"organization_id":  organizationID,
 		"is_admin":         isAdmin,
