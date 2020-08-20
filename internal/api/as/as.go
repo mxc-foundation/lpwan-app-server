@@ -706,7 +706,7 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 	log.WithFields(log.Fields{
 		"gatewayID": gatewayID.String(),
 		"time":      ts.Format(time.RFC3339),
-	}).Warn("processing gateway stats")
+	}).Info("processing gateway stats")
 
 	err = storage.Transaction(func(tx sqlx.Ext) error {
 		gw, err := storage.GetGateway(ctx, tx, gatewayID, true)
