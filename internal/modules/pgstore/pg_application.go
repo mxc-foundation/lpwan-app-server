@@ -253,7 +253,7 @@ func (ps *pgstore) GetApplicationCount(ctx context.Context, filters store.Applic
 		filters.Search = "%" + filters.Search + "%"
 	}
 
-	query, args, err := sqlx.Named(`
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct a.*)
 		from

@@ -47,7 +47,7 @@ class WalletStore extends EventEmitter {
             });
 
             resp = await checkStatus(resp);
-            console.log('getMining', resp);
+            //console.log('getMining', resp);
             return resp.body;
         } catch (error) {
             errorHandler(error);
@@ -63,7 +63,7 @@ class WalletStore extends EventEmitter {
             });
 
             resp = await checkStatus(resp);
-            console.log('getMining', resp);
+            //console.log('getMining', resp);
             return resp.body;
         } catch (error) {
             errorHandler(error);

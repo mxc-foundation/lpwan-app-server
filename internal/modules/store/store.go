@@ -69,11 +69,11 @@ func (h *Handler) Tx(ctx context.Context, f func(context.Context, *Handler) erro
 		}
 		err = f(ctx, tx)
 		if err == nil {
-			if err = h.store.TxCommit(ctx); err == nil {
+			if err = tx.store.TxCommit(ctx); err == nil {
 				return nil
 			}
 		}
-		_ = h.store.TxRollback(ctx)
+		_ = tx.store.TxRollback(ctx)
 		if h.IsErrorRepeat(err) {
 			// failed due to the serialization error, try again
 			continue

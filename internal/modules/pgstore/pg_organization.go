@@ -401,7 +401,7 @@ func (ps *pgstore) GetOrganization(ctx context.Context, id int64, forUpdate bool
 
 // GetOrganizationCount returns the total number of organizations.
 func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters store.OrganizationFilters) (int, error) {
-	query, args, err := sqlx.Named(`
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct o.*)
 		from
@@ -426,7 +426,7 @@ func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters store.Organ
 
 // GetOrganizations returns a slice of organizations, sorted by name.
 func (ps *pgstore) GetOrganizations(ctx context.Context, filters store.OrganizationFilters) ([]store.Organization, error) {
-	query, args, err := sqlx.Named(`
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			o.*
 		from
