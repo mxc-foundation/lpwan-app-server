@@ -9,9 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -77,7 +74,7 @@ func Setup(conf config.Config) error {
 }
 
 func setupAPI(conf config.Config) (err error) {
-	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret)
+	/*	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret)*/
 	rpID, err := uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
@@ -85,12 +82,6 @@ func setupAPI(conf config.Config) (err error) {
 
 	grpcOpts := helpers.GetgRPCServerOptions()
 	grpcServer := grpc.NewServer(grpcOpts...)
-	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(validator))
-	pb.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
-	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(validator))
-	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(validator))
-	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(validator, rpID))
-	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(validator))
 
 	// API defined in external_cus.go
 	/*pb.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(validator))
@@ -102,7 +93,7 @@ func setupAPI(conf config.Config) (err error) {
 	pb.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
 	pb.RegisterInternalServiceServer(grpcServer, NewInternalAPI(validator))*/
 
-	if err := SetupCusAPI(grpcServer); err != nil {
+	if err := SetupCusAPI(grpcServer, rpID); err != nil {
 		return err
 	}
 

@@ -857,9 +857,15 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.st.DeleteGateway(ctx, mac)
-	if err != nil {
-		return nil, err
+	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		err := handler.DeleteGateway(ctx, mac)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
 	return &empty.Empty{}, nil

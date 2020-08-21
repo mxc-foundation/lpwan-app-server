@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lib/pq/hstore"
+
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
@@ -222,6 +224,8 @@ type Gateway struct {
 	Latitude           float64       `db:"latitude"`
 	Longitude          float64       `db:"longitude"`
 	Altitude           float64       `db:"altitude"`
+	Tags               hstore.Hstore `db:"tags"`
+	Metadata           hstore.Hstore `db:"metadata"`
 	Model              string        `db:"model"`
 	FirstHeartbeat     int64         `db:"first_heartbeat"`
 	LastHeartbeat      int64         `db:"last_heartbeat"`

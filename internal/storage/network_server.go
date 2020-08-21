@@ -34,6 +34,8 @@ type NetworkServer struct {
 	GatewayDiscoveryInterval    int       `db:"gateway_discovery_interval"`
 	GatewayDiscoveryTXFrequency int       `db:"gateway_discovery_tx_frequency"`
 	GatewayDiscoveryDR          int       `db:"gateway_discovery_dr"`
+	Version                     string    `db:"version"`
+	Region                      string    `db:"region"`
 }
 
 // Validate validates the network-server data.

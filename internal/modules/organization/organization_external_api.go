@@ -244,6 +244,7 @@ func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizatio
 
 	for _, u := range users {
 		row := pb.OrganizationUserListItem{
+			Username:       u.Email,
 			UserId:         u.UserID,
 			IsAdmin:        u.IsAdmin,
 			IsDeviceAdmin:  u.IsDeviceAdmin,
@@ -340,6 +341,7 @@ func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUs
 
 	resp := pb.GetOrganizationUserResponse{
 		OrganizationUser: &pb.OrganizationUser{
+			Username:       u.Email,
 			OrganizationId: req.OrganizationId,
 			UserId:         req.UserId,
 			IsAdmin:        u.IsAdmin,

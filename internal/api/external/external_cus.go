@@ -1,7 +1,9 @@
 package external
 
 import (
+	"github.com/gofrs/uuid"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -12,6 +14,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -33,13 +36,24 @@ import (
 	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 )
 
-func SetupCusAPI(grpcServer *grpc.Server) error {
+func getValidator(jwtValidator *jwt.JWTValidator) auth.Validator {
+	return jwtValidator
+}
+
+func SetupCusAPI(grpcServer *grpc.Server, rpID uuid.UUID) error {
 	jwtValidator := jwt.NewJWTValidator("HS256", []byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
 	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, pgstore.New(storage.DB().DB.DB))
 	if err != nil {
 		return err
 	}
 	authcus.SetupCred(authPg.New(storage.DB().DB), jwtValidator, otpValidator)
+
+	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(jwtValidator))
+	pb.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(jwtValidator))
+	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(jwtValidator))
+	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(jwtValidator))
+	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(jwtValidator, rpID))
+	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(jwtValidator))
 
 	// device
 	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(applicationServerID))

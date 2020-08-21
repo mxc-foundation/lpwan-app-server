@@ -531,18 +531,6 @@ func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 		}
 	}
 
-	res, err := ps.db.ExecContext(ctx, "delete from gateway where mac = $1", mac[:])
-	if err != nil {
-		return errors.Wrap(err, "delete error")
-	}
-	ra, err := res.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "get rows affected error")
-	}
-	if ra == 0 {
-		return errors.New("not exist")
-	}
-
 	n, err := ps.GetNetworkServerForGatewayMAC(ctx, mac)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
@@ -577,6 +565,18 @@ func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 	})
 	if err != nil && status.Code(err) != codes.NotFound {
 		log.WithError(err).Error("delete gateway from m2m-server error")
+	}
+
+	res, err := ps.db.ExecContext(ctx, "delete from gateway where mac = $1", mac[:])
+	if err != nil {
+		return errors.Wrap(err, "delete error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return errors.New("not exist")
 	}
 
 	log.WithFields(log.Fields{

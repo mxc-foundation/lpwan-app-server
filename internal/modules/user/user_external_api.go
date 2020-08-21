@@ -85,7 +85,8 @@ func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetU
 			SessionTtl: user.SessionTTL,
 			IsAdmin:    user.IsAdmin,
 			IsActive:   user.IsActive,
-			Email:      user.UserEmail,
+			Username:   user.UserEmail,
+			Email:      user.EmailOld,
 			Note:       user.Note,
 		},
 	}
@@ -142,6 +143,7 @@ func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Li
 
 	for _, u := range users {
 		row := inpb.UserListItem{
+			Username:   u.UserEmail,
 			Id:         u.ID,
 			SessionTtl: u.SessionTTL,
 			IsAdmin:    u.IsAdmin,

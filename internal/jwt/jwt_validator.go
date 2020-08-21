@@ -2,10 +2,13 @@ package jwt
 
 import (
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"regexp"
 	"strings"
 	"time"
 
+	jwt2 "github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwt"
@@ -30,11 +33,6 @@ type Claims struct {
 	// APIKeyID defines the API key ID.
 	APIKeyID uuid.UUID `json:"api_key_id"`
 }
-
-// ValidatorFunc defines the signature of a claim validator function.
-// It returns a bool indicating if the validation passed or failed and an
-// error in case an error occurred (e.g. db connectivity).
-type ValidatorFunc func(*Claims) (bool, error)
 
 // JWTValidator validates JWT tokens.
 type JWTValidator struct {
@@ -135,4 +133,62 @@ func getTokenFromContext(ctx context.Context) (string, error) {
 	}
 
 	return match[1], nil
+}
+
+func (v JWTValidator) Validate(ctx context.Context, funcs ...auth.ValidatorFunc) error {
+	claims, err := v.GetClaims(ctx, "")
+	if err != nil {
+		return err
+	}
+
+	claimsAuth := auth.Claims{
+		StandardClaims: jwt2.StandardClaims{Subject: "user"},
+		Username:       claims.Username,
+		UserID:         claims.UserID,
+		APIKeyID:       claims.APIKeyID,
+	}
+	for _, f := range funcs {
+		ok, err := f(storage.DB().DB, &claimsAuth)
+		if err != nil {
+			return errors.Wrap(err, "validator func error")
+		}
+		if ok {
+			return nil
+		}
+	}
+
+	return ErrNotAuthorized
+}
+
+// GetSubject returns the claim subject.
+func (v JWTValidator) GetSubject(ctx context.Context) (string, error) {
+	return "user", nil
+}
+
+// GetUser returns the user object.
+func (v JWTValidator) GetUser(ctx context.Context) (storage.User, error) {
+	claims, err := v.GetClaims(ctx, "")
+	if err != nil {
+		return storage.User{}, err
+	}
+
+	if claims.UserID != 0 {
+		return storage.GetUser(ctx, storage.DB().DB, claims.UserID)
+	}
+
+	if claims.Username != "" {
+		return storage.GetUserByEmail(ctx, storage.DB().DB, claims.Username)
+	}
+
+	return storage.User{}, errors.New("no username or user_id in claims")
+}
+
+// GetAPIKeyID returns the API key ID.
+func (v JWTValidator) GetAPIKeyID(ctx context.Context) (uuid.UUID, error) {
+	claims, err := v.GetClaims(ctx, "")
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return claims.APIKeyID, nil
 }

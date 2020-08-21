@@ -47,6 +47,7 @@ type User struct {
 	EmailOld      string    `db:"email_old"`
 	Note          string    `db:"note"`
 	ExternalID    *string   `db:"external_id"` // must be pointer for unique index
+	SecurityToken *string   `db:"security_token"`
 }
 
 // Validate validates the user data.

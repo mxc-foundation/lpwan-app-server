@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"os"
 	"os/signal"
 	"syscall"
@@ -53,6 +54,7 @@ func run(cmd *cobra.Command, args []string) error {
 		printStartMessage,
 		startPProf,
 		setupStorage,
+		setupNetworkserver,
 		setupClient,
 		migrateGatewayStats,
 		migrateToClusterKeys,
@@ -141,6 +143,14 @@ func setupCodec() error {
 		return errors.Wrap(err, "setup codec error")
 	}
 
+	return nil
+}
+
+func setupNetworkserver() error {
+	if err := networkserver.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup networkserver pool error")
+	}
+	
 	return nil
 }
 
