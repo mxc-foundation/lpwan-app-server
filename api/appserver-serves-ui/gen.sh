@@ -3,10 +3,8 @@
 GRPC_GW_PATH=`go list -f '{{ .Dir }}' github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway`
 GRPC_GW_PATH="${GRPC_GW_PATH}/../third_party/googleapis"
 
-PROTOBUF_PATH=`go list -f '{{ .Dir }}' github.com/golang/protobuf/ptypes`
-
 # generate the gRPC code
-protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=paths=source_relative,plugins=grpc:. \
+protoc -I. -I${GRPC_GW_PATH} --go_out=paths=source_relative,plugins=grpc:. \
   device.proto \
   application.proto \
   deviceQueue.proto \
@@ -30,7 +28,7 @@ protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --go_out=paths=source_relative,p
   staking.proto
 
 # generate the JSON interface code
-protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=paths=source_relative,logtostderr=true:. \
+protoc -I. -I${GRPC_GW_PATH} --grpc-gateway_out=paths=source_relative,logtostderr=true:. \
   device.proto \
   application.proto \
   deviceQueue.proto \
@@ -54,7 +52,7 @@ protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --grpc-gateway_out=paths=source_
   staking.proto
 
 # generate the swagger definitions
-protoc -I. -I${GRPC_GW_PATH} -I${PROTOBUF_PATH} --swagger_out=json_names_for_fields=true,simple_operation_ids=true:./swagger \
+protoc -I. -I${GRPC_GW_PATH} --swagger_out=json_names_for_fields=true,simple_operation_ids=true:./swagger \
   device.proto \
   application.proto \
   deviceQueue.proto \

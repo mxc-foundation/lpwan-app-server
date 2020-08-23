@@ -98,6 +98,7 @@ import HistoryLayout from "./views/history/HistoryLayout";
 
 import RedirectToMobile from "./views/controlPanel/redirectToMobile/RedirectToMobile"
 import SystemSettings from "./views/controlPanel/settings/Settings"
+import UpdateWithdrawFee from "./views/controlPanel/settings/UpdateWithdrawFee"
 
 //dashboard
 import Dashboard from "./views/dashboards/";
@@ -320,7 +321,7 @@ class LoggedInRoutes extends Component {
                 <Route exact path="/organizations/:organizationID(\d+)/users/:userID(\d+)"
                        component={OrganizationUserLayout}/>
                 <Route path="/organizations/:organizationID(\d+)" component={OrganizationLayout}/>
-                
+
                 <Route path="/history/:organizationID"
                        render={props =>
                            <HistoryLayout
@@ -340,6 +341,14 @@ class LoggedInRoutes extends Component {
                 <Route path="/control-panel/system-settings"
                        render={props =>
                            <SystemSettings
+                               {...props}
+                               switchToSidebarId={this.props.switchToSidebarId}
+                           />
+                       }
+                />
+                <Route path="/control-panel/withdraw-fee"
+                       render={props =>
+                           <UpdateWithdrawFee
                                {...props}
                                switchToSidebarId={this.props.switchToSidebarId}
                            />

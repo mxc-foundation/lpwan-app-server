@@ -179,10 +179,7 @@ func local_request_FUOTADeploymentService_List_0(ctx context.Context, marshaler 
 	var protoReq ListFUOTADeploymentRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_FUOTADeploymentService_List_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_FUOTADeploymentService_List_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -327,10 +324,7 @@ func local_request_FUOTADeploymentService_ListDeploymentDevices_0(ctx context.Co
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "fuota_deployment_id", err)
 	}
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_FUOTADeploymentService_ListDeploymentDevices_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_FUOTADeploymentService_ListDeploymentDevices_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -342,7 +336,6 @@ func local_request_FUOTADeploymentService_ListDeploymentDevices_0(ctx context.Co
 // RegisterFUOTADeploymentServiceHandlerServer registers the http handlers for service FUOTADeploymentService to "mux".
 // UnaryRPC     :call FUOTADeploymentServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterFUOTADeploymentServiceHandlerFromEndpoint instead.
 func RegisterFUOTADeploymentServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server FUOTADeploymentServiceServer) error {
 
 	mux.Handle("POST", pattern_FUOTADeploymentService_CreateForDevice_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

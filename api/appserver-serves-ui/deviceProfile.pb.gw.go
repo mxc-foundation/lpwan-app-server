@@ -267,10 +267,7 @@ func local_request_DeviceProfileService_List_0(ctx context.Context, marshaler ru
 	var protoReq ListDeviceProfileRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceProfileService_List_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceProfileService_List_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -282,7 +279,6 @@ func local_request_DeviceProfileService_List_0(ctx context.Context, marshaler ru
 // RegisterDeviceProfileServiceHandlerServer registers the http handlers for service DeviceProfileService to "mux".
 // UnaryRPC     :call DeviceProfileServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterDeviceProfileServiceHandlerFromEndpoint instead.
 func RegisterDeviceProfileServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DeviceProfileServiceServer) error {
 
 	mux.Handle("POST", pattern_DeviceProfileService_Create_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

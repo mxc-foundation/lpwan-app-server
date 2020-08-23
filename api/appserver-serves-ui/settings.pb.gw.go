@@ -86,7 +86,6 @@ func local_request_SettingsService_ModifySettings_0(ctx context.Context, marshal
 // RegisterSettingsServiceHandlerServer registers the http handlers for service SettingsService to "mux".
 // UnaryRPC     :call SettingsServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterSettingsServiceHandlerFromEndpoint instead.
 func RegisterSettingsServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server SettingsServiceServer) error {
 
 	mux.Handle("GET", pattern_SettingsService_GetSettings_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

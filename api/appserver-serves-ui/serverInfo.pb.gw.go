@@ -89,7 +89,6 @@ func local_request_ServerInfoService_GetMxprotocolServerVersion_0(ctx context.Co
 // RegisterServerInfoServiceHandlerServer registers the http handlers for service ServerInfoService to "mux".
 // UnaryRPC     :call ServerInfoServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterServerInfoServiceHandlerFromEndpoint instead.
 func RegisterServerInfoServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ServerInfoServiceServer) error {
 
 	mux.Handle("GET", pattern_ServerInfoService_GetAppserverVersion_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

@@ -267,10 +267,7 @@ func local_request_GatewayProfileService_List_0(ctx context.Context, marshaler r
 	var protoReq ListGatewayProfilesRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_GatewayProfileService_List_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_GatewayProfileService_List_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -282,7 +279,6 @@ func local_request_GatewayProfileService_List_0(ctx context.Context, marshaler r
 // RegisterGatewayProfileServiceHandlerServer registers the http handlers for service GatewayProfileService to "mux".
 // UnaryRPC     :call GatewayProfileServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterGatewayProfileServiceHandlerFromEndpoint instead.
 func RegisterGatewayProfileServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server GatewayProfileServiceServer) error {
 
 	mux.Handle("POST", pattern_GatewayProfileService_Create_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

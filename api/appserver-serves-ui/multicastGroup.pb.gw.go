@@ -267,10 +267,7 @@ func local_request_MulticastGroupService_List_0(ctx context.Context, marshaler r
 	var protoReq ListMulticastGroupRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_MulticastGroupService_List_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_MulticastGroupService_List_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -606,7 +603,6 @@ func local_request_MulticastGroupService_ListQueue_0(ctx context.Context, marsha
 // RegisterMulticastGroupServiceHandlerServer registers the http handlers for service MulticastGroupService to "mux".
 // UnaryRPC     :call MulticastGroupServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterMulticastGroupServiceHandlerFromEndpoint instead.
 func RegisterMulticastGroupServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server MulticastGroupServiceServer) error {
 
 	mux.Handle("POST", pattern_MulticastGroupService_Create_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

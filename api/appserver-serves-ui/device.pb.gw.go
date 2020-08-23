@@ -143,10 +143,7 @@ func local_request_DeviceService_List_0(ctx context.Context, marshaler runtime.M
 	var protoReq ListDeviceRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceService_List_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceService_List_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -889,10 +886,7 @@ func local_request_DeviceService_GetDeviceList_0(ctx context.Context, marshaler 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "org_id", err)
 	}
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceService_GetDeviceList_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceService_GetDeviceList_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -1059,10 +1053,7 @@ func local_request_DeviceService_GetDeviceHistory_0(ctx context.Context, marshal
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "dev_id", err)
 	}
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DeviceService_GetDeviceHistory_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_DeviceService_GetDeviceHistory_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -1166,7 +1157,6 @@ func local_request_DeviceService_SetDeviceMode_0(ctx context.Context, marshaler 
 // RegisterDeviceServiceHandlerServer registers the http handlers for service DeviceService to "mux".
 // UnaryRPC     :call DeviceServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterDeviceServiceHandlerFromEndpoint instead.
 func RegisterDeviceServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DeviceServiceServer) error {
 
 	mux.Handle("POST", pattern_DeviceService_Create_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

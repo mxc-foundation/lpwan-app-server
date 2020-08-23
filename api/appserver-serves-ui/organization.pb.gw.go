@@ -55,10 +55,7 @@ func local_request_OrganizationService_List_0(ctx context.Context, marshaler run
 	var protoReq ListOrganizationRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_OrganizationService_List_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_OrganizationService_List_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -339,10 +336,7 @@ func local_request_OrganizationService_ListUsers_0(ctx context.Context, marshale
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "organization_id", err)
 	}
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_OrganizationService_ListUsers_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_OrganizationService_ListUsers_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -668,7 +662,6 @@ func local_request_OrganizationService_DeleteUser_0(ctx context.Context, marshal
 // RegisterOrganizationServiceHandlerServer registers the http handlers for service OrganizationService to "mux".
 // UnaryRPC     :call OrganizationServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterOrganizationServiceHandlerFromEndpoint instead.
 func RegisterOrganizationServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server OrganizationServiceServer) error {
 
 	mux.Handle("GET", pattern_OrganizationService_List_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
