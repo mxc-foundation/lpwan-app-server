@@ -2,8 +2,9 @@ package mining
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/brocaar/lorawan"
 	log "github.com/sirupsen/logrus"

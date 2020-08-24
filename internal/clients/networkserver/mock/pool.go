@@ -2,8 +2,6 @@ package mock
 
 import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 )
 
 // Pool is a network-server pool for testing.
@@ -20,7 +18,7 @@ func (p *Pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (ns.NetworkS
 
 // NewPool creates a network-server client pool which always
 // returns the given client on Get.
-func NewPool(client ns.NetworkServerServiceClient) nsconn.Pool {
+func NewPool(client ns.NetworkServerServiceClient) *Pool {
 	return &Pool{
 		Client: client,
 	}

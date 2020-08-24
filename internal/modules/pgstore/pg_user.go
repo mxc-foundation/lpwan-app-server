@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"

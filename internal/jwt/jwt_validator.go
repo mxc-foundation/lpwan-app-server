@@ -2,11 +2,12 @@ package jwt
 
 import (
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	jwt2 "github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"

@@ -3,9 +3,10 @@ package store
 import (
 	"context"
 	"errors"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"regexp"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 )
 
 type UserStore interface {

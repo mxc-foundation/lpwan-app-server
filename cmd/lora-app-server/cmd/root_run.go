@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"

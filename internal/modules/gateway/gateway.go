@@ -3,9 +3,10 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"os"
 	"strings"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/pkg/errors"
 	"github.com/robfig/cron"

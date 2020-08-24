@@ -35,6 +35,20 @@ localDevelopTemplate = \
           - seccomp:unconfined
         cap_add:
           - SYS_PTRACE
+      
+      gatewaybridge:
+        image: mxcdocker/chirpstack-gateway-bridge
+        ports:
+          - 1700:1700/udp
+        volumes:
+          - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
+        restart: always
+    
+      geoserver:
+        image: chirpstack/chirpstack-geolocation-server:3
+        volumes:
+          - ./configuration/chirpstack-geolocation-server:/etc/chirpstack-geolocation-server
+        restart: always 
           
       appserver:
         build:

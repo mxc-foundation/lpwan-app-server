@@ -1,8 +1,9 @@
 package m2m
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/notification"
 	"net"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/notification"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -46,7 +47,7 @@ func listenWithCredentials(bind, caCert, tlsCert, tlsKey string) error {
 	pb.RegisterDeviceM2MServiceServer(gs, device.NewDeviceM2MAPI())
 	pb.RegisterGatewayM2MServiceServer(gs, gateway.NewGatewayM2MAPI())
 	pb.RegisterNotificationServiceServer(gs, notification.NewNotificationAPI())
-	
+
 	ln, err := net.Listen("tcp", bind)
 	if err != nil {
 		return errors.Wrap(err, "listenWithCredentials: start api listener error")
