@@ -115,6 +115,25 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	var region string
+	var version string
+
+	nStruct := &nscli.NSStruct{
+		Server:  req.NetworkServer.Server,
+		CACert:  req.NetworkServer.CaCert,
+		TLSCert: req.NetworkServer.TlsCert,
+		TLSKey:  req.NetworkServer.TlsKey,
+	}
+	nsClient, err := nStruct.GetNetworkServiceClient()
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
+	if err == nil {
+		region = res.Region.String()
+		version = res.Version
+	}
 	networkServer := store.NetworkServer{
 		Name:                        req.NetworkServer.Name,
 		Server:                      req.NetworkServer.Server,
@@ -128,6 +147,8 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		GatewayDiscoveryInterval:    int(req.NetworkServer.GatewayDiscoveryInterval),
 		GatewayDiscoveryTXFrequency: int(req.NetworkServer.GatewayDiscoveryTxFrequency),
 		GatewayDiscoveryDR:          int(req.NetworkServer.GatewayDiscoveryDr),
+		Region:                      region,
+		Version:                     version,
 	}
 
 	if err := a.st.CreateNetworkServer(ctx, &networkServer); err != nil {

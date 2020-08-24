@@ -251,13 +251,13 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *store.Device, applicatio
 	d.UpdatedAt = time.Now()
 
 	_, err := ps.db.ExecContext(ctx, `
-        insert into device (
-            dev_eui,
-            created_at,
-            updated_at,
-            application_id,
-            device_profile_id,
-            name,
+		insert into device (
+			dev_eui,
+			created_at,
+			updated_at,
+			application_id,
+			device_profile_id,
+			name,
 			description,
 			device_status_battery,
 			device_status_margin,
@@ -268,8 +268,10 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *store.Device, applicatio
 			altitude,
 			dr,
 			variables,
-			tags
-        ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+			tags,
+			dev_addr,
+			app_s_key
+		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
 		d.DevEUI[:],
 		d.CreatedAt,
 		d.UpdatedAt,
@@ -287,6 +289,8 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *store.Device, applicatio
 		d.DR,
 		d.Variables,
 		d.Tags,
+		d.DevAddr[:],
+		d.AppSKey,
 	)
 	if err != nil {
 		return errors.Wrap(err, "insert error")

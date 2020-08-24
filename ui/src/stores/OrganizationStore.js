@@ -149,8 +149,8 @@ class OrganizationStore extends EventEmitter {
         try {
             const client = await this.swagger;
             let resp = await client.apis.OrganizationService.UpdateUser({
-                "organizationUser.organizationId": organizationUser.organizationID,
-                "organizationUser.userId": organizationUser.userID,
+                "organizationUser.organizationID": organizationUser.organizationID,
+                "organizationUser.userID": organizationUser.userID,
                 body: {
                     organizationUser: organizationUser,
                 },

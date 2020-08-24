@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 
@@ -40,14 +38,12 @@ type txDB interface {
 type pgstore struct {
 	db   DB
 	txDB txDB
-	pwh  *pwhash.PasswordHasher
 }
 
 // New returns a new database access layer for other stores
-func New(db DB, pwh *pwhash.PasswordHasher) store.Store {
+func New(db DB) store.Store {
 	return &pgstore{
-		db:  db,
-		pwh: pwh,
+		db: db,
 	}
 }
 

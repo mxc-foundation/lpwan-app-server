@@ -46,7 +46,7 @@ func NewInternalUserAPI() *InternalUserAPI {
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
 	userEmail := normalizeUsername(req.Username)
-	err := a.st.LoginUserByPassword(ctx, userEmail, req.Password)
+	err := a.st.LoginUserByPassword(ctx, userEmail, req.Password, Service.pwh)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -515,7 +515,7 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 			if err := pr.SetOTP(ctx, ""); err != nil {
 				return status.Errorf(codes.Internal, "couldn't update db: %v", err)
 			}
-			if err := handler.UpdatePassword(ctx, pr.UserID, req.NewPassword); err != nil {
+			if err := handler.UpdatePassword(ctx, pr.UserID, req.NewPassword, Service.pwh); err != nil {
 				return status.Errorf(codes.Internal, "couldn't update db: %v", err)
 			}
 			return nil
@@ -582,7 +582,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 			CanHaveGateways: true,
 		}
 
-		err = handler.FinishRegistration(ctx, req.UserId, req.Password)
+		err = handler.FinishRegistration(ctx, req.UserId, req.Password, Service.pwh)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}

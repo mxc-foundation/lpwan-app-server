@@ -48,7 +48,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 	}
 
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		err := handler.CreateUser(ctx, &user)
+		err := handler.CreateUser(ctx, &user, Service.pwh)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -214,7 +214,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswo
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.st.UpdatePassword(ctx, req.UserId, req.Password)
+	err := a.st.UpdatePassword(ctx, req.UserId, req.Password, Service.pwh)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

@@ -24,7 +24,7 @@ class DeviceStore extends EventEmitter {
 
     getDeviceList(orgId, offset, limit, callbackFunc, errorCallbackFunc) {
         this.swagger.then(client => {
-            client.apis.DSDeviceService.GetDeviceList({
+            client.apis.DeviceService.GetDeviceList({
                 orgId,
                 offset,
                 limit
@@ -43,7 +43,7 @@ class DeviceStore extends EventEmitter {
 
     getDeviceHistory(orgId, devId, offset, limit, callbackFunc) {
         this.swagger.then(client => {
-            client.apis.DSDeviceService.GetDeviceHistory({
+            client.apis.DeviceService.GetDeviceHistory({
                 orgId,
                 devId,
                 offset,
@@ -59,7 +59,7 @@ class DeviceStore extends EventEmitter {
 
     setDeviceMode(orgId, devId, devMode, callbackFunc) {
         this.swagger.then(client => {
-            client.apis.DSDeviceService.SetDeviceMode({
+            client.apis.DeviceService.SetDeviceMode({
                 "orgId": orgId,
                 "devId": devId,
                 body: {

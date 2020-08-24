@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"strings"
 	"time"
 
@@ -202,12 +203,12 @@ func (ps *pgstore) CheckUpdateProfileUserAccess(ctx context.Context, userEmail s
 }
 
 // CreateUser creates the given user.
-func (ps *pgstore) CreateUser(ctx context.Context, user *store.User) error {
+func (ps *pgstore) CreateUser(ctx context.Context, user *store.User, pwh *pwhash.PasswordHasher) error {
 	if err := user.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := ps.pwh.HashPassword(user.Password)
+	pwHash, err := pwh.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
@@ -431,33 +432,13 @@ func (ps *pgstore) DeleteUser(ctx context.Context, id int64) error {
 	return nil
 }
 
-// CheckPassword returns an error if the password for the user is not valid
-func (ps *pgstore) CheckPassword(ctx context.Context, userEmail string, password string) error {
-	// Find the user by userEmail
-	var user store.User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return errors.Wrap(err, "invalid email")
-		}
-		return errors.Wrap(err, "select error")
-	}
-
-	// Compare the passed in password with the hash in the database.
-	if err := ps.pwh.Validate(password, user.PasswordHash); err != nil {
-		return errors.Wrap(err, "password doesn't match email")
-	}
-
-	return nil
-}
-
 // UpdatePassword updates the user with the new password.
-func (ps *pgstore) UpdatePassword(ctx context.Context, id int64, newpassword string) error {
+func (ps *pgstore) UpdatePassword(ctx context.Context, id int64, newpassword string, pwh *pwhash.PasswordHasher) error {
 	if err := store.ValidatePassword(newpassword); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := ps.pwh.HashPassword(newpassword)
+	pwHash, err := pwh.HashPassword(newpassword)
 	if err != nil {
 		return err
 	}
@@ -478,7 +459,7 @@ func (ps *pgstore) UpdatePassword(ctx context.Context, id int64, newpassword str
 }
 
 // LoginUserByPassword checks the password for the user matching the given email
-func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, password string) error {
+func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, password string, pwh *pwhash.PasswordHasher) error {
 	// get the user by userEmail
 	var user store.User
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
@@ -490,7 +471,7 @@ func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, pa
 	}
 
 	// Compare the passed in password with the hash in the database.
-	if err := ps.pwh.Validate(password, user.PasswordHash); err != nil {
+	if err := pwh.Validate(password, user.PasswordHash); err != nil {
 		return errors.Wrap(err, "password doesn't match email")
 	}
 
@@ -637,12 +618,12 @@ func (ps *pgstore) GetTokenByUsername(ctx context.Context, userEmail string) (st
 }
 
 // FinishRegistration ...
-func (ps *pgstore) FinishRegistration(ctx context.Context, userID int64, password string) error {
+func (ps *pgstore) FinishRegistration(ctx context.Context, userID int64, password string, pwh *pwhash.PasswordHasher) error {
 	if err := store.ValidatePassword(password); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwdHash, err := ps.pwh.HashPassword(password)
+	pwdHash, err := pwh.HashPassword(password)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,6 @@ package pgstore
 
 import (
 	"context"
-
 	"github.com/pkg/errors"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"

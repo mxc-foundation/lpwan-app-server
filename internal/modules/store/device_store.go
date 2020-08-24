@@ -142,25 +142,28 @@ func (f DeviceFilters) SQL() string {
 
 // Device defines a LoRaWAN device.
 type Device struct {
-	DevEUI                    lorawan.EUI64 `db:"dev_eui"`
-	CreatedAt                 time.Time     `db:"created_at"`
-	UpdatedAt                 time.Time     `db:"updated_at"`
-	LastSeenAt                *time.Time    `db:"last_seen_at"`
-	ApplicationID             int64         `db:"application_id"`
-	DeviceProfileID           uuid.UUID     `db:"device_profile_id"`
-	Name                      string        `db:"name"`
-	Description               string        `db:"description"`
-	SkipFCntCheck             bool          `db:"-"`
-	ReferenceAltitude         float64       `db:"-"`
-	DeviceStatusBattery       *float32      `db:"device_status_battery"`
-	DeviceStatusMargin        *int          `db:"device_status_margin"`
-	DeviceStatusExternalPower bool          `db:"device_status_external_power_source"`
-	DR                        *int          `db:"dr"`
-	Latitude                  *float64      `db:"latitude"`
-	Longitude                 *float64      `db:"longitude"`
-	Altitude                  *float64      `db:"altitude"`
-	Variables                 hstore.Hstore `db:"variables"`
-	Tags                      hstore.Hstore `db:"tags"`
+	DevEUI                    lorawan.EUI64     `db:"dev_eui"`
+	CreatedAt                 time.Time         `db:"created_at"`
+	UpdatedAt                 time.Time         `db:"updated_at"`
+	LastSeenAt                *time.Time        `db:"last_seen_at"`
+	ApplicationID             int64             `db:"application_id"`
+	DeviceProfileID           uuid.UUID         `db:"device_profile_id"`
+	Name                      string            `db:"name"`
+	Description               string            `db:"description"`
+	SkipFCntCheck             bool              `db:"-"`
+	ReferenceAltitude         float64           `db:"-"`
+	DeviceStatusBattery       *float32          `db:"device_status_battery"`
+	DeviceStatusMargin        *int              `db:"device_status_margin"`
+	DeviceStatusExternalPower bool              `db:"device_status_external_power_source"`
+	DR                        *int              `db:"dr"`
+	Latitude                  *float64          `db:"latitude"`
+	Longitude                 *float64          `db:"longitude"`
+	Altitude                  *float64          `db:"altitude"`
+	Variables                 hstore.Hstore     `db:"variables"`
+	Tags                      hstore.Hstore     `db:"tags"`
+	DevAddr                   lorawan.DevAddr   `db:"dev_addr"`
+	AppSKey                   lorawan.AES128Key `db:"app_s_key"`
+	IsDisabled                bool              `db:"-"`
 }
 
 // DeviceListItem defines the Device as list item.

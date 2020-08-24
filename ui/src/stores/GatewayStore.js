@@ -19,7 +19,7 @@ class GatewayStore extends EventEmitter {
 
     getGatewayList(orgId, offset, limit, callbackFunc) {
         this.swagger.then(client => {
-            client.apis.GSGatewayService.GetGatewayList({
+            client.apis.GatewayService.GetGatewayList({
                 orgId,
                 offset,
                 limit
@@ -34,7 +34,7 @@ class GatewayStore extends EventEmitter {
 
     getGatewayProfile(gwId, callbackFunc) {
         this.swagger.then(client => {
-            client.apis.GSGatewayService.GetGatewayProfile({
+            client.apis.GatewayService.GetGatewayProfile({
                 gwId,
             })
                 .then(checkStatus)
@@ -47,7 +47,7 @@ class GatewayStore extends EventEmitter {
 
     getGatewayHistory(orgId, gwId, offset, limit, callbackFunc) {
         this.swagger.then(client => {
-            client.apis.GSGatewayService.GetGatewayHistory({
+            client.apis.GatewayService.GetGatewayHistory({
                 orgId,
                 gwId,
                 offset,
@@ -63,7 +63,7 @@ class GatewayStore extends EventEmitter {
 
     setGatewayMode(orgId, gwId, gwMode, callbackFunc) {
         this.swagger.then(client => {
-            client.apis.GSGatewayService.SetGatewayMode({
+            client.apis.GatewayService.SetGatewayMode({
                 "orgId": orgId,
                 "gwId": gwId,
                 body: {

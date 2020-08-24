@@ -190,8 +190,10 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *store.NetworkServ
 			gateway_discovery_enabled,
 			gateway_discovery_interval,
 			gateway_discovery_tx_frequency,
-			gateway_discovery_dr
-		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+			gateway_discovery_dr,
+			region,
+			version
+		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 		returning id`,
 		n.CreatedAt,
 		n.UpdatedAt,
@@ -207,6 +209,8 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *store.NetworkServ
 		n.GatewayDiscoveryInterval,
 		n.GatewayDiscoveryTXFrequency,
 		n.GatewayDiscoveryDR,
+		n.Region,
+		n.Version,
 	)
 	if err != nil {
 		return errors.Wrap(err, "insert error")

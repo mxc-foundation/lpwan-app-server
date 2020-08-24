@@ -69,10 +69,10 @@ func (h *Handler) AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig 
 	return h.store.AddNewDefaultGatewayConfig(ctx, defaultConfig)
 }
 func (h *Handler) UpdateDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
-	return h.store.AddNewDefaultGatewayConfig(ctx, defaultConfig)
+	return h.store.UpdateDefaultGatewayConfig(ctx, defaultConfig)
 }
 func (h *Handler) GetDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
-	return h.store.AddNewDefaultGatewayConfig(ctx, defaultConfig)
+	return h.store.GetDefaultGatewayConfig(ctx, defaultConfig)
 }
 
 func (h *Handler) AddGatewayFirmware(ctx context.Context, gwFw *GatewayFirmware) (model string, err error) {
