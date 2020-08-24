@@ -92,6 +92,9 @@ static/swagger/api.swagger.json:
 
 
 # shortcuts for development
+dev-requirements:
+	go install github.com/jteeuwen/go-bindata/go-bindata
+
 ui-requirements:
 	@echo "Installing UI requirements"
 	@cd ui && npm install
