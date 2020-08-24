@@ -1,5 +1,5 @@
-stages: 
-  - test 
+stages:
+  - test
   - build
   - release-private
   - release-public
@@ -24,20 +24,20 @@ react_test_frontend:
   tags:
     - kubernetes
 
-golangci-lint:
-  image: golangci/golangci-lint:v1.26.0
-  stage: test
-  before_script:
-    - go install github.com/jteeuwen/go-bindata/go-bindata
-    - make internal/statics
-  script:
-    - golangci-lint run --new-from-rev origin/master ./...
-  tags:
-    - kubernetes
-  except:
-    - master
-    - /crowdin/
-    - /l10n/
+#golangci-lint:
+#  image: golangci/golangci-lint:v1.26.0
+#  stage: test
+#  before_script:
+#    - go install github.com/jteeuwen/go-bindata/go-bindata
+#    - make internal/statics
+#  script:
+#    - golangci-lint run --new-from-rev origin/master ./...
+#  tags:
+#    - kubernetes
+#  except:
+#    - master
+#    - /crowdin/
+#    - /l10n/
 
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -46,7 +46,7 @@ variables:
 build_image:
   stage: build
   image: docker:19.03.0
-  before_script: 
+  before_script:
     - apk add --no-cache ca-certificates make git bash
   services:
     - docker:19.03.0-dind
@@ -71,7 +71,7 @@ build_image:
 tag_gitlab_image:
   stage: release-private
   image: docker:19.03.0
-  before_script: 
+  before_script:
     - apk add --no-cache ca-certificates make git bash
   services:
     - docker:19.03.0-dind
@@ -97,7 +97,7 @@ tag_gitlab_image:
 tag_dockerhub_image:
   stage: release-public
   image: docker:19.03.0
-  before_script: 
+  before_script:
     - apk add --no-cache ca-certificates make git bash
   services:
     - docker:19.03.0-dind
@@ -121,13 +121,13 @@ tag_dockerhub_image:
   tags:
     - kubernetes
 
-deploy_review: 
+deploy_review:
   stage: deploy
   image: alpine
   environment:
     name: staging
     url: $STAGINGURL
-  before_script: 
+  before_script:
     - apk add --no-cache curl
   script:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
@@ -136,13 +136,13 @@ deploy_review:
   tags:
     - kubernetes
 
-deploy_test_cloud: 
+deploy_test_cloud:
   stage: deploy
   image: alpine
   environment:
     name: preprod
     url: $PREPRODURL
-  before_script: 
+  before_script:
     - apk add --no-cache curl
   script:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCLOUD https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
@@ -151,13 +151,13 @@ deploy_test_cloud:
   tags:
     - kubernetes
 
-deploy_test_china: 
+deploy_test_china:
   stage: deploy
   image: alpine
   environment:
     name: preprodcn
     url: $PREPRODCNURL
-  before_script: 
+  before_script:
     - apk add --no-cache curl
   script:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCHINA https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
