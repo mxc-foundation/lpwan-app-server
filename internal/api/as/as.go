@@ -703,6 +703,14 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "time error"))
 	}
+
+	if diff := time.Since(ts); diff > time.Minute || diff < -time.Minute {
+		log.WithFields(log.Fields{
+			"gatewayID":   gatewayID.String(),
+			"gatewayTime": ts.Format(time.RFC3339),
+			"appsrvTime":  time.Now().Format(time.RFC3339),
+		}).Warn("time difference with gateway")
+	}
 	log.WithFields(log.Fields{
 		"gatewayID": gatewayID.String(),
 		"time":      ts.Format(time.RFC3339),
