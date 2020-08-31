@@ -1,130 +1,131 @@
-version: "2"
-services:
-  network-server:
-    build:
-      context: ../lpwan-server
-      dockerfile: Dockerfile-devel
-    volumes:
-      - ../lpwan-server/configuration:/etc/network-server
-      - ../lpwan-server:/network-server
-    tty: true
 
-  mxprotocol-server:
-    build:
-      context: ../mxprotocol-server
-      dockerfile: Dockerfile-devel
-    volumes:
-      - ../mxprotocol-server/configuration:/etc/mxprotocol-server
-      - ../mxprotocol-server:/mxprotocol-server
-    links:
-      - network-server
-      - postgresql
-      - redis
-      - mosquitto
-    environment:
-      - APPSERVER=http://localhost:8080
-      - MXPROTOCOL_SERVER=http://localhost:4000
-    tty: true
-    ports:
-      - 4000:4000
-    security_opt:
-      - seccomp:unconfined
-    cap_add:
-      - SYS_PTRACE
-
-  gatewaybridge:
-    image: mxcdocker/chirpstack-gateway-bridge
-    ports:
-      - 1700:1700/udp
-    volumes:
-      - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
-    restart: always
-
-  geoserver:
-    image: chirpstack/chirpstack-geolocation-server:3
-    volumes:
-      - ./configuration/chirpstack-geolocation-server:/etc/chirpstack-geolocation-server
-    restart: always
-
-  web-ui:
-    build:
-      context: ./ui
-      dockerfile: Dockerfile
-    volumes:
-      - ./ui:/web-ui
-      - ./ui/conf.d:/etc/nginx/conf.d
-    ports:
-      - 8080:8080
-    tty: true
-
-  appserver:
-    build:
-      context: .
-      dockerfile: Dockerfile-devel
-    volumes:
-      - ./configuration:/etc/lora-app-server
-      - ./:/lora-app-server
-    links:
-      - network-server
-      - mxprotocol-server
-      - postgres
-      - redis
-      - mosquitto
-      - rabbitmq
-      - zookeeper
-      - kafka
-      - web-ui
-    ports:
-      - 8004:8004
-      - 8005:8005
-    environment:
-      - SUPERNODE_DATA_SERVICE=local
-      - TEST_POSTGRES_DSN=postgres://chirpstack_as:chirpstack_as@postgres/chirpstack_as?sslmode=disable
-      - TEST_REDIS_URL=redis://redis:6379
-      - TEST_MQTT_SERVER=tcp://mosquitto:1883
-      - TEST_RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-      - TEST_KAFKA_BROKER=kafka:9092
-    env_file:
-      - ./config
-    security_opt:
-      - seccomp:unconfined
-    cap_add:
-      - SYS_PTRACE
-    tty: true
-
-  postgresql:
-    image: postgres:9.6-alpine
-    volumes:
-      - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
-    environment:
-      - POSTGRES_PASSWORD=local_superuser_pass
-
-  redis:
-    image: redis:5-alpine
-
-  mosquitto:
-    image: eclipse-mosquitto
-
-  postgres:
-    image: postgres:9.6-alpine
-    environment:
-      - POSTGRES_HOST_AUTH_METHOD=trust
-    volumes:
-      - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
-
-  rabbitmq:
-    image: rabbitmq:3-alpine
-
-  zookeeper:
-    image: 'bitnami/zookeeper:3'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-
-  kafka:
-    image: 'bitnami/kafka:2'
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-    depends_on:
-      - zookeeper
+    version: "2"
+    services:  
+      network-server:
+        build:
+          context: ../lpwan-server
+          dockerfile: Dockerfile-devel
+        volumes:
+          - ../lpwan-server/configuration:/etc/network-server
+          - ../lpwan-server:/network-server
+        tty: true
+          
+      mxprotocol-server:
+        build:
+          context: ../mxprotocol-server
+          dockerfile: Dockerfile-devel
+        volumes:
+          - ../mxprotocol-server/configuration:/etc/mxprotocol-server
+          - ../mxprotocol-server:/mxprotocol-server
+        links:
+          - network-server
+          - postgresql
+          - redis
+          - mosquitto
+        environment:
+          - APPSERVER=http://localhost:8080
+          - MXPROTOCOL_SERVER=http://localhost:4000
+        tty: true
+        ports:
+          - 4000:4000
+        security_opt:
+          - seccomp:unconfined
+        cap_add:
+          - SYS_PTRACE
+      
+      gatewaybridge:
+        image: mxcdocker/chirpstack-gateway-bridge
+        ports:
+          - 1700:1700/udp
+        volumes:
+          - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
+        restart: always
+    
+      geoserver:
+        image: chirpstack/chirpstack-geolocation-server:3
+        volumes:
+          - ./configuration/chirpstack-geolocation-server:/etc/chirpstack-geolocation-server
+        restart: always 
+      
+      web-ui:
+        build:
+          context: ../supernode/appserver-frontend
+          dockerfile: Dockerfile
+        volumes:
+          - ../supernode/appserver-frontend:/web-ui
+        ports:
+          - 3001:3001
+        tty: true
+        
+      appserver:
+        build:
+          context: .
+          dockerfile: Dockerfile-devel
+        volumes:
+          - ./configuration:/etc/lora-app-server
+          - ./:/lora-app-server
+        links:
+          - network-server
+          - mxprotocol-server
+          - postgres
+          - redis
+          - mosquitto
+          - rabbitmq
+          - zookeeper
+          - kafka
+          - web-ui
+        ports:
+          - 8080:8080
+          - 8004:8004
+          - 8005:8005
+        environment:
+          - SUPERNODE_DATA_SERVICE=local
+          - TEST_POSTGRES_DSN=postgres://chirpstack_as:chirpstack_as@postgres/chirpstack_as?sslmode=disable
+          - TEST_REDIS_URL=redis://redis:6379
+          - TEST_MQTT_SERVER=tcp://mosquitto:1883
+          - TEST_RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+          - TEST_KAFKA_BROKER=kafka:9092
+        env_file:
+          - ./config
+        security_opt:
+          - seccomp:unconfined
+        cap_add:
+          - SYS_PTRACE
+        tty: true
+    
+      postgresql:
+        image: postgres:9.6-alpine
+        volumes:
+          - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
+        environment:
+          - POSTGRES_PASSWORD=local_superuser_pass
+    
+      redis:
+        image: redis:5-alpine
+    
+      mosquitto:
+        image: eclipse-mosquitto
+    
+      postgres:
+        image: postgres:9.6-alpine
+        environment:
+          - POSTGRES_HOST_AUTH_METHOD=trust
+        volumes:
+          - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
+    
+      rabbitmq:
+        image: rabbitmq:3-alpine
+    
+      zookeeper:
+        image: 'bitnami/zookeeper:3'
+        environment:
+          - ALLOW_ANONYMOUS_LOGIN=yes
+          
+      kafka:
+        image: 'bitnami/kafka:2'
+        environment:
+          - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+          - ALLOW_PLAINTEXT_LISTENER=yes
+        depends_on:
+          - zookeeper
     

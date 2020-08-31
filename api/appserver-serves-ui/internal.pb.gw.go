@@ -160,7 +160,10 @@ func local_request_InternalService_GlobalSearch_0(ctx context.Context, marshaler
 	var protoReq GlobalSearchRequest
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_InternalService_GlobalSearch_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_InternalService_GlobalSearch_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -530,6 +533,7 @@ func local_request_InternalService_ConfirmPasswordReset_0(ctx context.Context, m
 // RegisterInternalServiceHandlerServer registers the http handlers for service InternalService to "mux".
 // UnaryRPC     :call InternalServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterInternalServiceHandlerFromEndpoint instead.
 func RegisterInternalServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server InternalServiceServer) error {
 
 	mux.Handle("POST", pattern_InternalService_Login_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

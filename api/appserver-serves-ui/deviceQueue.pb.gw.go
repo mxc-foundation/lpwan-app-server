@@ -212,6 +212,7 @@ func local_request_DeviceQueueService_List_0(ctx context.Context, marshaler runt
 // RegisterDeviceQueueServiceHandlerServer registers the http handlers for service DeviceQueueService to "mux".
 // UnaryRPC     :call DeviceQueueServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterDeviceQueueServiceHandlerFromEndpoint instead.
 func RegisterDeviceQueueServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DeviceQueueServiceServer) error {
 
 	mux.Handle("POST", pattern_DeviceQueueService_Enqueue_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

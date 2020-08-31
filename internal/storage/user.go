@@ -1,7 +1,12 @@
 package storage
 
 import (
+	"context"
+	"database/sql"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
 )
 
 // User defines the user structure.
@@ -21,31 +26,46 @@ type User struct {
 	SecurityToken *string   `db:"security_token"`
 }
 
-// UserProfile contains the profile of the user.
-type UserProfile struct {
-	User          UserProfileUser
-	Organizations []UserProfileOrganization
+// GetUser returns the User for the given id.
+func GetUser(ctx context.Context, db sqlx.Queryer, id int64) (User, error) {
+	var user User
+
+	err := sqlx.Get(db, &user, `
+		select
+			*
+		from
+			"user"
+		where
+			id = $1
+	`, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, ErrDoesNotExist
+		}
+		return user, errors.Wrap(err, "select error")
+	}
+
+	return user, nil
 }
 
-// UserProfileUser contains the user information of the profile.
-type UserProfileUser struct {
-	ID         int64     `db:"id"`
-	Email      string    `db:"email"`
-	IsAdmin    bool      `db:"is_admin"`
-	IsActive   bool      `db:"is_active"`
-	SessionTTL int32     `db:"session_ttl"`
-	CreatedAt  time.Time `db:"created_at"`
-	UpdatedAt  time.Time `db:"updated_at"`
-}
+// GetUserByEmail returns the User for the given email.
+func GetUserByEmail(ctx context.Context, db sqlx.Queryer, email string) (User, error) {
+	var user User
 
-// UserProfileOrganization contains the organizations to which the user
-// is linked.
-type UserProfileOrganization struct {
-	ID             int64     `db:"organization_id"`
-	Name           string    `db:"organization_name"`
-	IsAdmin        bool      `db:"is_admin"`
-	IsDeviceAdmin  bool      `db:"is_device_admin"`
-	IsGatewayAdmin bool      `db:"is_gateway_admin"`
-	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
+	err := sqlx.Get(db, &user, `
+		select
+			*
+		from
+			"user"
+		where
+			email = $1
+	`, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return user, ErrDoesNotExist
+		}
+		return user, errors.Wrap(err, "select error")
+	}
+
+	return user, nil
 }

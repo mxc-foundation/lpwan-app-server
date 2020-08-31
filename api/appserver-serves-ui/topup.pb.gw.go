@@ -89,7 +89,10 @@ func local_request_TopUpService_GetTopUpDestination_0(ctx context.Context, marsh
 	var protoReq GetTopUpDestinationRequest
 	var metadata runtime.ServerMetadata
 
-	if err := runtime.PopulateQueryParameters(&protoReq, req.URL.Query(), filter_TopUpService_GetTopUpDestination_0); err != nil {
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_TopUpService_GetTopUpDestination_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -101,6 +104,7 @@ func local_request_TopUpService_GetTopUpDestination_0(ctx context.Context, marsh
 // RegisterTopUpServiceHandlerServer registers the http handlers for service TopUpService to "mux".
 // UnaryRPC     :call TopUpServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
+// Note that using this registration option will cause many gRPC library features (such as grpc.SendHeader, etc) to stop working. Consider using RegisterTopUpServiceHandlerFromEndpoint instead.
 func RegisterTopUpServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server TopUpServiceServer) error {
 
 	mux.Handle("POST", pattern_TopUpService_GetTopUpHistory_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

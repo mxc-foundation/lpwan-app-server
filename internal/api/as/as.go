@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"

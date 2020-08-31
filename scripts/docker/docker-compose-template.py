@@ -49,7 +49,17 @@ localDevelopTemplate = \
         volumes:
           - ./configuration/chirpstack-geolocation-server:/etc/chirpstack-geolocation-server
         restart: always 
-          
+      
+      web-ui:
+        build:
+          context: ../supernode/appserver-frontend
+          dockerfile: Dockerfile
+        volumes:
+          - ../supernode/appserver-frontend:/web-ui
+        ports:
+          - 3001:3001
+        tty: true
+        
       appserver:
         build:
           context: .
@@ -66,6 +76,7 @@ localDevelopTemplate = \
           - rabbitmq
           - zookeeper
           - kafka
+          - web-ui
         ports:
           - 8080:8080
           - 8004:8004

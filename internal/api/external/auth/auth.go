@@ -1,21 +1,12 @@
 package auth
 
 import (
-	"fmt"
-	"regexp"
-
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/metadata"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"golang.org/x/net/context"
 )
-
-var validAuthorizationRegexp = regexp.MustCompile(`(?i)^bearer (.*)$`)
 
 // Claims defines the struct containing the token claims.
 type Claims struct {
@@ -56,124 +47,3 @@ type Validator interface {
 // It returns a bool indicating if the validation passed or failed and an
 // error in case an error occurred (e.g. db connectivity).
 type ValidatorFunc func(sqlx.Queryer, *Claims) (bool, error)
-
-// JWTValidator validates JWT tokens.
-type JWTValidator struct {
-	db        sqlx.Ext
-	secret    string
-	algorithm string
-}
-
-// Validate validates the token from the given context against the given
-// validator funcs.
-func (v JWTValidator) Validate(ctx context.Context, funcs ...ValidatorFunc) error {
-	claims, err := v.getClaims(ctx)
-	if err != nil {
-		return err
-	}
-
-	for _, f := range funcs {
-		ok, err := f(v.db, claims)
-		if err != nil {
-			return errors.Wrap(err, "validator func error")
-		}
-		if ok {
-			return nil
-		}
-	}
-
-	return ErrNotAuthorized
-}
-
-// GetSubject returns the subject of the claim.
-func (v JWTValidator) GetSubject(ctx context.Context) (string, error) {
-	claims, err := v.getClaims(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	return claims.Subject, nil
-}
-
-// GetAPIKeyID returns the API key of the token.
-func (v JWTValidator) GetAPIKeyID(ctx context.Context) (uuid.UUID, error) {
-	claims, err := v.getClaims(ctx)
-	if err != nil {
-		return uuid.Nil, err
-	}
-
-	return claims.APIKeyID, nil
-}
-
-// GetUser returns the user object.
-func (v JWTValidator) GetUser(ctx context.Context) (storage.User, error) {
-	claims, err := v.getClaims(ctx)
-	if err != nil {
-		return storage.User{}, err
-	}
-
-	if claims.Subject != SubjectUser {
-		return storage.User{}, errors.New("subject must be user")
-	}
-
-	if claims.UserID != 0 {
-		return storage.GetUser(ctx, v.db, claims.UserID)
-	}
-
-	if claims.Username != "" {
-		return storage.GetUserByEmail(ctx, v.db, claims.Username)
-	}
-
-	return storage.User{}, errors.New("no username or user_id in claims")
-}
-
-func (v JWTValidator) getClaims(ctx context.Context) (*Claims, error) {
-	tokenStr, err := getTokenFromContext(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "get token from context error")
-	}
-
-	token, err := jwt.ParseWithClaims(tokenStr, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if token.Header["alg"] != v.algorithm {
-			return nil, ErrInvalidAlgorithm
-		}
-		return []byte(v.secret), nil
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "jwt parse error")
-	}
-
-	if !token.Valid {
-		return nil, ErrInvalidToken
-	}
-
-	claims, ok := token.Claims.(*Claims)
-	if !ok {
-		// no need to use a static error, this should never happen
-		return nil, fmt.Errorf("api/auth: expected *Claims, got %T", token.Claims)
-	}
-
-	return claims, nil
-}
-
-func getTokenFromContext(ctx context.Context) (string, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return "", ErrNoMetadataInContext
-	}
-
-	token, ok := md["authorization"]
-	if !ok || len(token) == 0 {
-		return "", ErrNoAuthorizationInMetadata
-	}
-
-	match := validAuthorizationRegexp.FindStringSubmatch(token[0])
-
-	// authorization header should respect RFC1945
-	if len(match) == 0 {
-		log.Warning("Deprecated Authorization header : RFC1945 format expected : Authorization: <type> <credentials>")
-		return token[0], nil
-	}
-
-	return match[1], nil
-}

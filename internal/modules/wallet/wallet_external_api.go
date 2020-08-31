@@ -111,46 +111,6 @@ func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.Ge
 	}, status.Error(codes.OK, "")
 }
 
-func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.GetGatewayMiningIncomeRequest) (*api.GetGatewayMiningIncomeResponse, error) {
-	cred, err := s.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be organization admin")
-	}
-
-	logInfo := "api/appserver_serves_ui/GetGatewayMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)
-	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
-		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	walletClient := m2mServer.NewMiningServiceClient(m2mClient)
-	resp, err := walletClient.MiningStats(ctx, &m2mServer.MiningStatsRequest{
-		GatewayMac:     req.GatewayMac,
-		OrganizationId: req.OrgId,
-		FromDate:       req.FromDate,
-		TillDate:       req.TillDate,
-	})
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unavailable, err.Error())
-	}
-	stats := &api.GetGatewayMiningIncomeResponse{
-		Total: resp.Total,
-	}
-	for _, ds := range resp.DailyStats {
-		stats.DailyStats = append(stats.DailyStats, &api.MiningStats{
-			Date:   ds.Date,
-			Amount: ds.Amount,
-		})
-	}
-	return stats, nil
-}
-
 func (s *WalletServerAPI) GetMiningInfo(ctx context.Context, req *api.GetMiningInfoRequest) (*api.GetMiningInfoResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetMiningInfo org=" + strconv.FormatInt(req.OrgId, 10)
 
