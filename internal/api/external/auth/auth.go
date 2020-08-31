@@ -64,15 +64,6 @@ type JWTValidator struct {
 	algorithm string
 }
 
-// NewJWTValidator creates a new JWTValidator.
-func NewJWTValidator(db sqlx.Ext, algorithm, secret string) *JWTValidator {
-	return &JWTValidator{
-		db:        db,
-		secret:    secret,
-		algorithm: algorithm,
-	}
-}
-
 // Validate validates the token from the given context against the given
 // validator funcs.
 func (v JWTValidator) Validate(ctx context.Context, funcs ...ValidatorFunc) error {

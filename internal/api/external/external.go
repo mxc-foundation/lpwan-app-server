@@ -83,16 +83,6 @@ func setupAPI(conf config.Config) (err error) {
 	grpcOpts := helpers.GetgRPCServerOptions()
 	grpcServer := grpc.NewServer(grpcOpts...)
 
-	// API defined in external_cus.go
-	/*pb.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(validator))
-	pb.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(validator))
-	pb.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(validator))
-	pb.RegisterApplicationServiceServer(grpcServer, NewApplicationAPI(validator))
-	pb.RegisterNetworkServerServiceServer(grpcServer, NewNetworkServerAPI(validator))
-	pb.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(validator))
-	pb.RegisterUserServiceServer(grpcServer, NewUserAPI(validator))
-	pb.RegisterInternalServiceServer(grpcServer, NewInternalAPI(validator))*/
-
 	if err := SetupCusAPI(grpcServer, rpID); err != nil {
 		return err
 	}
