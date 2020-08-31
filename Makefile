@@ -9,7 +9,7 @@ build: internal/statics internal/migrations
 clean:
 	@echo "Cleaning up workspace"
 	@rm -rf build dist internal/migrations/migrations_gen.go internal/static/static_gen.go ui/build static/static
-	@rm -f static/index.html static/icon.png static/manifest.json static/asset-manifest.json static/service-worker.js
+	@rm -f static/index.html static/icon.png static/mxc_icon.png static/manifest.json static/asset-manifest.json static/service-worker.js static/precache-manifest.*.js
 	@rm -rf static/logo
 	@rm -rf static/img
 	@rm -f static/swagger/*.json
@@ -55,21 +55,6 @@ dist: ui/build internal/statics internal/migrations
 snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
 
-ui/test:
-	@echo "Running react tests"
-	@cd ui && npm test
-
-ui/build_dep:
-	@echo "Building node-sass"
-	@cd ui/node_modules/node-sass/ && npm install
-	@echo "Running npm audit fix"
-	@cd ui && npm audit fix
-
-ui/build:
-	@echo "Building ui"
-	@cd ui && npm run build
-	@mv ui/build/* static
-
 api:
 	@echo "Generating API code from .proto files"
 	@rm -rf /tmp/chirpstack-api
@@ -94,10 +79,6 @@ static/swagger/api.swagger.json:
 # shortcuts for development
 dev-requirements:
 	go install github.com/jteeuwen/go-bindata/go-bindata
-
-ui-requirements:
-	@echo "Installing UI requirements"
-	@cd ui && npm install
 
 serve: build
 	@echo "Starting LPWAN App Server"
