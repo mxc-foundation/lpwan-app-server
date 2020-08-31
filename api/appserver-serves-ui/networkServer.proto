@@ -10,38 +10,38 @@ import "google/protobuf/empty.proto";
 // NetworkServerService is the service managing network-servers.
 service NetworkServerService {
     // Create creates the given network-server.
-    rpc Create(CreateNetworkServerRequest) returns (CreateNetworkServerResponse) {
-        option(google.api.http) = {
+    rpc Create (CreateNetworkServerRequest) returns (CreateNetworkServerResponse) {
+        option (google.api.http) = {
             post: "/api/network-servers"
             body: "*"
         };
     }
 
     // Get returns the network-server matching the given id.
-    rpc Get(GetNetworkServerRequest) returns (GetNetworkServerResponse) {
-        option(google.api.http) = {
+    rpc Get (GetNetworkServerRequest) returns (GetNetworkServerResponse) {
+        option (google.api.http) = {
             get: "/api/network-servers/{id}"
         };
     }
 
     // Update updates the given network-server.
-    rpc Update(UpdateNetworkServerRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Update (UpdateNetworkServerRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             put: "/api/network-servers/{network_server.id}"
             body: "*"
         };
     }
 
     // Delete deletes the network-server matching the given id.
-    rpc Delete(DeleteNetworkServerRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Delete (DeleteNetworkServerRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             delete: "/api/network-servers/{id}"
         };
     };
 
     // List lists the available network-servers.
-    rpc List(ListNetworkServerRequest) returns (ListNetworkServerResponse) {
-        option(google.api.http) = {
+    rpc List (ListNetworkServerRequest) returns (ListNetworkServerResponse) {
+        option (google.api.http) = {
             get: "/api/network-servers"
         };
     }

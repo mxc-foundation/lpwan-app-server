@@ -7,15 +7,15 @@ import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
 service TopUpService {
-    rpc GetTopUpHistory(GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse){
-        option(google.api.http) = {
+    rpc GetTopUpHistory (GetTopUpHistoryRequest) returns (GetTopUpHistoryResponse) {
+        option (google.api.http) = {
 			post: "/api/top-up/history"
                         body: "*"
 		};
     }
 
-    rpc GetTopUpDestination(GetTopUpDestinationRequest) returns (GetTopUpDestinationResponse){
-        option(google.api.http) = {
+    rpc GetTopUpDestination (GetTopUpDestinationRequest) returns (GetTopUpDestinationResponse) {
+        option (google.api.http) = {
 			get: "/api/top-up/account"
 		};
     }

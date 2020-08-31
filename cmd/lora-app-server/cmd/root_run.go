@@ -2,11 +2,14 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -14,24 +17,29 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
+	jscodec "github.com/mxc-foundation/lpwan-app-server/internal/codec/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/fuota"
-	gw "github.com/mxc-foundation/lpwan-app-server/internal/gateway-manager"
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/application"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/multi"
-	"github.com/mxc-foundation/lpwan-app-server/internal/metrics"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
+	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/miningstore"
+
+	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	gpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
+	miningmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
+	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
+	orgmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	usermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
 func run(cmd *cobra.Command, args []string) error {
@@ -41,14 +49,14 @@ func run(cmd *cobra.Command, args []string) error {
 
 	tasks := []func() error{
 		setLogLevel,
+		setSyslog,
 		printStartMessage,
 		startPProf,
 		setupStorage,
+		setupNetworkserver,
 		setupClient,
-		setupUpdateFirmwareFromPs,
-		setupDefaultEnv,
-		setupLoadGatewayTemplates,
 		migrateGatewayStats,
+		migrateToClusterKeys,
 		setupIntegration,
 		setupSMTP,
 		setupCodec,
@@ -57,9 +65,11 @@ func run(cmd *cobra.Command, args []string) error {
 		setupMulticastSetup,
 		setupFragmentation,
 		setupFUOTA,
-		setupMetrics,
-		setupMining,
+
+		setupModules,
+		setupUpdateFirmwareFromPs,
 		setupAPI,
+		setupMonitoring,
 	}
 
 	for _, t := range tasks {
@@ -98,8 +108,8 @@ func setLogLevel() error {
 func printStartMessage() error {
 	log.WithFields(log.Fields{
 		"version": version,
-		"docs":    "https://www.loraserver.io/",
-	}).Info("starting LPWAN App Server")
+		"docs":    "https://www.chirpstack.io/",
+	}).Info("starting ChirpStack Application Server")
 	return nil
 }
 
@@ -120,85 +130,48 @@ func setupSMTP() error {
 }
 
 func setupIntegration() error {
-	var confs []interface{}
-
-	for _, name := range config.C.ApplicationServer.Integration.Enabled {
-		switch name {
-		case "aws_sns":
-			confs = append(confs, config.C.ApplicationServer.Integration.AWSSNS)
-		case "azure_service_bus":
-			confs = append(confs, config.C.ApplicationServer.Integration.AzureServiceBus)
-		case "mqtt":
-			confs = append(confs, config.C.ApplicationServer.Integration.MQTT)
-		case "gcp_pub_sub":
-			confs = append(confs, config.C.ApplicationServer.Integration.GCPPubSub)
-		case "postgresql":
-			confs = append(confs, config.C.ApplicationServer.Integration.PostgreSQL)
-		default:
-			return fmt.Errorf("unknown integration type: %s", name)
-		}
+	if err := integration.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup integration error")
 	}
-
-	mi, err := multi.New(confs)
-	if err != nil {
-		return errors.Wrap(err, "setup integrations error")
-	}
-	mi.Add(application.New())
-	integration.SetIntegration(mi)
 
 	return nil
 }
 
 func setupCodec() error {
-	if err := codec.Setup(config.C); err != nil {
+	if err := jscodec.Setup(config.C); err != nil {
 		return errors.Wrap(err, "setup codec error")
 	}
+
+	return nil
+}
+
+func setupNetworkserver() error {
+	if err := networkserver.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup networkserver pool error")
+	}
+
 	return nil
 }
 
 func setupClient() error {
-	if err := setupNetworkServer(); err != nil {
-		return err
+	if err := nscli.Setup(); err != nil {
+		return errors.Wrap(err, "setup networkserver connection error")
 	}
 
-	if err := setupM2MServer(); err != nil {
-		return err
+	if err := m2mcli.Setup(config.C.M2MServer); err != nil {
+		return errors.Wrap(err, "setup m2m-server connection error")
 	}
 
-	return nil
-}
-
-func setupM2MServer() error {
-	if err := m2m_client.Setup(); err != nil {
-		return errors.Wrap(err, "setup m2m-server error")
+	if err := pscli.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup provisioning server connection error")
 	}
-	return nil
-}
 
-func setupNetworkServer() error {
-	if err := networkserver.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup networkserver error")
-	}
 	return nil
 }
 
 func setupUpdateFirmwareFromPs() error {
-	if err := storage.UpdateFirmwareFromProvisioningServer(config.C); err != nil {
+	if err := gwmod.Service.UpdateFirmwareFromProvisioningServer(context.TODO(), config.C); err != nil {
 		return errors.Wrap(err, "setup update firmware error")
-	}
-	return nil
-}
-
-func setupDefaultEnv() error {
-	if err := storage.SetupDefault(); err != nil {
-		return errors.Wrap(err, "setup default error")
-	}
-	return nil
-}
-
-func setupLoadGatewayTemplates() error {
-	if err := gw.LoadTemplates(); err != nil {
-		return errors.Wrap(err, "load gateway config template error")
 	}
 	return nil
 }
@@ -211,15 +184,15 @@ func migrateGatewayStats() error {
 	return nil
 }
 
-func handleDataDownPayloads() error {
-	go downlink.HandleDataDownPayloads()
-	return nil
+func migrateToClusterKeys() error {
+	return code.Migrate("migrate_to_cluster_keys", func(db sqlx.Ext) error {
+		return code.MigrateToClusterKeys(config.C)
+	})
 }
 
-func setupAPI() error {
-	if err := api.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup api error")
-	}
+func handleDataDownPayloads() error {
+	downChan := integration.ForApplicationID(0).DataDownChan()
+	go downlink.HandleDataDownPayloads(downChan)
 	return nil
 }
 
@@ -250,22 +223,53 @@ func setupFUOTA() error {
 	return nil
 }
 
-func setupMetrics() error {
-	if err := metrics.Setup(config.C); err != nil {
-		return errors.Wrap(err, "setup metrics error")
+func setupModules() (err error) {
+
+	if err = gwmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = devmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = appmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = gpmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = miningmod.Setup(config.C.ApplicationServer.MiningSetUp, pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = nsmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = orgmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = usermod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func setupAPI() error {
+	if err := api.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup api error")
 	}
 	return nil
 }
 
-func setupMining() error {
-	miningStore := miningstore.New(storage.DB().DB)
-	m2mClient, err := m2m_client.New(config.C.M2MServer)
-	if err != nil {
-		return fmt.Errorf("couldn't create m2m client: %v", err)
-	}
-	cfg := config.C.ApplicationServer.MiningSetUp
-	if err := mining.Setup(cfg, miningStore, m2mClient); err != nil {
-		return errors.Wrap(err, "setup service mining error")
+func setupMonitoring() error {
+	if err := monitoring.Setup(config.C); err != nil {
+		return errors.Wrap(err, "setup monitoring error")
 	}
 	return nil
 }

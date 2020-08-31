@@ -13,7 +13,6 @@ import (
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend/joinserver"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
@@ -104,6 +103,7 @@ func getHandler(conf config.Config) (http.Handler, error) {
 			return joinserver.DeviceKeys{
 				DevEUI:    dk.DevEUI,
 				NwkKey:    dk.NwkKey,
+				AppKey:    dk.AppKey,
 				JoinNonce: dk.JoinNonce,
 			}, nil
 		},
@@ -123,6 +123,29 @@ func getHandler(conf config.Config) (http.Handler, error) {
 		},
 		GetASKEKLabelByDevEUIFunc: func(devEUI lorawan.EUI64) (string, error) {
 			return conf.JoinServer.KEK.ASKEKLabel, nil
+		},
+		GetHomeNetIDByDevEUIFunc: func(devEUI lorawan.EUI64) (lorawan.NetID, error) {
+			d, err := storage.GetDevice(context.TODO(), storage.DB(), devEUI, false, true)
+			if err != nil {
+				if errors.Cause(err) == storage.ErrDoesNotExist {
+					return lorawan.NetID{}, joinserver.ErrDevEUINotFound
+				}
+
+				return lorawan.NetID{}, errors.Wrap(err, "get device error")
+			}
+
+			var netID lorawan.NetID
+
+			netIDStr, ok := d.Variables.Map["home_netid"]
+			if !ok {
+				return netID, nil
+			}
+
+			if err := netID.UnmarshalText([]byte(netIDStr.String)); err != nil {
+				return lorawan.NetID{}, errors.Wrap(err, "unmarshal netid error")
+			}
+
+			return netID, nil
 		},
 	}
 

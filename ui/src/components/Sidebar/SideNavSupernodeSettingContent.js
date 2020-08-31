@@ -1,7 +1,7 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import i18n, { packageNS } from '../../i18n';
-import { BACK_TO_CONTROL, DEFAULT } from '../../util/Data';
+import {Link} from 'react-router-dom';
+import i18n, {packageNS} from '../../i18n';
+import {BACK_TO_CONTROL, DEFAULT} from '../../util/Data';
 import Admin from '../Admin';
 
 
@@ -13,7 +13,8 @@ const SideNavSupernodeSettingContent = (props) => {
                     <li className="menu-title">{i18n.t(`${packageNS}:menu.control_panel`)}</li>
 
                     <li>
-                        <Link to={BACK_TO_CONTROL} className="waves-effect side-nav-link-ref" onClick={() => props.switchSidebar(DEFAULT)}>
+                        <Link to={BACK_TO_CONTROL} className="waves-effect side-nav-link-ref"
+                              onClick={() => props.switchSidebar(DEFAULT)}>
                             <span className="mdi mdi-arrow-left-bold"></span>
                             <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
                             <span>{i18n.t(`${packageNS}:tr000450`)}</span>
@@ -24,6 +25,12 @@ const SideNavSupernodeSettingContent = (props) => {
                         <Link to={`/control-panel/system-settings`} className="waves-effect side-nav-link-ref">
                             <i className="mdi mdi-settings"></i>
                             <span> {i18n.t(`${packageNS}:menu.system_settings.system_settings`)} </span>
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to={`/control-panel/withdraw-fee`} className="waves-effect side-nav-link-ref">
+                            <i className="mdi mdi-settings"></i>
+                            <span> {i18n.t(`${packageNS}:menu.system_settings.update_withdraw_fee`)} </span>
                         </Link>
                     </li>
                 </Admin>

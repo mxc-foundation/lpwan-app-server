@@ -2,8 +2,8 @@ package test
 
 import (
 	"os"
+	"strings"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/jmoiron/sqlx"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
@@ -23,17 +23,20 @@ func GetConfig() config.Config {
 
 	var c config.Config
 
-	c.PostgreSQL.DSN = "postgres://localhost/loraserver_as_test?sslmode=disable"
-	c.Redis.URL = "redis://localhost:6379"
+	c.PostgreSQL.DSN = "postgres://localhost/chirpstack_as_test?sslmode=disable"
+	c.Redis.Servers = []string{"localhost:6379"}
 	c.ApplicationServer.Integration.MQTT.Server = "tcp://localhost:1883"
 	c.ApplicationServer.ID = "6d5db27e-4ce2-4b2b-b5d7-91f069397978"
+	c.ApplicationServer.Integration.AMQP.EventRoutingKeyTemplate = "application.{{ .ApplicationID }}.device.{{ .DevEUI }}.event.{{ .EventType }}"
+	c.ApplicationServer.Integration.Kafka.Topic = "chirpstack_as"
+	c.ApplicationServer.Integration.Kafka.EventKeyTemplate = "application.{{ .ApplicationID }}.device.{{ .DevEUI }}.event.{{ .EventType }}"
 
 	if v := os.Getenv("TEST_POSTGRES_DSN"); v != "" {
 		c.PostgreSQL.DSN = v
 	}
 
-	if v := os.Getenv("TEST_REDIS_URL"); v != "" {
-		c.Redis.URL = v
+	if v := os.Getenv("TEST_REDIS_SERVERS"); v != "" {
+		c.Redis.Servers = strings.Split(v, ",")
 	}
 
 	if v := os.Getenv("TEST_MQTT_SERVER"); v != "" {
@@ -46,6 +49,14 @@ func GetConfig() config.Config {
 
 	if v := os.Getenv("TEST_MQTT_PASSWORD"); v != "" {
 		c.ApplicationServer.Integration.MQTT.Password = v
+	}
+
+	if v := os.Getenv("TEST_RABBITMQ_URL"); v != "" {
+		c.ApplicationServer.Integration.AMQP.URL = v
+	}
+
+	if v := os.Getenv("TEST_KAFKA_BROKER"); v != "" {
+		c.ApplicationServer.Integration.Kafka.Brokers = []string{v}
 	}
 
 	return c
@@ -62,15 +73,6 @@ func MustResetDB(db *sqlx.DB) {
 		log.Fatal(err)
 	}
 	if _, err := migrate.Exec(db.DB, "postgres", m, migrate.Up); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// MustFlushRedis flushes the Redis storage.
-func MustFlushRedis(p *redis.Pool) {
-	c := p.Get()
-	defer c.Close()
-	if _, err := c.Do("FLUSHALL"); err != nil {
 		log.Fatal(err)
 	}
 }

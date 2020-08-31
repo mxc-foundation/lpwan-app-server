@@ -14,6 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"google.golang.org/grpc/metadata"
+
+	"github.com/pkg/errors"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 )
@@ -48,6 +51,12 @@ const (
 	errOTPNotValid  = "The OTP is not valid"
 	errOTPLockedOut = "Too many unsuccessful attemps, try again in 10 minutes"
 )
+
+// Claims defines the struct containing the token claims.
+type Claims struct {
+	// OTP code if it is present, not a part of JWT
+	OTP string `json:"-"`
+}
 
 // Validator provides methods to generate TOTP configuration for the user and validate OTPs
 type Validator struct {
@@ -134,6 +143,18 @@ func (v *Validator) NewConfiguration(ctx context.Context, username string) (*Con
 	conf.RecoveryCodes = rCodes
 
 	return conf, nil
+}
+
+// ValidateOTP validates OTP and returns the error if it is not valid
+func (v *Validator) ValidateOTP(ctx context.Context, username, otp string) error {
+	enabled, err := v.IsEnabled(ctx, username)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return errors.New("OTP is not enabled")
+	}
+	return v.Validate(ctx, username, otp)
 }
 
 // GetRecoveryCodes returns the list of recovery codes for the user. If
@@ -332,4 +353,19 @@ func generateRecoveryCode() (string, error) {
 	}
 	code := fmt.Sprintf("%x", binCode)
 	return code[:5] + "-" + code[5:], nil
+}
+
+func (v *Validator) GetClaims(ctx context.Context) (*Claims, error) {
+	return &Claims{OTP: getOTPFromContext(ctx)}, nil
+}
+
+func getOTPFromContext(ctx context.Context) string {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return ""
+	}
+	if len(md["x-otp"]) == 1 {
+		return md["x-otp"][0]
+	}
+	return ""
 }

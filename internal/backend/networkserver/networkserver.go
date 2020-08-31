@@ -12,10 +12,10 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
@@ -40,7 +40,6 @@ func Setup(conf config.Config) error {
 	p = &pool{
 		clients: make(map[string]client),
 	}
-
 	return nil
 }
 
@@ -110,6 +109,7 @@ func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*g
 		grpc.WithStreamInterceptor(
 			grpc_logrus.StreamClientInterceptor(logrusEntry, logrusOpts...),
 		),
+		grpc.WithBalancerName(roundrobin.Name),
 	}
 
 	if len(caCert) == 0 && len(tlsCert) == 0 && len(tlsKey) == 0 {

@@ -179,9 +179,6 @@ message ListUserRequest {
 
     // Offset in the result-set (for pagination).
     int64 offset = 2;
-
-    // When provided, the given string will be used to search on username.
-    string search = 3;
 }
 
 message ListUserResponse {

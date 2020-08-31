@@ -9,23 +9,23 @@ import "google/protobuf/empty.proto";
 // DeviceQueueService is the service managing the downlink data queue.
 service DeviceQueueService {
     // Enqueue adds the given item to the device-queue.
-    rpc Enqueue(EnqueueDeviceQueueItemRequest) returns (EnqueueDeviceQueueItemResponse) {
-        option(google.api.http) = {
+    rpc Enqueue (EnqueueDeviceQueueItemRequest) returns (EnqueueDeviceQueueItemResponse) {
+        option (google.api.http) = {
             post: "/api/devices/{device_queue_item.dev_eui}/queue"
             body: "*"
         };
     }
 
     // Flush flushes the downlink device-queue.
-    rpc Flush(FlushDeviceQueueRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Flush (FlushDeviceQueueRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             delete: "/api/devices/{dev_eui}/queue"
         };
     }
 
     // List lists the items in the device-queue.
-    rpc List(ListDeviceQueueItemsRequest) returns (ListDeviceQueueItemsResponse) {
-        option(google.api.http) = {
+    rpc List (ListDeviceQueueItemsRequest) returns (ListDeviceQueueItemsResponse) {
+        option (google.api.http) = {
             get: "/api/devices/{dev_eui}/queue"
         };
     }

@@ -13,38 +13,38 @@ import "as_profiles.proto";
 // DeviceProfileService is the service managing device-profiles.
 service DeviceProfileService {
     // Create creates the given device-profile.
-    rpc Create(CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {
-        option(google.api.http) = {
+    rpc Create (CreateDeviceProfileRequest) returns (CreateDeviceProfileResponse) {
+        option (google.api.http) = {
             post: "/api/device-profiles"
             body: "*"
         };
     }
 
     // Get returns the device-profile matching the given id.
-    rpc Get(GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {
-        option(google.api.http) = {
+    rpc Get (GetDeviceProfileRequest) returns (GetDeviceProfileResponse) {
+        option (google.api.http) = {
             get: "/api/device-profiles/{id}"
         };
     }
 
     // Update updates the given device-profile.
-    rpc Update(UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Update (UpdateDeviceProfileRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             put: "/api/device-profiles/{device_profile.id}"
             body: "*"
         };
     }
 
     // Delete deletes the device-profile matching the given id.
-    rpc Delete(DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {
-        option(google.api.http) = {
+    rpc Delete (DeleteDeviceProfileRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
             delete: "/api/device-profiles/{id}"
         };
     }
 
     // List lists the available device-profiles.
-    rpc List(ListDeviceProfileRequest) returns (ListDeviceProfileResponse) {
-        option(google.api.http) = {
+    rpc List (ListDeviceProfileRequest) returns (ListDeviceProfileResponse) {
+        option (google.api.http) = {
             get: "/api/device-profiles"
         };
     }

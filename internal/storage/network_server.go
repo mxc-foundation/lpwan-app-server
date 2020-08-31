@@ -2,22 +2,19 @@ package storage
 
 import (
 	"context"
+	"strings"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/empty"
-
-	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
+	"github.com/brocaar/lorawan"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
 // NetworkServer defines the information to connect to a network-server.
@@ -43,6 +40,10 @@ type NetworkServer struct {
 
 // Validate validates the network-server data.
 func (ns NetworkServer) Validate() error {
+	if strings.TrimSpace(ns.Name) == "" || len(ns.Name) > 100 {
+		return ErrNetworkServerInvalidName
+	}
+
 	if ns.GatewayDiscoveryEnabled && ns.GatewayDiscoveryInterval <= 0 {
 		return ErrInvalidGatewayDiscoveryInterval
 	}
@@ -119,25 +120,6 @@ func CreateNetworkServer(ctx context.Context, db sqlx.Queryer, n *NetworkServer)
 		return errors.Wrap(err, "create routing-profile error")
 	}
 
-	resp, err := nsClient.GetVersion(ctx, &empty.Empty{})
-	if err != nil {
-		return errors.Wrap(err, "failed to get network server region infomation")
-	}
-
-	err = db.QueryRowx(`
-		update 
-			network_server 
-		set 
-			version = $1,
-			region = $2
-		where id = $3;`,
-		resp.Version,
-		resp.Region.String(),
-		n.ID).Err()
-	if err != nil {
-		return errors.Wrap(err, "failed to update netwokd server region information into database")
-	}
-
 	log.WithFields(log.Fields{
 		"id":     n.ID,
 		"name":   n.Name,
@@ -156,17 +138,6 @@ func GetNetworkServer(ctx context.Context, db sqlx.Queryer, id int64) (NetworkSe
 	}
 
 	return ns, nil
-}
-
-// GetDefaultNetworkServer returns the network-server matching the given name.
-func GetDefaultNetworkServer(ctx context.Context, db sqlx.Queryer) (NetworkServer, error) {
-	var n NetworkServer
-	err := sqlx.Get(db, &n, "select * from network_server where name = 'default_network_server'")
-	if err != nil {
-		return n, handlePSQLError(Select, err, "select error")
-	}
-
-	return n, nil
 }
 
 // UpdateNetworkServer updates the given network-server.
@@ -242,25 +213,6 @@ func UpdateNetworkServer(ctx context.Context, db sqlx.Execer, n *NetworkServer) 
 	})
 	if err != nil {
 		return errors.Wrap(err, "update routing-profile error")
-	}
-
-	resp, err := nsClient.GetVersion(ctx, &empty.Empty{})
-	if err != nil {
-		return errors.Wrap(err, "failed to get network server region infomation")
-	}
-
-	_, err = db.Exec(`
-		update 
-			network_server 
-		set 
-			version = $1,
-			region = $2
-		where id = $3;`,
-		resp.Version,
-		resp.Region.String(),
-		n.ID)
-	if err != nil {
-		return errors.Wrap(err, "failed to update netwokd server region information into database")
 	}
 
 	log.WithFields(log.Fields{

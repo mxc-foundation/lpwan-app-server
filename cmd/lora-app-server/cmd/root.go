@@ -35,28 +35,22 @@ func init() {
 	rootCmd.PersistentFlags().Int("log-level", 4, "debug=5, info=4, error=2, fatal=1, panic=0")
 
 	// bind flag to config vars
-	if err := viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level")); err != nil {
-		log.WithError(err).Error("BindPFlag error")
-	}
+	viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
 
 	// defaults
 	viper.SetDefault("general.password_hash_iterations", 100000)
-	viper.SetDefault("general.mxc_logo", "https://www.mxc.org/images/MXC-app-icon10242x.png")
-	viper.SetDefault("general.host_server", "lora.demo.cloud.mxc.org")
-	viper.SetDefault("postgresql.dsn", "postgres://localhost/loraserver_as?sslmode=disable")
+	viper.SetDefault("postgresql.dsn", "postgres://localhost/chirpstack_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
 	viper.SetDefault("postgresql.max_idle_connections", 2)
 	viper.SetDefault("redis.url", "redis://localhost:6379")
-	viper.SetDefault("redis.max_idle", 10)
-	viper.SetDefault("redis.idle_timeout", 5*time.Minute)
-	viper.SetDefault("application_server.gateways_locations_limit", 100000)
-	viper.SetDefault("application_server.integration.mqtt.server", "tcp://localhost:1883")
-	viper.SetDefault("application_server.api.public_host", "localhost:8080")
+	viper.SetDefault("application_server.api.public_host", "localhost:8001")
 	viper.SetDefault("application_server.id", "6d5db27e-4ce2-4b2b-b5d7-91f069397978")
-	viper.SetDefault("application_server.cache_dir", "cache")
-	viper.SetDefault("application_server.api.bind", "0.0.0.0:8080")
+	viper.SetDefault("application_server.api.bind", "0.0.0.0:8001")
 	viper.SetDefault("application_server.external_api.bind", "0.0.0.0:8080")
 	viper.SetDefault("join_server.bind", "0.0.0.0:8003")
+	viper.SetDefault("application_server.integration.marshaler", "json_v3")
+	viper.SetDefault("application_server.integration.mqtt.server", "tcp://localhost:1883")
+	viper.SetDefault("application_server.integration.mqtt.max_reconnect_interval", time.Minute)
 	viper.SetDefault("application_server.integration.mqtt.uplink_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/rx")
 	viper.SetDefault("application_server.integration.mqtt.downlink_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/tx")
 	viper.SetDefault("application_server.integration.mqtt.join_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/join")
@@ -64,7 +58,15 @@ func init() {
 	viper.SetDefault("application_server.integration.mqtt.error_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/error")
 	viper.SetDefault("application_server.integration.mqtt.status_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/status")
 	viper.SetDefault("application_server.integration.mqtt.location_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/location")
+	viper.SetDefault("application_server.integration.mqtt.tx_ack_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/txack")
+	viper.SetDefault("application_server.integration.mqtt.integration_topic_template", "application/{{ .ApplicationID }}/device/{{ .DevEUI }}/integration")
 	viper.SetDefault("application_server.integration.mqtt.clean_session", true)
+	viper.SetDefault("application_server.integration.kafka.brokers", []string{"localhost:9092"})
+	viper.SetDefault("application_server.integration.kafka.topic", "chirpstack_as")
+	viper.SetDefault("application_server.integration.kafka.event_key_template", "application.{{ .ApplicationID }}.device.{{ .DevEUI }}.event.{{ .EventType }}")
+	viper.SetDefault("application_server.integration.postgresql.max_idle_connections", 2)
+	viper.SetDefault("application_server.integration.amqp.url", "amqp://guest:guest@localhost:5672")
+	viper.SetDefault("application_server.integration.amqp.event_routing_key_template", "application.{{ .ApplicationID }}.device.{{ .DevEUI }}.event.{{ .EventType }}")
 	viper.SetDefault("application_server.integration.enabled", []string{"mqtt"})
 	viper.SetDefault("application_server.codec.js.max_execution_time", 100*time.Millisecond)
 
@@ -82,8 +84,6 @@ func init() {
 	viper.SetDefault("metrics.redis.hour_aggregation_ttl", time.Hour*48)
 	viper.SetDefault("metrics.redis.day_aggregation_ttl", time.Hour*24*90)
 	viper.SetDefault("metrics.redis.month_aggregation_ttl", time.Hour*24*730)
-
-	viper.SetDefault("operator.operator_logo", os.Getenv("APPSERVER")+"/branding.png")
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
@@ -116,9 +116,21 @@ func initConfig() {
 		if err := viper.ReadInConfig(); err != nil {
 			switch err.(type) {
 			case viper.ConfigFileNotFoundError:
-				log.Warning("No configuration file found, using defaults. See: https://www.loraserver.io/lora-app-server/install/config/")
+				log.Warning("No configuration file found, using defaults. See: https://www.chirpstack.io/application-server/install/config/")
 			default:
 				log.WithError(err).Fatal("read configuration file error")
+			}
+		}
+	}
+
+	for _, pair := range os.Environ() {
+		d := strings.SplitN(pair, "=", 2)
+		if strings.Contains(d[0], ".") {
+			log.Warning("Using dots in env variable is illegal and deprecated. Please use double underscore `__` for: ", d[0])
+			underscoreName := strings.ReplaceAll(d[0], ".", "__")
+			// Set only when the underscore version doesn't already exist.
+			if _, exists := os.LookupEnv(underscoreName); !exists {
+				os.Setenv(underscoreName, d[1])
 			}
 		}
 	}
@@ -168,10 +180,11 @@ func viperBindEnvs(iface interface{}, parts ...string) {
 		case reflect.Struct:
 			viperBindEnvs(v.Interface(), append(parts, tv)...)
 		default:
-			key := strings.Join(append(parts, tv), ".")
-			if err := viper.BindEnv(key); err != nil {
-				log.WithError(err).Error("BindEnv error")
-			}
+			// Bash doesn't allow env variable names with a dot so
+			// bind the double underscore version.
+			keyDot := strings.Join(append(parts, tv), ".")
+			keyUnderscore := strings.Join(append(parts, tv), "__")
+			viper.BindEnv(keyDot, strings.ToUpper(keyUnderscore))
 		}
 	}
 }

@@ -8,8 +8,8 @@ import "google/protobuf/empty.proto";
 
 service M2MServerInfoService {
     // get version
-    rpc GetVersion(google.protobuf.Empty) returns (GetVersionResponse) {
-        option(google.api.http) = {
+    rpc GetVersion (google.protobuf.Empty) returns (GetVersionResponse) {
+        option (google.api.http) = {
             get: "/api/server-info/version"
         };
     };

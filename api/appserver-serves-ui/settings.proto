@@ -6,7 +6,6 @@ option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-se
 import "google/api/annotations.proto";
 import "google/protobuf/wrappers.proto";
 
-
 // SettingsService is the service managing system settings.
 service SettingsService {
     rpc GetSettings (GetSettingsRequest) returns (GetSettingsResponse) {
@@ -16,14 +15,15 @@ service SettingsService {
     }
 
     rpc ModifySettings (ModifySettingsRequest) returns (ModifySettingsResponse) {
-        option(google.api.http) = {
+        option (google.api.http) = {
 			put: "/api/settings"
 			body: "*"
 		};
     }
 }
 
-message GetSettingsRequest {}
+message GetSettingsRequest {
+}
 
 message GetSettingsResponse {
     // when supernode income is lower than expected revenue, warn system owner to increase income

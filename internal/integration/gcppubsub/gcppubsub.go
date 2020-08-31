@@ -1,129 +1,176 @@
 package gcppubsub
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
+	"io/ioutil"
+	"net/http"
+	"time"
 
-	"cloud.google.com/go/pubsub"
+	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/api/option"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
-// Config holds the GCP Pub/Sub integration configuration.
-type Config struct {
-	CredentialsFile string `mapstructure:"credentials_file"`
-	ProjectID       string `mapstructure:"project_id"`
-	TopicName       string `mapstructure:"topic_name"`
+type publishRequest struct {
+	Messages []message `json:"messages"`
+}
+
+type message struct {
+	Attributes map[string]string `json:"attributes"`
+	Data       []byte            `json:"data"`
 }
 
 // Integration implements a GCP Pub/Sub integration.
 type Integration struct {
-	sync.RWMutex
-	ctx    context.Context
-	cancel context.CancelFunc
+	marshaler marshaler.Type
 
-	client *pubsub.Client
-	topic  *pubsub.Topic
+	project             string
+	topic               string
+	jsonCredentialsFile []byte
+	client              *http.Client
 }
 
 // New creates a new Pub/Sub integration.
-func New(conf Config) (*Integration, error) {
+func New(m marshaler.Type, conf config.IntegrationGCPConfig) (*Integration, error) {
+	if conf.Marshaler != "" {
+		switch conf.Marshaler {
+		case "PROTOBUF":
+			m = marshaler.Protobuf
+		case "JSON":
+			m = marshaler.ProtobufJSON
+		case "JSON_V3":
+			m = marshaler.JSONV3
+		}
+	}
+
 	i := Integration{
-		ctx: context.Background(),
+		marshaler: m,
+		project:   conf.ProjectID,
+		topic:     conf.TopicName,
 	}
+
 	var err error
-	var o []option.ClientOption
-
-	i.ctx, i.cancel = context.WithCancel(i.ctx)
-
 	if conf.CredentialsFile != "" {
-		o = append(o, option.WithCredentialsFile(conf.CredentialsFile))
+		i.jsonCredentialsFile, err = ioutil.ReadFile(conf.CredentialsFile)
+		if err != nil {
+			return nil, errors.Wrap(err, "read credentials file error")
+		}
+	} else {
+		i.jsonCredentialsFile = []byte(conf.CredentialsFileBytes)
 	}
 
-	log.Info("integration/gcp_pub_sub: setting up client")
-	i.client, err = pubsub.NewClient(i.ctx, conf.ProjectID, o...)
+	creds, err := google.CredentialsFromJSON(context.Background(), i.jsonCredentialsFile, "https://www.googleapis.com/auth/pubsub")
 	if err != nil {
-		return nil, errors.Wrap(err, "new pubsub client error")
+		return nil, errors.Wrap(err, "credentials from json error")
 	}
-
-	log.WithField("topic", conf.TopicName).Info("integration/gcp_pub_sub: setup topic")
-	i.topic = i.client.Topic(conf.TopicName)
-	ok, err := i.topic.Exists(i.ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "topic exists error")
-	}
-	if !ok {
-		return nil, fmt.Errorf("topic %s does not exist", conf.TopicName)
-	}
+	i.client = oauth2.NewClient(context.Background(), creds.TokenSource)
 
 	return &i, nil
 }
 
-// Close closes the integration.
+// Close is not implemented.
 func (i *Integration) Close() error {
-	log.Info("integration/gcppubsub: closing integration")
-	i.cancel()
-	return i.client.Close()
-}
-
-// SendDataUp sends an uplink data payload.
-func (i *Integration) SendDataUp(ctx context.Context, pl integration.DataUpPayload) error {
-	return i.publish(ctx, "up", pl.DevEUI, pl)
-}
-
-// SendJoinNotification sends a join notification.
-func (i *Integration) SendJoinNotification(ctx context.Context, pl integration.JoinNotification) error {
-	return i.publish(ctx, "join", pl.DevEUI, pl)
-}
-
-// SendACKNotification sends an ack notification.
-func (i *Integration) SendACKNotification(ctx context.Context, pl integration.ACKNotification) error {
-	return i.publish(ctx, "ack", pl.DevEUI, pl)
-}
-
-// SendErrorNotification sends an error notification.
-func (i *Integration) SendErrorNotification(ctx context.Context, pl integration.ErrorNotification) error {
-	return i.publish(ctx, "error", pl.DevEUI, pl)
-}
-
-// SendStatusNotification sends a status notification.
-func (i *Integration) SendStatusNotification(ctx context.Context, pl integration.StatusNotification) error {
-	return i.publish(ctx, "status", pl.DevEUI, pl)
-}
-
-// SendLocationNotification sends a location notification.
-func (i *Integration) SendLocationNotification(ctx context.Context, pl integration.LocationNotification) error {
-	return i.publish(ctx, "location", pl.DevEUI, pl)
-}
-
-// DataDownChan return nil.
-func (i *Integration) DataDownChan() chan integration.DataDownPayload {
 	return nil
 }
 
-func (i *Integration) publish(ctx context.Context, event string, devEUI lorawan.EUI64, v interface{}) error {
-	jsonB, err := json.Marshal(v)
+// HandleUplinkEvent sends an UplinkEvent.
+func (i *Integration) HandleUplinkEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.UplinkEvent) error {
+	return i.publish(ctx, "up", pl.DevEui, &pl)
+}
+
+// HandleJoinEvent sends a JoinEvent.
+func (i *Integration) HandleJoinEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.JoinEvent) error {
+	return i.publish(ctx, "join", pl.DevEui, &pl)
+}
+
+// HandleAckEvent sends an AckEvent.
+func (i *Integration) HandleAckEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.AckEvent) error {
+	return i.publish(ctx, "ack", pl.DevEui, &pl)
+}
+
+// HandleErrorEvent sends an ErrorEvent.
+func (i *Integration) HandleErrorEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.ErrorEvent) error {
+	return i.publish(ctx, "error", pl.DevEui, &pl)
+}
+
+// HandleStatusEvent sends a StatusEvent.
+func (i *Integration) HandleStatusEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.StatusEvent) error {
+	return i.publish(ctx, "status", pl.DevEui, &pl)
+}
+
+// HandleLocationEvent sends a LocationEvent.
+func (i *Integration) HandleLocationEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.LocationEvent) error {
+	return i.publish(ctx, "location", pl.DevEui, &pl)
+}
+
+// HandleTxAckEvent sends a TxAckEvent.
+func (i *Integration) HandleTxAckEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.TxAckEvent) error {
+	return i.publish(ctx, "txack", pl.DevEui, &pl)
+}
+
+// HandleIntegrationEvent sends an IntegrationEvent.
+func (i *Integration) HandleIntegrationEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.IntegrationEvent) error {
+	return i.publish(ctx, "integration", pl.DevEui, &pl)
+}
+
+// DataDownChan return nil.
+func (i *Integration) DataDownChan() chan models.DataDownPayload {
+	return nil
+}
+
+func (i *Integration) publish(ctx context.Context, event string, devEUIB []byte, msg proto.Message) error {
+	var devEUI lorawan.EUI64
+	copy(devEUI[:], devEUIB)
+
+	b, err := marshaler.Marshal(i.marshaler, msg)
 	if err != nil {
-		return errors.Wrap(err, "marshal json error")
+		return errors.Wrap(err, "marshal event error")
 	}
 
-	res := i.topic.Publish(ctx, &pubsub.Message{
-		Data: jsonB,
-		Attributes: map[string]string{
-			"event":  event,
-			"devEUI": devEUI.String(),
+	req := publishRequest{
+		Messages: []message{
+			{
+				Attributes: map[string]string{
+					"event":  event,
+					"devEUI": devEUI.String(),
+				},
+				Data: b,
+			},
 		},
-	})
-	if _, err := res.Get(i.ctx); err != nil {
-		return errors.Wrap(err, "get publish result error")
+	}
+	b, err = json.Marshal(req)
+	if err != nil {
+		return errors.Wrap(err, "marshal pub/sub request error")
+	}
+
+	ctxCancel, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
+	httpReq, err := http.NewRequestWithContext(ctxCancel, "POST", fmt.Sprintf("https://pubsub.googleapis.com/v1/projects/%s/topics/%s:publish", i.project, i.topic), bytes.NewReader(b))
+	if err != nil {
+		return errors.Wrap(err, "new request error")
+	}
+
+	resp, err := i.client.Do(httpReq)
+	if err != nil {
+		return errors.Wrap(err, "pub/sub request error")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		b, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("exepcted 2xx code, got: %d (%s)", resp.StatusCode, string(b))
 	}
 
 	log.WithFields(log.Fields{

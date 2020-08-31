@@ -8,18 +8,19 @@ package appserver_serves_ui
 
 import (
 	context "context"
+	reflect "reflect"
+	sync "sync"
+
+	common "github.com/brocaar/chirpstack-api/go/v3/common"
 	proto "github.com/golang/protobuf/proto"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
-	common "github.com/mxc-foundation/lpwan-server/api/common"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (

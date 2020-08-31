@@ -8,150 +8,149 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "user.proto";
 
-
 // InternalService is the service providing API endpoints for internal usage.
 service InternalService {
-	// Log the user in, returns JWT
-	rpc Login(LoginRequest) returns (LoginResponse) {
-		option(google.api.http) = {
+    // Log the user in, returns JWT
+    rpc Login (LoginRequest) returns (LoginResponse) {
+        option (google.api.http) = {
 			post: "/api/internal/login"
 			body: "*"
 		};
-	}
+    }
 
-        // Validate OTP, returns JWT
-        rpc Login2FA(Login2FARequest) returns (LoginResponse) {
-                option(google.api.http) = {
+    // Validate OTP, returns JWT
+    rpc Login2FA (Login2FARequest) returns (LoginResponse) {
+        option (google.api.http) = {
                         post: "/api/internal/login-2fa"
                         body: "*"
                 };
-        }
+    }
 
-	// Get the current user's profile
-	rpc Profile(google.protobuf.Empty) returns (ProfileResponse) {
-		option(google.api.http) = {
+    // Get the current user's profile
+    rpc Profile (google.protobuf.Empty) returns (ProfileResponse) {
+        option (google.api.http) = {
 			get: "/api/internal/profile"
 		};
-	}
+    }
 
-	// Get the branding for the UI
-	rpc Branding(google.protobuf.Empty) returns (BrandingResponse) {
-		option(google.api.http) = {
+    // Get the branding for the UI
+    rpc Branding (google.protobuf.Empty) returns (BrandingResponse) {
+        option (google.api.http) = {
 			get: "/api/internal/branding"
 		};
-	}
+    }
 
-	// Perform a global search.
-	rpc GlobalSearch(GlobalSearchRequest) returns (GlobalSearchResponse) {
-		option(google.api.http) = {
+    // Perform a global search.
+    rpc GlobalSearch (GlobalSearchRequest) returns (GlobalSearchResponse) {
+        option (google.api.http) = {
 			get: "/api/internal/search"
 		};
-	}
+    }
 
-	rpc RegisterUser(RegisterUserRequest) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
+    rpc RegisterUser (RegisterUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
 			post: "/api/internal/registration"
 			body: "*"
 		};
-	}
+    }
 
-	rpc ConfirmRegistration(ConfirmRegistrationRequest) returns (ConfirmRegistrationResponse) {
-		option (google.api.http) = {
+    rpc ConfirmRegistration (ConfirmRegistrationRequest) returns (ConfirmRegistrationResponse) {
+        option (google.api.http) = {
 			post: "/api/internal/registration-confirm"
 			body: "*"
 		};
-	}
+    }
 
-	rpc FinishRegistration(FinishRegistrationRequest) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
+    rpc FinishRegistration (FinishRegistrationRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
 			post: "/api/internal/registration-finish"
 			body: "*"
 		};
-	}
+    }
 
-	rpc GetVerifyingGoogleRecaptcha(GoogleRecaptchaRequest) returns (GoogleRecaptchaResponse) {
-		option (google.api.http) = {
+    rpc GetVerifyingGoogleRecaptcha (GoogleRecaptchaRequest) returns (GoogleRecaptchaResponse) {
+        option (google.api.http) = {
 			post: "/api/internal/verify-g-recaptcha"
 			body: "*"
 		};
-	}
+    }
 
-	rpc GetTOTPStatus (TOTPStatusRequest) returns (TOTPStatusResponse) {
-		option (google.api.http) = {
+    rpc GetTOTPStatus (TOTPStatusRequest) returns (TOTPStatusResponse) {
+        option (google.api.http) = {
 			get: "/api/internal/totp-status"
 		};
-	}
+    }
 
-	rpc GetTOTPConfiguration (GetTOTPConfigurationRequest) returns (GetTOTPConfigurationResponse) {
-		option (google.api.http) = {
+    rpc GetTOTPConfiguration (GetTOTPConfigurationRequest) returns (GetTOTPConfigurationResponse) {
+        option (google.api.http) = {
 			post: "/api/internal/totp-configuration"
                         body: "*"
 		};
-	}
+    }
 
-	rpc EnableTOTP (TOTPStatusRequest) returns (TOTPStatusResponse) {
-		option (google.api.http) = {
+    rpc EnableTOTP (TOTPStatusRequest) returns (TOTPStatusResponse) {
+        option (google.api.http) = {
 			post: "/api/internal/totp-enable"
                         body: "*"
 		};
-	}
+    }
 
-	rpc DisableTOTP (TOTPStatusRequest) returns (TOTPStatusResponse) {
-		option (google.api.http) = {
+    rpc DisableTOTP (TOTPStatusRequest) returns (TOTPStatusResponse) {
+        option (google.api.http) = {
 			post: "/api/internal/totp-disable"
                         body: "*"
 		};
-	}
+    }
 
-	rpc GetRecoveryCodes (GetRecoveryCodesRequest) returns (GetRecoveryCodesResponse) {
-		option (google.api.http) = {
+    rpc GetRecoveryCodes (GetRecoveryCodesRequest) returns (GetRecoveryCodesResponse) {
+        option (google.api.http) = {
 			post: "/api/internal/totp-recovery-codes"
                         body: "*"
 		};
-	}
+    }
 
-        rpc RequestPasswordReset (PasswordResetReq) returns (PasswordResetResp) {
-                option (google.api.http) = {
+    rpc RequestPasswordReset (PasswordResetReq) returns (PasswordResetResp) {
+        option (google.api.http) = {
                         post: "/api/internal/request-password-reset"
                         body: "*"
                 };
-        }
+    }
 
-        rpc ConfirmPasswordReset (ConfirmPasswordResetReq) returns (PasswordResetResp) {
-                option (google.api.http) = {
+    rpc ConfirmPasswordReset (ConfirmPasswordResetReq) returns (PasswordResetResp) {
+        option (google.api.http) = {
                         post: "/api/internal/confirm-password-reset"
                         body: "*"
                 };
-        }
+    }
 }
 
 message GoogleRecaptchaRequest {
-	string secret = 1;
-	string response = 2;
-	string remoteip = 3;
+    string secret = 1;
+    string response = 2;
+    string remoteip = 3;
 }
 
 message GoogleRecaptchaResponse {
-	bool success = 1;
-	string challenge_ts = 2;
-	string hostname = 3;
-	string error_codes = 4;
+    bool success = 1;
+    string challenge_ts = 2;
+    string hostname = 3;
+    string error_codes = 4;
 }
 
 message ProfileSettings {
-	// Existing users in the system can not be assigned to organizations and
-	// application and can not be listed by non global admin users.
-	bool disable_assign_existing_users = 1;
+    // Existing users in the system can not be assigned to organizations and
+    // application and can not be listed by non global admin users.
+    bool disable_assign_existing_users = 1;
 }
 
 // Defines an organization to which an user is associated.
 message OrganizationLink {
     // Organization ID.
     int64 organization_id = 1 [json_name = "organizationID"];
-    
+
     // Organization name.
     string organization_name = 2;
-    
+
     // User is admin within the context of this organization.
     // There is no need to set the is_device_admin and is_gateway_admin flags.
     bool is_admin = 3;
@@ -162,27 +161,27 @@ message OrganizationLink {
 
     // User is able to modify gateways.
     bool is_gateway_admin = 7;
-    
+
     // Created at timestamp.
     google.protobuf.Timestamp created_at = 4;
-    
+
     // Last update timestamp.
-	google.protobuf.Timestamp updated_at = 5;
+    google.protobuf.Timestamp updated_at = 5;
 }
 
 message LoginRequest {
-	// Username of the user.
-	string username = 1;
+    // Username of the user.
+    string username = 1;
 
-	// Password of the user.
-	string password = 2;
+    // Password of the user.
+    string password = 2;
 }
 
 message LoginResponse {
-	// The JWT token to be used to access lora-app-server interfaces.
-	string jwt = 1;
-        // Two-factor authentication is required to finish the process
-        bool is_2fa_required = 2;
+    // The JWT token to be used to access lora-app-server interfaces.
+    string jwt = 1;
+    // Two-factor authentication is required to finish the process
+    bool is_2fa_required = 2;
 }
 
 message Login2FARequest {
@@ -191,73 +190,70 @@ message Login2FARequest {
 message ProfileResponse {
     // User object.
     User user = 1;
-    
+
     // Organizations to which the user is associated.
     repeated OrganizationLink organizations = 3;
-    
-    // Profile settings.
-	ProfileSettings settings = 4;
 }
 
 message GlobalSearchRequest {
-	// Search query.
-	string search = 1;
+    // Search query.
+    string search = 1;
 
-	// Max number of results to return.
-	int64 limit = 2;
+    // Max number of results to return.
+    int64 limit = 2;
 
-	// Offset offset of the result-set (for pagination).
-	int64 offset = 3;
+    // Offset offset of the result-set (for pagination).
+    int64 offset = 3;
 }
 
 message GlobalSearchResponse {
-	repeated GlobalSearchResult result = 1;
+    repeated GlobalSearchResult result = 1;
 }
 
 message GlobalSearchResult {
-	// Record kind.
-	string kind = 1;
+    // Record kind.
+    string kind = 1;
 
-	// Search score.
-	float score = 2;
+    // Search score.
+    float score = 2;
 
-	// Organization id.
-	int64 organization_id = 3 [json_name = "organizationID"];
+    // Organization id.
+    int64 organization_id = 3 [json_name = "organizationID"];
 
-	// Organization name.
-	string organization_name = 4;
+    // Organization name.
+    string organization_name = 4;
 
-	// Application id.
-	int64 application_id = 5 [json_name = "applicationID"];
+    // Application id.
+    int64 application_id = 5 [json_name = "applicationID"];
 
-	// Application name.
-	string application_name = 6;
+    // Application name.
+    string application_name = 6;
 
-	// Device DevEUI (hex encoded).
-	string device_dev_eui = 7 [json_name = "deviceDevEUI"];
+    // Device DevEUI (hex encoded).
+    string device_dev_eui = 7 [json_name = "deviceDevEUI"];
 
-	// Device name.
-	string device_name = 8;
+    // Device name.
+    string device_name = 8;
 
-	// Gateway MAC (hex encoded).
-	string gateway_mac = 9 [json_name = "gatewayMAC"];
+    // Gateway MAC (hex encoded).
+    string gateway_mac = 9 [json_name = "gatewayMAC"];
 
-	// Gateway name.
-	string gateway_name = 10;
+    // Gateway name.
+    string gateway_name = 10;
 }
 
 message BrandingResponse {
     // Logo html.
     string logo = 1;
-    
+
     // Registration html.
     string registration = 2;
-    
-    // Footer html.
-	string footer = 3;
 
-	// Logo img path
-	string logo_path = 4;
+    // Footer html.
+    string footer = 3;
+
+    // Logo img path
+    string logo_path = 4;
 }
 
 message RegisterUserRequest {

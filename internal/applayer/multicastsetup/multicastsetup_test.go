@@ -12,7 +12,6 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/multicastsetup"
 	"github.com/brocaar/lorawan/gps"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -23,15 +22,14 @@ type MulticastSetupTestSuite struct {
 	suite.Suite
 	tx *storage.TxLogger
 
-	NSClient         *nsmock.Client
-	NetworkServer    storage.NetworkServer
-	Organization     storage.Organization
-	ServiceProfile   storage.ServiceProfile
-	Application      storage.Application
-	DeviceProfile    storage.DeviceProfile
-	Device           storage.Device
-	DeviceActivation storage.DeviceActivation
-	MulticastGroup   storage.MulticastGroup
+	NSClient       *nsmock.Client
+	NetworkServer  storage.NetworkServer
+	Organization   storage.Organization
+	ServiceProfile storage.ServiceProfile
+	Application    storage.Application
+	DeviceProfile  storage.DeviceProfile
+	Device         storage.Device
+	MulticastGroup storage.MulticastGroup
 }
 
 func (ts *MulticastSetupTestSuite) SetupSuite() {
@@ -104,11 +102,6 @@ func (ts *MulticastSetupTestSuite) SetupTest() {
 	}
 	assert.NoError(storage.CreateDevice(context.Background(), ts.tx, &ts.Device))
 
-	ts.DeviceActivation = storage.DeviceActivation{
-		DevEUI: ts.Device.DevEUI,
-	}
-	assert.NoError(storage.CreateDeviceActivation(context.Background(), ts.tx, &ts.DeviceActivation))
-
 	ts.MulticastGroup = storage.MulticastGroup{
 		Name:             "test-mg",
 		MCAppSKey:        lorawan.AES128Key{1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8},
@@ -143,7 +136,7 @@ func (ts *MulticastSetupTestSuite) TestSyncRemoteMulticastSetupReq() {
 	req := <-ts.NSClient.CreateDeviceQueueItemChan
 	assert.Equal(multicastsetup.DefaultFPort, uint8(req.Item.FPort))
 
-	b, err := lorawan.EncryptFRMPayload(ts.DeviceActivation.AppSKey, false, ts.DeviceActivation.DevAddr, 0, req.Item.FrmPayload)
+	b, err := lorawan.EncryptFRMPayload(ts.Device.AppSKey, false, ts.Device.DevAddr, 0, req.Item.FrmPayload)
 	assert.NoError(err)
 
 	var cmd multicastsetup.Command
@@ -305,7 +298,7 @@ func (ts *MulticastSetupTestSuite) TestSyncRemoteMulticastDeleteReq() {
 	req := <-ts.NSClient.CreateDeviceQueueItemChan
 	assert.Equal(multicastsetup.DefaultFPort, uint8(req.Item.FPort))
 
-	b, err := lorawan.EncryptFRMPayload(ts.DeviceActivation.AppSKey, false, ts.DeviceActivation.DevAddr, 0, req.Item.FrmPayload)
+	b, err := lorawan.EncryptFRMPayload(ts.Device.AppSKey, false, ts.Device.DevAddr, 0, req.Item.FrmPayload)
 	assert.NoError(err)
 
 	var cmd multicastsetup.Command
@@ -355,7 +348,7 @@ func (ts *MulticastSetupTestSuite) TestSyncRemoteMulticastClassCSessionReq() {
 	req := <-ts.NSClient.CreateDeviceQueueItemChan
 	assert.Equal(multicastsetup.DefaultFPort, uint8(req.Item.FPort))
 
-	b, err := lorawan.EncryptFRMPayload(ts.DeviceActivation.AppSKey, false, ts.DeviceActivation.DevAddr, 0, req.Item.FrmPayload)
+	b, err := lorawan.EncryptFRMPayload(ts.Device.AppSKey, false, ts.Device.DevAddr, 0, req.Item.FrmPayload)
 	assert.NoError(err)
 
 	var cmd multicastsetup.Command

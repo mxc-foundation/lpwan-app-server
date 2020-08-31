@@ -8,13 +8,47 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 )
+
+func TestMulticastGroupValidate(t *testing.T) {
+	tests := []struct {
+		MulticastGroup MulticastGroup
+		Error          error
+	}{
+		{
+			MulticastGroup: MulticastGroup{
+				Name: "valid-name",
+			},
+		},
+		{
+			MulticastGroup: MulticastGroup{
+				Name: "",
+			},
+			Error: ErrMulticastGroupInvalidName,
+		},
+		{
+			MulticastGroup: MulticastGroup{
+				Name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			},
+		},
+		{
+			MulticastGroup: MulticastGroup{
+				Name: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			},
+			Error: ErrMulticastGroupInvalidName,
+		},
+	}
+
+	assert := require.New(t)
+
+	for _, tst := range tests {
+		assert.Equal(tst.Error, tst.MulticastGroup.Validate())
+	}
+}
 
 func (ts *StorageTestSuite) TestMulticastGroup() {
 	assert := require.New(ts.T())

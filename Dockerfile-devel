@@ -11,5 +11,5 @@ RUN mkdir -p $PROJECT_PATH
 COPY . $PROJECT_PATH
 WORKDIR $PROJECT_PATH
 
-RUN make dev-requirements ui-requirements
+RUN make ui-requirements
 

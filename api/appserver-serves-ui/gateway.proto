@@ -11,193 +11,286 @@ import "as_common.proto";
 // from loraserver
 import "common/common.proto";
 
-
 // GatewayService is the service managing the gateways.
 service GatewayService {
-	// Create creates the given gateway.
-	rpc Create(CreateGatewayRequest) returns (google.protobuf.Empty) {
-		option(google.api.http) = {
+    // Create creates the given gateway.
+    rpc Create (CreateGatewayRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
 			post: "/api/gateways"
 			body: "*"
 		};
-	}
+    }
 
-	// Get returns the gateway for the requested mac address.
-	rpc Get(GetGatewayRequest) returns (GetGatewayResponse) {
-		option (google.api.http) = {
+    // Get returns the gateway for the requested mac address.
+    rpc Get (GetGatewayRequest) returns (GetGatewayResponse) {
+        option (google.api.http) = {
 			get: "/api/gateways/{id}"
 		};
-	}
+    }
 
-	// Update updates the gateway matching the given mac address.
-	rpc Update(UpdateGatewayRequest) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
+    // Update updates the gateway matching the given mac address.
+    rpc Update (UpdateGatewayRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
 			put: "/api/gateways/{gateway.id}"
 			body: "*"
 		};
-	}
-	
-	// Delete deletes the gateway matching the given mac address.
-	rpc Delete(DeleteGatewayRequest) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
+    }
+
+    // Delete deletes the gateway matching the given mac address.
+    rpc Delete (DeleteGatewayRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
 			delete: "/api/gateways/{id}"
 		};
-	}
+    }
 
-	// List lists the gateways.
-	rpc List(ListGatewayRequest) returns (ListGatewayResponse) {
-		option (google.api.http) = {
+    // List lists the gateways.
+    rpc List (ListGatewayRequest) returns (ListGatewayResponse) {
+        option (google.api.http) = {
 			get: "/api/gateways"
 		};
-	}
+    }
 
-	// ListLocations lists the gateways locations.
-	rpc ListLocations(ListGatewayLocationsRequest) returns (ListGatewayLocationsResponse) {
-		option (google.api.http) = {
+    // ListLocations lists the gateways locations.
+    rpc ListLocations (ListGatewayLocationsRequest) returns (ListGatewayLocationsResponse) {
+        option (google.api.http) = {
 			get: "/api/gateways-loc"
 		};
-	}
+    }
 
-	// GetStats lists the gateway stats given the query parameters.
-	rpc GetStats(GetGatewayStatsRequest) returns (GetGatewayStatsResponse) {
-		option (google.api.http) = {
+    // GetStats lists the gateway stats given the query parameters.
+    rpc GetStats (GetGatewayStatsRequest) returns (GetGatewayStatsResponse) {
+        option (google.api.http) = {
 			get: "/api/gateways/{gateway_id}/stats"
 		};
-	}
+    }
 
-	// GetLastPing returns the last emitted ping and gateways receiving this ping.
-	rpc GetLastPing(GetLastPingRequest) returns (GetLastPingResponse) {
-		option (google.api.http) = {
+    // GetLastPing returns the last emitted ping and gateways receiving this ping.
+    rpc GetLastPing (GetLastPingRequest) returns (GetLastPingResponse) {
+        option (google.api.http) = {
 			get: "/api/gateways/{gateway_id}/pings/last"
 		};
-	}
+    }
 
     // StreamFrameLogs streams the uplink and downlink frame-logs for the given gateway ID.
-	// Notes:
-	//   * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.
-	//   * This endpoint does not work from a web-browser.
-    rpc StreamFrameLogs(StreamGatewayFrameLogsRequest) returns (stream StreamGatewayFrameLogsResponse) {
+    // Notes:
+    //   * These are the raw LoRaWAN frames and this endpoint is intended for debugging only.
+    //   * This endpoint does not work from a web-browser.
+    rpc StreamFrameLogs (StreamGatewayFrameLogsRequest) returns (stream StreamGatewayFrameLogsResponse) {
         option (google.api.http) = {
             get: "/api/gateways/{gateway_id}/frames"
         };
-	}
+    }
 
-	rpc Register(RegisterRequest) returns (RegisterResponse) {
-		option (google.api.http) = {
+    rpc Register (RegisterRequest) returns (RegisterResponse) {
+        option (google.api.http) = {
             post: "/api/gateways/register"
 			body: "*"
         };
-	}
+    }
 
-	rpc GetGwConfig(GetGwConfigRequest) returns (GetGwConfigResponse) {
-		option (google.api.http) = {
+    rpc GetGwConfig (GetGwConfigRequest) returns (GetGwConfigResponse) {
+        option (google.api.http) = {
             get: "/api/gateways/getconfig/{gateway_id}"
         };
-	}
+    }
 
-	rpc UpdateGwConfig(UpdateGwConfigRequest) returns (UpdateGwConfigResponse) {
-		option (google.api.http) = {
+    rpc UpdateGwConfig (UpdateGwConfigRequest) returns (UpdateGwConfigResponse) {
+        option (google.api.http) = {
 			put: "/api/gateways/updateconfig/{gateway_id}"
 			body: "*"
 		};
-	}
+    }
 
-	rpc GetGwPwd(GetGwPwdRequest) returns (GetGwPwdResponse) {
-		option (google.api.http) = {
+    rpc GetGwPwd (GetGwPwdRequest) returns (GetGwPwdResponse) {
+        option (google.api.http) = {
             get: "/api/gateways/getpassword/{gateway_id}"
         };
-	}
+    }
 
-	rpc SetAutoUpdateFirmware(SetAutoUpdateFirmwareRequest) returns (SetAutoUpdateFirmwareResponse) {
-		option (google.api.http) = {
+    rpc SetAutoUpdateFirmware (SetAutoUpdateFirmwareRequest) returns (SetAutoUpdateFirmwareResponse) {
+        option (google.api.http) = {
 			put: "/api/gateways/set-auto-update/{gateway_id}"
 			body: "*"
 		};
-	}
+    }
 
-	rpc InsertNewDefaultGatewayConfig(InsertNewDefaultGatewayConfigRequest) returns (InsertNewDefaultGatewayConfigResponse) {
-		option (google.api.http) = {
+    rpc InsertNewDefaultGatewayConfig (InsertNewDefaultGatewayConfigRequest) returns (InsertNewDefaultGatewayConfigResponse) {
+        option (google.api.http) = {
 			post: "/api/gateways/default-config/add"
 			body: "*"
 		};
-	}
+    }
 
-	rpc UpdateDefaultGatewayConfig(UpdateDefaultGatewayConfigRequest) returns (UpdateDefaultGatewayConfigResponse) {
-		option (google.api.http) = {
+    rpc UpdateDefaultGatewayConfig (UpdateDefaultGatewayConfigRequest) returns (UpdateDefaultGatewayConfigResponse) {
+        option (google.api.http) = {
 			put: "/api/gateways/default-config/update"
 			body: "*"
 		};
-	}
+    }
 
-	rpc GetDefaultGatewayConfig(GetDefaultGatewayConfigRequest) returns (GetDefaultGatewayConfigResponse) {
-		option (google.api.http) = {
+    rpc GetDefaultGatewayConfig (GetDefaultGatewayConfigRequest) returns (GetDefaultGatewayConfigResponse) {
+        option (google.api.http) = {
 			get: "/api/gateways/default-config/get"
 		};
-	}
+    }
 
-	rpc BatchResetDefaultGatewatConfig(BatchResetDefaultGatewatConfigRequest) returns (BatchResetDefaultGatewatConfigResponse) {
-		option (google.api.http) = {
+    rpc BatchResetDefaultGatewatConfig (BatchResetDefaultGatewatConfigRequest) returns (BatchResetDefaultGatewatConfigResponse) {
+        option (google.api.http) = {
 			put: "/api/gateways/default-config/batch-reset"
 			body: "*"
 		};
-	}
+    }
 
-	rpc ResetDefaultGatewatConfigByID(ResetDefaultGatewatConfigByIDRequest) returns (ResetDefaultGatewatConfigByIDResponse) {
-		option (google.api.http) = {
+    rpc ResetDefaultGatewatConfigByID (ResetDefaultGatewatConfigByIDRequest) returns (ResetDefaultGatewatConfigByIDResponse) {
+        option (google.api.http) = {
 			put: "/api/gateways/default-config/reset"
 			body: "*"
 		};
-	}
+    }
 
+
+    rpc GetGatewayList (GetGatewayListRequest) returns (GetGatewayListResponse) {
+        option (google.api.http) = {
+			get: "/api/gateway/{org_id}/gateway-list"
+		};
+    }
+
+    rpc GetGatewayProfile (GetGSGatewayProfileRequest) returns (GetGSGatewayProfileResponse) {
+        option (google.api.http) = {
+			get: "/api/gateway/{org_id}/gateway-profile/{gw_id}"
+		};
+    }
+
+    rpc GetGatewayHistory (GetGatewayHistoryRequest) returns (GetGatewayHistoryResponse) {
+        option (google.api.http) = {
+			get: "/api/gateway/{org_id}/gateway-history/{gw_id}"
+		};
+    }
+
+    rpc SetGatewayMode (SetGatewayModeRequest) returns (SetGatewayModeResponse) {
+        option (google.api.http) = {
+    			post: "/api/gateway/{org_id}/gateway-mode/{gw_id}"
+    			body: "*"
+    		};
+    }
+
+}
+
+enum GatewayMode {
+    GW_INACTIVE = 0;
+    GW_FREE_GATEWAYS_LIMITED = 1;
+    GW_WHOLE_NETWORK = 2;
+    GW_DELETED = 3;
+}
+
+message GetGatewayListRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+}
+
+message GetGatewayListResponse {
+    repeated GSGatewayProfile gw_profile = 1;
+    int64 count = 2;
+}
+
+message GetGSGatewayProfileRequest {
+    int64 org_id = 1;
+    int64 gw_id = 2;
+    int64 offset = 3;
+    int64 limit = 4;
+}
+
+message GSGatewayProfile {
+    int64 id = 1;
+    string mac = 2;
+    int64 fk_gw_ns = 3;
+    int64 fk_wallet = 4;
+    GatewayMode mode = 5;
+    string create_at = 6;
+    string last_seen_at = 7;
+    int64 org_id = 8;
+    string description = 9;
+    string name = 10;
+}
+
+message GetGSGatewayProfileResponse {
+    GSGatewayProfile gw_profile = 1;
+}
+
+message GetGatewayHistoryRequest {
+    int64 org_id = 1;
+    int64 gw_id = 2;
+    int64 offset = 3;
+    int64 limit = 4;
+}
+
+message GetGatewayHistoryResponse {
+    string gw_history = 1;
+}
+
+message SetGatewayModeRequest {
+    int64 org_id = 1;
+    int64 gw_id = 2;
+    GatewayMode gw_mode = 3;
+}
+
+message SetGatewayModeResponse {
+    bool status = 1;
 }
 
 message BatchResetDefaultGatewatConfigRequest {
-	string organization_list = 1;
+    string organization_list = 1;
 }
 
 message BatchResetDefaultGatewatConfigResponse {
-	string status = 1;
+    string status = 1;
 }
 
 message ResetDefaultGatewatConfigByIDRequest {
-	string id = 1;
+    string id = 1;
 }
 
 message ResetDefaultGatewatConfigByIDResponse {
-	string status = 1;
+    string status = 1;
 }
 
 message Gateway {
-	// Gateway ID (HEX encoded).
-	string id = 1;
+    // Gateway ID (HEX encoded).
+    string id = 1;
 
-	// Gateway name.
-	string name = 2;
-	
-	// Gateway description.
-	string description = 3;
+    // Gateway name.
+    string name = 2;
 
-	// Gateway location.
-	common.Location location = 4;
+    // Gateway description.
+    string description = 3;
 
-	// Organization ID to which the gateway belongs.
-	// This can't be changed after creating the gateway.
-	int64 organization_id = 5 [json_name = "organizationID"];
+    // Gateway location.
+    common.Location location = 4;
 
-	// Set to true to enable gateway discovery.
-	bool discovery_enabled = 6;
+    // Organization ID to which the gateway belongs.
+    // This can't be changed after creating the gateway.
+    int64 organization_id = 5 [json_name = "organizationID"];
 
-	// Network-server ID on which the gateway is provisioned.
-	int64 network_server_id = 7 [json_name = "networkServerID"];
+    // Set to true to enable gateway discovery.
+    bool discovery_enabled = 6;
 
-	// Gateway-profile ID (UUID string, optional).
-	string gateway_profile_id = 8 [json_name = "gatewayProfileID"];
+    // Network-server ID on which the gateway is provisioned.
+    int64 network_server_id = 7 [json_name = "networkServerID"];
 
-	// Gateway boards configuration (optional).
+    // Gateway-profile ID (UUID string, optional).
+    string gateway_profile_id = 8 [json_name = "gatewayProfileID"];
+
+    // Gateway boards configuration (optional).
     // This is (currently) only needed when the gateway supports the fine-timestamp
     // and you you would like to add the FPGA ID to the gateway meta-data or would
-	// like LPWAN Server to decrypt the fine-timestamp.
-	repeated GatewayBoard boards = 9;
+    // like LPWAN Server to decrypt the fine-timestamp.
+    repeated GatewayBoard boards = 9;
+    // Tags (user defined).
+    map<string, string> tags = 10;
+
+    // Metadata (provided by the gateway).
+    map<string, string> metadata = 11;
 }
 
 message GatewayBoard {
@@ -209,69 +302,70 @@ message GatewayBoard {
 }
 
 message CreateGatewayRequest {
-	// Gateway object to create.
-	Gateway gateway = 1;
+    // Gateway object to create.
+    Gateway gateway = 1;
 }
 
 message GetGatewayRequest {
-	// Gateway ID (HEX encoded).
-	string id = 1;
+    // Gateway ID (HEX encoded).
+    string id = 1;
 }
 
 message GetGatewayResponse {
-	// Gateway object.
-	Gateway gateway = 1;
-	
-	// Created at timestamp.
-	google.protobuf.Timestamp created_at = 2;
-	
-	// Last update timestamp.
-	google.protobuf.Timestamp updated_at = 3;
-	
-	// First seen at timestamp.
-	google.protobuf.Timestamp first_seen_at = 4;
-	
-	// Last seen at timestamp.
-	google.protobuf.Timestamp last_seen_at = 5;
+    // Gateway object.
+    Gateway gateway = 1;
+
+    // Created at timestamp.
+    google.protobuf.Timestamp created_at = 2;
+
+    // Last update timestamp.
+    google.protobuf.Timestamp updated_at = 3;
+
+    // First seen at timestamp.
+    google.protobuf.Timestamp first_seen_at = 4;
+
+    // Last seen at timestamp.
+    google.protobuf.Timestamp last_seen_at = 5;
 };
 
 message DeleteGatewayRequest {
-	// Gateway ID (HEX encoded).
-	string id = 1;
+    // Gateway ID (HEX encoded).
+    string id = 1;
 }
 
 message ListGatewayRequest {
-	// Max number of nodes to return in the result-set.
-	int32 limit = 1;
+    // Max number of nodes to return in the result-set.
+    int32 limit = 1;
 
-	// Offset of the result-set (for pagination).
-	int32 offset = 2;
+    // Offset of the result-set (for pagination).
+    int32 offset = 2;
 
-	// ID of the organization for which to filter on, when left blank the
-	// response will return all gateways to which the user has access to.
-	int64 organization_id = 3 [json_name = "organizationID"];
+    // ID of the organization for which to filter on, when left blank the
+    // response will return all gateways to which the user has access to.
+    int64 organization_id = 3 [json_name = "organizationID"];
 
-	// Search on name or gateway MAC (optional).
-	string search = 4;
+    // Search on name or gateway MAC (optional).
+    string search = 4;
 }
 
-message ListGatewayLocationsRequest {}
+message ListGatewayLocationsRequest {
+}
 
 message GatewayListItem {
-	// Gateway ID (HEX encoded).
-	string id = 1;
-	
-	// A name for the gateway
-	string name = 2;
-	
-	// A description for the gateway
-	string description = 3;
+    // Gateway ID (HEX encoded).
+    string id = 1;
 
-	// Create timestamp.
-	google.protobuf.Timestamp created_at = 4;
-	
-	// Last update timestamp.
-	google.protobuf.Timestamp updated_at = 5;
+    // A name for the gateway
+    string name = 2;
+
+    // A description for the gateway
+    string description = 3;
+
+    // Create timestamp.
+    google.protobuf.Timestamp created_at = 4;
+
+    // Last update timestamp.
+    google.protobuf.Timestamp updated_at = 5;
 
     // First seen timestamp.
     google.protobuf.Timestamp first_seen_at = 8;
@@ -279,127 +373,127 @@ message GatewayListItem {
     // Last seen timestamp.
     google.protobuf.Timestamp last_seen_at = 9;
 
-	// Organization ID.
-	int64 organization_id = 6 [json_name = "organizationID"];
+    // Organization ID.
+    int64 organization_id = 6 [json_name = "organizationID"];
 
-	// Network-server ID.
-	int64 network_server_id = 7 [json_name = "networkServerID"];
+    // Network-server ID.
+    int64 network_server_id = 7 [json_name = "networkServerID"];
 
-	// Location.
-	common.Location location = 10;
+    // Location.
+    common.Location location = 10;
 }
 
 message GatewayLocation {
-	// Latitude of the gateway -90.0 to 90.0.
-	double latitude = 1;
-	// Longitude of the gateway -180.0 to 180.0.
-	double longitude = 2;
-	// Altitude of the gateway in meters.
-	double altitude = 3;
+    // Latitude of the gateway -90.0 to 90.0.
+    double latitude = 1;
+    // Longitude of the gateway -180.0 to 180.0.
+    double longitude = 2;
+    // Altitude of the gateway in meters.
+    double altitude = 3;
 }
 
 message GatewayLocationListItem {
-	// Location.
-	GatewayLocation location = 10;
+    // Location.
+    GatewayLocation location = 10;
 }
 
 message ListGatewayResponse {
-	// Total number of nodes available within the result-set.
-	int64 total_count = 1;
+    // Total number of nodes available within the result-set.
+    int64 total_count = 1;
 
-	// Nodes within this result-set.
-	repeated GatewayListItem result = 2;
+    // Nodes within this result-set.
+    repeated GatewayListItem result = 2;
 }
 
 message ListGatewayLocationsResponse {
-	// Nodes within this result-set.
-	repeated GatewayLocationListItem result = 1;
+    // Nodes within this result-set.
+    repeated GatewayLocationListItem result = 1;
 }
 
 
 message UpdateGatewayRequest {
-	// Gateway object to update.
-	Gateway gateway = 1;
+    // Gateway object to update.
+    Gateway gateway = 1;
 }
 
 message GatewayStats {
-	// Timestamp of the (aggregated) measurement.
-	google.protobuf.Timestamp timestamp = 1;
+    // Timestamp of the (aggregated) measurement.
+    google.protobuf.Timestamp timestamp = 1;
 
-	// Packets received by the gateway.
-	int32 rx_packets_received = 2;
+    // Packets received by the gateway.
+    int32 rx_packets_received = 2;
 
-	// Packets received by the gateway that passed the CRC check.
-	int32 rx_packets_received_ok = 3 [json_name = "rxPacketsReceivedOK"];
+    // Packets received by the gateway that passed the CRC check.
+    int32 rx_packets_received_ok = 3 [json_name = "rxPacketsReceivedOK"];
 
-	// Packets received by the gateway for transmission.
-	int32 tx_packets_received = 4;
+    // Packets received by the gateway for transmission.
+    int32 tx_packets_received = 4;
 
-	// Packets transmitted by the gateway.
-	int32 tx_packets_emitted = 5;
+    // Packets transmitted by the gateway.
+    int32 tx_packets_emitted = 5;
 }
 
 message GetGatewayStatsRequest {
-	// Gateway ID (HEX encoded).
-	string gateway_id = 1 [json_name = "gatewayID"];
+    // Gateway ID (HEX encoded).
+    string gateway_id = 1 [json_name = "gatewayID"];
 
-	// Aggregation interval.  One of "second", "minute", "hour", "day", "week",
-	// "month", "quarter", "year".  Case insensitive.
-	string interval = 2;
+    // Aggregation interval.  One of "second", "minute", "hour", "day", "week",
+    // "month", "quarter", "year".  Case insensitive.
+    string interval = 2;
 
-	// Timestamp to start from.
-	google.protobuf.Timestamp start_timestamp = 3;
+    // Timestamp to start from.
+    google.protobuf.Timestamp start_timestamp = 3;
 
-	// Timestamp until to get from.
-	google.protobuf.Timestamp end_timestamp = 4;
+    // Timestamp until to get from.
+    google.protobuf.Timestamp end_timestamp = 4;
 }
 
 message GetGatewayStatsResponse {
-	repeated GatewayStats result = 1;
+    repeated GatewayStats result = 1;
 }
 
 message PingRX {
-	// Gateway ID (HEX encoded).
-	string gateway_id = 1 [json_name = "gatewayID"];
+    // Gateway ID (HEX encoded).
+    string gateway_id = 1 [json_name = "gatewayID"];
 
-	// RSSI.
-	int32 rssi = 2;
+    // RSSI.
+    int32 rssi = 2;
 
-	// LoRa SNR.
-	double lora_snr = 3 [json_name = "loRaSNR"];
+    // LoRa SNR.
+    double lora_snr = 3 [json_name = "loRaSNR"];
 
-	// Latitude of the gateway -90.0 to 90.0.
-	double latitude = 4;
-	
-	// Longitude of the gateway -180.0 to 180.0.
-	double longitude = 5;
-	
-	// Altitude of the gateway in meters.
-	double altitude = 6;
+    // Latitude of the gateway -90.0 to 90.0.
+    double latitude = 4;
+
+    // Longitude of the gateway -180.0 to 180.0.
+    double longitude = 5;
+
+    // Altitude of the gateway in meters.
+    double altitude = 6;
 }
 
 message GetLastPingRequest {
-	// Gateway ID (HEX encoded).
-	string gateway_id = 1 [json_name = "gatewayID"];
+    // Gateway ID (HEX encoded).
+    string gateway_id = 1 [json_name = "gatewayID"];
 }
 
 message GetLastPingResponse {
-	// Created at timestamp.
-	google.protobuf.Timestamp created_at = 1;
+    // Created at timestamp.
+    google.protobuf.Timestamp created_at = 1;
 
-	// Frequency (Hz).
-	uint32 frequency = 2;
+    // Frequency (Hz).
+    uint32 frequency = 2;
 
-	// Data-rate.
-	uint32 dr = 3;
+    // Data-rate.
+    uint32 dr = 3;
 
-	// Gateways and meta-data of reception.
-	repeated PingRX ping_rx = 4 [json_name = "pingRX"];
+    // Gateways and meta-data of reception.
+    repeated PingRX ping_rx = 4 [json_name = "pingRX"];
 }
 
 message StreamGatewayFrameLogsRequest {
-	// Gateway ID (HEX encoded).
-	string gateway_id = 1 [json_name = "gatewayID"];
+    // Gateway ID (HEX encoded).
+    string gateway_id = 1 [json_name = "gatewayID"];
 }
 
 message StreamGatewayFrameLogsResponse {
@@ -413,74 +507,74 @@ message StreamGatewayFrameLogsResponse {
 }
 
 message GetGwConfigRequest {
-	string gateway_id = 1;
+    string gateway_id = 1;
 }
 
 message GetGwConfigResponse {
-	string conf = 1;
+    string conf = 1;
 }
 
 message UpdateGwConfigRequest {
-	string gateway_id = 1;
-	string conf = 2;
+    string gateway_id = 1;
+    string conf = 2;
 }
 
 message UpdateGwConfigResponse {
-	string status = 1;
+    string status = 1;
 }
 
 message RegisterRequest {
-	int64 organization_id = 1;
-	string sn = 2;
+    int64 organization_id = 1;
+    string sn = 2;
 }
 
 message RegisterResponse {
-	string status = 1;
+    string status = 1;
 }
 
 message GetGwPwdRequest {
-	string gateway_id = 1;
-	string sn = 2;
+    string gateway_id = 1;
+    string sn = 2;
 }
 
 message GetGwPwdResponse {
-	string password = 1;
+    string password = 1;
 }
 
 message SetAutoUpdateFirmwareRequest {
-	string gateway_id = 1;
-	bool   auto_update = 2;
+    string gateway_id = 1;
+    bool auto_update = 2;
 }
 
 message SetAutoUpdateFirmwareResponse {
-	string message = 1;
+    string message = 1;
 }
 
 message InsertNewDefaultGatewayConfigRequest {
-	string model = 1;
-	string region = 2;
-	string default_config = 3;
+    string model = 1;
+    string region = 2;
+    string default_config = 3;
 }
 
 message InsertNewDefaultGatewayConfigResponse {
-	string status = 1;
+    string status = 1;
 }
 
 message UpdateDefaultGatewayConfigRequest {
-	string model = 1;
-	string region = 2;
-	string default_config = 3;
+    string model = 1;
+    string region = 2;
+    string default_config = 3;
 }
 
 message UpdateDefaultGatewayConfigResponse {
-	string status = 1;
+    string status = 1;
 }
 
 message GetDefaultGatewayConfigRequest {
-	string model = 1;
-	string region = 2;
+    string model = 1;
+    string region = 2;
 }
 
 message GetDefaultGatewayConfigResponse {
-	string default_config = 1;
+    string default_config = 1;
 }

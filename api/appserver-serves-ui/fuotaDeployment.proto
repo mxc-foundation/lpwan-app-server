@@ -11,37 +11,37 @@ import "multicastGroup.proto";
 // FUOTADeploymentService is the service managing FUOTA deployments.
 service FUOTADeploymentService {
     // CreateForDevice creates a deployment for the given DevEUI.
-    rpc CreateForDevice(CreateFUOTADeploymentForDeviceRequest) returns (CreateFUOTADeploymentForDeviceResponse) {
-        option(google.api.http) = {
+    rpc CreateForDevice (CreateFUOTADeploymentForDeviceRequest) returns (CreateFUOTADeploymentForDeviceResponse) {
+        option (google.api.http) = {
             post: "/api/devices/{dev_eui}/fuota-deployments"
             body: "*"
         };
     }
 
     // Get returns the fuota deployment for the given id.
-    rpc Get(GetFUOTADeploymentRequest) returns (GetFUOTADeploymentResponse) {
-        option(google.api.http) = {
+    rpc Get (GetFUOTADeploymentRequest) returns (GetFUOTADeploymentResponse) {
+        option (google.api.http) = {
             get: "/api/fuota-deployments/{id}"
         };
     }
 
     // List lists the fuota deployments.
-    rpc List(ListFUOTADeploymentRequest) returns (ListFUOTADeploymentResponse) {
-        option(google.api.http) = {
+    rpc List (ListFUOTADeploymentRequest) returns (ListFUOTADeploymentResponse) {
+        option (google.api.http) = {
             get: "/api/fuota-deployments"
         };
     }
 
     // GetDeploymentDevice returns the deployment device.
-    rpc GetDeploymentDevice(GetFUOTADeploymentDeviceRequest) returns (GetFUOTADeploymentDeviceResponse) {
-        option(google.api.http) = {
+    rpc GetDeploymentDevice (GetFUOTADeploymentDeviceRequest) returns (GetFUOTADeploymentDeviceResponse) {
+        option (google.api.http) = {
             get: "/api/fuota-deployments/{fuota_deployment_id}/devices/{dev_eui}"
         };
     }
 
     // ListDeploymentDevices lists the devices (and status) for the given fuota deployment ID.
-    rpc ListDeploymentDevices(ListFUOTADeploymentDevicesRequest) returns (ListFUOTADeploymentDevicesResponse) {
-        option(google.api.http) = {
+    rpc ListDeploymentDevices (ListFUOTADeploymentDevicesRequest) returns (ListFUOTADeploymentDevicesResponse) {
+        option (google.api.http) = {
             get: "/api/fuota-deployments/{fuota_deployment_id}/devices"
         };
     }
@@ -160,7 +160,7 @@ message ListFUOTADeploymentRequest {
 
     // Application ID to filter on (optional).
     int64 application_id = 3 [json_name = "applicationID"];
-    
+
     // Device EUI (HEX encoded) (optional).
     string dev_eui = 4 [json_name = "devEUI"];
 }

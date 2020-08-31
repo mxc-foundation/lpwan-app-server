@@ -7,9 +7,8 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -33,21 +32,20 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 		return nil, grpc.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsGlobalAdmin(ctx); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationsAccess(auth.Create)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	org := storage.Organization{
 		Name:            req.Organization.Name,
 		DisplayName:     req.Organization.DisplayName,
 		CanHaveGateways: req.Organization.CanHaveGateways,
+		MaxDeviceCount:  int(req.Organization.MaxDeviceCount),
+		MaxGatewayCount: int(req.Organization.MaxGatewayCount),
 	}
 
-	err = storage.CreateOrganization(ctx, storage.DB(), &org)
+	err := storage.CreateOrganization(ctx, storage.DB(), &org)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -59,15 +57,12 @@ func (a *OrganizationAPI) Create(ctx context.Context, req *pb.CreateOrganization
 
 // Get returns the organization matching the given ID.
 func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationRequest) (*pb.GetOrganizationResponse, error) {
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsOrgUser(ctx, req.Id); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be an organization user")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationAccess(auth.Read, req.Id)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	org, err := storage.GetOrganization(ctx, storage.DB(), req.Id)
+	org, err := storage.GetOrganization(ctx, storage.DB(), req.Id, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -78,6 +73,8 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 			Name:            org.Name,
 			DisplayName:     org.DisplayName,
 			CanHaveGateways: org.CanHaveGateways,
+			MaxDeviceCount:  uint32(org.MaxDeviceCount),
+			MaxGatewayCount: uint32(org.MaxGatewayCount),
 		},
 	}
 
@@ -95,33 +92,47 @@ func (a *OrganizationAPI) Get(ctx context.Context, req *pb.GetOrganizationReques
 
 // List lists the organizations to which the user has access.
 func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequest) (*pb.ListOrganizationResponse, error) {
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationsAccess(auth.List)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	var count int
-	var orgs []storage.Organization
+	filters := storage.OrganizationFilters{
+		Search: req.Search,
+		Limit:  int(req.Limit),
+		Offset: int(req.Offset),
+	}
 
-	if err := cred.IsGlobalAdmin(ctx); err == nil {
-		count, err = storage.GetOrganizationCount(ctx, storage.DB(), req.Search)
+	sub, err := a.validator.GetSubject(ctx)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	switch sub {
+	case auth.SubjectUser:
+		user, err := a.validator.GetUser(ctx)
 		if err != nil {
 			return nil, helpers.ErrToRPCError(err)
 		}
 
-		orgs, err = storage.GetOrganizations(ctx, storage.DB(), int(req.Limit), int(req.Offset), req.Search)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+		if !user.IsAdmin {
+			filters.UserID = user.ID
 		}
-	} else {
-		count, err = storage.GetOrganizationCountForUser(ctx, storage.DB(), cred.Username(), req.Search)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		orgs, err = storage.GetOrganizationsForUser(ctx, storage.DB(), cred.Username(), int(req.Limit), int(req.Offset), req.Search)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+	case auth.SubjectAPIKey:
+		// Nothing to do as the validator function already validated that the
+		// API key must be a global admin key.
+	default:
+		return nil, grpc.Errorf(codes.Unauthenticated, "invalid token subject: %s", err)
+	}
+
+	count, err := storage.GetOrganizationCount(ctx, storage.DB(), filters)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	orgs, err := storage.GetOrganizations(ctx, storage.DB(), filters)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
 	resp := pb.ListOrganizationResponse{
@@ -153,28 +164,46 @@ func (a *OrganizationAPI) List(ctx context.Context, req *pb.ListOrganizationRequ
 
 // Update updates the given organization.
 func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganizationRequest) (*empty.Empty, error) {
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-
 	if req.Organization == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "organization must not be nil")
+		return nil, grpc.Errorf(codes.InvalidArgument, "organization must not be nil")
 	}
 
-	if err := cred.IsOrgAdmin(ctx, req.Organization.Id); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be an organization admin")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationAccess(auth.Update, req.Organization.Id)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	org, err := storage.GetOrganization(ctx, storage.DB(), req.Organization.Id)
+	sub, err := a.validator.GetSubject(ctx)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	org, err := storage.GetOrganization(ctx, storage.DB(), req.Organization.Id, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	org.Name = req.Organization.Name
 	org.DisplayName = req.Organization.DisplayName
-	if cred.IsGlobalAdmin(ctx) == nil {
+
+	switch sub {
+	case auth.SubjectUser:
+		user, err := a.validator.GetUser(ctx)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		if user.IsAdmin {
+			org.CanHaveGateways = req.Organization.CanHaveGateways
+			org.MaxGatewayCount = int(req.Organization.MaxGatewayCount)
+			org.MaxDeviceCount = int(req.Organization.MaxDeviceCount)
+		}
+	case auth.SubjectAPIKey:
+		// The validator function already validated that the
+		// API key must be a global admin key.
 		org.CanHaveGateways = req.Organization.CanHaveGateways
+		org.MaxGatewayCount = int(req.Organization.MaxGatewayCount)
+		org.MaxDeviceCount = int(req.Organization.MaxDeviceCount)
 	}
 
 	err = storage.UpdateOrganization(ctx, storage.DB(), &org)
@@ -187,15 +216,12 @@ func (a *OrganizationAPI) Update(ctx context.Context, req *pb.UpdateOrganization
 
 // Delete deletes the organization matching the given ID.
 func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganizationRequest) (*empty.Empty, error) {
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsGlobalAdmin(ctx); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be a global admin")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationAccess(auth.Delete, req.Id)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
+	err := storage.Transaction(func(tx sqlx.Ext) error {
 		if err := storage.DeleteAllGatewaysForOrganizationID(ctx, tx, req.Id); err != nil {
 			return helpers.ErrToRPCError(err)
 		}
@@ -215,12 +241,9 @@ func (a *OrganizationAPI) Delete(ctx context.Context, req *pb.DeleteOrganization
 
 // ListUsers lists the users assigned to the given organization.
 func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizationUsersRequest) (*pb.ListOrganizationUsersResponse, error) {
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsOrgUser(ctx, req.OrganizationId); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be an organization user")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationUsersAccess(auth.List, req.OrganizationId)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	users, err := storage.GetOrganizationUsers(ctx, storage.DB(), req.OrganizationId, int(req.Limit), int(req.Offset))
@@ -240,7 +263,7 @@ func (a *OrganizationAPI) ListUsers(ctx context.Context, req *pb.ListOrganizatio
 	for _, u := range users {
 		row := pb.OrganizationUserListItem{
 			UserId:         u.UserID,
-			Username:       u.Username,
+			Email:          u.Email,
 			IsAdmin:        u.IsAdmin,
 			IsDeviceAdmin:  u.IsDeviceAdmin,
 			IsGatewayAdmin: u.IsGatewayAdmin,
@@ -267,18 +290,20 @@ func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUs
 		return nil, grpc.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationUsersAccess(auth.Create, req.OrganizationUser.OrganizationId)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	if err := cred.IsOrgAdmin(ctx, req.OrganizationUser.OrganizationId); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be an organization admin")
+
+	user, err := storage.GetUserByEmail(ctx, storage.DB(), req.OrganizationUser.Email)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
 	err = storage.CreateOrganizationUser(ctx,
 		storage.DB(),
 		req.OrganizationUser.OrganizationId,
-		req.OrganizationUser.UserId,
+		user.ID,
 		req.OrganizationUser.IsAdmin,
 		req.OrganizationUser.IsDeviceAdmin,
 		req.OrganizationUser.IsGatewayAdmin,
@@ -296,15 +321,12 @@ func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganiza
 		return nil, grpc.Errorf(codes.InvalidArgument, "organization_user must not be nil")
 	}
 
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if err := cred.IsOrgAdmin(ctx, req.OrganizationUser.OrganizationId); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be an organization admin")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationUserAccess(auth.Update, req.OrganizationUser.OrganizationId, req.OrganizationUser.UserId)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err = storage.UpdateOrganizationUser(ctx,
+	err := storage.UpdateOrganizationUser(ctx,
 		storage.DB(),
 		req.OrganizationUser.OrganizationId,
 		req.OrganizationUser.UserId,
@@ -321,12 +343,25 @@ func (a *OrganizationAPI) UpdateUser(ctx context.Context, req *pb.UpdateOrganiza
 
 // DeleteUser deletes the given user from the organization.
 func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganizationUserRequest) (*empty.Empty, error) {
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationUserAccess(auth.Delete, req.OrganizationId, req.UserId)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	if err := cred.IsOrgAdmin(ctx, req.OrganizationId); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be an organization admin")
+
+	sub, err := a.validator.GetSubject(ctx)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	if sub == auth.SubjectUser {
+		user, err := a.validator.GetUser(ctx)
+		if err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		if !user.IsAdmin && user.ID == req.UserId {
+			return nil, grpc.Errorf(codes.InvalidArgument, "you can not delete yourself from an organization")
+		}
 	}
 
 	err = storage.DeleteOrganizationUser(ctx, storage.DB(), req.OrganizationId, req.UserId)
@@ -339,14 +374,9 @@ func (a *OrganizationAPI) DeleteUser(ctx context.Context, req *pb.DeleteOrganiza
 
 // GetUser returns the user details for the given user ID.
 func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUserRequest) (*pb.GetOrganizationUserResponse, error) {
-	cred, err := a.validator.GetCredentials(ctx)
-	if err != nil {
-		return nil, status.Error(codes.Unauthenticated, "not authenticated")
-	}
-	if cred.UserID() != req.UserId {
-		if err := cred.IsOrgAdmin(ctx, req.OrganizationId); err != nil {
-			return nil, status.Error(codes.PermissionDenied, "must be user themselves or an organization admin")
-		}
+	if err := a.validator.Validate(ctx,
+		auth.ValidateOrganizationUserAccess(auth.Read, req.OrganizationId, req.UserId)); err != nil {
+		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
 	user, err := storage.GetOrganizationUser(ctx, storage.DB(), req.OrganizationId, req.UserId)
@@ -361,7 +391,7 @@ func (a *OrganizationAPI) GetUser(ctx context.Context, req *pb.GetOrganizationUs
 			IsAdmin:        user.IsAdmin,
 			IsDeviceAdmin:  user.IsDeviceAdmin,
 			IsGatewayAdmin: user.IsGatewayAdmin,
-			Username:       user.Username,
+			Email:          user.Email,
 		},
 	}
 

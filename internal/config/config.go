@@ -3,13 +3,8 @@ package config
 import (
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/m2m_client"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/awssns"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/mqtt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
-	"github.com/mxc-foundation/lpwan-app-server/internal/mining"
+	mxprotocolconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 )
 
@@ -43,6 +38,7 @@ type OperatorStruct struct {
 type Config struct {
 	General struct {
 		LogLevel               int    `mapstructure:"log_level"`
+		LogToSyslog            bool   `mapstructure:"log_to_syslog"`
 		PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
 		Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
 		DefaultLanguage        string `mapstructure:"defualt_language"`
@@ -56,16 +52,20 @@ type Config struct {
 	} `mapstructure:"postgresql"`
 
 	Redis struct {
-		URL         string        `mapstructure:"url"`
-		MaxIdle     int           `mapstructure:"max_idle"`
-		IdleTimeout time.Duration `mapstructure:"idle_timeout"`
-	}
+		URL        string   `mapstructure:"url"` // deprecated
+		Servers    []string `mapstructure:"servers"`
+		Cluster    bool     `mapstructure:"cluster"`
+		MasterName string   `mapstructure:"master_name"`
+		PoolSize   int      `mapstructure:"pool_size"`
+		Password   string   `mapstructure:"password"`
+		Database   int      `mapstructure:"database"`
+	} `mapstructure:"redis"`
 
 	Operator OperatorStruct `mapstructure:"operator"`
 
 	SMTP map[string]SMTPStruct `mapstructure:"smtp"`
 
-	M2MServer m2m_client.M2MConfig `mapstructure:"m2m_server"`
+	M2MServer mxprotocolconn.MxprotocolServerStruct `mapstructure:"m2m_server"`
 
 	ProvisionServer struct {
 		ProvisionServer string `mapstructure:"provision_server"`
@@ -80,15 +80,21 @@ type Config struct {
 		Secret     string `mapstructure:"secret"`
 	} `mapstructure:"recaptcha"`
 
-	AliyunRecaptcha struct {
-		AppKey       string `mapstructure:"app_key"`
-		Scene        string `mapstructure:"scene"`
-		AccessKey    string `mapstructure:"acc_key"`
-		AccSecretKey string `mapstructure:"acc_secret_key"`
-	} `mapstructure:"aliyunrecaptcha"`
-
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
+
+		UserAuthentication struct {
+			OpenIDConnect struct {
+				Enabled                 bool   `mapstructure:"enabled"`
+				RegistrationEnabled     bool   `mapstructure:"registration_enabled"`
+				RegistrationCallbackURL string `mapstructure:"registration_callback_url"`
+				ProviderURL             string `mapstructure:"provider_url"`
+				ClientID                string `mapstructure:"client_id"`
+				ClientSecret            string `mapstructure:"client_secret"`
+				RedirectURL             string `mapstructure:"redirect_url"`
+				LoginLabel              string `mapstructure:"login_label"`
+			} `mapstructure:"openid_connect"`
+		} `mapstructure:"user_authentication"`
 
 		Codec struct {
 			JS struct {
@@ -97,14 +103,17 @@ type Config struct {
 		} `mapstructure:"codec"`
 
 		Integration struct {
-			Backend         string                 `mapstructure:"backend"` // deprecated
-			Enabled         []string               `mapstructure:"enabled"`
-			AWSSNS          awssns.Config          `mapstructure:"aws_sns"`
-			AzureServiceBus azureservicebus.Config `mapstructure:"azure_service_bus"`
-			MQTT            mqtt.Config            `mapstructure:"mqtt"`
-			GCPPubSub       gcppubsub.Config       `mapstructure:"gcp_pub_sub"`
-			PostgreSQL      postgresql.Config      `mapstructure:"postgresql"`
-		}
+			Marshaler       string                      `mapstructure:"marshaler"`
+			Backend         string                      `mapstructure:"backend"` // deprecated
+			Enabled         []string                    `mapstructure:"enabled"`
+			AWSSNS          IntegrationAWSSNSConfig     `mapstructure:"aws_sns"`
+			AzureServiceBus IntegrationAzureConfig      `mapstructure:"azure_service_bus"`
+			MQTT            IntegrationMQTTConfig       `mapstructure:"mqtt"`
+			GCPPubSub       IntegrationGCPConfig        `mapstructure:"gcp_pub_sub"`
+			Kafka           IntegrationKafkaConfig      `mapstructure:"kafka"`
+			PostgreSQL      IntegrationPostgreSQLConfig `mapstructure:"postgresql"`
+			AMQP            IntegrationAMQPConfig       `mapstructure:"amqp"`
+		} `mapstructure:"integration"`
 
 		API struct {
 			Bind       string `mapstructure:"bind"`
@@ -138,13 +147,12 @@ type Config struct {
 		} `mapstructure:"api_for_gateway"`
 
 		ExternalAPI struct {
-			Bind                       string
-			TLSCert                    string `mapstructure:"tls_cert"`
-			TLSKey                     string `mapstructure:"tls_key"`
-			JWTSecret                  string `mapstructure:"jwt_secret"`
-			OTPSecret                  string `mapstructure:"otp_secret"`
-			DisableAssignExistingUsers bool   `mapstructure:"disable_assign_existing_users"`
-			CORSAllowOrigin            string `mapstructure:"cors_allow_origin"`
+			Bind            string
+			TLSCert         string `mapstructure:"tls_cert"`
+			TLSKey          string `mapstructure:"tls_key"`
+			JWTSecret       string `mapstructure:"jwt_secret"`
+			OTPSecret       string `mapstructure:"otp_secret"`
+			CORSAllowOrigin string `mapstructure:"cors_allow_origin"`
 		} `mapstructure:"external_api"`
 
 		RemoteMulticastSetup struct {
@@ -163,6 +171,11 @@ type Config struct {
 			McGroupID int `mapstructure:"mc_group_id"`
 			FragIndex int `mapstructure:"frag_index"`
 		} `mapstructure:"fuota_deployment"`
+
+		Branding struct {
+			Footer       string
+			Registration string
+		} `mapstructure:"branding"`
 
 		MiningSetUp mining.Config `mapstructure:"mining_setup"`
 	} `mapstructure:"application_server"`
@@ -200,7 +213,108 @@ type Config struct {
 	} `mapstructure:"metrics"`
 
 	PProf pprof.Config `mapstructure:"pprof"`
+
+	Monitoring struct {
+		Bind                         string `mapstructure:"bind"`
+		PrometheusEndpoint           bool   `mapstructure:"prometheus_endpoint"`
+		PrometheusAPITimingHistogram bool   `mapstructure:"prometheus_api_timing_histogram"`
+		HealthcheckEndpoint          bool   `mapstructure:"healthcheck_endpoint"`
+	} `mapstructure:"monitoring"`
 }
+
+// IntegrationMQTTConfig holds the configuration for the MQTT integration.
+type IntegrationMQTTConfig struct {
+	Server               string        `mapstructure:"server"`
+	Username             string        `mapstructure:"username"`
+	Password             string        `mapstructure:"password"`
+	MaxReconnectInterval time.Duration `mapstructure:"max_reconnect_interval"`
+	QOS                  uint8         `mapstructure:"qos"`
+	CleanSession         bool          `mapstructure:"clean_session"`
+	ClientID             string        `mapstructure:"client_id"`
+	CACert               string        `mapstructure:"ca_cert"`
+	TLSCert              string        `mapstructure:"tls_cert"`
+	TLSKey               string        `mapstructure:"tls_key"`
+	EventTopicTemplate   string        `mapstructure:"event_topic_template"`
+	CommandTopicTemplate string        `mapstructure:"command_topic_template"`
+	RetainEvents         bool          `mapstructure:"retain_events"`
+
+	// For backards compatibility
+	UplinkTopicTemplate        string `mapstructure:"uplink_topic_template"`
+	DownlinkTopicTemplate      string `mapstructure:"downlink_topic_template"`
+	JoinTopicTemplate          string `mapstructure:"join_topic_template"`
+	AckTopicTemplate           string `mapstructure:"ack_topic_template"`
+	ErrorTopicTemplate         string `mapstructure:"error_topic_template"`
+	StatusTopicTemplate        string `mapstructure:"status_topic_template"`
+	LocationTopicTemplate      string `mapstructure:"location_topic_template"`
+	TxAckTopicTemplate         string `mapstructure:"tx_ack_topic_template"`
+	IntegrationTopicTemplate   string `mapstructure:"integration_topic_template"`
+	UplinkRetainedMessage      bool   `mapstructure:"uplink_retained_message"`
+	JoinRetainedMessage        bool   `mapstructure:"join_retained_message"`
+	AckRetainedMessage         bool   `mapstructure:"ack_retained_message"`
+	ErrorRetainedMessage       bool   `mapstructure:"error_retained_message"`
+	StatusRetainedMessage      bool   `mapstructure:"status_retained_message"`
+	LocationRetainedMessage    bool   `mapstructure:"location_retained_message"`
+	TxAckRetainedMessage       bool   `mapstructure:"tx_ack_retained_message"`
+	IntegrationRetainedMessage bool   `mapstructure:"integration_retained_message"`
+}
+
+// IntegrationAWSSNSConfig holds the AWS SNS integration configuration.
+type IntegrationAWSSNSConfig struct {
+	Marshaler          string `mapstructure:"marshaler" json:"marshaler"`
+	AWSRegion          string `mapstructure:"aws_region" json:"region"`
+	AWSAccessKeyID     string `mapstructure:"aws_access_key_id" json:"accessKeyID"`
+	AWSSecretAccessKey string `mapstructure:"aws_secret_access_key" json:"secretAccessKey"`
+	TopicARN           string `mapstructure:"topic_arn" json:"topicARN"`
+}
+
+// IntegrationAzureConfig holds the Azure Service-Bus integration configuration.
+type IntegrationAzureConfig struct {
+	Marshaler        string           `mapstructure:"marshaler" json:"marshaler"`
+	ConnectionString string           `mapstructure:"connection_string" json:"connectionString"`
+	PublishMode      AzurePublishMode `mapstructure:"publish_mode" json:"-"`
+	PublishName      string           `mapstructure:"publish_name" json:"publishName"`
+}
+
+// IntegrationGCPConfig holds the GCP Pub/Sub integration configuration.
+type IntegrationGCPConfig struct {
+	Marshaler            string `mapstructure:"marshaler" json:"marshaler"`
+	CredentialsFile      string `mapstructure:"credentials_file" json:"-"`
+	CredentialsFileBytes []byte `mapstructure:"-" json:"credentialsFile"`
+	ProjectID            string `mapstructure:"project_id" json:"projectID"`
+	TopicName            string `mapstructure:"topic_name" json:"topicName"`
+}
+
+// IntegrationPostgreSQLConfig holds the PostgreSQL integration configuration.
+type IntegrationPostgreSQLConfig struct {
+	DSN                string `json:"dsn"`
+	MaxOpenConnections int    `mapstructure:"max_open_connections"`
+	MaxIdleConnections int    `mapstructure:"max_idle_connections"`
+}
+
+// IntegrationAMQPConfig holds the AMQP integration configuration.
+type IntegrationAMQPConfig struct {
+	URL                     string `mapstructure:"url"`
+	EventRoutingKeyTemplate string `mapstructure:"event_routing_key_template"`
+}
+
+// IntegrationKafkaConfig holds the Kafka integration configuration.
+type IntegrationKafkaConfig struct {
+	Brokers          []string `mapstructure:"brokers"`
+	TLS              bool     `mapstructure:"tls"`
+	Topic            string   `mapstructure:"topic"`
+	EventKeyTemplate string   `mapstructure:"event_key_template"`
+	Username         string   `mapstructure:"username"`
+	Password         string   `mapstructure:"password"`
+}
+
+// AzurePublishMode defines the publish-mode type.
+type AzurePublishMode string
+
+// Publish modes.
+const (
+	AzurePublishModeTopic AzurePublishMode = "topic"
+	AzurePublishModeQueue AzurePublishMode = "queue"
+)
 
 // C holds the global configuration.
 var C Config

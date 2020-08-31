@@ -54,7 +54,7 @@
   "tr000053": "mxc",
   "tr000054": "Rows per page",
   "tr000055": "All users",
-  "tr000056": "Username",
+  "tr000056": "User Email",
   "tr000057": "Active",
   "tr000058": "Admin",
   "tr000059": "loraserver",
@@ -567,10 +567,10 @@
       "requester": "Requester",
       "balance": "Balance",
       "destination": "Destination",
-      "available":"Available",
+      "available": "Available",
       "submit_withdrawal_request": "Submit Withdrawal Request",
-      "date_requested": "Date Requested", 
-      "status": "Status", 
+      "date_requested": "Date Requested",
+      "status": "Status",
       "transaction_hash": "Transaction Hash",
       "request_withdraw_title": "Are you sure?",
       "request_withdraw_text_0": "You are requesting to withdraw from this Supernode. Once the request is completed, the Supernode operator must confirm this withdrawal.",
@@ -769,7 +769,7 @@
       "min": "The minimum is 0.",
       "need_number": "Requires a number.",
       "need_19_digit": "Requires number less than 19 digits.",
-      "format_unmatch":"please match the requested format."
+      "format_unmatch": "please match the requested format."
     },
     "store": {
       "device_has_been": "Device(s) has been",
@@ -798,17 +798,20 @@
       "comment": "Comment",
       "done": "Done",
       "contour_payments": "Contour Payments",
-      "code_unmatch":"incorrect OTP code. please, try it again."
+      "code_unmatch": "incorrect OTP code. please, try it again."
     },
     "system_settings": {
-      "system_settings": "System Fees"
+      "system_settings": "System Fees",
+      "update_withdraw_fee": "Withdraw Fee"
     },
     "settings": {
       "save_changes": "SAVE CHANGES",
       "proceed": "PROCEED",
       "system_settings": "System Fees",
+      "update_withdraw_fee": "Withdraw Fee",
       "control_panel": "Control Panel",
       "withdraw_fee": "Withdraw Fee",
+      "currency": "Currency",
       "downlink_price": "Downlink Price",
       "percentage_share": "Percentage Share per transaction",
       "expected_percentage": "Percentage Share expected from stake amount",
@@ -845,7 +848,7 @@
       "check_delete": "Are you sure you want to delete this user?",
       "change_password": "Change password",
       "delete": "Delete",
-      "username": "Username",
+      "username": "User Email",
       "active": "Active",
       "admin": "Admin",
       "is_active": "Is active",
@@ -941,7 +944,7 @@
       },
       "coming_soon": "Coming Soon"
     },
-    "registration": { 
+    "registration": {
       "email": "Email Address",
       "password": "Password",
       "password_hint": "(Minimum eight characters, at least one letter, one number and one special character)",
@@ -1010,6 +1013,6 @@
     "title": "MXC DataDash",
     "subtitle": "Manage your M2M Wallet in the DataDash App",
     "description": "Introducing the most progressive step in the burgeoning global data economy. A step that is set to reform the data transmission market and significantly increase transaction speeds. Welcome to the new world of data, welcome to MXC Supernodes.",
-    "menu" : "M2M Wallet"
+    "menu": "M2M Wallet"
   }
 }

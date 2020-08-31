@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -28,6 +28,13 @@ func (ts *APITestSuite) TestNetworkServer() {
 		Name: "test-org",
 	}
 	assert.NoError(storage.CreateOrganization(context.Background(), storage.DB(), &org))
+
+	adminUser := storage.User{
+		Email:    "admin@user.com",
+		IsActive: true,
+		IsAdmin:  true,
+	}
+	assert.NoError(storage.CreateUser(context.Background(), storage.DB(), &adminUser))
 
 	ts.T().Run("Create", func(t *testing.T) {
 		assert := require.New(t)
@@ -97,7 +104,7 @@ func (ts *APITestSuite) TestNetworkServer() {
 
 		t.Run("List as admin", func(t *testing.T) {
 			assert := require.New(t)
-			validator.returnIsAdmin = true
+			validator.returnUser = adminUser
 
 			listResp, err := api.List(context.Background(), &pb.ListNetworkServerRequest{
 				Limit:  10,

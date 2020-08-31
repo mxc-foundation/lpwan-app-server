@@ -10,10 +10,8 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
-
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -122,7 +120,7 @@ func migrateGatewayStatsForGatewayIDInterval(nsClient ns.NetworkServerServiceCli
 			return err
 		}
 
-		err = storage.SaveMetricsForInterval(context.Background(), storage.RedisPool(), storage.AggregationInterval(interval.String()), fmt.Sprintf("gw:%s", gatewayID), storage.MetricsRecord{
+		err = storage.SaveMetricsForInterval(context.Background(), storage.AggregationInterval(interval.String()), fmt.Sprintf("gw:%s", gatewayID), storage.MetricsRecord{
 			Time: ts,
 			Metrics: map[string]float64{
 				"rx_count":    float64(m.RxPacketsReceived),

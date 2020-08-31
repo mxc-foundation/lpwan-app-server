@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/applayer/clocksync"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/downlink"
+	"github.com/brocaar/lorawan"
+	"github.com/brocaar/lorawan/applayer/clocksync"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // HandleClockSyncCommand handles an uplink clock synchronization command.
@@ -63,7 +63,7 @@ func handleAppTimeReq(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, ti
 		return errors.Wrap(err, "marshal command error")
 	}
 
-	_, err = downlink.EnqueueDownlinkPayload(ctx, db, devEUI, false, uint8(clocksync.DefaultFPort), b)
+	_, err = storage.EnqueueDownlinkPayload(ctx, db, devEUI, false, uint8(clocksync.DefaultFPort), b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

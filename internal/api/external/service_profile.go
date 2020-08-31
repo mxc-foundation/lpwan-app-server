@@ -10,9 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 
-	"github.com/mxc-foundation/lpwan-server/api/ns"
-
-	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -235,12 +234,7 @@ func (a *ServiceProfileServiceAPI) List(ctx context.Context, req *pb.ListService
 		return nil, grpc.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	isAdmin, err := a.validator.GetIsAdmin(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	username, err := a.validator.GetUsername(ctx)
+	user, err := a.validator.GetUser(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -249,7 +243,7 @@ func (a *ServiceProfileServiceAPI) List(ctx context.Context, req *pb.ListService
 	var sps []storage.ServiceProfileMeta
 
 	if req.OrganizationId == 0 {
-		if isAdmin {
+		if user.IsAdmin {
 			sps, err = storage.GetServiceProfiles(ctx, storage.DB(), int(req.Limit), int(req.Offset))
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
@@ -260,12 +254,12 @@ func (a *ServiceProfileServiceAPI) List(ctx context.Context, req *pb.ListService
 				return nil, helpers.ErrToRPCError(err)
 			}
 		} else {
-			sps, err = storage.GetServiceProfilesForUser(ctx, storage.DB(), username, int(req.Limit), int(req.Offset))
+			sps, err = storage.GetServiceProfilesForUser(ctx, storage.DB(), user.ID, int(req.Limit), int(req.Offset))
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
 
-			count, err = storage.GetServiceProfileCountForUser(ctx, storage.DB(), username)
+			count, err = storage.GetServiceProfileCountForUser(ctx, storage.DB(), user.ID)
 			if err != nil {
 				return nil, helpers.ErrToRPCError(err)
 			}
@@ -287,10 +281,11 @@ func (a *ServiceProfileServiceAPI) List(ctx context.Context, req *pb.ListService
 	}
 	for _, sp := range sps {
 		row := pb.ServiceProfileListItem{
-			Id:              sp.ServiceProfileID.String(),
-			Name:            sp.Name,
-			OrganizationId:  sp.OrganizationID,
-			NetworkServerId: sp.NetworkServerID,
+			Id:                sp.ServiceProfileID.String(),
+			Name:              sp.Name,
+			OrganizationId:    sp.OrganizationID,
+			NetworkServerId:   sp.NetworkServerID,
+			NetworkServerName: sp.NetworkServerName,
 		}
 
 		row.CreatedAt, err = ptypes.TimestampProto(sp.CreatedAt)

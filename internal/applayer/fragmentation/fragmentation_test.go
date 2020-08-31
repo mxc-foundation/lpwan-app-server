@@ -5,12 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brocaar/lorawan"
-	"github.com/brocaar/lorawan/applayer/fragmentation"
 	"github.com/gofrs/uuid"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/brocaar/lorawan"
+	"github.com/brocaar/lorawan/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -21,14 +21,13 @@ type FragmentationSessionTestSuite struct {
 	suite.Suite
 	tx *storage.TxLogger
 
-	NSClient         *nsmock.Client
-	NetworkServer    storage.NetworkServer
-	Organization     storage.Organization
-	ServiceProfile   storage.ServiceProfile
-	Application      storage.Application
-	DeviceProfile    storage.DeviceProfile
-	Device           storage.Device
-	DeviceActivation storage.DeviceActivation
+	NSClient       *nsmock.Client
+	NetworkServer  storage.NetworkServer
+	Organization   storage.Organization
+	ServiceProfile storage.ServiceProfile
+	Application    storage.Application
+	DeviceProfile  storage.DeviceProfile
+	Device         storage.Device
 }
 
 func (ts *FragmentationSessionTestSuite) SetupSuite() {
@@ -102,11 +101,6 @@ func (ts *FragmentationSessionTestSuite) SetupTest() {
 		Description:     "test device",
 	}
 	assert.NoError(storage.CreateDevice(context.Background(), ts.tx, &ts.Device))
-
-	ts.DeviceActivation = storage.DeviceActivation{
-		DevEUI: ts.Device.DevEUI,
-	}
-	assert.NoError(storage.CreateDeviceActivation(context.Background(), ts.tx, &ts.DeviceActivation))
 }
 
 func (ts *FragmentationSessionTestSuite) TestSyncFragSessionSetupReq() {
@@ -134,7 +128,7 @@ func (ts *FragmentationSessionTestSuite) TestSyncFragSessionSetupReq() {
 	req := <-ts.NSClient.CreateDeviceQueueItemChan
 	assert.Equal(fragmentation.DefaultFPort, uint8(req.Item.FPort))
 
-	b, err := lorawan.EncryptFRMPayload(ts.DeviceActivation.AppSKey, false, ts.DeviceActivation.DevAddr, 0, req.Item.FrmPayload)
+	b, err := lorawan.EncryptFRMPayload(ts.Device.AppSKey, false, ts.Device.DevAddr, 0, req.Item.FrmPayload)
 	assert.NoError(err)
 
 	var cmd fragmentation.Command
@@ -184,7 +178,7 @@ func (ts *FragmentationSessionTestSuite) TestSyncFragSessionDeleteReq() {
 	req := <-ts.NSClient.CreateDeviceQueueItemChan
 	assert.Equal(fragmentation.DefaultFPort, uint8(req.Item.FPort))
 
-	b, err := lorawan.EncryptFRMPayload(ts.DeviceActivation.AppSKey, false, ts.DeviceActivation.DevAddr, 0, req.Item.FrmPayload)
+	b, err := lorawan.EncryptFRMPayload(ts.Device.AppSKey, false, ts.Device.DevAddr, 0, req.Item.FrmPayload)
 	assert.NoError(err)
 
 	var cmd fragmentation.Command
@@ -299,7 +293,8 @@ func (ts *FragmentationSessionTestSuite) TestFragSessionDeleteAns() {
 func (ts *FragmentationSessionTestSuite) TestFragSessionStatusAns() {
 	assert := require.New(ts.T())
 	fd := storage.FUOTADeployment{
-		Name: "test-deployment",
+		Name:    "test-deployment",
+		Payload: []byte{1, 2, 3},
 	}
 	assert.NoError(storage.CreateFUOTADeploymentForDevice(context.Background(), ts.tx, &fd, ts.Device.DevEUI))
 	fdd, err := storage.GetPendingFUOTADeploymentDevice(context.Background(), ts.tx, ts.Device.DevEUI)

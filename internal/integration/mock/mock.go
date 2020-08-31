@@ -3,30 +3,35 @@ package mock
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 )
 
 // Integration implements a mock integration.
 type Integration struct {
-	SendDataUpChan               chan integration.DataUpPayload
-	SendJoinNotificationChan     chan integration.JoinNotification
-	SendACKNotificationChan      chan integration.ACKNotification
-	SendErrorNotificationChan    chan integration.ErrorNotification
-	DataDownPayloadChan          chan integration.DataDownPayload
-	SendStatusNotificationChan   chan integration.StatusNotification
-	SendLocationNotificationChan chan integration.LocationNotification
+	SendDataUpChan                  chan pb.UplinkEvent
+	SendJoinNotificationChan        chan pb.JoinEvent
+	SendACKNotificationChan         chan pb.AckEvent
+	SendErrorNotificationChan       chan pb.ErrorEvent
+	DataDownPayloadChan             chan models.DataDownPayload
+	SendStatusNotificationChan      chan pb.StatusEvent
+	SendLocationNotificationChan    chan pb.LocationEvent
+	SendTxAckNotificationChan       chan pb.TxAckEvent
+	SendIntegrationNotificationChan chan pb.IntegrationEvent
 }
 
 // New creates a new mock integration.
 func New() *Integration {
 	return &Integration{
-		SendDataUpChan:               make(chan integration.DataUpPayload, 100),
-		SendJoinNotificationChan:     make(chan integration.JoinNotification, 100),
-		SendACKNotificationChan:      make(chan integration.ACKNotification, 100),
-		SendErrorNotificationChan:    make(chan integration.ErrorNotification, 100),
-		DataDownPayloadChan:          make(chan integration.DataDownPayload, 100),
-		SendStatusNotificationChan:   make(chan integration.StatusNotification, 100),
-		SendLocationNotificationChan: make(chan integration.LocationNotification, 100),
+		SendDataUpChan:                  make(chan pb.UplinkEvent, 100),
+		SendJoinNotificationChan:        make(chan pb.JoinEvent, 100),
+		SendACKNotificationChan:         make(chan pb.AckEvent, 100),
+		SendErrorNotificationChan:       make(chan pb.ErrorEvent, 100),
+		DataDownPayloadChan:             make(chan models.DataDownPayload, 100),
+		SendStatusNotificationChan:      make(chan pb.StatusEvent, 100),
+		SendLocationNotificationChan:    make(chan pb.LocationEvent, 100),
+		SendTxAckNotificationChan:       make(chan pb.TxAckEvent, 100),
+		SendIntegrationNotificationChan: make(chan pb.IntegrationEvent, 100),
 	}
 }
 
@@ -35,43 +40,55 @@ func (i *Integration) Close() error {
 	return nil
 }
 
-// SendDataUp method.
-func (i *Integration) SendDataUp(ctx context.Context, payload integration.DataUpPayload) error {
+// HandleUplinkEvent sends an UplinkEvent.
+func (i *Integration) HandleUplinkEvent(ctx context.Context, vars map[string]string, payload pb.UplinkEvent) error {
 	i.SendDataUpChan <- payload
 	return nil
 }
 
-// SendJoinNotification Method.
-func (i *Integration) SendJoinNotification(ctx context.Context, payload integration.JoinNotification) error {
+// HandleJoinEvent sends a JoinEvent.
+func (i *Integration) HandleJoinEvent(ctx context.Context, vars map[string]string, payload pb.JoinEvent) error {
 	i.SendJoinNotificationChan <- payload
 	return nil
 }
 
-// SendACKNotification method.
-func (i *Integration) SendACKNotification(ctx context.Context, payload integration.ACKNotification) error {
+// HandleAckEvent sends an AckEvent.
+func (i *Integration) HandleAckEvent(ctx context.Context, vars map[string]string, payload pb.AckEvent) error {
 	i.SendACKNotificationChan <- payload
 	return nil
 }
 
-// SendErrorNotification method.
-func (i *Integration) SendErrorNotification(ctx context.Context, payload integration.ErrorNotification) error {
+// HandleErrorEvent sends an ErrorEvent.
+func (i *Integration) HandleErrorEvent(ctx context.Context, vars map[string]string, payload pb.ErrorEvent) error {
 	i.SendErrorNotificationChan <- payload
 	return nil
 }
 
 // DataDownChan method.
-func (i *Integration) DataDownChan() chan integration.DataDownPayload {
+func (i *Integration) DataDownChan() chan models.DataDownPayload {
 	return i.DataDownPayloadChan
 }
 
-// SendStatusNotification method.
-func (i *Integration) SendStatusNotification(ctx context.Context, payload integration.StatusNotification) error {
+// HandleStatusEvent sends a StatusEvent.
+func (i *Integration) HandleStatusEvent(ctx context.Context, vars map[string]string, payload pb.StatusEvent) error {
 	i.SendStatusNotificationChan <- payload
 	return nil
 }
 
-// SendLocationNotification method.
-func (i *Integration) SendLocationNotification(ctx context.Context, payload integration.LocationNotification) error {
+// HandleLocationEvent sends a LocationEvent.
+func (i *Integration) HandleLocationEvent(ctx context.Context, vars map[string]string, payload pb.LocationEvent) error {
 	i.SendLocationNotificationChan <- payload
+	return nil
+}
+
+// HandleTxAckEvent sends a TxAckEvent.
+func (i *Integration) HandleTxAckEvent(ctx context.Context, vars map[string]string, payload pb.TxAckEvent) error {
+	i.SendTxAckNotificationChan <- payload
+	return nil
+}
+
+// HandleIntegrationEvent sends an IntegrationEvent.
+func (i *Integration) HandleIntegrationEvent(ctx context.Context, vars map[string]string, payload pb.IntegrationEvent) error {
+	i.SendIntegrationNotificationChan <- payload
 	return nil
 }

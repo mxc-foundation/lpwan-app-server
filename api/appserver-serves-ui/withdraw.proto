@@ -22,7 +22,7 @@ service WithdrawService {
     }
 
     rpc ModifyWithdrawFee (ModifyWithdrawFeeRequest) returns (ModifyWithdrawFeeResponse) {
-        option(google.api.http) = {
+        option (google.api.http) = {
 			put: "/api/withdraw/modify-withdraw-fee"
 			body: "*"
 		};

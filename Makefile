@@ -1,4 +1,4 @@
-.PHONY: format build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
+.PHONY: build clean test lint sec package package-deb ui/build ui/build_dep api statics requirements ui-requirements serve update-vendor internal/statics internal/migrations static/swagger/api.swagger.json
 PKGS := $(shell go list ./... | grep -v /vendor |grep -v lora-app-server/api | grep -v /migrations | grep -v /static | grep -v /ui)
 VERSION := $(shell git describe --tags --always --long |sed -e "s/^v//")
 
@@ -47,8 +47,10 @@ dist: ui/build internal/statics internal/migrations
 	@goreleaser
 	mkdir -p dist/upload/tar
 	mkdir -p dist/upload/deb
+	mkdir -p dist/upload/rpm
 	mv dist/*.tar.gz dist/upload/tar
 	mv dist/*.deb dist/upload/deb
+	mv dist/*.rpm dist/upload/rpm
 
 snapshot: ui/build internal/statics internal/migrations
 	@goreleaser --snapshot
@@ -64,14 +66,18 @@ ui/build_dep:
 	@cd ui && npm audit fix
 
 ui/build:
-	@echo "BUilding ui"
+	@echo "Building ui"
 	@cd ui && npm run build
 	@mv ui/build/* static
 
 api:
 	@echo "Generating API code from .proto files"
-	go generate api/appserver-serves-ui/api.go
-	go generate api/appserver-serves-gateway/api.go
+	@rm -rf /tmp/chirpstack-api
+	@git clone https://github.com/brocaar/chirpstack-api.git /tmp/chirpstack-api
+	@cp -rf /tmp/chirpstack-api/protobuf/* api/appserver-serves-ui/
+	@go generate api/appserver-serves-ui/api.go
+	@go generate api/appserver-serves-gateway/api.go
+	@go generate api/appserver-serves-m2m/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
 	@echo "Generating static files"
@@ -86,12 +92,7 @@ static/swagger/api.swagger.json:
 
 
 # shortcuts for development
-
 dev-requirements:
-	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-	go install github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-	go install github.com/golang/protobuf/protoc-gen-go
-	go install github.com/elazarl/go-bindata-assetfs/go-bindata-assetfs
 	go install github.com/jteeuwen/go-bindata/go-bindata
 
 ui-requirements:
@@ -101,10 +102,3 @@ ui-requirements:
 serve: build
 	@echo "Starting LPWAN App Server"
 	./build/lora-app-server
-
-update-vendor:
-	@echo "Updating vendored packages"
-	@govendor update +external
-
-run-compose-test:
-	docker-compose run --rm appserver make test

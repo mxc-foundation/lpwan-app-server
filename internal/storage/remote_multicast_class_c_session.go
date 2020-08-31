@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/brocaar/lorawan"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 

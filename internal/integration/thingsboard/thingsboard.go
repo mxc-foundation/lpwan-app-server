@@ -14,7 +14,9 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
+	"github.com/brocaar/lorawan"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
@@ -40,12 +42,15 @@ func New(conf Config) (*Integration, error) {
 	}, nil
 }
 
-// SendDataUp sends the (decoded) uplink payload to the Thingsboard endpoint.
-func (i *Integration) SendDataUp(ctx context.Context, pl integration.DataUpPayload) error {
-	accessToken, ok := pl.Variables["ThingsBoardAccessToken"]
+// HandleUplinkEvent sends the uplink payload to Thingsboard.
+func (i *Integration) HandleUplinkEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.UplinkEvent) error {
+	var devEUI lorawan.EUI64
+	copy(devEUI[:], pl.DevEui)
+
+	accessToken, ok := vars["ThingsBoardAccessToken"]
 	if !ok {
 		log.WithFields(log.Fields{
-			"dev_eui": pl.DevEUI,
+			"dev_eui": devEUI,
 			"ctx_id":  ctx.Value(logging.ContextIDKey),
 		}).Warning("integration/thingsboard: device does not have a 'ThingsBoardAccessToken' variable")
 		return nil
@@ -56,11 +61,37 @@ func (i *Integration) SendDataUp(ctx context.Context, pl integration.DataUpPaylo
 		attributes[k] = v
 	}
 	attributes["application_name"] = pl.ApplicationName
-	attributes["application_id"] = strconv.FormatInt(pl.ApplicationID, 10)
+	attributes["application_id"] = strconv.FormatInt(int64(pl.ApplicationId), 10)
 	attributes["device_name"] = pl.DeviceName
-	attributes["dev_eui"] = pl.DevEUI
+	attributes["dev_eui"] = devEUI
 
-	telemetry := structToMap("data", pl.Object)
+	var obj interface{}
+	if pl.ObjectJson != "" {
+		if err := json.Unmarshal([]byte(pl.ObjectJson), &obj); err != nil {
+			return errors.Wrap(err, "unmarshal json error")
+		}
+	}
+
+	telemetry := objToMap("data", obj)
+
+	if len(pl.RxInfo) != 0 {
+		var rssi int32
+		for i, rxInfo := range pl.RxInfo {
+			if i == 0 || rxInfo.Rssi > rssi {
+				rssi = rxInfo.Rssi
+			}
+		}
+
+		var snr float64
+		for i, rxInfo := range pl.RxInfo {
+			if i == 0 || rxInfo.LoraSnr > snr {
+				snr = rxInfo.LoraSnr
+			}
+		}
+
+		telemetry["data_rssi"] = rssi
+		telemetry["data_snr"] = snr
+	}
 
 	if err := i.send(accessToken, attributes, telemetry); err != nil {
 		return errors.Wrap(err, "send event error")
@@ -68,34 +99,37 @@ func (i *Integration) SendDataUp(ctx context.Context, pl integration.DataUpPaylo
 
 	log.WithFields(log.Fields{
 		"event":   "up",
-		"dev_eui": pl.DevEUI,
+		"dev_eui": devEUI,
 		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("integration/thingsboard: attributes and telemetry uploaded")
 
 	return nil
 }
 
-// SendJoinNotification returns nil.
-func (i *Integration) SendJoinNotification(ctx context.Context, pl integration.JoinNotification) error {
+// HandleJoinEvent is not implemented.
+func (i *Integration) HandleJoinEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.JoinEvent) error {
 	return nil
 }
 
-// SendACKNotification returns nil.
-func (i *Integration) SendACKNotification(ctx context.Context, pl integration.ACKNotification) error {
+// HandleAckEvent is not implemented.
+func (i *Integration) HandleAckEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.AckEvent) error {
 	return nil
 }
 
-// SendErrorNotification returns nil.
-func (i *Integration) SendErrorNotification(ctx context.Context, pl integration.ErrorNotification) error {
+// HandleErrorEvent is not implemented.
+func (i *Integration) HandleErrorEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.ErrorEvent) error {
 	return nil
 }
 
-// SendStatusNotification sends the device-status fields to the Thingsboard endpoint.
-func (i *Integration) SendStatusNotification(ctx context.Context, pl integration.StatusNotification) error {
-	accessToken, ok := pl.Variables["ThingsBoardAccessToken"]
+// HandleStatusEvent sends the device-status to Thingsboard.
+func (i *Integration) HandleStatusEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.StatusEvent) error {
+	var devEUI lorawan.EUI64
+	copy(devEUI[:], pl.DevEui)
+
+	accessToken, ok := vars["ThingsBoardAccessToken"]
 	if !ok {
 		log.WithFields(log.Fields{
-			"dev_eui": pl.DevEUI,
+			"dev_eui": devEUI,
 			"ctx_id":  ctx.Value(logging.ContextIDKey),
 		}).Warning("integration/thingsboard: device does not have a 'ThingsBoardAccessToken' variable")
 		return nil
@@ -106,12 +140,11 @@ func (i *Integration) SendStatusNotification(ctx context.Context, pl integration
 		attributes[k] = v
 	}
 	attributes["application_name"] = pl.ApplicationName
-	attributes["application_id"] = strconv.FormatInt(pl.ApplicationID, 10)
+	attributes["application_id"] = strconv.FormatInt(int64(pl.ApplicationId), 10)
 	attributes["device_name"] = pl.DeviceName
-	attributes["dev_eui"] = pl.DevEUI
+	attributes["dev_eui"] = devEUI
 
 	telemetry := map[string]interface{}{
-		"status_battery":                   pl.Battery,
 		"status_margin":                    pl.Margin,
 		"status_external_power_source":     pl.ExternalPowerSource,
 		"status_battery_level":             pl.BatteryLevel,
@@ -123,19 +156,22 @@ func (i *Integration) SendStatusNotification(ctx context.Context, pl integration
 
 	log.WithFields(log.Fields{
 		"event":   "status",
-		"dev_eui": pl.DevEUI,
+		"dev_eui": devEUI,
 		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("integration/thingsboard: attributes and telemetry uploaded")
 
 	return nil
 }
 
-// SendLocationNotification sends the device location to the Thingsboard endpoint.
-func (i *Integration) SendLocationNotification(ctx context.Context, pl integration.LocationNotification) error {
-	accessToken, ok := pl.Variables["ThingsBoardAccessToken"]
+// HandleLocationEvent sends the location to Thingsboard.
+func (i *Integration) HandleLocationEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.LocationEvent) error {
+	var devEUI lorawan.EUI64
+	copy(devEUI[:], pl.DevEui)
+
+	accessToken, ok := vars["ThingsBoardAccessToken"]
 	if !ok {
 		log.WithFields(log.Fields{
-			"dev_eui": pl.DevEUI,
+			"dev_eui": devEUI,
 			"ctx_id":  ctx.Value(logging.ContextIDKey),
 		}).Warning("integration/thingsboard: device does not have a 'ThingsBoardAccessToken' variable")
 		return nil
@@ -146,14 +182,14 @@ func (i *Integration) SendLocationNotification(ctx context.Context, pl integrati
 		attributes[k] = v
 	}
 	attributes["application_name"] = pl.ApplicationName
-	attributes["application_id"] = strconv.FormatInt(pl.ApplicationID, 10)
+	attributes["application_id"] = strconv.FormatInt(int64(pl.ApplicationId), 10)
 	attributes["device_name"] = pl.DeviceName
-	attributes["dev_eui"] = pl.DevEUI
+	attributes["dev_eui"] = devEUI
 
 	telemetry := map[string]interface{}{
-		"location_latitude":  pl.Location.Latitude,
-		"location_longitude": pl.Location.Longitude,
-		"location_altitude":  pl.Location.Altitude,
+		"location_latitude":  pl.GetLocation().GetLatitude(),
+		"location_longitude": pl.GetLocation().GetLongitude(),
+		"location_altitude":  pl.GetLocation().GetAltitude(),
 	}
 
 	if err := i.send(accessToken, attributes, telemetry); err != nil {
@@ -162,15 +198,25 @@ func (i *Integration) SendLocationNotification(ctx context.Context, pl integrati
 
 	log.WithFields(log.Fields{
 		"event":   "location",
-		"dev_eui": pl.DevEUI,
+		"dev_eui": devEUI,
 		"ctx_id":  ctx.Value(logging.ContextIDKey),
 	}).Info("integration/thingsboard: attributes and telemetry uploaded")
 
 	return nil
 }
 
+// HandleTxAckEvent is not implemented.
+func (i *Integration) HandleTxAckEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.TxAckEvent) error {
+	return nil
+}
+
+// HandleIntegrationEvent is not implemented.
+func (i *Integration) HandleIntegrationEvent(ctx context.Context, _ models.Integration, vars map[string]string, pl pb.IntegrationEvent) error {
+	return nil
+}
+
 // DataDownChan returns nil.
-func (i *Integration) DataDownChan() chan integration.DataDownPayload {
+func (i *Integration) DataDownChan() chan models.DataDownPayload {
 	return nil
 }
 
@@ -223,7 +269,7 @@ func (i *Integration) send(token string, attributes, telemetry map[string]interf
 	return nil
 }
 
-func structToMap(prefix string, v interface{}) map[string]interface{} {
+func objToMap(prefix string, v interface{}) map[string]interface{} {
 	out := make(map[string]interface{})
 
 	if v == nil {
@@ -242,7 +288,7 @@ func structToMap(prefix string, v interface{}) map[string]interface{} {
 			for _, k := range keys {
 				keyName := fmt.Sprintf("%v", k.Interface())
 
-				for k, v := range structToMap(prefix+"_"+keyName, v.MapIndex(k).Interface()) {
+				for k, v := range objToMap(prefix+"_"+keyName, v.MapIndex(k).Interface()) {
 					out[k] = v
 				}
 			}
@@ -261,14 +307,14 @@ func structToMap(prefix string, v interface{}) map[string]interface{} {
 					fieldName = strings.ToLower(v.Type().Field(i).Name)
 				}
 
-				for k, v := range structToMap(prefix+"_"+fieldName, v.Field(i).Interface()) {
+				for k, v := range objToMap(prefix+"_"+fieldName, v.Field(i).Interface()) {
 					out[k] = v
 				}
 			}
 
 		case reflect.Ptr:
 			v := reflect.Indirect(reflect.ValueOf(o))
-			for k, v := range structToMap(prefix, v.Interface()) {
+			for k, v := range objToMap(prefix, v.Interface()) {
 				out[k] = v
 			}
 

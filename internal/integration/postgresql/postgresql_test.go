@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/lib/pq/hstore"
@@ -17,7 +17,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
+	"github.com/brocaar/chirpstack-api/go/v3/common"
+	"github.com/brocaar/chirpstack-api/go/v3/gw"
+	"github.com/brocaar/lorawan"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 type deviceUp struct {
@@ -115,7 +121,11 @@ type PostgreSQLTestSuite struct {
 }
 
 func (ts *PostgreSQLTestSuite) SetupSuite() {
-	dsn := "postgres://localhost/loraserver_as_test?sslmode=disable"
+	assert := require.New(ts.T())
+	conf := test.GetConfig()
+	assert.NoError(storage.Setup(conf))
+
+	dsn := "postgres://localhost/chirpstack_as_test?sslmode=disable"
 	if v := os.Getenv("TEST_POSTGRES_DSN"); v != "" {
 		dsn = v
 	}
@@ -126,7 +136,7 @@ func (ts *PostgreSQLTestSuite) SetupSuite() {
 		panic(err)
 	}
 
-	ts.integration, err = New(Config{
+	ts.integration, err = New(config.IntegrationPostgreSQLConfig{
 		DSN: dsn,
 	})
 	if err != nil {
@@ -286,42 +296,44 @@ func (ts *PostgreSQLTestSuite) SetupTest() {
 	}
 }
 
-func (ts *PostgreSQLTestSuite) TestSendDataUp() {
-	timestamp := time.Now().Round(time.Second).UTC()
+func (ts *PostgreSQLTestSuite) TestHandleUplinkEvent() {
 	assert := require.New(ts.T())
 
-	pl := integration.DataUpPayload{
-		ApplicationID:   1,
+	timestamp := time.Now().Round(time.Second).UTC()
+	tsProto, err := ptypes.TimestampProto(timestamp)
+	assert.NoError(err)
+
+	pl := pb.UplinkEvent{
+		ApplicationId:   1,
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
-		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
-		RXInfo: []integration.RXInfo{
+		DevEui:          []byte{1, 2, 3, 4, 5, 6, 7, 8},
+		RxInfo: []*gw.UplinkRXInfo{
 			{
-				GatewayID: lorawan.EUI64{8, 7, 6, 5, 4, 3, 2, 1},
-				Name:      "test-gateway",
-				Time:      &timestamp,
-				RSSI:      20,
-				LoRaSNR:   10,
+				GatewayId: []byte{8, 7, 6, 5, 4, 3, 2, 1},
+				Time:      tsProto,
+				Rssi:      20,
+				LoraSnr:   10,
 			},
 		},
-		TXInfo: integration.TXInfo{
+		TxInfo: &gw.UplinkTXInfo{
 			Frequency: 868100000,
-			DR:        4,
 		},
-		ADR:   true,
+		Dr:    4,
+		Adr:   true,
 		FCnt:  2,
 		FPort: 3,
 		Data:  []byte{1, 2, 3, 4},
-		Object: map[string]interface{}{
+		ObjectJson: `{
 			"temp": 21.5,
-			"hum":  44.3,
-		},
+			"hum":  44.3
+		}`,
 		Tags: map[string]string{
 			"foo": "bar",
 		},
 	}
 
-	assert.NoError(ts.integration.SendDataUp(context.Background(), pl))
+	assert.NoError(ts.integration.HandleUplinkEvent(context.Background(), nil, nil, pl))
 
 	var up deviceUp
 	assert.NoError(ts.db.Get(&up, "select * from device_up"))
@@ -356,29 +368,31 @@ func (ts *PostgreSQLTestSuite) TestSendDataUp() {
 	}, up)
 }
 
-func (ts *PostgreSQLTestSuite) TestSendDataUpNoObject() {
-	timestamp := time.Now().Round(time.Second).UTC()
+func (ts *PostgreSQLTestSuite) TestHandleUplinkEventNoObject() {
 	assert := require.New(ts.T())
 
-	pl := integration.DataUpPayload{
-		ApplicationID:   1,
+	timestamp := time.Now().Round(time.Second).UTC()
+	tsProto, err := ptypes.TimestampProto(timestamp)
+	assert.NoError(err)
+
+	pl := pb.UplinkEvent{
+		ApplicationId:   1,
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
-		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
-		RXInfo: []integration.RXInfo{
+		DevEui:          []byte{1, 2, 3, 4, 5, 6, 7, 8},
+		RxInfo: []*gw.UplinkRXInfo{
 			{
-				GatewayID: lorawan.EUI64{8, 7, 6, 5, 4, 3, 2, 1},
-				Name:      "test-gateway",
-				Time:      &timestamp,
-				RSSI:      20,
-				LoRaSNR:   10,
+				GatewayId: []byte{8, 7, 6, 5, 4, 3, 2, 1},
+				Time:      tsProto,
+				Rssi:      20,
+				LoraSnr:   10,
 			},
 		},
-		TXInfo: integration.TXInfo{
+		TxInfo: &gw.UplinkTXInfo{
 			Frequency: 868100000,
-			DR:        4,
 		},
-		ADR:   true,
+		Dr:    4,
+		Adr:   true,
 		FCnt:  2,
 		FPort: 3,
 		Data:  []byte{1, 2, 3, 4},
@@ -387,7 +401,7 @@ func (ts *PostgreSQLTestSuite) TestSendDataUpNoObject() {
 		},
 	}
 
-	assert.NoError(ts.integration.SendDataUp(context.Background(), pl))
+	assert.NoError(ts.integration.HandleUplinkEvent(context.Background(), nil, nil, pl))
 
 	var up deviceUp
 	assert.NoError(ts.db.Get(&up, "select * from device_up"))
@@ -421,29 +435,31 @@ func (ts *PostgreSQLTestSuite) TestSendDataUpNoObject() {
 	}, up)
 }
 
-func (ts *PostgreSQLTestSuite) TestSendDataUpNoData() {
-	timestamp := time.Now().Round(time.Second).UTC()
+func (ts *PostgreSQLTestSuite) TestUplinkEventNoData() {
 	assert := require.New(ts.T())
 
-	pl := integration.DataUpPayload{
-		ApplicationID:   1,
+	timestamp := time.Now().Round(time.Second).UTC()
+	tsPB, err := ptypes.TimestampProto(timestamp)
+	assert.NoError(err)
+
+	pl := pb.UplinkEvent{
+		ApplicationId:   1,
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
-		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
-		RXInfo: []integration.RXInfo{
+		DevEui:          []byte{1, 2, 3, 4, 5, 6, 7, 8},
+		RxInfo: []*gw.UplinkRXInfo{
 			{
-				GatewayID: lorawan.EUI64{8, 7, 6, 5, 4, 3, 2, 1},
-				Name:      "test-gateway",
-				Time:      &timestamp,
-				RSSI:      20,
-				LoRaSNR:   10,
+				GatewayId: []byte{8, 7, 6, 5, 4, 3, 2, 1},
+				Time:      tsPB,
+				Rssi:      20,
+				LoraSnr:   10,
 			},
 		},
-		TXInfo: integration.TXInfo{
+		TxInfo: &gw.UplinkTXInfo{
 			Frequency: 868100000,
-			DR:        4,
 		},
-		ADR:   true,
+		Dr:    4,
+		Adr:   true,
 		FCnt:  2,
 		FPort: 3,
 		Tags: map[string]string{
@@ -451,7 +467,7 @@ func (ts *PostgreSQLTestSuite) TestSendDataUpNoData() {
 		},
 	}
 
-	assert.NoError(ts.integration.SendDataUp(context.Background(), pl))
+	assert.NoError(ts.integration.HandleUplinkEvent(context.Background(), nil, nil, pl))
 
 	var up deviceUp
 	assert.NoError(ts.db.Get(&up, "select * from device_up"))
@@ -485,15 +501,16 @@ func (ts *PostgreSQLTestSuite) TestSendDataUpNoData() {
 	}, up)
 }
 
-func (ts *PostgreSQLTestSuite) TestSendStatusNotification() {
-	timestamp := time.Now()
+func (ts *PostgreSQLTestSuite) TestHandleStatusEvent() {
 	assert := require.New(ts.T())
 
-	pl := integration.StatusNotification{
-		ApplicationID:           1,
+	timestamp := time.Now()
+
+	pl := pb.StatusEvent{
+		ApplicationId:           1,
 		ApplicationName:         "test-app",
 		DeviceName:              "test-device",
-		DevEUI:                  lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
+		DevEui:                  []byte{1, 2, 3, 4, 5, 6, 7, 8},
 		Margin:                  10,
 		ExternalPowerSource:     true,
 		BatteryLevelUnavailable: true,
@@ -503,7 +520,7 @@ func (ts *PostgreSQLTestSuite) TestSendStatusNotification() {
 		},
 	}
 
-	assert.NoError(ts.integration.SendStatusNotification(context.Background(), pl))
+	assert.NoError(ts.integration.HandleStatusEvent(context.Background(), nil, nil, pl))
 
 	var status deviceStatus
 	assert.NoError(ts.db.Get(&status, "select * from device_status"))
@@ -533,22 +550,23 @@ func (ts *PostgreSQLTestSuite) TestSendStatusNotification() {
 
 }
 
-func (ts *PostgreSQLTestSuite) TestJoinNotification() {
-	timestamp := time.Now()
+func (ts *PostgreSQLTestSuite) TestHandleJoinEvent() {
 	assert := require.New(ts.T())
 
-	pl := integration.JoinNotification{
-		ApplicationID:   1,
+	timestamp := time.Now()
+
+	pl := pb.JoinEvent{
+		ApplicationId:   1,
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
-		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
-		DevAddr:         lorawan.DevAddr{1, 2, 3, 4},
+		DevEui:          []byte{1, 2, 3, 4, 5, 6, 7, 8},
+		DevAddr:         []byte{1, 2, 3, 4},
 		Tags: map[string]string{
 			"foo": "bar",
 		},
 	}
 
-	assert.NoError(ts.integration.SendJoinNotification(context.Background(), pl))
+	assert.NoError(ts.integration.HandleJoinEvent(context.Background(), nil, nil, pl))
 
 	var join deviceJoin
 	assert.NoError(ts.db.Get(&join, "select * from device_join"))
@@ -574,15 +592,16 @@ func (ts *PostgreSQLTestSuite) TestJoinNotification() {
 	}, join)
 }
 
-func (ts *PostgreSQLTestSuite) TestAckNotification() {
-	timestamp := time.Now()
+func (ts *PostgreSQLTestSuite) TestHandleAckEvent() {
 	assert := require.New(ts.T())
 
-	pl := integration.ACKNotification{
-		ApplicationID:   1,
+	timestamp := time.Now()
+
+	pl := pb.AckEvent{
+		ApplicationId:   1,
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
-		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
+		DevEui:          []byte{1, 2, 3, 4, 5, 6, 7, 8},
 		Acknowledged:    true,
 		FCnt:            10,
 		Tags: map[string]string{
@@ -590,7 +609,7 @@ func (ts *PostgreSQLTestSuite) TestAckNotification() {
 		},
 	}
 
-	assert.NoError(ts.integration.SendACKNotification(context.Background(), pl))
+	assert.NoError(ts.integration.HandleAckEvent(context.Background(), nil, nil, pl))
 
 	var ack deviceAck
 	assert.NoError(ts.db.Get(&ack, "select * from device_ack"))
@@ -617,16 +636,17 @@ func (ts *PostgreSQLTestSuite) TestAckNotification() {
 	}, ack)
 }
 
-func (ts *PostgreSQLTestSuite) TestErrorNotification() {
-	timestamp := time.Now()
+func (ts *PostgreSQLTestSuite) TestHandleErrorEvent() {
 	assert := require.New(ts.T())
 
-	pl := integration.ErrorNotification{
-		ApplicationID:   1,
+	timestamp := time.Now()
+
+	pl := pb.ErrorEvent{
+		ApplicationId:   1,
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
-		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
-		Type:            "BOOM",
+		DevEui:          []byte{1, 2, 3, 4, 5, 6, 7, 8},
+		Type:            pb.ErrorType_DOWNLINK_PAYLOAD_SIZE,
 		Error:           "Everything blew up!",
 		FCnt:            10,
 		Tags: map[string]string{
@@ -634,7 +654,7 @@ func (ts *PostgreSQLTestSuite) TestErrorNotification() {
 		},
 	}
 
-	assert.NoError(ts.integration.SendErrorNotification(context.Background(), pl))
+	assert.NoError(ts.integration.HandleErrorEvent(context.Background(), nil, nil, pl))
 
 	var e deviceError
 	assert.NoError(ts.db.Get(&e, "select * from device_error"))
@@ -651,7 +671,7 @@ func (ts *PostgreSQLTestSuite) TestErrorNotification() {
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
 		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
-		Type:            "BOOM",
+		Type:            "DOWNLINK_PAYLOAD_SIZE",
 		Error:           "Everything blew up!",
 		FCnt:            10,
 		Tags: hstore.Hstore{
@@ -662,16 +682,17 @@ func (ts *PostgreSQLTestSuite) TestErrorNotification() {
 	}, e)
 }
 
-func (ts *PostgreSQLTestSuite) TestLocationNotification() {
-	timestamp := time.Now()
+func (ts *PostgreSQLTestSuite) TestLocationEvent() {
 	assert := require.New(ts.T())
 
-	pl := integration.LocationNotification{
-		ApplicationID:   1,
+	timestamp := time.Now()
+
+	pl := pb.LocationEvent{
+		ApplicationId:   1,
 		ApplicationName: "test-app",
 		DeviceName:      "test-device",
-		DevEUI:          lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
-		Location: integration.Location{
+		DevEui:          []byte{1, 2, 3, 4, 5, 6, 7, 8},
+		Location: &common.Location{
 			Altitude:  1.123,
 			Latitude:  2.123,
 			Longitude: 3.123,
@@ -681,7 +702,7 @@ func (ts *PostgreSQLTestSuite) TestLocationNotification() {
 		},
 	}
 
-	assert.NoError(ts.integration.SendLocationNotification(context.Background(), pl))
+	assert.NoError(ts.integration.HandleLocationEvent(context.Background(), nil, nil, pl))
 
 	var loc deviceLocation
 	assert.NoError(ts.db.Get(&loc, "select * from device_location"))
