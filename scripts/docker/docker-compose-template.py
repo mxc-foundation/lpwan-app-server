@@ -7,7 +7,7 @@ localDevelopTemplate = \
       network-server:
         build:
           context: ../lpwan-server
-          dockerfile: Dockerfile-devel
+          dockerfile: Dockerfile
         volumes:
           - ../lpwan-server/configuration:/etc/network-server
           - ../lpwan-server:/network-server
@@ -16,7 +16,7 @@ localDevelopTemplate = \
       mxprotocol-server:
         build:
           context: ../mxprotocol-server
-          dockerfile: Dockerfile-devel
+          dockerfile: Dockerfile
         volumes:
           - ../mxprotocol-server/configuration:/etc/mxprotocol-server
           - ../mxprotocol-server:/mxprotocol-server
@@ -52,10 +52,10 @@ localDevelopTemplate = \
       
       web-ui:
         build:
-          context: ../supernode/appserver-frontend
+          context: ../web-ui
           dockerfile: Dockerfile
         volumes:
-          - ../supernode/appserver-frontend:/web-ui
+          - ../web-ui:/web-ui
         ports:
           - 3001:3001
         tty: true
