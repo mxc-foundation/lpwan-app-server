@@ -19,7 +19,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
-const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
+const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token, password_hash"
 const internalUserFields = "*"
 
 func (ps *pgstore) CheckActiveUser(ctx context.Context, userEmail string, userID int64) (bool, error) {
@@ -118,7 +118,33 @@ func (ps *pgstore) CheckReadUserAccess(ctx context.Context, userEmail string, us
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateDeleteUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
+func (ps *pgstore) CheckUpdateUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+	`
+	// user itself
+	var userWhere = [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.id = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID, operatorUserID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckDeleteUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -145,20 +171,16 @@ func (ps *pgstore) CheckUpdateDeleteUserAccess(ctx context.Context, userEmail st
 }
 
 func (ps *pgstore) CheckUpdatePasswordUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
-	if userID != operatorUserID {
-		return false, errors.New("no permission to update other user's password")
-	}
-
 	userQuery := `
 		select
 			1
 		from
 			"user" u
 	`
-	// global admin
+
 	// user itself
 	var userWhere = [][]string{
-		{"(u.email = $1 or u.id = $2)", "u.is_active = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.id = $2"},
 	}
 
 	var ors []string
@@ -169,7 +191,7 @@ func (ps *pgstore) CheckUpdatePasswordUserAccess(ctx context.Context, userEmail 
 	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
 
 	var count int64
-	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID); err != nil {
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, userEmail, userID, operatorUserID); err != nil {
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil

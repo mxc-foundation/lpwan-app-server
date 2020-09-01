@@ -87,6 +87,7 @@ func init() {
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(testNsAPICmd)
 }
 
 // Execute executes the root command.

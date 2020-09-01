@@ -126,8 +126,10 @@ func (v *Validator) ValidateUserAccess(ctx context.Context, flag authcus.Flag, u
 	switch flag {
 	case authcus.Read:
 		return Service.St.CheckReadUserAccess(ctx, u.UserEmail, userID, u.ID)
-	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteUserAccess(ctx, u.UserEmail, userID, u.ID)
+	case authcus.Update:
+		return Service.St.CheckUpdateUserAccess(ctx, u.UserEmail, userID, u.ID)
+	case authcus.Delete:
+		return Service.St.CheckDeleteUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.UpdateProfile:
 		return Service.St.CheckUpdateProfileUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.UpdatePassword:

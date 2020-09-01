@@ -39,7 +39,8 @@ type UserStore interface {
 	CheckListUserAcess(ctx context.Context, userEmail string, userID int64) (bool, error)
 
 	CheckReadUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error)
-	CheckUpdateDeleteUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error)
+	CheckUpdateUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error)
+	CheckDeleteUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error)
 	CheckUpdateProfileUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error)
 	CheckUpdatePasswordUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error)
 }
@@ -121,8 +122,11 @@ func (h *Handler) CheckListUserAcess(ctx context.Context, userEmail string, user
 func (h *Handler) CheckReadUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
 	return h.store.CheckReadUserAccess(ctx, userEmail, userID, operatorUserID)
 }
-func (h *Handler) CheckUpdateDeleteUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
-	return h.store.CheckUpdateDeleteUserAccess(ctx, userEmail, userID, operatorUserID)
+func (h *Handler) CheckUpdateUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
+	return h.store.CheckUpdateUserAccess(ctx, userEmail, userID, operatorUserID)
+}
+func (h *Handler) CheckDeleteUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
+	return h.store.CheckDeleteUserAccess(ctx, userEmail, userID, operatorUserID)
 }
 func (h *Handler) CheckUpdateProfileUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error) {
 	return h.store.CheckUpdateProfileUserAccess(ctx, userEmail, userID, operatorUserID)
