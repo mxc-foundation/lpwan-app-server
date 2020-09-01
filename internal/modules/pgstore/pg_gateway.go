@@ -3,6 +3,7 @@ package pgstore
 import (
 	"context"
 	"database/sql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strings"
 	"time"
 
@@ -231,7 +232,7 @@ func (ps *pgstore) GetGatewayFirmware(ctx context.Context, model string, forUpda
 	err = sqlx.GetContext(ctx, ps.db, &gwFw, "select * from gateway_firmware where model = $1 "+fu, model)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return gwFw, errors.New("not exist")
+			return gwFw, storage.ErrDoesNotExist
 		}
 		return gwFw, err
 	}
@@ -597,7 +598,7 @@ func (ps *pgstore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate 
 	err := sqlx.GetContext(ctx, ps.db, &gw, "select * from gateway where mac = $1"+fu, mac[:])
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return gw, errors.New("not exist")
+			return gw, storage.ErrDoesNotExist
 		}
 		return gw, err
 	}

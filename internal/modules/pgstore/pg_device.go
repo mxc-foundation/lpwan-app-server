@@ -2,6 +2,8 @@ package pgstore
 
 import (
 	"context"
+	"database/sql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strings"
 	"time"
 
@@ -317,6 +319,9 @@ func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdat
 	var d store.Device
 	err := sqlx.GetContext(ctx, ps.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return d, storage.ErrDoesNotExist
+		}
 		return d, errors.Wrap(err, "select error")
 	}
 

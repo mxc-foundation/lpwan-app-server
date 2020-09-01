@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 
 	"github.com/dgrijalva/jwt-go"
@@ -19,7 +21,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
-const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token, password_hash"
+const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
 const internalUserFields = "*"
 
 func (ps *pgstore) CheckActiveUser(ctx context.Context, userEmail string, userID int64) (bool, error) {
@@ -293,7 +295,7 @@ func (ps *pgstore) GetUser(ctx context.Context, id int64) (store.User, error) {
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where id = $1", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errors.New("not exist")
+			return user, storage.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -308,7 +310,7 @@ func (ps *pgstore) GetUserByExternalID(ctx context.Context, externalID string) (
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errors.New("not exist")
+			return user, storage.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -322,7 +324,7 @@ func (ps *pgstore) GetUserByUsername(ctx context.Context, userEmail string) (sto
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errors.New("not exist")
+			return user, storage.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -337,7 +339,7 @@ func (ps *pgstore) GetUserByEmail(ctx context.Context, userEmail string) (store.
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errors.New("not exist")
+			return user, storage.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -389,8 +391,7 @@ func (ps *pgstore) UpdateUser(ctx context.Context, u *store.User) error {
 			email = $6,
 			email_verified = $7,
 			note = $8,
-			external_id = $9,
-			password_hash = $10
+			external_id = $9
 		where
 			id = $1`,
 		u.ID,
@@ -402,7 +403,6 @@ func (ps *pgstore) UpdateUser(ctx context.Context, u *store.User) error {
 		u.EmailVerified,
 		u.Note,
 		u.ExternalID,
-		u.PasswordHash,
 	)
 	if err != nil {
 		return errors.Wrap(err, "update error")
@@ -488,7 +488,7 @@ func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, pa
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return errors.Wrap(err, "invalid email")
+			return storage.ErrDoesNotExist
 		}
 		return errors.Wrap(err, "select error")
 	}
@@ -581,22 +581,27 @@ func (ps *pgstore) RegisterUser(ctx context.Context, user *store.User, token str
 
 	// Add the new user.
 	err := sqlx.GetContext(ctx, ps.db, &user.ID, `
-		insert into "user" (
+		insert into "user"(
 			email,
 			is_admin,
 			is_active,
 			session_ttl,
 			created_at,
 			updated_at,
-	        security_token)
-		values (
-			$1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+			email_verified,
+			note,
+			external_id,
+			security_token)
+		values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)	returning id`,
 		user.UserEmail,
 		user.IsAdmin,
 		user.IsActive,
 		user.SessionTTL,
 		user.CreatedAt,
 		user.UpdatedAt,
+		user.EmailVerified,
+		user.Note,
+		user.ExternalID,
 		token,
 	)
 	if err != nil {
@@ -617,7 +622,7 @@ func (ps *pgstore) GetUserByToken(ctx context.Context, token string) (store.User
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where security_token = $1", token)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, errors.New("not exist")
+			return user, storage.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -632,7 +637,7 @@ func (ps *pgstore) GetTokenByUsername(ctx context.Context, userEmail string) (st
 	err := sqlx.GetContext(ctx, ps.db, &otp, "select security_token from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return otp, errors.New("not exist")
+			return otp, storage.ErrDoesNotExist
 		}
 		return otp, errors.Wrap(err, "select error")
 	}
@@ -652,13 +657,16 @@ func (ps *pgstore) FinishRegistration(ctx context.Context, userID int64, passwor
 	}
 
 	_, err = ps.db.ExecContext(ctx, `
-		update "user"
-		set
-			password_hash = $1,
-			is_active = true,
-			security_token = null,
-			updated_at = now()
-		where id = $2`,
+	update
+	"user"
+	set
+	password_hash = $1,
+		is_active = true,
+		security_token = null,
+		updated_at = now()
+	where
+	id = $2
+	`,
 		pwdHash,
 		userID,
 	)
@@ -674,9 +682,14 @@ func (ps *pgstore) FinishRegistration(ctx context.Context, userID int64, passwor
 }
 
 func (ps *pgstore) SetOTP(ctx context.Context, pr *store.PasswordResetRecord) error {
-	res, err := ps.db.ExecContext(ctx, `UPDATE password_reset
-						SET otp = $1, generated_at = $2, attempts_left = $3
-						WHERE user_id = $4`,
+	res, err := ps.db.ExecContext(ctx, `
+	UPDATE
+	password_reset
+	SET
+	otp = $1, generated_at = $2, attempts_left = $3
+	WHERE
+	user_id = $4
+	`,
 		pr.OTP, pr.GeneratedAt, pr.AttemptsLeft, pr.UserID)
 	if err != nil {
 		return err
@@ -694,7 +707,14 @@ func (ps *pgstore) SetOTP(ctx context.Context, pr *store.PasswordResetRecord) er
 
 func (ps *pgstore) ReduceAttempts(ctx context.Context, pr *store.PasswordResetRecord) error {
 	pr.AttemptsLeft--
-	res, err := ps.db.ExecContext(ctx, `UPDATE password_reset SET attempts_left = $1 WHERE user_id = $2`,
+	res, err := ps.db.ExecContext(ctx, `
+	UPDATE
+	password_reset
+	SET
+	attempts_left = $1
+	WHERE
+	user_id = $2
+	`,
 		pr.AttemptsLeft, pr.UserID)
 	if err != nil {
 		return err
@@ -711,7 +731,14 @@ func (ps *pgstore) ReduceAttempts(ctx context.Context, pr *store.PasswordResetRe
 }
 
 func (ps *pgstore) GetPasswordResetRecord(ctx context.Context, userID int64) (*store.PasswordResetRecord, error) {
-	query := `SELECT otp, generated_at, attempts_left FROM password_reset WHERE user_id = $1`
+	query := `
+	SELECT
+	otp, generated_at, attempts_left
+	FROM
+	password_reset
+	WHERE
+	user_id = $1
+	`
 	rows, err := ps.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
@@ -732,7 +759,11 @@ func (ps *pgstore) GetPasswordResetRecord(ctx context.Context, userID int64) (*s
 		return nil, err
 	}
 	if count == 0 {
-		_, err := ps.db.ExecContext(ctx, `INSERT INTO password_reset (user_id, otp, generated_at, attempts_left) VALUES ($1, $2, $3, $4)`, res.UserID, res.OTP, res.GeneratedAt, res.AttemptsLeft)
+		_, err := ps.db.ExecContext(ctx, `
+	INSERT
+	INTO
+	password_reset(user_id, otp, generated_at, attempts_left)
+	VALUES($1, $2, $3, $4)`, res.UserID, res.OTP, res.GeneratedAt, res.AttemptsLeft)
 		if err != nil {
 			return nil, fmt.Errorf("failed to add a new password reset record: %v", err)
 		}

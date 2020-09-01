@@ -2,6 +2,8 @@ package pgstore
 
 import (
 	"context"
+	"database/sql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strings"
 	"time"
 
@@ -450,6 +452,9 @@ func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]
 		offset,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, storage.ErrDoesNotExist
+		}
 		return nil, errors.Wrap(err, "select error")
 	}
 
