@@ -9,7 +9,7 @@ localDevelopTemplate = \
           context: ../lpwan-server
           dockerfile: Dockerfile
         volumes:
-          - ../lpwan-server/configuration:/etc/network-server
+          - ../lpwan-server/configuration:/etc/loraserver
           - ../lpwan-server:/network-server
         tty: true
           
