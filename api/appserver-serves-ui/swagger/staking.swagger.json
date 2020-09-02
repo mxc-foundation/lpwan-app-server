@@ -11,6 +11,38 @@
     "application/json"
   ],
   "paths": {
+    "/api/staking/staking_percentage": {
+      "get": {
+        "summary": "Get information about staking percentage and boosts for lockin stake",
+        "operationId": "GetStakingPercentage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakingPercentageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "currency",
+            "description": "int64 org_id = 1;.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
     "/api/staking/{orgId}/activestakes": {
       "get": {
         "summary": "Get list of active stakes",
@@ -191,44 +223,6 @@
         ]
       }
     },
-    "/api/staking/{orgId}/staking_percentage": {
-      "get": {
-        "summary": "Get information about staking percentage and boosts for lockin stake",
-        "operationId": "GetStakingPercentage",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/appserver_serves_uiStakingPercentageResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "orgId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "currency",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "StakingService"
-        ]
-      }
-    },
     "/api/staking/{orgId}/unstake": {
       "post": {
         "summary": "Unstake existing stake",
@@ -279,7 +273,7 @@
           "format": "int64",
           "title": "for how many periods (normally months) stake will be locked"
         },
-        "boostPercents": {
+        "boost": {
           "type": "string",
           "title": "what boost will apply to this stake [0, 1]"
         }
@@ -328,9 +322,9 @@
           "format": "date-time",
           "title": "the time till which the stake is locked and can't be withdrawn"
         },
-        "boostPercents": {
+        "boost": {
           "type": "string",
-          "title": "boost percents [0, 1]"
+          "title": "boost [0, 1]"
         }
       }
     },
@@ -352,9 +346,9 @@
           "format": "int64",
           "title": "for how many periods stake should be locked"
         },
-        "boostPercents": {
+        "boost": {
           "type": "string",
-          "title": "the boost percents [0,1]"
+          "title": "the boost [0,1]"
         }
       }
     },
@@ -398,10 +392,10 @@
     "appserver_serves_uiStakingPercentageResponse": {
       "type": "object",
       "properties": {
-        "stakingPercentage": {
+        "stakingShare": {
           "type": "number",
           "format": "double",
-          "title": "base staking percentage"
+          "title": "what share of supernode income is allocated for staking"
         },
         "lockBoosts": {
           "type": "array",
@@ -411,7 +405,7 @@
           "title": "list of boosts for locking stake for different periods"
         }
       },
-      "title": "information about staking percentage and boosts"
+      "title": "information about staking share and boosts"
     },
     "appserver_serves_uiStakingRevenueResponse": {
       "type": "object",

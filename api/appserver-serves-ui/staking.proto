@@ -67,8 +67,8 @@ message StakeRequest {
     string currency = 3;
     // for how many periods stake should be locked
     int64 lock_periods = 5;
-    // the boost percents [0,1]
-    string boost_percents = 6;
+    // the boost [0,1]
+    string boost = 6;
 }
 
 message StakeResponse {
@@ -102,8 +102,8 @@ message Stake {
     bool active = 5;
     // the time till which the stake is locked and can't be withdrawn
     google.protobuf.Timestamp lock_till = 6;
-    // boost percents [0, 1]
-    string boost_percents = 7;
+    // boost [0, 1]
+    string boost = 7;
 }
 
 message GetActiveStakesResponse {
@@ -138,13 +138,13 @@ message Boost {
     // for how many periods (normally months) stake will be locked
     int64 lock_periods = 1;
     // what boost will apply to this stake [0, 1]
-    string boost_percents = 2;
+    string boost = 2;
 }
 
-// information about staking percentage and boosts
+// information about staking share and boosts
 message StakingPercentageResponse {
-    // base staking percentage
-    double staking_percentage = 1;
+    // what share of supernode income is allocated for staking
+    double staking_share = 1;
     // list of boosts for locking stake for different periods
     repeated Boost lock_boosts = 2;
 }

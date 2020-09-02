@@ -29,7 +29,7 @@ func NewStakingServerAPI(validator auth.Validator) *StakingServerAPI {
 
 // GetStakingPercentage defines the request and response to get staking percentage
 func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingPercentage org=%d", req.OrgId)
+	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingPercentage")
 
 	m2mClient, err := m2m_client.GetPool().Get(config.C.M2MServer.M2MServer, []byte(config.C.M2MServer.CACert),
 		[]byte(config.C.M2MServer.TLSCert), []byte(config.C.M2MServer.TLSKey))
@@ -49,12 +49,12 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 	}
 
 	spr := &api.StakingPercentageResponse{
-		StakingPercentage: resp.StakingPercentage,
+		StakingShare: resp.StakingShare,
 	}
 	for _, boost := range resp.LockBoosts {
 		spr.LockBoosts = append(spr.LockBoosts, &api.Boost{
-			LockPeriods:   boost.LockPeriods,
-			BoostPercents: boost.BoostPercents,
+			LockPeriods: boost.LockPeriods,
+			Boost:       boost.Boost,
 		})
 	}
 	return spr, nil
@@ -90,11 +90,11 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 	stakeClient := m2mServer.NewStakingServiceClient(m2mClient)
 
 	resp, err := stakeClient.Stake(ctx, &m2mServer.StakeRequest{
-		OrgId:         req.OrgId,
-		Currency:      req.Currency,
-		Amount:        req.Amount,
-		LockPeriods:   req.LockPeriods,
-		BoostPercents: req.BoostPercents,
+		OrgId:       req.OrgId,
+		Currency:    req.Currency,
+		Amount:      req.Amount,
+		LockPeriods: req.LockPeriods,
+		Boost:       req.Boost,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -189,13 +189,13 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 	for _, stake := range resp.ActStake {
 		gasr.ActStake = append(gasr.ActStake,
 			&api.Stake{
-				Id:            stake.Id,
-				StartTime:     stake.StartTime,
-				EndTime:       stake.EndTime,
-				Amount:        stake.Amount,
-				Active:        stake.Active,
-				LockTill:      stake.LockTill,
-				BoostPercents: stake.BoostPercents,
+				Id:        stake.Id,
+				StartTime: stake.StartTime,
+				EndTime:   stake.EndTime,
+				Amount:    stake.Amount,
+				Active:    stake.Active,
+				LockTill:  stake.LockTill,
+				Boost:     stake.Boost,
 			})
 	}
 	return gasr, nil
@@ -275,13 +275,13 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 		var stake *api.Stake
 		if st := item.Stake; st != nil {
 			stake = &api.Stake{
-				Id:            st.Id,
-				Amount:        st.Amount,
-				Active:        st.Active,
-				StartTime:     st.StartTime,
-				EndTime:       st.EndTime,
-				LockTill:      st.LockTill,
-				BoostPercents: st.BoostPercents,
+				Id:        st.Id,
+				Amount:    st.Amount,
+				Active:    st.Active,
+				StartTime: st.StartTime,
+				EndTime:   st.EndTime,
+				LockTill:  st.LockTill,
+				Boost:     st.Boost,
 			}
 		}
 		stakeHistory := &api.StakingHistory{
