@@ -3,10 +3,11 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -1133,8 +1134,10 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 
 	// get gateway profile id, always use the default one
 	count, err := gp.Service.St.GetGatewayProfileCount(ctx)
-	if err != nil && err != storage.ErrDoesNotExist || count == 0 {
-		return nil, status.Error(codes.NotFound, err.Error())
+	if err != nil && err != storage.ErrDoesNotExist {
+		return nil, status.Error(codes.Internal, err.Error())
+	} else if err == storage.ErrDoesNotExist {
+		return nil, status.Error(codes.NotFound, "")
 	}
 
 	gpList, err := gp.Service.St.GetGatewayProfiles(ctx, count, 0)
