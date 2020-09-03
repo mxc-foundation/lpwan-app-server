@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"strconv"
 	"strings"
 	"time"
@@ -205,7 +206,7 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *api
 	defaultGatewayConfig := store.DefaultGatewayConfig{
 		Model:         req.Model,
 		Region:        req.Region,
-		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", Service.SupernodeAddr, -1),
+		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", serverinfo.Service.SupernodeAddr, -1),
 	}
 
 	err = a.st.GetDefaultGatewayConfig(ctx, &defaultGatewayConfig)
@@ -247,7 +248,7 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *api.Up
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	defaultGatewayConfig.DefaultConfig = strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", Service.SupernodeAddr, -1)
+	defaultGatewayConfig.DefaultConfig = strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", serverinfo.Service.SupernodeAddr, -1)
 	err = a.st.UpdateDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
@@ -1088,7 +1089,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 	// register gateway with current supernode on remote provisioning server
 	provReq := psPb.RegisterGWRequest{
 		Sn:            req.Sn,
-		SuperNodeAddr: Service.SupernodeAddr,
+		SuperNodeAddr: serverinfo.Service.SupernodeAddr,
 		OrgId:         req.OrganizationId,
 	}
 
