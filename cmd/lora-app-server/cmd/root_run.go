@@ -33,6 +33,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	asmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	gpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
@@ -259,6 +260,10 @@ func setupModules() (err error) {
 	}
 
 	if err = servermod.Setup(config.C, pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = asmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
 		return err
 	}
 

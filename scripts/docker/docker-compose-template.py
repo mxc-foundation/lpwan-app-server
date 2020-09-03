@@ -20,11 +20,6 @@ localDevelopTemplate = \
         volumes:
           - ../mxprotocol-server/configuration:/etc/mxprotocol-server
           - ../mxprotocol-server:/mxprotocol-server
-        links:
-          - network-server
-          - postgresql
-          - redis
-          - mosquitto
         environment:
           - APPSERVER=http://localhost:8080
           - MXPROTOCOL_SERVER=http://localhost:4000
@@ -49,16 +44,6 @@ localDevelopTemplate = \
         volumes:
           - ./configuration/chirpstack-geolocation-server:/etc/chirpstack-geolocation-server
         restart: always 
-      
-      web-ui:
-        build:
-          context: ../web-ui
-          dockerfile: Dockerfile
-        volumes:
-          - ../web-ui:/web-ui
-        ports:
-          - 3001:3001
-        tty: true
         
       appserver:
         build:
@@ -67,16 +52,6 @@ localDevelopTemplate = \
         volumes:
           - ./configuration:/etc/lora-app-server
           - ./:/lora-app-server
-        links:
-          - network-server
-          - mxprotocol-server
-          - postgres
-          - redis
-          - mosquitto
-          - rabbitmq
-          - zookeeper
-          - kafka
-          - web-ui
         ports:
           - 8080:8080
           - 8004:8004
