@@ -39,6 +39,7 @@ import (
 	miningmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	orgmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	servermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	usermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
@@ -170,7 +171,7 @@ func setupClient() error {
 }
 
 func setupUpdateFirmwareFromPs() error {
-	if err := gwmod.Service.UpdateFirmwareFromProvisioningServer(context.TODO(), config.C); err != nil {
+	if err := gwmod.Service.UpdateFirmwareFromProvisioningServer(context.TODO()); err != nil {
 		return errors.Wrap(err, "setup update firmware error")
 	}
 	return nil
@@ -225,7 +226,7 @@ func setupFUOTA() error {
 
 func setupModules() (err error) {
 
-	if err = gwmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = gwmod.Setup(config.C, pgstore.New(storage.DB().DB)); err != nil {
 		return err
 	}
 
@@ -254,6 +255,10 @@ func setupModules() (err error) {
 	}
 
 	if err = usermod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = servermod.Setup(config.C, pgstore.New(storage.DB().DB)); err != nil {
 		return err
 	}
 

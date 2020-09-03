@@ -2,8 +2,6 @@ package serverinfo
 
 import (
 	"context"
-	"os"
-
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -29,7 +27,7 @@ func (s *ServerInfoAPI) GetAppserverVersion(ctx context.Context, req *empty.Empt
 }
 
 func (s *ServerInfoAPI) GetServerRegion(ctx context.Context, req *empty.Empty) (*pb.GetServerRegionResponse, error) {
-	region := os.Getenv("SERVER_REGION")
+	region := Service.ServerRegion
 
 	if region == pb.ServerRegion_name[int32(pb.ServerRegion_AVERAGE)] {
 		return &pb.GetServerRegionResponse{ServerRegion: pb.ServerRegion_name[int32(pb.ServerRegion_AVERAGE)]}, nil

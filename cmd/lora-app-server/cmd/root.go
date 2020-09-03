@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -148,18 +147,6 @@ func initConfig() {
 	}
 
 	config.AppserverVersion = version
-
-	// replace servers with local env parameter
-	dataServiceMode := os.Getenv("SUPERNODE_DATA_SERVICE")
-	remoteServer := os.Getenv("REMOTE_SERVER_NAME")
-	if (dataServiceMode == "remote") && (remoteServer != "") {
-		config.C.PostgreSQL.DSN = strings.Replace(config.C.PostgreSQL.DSN,
-			"@postgresql:5432/", fmt.Sprintf("@%s:5432/", remoteServer), -1)
-		config.C.ApplicationServer.Integration.MQTT.Server = strings.Replace(config.C.ApplicationServer.Integration.MQTT.Server,
-			"//mosquitto:1883", fmt.Sprintf("//%s:1883", remoteServer), -1)
-		/*		config.C.Redis.URL = strings.Replace(config.C.Redis.URL,
-				"//redis:6379", fmt.Sprintf("//%s:6379", remoteServer), -1)*/
-	}
 
 }
 

@@ -8,12 +8,7 @@ SERVICENAME=appserver
 
 
 if [ -f "$CONFIG" ]; then
-  supernode_mode=$(cat $CONFIG | awk -F '=' '/SUPERNODE_MODE/{print $NF}')
-
-  if [ "$supernode_mode" != "development" ] && [ "$supernode_mode" != "testing" ]; then
-    echo "Invalid SUPERNODE_MODE=$supernode_mode in $CONFIG file: SUPERNODE_MODE=[development|testing]"
-    exit
-  fi
+  supernode_mode="development"
 
 else
   echo "Config file does not exist. Nothing is done. "

@@ -7,9 +7,8 @@ import (
 )
 
 type Controller struct {
-	St        *store.Handler
-	Validator Validator
-	pwh       *pwhash.PasswordHasher
+	St  *store.Handler
+	pwh *pwhash.PasswordHasher
 }
 
 var Service = &Controller{}

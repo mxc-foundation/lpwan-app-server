@@ -3,10 +3,7 @@ package gateway
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/pkg/errors"
 	"github.com/robfig/cron"
@@ -16,58 +13,66 @@ import (
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
+type Pserver struct {
+	ProvisionServer string
+	CACert          string
+	TLSCert         string
+	TLSKey          string
+	UpdateSchedule  string
+}
+
 type Controller struct {
-	St            *store.Handler
-	Validator     Validator
-	SupernodeAddr string
+	St                 *store.Handler
+	ps                 Pserver
+	bindPortOldGateway string
+	bindPortNewGateway string
 }
 
 var Service = &Controller{}
 
-func Setup(s store.Store) error {
+func Setup(conf config.Config, s store.Store) error {
 	Service.St, _ = store.New(s)
-	return nil
-}
-
-func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context, conf config.Config) error {
-	log.WithFields(log.Fields{
-		"provisioning-server": conf.ProvisionServer.ProvisionServer,
-		"caCert":              conf.ProvisionServer.CACert,
-		"tlsCert":             conf.ProvisionServer.TLSCert,
-		"tlsKey":              conf.ProvisionServer.TLSKey,
-		"schedule":            conf.ProvisionServer.UpdateSchedule,
-	}).Info("Start schedule to update gateway firmware...")
-	c.SupernodeAddr = os.Getenv("APPSERVER")
-	if strings.HasPrefix(c.SupernodeAddr, "https://") {
-		c.SupernodeAddr = strings.Replace(c.SupernodeAddr, "https://", "", -1)
+	Service.ps = Pserver{
+		ProvisionServer: conf.ProvisionServer.ProvisionServer,
+		CACert:          conf.ProvisionServer.CACert,
+		TLSCert:         conf.ProvisionServer.TLSCert,
+		TLSKey:          conf.ProvisionServer.TLSKey,
+		UpdateSchedule:  conf.ProvisionServer.UpdateSchedule,
 	}
-	if strings.HasPrefix(c.SupernodeAddr, "http://") {
-		c.SupernodeAddr = strings.Replace(c.SupernodeAddr, "http://", "", -1)
-	}
-	if strings.HasSuffix(c.SupernodeAddr, ":8080") {
-		c.SupernodeAddr = strings.Replace(c.SupernodeAddr, ":8080", "", -1)
-	}
-	c.SupernodeAddr = strings.Replace(c.SupernodeAddr, "/", "", -1)
-
-	var bindPortOldGateway string
-	var bindPortNewGateway string
 
 	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.OldGateway.Bind, ":"); len(strArray) != 2 {
 		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", conf.ApplicationServer.APIForGateway.OldGateway.Bind))
 	} else {
-		bindPortOldGateway = strArray[1]
+		Service.bindPortOldGateway = strArray[1]
 	}
 
 	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.NewGateway.Bind, ":"); len(strArray) != 2 {
 		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", conf.ApplicationServer.APIForGateway.NewGateway.Bind))
 	} else {
-		bindPortNewGateway = strArray[1]
+		Service.bindPortNewGateway = strArray[1]
 	}
 
+	return nil
+}
+
+func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context) error {
+	log.WithFields(log.Fields{
+		"provisioning-server": c.ps.ProvisionServer,
+		"caCert":              c.ps.CACert,
+		"tlsCert":             c.ps.TLSCert,
+		"tlsKey":              c.ps.TLSKey,
+		"schedule":            c.ps.UpdateSchedule,
+	}).Info("Start schedule to update gateway firmware...")
+
+	supernodeAddr := serverinfo.Service.SupernodeAddr
+
 	cron := cron.New()
-	err := cron.AddFunc(conf.ProvisionServer.UpdateSchedule, func() {
+	err := cron.AddFunc(c.ps.UpdateSchedule, func() {
 		log.Info("Check firmware update...")
 		gwFwList, err := c.St.GetGatewayFirmwareList(ctx)
 		if err != nil {
@@ -85,9 +90,9 @@ func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context, c
 		for _, v := range gwFwList {
 			res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
 				Model:          v.Model,
-				SuperNodeAddr:  c.SupernodeAddr,
-				PortOldGateway: bindPortOldGateway,
-				PortNewGateway: bindPortNewGateway,
+				SuperNodeAddr:  supernodeAddr,
+				PortOldGateway: c.bindPortOldGateway,
+				PortNewGateway: c.bindPortNewGateway,
 			})
 			if err != nil {
 				log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
