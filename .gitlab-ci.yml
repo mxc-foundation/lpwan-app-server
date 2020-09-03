@@ -5,25 +5,6 @@ stages:
   - release-public
   - deploy
 
-react_test_frontend:
-  image: golang:1.15-alpine
-  stage: test
-  before_script:
-    - apk add --no-cache ca-certificates make git bash protobuf protobuf-dev nodejs nodejs-npm
-  script:
-    - cd ui
-    - npm install
-    - npm test
-  allow_failure: true
-  except:
-    - master
-    - develop
-    - buildserver
-    - /crowdin/
-    - /l10n/
-  tags:
-    - kubernetes
-
 #golangci-lint:
 #  image: golangci/golangci-lint:v1.26.0
 #  stage: test
