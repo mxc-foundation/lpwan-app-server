@@ -7,8 +7,7 @@ import (
 )
 
 type Controller struct {
-	St        *store.Handler
-	Validator Validator
+	St *store.Handler
 }
 
 var Service = &Controller{}

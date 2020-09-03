@@ -6,9 +6,9 @@ import (
 	"encoding/base32"
 	"encoding/json"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"html/template"
 	"net/smtp"
-	"os"
 	"strings"
 	"time"
 
@@ -73,7 +73,7 @@ func Setup(c config.Config) error {
 	}
 
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
-	email.host = os.Getenv("APPSERVER")
+	email.host = "https://" + serverinfo.Service.SupernodeAddr
 	email.operator = operatorInfo{
 		operatorName:       c.Operator.Operator,
 		downloadAppStore:   c.Operator.DownloadAppStore,

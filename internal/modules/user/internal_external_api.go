@@ -6,11 +6,11 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
@@ -226,7 +226,7 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 // Branding returns UI branding.
 func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
 	resp := inpb.BrandingResponse{
-		LogoPath: os.Getenv("APPSERVER") + "/branding.png",
+		LogoPath: "https://" + serverinfo.Service.SupernodeAddr + "/branding.png",
 	}
 
 	return &resp, nil
