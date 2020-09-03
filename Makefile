@@ -77,6 +77,9 @@ static/swagger/api.swagger.json:
 
 
 # shortcuts for development
+devel-tools:
+	go get github.com/go-delve/delve/cmd/dlv
+
 dev-requirements:
 	go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger

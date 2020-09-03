@@ -2,6 +2,8 @@ package pgstore
 
 import (
 	"context"
+	"database/sql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strings"
 	"time"
 
@@ -296,6 +298,9 @@ func (ps *pgstore) GetGatewayProfileCount(ctx context.Context) (int, error) {
 			count(*)
 		from gateway_profile`)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, storage.ErrDoesNotExist
+		}
 		return 0, err
 	}
 
