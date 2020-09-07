@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	httpint "github.com/mxc-foundation/lpwan-app-server/internal/integration/http"

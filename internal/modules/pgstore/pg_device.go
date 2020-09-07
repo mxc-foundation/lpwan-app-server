@@ -3,9 +3,10 @@ package pgstore
 import (
 	"context"
 	"database/sql"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -194,6 +195,40 @@ func (ps *pgstore) CheckDeleteNodeAccess(ctx context.Context, username string, d
 		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
 		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_admin = true", "d.dev_eui = $2"},
 		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_device_admin = true", "d.dev_eui = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, devEUI[:], userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join application a
+			on a.organization_id = ou.organization_id
+		left join device d
+			on a.id = d.application_id
+	`
+	// global admin
+	// organization user
+	userWhere := [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "d.dev_eui = $2"},
 	}
 
 	var ors []string

@@ -30,12 +30,12 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // DeviceAPI exports the Node related functions.
@@ -359,7 +359,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 		idFilter = true
 
 		// validate that the client has access to the given service-profile
-		if valid, err := NewValidator().ValidateServiceProfileAccess(ctx, authcus.Read, filters.ServiceProfileID); !valid || err != nil {
+		if valid, err := serviceprofile.NewValidator().ValidateServiceProfileAccess(ctx, authcus.Read, filters.ServiceProfileID); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}

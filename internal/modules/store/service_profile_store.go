@@ -10,6 +10,29 @@ import (
 type ServiceProfileStore interface {
 	DeleteAllServiceProfilesForOrganizationID(ctx context.Context, organizationID int64) error
 	DeleteServiceProfile(ctx context.Context, id uuid.UUID) error
+
+	// validator
+	CheckCreateServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
+	CheckListServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
+
+	CheckUpdateDeleteServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
+	CheckReadServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
+}
+
+func (h *Handler) CheckUpdateDeleteServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+	return h.store.CheckUpdateDeleteServiceProfileAccess(ctx, username, id, userID)
+}
+
+func (h *Handler) CheckReadServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+	return h.store.CheckReadServiceProfileAccess(ctx, username, id, userID)
+}
+
+func (h *Handler) CheckCreateServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	return h.store.CheckCreateServiceProfilesAccess(ctx, username, organizationID, userID)
+}
+
+func (h *Handler) CheckListServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	return h.store.CheckListServiceProfilesAccess(ctx, username, organizationID, userID)
 }
 
 func (h *Handler) DeleteAllServiceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {

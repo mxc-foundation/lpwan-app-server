@@ -1085,30 +1085,55 @@ func ValidateOrganizationUserAccess(flag Flag, organizationID, userID int64) Val
 // ValidateGatewayProfileAccess validates if the client has access
 // to the gateway-profiles.
 func ValidateGatewayProfileAccess(flag Flag) ValidatorFunc {
-	query := `
+	userQuery := `
 		select
 			1
 		from
 			"user" u
 	`
 
-	var where = [][]string{}
+	apiKeyQuery := `
+		select
+			1
+		from
+			api_key ak
+	`
+
+	var userWhere = [][]string{}
+	var apiKeyWhere = [][]string{}
 
 	switch flag {
 	case Create, Update, Delete:
 		// global admin
-		where = [][]string{
+		userWhere = [][]string{
 			{"(u.email = $1 or u.id = $2)", "u.is_active = true", "u.is_admin = true"},
+		}
+
+		// admin api key
+		apiKeyWhere = [][]string{
+			{"ak.id = $1", "ak.is_admin = true"},
 		}
 	case Read, List:
 		// any active user
-		where = [][]string{
+		userWhere = [][]string{
 			{"(u.email = $1 or u.id = $2)", "u.is_active = true"},
+		}
+
+		// any api key
+		apiKeyWhere = [][]string{
+			{"ak.id = $1"},
 		}
 	}
 
 	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		return executeQuery(db, query, where, claims.Username, claims.UserID)
+		switch claims.Subject {
+		case SubjectUser:
+			return executeQuery(db, userQuery, userWhere, claims.Username, claims.UserID)
+		case SubjectAPIKey:
+			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID)
+		default:
+			return false, nil
+		}
 	}
 }
 
@@ -1307,501 +1332,6 @@ func ValidateOrganizationNetworkServerAccess(flag Flag, organizationID, networkS
 			return executeQuery(db, userQuery, userWhere, claims.Username, organizationID, networkServerID, claims.UserID)
 		case SubjectAPIKey:
 			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, organizationID, networkServerID)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateServiceProfilesAccess validates if the client has access to the
-// service-profiles.
-func ValidateServiceProfilesAccess(flag Flag, organizationID int64) ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-	`
-
-	var userWhere = [][]string{}
-	var apiKeyWhere = [][]string{}
-
-	switch flag {
-	case Create:
-		// global admin
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
-		}
-
-		// admin api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true", "$2 = $2"},
-		}
-	case List:
-		// global admin
-		// organization user (when organization id is given)
-		// any active user (filtered by user)
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 > 0", "o.id = $2"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 = 0"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "ak.organization_id = $2"},
-		}
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return executeQuery(db, userQuery, userWhere, claims.Username, organizationID, claims.UserID)
-		case SubjectAPIKey:
-			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, organizationID)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateServiceProfileAccess validates if the client has access to the
-// given service-profile.
-func ValidateServiceProfileAccess(flag Flag, id uuid.UUID) ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join service_profile sp
-			on sp.organization_id = ou.organization_id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-		left join service_profile sp
-			on ak.organization_id = sp.organization_id
-	`
-
-	var userWhere = [][]string{}
-	var apiKeyWhere = [][]string{}
-
-	switch flag {
-	case Read:
-		// global admin
-		// organization users to which the service-profile is linked
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "sp.service_profile_id = $2"},
-		}
-
-		// admin api key
-		// org api key to which the service-profile is linked
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "sp.service_profile_id = $2"},
-		}
-	case Update, Delete:
-		// global admin
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
-		}
-
-		// admin api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true", "$2 = $2"},
-		}
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return executeQuery(db, userQuery, userWhere, claims.Username, id, claims.UserID)
-		case SubjectAPIKey:
-			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, id)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateDeviceProfilesAccess validates if the client has access to the
-// device-profiles.
-func ValidateDeviceProfilesAccess(flag Flag, organizationID, applicationID int64) ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-		left join application a
-			on a.organization_id = o.id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-		left join application a
-			on ak.organization_id = a.organization_id or ak.application_id = a.id
-	`
-
-	var userWhere = [][]string{}
-	var apiKeyWhere = [][]string{}
-
-	switch flag {
-	case Create:
-		// global admin
-		// organization admin
-		// organization device admin
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "o.id = $2", "ou.is_admin = true", "$3 = 0"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "o.id = $2", "ou.is_device_admin = true", "$3 = 0"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "ak.organization_id = $2", "$3 = $3"},
-		}
-	case List:
-		// global admin
-		// organization user (when organization id is given)
-		// user linked to a given application (when application id is given)
-		// any active user (filtered by user)
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "$3 = 0", "$2 > 0", "o.id = $2"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "$2 = 0", "$3 > 0", "a.id = $3"},
-			{"(u.email = $1 or u.id = $4)", "u.is_active = true", "$2 = 0", "$3 = 0"},
-		}
-
-		// admin api key
-		// org api key (by organization id filter)
-		// org api key (by application id filter)
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "ak.organization_id = $2", "$3 = 0"},
-			{"ak.id = $1", "a.id = $3", "$2 = 0"},
-		}
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return executeQuery(db, userQuery, userWhere, claims.Username, organizationID, applicationID, claims.UserID)
-		case SubjectAPIKey:
-			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, organizationID, applicationID)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateDeviceProfileAccess validates if the client has access to the
-// given device-profile.
-func ValidateDeviceProfileAccess(flag Flag, id uuid.UUID) ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-		left join application a
-			on a.organization_id = o.id
-		left join device_profile dp
-			on dp.organization_id = o.id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-		left join application a
-			on ak.application_id = a.id
-		left join organization o
-			on ak.organization_id = o.id
-		left join device_profile dp
-			on a.organization_id = dp.organization_id or o.id = dp.organization_id
-	`
-
-	var userWhere = [][]string{}
-	var apiKeyWhere = [][]string{}
-
-	switch flag {
-	case Read:
-		// gloabal admin
-		// organization users
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "dp.device_profile_id = $2"},
-		}
-
-		// admin api key
-		// org api key
-		// app api key within the same org as the device-profile
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "dp.device_profile_id = $2"}, // dp is joined both on application and organization
-		}
-	case Update, Delete:
-		// global admin
-		// organization admin users
-		// organization device admin users
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_admin=true", "dp.device_profile_id = $2"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_device_admin=true", "dp.device_profile_id = $2"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "dp.device_profile_id = $2", "ak.organization_id = dp.organization_id"},
-		}
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return executeQuery(db, userQuery, userWhere, claims.Username, id, claims.UserID)
-		case SubjectAPIKey:
-			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, id)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateMulticastGroupsAccess validates if the client has access to the
-// multicast-groups.
-func ValidateMulticastGroupsAccess(flag Flag, organizationID int64) ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join organization o
-			on o.id = ou.organization_id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-		left join organization o
-			on ak.organization_id = o.id
-	`
-
-	var userWhere = [][]string{}
-	var apiKeyWhere = [][]string{}
-
-	switch flag {
-	case Create:
-		// global admin
-		// organization admin
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2", "ou.is_admin = true"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "o.id = $2"},
-		}
-
-	case List:
-		// global admin
-		// organization user
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "o.id = $2"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "o.id = $2"},
-		}
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return executeQuery(db, userQuery, userWhere, claims.Username, organizationID, claims.UserID)
-		case SubjectAPIKey:
-			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, organizationID)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateMulticastGroupAccess validates if the client has access to the given
-// multicast-group.
-func ValidateMulticastGroupAccess(flag Flag, multicastGroupID uuid.UUID) ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join service_profile sp
-			on sp.organization_id = ou.organization_id
-		left join multicast_group mg
-			on sp.service_profile_id = mg.service_profile_id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-		left join organization o
-			on ak.organization_id = o.id
-		left join service_profile sp
-			on o.id = sp.organization_id
-		left join multicast_group mg
-			on sp.service_profile_id = mg.service_profile_id
-	`
-
-	var userWhere = [][]string{}
-	var apiKeyWhere = [][]string{}
-
-	switch flag {
-	case Read:
-		// global admin
-		// organization users
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "mg.id = $2"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "mg.id = $2"},
-		}
-	case Update, Delete:
-		// global admin
-		// organization admin users
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "ou.is_admin = true", "mg.id = $2"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "mg.id = $2"},
-		}
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return executeQuery(db, userQuery, userWhere, claims.Username, multicastGroupID, claims.UserID)
-		case SubjectAPIKey:
-			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, multicastGroupID)
-		default:
-			return false, nil
-		}
-	}
-}
-
-// ValidateMulticastGroupQueueAccess validates if the client has access to
-// the given multicast-group queue.
-func ValidateMulticastGroupQueueAccess(flag Flag, multicastGroupID uuid.UUID) ValidatorFunc {
-	userQuery := `
-		select
-			1
-		from
-			"user" u
-		left join organization_user ou
-			on u.id = ou.user_id
-		left join service_profile sp
-			on sp.organization_id = ou.organization_id
-		left join multicast_group mg
-			on sp.service_profile_id = mg.service_profile_id
-	`
-
-	apiKeyQuery := `
-		select
-			1
-		from
-			api_key ak
-		left join organization o
-			on ak.organization_id = o.id
-		left join service_profile sp
-			on o.id = sp.organization_id
-		left join multicast_group mg
-			on sp.service_profile_id = mg.service_profile_id
-	`
-
-	var userWhere = [][]string{}
-	var apiKeyWhere = [][]string{}
-
-	switch flag {
-	case Create, Read, List, Delete:
-		// global admin
-		// organization user
-		userWhere = [][]string{
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
-			{"(u.email = $1 or u.id = $3)", "u.is_active = true", "mg.id = $2"},
-		}
-
-		// admin api key
-		// org api key
-		apiKeyWhere = [][]string{
-			{"ak.id = $1", "ak.is_admin = true"},
-			{"ak.id = $1", "mg.id = $2"},
-		}
-	}
-
-	return func(db sqlx.Queryer, claims *Claims) (bool, error) {
-		switch claims.Subject {
-		case SubjectUser:
-			return executeQuery(db, userQuery, userWhere, claims.Username, multicastGroupID, claims.UserID)
-		case SubjectAPIKey:
-			return executeQuery(db, apiKeyQuery, apiKeyWhere, claims.APIKeyID, multicastGroupID)
 		default:
 			return false, nil
 		}

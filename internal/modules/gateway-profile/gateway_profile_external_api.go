@@ -12,7 +12,6 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
@@ -60,7 +59,7 @@ func (a *GatewayProfileAPI) Create(ctx context.Context, req *pb.CreateGatewayPro
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		err := handler.CreateGatewayProfile(ctx, &gp)
 		if err != nil {
-			return helpers.ErrToRPCError(err)
+			return status.Errorf(codes.Unknown, "%s", err)
 		}
 
 		return nil
@@ -70,7 +69,7 @@ func (a *GatewayProfileAPI) Create(ctx context.Context, req *pb.CreateGatewayPro
 
 	gpID, err := uuid.FromBytes(gp.GatewayProfile.Id)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	return &pb.CreateGatewayProfileResponse{
@@ -91,7 +90,7 @@ func (a *GatewayProfileAPI) Get(ctx context.Context, req *pb.GetGatewayProfileRe
 
 	gp, err := a.st.GetGatewayProfile(ctx, gpID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	out := pb.GetGatewayProfileResponse{
@@ -105,11 +104,11 @@ func (a *GatewayProfileAPI) Get(ctx context.Context, req *pb.GetGatewayProfileRe
 
 	out.CreatedAt, err = ptypes.TimestampProto(gp.CreatedAt)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 	out.UpdatedAt, err = ptypes.TimestampProto(gp.UpdatedAt)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	for _, ec := range gp.GatewayProfile.ExtraChannels {
@@ -142,7 +141,7 @@ func (a *GatewayProfileAPI) Update(ctx context.Context, req *pb.UpdateGatewayPro
 
 	gp, err := a.st.GetGatewayProfile(ctx, gpID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	gp.Name = req.GatewayProfile.Name
@@ -162,7 +161,7 @@ func (a *GatewayProfileAPI) Update(ctx context.Context, req *pb.UpdateGatewayPro
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		err = handler.UpdateGatewayProfile(ctx, &gp)
 		if err != nil {
-			return helpers.ErrToRPCError(err)
+			return status.Errorf(codes.Unknown, "%s", err)
 		}
 
 		return nil
@@ -186,7 +185,7 @@ func (a *GatewayProfileAPI) Delete(ctx context.Context, req *pb.DeleteGatewayPro
 
 	err = a.st.DeleteGatewayProfile(ctx, gpID)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -205,22 +204,22 @@ func (a *GatewayProfileAPI) List(ctx context.Context, req *pb.ListGatewayProfile
 	if req.NetworkServerId == 0 {
 		count, err = a.st.GetGatewayProfileCount(ctx)
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 
 		gps, err = a.st.GetGatewayProfiles(ctx, int(req.Limit), int(req.Offset))
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 	} else {
 		count, err = a.st.GetGatewayProfileCountForNetworkServerID(ctx, req.NetworkServerId)
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 
 		gps, err = a.st.GetGatewayProfilesForNetworkServerID(ctx, req.NetworkServerId, int(req.Limit), int(req.Offset))
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 	}
 
@@ -238,11 +237,11 @@ func (a *GatewayProfileAPI) List(ctx context.Context, req *pb.ListGatewayProfile
 
 		row.CreatedAt, err = ptypes.TimestampProto(gp.CreatedAt)
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 		row.UpdatedAt, err = ptypes.TimestampProto(gp.UpdatedAt)
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 
 		out.Result = append(out.Result, &row)

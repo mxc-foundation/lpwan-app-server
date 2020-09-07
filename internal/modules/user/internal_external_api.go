@@ -6,13 +6,14 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 

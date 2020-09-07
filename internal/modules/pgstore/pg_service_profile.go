@@ -2,6 +2,7 @@ package pgstore
 
 import (
 	"context"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -16,6 +17,135 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
+
+func (ps *pgstore) CheckReadServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join service_profile sp
+			on sp.organization_id = ou.organization_id
+	`
+	// global admin
+	// organization users to which the service-profile is linked
+	userWhere := [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "sp.service_profile_id = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, id, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+
+}
+
+func (ps *pgstore) CheckUpdateDeleteServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join service_profile sp
+			on sp.organization_id = ou.organization_id
+	`
+	// global admin
+	userWhere := [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, id, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+
+}
+
+func (ps *pgstore) CheckCreateServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+	`
+
+	// global admin
+	userWhere := [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true", "$2 = $2"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
+
+func (ps *pgstore) CheckListServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+	userQuery := `
+		select
+			1
+		from
+			"user" u
+		left join organization_user ou
+			on u.id = ou.user_id
+		left join organization o
+			on o.id = ou.organization_id
+	`
+	// global admin
+	// organization user (when organization id is given)
+	// any active user (filtered by user)
+	userWhere := [][]string{
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "u.is_admin = true"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 > 0", "o.id = $2"},
+		{"(u.email = $1 or u.id = $3)", "u.is_active = true", "$2 = 0"},
+	}
+
+	var ors []string
+	for _, ands := range userWhere {
+		ors = append(ors, "(("+strings.Join(ands, ") and (")+"))")
+	}
+	whereStr := strings.Join(ors, " or ")
+	userQuery = "select count(*) from (" + userQuery + " where " + whereStr + " limit 1) count_only"
+
+	var count int64
+	if err := sqlx.GetContext(ctx, ps.db, &count, userQuery, username, organizationID, userID); err != nil {
+		return false, errors.Wrap(err, "select error")
+	}
+	return count > 0, nil
+}
 
 // DeleteAllServiceProfilesForOrganizationID deletes all service-profiles
 // given an organization id.

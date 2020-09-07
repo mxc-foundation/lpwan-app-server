@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/spf13/viper"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -146,6 +147,16 @@ func initConfig() {
 		config.C.ApplicationServer.Integration.Enabled = []string{config.C.ApplicationServer.Integration.Backend}
 	}
 
+	if config.C.Redis.URL != "" {
+		opt, err := redis.ParseURL(config.C.Redis.URL)
+		if err != nil {
+			log.WithError(err).Fatal("redis url error")
+		}
+
+		config.C.Redis.Servers = []string{opt.Addr}
+		config.C.Redis.Database = opt.DB
+		config.C.Redis.Password = opt.Password
+	}
 	config.AppserverVersion = version
 
 }

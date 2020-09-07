@@ -11,10 +11,11 @@ import (
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/golang/protobuf/proto"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 )
 
 func TestParseConnectionString(t *testing.T) {

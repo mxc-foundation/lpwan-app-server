@@ -6,13 +6,16 @@ import (
 	"os/signal"
 	"syscall"
 
+	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
@@ -35,6 +38,7 @@ import (
 	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	asmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	devprofilemod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
 	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	gpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	miningmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
@@ -264,6 +268,14 @@ func setupModules() (err error) {
 	}
 
 	if err = asmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = devprofilemod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = serviceprofile.Setup(pgstore.New(storage.DB().DB)); err != nil {
 		return err
 	}
 

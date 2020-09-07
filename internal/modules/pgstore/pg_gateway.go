@@ -3,9 +3,10 @@ package pgstore
 import (
 	"context"
 	"database/sql"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/brocaar/lorawan"
 	"github.com/jmoiron/sqlx"

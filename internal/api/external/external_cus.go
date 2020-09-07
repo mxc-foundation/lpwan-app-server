@@ -7,6 +7,9 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
+	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
+
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
@@ -14,6 +17,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -23,6 +27,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	devprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/staking"
@@ -43,16 +48,16 @@ func SetupCusAPI(grpcServer *grpc.Server, rpID uuid.UUID) error {
 	}
 	authcus.SetupCred(authPg.New(storage.DB().DB), jwtValidator, otpValidator)
 
-	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(jwtValidator))
-	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(jwtValidator))
-	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(jwtValidator))
-	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(jwtValidator, rpID))
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(jwtValidator))
 
+	pb.RegisterDeviceQueueServiceServer(grpcServer, device.NewDeviceQueueAPI())
+	pb.RegisterMulticastGroupServiceServer(grpcServer, multicast.NewMulticastGroupAPI(rpID))
+	pb.RegisterServiceProfileServiceServer(grpcServer, serviceprofile.NewServiceProfileServiceAPI())
+	pb.RegisterDeviceProfileServiceServer(grpcServer, devprofile.NewDeviceProfileServiceAPI())
 	// device
-	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(applicationServerID))
+	api.RegisterDeviceServiceServer(grpcServer, device.NewDeviceAPI(rpID))
 	// gateway
-	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(applicationServerID))
+	api.RegisterGatewayServiceServer(grpcServer, gateway.NewGatewayAPI(rpID))
 	// gateway profile
 	api.RegisterGatewayProfileServiceServer(grpcServer, gatewayprofile.NewGatewayProfileAPI())
 	// application

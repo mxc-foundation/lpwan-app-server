@@ -6,11 +6,12 @@ import (
 	"encoding/base32"
 	"encoding/json"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"html/template"
 	"net/smtp"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 

@@ -31,6 +31,7 @@ type Store interface {
 	UserStore
 	ServiceProfileStore
 	DeviceProfileStore
+	MulticastGroupStore
 }
 
 type Handler struct {

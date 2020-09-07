@@ -3,22 +3,19 @@ package networkserver
 import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
+	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // NetworkServerAPI exports the NetworkServer related functions.
@@ -126,7 +123,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 	}
 	nsClient, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
@@ -152,7 +149,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 	}
 
 	if err := a.st.CreateNetworkServer(ctx, &networkServer); err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	return &pb.CreateNetworkServerResponse{
@@ -168,7 +165,7 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 
 	n, err := a.st.GetNetworkServer(ctx, req.Id)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	var region string
@@ -182,7 +179,7 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 	}
 	nsClient, err := nStruct.GetNetworkServiceClient()
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
@@ -211,11 +208,11 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 
 	response.CreatedAt, err = ptypes.TimestampProto(n.CreatedAt)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 	response.UpdatedAt, err = ptypes.TimestampProto(n.UpdatedAt)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	return &response, nil
@@ -233,7 +230,7 @@ func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServ
 
 	networkServer, err := a.st.GetNetworkServer(ctx, req.NetworkServer.Id)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	networkServer.Name = req.NetworkServer.Name
@@ -262,7 +259,7 @@ func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServ
 	}
 
 	if err := a.st.UpdateNetworkServer(ctx, &networkServer); err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -275,7 +272,7 @@ func (a *NetworkServerAPI) Delete(ctx context.Context, req *pb.DeleteNetworkServ
 	}
 
 	if err := a.st.DeleteNetworkServer(ctx, req.Id); err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	return &empty.Empty{}, nil
@@ -289,7 +286,7 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 
 	u, err := NewValidator().GetUser(ctx)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
 	var count int
@@ -299,21 +296,21 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 		if u.IsGlobalAdmin {
 			count, err = a.st.GetNetworkServerCount(ctx)
 			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
+				return nil, status.Errorf(codes.Unknown, "%s", err)
 			}
 			nss, err = a.st.GetNetworkServers(ctx, int(req.Limit), int(req.Offset))
 			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
+				return nil, status.Errorf(codes.Unknown, "%s", err)
 			}
 		}
 	} else {
 		count, err = a.st.GetNetworkServerCountForOrganizationID(ctx, req.OrganizationId)
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 		nss, err = a.st.GetNetworkServersForOrganizationID(ctx, req.OrganizationId, int(req.Limit), int(req.Offset))
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 	}
 
@@ -330,11 +327,11 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 
 		row.CreatedAt, err = ptypes.TimestampProto(ns.CreatedAt)
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 		row.UpdatedAt, err = ptypes.TimestampProto(ns.UpdatedAt)
 		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			return nil, status.Errorf(codes.Unknown, "%s", err)
 		}
 
 		resp.Result = append(resp.Result, &row)

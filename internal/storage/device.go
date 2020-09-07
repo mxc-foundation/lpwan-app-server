@@ -15,6 +15,7 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -736,7 +737,7 @@ func GetDevicesActiveInactive(ctx context.Context, db sqlx.Queryer, organization
 	err := sqlx.Get(db, &out, `
 		with device_active_inactive as (
 			select
-				make_interval(secs => dp.uplink_interval / 1000000000) as uplink_interval,
+				make_interval(secs => dp.uplink_interval / 1000000000) * 1.5 as uplink_interval,
 				d.last_seen_at as last_seen_at
 			from
 				device d

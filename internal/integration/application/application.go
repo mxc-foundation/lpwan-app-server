@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/influxdb"

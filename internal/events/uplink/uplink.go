@@ -18,6 +18,7 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"

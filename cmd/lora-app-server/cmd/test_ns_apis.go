@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/ns"
+
 	ns "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 )
 

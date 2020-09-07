@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/lib/pq/hstore"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec/cayennelpp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec/js"
 )

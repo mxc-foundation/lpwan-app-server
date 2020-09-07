@@ -34,6 +34,7 @@ type DeviceStore interface {
 	CheckReadNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
 	CheckUpdateNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
 	CheckDeleteNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
+	CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
 }
 
 func (h *Handler) CreateDevice(ctx context.Context, d *Device, applicationServerID uuid.UUID) error {
@@ -97,6 +98,9 @@ func (h *Handler) CheckUpdateNodeAccess(ctx context.Context, username string, de
 }
 func (h *Handler) CheckDeleteNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	return h.store.CheckDeleteNodeAccess(ctx, username, devEUI, userID)
+}
+func (h *Handler) CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+	return h.store.CheckCreateListDeleteDeviceQueueAccess(ctx, username, devEUI, userID)
 }
 
 // DeviceFilters provide filters that can be used to filter on devices.

@@ -12,6 +12,7 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -34,8 +35,6 @@ type NetworkServer struct {
 	GatewayDiscoveryInterval    int       `db:"gateway_discovery_interval"`
 	GatewayDiscoveryTXFrequency int       `db:"gateway_discovery_tx_frequency"`
 	GatewayDiscoveryDR          int       `db:"gateway_discovery_dr"`
-	Version                     string    `db:"version"`
-	Region                      string    `db:"region"`
 }
 
 // Validate validates the network-server data.
@@ -267,80 +266,74 @@ func DeleteNetworkServer(ctx context.Context, db sqlx.Ext, id int64) error {
 	return nil
 }
 
-// GetNetworkServerCount returns the total number of network-servers.
-func GetNetworkServerCount(ctx context.Context, db sqlx.Queryer) (int, error) {
-	var count int
-	err := sqlx.Get(db, &count, "select count(*) from network_server")
-	if err != nil {
-		return 0, handlePSQLError(Select, err, "select error")
-	}
+// NetworkServerFilters provides filters for filtering network-servers.
+type NetworkServerFilters struct {
+	OrganizationID int64 `db:"organization_id"`
 
-	return count, nil
+	// Limit and Offset are added for convenience so that this struct can
+	// be given as the arguments.
+	Limit  int `db:"limit"`
+	Offset int `db:"offset"`
 }
 
-// GetNetworkServerCountForOrganizationID returns the total number of
-// network-servers accessible for the given organization id.
-// A network-server is accessible for an organization when it is used by one
-// of its service-profiles.
-func GetNetworkServerCountForOrganizationID(ctx context.Context, db sqlx.Queryer, organizationID int64) (int, error) {
-	var count int
-	err := sqlx.Get(db, &count, `
+// SQL returns the SQL filters.
+func (f NetworkServerFilters) SQL() string {
+	var filters []string
+
+	if f.OrganizationID != 0 {
+		filters = append(filters, "sp.organization_id = :organization_id")
+	}
+
+	if len(filters) == 0 {
+		return ""
+	}
+
+	return "where " + strings.Join(filters, " and ")
+}
+
+// GetNetworkServerCount returns the total number of network-servers.
+func GetNetworkServerCount(ctx context.Context, db sqlx.Queryer, filters NetworkServerFilters) (int, error) {
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
-			count (distinct ns.id)
+			count(distinct ns.id)
 		from
 			network_server ns
-		inner join service_profile sp
-			on sp.network_server_id = ns.id
-		where
-			sp.organization_id = $1`,
-		organizationID,
-	)
+		left join service_profile sp
+			on ns.id = sp.network_server_id
+	`+filters.SQL(), filters)
+	if err != nil {
+		return 0, errors.Wrap(err, "named query error")
+	}
+
+	var count int
+	err = sqlx.Get(db, &count, query, args...)
 	if err != nil {
 		return 0, handlePSQLError(Select, err, "select error")
 	}
+
 	return count, nil
 }
 
 // GetNetworkServers returns a slice of network-servers.
-func GetNetworkServers(ctx context.Context, db sqlx.Queryer, limit, offset int) ([]NetworkServer, error) {
-	var nss []NetworkServer
-	err := sqlx.Select(db, &nss, `
-		select *
-		from network_server
-		order by name
-		limit $1 offset $2`,
-		limit,
-		offset,
-	)
-	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
-	}
-
-	return nss, nil
-}
-
-// GetNetworkServersForOrganizationID returns a slice of network-server
-// accessible for the given organization id.
-// A network-server is accessible for an organization when it is used by one
-// of its service-profiles.
-func GetNetworkServersForOrganizationID(ctx context.Context, db sqlx.Queryer, organizationID int64, limit, offset int) ([]NetworkServer, error) {
-	var nss []NetworkServer
-	err := sqlx.Select(db, &nss, `
+func GetNetworkServers(ctx context.Context, db sqlx.Queryer, filters NetworkServerFilters) ([]NetworkServer, error) {
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
-			ns.*
+			distinct ns.*
 		from
 			network_server ns
-		inner join service_profile sp
-			on sp.network_server_id = ns.id
-		where
-			sp.organization_id = $1
-		group by ns.id
-		order by name
-		limit $2 offset $3`,
-		organizationID,
-		limit,
-		offset,
-	)
+		left join service_profile sp
+			on ns.id = sp.network_server_id
+	`+filters.SQL()+`
+		order by ns.name
+		limit :limit
+		offset :offset
+	`, filters)
+	if err != nil {
+		return nil, errors.Wrap(err, "named query error")
+	}
+
+	var nss []NetworkServer
+	err = sqlx.Select(db, &nss, query, args...)
 	if err != nil {
 		return nil, handlePSQLError(Select, err, "select error")
 	}

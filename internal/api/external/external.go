@@ -24,6 +24,7 @@ import (
 	"github.com/tmc/grpc-websocket-proxy/wsproxy"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -31,20 +32,10 @@ import (
 )
 
 var (
-	brandingRegistration    string
-	brandingFooter          string
-	openIDLoginLabel        string
-	openIDConnectEnabled    bool
-	registrationEnabled     bool
-	registrationCallbackURL string
-
 	bind            string
 	tlsCert         string
 	tlsKey          string
-	jwtSecret       string
 	corsAllowOrigin string
-
-	applicationServerID uuid.UUID
 )
 
 // Setup configures the API package.
@@ -53,22 +44,10 @@ func Setup(conf config.Config) error {
 		return errors.New("jwt_secret must be set")
 	}
 
-	brandingRegistration = conf.ApplicationServer.Branding.Registration
-	brandingFooter = conf.ApplicationServer.Branding.Footer
-	registrationEnabled = conf.ApplicationServer.UserAuthentication.OpenIDConnect.RegistrationEnabled
-	registrationCallbackURL = conf.ApplicationServer.UserAuthentication.OpenIDConnect.RegistrationCallbackURL
-	openIDConnectEnabled = conf.ApplicationServer.UserAuthentication.OpenIDConnect.Enabled
-	openIDLoginLabel = conf.ApplicationServer.UserAuthentication.OpenIDConnect.LoginLabel
-
 	bind = conf.ApplicationServer.ExternalAPI.Bind
 	tlsCert = conf.ApplicationServer.ExternalAPI.TLSCert
 	tlsKey = conf.ApplicationServer.ExternalAPI.TLSKey
-	jwtSecret = conf.ApplicationServer.ExternalAPI.JWTSecret
 	corsAllowOrigin = conf.ApplicationServer.ExternalAPI.CORSAllowOrigin
-
-	if err := applicationServerID.UnmarshalText([]byte(conf.ApplicationServer.ID)); err != nil {
-		return errors.Wrap(err, "decode application_server.id error")
-	}
 
 	return setupAPI(conf)
 }
