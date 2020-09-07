@@ -4,10 +4,10 @@ package appserver_serves_ui;
 option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
 import "google/api/annotations.proto";
-import "internal.proto";
 import "google/protobuf/timestamp.proto";
 
 service StakingService {
+    // Make new stake
     rpc Stake (StakeRequest) returns (StakeResponse) {
         option (google.api.http) = {
             post: "/api/staking/{org_id}/stake"
@@ -15,6 +15,7 @@ service StakingService {
         };
     };
 
+    // Unstake existing stake
     rpc Unstake (UnstakeRequest) returns (UnstakeResponse) {
         option (google.api.http) = {
             post: "/api/staking/{org_id}/unstake"
@@ -22,6 +23,7 @@ service StakingService {
         };
     };
 
+    // Get list of active stakes
     rpc GetActiveStakes (GetActiveStakesRequest) returns (GetActiveStakesResponse) {
         option (google.api.http) = {
             get: "/api/staking/{org_id}/activestakes"
@@ -40,9 +42,10 @@ service StakingService {
         };
     };
 
+    // Get information about staking percentage and boosts for lockin stake
     rpc GetStakingPercentage (StakingPercentageRequest) returns (StakingPercentageResponse) {
         option (google.api.http) = {
-            get: "/api/staking/{org_id}/staking_percentage"
+            get: "/api/staking/staking_percentage"
         };
     }
 }
@@ -62,21 +65,24 @@ message StakeRequest {
     int64 org_id = 1;
     string amount = 2;
     string currency = 3;
+    // for how many periods stake should be locked
+    int64 lock_periods = 5;
+    // the boost [0,1]
+    string boost = 6;
 }
 
 message StakeResponse {
     string status = 1;
-    ProfileResponse user_profile = 2;
 }
 
 message UnstakeRequest {
     int64 org_id = 1;
-    string currency = 2;
+    // string currency = 2;
+    int64 stake_id = 3;
 }
 
 message UnstakeResponse {
     string status = 1;
-    ProfileResponse user_profile = 2;
 }
 
 message GetActiveStakesRequest {
@@ -84,17 +90,24 @@ message GetActiveStakesRequest {
     string currency = 2;
 }
 
-message ActiveStake {
+message Stake {
     int64 id = 1;
-    string amount = 3;
-    string stake_status = 4;
-    google.protobuf.Timestamp start_time = 5;
-    google.protobuf.Timestamp end_time = 6;
+    // when stake was placed
+    google.protobuf.Timestamp start_time = 2;
+    // when stake was withdrawn
+    google.protobuf.Timestamp end_time = 3;
+    // amount staked
+    string amount = 4;
+    // if stake is active
+    bool active = 5;
+    // the time till which the stake is locked and can't be withdrawn
+    google.protobuf.Timestamp lock_till = 6;
+    // boost [0, 1]
+    string boost = 7;
 }
 
 message GetActiveStakesResponse {
-    ActiveStake act_stake = 1;
-    ProfileResponse user_profile = 2;
+    repeated Stake act_stake = 1;
 }
 
 message StakingHistoryRequest {
@@ -102,14 +115,6 @@ message StakingHistoryRequest {
     string currency = 4;
     google.protobuf.Timestamp from = 5;
     google.protobuf.Timestamp till = 6;
-}
-
-message Stake {
-    int64 id = 1;
-    google.protobuf.Timestamp start_time = 2;
-    google.protobuf.Timestamp end_time = 3;
-    string amount = 4;
-    bool active = 5;
 }
 
 message StakingHistory {
@@ -120,16 +125,26 @@ message StakingHistory {
 }
 
 message StakingHistoryResponse {
-    ProfileResponse user_profile = 1;
     repeated StakingHistory staking_hist = 2;
-    int64 count = 3;
 }
 
 message StakingPercentageRequest {
-    int64 org_id = 1;
+    // int64 org_id = 1;
     string currency = 2;
 }
 
+// information about boost for locking the stake
+message Boost {
+    // for how many periods (normally months) stake will be locked
+    int64 lock_periods = 1;
+    // what boost will apply to this stake [0, 1]
+    string boost = 2;
+}
+
+// information about staking share and boosts
 message StakingPercentageResponse {
-    double staking_percentage = 1;
+    // what share of supernode income is allocated for staking
+    double staking_share = 1;
+    // list of boosts for locking stake for different periods
+    repeated Boost lock_boosts = 2;
 }
