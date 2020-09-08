@@ -63,12 +63,11 @@ func (s *SettingsServerAPI) GetSettings(ctx context.Context, req *api.GetSetting
 	}
 	compFloat, _ := compensation.Float64()
 	return &api.GetSettingsResponse{
-		LowBalanceWarning:                resp.LowBalanceWarning,
-		DownlinkPrice:                    resp.DownlinkPrice,
-		SupernodeIncomeRatio:             resp.SupernodeIncomeRatio,
-		StakingPercentage:                resp.StakingPercentage,
-		StakingExpectedRevenuePercentage: resp.StakingExpectedRevenuePercentage,
-		Compensation:                     compFloat,
+		LowBalanceWarning:    resp.LowBalanceWarning,
+		DownlinkPrice:        resp.DownlinkPrice,
+		SupernodeIncomeRatio: resp.SupernodeIncomeRatio,
+		StakingInterest:      resp.StakingInterest,
+		Compensation:         compFloat,
 	}, status.Error(codes.OK, "")
 }
 
