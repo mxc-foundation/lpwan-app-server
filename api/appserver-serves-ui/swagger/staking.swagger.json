@@ -392,10 +392,10 @@
     "appserver_serves_uiStakingPercentageResponse": {
       "type": "object",
       "properties": {
-        "stakingShare": {
+        "stakingInterest": {
           "type": "number",
           "format": "double",
-          "title": "what share of supernode income is allocated for staking"
+          "title": "base staking interest"
         },
         "lockBoosts": {
           "type": "array",

@@ -143,8 +143,8 @@ message Boost {
 
 // information about staking share and boosts
 message StakingPercentageResponse {
-    // what share of supernode income is allocated for staking
-    double staking_share = 1;
+    // base staking interest
+    double staking_interest = 1;
     // list of boosts for locking stake for different periods
     repeated Boost lock_boosts = 2;
 }

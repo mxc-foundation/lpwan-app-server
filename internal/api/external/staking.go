@@ -49,7 +49,7 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 	}
 
 	spr := &api.StakingPercentageResponse{
-		StakingShare: resp.StakingShare,
+		StakingInterest: resp.StakingInterest,
 	}
 	for _, boost := range resp.LockBoosts {
 		spr.LockBoosts = append(spr.LockBoosts, &api.Boost{
