@@ -42,7 +42,6 @@ func init() {
 	viper.SetDefault("postgresql.dsn", "postgres://localhost/chirpstack_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
 	viper.SetDefault("postgresql.max_idle_connections", 2)
-	viper.SetDefault("redis.url", "redis://localhost:6379")
 	viper.SetDefault("application_server.api.public_host", "localhost:8001")
 	viper.SetDefault("application_server.id", "6d5db27e-4ce2-4b2b-b5d7-91f069397978")
 	viper.SetDefault("application_server.api.bind", "0.0.0.0:8001")

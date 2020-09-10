@@ -23,11 +23,7 @@ func NewStakingServerAPI() *StakingServerAPI {
 
 // GetStakingPercentage defines the request and response to get staking percentage
 func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingPercentage org=%d", req.OrgId)
-
-	if err := NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
-	}
+	logInfo, _ := fmt.Print("api/appserver_serves_ui/GetStakingPercentage")
 
 	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
@@ -36,16 +32,23 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 	}
 
 	resp, err := stakeClient.GetStakingPercentage(ctx, &pb.StakingPercentageRequest{
-		OrgId: req.OrgId,
+		Currency: req.Currency,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.StakingPercentageResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.StakingPercentageResponse{
-		StakingPercentage: resp.StakingPercentage,
-	}, status.Error(codes.OK, "")
+	spr := &api.StakingPercentageResponse{
+		StakingInterest: resp.StakingInterest,
+	}
+	for _, boost := range resp.LockBoosts {
+		spr.LockBoosts = append(spr.LockBoosts, &api.Boost{
+			LockPeriods: boost.LockPeriods,
+			Boost:       boost.Boost,
+		})
+	}
+	return spr, nil
 }
 
 // Stake defines the request and response for staking
@@ -63,8 +66,11 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 	}
 
 	resp, err := stakeClient.Stake(ctx, &pb.StakeRequest{
-		OrgId:  req.OrgId,
-		Amount: req.Amount,
+		OrgId:       req.OrgId,
+		Currency:    req.Currency,
+		Amount:      req.Amount,
+		LockPeriods: req.LockPeriods,
+		Boost:       req.Boost,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -87,15 +93,16 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	resp, err := stakeClient.Unstake(ctx, &pb.UnstakeRequest{
-		OrgId: req.OrgId,
+		OrgId:   req.OrgId,
+		StakeId: req.StakeId,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.UnstakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.UnstakeResponse{
@@ -118,26 +125,28 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 	}
 
 	resp, err := stakeClient.GetActiveStakes(ctx, &pb.GetActiveStakesRequest{
-		OrgId: req.OrgId,
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unknown, err.Error())
+		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	if resp.ActStake == nil {
-		return &api.GetActiveStakesResponse{}, status.Errorf(codes.OK, "")
+	gasr := &api.GetActiveStakesResponse{}
+	for _, stake := range resp.ActStake {
+		gasr.ActStake = append(gasr.ActStake,
+			&api.Stake{
+				Id:        stake.Id,
+				StartTime: stake.StartTime,
+				EndTime:   stake.EndTime,
+				Amount:    stake.Amount,
+				Active:    stake.Active,
+				LockTill:  stake.LockTill,
+				Boost:     stake.Boost,
+			})
 	}
-
-	return &api.GetActiveStakesResponse{
-		ActStake: &api.ActiveStake{
-			Id:          resp.ActStake.Id,
-			Amount:      resp.ActStake.Amount,
-			StakeStatus: resp.ActStake.StakeStatus,
-			StartTime:   resp.ActStake.StartTime,
-			EndTime:     resp.ActStake.EndTime,
-		},
-	}, status.Error(codes.OK, "")
+	return gasr, nil
 }
 
 // GetStakingRevenue returns the amount earned from staking during the specified period
@@ -202,6 +211,8 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 				Active:    st.Active,
 				StartTime: st.StartTime,
 				EndTime:   st.EndTime,
+				LockTill:  st.LockTill,
+				Boost:     st.Boost,
 			}
 		}
 		stakeHistory := &api.StakingHistory{

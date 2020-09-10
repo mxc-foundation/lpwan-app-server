@@ -2,42 +2,38 @@ package external
 
 import (
 	"github.com/gofrs/uuid"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
-	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
-
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-	"github.com/mxc-foundation/lpwan-app-server/internal/otp/pgstore"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	devprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
+	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota_deployment"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/topup"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/wallet"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/withdraw"
-
-	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/pgstore"
-	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 func SetupCusAPI(grpcServer *grpc.Server, rpID uuid.UUID) error {
@@ -48,8 +44,7 @@ func SetupCusAPI(grpcServer *grpc.Server, rpID uuid.UUID) error {
 	}
 	authcus.SetupCred(authPg.New(storage.DB().DB), jwtValidator, otpValidator)
 
-	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(jwtValidator))
-
+	pb.RegisterFUOTADeploymentServiceServer(grpcServer, fuotamod.NewFUOTADeploymentAPI())
 	pb.RegisterDeviceQueueServiceServer(grpcServer, device.NewDeviceQueueAPI())
 	pb.RegisterMulticastGroupServiceServer(grpcServer, multicast.NewMulticastGroupAPI(rpID))
 	pb.RegisterServiceProfileServiceServer(grpcServer, serviceprofile.NewServiceProfileServiceAPI())

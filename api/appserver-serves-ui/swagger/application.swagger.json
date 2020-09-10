@@ -1318,7 +1318,6 @@
         },
         "geolocation": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Geolocation enabled."
         },
         "geolocationToken": {
@@ -1337,17 +1336,14 @@
         },
         "geolocationTDOA": {
           "type": "boolean",
-          "format": "boolean",
           "description": "TDOA based geolocation is enabled."
         },
         "geolocationRSSI": {
           "type": "boolean",
-          "format": "boolean",
           "description": "RSSI based geolocation is enabled."
         },
         "geolocationGNSS": {
           "type": "boolean",
-          "format": "boolean",
           "description": "GNSS based geolocation is enabled (LR1110)."
         },
         "geolocationGNSSPayloadField": {
@@ -1356,12 +1352,10 @@
         },
         "geolocationGNSSUseRxTime": {
           "type": "boolean",
-          "format": "boolean",
           "description": "GNSS use RX time.\nIn case this is set to true, the resolver will use the RX time of the\nnetwork instead of the timestamp included in the LR1110 payload."
         },
         "geolocationWifi": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Wifi based geolocation is enabled."
         },
         "geolocationWifiPayloadField": {
@@ -1370,7 +1364,6 @@
         },
         "das": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Device Application Services enabled."
         },
         "dasToken": {

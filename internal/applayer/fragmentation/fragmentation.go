@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -46,8 +47,8 @@ func SyncRemoteFragmentationSessionsLoop() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-		err = storage.Transaction(func(tx sqlx.Ext) error {
-			return syncRemoteFragmentationSessions(ctx, tx)
+		err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+			return syncRemoteFragmentationSessions(ctx, handler)
 		})
 		if err != nil {
 			log.WithError(err).Error("sync remote fragmentation setup error")
@@ -57,7 +58,7 @@ func SyncRemoteFragmentationSessionsLoop() {
 }
 
 // HandleRemoteFragmentationSessionCommand handles an uplink fragmentation session command.
-func HandleRemoteFragmentationSessionCommand(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, b []byte) error {
+func HandleRemoteFragmentationSessionCommand(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, b []byte) error {
 	var cmd fragmentation.Command
 
 	if err := cmd.UnmarshalBinary(true, b); err != nil {
@@ -70,7 +71,7 @@ func HandleRemoteFragmentationSessionCommand(ctx context.Context, db sqlx.Ext, d
 		if !ok {
 			return fmt.Errorf("expected *fragmentation.FragSessionSetupAnsPayload, got: %T", cmd.Payload)
 		}
-		if err := handleFragSessionSetupAns(ctx, db, devEUI, pl); err != nil {
+		if err := handleFragSessionSetupAns(ctx, handler, devEUI, pl); err != nil {
 			return errors.Wrap(err, "handle FragSessionSetupAns error")
 		}
 	case fragmentation.FragSessionDeleteAns:
@@ -78,7 +79,7 @@ func HandleRemoteFragmentationSessionCommand(ctx context.Context, db sqlx.Ext, d
 		if !ok {
 			return fmt.Errorf("expected *fragmentation.FragSessionDeleteAnsPayload, got: %T", cmd.Payload)
 		}
-		if err := handleFragSessionDeleteAns(ctx, db, devEUI, pl); err != nil {
+		if err := handleFragSessionDeleteAns(ctx, handler, devEUI, pl); err != nil {
 			return errors.Wrap(err, "handle FragSessionDeleteAns error")
 		}
 	case fragmentation.FragSessionStatusAns:
@@ -86,7 +87,7 @@ func HandleRemoteFragmentationSessionCommand(ctx context.Context, db sqlx.Ext, d
 		if !ok {
 			return fmt.Errorf("expected *fragmentation.FragSessionStatusAns, got: %T", cmd.Payload)
 		}
-		if err := handleFragSessionStatusAns(ctx, db, devEUI, pl); err != nil {
+		if err := handleFragSessionStatusAns(ctx, handler, devEUI, pl); err != nil {
 			return errors.Wrap(err, "handle FragSessionStatusAns error")
 		}
 	default:
@@ -96,14 +97,14 @@ func HandleRemoteFragmentationSessionCommand(ctx context.Context, db sqlx.Ext, d
 	return nil
 }
 
-func syncRemoteFragmentationSessions(ctx context.Context, db sqlx.Ext) error {
-	items, err := storage.GetPendingRemoteFragmentationSessions(ctx, db, syncBatchSize, syncRetries)
+func syncRemoteFragmentationSessions(ctx context.Context, handler *store.Handler) error {
+	items, err := storage.GetPendingRemoteFragmentationSessions(ctx, handler, syncBatchSize, syncRetries)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := syncRemoteFragmentationSession(ctx, db, item); err != nil {
+		if err := syncRemoteFragmentationSession(ctx, handler, item); err != nil {
 			return errors.Wrap(err, "sync remote fragmentation session error")
 		}
 	}
@@ -111,7 +112,7 @@ func syncRemoteFragmentationSessions(ctx context.Context, db sqlx.Ext) error {
 	return nil
 }
 
-func syncRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, item storage.RemoteFragmentationSession) error {
+func syncRemoteFragmentationSession(ctx context.Context, handler *store.Handler, item storage.RemoteFragmentationSession) error {
 	var cmd fragmentation.Command
 
 	switch item.State {
@@ -158,7 +159,7 @@ func syncRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, item stora
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, db, item.DevEUI, false, fragmentation.DefaultFPort, b)
+	_, err = storage.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, fragmentation.DefaultFPort, b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}
@@ -172,7 +173,7 @@ func syncRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, item stora
 	item.RetryCount++
 	item.RetryAfter = time.Now().Add(item.RetryInterval)
 
-	err = storage.UpdateRemoteFragmentationSession(ctx, db, &item)
+	err = storage.UpdateRemoteFragmentationSession(ctx, handler, &item)
 	if err != nil {
 		return errors.Wrap(err, "update remote fragmentation session error")
 	}
@@ -180,7 +181,7 @@ func syncRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, item stora
 	return nil
 }
 
-func handleFragSessionSetupAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, pl *fragmentation.FragSessionSetupAnsPayload) error {
+func handleFragSessionSetupAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *fragmentation.FragSessionSetupAnsPayload) error {
 	log.WithFields(log.Fields{
 		"dev_eui":                          devEUI,
 		"frag_index":                       pl.StatusBitMask.FragIndex,
@@ -195,20 +196,20 @@ func handleFragSessionSetupAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.
 		return fmt.Errorf("WrongDescriptor: %t, FragSessionIndexNotSupported: %t, NotEnoughMemory: %t, EncodingUnsupported: %t", pl.StatusBitMask.WrongDescriptor, pl.StatusBitMask.FragSessionIndexNotSupported, pl.StatusBitMask.NotEnoughMemory, pl.StatusBitMask.EncodingUnsupported)
 	}
 
-	rfs, err := storage.GetRemoteFragmentationSession(ctx, db, devEUI, int(pl.StatusBitMask.FragIndex), true)
+	rfs, err := storage.GetRemoteFragmentationSession(ctx, handler, devEUI, int(pl.StatusBitMask.FragIndex), true)
 	if err != nil {
 		return errors.Wrap(err, "get remote fragmentation session error")
 	}
 
 	rfs.StateProvisioned = true
-	if err := storage.UpdateRemoteFragmentationSession(ctx, db, &rfs); err != nil {
+	if err := storage.UpdateRemoteFragmentationSession(ctx, handler, &rfs); err != nil {
 		return errors.Wrap(err, "update remote fragmentation session error")
 	}
 
 	return nil
 }
 
-func handleFragSessionDeleteAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, pl *fragmentation.FragSessionDeleteAnsPayload) error {
+func handleFragSessionDeleteAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *fragmentation.FragSessionDeleteAnsPayload) error {
 	log.WithFields(log.Fields{
 		"dev_eui":                devEUI,
 		"frag_index":             pl.Status.FragIndex,
@@ -220,20 +221,20 @@ func handleFragSessionDeleteAns(ctx context.Context, db sqlx.Ext, devEUI lorawan
 		return fmt.Errorf("FragIndex %d does not exist", pl.Status.FragIndex)
 	}
 
-	rfs, err := storage.GetRemoteFragmentationSession(ctx, db, devEUI, int(pl.Status.FragIndex), true)
+	rfs, err := storage.GetRemoteFragmentationSession(ctx, handler, devEUI, int(pl.Status.FragIndex), true)
 	if err != nil {
 		return errors.Wrap(err, "get remove fragmentation session error")
 	}
 
 	rfs.StateProvisioned = true
-	if err := storage.UpdateRemoteFragmentationSession(ctx, db, &rfs); err != nil {
+	if err := storage.UpdateRemoteFragmentationSession(ctx, handler, &rfs); err != nil {
 		return errors.Wrap(err, "update remote fragmentation session error")
 	}
 
 	return nil
 }
 
-func handleFragSessionStatusAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, pl *fragmentation.FragSessionStatusAnsPayload) error {
+func handleFragSessionStatusAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *fragmentation.FragSessionStatusAnsPayload) error {
 	log.WithFields(log.Fields{
 		"dev_eui":                  devEUI,
 		"frag_index":               pl.ReceivedAndIndex.FragIndex,
@@ -243,7 +244,7 @@ func handleFragSessionStatusAns(ctx context.Context, db sqlx.Ext, devEUI lorawan
 		"ctx_id":                   ctx.Value(logging.ContextIDKey),
 	}).Info("FragSessionStatusAns received")
 
-	fdd, err := storage.GetPendingFUOTADeploymentDevice(ctx, db, devEUI)
+	fdd, err := storage.GetPendingFUOTADeploymentDevice(ctx, handler, devEUI)
 	if err != nil {
 		return errors.Wrap(err, "get pending fuota deployment device error")
 	}
@@ -260,7 +261,7 @@ func handleFragSessionStatusAns(ctx context.Context, db sqlx.Ext, devEUI lorawan
 		fdd.ErrorMessage = "Not enough matrix memory."
 	}
 
-	err = storage.UpdateFUOTADeploymentDevice(ctx, db, &fdd)
+	err = storage.UpdateFUOTADeploymentDevice(ctx, handler, &fdd)
 	if err != nil {
 		return errors.Wrap(err, "update fuota deployment device error")
 	}

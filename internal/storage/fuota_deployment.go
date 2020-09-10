@@ -14,6 +14,7 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // FUOTADeploymentState defines the fuota deployment state.
@@ -150,7 +151,7 @@ func (fd FUOTADeployment) Validate() error {
 
 // CreateFUOTADeploymentForDevice creates and initializes a FUOTA deployment
 // for the given device.
-func CreateFUOTADeploymentForDevice(ctx context.Context, db sqlx.Ext, fd *FUOTADeployment, devEUI lorawan.EUI64) error {
+func CreateFUOTADeploymentForDevice(ctx context.Context, handler *store.Handler, fd *FUOTADeployment, devEUI lorawan.EUI64) error {
 	if err := fd.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -246,7 +247,7 @@ func CreateFUOTADeploymentForDevice(ctx context.Context, db sqlx.Ext, fd *FUOTAD
 }
 
 // GetFUOTADeployment returns the FUOTA deployment for the given ID.
-func GetFUOTADeployment(ctx context.Context, db sqlx.Ext, id uuid.UUID, forUpdate bool) (FUOTADeployment, error) {
+func GetFUOTADeployment(ctx context.Context, handler *store.Handler, id uuid.UUID, forUpdate bool) (FUOTADeployment, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -284,7 +285,7 @@ func GetFUOTADeployment(ctx context.Context, db sqlx.Ext, id uuid.UUID, forUpdat
 }
 
 // GetPendingFUOTADeployments returns the pending FUOTA deployments.
-func GetPendingFUOTADeployments(ctx context.Context, db sqlx.Ext, batchSize int) ([]FUOTADeployment, error) {
+func GetPendingFUOTADeployments(ctx context.Context, handler *store.Handler, batchSize int) ([]FUOTADeployment, error) {
 	var out []FUOTADeployment
 
 	rows, err := db.Queryx(`
@@ -337,7 +338,7 @@ func GetPendingFUOTADeployments(ctx context.Context, db sqlx.Ext, batchSize int)
 }
 
 // UpdateFUOTADeployment updates the given FUOTA deployment.
-func UpdateFUOTADeployment(ctx context.Context, db sqlx.Ext, fd *FUOTADeployment) error {
+func UpdateFUOTADeployment(ctx context.Context, handler *store.Handler, fd *FUOTADeployment) error {
 	if err := fd.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -406,7 +407,7 @@ func UpdateFUOTADeployment(ctx context.Context, db sqlx.Ext, fd *FUOTADeployment
 }
 
 // GetFUOTADeploymentCount returns the number of FUOTA deployments.
-func GetFUOTADeploymentCount(ctx context.Context, db sqlx.Queryer, filters FUOTADeploymentFilters) (int, error) {
+func GetFUOTADeploymentCount(ctx context.Context, handler *store.Handler, filters FUOTADeploymentFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct fd.*)
@@ -435,7 +436,7 @@ func GetFUOTADeploymentCount(ctx context.Context, db sqlx.Queryer, filters FUOTA
 }
 
 // GetFUOTADeployments returns a slice of fuota deployments.
-func GetFUOTADeployments(ctx context.Context, db sqlx.Queryer, filters FUOTADeploymentFilters) ([]FUOTADeploymentListItem, error) {
+func GetFUOTADeployments(ctx context.Context, handler *store.Handler, filters FUOTADeploymentFilters) ([]FUOTADeploymentListItem, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			distinct fd.id,
@@ -474,7 +475,7 @@ func GetFUOTADeployments(ctx context.Context, db sqlx.Queryer, filters FUOTADepl
 
 // GetFUOTADeploymentDevice returns the FUOTA deployment record for the given
 // device.
-func GetFUOTADeploymentDevice(ctx context.Context, db sqlx.Queryer, fuotaDeploymentID uuid.UUID, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
+func GetFUOTADeploymentDevice(ctx context.Context, handler *store.Handler, fuotaDeploymentID uuid.UUID, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
 	var out FUOTADeploymentDevice
 	err := sqlx.Get(db, &out, `
 		select
@@ -495,7 +496,7 @@ func GetFUOTADeploymentDevice(ctx context.Context, db sqlx.Queryer, fuotaDeploym
 
 // GetPendingFUOTADeploymentDevice returns the pending FUOTA deployment record
 // for the given DevEUI.
-func GetPendingFUOTADeploymentDevice(ctx context.Context, db sqlx.Queryer, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
+func GetPendingFUOTADeploymentDevice(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
 	var out FUOTADeploymentDevice
 
 	err := sqlx.Get(db, &out, `
@@ -517,7 +518,7 @@ func GetPendingFUOTADeploymentDevice(ctx context.Context, db sqlx.Queryer, devEU
 }
 
 // UpdateFUOTADeploymentDevice updates the given fuota deployment device record.
-func UpdateFUOTADeploymentDevice(ctx context.Context, db sqlx.Ext, fdd *FUOTADeploymentDevice) error {
+func UpdateFUOTADeploymentDevice(ctx context.Context, handler *store.Handler, fdd *FUOTADeploymentDevice) error {
 	fdd.UpdatedAt = time.Now()
 
 	res, err := db.Exec(`
@@ -559,7 +560,7 @@ func UpdateFUOTADeploymentDevice(ctx context.Context, db sqlx.Ext, fdd *FUOTADep
 
 // GetFUOTADeploymentDeviceCount returns the device count for the given
 // FUOTA deployment ID.
-func GetFUOTADeploymentDeviceCount(ctx context.Context, db sqlx.Queryer, fuotaDeploymentID uuid.UUID) (int, error) {
+func GetFUOTADeploymentDeviceCount(ctx context.Context, handler *store.Handler, fuotaDeploymentID uuid.UUID) (int, error) {
 	var count int
 	err := sqlx.Get(db, &count, `
 		select
@@ -579,7 +580,7 @@ func GetFUOTADeploymentDeviceCount(ctx context.Context, db sqlx.Queryer, fuotaDe
 
 // GetFUOTADeploymentDevices returns a slice of devices for the given FUOTA
 // deployment ID.
-func GetFUOTADeploymentDevices(ctx context.Context, db sqlx.Queryer, fuotaDeploymentID uuid.UUID, limit, offset int) ([]FUOTADeploymentDeviceListItem, error) {
+func GetFUOTADeploymentDevices(ctx context.Context, handler *store.Handler, fuotaDeploymentID uuid.UUID, limit, offset int) ([]FUOTADeploymentDeviceListItem, error) {
 	var out []FUOTADeploymentDeviceListItem
 
 	err := sqlx.Select(db, &out, `
@@ -614,7 +615,7 @@ func GetFUOTADeploymentDevices(ctx context.Context, db sqlx.Queryer, fuotaDeploy
 }
 
 // GetServiceProfileIDForFUOTADeployment returns the service-profile ID for the given FUOTA deployment.
-func GetServiceProfileIDForFUOTADeployment(ctx context.Context, db sqlx.Ext, fuotaDeploymentID uuid.UUID) (uuid.UUID, error) {
+func GetServiceProfileIDForFUOTADeployment(ctx context.Context, handler *store.Handler, fuotaDeploymentID uuid.UUID) (uuid.UUID, error) {
 	var out uuid.UUID
 
 	err := sqlx.Get(db, &out, `

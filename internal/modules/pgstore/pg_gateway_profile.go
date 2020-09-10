@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -300,7 +298,7 @@ func (ps *pgstore) GetGatewayProfileCount(ctx context.Context) (int, error) {
 		from gateway_profile`)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, storage.ErrDoesNotExist
+			return 0, store.ErrDoesNotExist
 		}
 		return 0, err
 	}

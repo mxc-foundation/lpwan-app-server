@@ -1,19 +1,20 @@
 package code
 
 import (
+	"context"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // Migrate checks if the given function code has been applied and if not
 // it will execute the given function.
-func Migrate(name string, f func(db sqlx.Ext) error) error {
-	return storage.Transaction(func(tx sqlx.Ext) error {
+func Migrate(name string, f func(handler *store.Handler) error) error {
+	return storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		_, err := tx.Exec(`lock table code_migration`)
 		if err != nil {
 			return errors.Wrap(err, "lock code migration table error")

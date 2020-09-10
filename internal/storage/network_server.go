@@ -16,6 +16,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // NetworkServer defines the information to connect to a network-server.
@@ -35,6 +36,8 @@ type NetworkServer struct {
 	GatewayDiscoveryInterval    int       `db:"gateway_discovery_interval"`
 	GatewayDiscoveryTXFrequency int       `db:"gateway_discovery_tx_frequency"`
 	GatewayDiscoveryDR          int       `db:"gateway_discovery_dr"`
+	Version                     string    `db:"version"`
+	Region                      string    `db:"region"`
 }
 
 // Validate validates the network-server data.
@@ -50,7 +53,7 @@ func (ns NetworkServer) Validate() error {
 }
 
 // CreateNetworkServer creates the given network-server.
-func CreateNetworkServer(ctx context.Context, db sqlx.Queryer, n *NetworkServer) error {
+func CreateNetworkServer(ctx context.Context, handler *store.Handler, n *NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -129,7 +132,7 @@ func CreateNetworkServer(ctx context.Context, db sqlx.Queryer, n *NetworkServer)
 }
 
 // GetNetworkServer returns the network-server matching the given id.
-func GetNetworkServer(ctx context.Context, db sqlx.Queryer, id int64) (NetworkServer, error) {
+func GetNetworkServer(ctx context.Context, handler *store.Handler, id int64) (NetworkServer, error) {
 	var ns NetworkServer
 	err := sqlx.Get(db, &ns, "select * from network_server where id = $1", id)
 	if err != nil {
@@ -140,7 +143,7 @@ func GetNetworkServer(ctx context.Context, db sqlx.Queryer, id int64) (NetworkSe
 }
 
 // UpdateNetworkServer updates the given network-server.
-func UpdateNetworkServer(ctx context.Context, db sqlx.Execer, n *NetworkServer) error {
+func UpdateNetworkServer(ctx context.Context, handler *store.Handler, n *NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -224,7 +227,7 @@ func UpdateNetworkServer(ctx context.Context, db sqlx.Execer, n *NetworkServer) 
 }
 
 // DeleteNetworkServer deletes the network-server matching the given id.
-func DeleteNetworkServer(ctx context.Context, db sqlx.Ext, id int64) error {
+func DeleteNetworkServer(ctx context.Context, handler *store.Handler, id int64) error {
 	n, err := GetNetworkServer(ctx, db, id)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
@@ -292,7 +295,7 @@ func (f NetworkServerFilters) SQL() string {
 }
 
 // GetNetworkServerCount returns the total number of network-servers.
-func GetNetworkServerCount(ctx context.Context, db sqlx.Queryer, filters NetworkServerFilters) (int, error) {
+func GetNetworkServerCount(ctx context.Context, handler *store.Handler, filters NetworkServerFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct ns.id)
@@ -315,7 +318,7 @@ func GetNetworkServerCount(ctx context.Context, db sqlx.Queryer, filters Network
 }
 
 // GetNetworkServers returns a slice of network-servers.
-func GetNetworkServers(ctx context.Context, db sqlx.Queryer, filters NetworkServerFilters) ([]NetworkServer, error) {
+func GetNetworkServers(ctx context.Context, handler *store.Handler, filters NetworkServerFilters) ([]NetworkServer, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			distinct ns.*
@@ -342,7 +345,7 @@ func GetNetworkServers(ctx context.Context, db sqlx.Queryer, filters NetworkServ
 }
 
 // GetNetworkServerForDevEUI returns the network-server for the given DevEUI.
-func GetNetworkServerForDevEUI(ctx context.Context, db sqlx.Queryer, devEUI lorawan.EUI64) (NetworkServer, error) {
+func GetNetworkServerForDevEUI(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.Get(db, &n, `
 		select
@@ -365,7 +368,7 @@ func GetNetworkServerForDevEUI(ctx context.Context, db sqlx.Queryer, devEUI lora
 
 // GetNetworkServerForDeviceProfileID returns the network-server for the given
 // device-profile id.
-func GetNetworkServerForDeviceProfileID(ctx context.Context, db sqlx.Queryer, id uuid.UUID) (NetworkServer, error) {
+func GetNetworkServerForDeviceProfileID(ctx context.Context, handler *store.Handler, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.Get(db, &n, `
 		select
@@ -386,7 +389,7 @@ func GetNetworkServerForDeviceProfileID(ctx context.Context, db sqlx.Queryer, id
 
 // GetNetworkServerForServiceProfileID returns the network-server for the given
 // service-profile id.
-func GetNetworkServerForServiceProfileID(ctx context.Context, db sqlx.Queryer, id uuid.UUID) (NetworkServer, error) {
+func GetNetworkServerForServiceProfileID(ctx context.Context, handler *store.Handler, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.Get(db, &n, `
 		select
@@ -407,7 +410,7 @@ func GetNetworkServerForServiceProfileID(ctx context.Context, db sqlx.Queryer, i
 
 // GetNetworkServerForGatewayMAC returns the network-server for a given
 // gateway mac.
-func GetNetworkServerForGatewayMAC(ctx context.Context, db sqlx.Queryer, mac lorawan.EUI64) (NetworkServer, error) {
+func GetNetworkServerForGatewayMAC(ctx context.Context, handler *store.Handler, mac lorawan.EUI64) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.Get(db, &n, `
 		select
@@ -427,7 +430,7 @@ func GetNetworkServerForGatewayMAC(ctx context.Context, db sqlx.Queryer, mac lor
 
 // GetNetworkServerForGatewayProfileID returns the network-server for the given
 // gateway-profile id.
-func GetNetworkServerForGatewayProfileID(ctx context.Context, db sqlx.Queryer, id uuid.UUID) (NetworkServer, error) {
+func GetNetworkServerForGatewayProfileID(ctx context.Context, handler *store.Handler, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.Get(db, &n, `
 		select
@@ -448,7 +451,7 @@ func GetNetworkServerForGatewayProfileID(ctx context.Context, db sqlx.Queryer, i
 
 // GetNetworkServerForMulticastGroupID returns the network-server for the given
 // multicast-group id.
-func GetNetworkServerForMulticastGroupID(ctx context.Context, db sqlx.Queryer, id uuid.UUID) (NetworkServer, error) {
+func GetNetworkServerForMulticastGroupID(ctx context.Context, handler *store.Handler, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.Get(db, &n, `
 		select

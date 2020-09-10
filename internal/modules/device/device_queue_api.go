@@ -91,7 +91,7 @@ func (d *DeviceQueueAPI) Enqueue(ctx context.Context, req *pb.EnqueueDeviceQueue
 			}
 		}
 
-		fCnt, err = EnqueueDownlinkPayload(ctx, devEUI, req.DeviceQueueItem.Confirmed, uint8(req.DeviceQueueItem.FPort), req.DeviceQueueItem.Data)
+		fCnt, err = handler.EnqueueDownlinkPayload(ctx, devEUI, req.DeviceQueueItem.Confirmed, uint8(req.DeviceQueueItem.FPort), req.DeviceQueueItem.Data)
 		if err != nil {
 			return status.Errorf(codes.Internal, "enqueue downlink payload error: %s", err)
 		}

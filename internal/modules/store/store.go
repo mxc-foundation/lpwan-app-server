@@ -32,6 +32,7 @@ type Store interface {
 	ServiceProfileStore
 	DeviceProfileStore
 	MulticastGroupStore
+	FUOTADeploymentStore
 }
 
 type Handler struct {

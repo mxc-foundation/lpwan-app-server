@@ -837,7 +837,6 @@
         },
         "skipFCntCheck": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Skip frame-counter checks (this is insecure, but could be helpful for debugging)."
         },
         "referenceAltitude": {
@@ -861,7 +860,6 @@
         },
         "isDisabled": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Device is disabled."
         }
       }
@@ -971,12 +969,10 @@
         },
         "deviceStatusExternalPowerSource": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Device is connected to an external power source."
         },
         "deviceStatusBatteryLevelUnavailable": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Device battery status is unavailable."
         },
         "deviceStatusBatteryLevel": {
@@ -1137,8 +1133,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -1426,7 +1421,6 @@
         },
         "polarizationInversion": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Polarization inversion."
         }
       }

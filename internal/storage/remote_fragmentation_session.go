@@ -13,6 +13,7 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // RemoteFragmentationSession defines a remote fragmentation session record.
@@ -36,7 +37,7 @@ type RemoteFragmentationSession struct {
 }
 
 // CreateRemoteFragmentationSession creates the given fragmentation session.
-func CreateRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, sess *RemoteFragmentationSession) error {
+func CreateRemoteFragmentationSession(ctx context.Context, handler *store.Handler, sess *RemoteFragmentationSession) error {
 	now := time.Now()
 	sess.CreatedAt = now
 	sess.UpdatedAt = now
@@ -91,7 +92,7 @@ func CreateRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, sess *Re
 
 // GetRemoteFragmentationSession returns the fragmentation session given a
 // DevEUI and fragmentation index.
-func GetRemoteFragmentationSession(ctx context.Context, db sqlx.Queryer, devEUI lorawan.EUI64, fragIndex int, forUpdate bool) (RemoteFragmentationSession, error) {
+func GetRemoteFragmentationSession(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, fragIndex int, forUpdate bool) (RemoteFragmentationSession, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -129,7 +130,7 @@ func GetRemoteFragmentationSession(ctx context.Context, db sqlx.Queryer, devEUI 
 
 // GetPendingRemoteFragmentationSessions returns a slice of pending remote
 // fragmentation sessions.
-func GetPendingRemoteFragmentationSessions(ctx context.Context, db sqlx.Queryer, limit, maxRetryCount int) ([]RemoteFragmentationSession, error) {
+func GetPendingRemoteFragmentationSessions(ctx context.Context, handler *store.Handler, limit, maxRetryCount int) ([]RemoteFragmentationSession, error) {
 	var items []RemoteFragmentationSession
 
 	rows, err := db.Queryx(`
@@ -196,7 +197,7 @@ func GetPendingRemoteFragmentationSessions(ctx context.Context, db sqlx.Queryer,
 }
 
 // UpdateRemoteFragmentationSession updates the given fragmentation session.
-func UpdateRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, sess *RemoteFragmentationSession) error {
+func UpdateRemoteFragmentationSession(ctx context.Context, handler *store.Handler, sess *RemoteFragmentationSession) error {
 	sess.UpdatedAt = time.Now()
 
 	res, err := db.Exec(`
@@ -256,7 +257,7 @@ func UpdateRemoteFragmentationSession(ctx context.Context, db sqlx.Ext, sess *Re
 
 // DeleteRemoteFragmentationSession removes the fragmentation session for the
 // given DevEUI / fragmentation index combination.
-func DeleteRemoteFragmentationSession(ctx context.Context, db sqlx.Execer, devEUI lorawan.EUI64, fragIndex int) error {
+func DeleteRemoteFragmentationSession(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, fragIndex int) error {
 	res, err := db.Exec(`
 		delete from remote_fragmentation_session
 		where

@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -16,7 +17,7 @@ import (
 )
 
 // HandleClockSyncCommand handles an uplink clock synchronization command.
-func HandleClockSyncCommand(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, timeSinceGPSEpoch time.Duration, b []byte) error {
+func HandleClockSyncCommand(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, timeSinceGPSEpoch time.Duration, b []byte) error {
 	var cmd clocksync.Command
 
 	if err := cmd.UnmarshalBinary(true, b); err != nil {
@@ -29,7 +30,7 @@ func HandleClockSyncCommand(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI
 		if !ok {
 			return fmt.Errorf("expected *clocksync.AppTimeReqPayload, got: %T", cmd.Payload)
 		}
-		if err := handleAppTimeReq(ctx, db, devEUI, timeSinceGPSEpoch, pl); err != nil {
+		if err := handleAppTimeReq(ctx, handler, devEUI, timeSinceGPSEpoch, pl); err != nil {
 			return errors.Wrap(err, "handle AppTimeReq error")
 		}
 	default:
@@ -39,7 +40,7 @@ func HandleClockSyncCommand(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI
 	return nil
 }
 
-func handleAppTimeReq(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, timeSinceGPSEpoch time.Duration, pl *clocksync.AppTimeReqPayload) error {
+func handleAppTimeReq(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, timeSinceGPSEpoch time.Duration, pl *clocksync.AppTimeReqPayload) error {
 	deviceGPSTime := int64(pl.DeviceTime)
 	networkGPSTime := int64((timeSinceGPSEpoch / time.Second) % (1 << 32))
 
@@ -64,7 +65,7 @@ func handleAppTimeReq(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, ti
 		return errors.Wrap(err, "marshal command error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, db, devEUI, false, uint8(clocksync.DefaultFPort), b)
+	_, err = storage.EnqueueDownlinkPayload(ctx, handler, devEUI, false, uint8(clocksync.DefaultFPort), b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

@@ -6,10 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
-	jwt2 "github.com/dgrijalva/jwt-go"
 	"github.com/gofrs/uuid"
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwt"
@@ -17,6 +13,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // defaultSessionTTL defines the default session TTL
@@ -134,31 +132,6 @@ func getTokenFromContext(ctx context.Context) (string, error) {
 	}
 
 	return match[1], nil
-}
-
-func (v JWTValidator) Validate(ctx context.Context, funcs ...auth.ValidatorFunc) error {
-	claims, err := v.GetClaims(ctx, "")
-	if err != nil {
-		return err
-	}
-
-	claimsAuth := auth.Claims{
-		StandardClaims: jwt2.StandardClaims{Subject: "user"},
-		Username:       claims.Username,
-		UserID:         claims.UserID,
-		APIKeyID:       claims.APIKeyID,
-	}
-	for _, f := range funcs {
-		ok, err := f(storage.DB().DB, &claimsAuth)
-		if err != nil {
-			return errors.Wrap(err, "validator func error")
-		}
-		if ok {
-			return nil
-		}
-	}
-
-	return ErrNotAuthorized
 }
 
 // GetSubject returns the claim subject.

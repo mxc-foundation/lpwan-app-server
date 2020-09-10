@@ -11,7 +11,7 @@ import (
 )
 
 type DeviceStore interface {
-	CreateDevice(ctx context.Context, d *Device, applicationServerID uuid.UUID) error
+	CreateDevice(ctx context.Context, d *Device) error
 	GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (Device, error)
 	GetDeviceCount(ctx context.Context, filters DeviceFilters) (int, error)
 	GetAllDeviceEuis(ctx context.Context) ([]string, error)
@@ -26,6 +26,10 @@ type DeviceStore interface {
 	GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error)
 	DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error
 	UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error
+	UpdateDeviceLastSeenAndDR(ctx context.Context, devEUI lorawan.EUI64, ts time.Time, dr int) error
+	EnqueueDownlinkPayload(ctx context.Context, devEUI lorawan.EUI64, confirmed bool, fPort uint8, data []byte) (uint32, error)
+	GetDevicesActiveInactive(ctx context.Context, organizationID int64) (DevicesActiveInactive, error)
+	GetDevicesDataRates(ctx context.Context, organizationID int64) (DevicesDataRates, error)
 
 	// validator
 	CheckCreateNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error)
@@ -37,8 +41,24 @@ type DeviceStore interface {
 	CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
 }
 
-func (h *Handler) CreateDevice(ctx context.Context, d *Device, applicationServerID uuid.UUID) error {
-	return h.store.CreateDevice(ctx, d, applicationServerID)
+func (h *Handler) GetDevicesDataRates(ctx context.Context, organizationID int64) (DevicesDataRates, error) {
+	return h.store.GetDevicesDataRates(ctx, organizationID)
+}
+
+func (h *Handler) GetDevicesActiveInactive(ctx context.Context, organizationID int64) (DevicesActiveInactive, error) {
+	return h.store.GetDevicesActiveInactive(ctx, organizationID)
+}
+
+func (h *Handler) EnqueueDownlinkPayload(ctx context.Context, devEUI lorawan.EUI64, confirmed bool, fPort uint8, data []byte) (uint32, error) {
+	return h.store.EnqueueDownlinkPayload(ctx, devEUI, confirmed, fPort, data)
+}
+
+func (h *Handler) UpdateDeviceLastSeenAndDR(ctx context.Context, devEUI lorawan.EUI64, ts time.Time, dr int) error {
+	return h.store.UpdateDeviceLastSeenAndDR(ctx, devEUI, ts, dr)
+}
+
+func (h *Handler) CreateDevice(ctx context.Context, d *Device) error {
+	return h.store.CreateDevice(ctx, d)
 }
 func (h *Handler) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (Device, error) {
 	return h.store.GetDevice(ctx, devEUI, forUpdate)
@@ -106,10 +126,12 @@ func (h *Handler) CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, us
 // DeviceFilters provide filters that can be used to filter on devices.
 // Note that empty values are not used as filter.
 type DeviceFilters struct {
-	ApplicationID    int64     `db:"application_id"`
-	MulticastGroupID uuid.UUID `db:"multicast_group_id"`
-	ServiceProfileID uuid.UUID `db:"service_profile_id"`
-	Search           string    `db:"search"`
+	OrganizationID   int64         `db:"organization_id"`
+	ApplicationID    int64         `db:"application_id"`
+	MulticastGroupID uuid.UUID     `db:"multicast_group_id"`
+	ServiceProfileID uuid.UUID     `db:"service_profile_id"`
+	Search           string        `db:"search"`
+	Tags             hstore.Hstore `db:"tags"`
 
 	// Limit and Offset are added for convenience so that this struct can
 	// be given as the arguments.
@@ -120,6 +142,10 @@ type DeviceFilters struct {
 // SQL returns the SQL filter.
 func (f DeviceFilters) SQL() string {
 	var filters []string
+
+	if f.OrganizationID != 0 {
+		filters = append(filters, "a.organization_id = :organization_id")
+	}
 
 	if f.ApplicationID != 0 {
 		filters = append(filters, "d.application_id = :application_id")
@@ -135,6 +161,10 @@ func (f DeviceFilters) SQL() string {
 
 	if f.Search != "" {
 		filters = append(filters, "(d.name ilike :search or encode(d.dev_eui, 'hex') ilike :search)")
+	}
+
+	if len(f.Tags.Map) != 0 {
+		filters = append(filters, "d.tags @> :tags")
 	}
 
 	if len(filters) == 0 {
@@ -200,3 +230,12 @@ type DeviceActivation struct {
 	DevAddr   lorawan.DevAddr   `db:"dev_addr"`
 	AppSKey   lorawan.AES128Key `db:"app_s_key"`
 }
+
+// DevicesActiveInactive holds the active and inactive counts.
+type DevicesActiveInactive struct {
+	NeverSeenCount uint32 `db:"never_seen_count"`
+	ActiveCount    uint32 `db:"active_count"`
+	InactiveCount  uint32 `db:"inactive_count"`
+}
+
+type DevicesDataRates map[uint32]uint32

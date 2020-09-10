@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -454,7 +452,7 @@ func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, storage.ErrDoesNotExist
+			return nil, store.ErrDoesNotExist
 		}
 		return nil, errors.Wrap(err, "select error")
 	}

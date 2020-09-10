@@ -36,7 +36,7 @@ func (ts *ASTestSuite) SetupSuite() {
 	assert := require.New(ts.T())
 	conf := test.GetConfig()
 	assert.NoError(storage.Setup(conf))
-	test.MustResetDB(storage.DB().DB)
+	test.MustResetDB(storage.DBTest().DB)
 	storage.RedisClient().FlushAll()
 }
 
@@ -294,7 +294,7 @@ func (ts *ASTestSuite) TestApplicationServer() {
 			t.Run("JS codec", func(t *testing.T) {
 				assert := require.New(t)
 
-				app.PayloadCodec = codec.CustomJSType
+				app.PayloadCodec = string(codec.CustomJSType)
 				app.PayloadDecoderScript = `
 						function Decode(fPort, bytes) {
 							return {
@@ -315,7 +315,7 @@ func (ts *ASTestSuite) TestApplicationServer() {
 			t.Run("JS codec on device-profile", func(t *testing.T) {
 				assert := require.New(t)
 
-				dp.PayloadCodec = codec.CustomJSType
+				dp.PayloadCodec = string(codec.CustomJSType)
 				dp.PayloadDecoderScript = `
 						function Decode(fPort, bytes) {
 							return {

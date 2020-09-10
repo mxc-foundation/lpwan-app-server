@@ -19,6 +19,7 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // saltSize defines the salt size
@@ -47,6 +48,7 @@ type User struct {
 	EmailOld      string    `db:"email_old"`
 	Note          string    `db:"note"`
 	ExternalID    *string   `db:"external_id"` // must be pointer for unique index
+	SecurityToken *string   `db:"security_token"`
 }
 
 // Validate validates the user data.
@@ -104,7 +106,7 @@ type UserProfileOrganization struct {
 }
 
 // CreateUser creates the given user.
-func CreateUser(ctx context.Context, db sqlx.Queryer, user *User) error {
+func CreateUser(ctx context.Context, handler *store.Handler, user *User) error {
 	if err := user.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -160,7 +162,7 @@ func CreateUser(ctx context.Context, db sqlx.Queryer, user *User) error {
 }
 
 // GetUser returns the User for the given id.
-func GetUser(ctx context.Context, db sqlx.Queryer, id int64) (User, error) {
+func GetUser(ctx context.Context, handler *store.Handler, id int64) (User, error) {
 	var user User
 
 	err := sqlx.Get(db, &user, `
@@ -182,7 +184,7 @@ func GetUser(ctx context.Context, db sqlx.Queryer, id int64) (User, error) {
 }
 
 // GetUserByExternalID returns the User for the given ext. ID.
-func GetUserByExternalID(ctx context.Context, db sqlx.Queryer, externalID string) (User, error) {
+func GetUserByExternalID(ctx context.Context, handler *store.Handler, externalID string) (User, error) {
 	var user User
 
 	err := sqlx.Get(db, &user, `
@@ -204,7 +206,7 @@ func GetUserByExternalID(ctx context.Context, db sqlx.Queryer, externalID string
 }
 
 // GetUserByEmail returns the User for the given email.
-func GetUserByEmail(ctx context.Context, db sqlx.Queryer, email string) (User, error) {
+func GetUserByEmail(ctx context.Context, handler *store.Handler, email string) (User, error) {
 	var user User
 
 	err := sqlx.Get(db, &user, `
@@ -226,7 +228,7 @@ func GetUserByEmail(ctx context.Context, db sqlx.Queryer, email string) (User, e
 }
 
 // GetUserCount returns the total number of users.
-func GetUserCount(ctx context.Context, db sqlx.Queryer) (int, error) {
+func GetUserCount(ctx context.Context, handler *store.Handler) (int, error) {
 	var count int
 	err := sqlx.Get(db, &count, `
 		select
@@ -240,7 +242,7 @@ func GetUserCount(ctx context.Context, db sqlx.Queryer) (int, error) {
 }
 
 // GetUsers returns a slice of users, respecting the given limit and offset.
-func GetUsers(ctx context.Context, db sqlx.Queryer, limit, offset int) ([]User, error) {
+func GetUsers(ctx context.Context, handler *store.Handler, limit, offset int) ([]User, error) {
 	var users []User
 
 	err := sqlx.Select(db, &users, `
@@ -260,7 +262,7 @@ func GetUsers(ctx context.Context, db sqlx.Queryer, limit, offset int) ([]User, 
 }
 
 // UpdateUser updates the given User.
-func UpdateUser(ctx context.Context, db sqlx.Execer, u *User) error {
+func UpdateUser(ctx context.Context, handler *store.Handler, u *User) error {
 	if err := u.Validate(); err != nil {
 		return errors.Wrap(err, "validate user error")
 	}
@@ -318,7 +320,7 @@ func UpdateUser(ctx context.Context, db sqlx.Execer, u *User) error {
 }
 
 // DeleteUser deletes the User record matching the given ID.
-func DeleteUser(ctx context.Context, db sqlx.Execer, id int64) error {
+func DeleteUser(ctx context.Context, handler *store.Handler, id int64) error {
 	res, err := db.Exec(`
 		delete from
 			"user"
@@ -345,7 +347,7 @@ func DeleteUser(ctx context.Context, db sqlx.Execer, id int64) error {
 
 // LoginUserByPassword returns a JWT token for the user matching the given email
 // and password combination.
-func LoginUserByPassword(ctx context.Context, db sqlx.Queryer, email string, password string) (string, error) {
+func LoginUserByPassword(ctx context.Context, handler *store.Handler, email string, password string) (string, error) {
 	// get the user by email
 	var user User
 	err := sqlx.Get(db, &user, `
@@ -373,7 +375,7 @@ func LoginUserByPassword(ctx context.Context, db sqlx.Queryer, email string, pas
 
 // GetProfile returns the user profile (user, applications and organizations
 // to which the user is linked).
-func GetProfile(ctx context.Context, db sqlx.Queryer, id int64) (UserProfile, error) {
+func GetProfile(ctx context.Context, handler *store.Handler, id int64) (UserProfile, error) {
 	var prof UserProfile
 
 	user, err := GetUser(ctx, db, id)

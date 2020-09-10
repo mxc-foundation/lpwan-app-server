@@ -1,12 +1,15 @@
 package storage
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/go-redis/redis/v7"
 	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 
 	// register postgresql driver
 	_ "github.com/lib/pq"
@@ -109,7 +112,12 @@ func logQuery(query string, duration time.Duration, args ...interface{}) {
 }
 
 // DB returns the PostgreSQL database object.
-func DB() *DBLogger {
+func DB() *store.Handler {
+	h, _ := store.New(pgstore.New(db))
+	return h
+}
+
+func DBTest() *DBLogger {
 	return db
 }
 
@@ -120,22 +128,14 @@ func RedisClient() redis.UniversalClient {
 
 // Transaction wraps the given function in a transaction. In case the given
 // functions returns an error, the transaction will be rolled back.
-func Transaction(f func(tx sqlx.Ext) error) error {
-	tx, err := db.Beginx()
-	if err != nil {
-		return errors.Wrap(err, "storage: begin transaction error")
-	}
-
-	err = f(tx)
-	if err != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			return errors.Wrap(rbErr, "storage: transaction rollback error")
+func Transaction(f func(ctx context.Context, handler *store.Handler) error) error {
+	if err := DB().Tx(context.TODO(), func(ctx context.Context, handler *store.Handler) error {
+		if err := f(ctx, handler); err != nil {
+			return err
 		}
+		return nil
+	}); err != nil {
 		return err
-	}
-
-	if err := tx.Commit(); err != nil {
-		return errors.Wrap(err, "storage: transaction commit error")
 	}
 	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 
 	api "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
@@ -13,12 +12,13 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // Enqueue adds the given payload to the multicast-group queue.
-func Enqueue(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID, fPort uint8, data []byte) (uint32, error) {
-	fCnts, err := EnqueueMultiple(ctx, db, multicastGroupID, fPort, [][]byte{data})
+func Enqueue(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, fPort uint8, data []byte) (uint32, error) {
+	fCnts, err := EnqueueMultiple(ctx, handler, multicastGroupID, fPort, [][]byte{data})
 	if err != nil {
 		return 0, err
 	}
@@ -31,17 +31,17 @@ func Enqueue(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID, fPort
 }
 
 // EnqueueMultiple adds the given payloads to the multicast-group queue.
-func EnqueueMultiple(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID, fPort uint8, payloads [][]byte) ([]uint32, error) {
+func EnqueueMultiple(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, fPort uint8, payloads [][]byte) ([]uint32, error) {
 	// Get and lock multicast-group, the lock is to make sure there are no
 	// concurrent enqueue actions for the same multicast-group, which would
 	// result in the re-use of the same frame-counter.
-	mg, err := storage.GetMulticastGroup(ctx, db, multicastGroupID, true, false)
+	mg, err := storage.GetMulticastGroup(ctx, handler, multicastGroupID, true, false)
 	if err != nil {
 		return nil, errors.Wrap(err, "get multicast-group error")
 	}
 
 	// get network-server / client
-	n, err := storage.GetNetworkServerForMulticastGroupID(ctx, db, multicastGroupID)
+	n, err := storage.GetNetworkServerForMulticastGroupID(ctx, handler, multicastGroupID)
 	if err != nil {
 		return nil, errors.Wrap(err, "get network-server error")
 	}
@@ -82,14 +82,14 @@ func EnqueueMultiple(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUI
 }
 
 // ListQueue lists the items in the multicast-group queue.
-func ListQueue(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID) ([]api.MulticastQueueItem, error) {
+func ListQueue(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID) ([]api.MulticastQueueItem, error) {
 
-	mg, err := storage.GetMulticastGroup(ctx, db, multicastGroupID, false, false)
+	mg, err := storage.GetMulticastGroup(ctx, handler, multicastGroupID, false, false)
 	if err != nil {
 		return nil, errors.Wrap(err, "get multicast-group error")
 	}
 
-	n, err := storage.GetNetworkServerForMulticastGroupID(ctx, db, multicastGroupID)
+	n, err := storage.GetNetworkServerForMulticastGroupID(ctx, handler, multicastGroupID)
 	if err != nil {
 		return nil, errors.Wrap(err, "get network-server for multicast-group error")
 	}

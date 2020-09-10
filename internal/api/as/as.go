@@ -8,8 +8,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -296,8 +297,8 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 	var d storage.Device
 	var err error
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err = storage.GetDevice(ctx, tx, devEUI, true, true)
+	err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+		d, err = storage.GetDevice(ctx, handler, devEUI, true, true)
 		if err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "get device error"))
 		}
@@ -316,7 +317,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 			d.DeviceStatusBattery = &req.BatteryLevel
 		}
 
-		if err = storage.UpdateDevice(ctx, tx, &d, true); err != nil {
+		if err = storage.UpdateDevice(ctx, handler, &d, true); err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "update device error"))
 		}
 
@@ -377,8 +378,8 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 	var d storage.Device
 	var err error
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		d, err = storage.GetDevice(ctx, tx, devEUI, true, true)
+	err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+		d, err = storage.GetDevice(ctx, handler, devEUI, true, true)
 		if err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "get device error"))
 		}
@@ -387,7 +388,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 		d.Longitude = &req.Location.Longitude
 		d.Altitude = &req.Location.Altitude
 
-		if err = storage.UpdateDevice(ctx, tx, &d, true); err != nil {
+		if err = storage.UpdateDevice(ctx, handler, &d, true); err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "update device error"))
 		}
 
@@ -441,8 +442,8 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 
 	ts := time.Now()
 
-	err := storage.Transaction(func(tx sqlx.Ext) error {
-		gw, err := storage.GetGateway(ctx, tx, gatewayID, true)
+	err := storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+		gw, err := storage.GetGateway(ctx, handler, gatewayID, true)
 		if err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "get gateway error"))
 		}
@@ -465,7 +466,7 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 			gw.Metadata.Map[k] = sql.NullString{Valid: true, String: v}
 		}
 
-		if err := storage.UpdateGateway(ctx, tx, &gw); err != nil {
+		if err := storage.UpdateGateway(ctx, handler, &gw); err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "update gateway error"))
 		}
 

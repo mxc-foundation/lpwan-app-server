@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"github.com/brocaar/lorawan"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -233,7 +231,7 @@ func (ps *pgstore) GetGatewayFirmware(ctx context.Context, model string, forUpda
 	err = sqlx.GetContext(ctx, ps.db, &gwFw, "select * from gateway_firmware where model = $1 "+fu, model)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return gwFw, storage.ErrDoesNotExist
+			return gwFw, store.ErrDoesNotExist
 		}
 		return gwFw, err
 	}
@@ -327,6 +325,8 @@ func (ps *pgstore) CreateGateway(ctx context.Context, gw *store.Gateway) error {
 			latitude,
 			longitude,
 			altitude,
+			tags,
+			metadata,
 		    model,
 		    first_heartbeat,
 		    last_heartbeat,
@@ -334,7 +334,7 @@ func (ps *pgstore) CreateGateway(ctx context.Context, gw *store.Gateway) error {
 		    os_version,
 			sn
 		) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
-		          $20, $21, $22)`,
+		          $20, $21, $22, $23, $24)`,
 		gw.MAC[:],
 		gw.CreatedAt,
 		gw.UpdatedAt,
@@ -351,6 +351,8 @@ func (ps *pgstore) CreateGateway(ctx context.Context, gw *store.Gateway) error {
 		gw.Latitude,
 		gw.Longitude,
 		gw.Altitude,
+		gw.Tags,
+		gw.Metadata,
 		gw.Model,
 		gw.FirstHeartbeat,
 		gw.LastHeartbeat,
@@ -358,7 +360,7 @@ func (ps *pgstore) CreateGateway(ctx context.Context, gw *store.Gateway) error {
 		gw.OsVersion,
 		gw.SerialNumber)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -599,7 +601,7 @@ func (ps *pgstore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate 
 	err := sqlx.GetContext(ctx, ps.db, &gw, "select * from gateway where mac = $1"+fu, mac[:])
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return gw, storage.ErrDoesNotExist
+			return gw, store.ErrDoesNotExist
 		}
 		return gw, err
 	}

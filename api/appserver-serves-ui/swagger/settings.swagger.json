@@ -80,15 +80,10 @@
           "type": "number",
           "format": "double"
         },
-        "stakingPercentage": {
+        "stakingInterest": {
           "type": "number",
           "format": "double",
-          "title": "this is the percentage of reward from supernode income"
-        },
-        "stakingExpectedRevenuePercentage": {
-          "type": "number",
-          "format": "double",
-          "title": "this is the percentage of expected reward from staking amount"
+          "title": "this is the monthly interest we pay on stakes"
         },
         "compensation": {
           "type": "number",
@@ -117,8 +112,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },

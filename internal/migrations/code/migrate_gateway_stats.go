@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -19,7 +21,7 @@ import (
 )
 
 // MigrateGatewayStats imports the gateway stats from the network-server.
-func MigrateGatewayStats(db sqlx.Ext) error {
+func MigrateGatewayStats(handler *store.Handler) error {
 	var ids []lorawan.EUI64
 	err := sqlx.Select(db, &ids, `
 		select

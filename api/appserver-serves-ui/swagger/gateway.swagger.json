@@ -989,7 +989,6 @@
         },
         "discoveryEnabled": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Set to true to enable gateway discovery."
         },
         "networkServerID": {
@@ -1407,8 +1406,7 @@
           "type": "string"
         },
         "autoUpdate": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -1440,8 +1438,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -1748,7 +1745,6 @@
         },
         "polarizationInversion": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Polarization inversion."
         }
       }

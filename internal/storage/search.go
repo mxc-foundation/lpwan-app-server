@@ -9,6 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/brocaar/lorawan"
 )
 
@@ -28,7 +30,7 @@ type SearchResult struct {
 
 // GlobalSearch performs a search on organizations, applications, gateways
 // and devices.
-func GlobalSearch(ctx context.Context, db sqlx.Queryer, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error) {
+func GlobalSearch(ctx context.Context, handler *store.Handler, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error) {
 	var result []SearchResult
 
 	query, tags := parseSearchQuery(search)

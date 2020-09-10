@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -14,6 +15,10 @@ type DeviceProfileStore interface {
 	DeleteAllDeviceProfilesForOrganizationID(ctx context.Context, organizationID int64) error
 	DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error
 	GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate bool) (DeviceProfile, error)
+	CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) error
+	UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error
+	GetDeviceProfileCount(ctx context.Context, filters DeviceProfileFilters) (int, error)
+	GetDeviceProfiles(ctx context.Context, filters DeviceProfileFilters) ([]DeviceProfileMeta, error)
 
 	// validator
 	CheckCreateDeviceProfilesAccess(ctx context.Context, username string, organizationID, applicationID, userID int64) (bool, error)
@@ -21,6 +26,22 @@ type DeviceProfileStore interface {
 
 	CheckReadDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
 	CheckUpdateDeleteDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
+}
+
+func (h *Handler) GetDeviceProfiles(ctx context.Context, filters DeviceProfileFilters) ([]DeviceProfileMeta, error) {
+	return h.store.GetDeviceProfiles(ctx, filters)
+}
+
+func (h *Handler) GetDeviceProfileCount(ctx context.Context, filters DeviceProfileFilters) (int, error) {
+	return h.store.GetDeviceProfileCount(ctx, filters)
+}
+
+func (h *Handler) UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
+	return h.store.UpdateDeviceProfile(ctx, dp)
+}
+
+func (h *Handler) CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
+	return h.store.CreateDeviceProfile(ctx, dp)
 }
 
 func (h *Handler) CheckReadDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
@@ -75,4 +96,49 @@ type DeviceProfile struct {
 	Tags                 hstore.Hstore    `db:"tags"`
 	UplinkInterval       time.Duration    `db:"uplink_interval"`
 	DeviceProfile        ns.DeviceProfile `db:"-"`
+}
+
+// Validate validates the device-profile data.
+func (dp DeviceProfile) Validate() error {
+	if strings.TrimSpace(dp.Name) == "" || len(dp.Name) > 100 {
+		return ErrDeviceProfileInvalidName
+	}
+	return nil
+}
+
+// DeviceProfileFilters provide filders for filtering device-profiles.
+type DeviceProfileFilters struct {
+	ApplicationID  int64 `db:"application_id"`
+	OrganizationID int64 `db:"organization_id"`
+	UserID         int64 `db:"user_id"`
+
+	// Limit and Offset are added for convenience so that this struct can
+	// be given as the arguments.
+	Limit  int `db:"limit"`
+	Offset int `db:"offset"`
+}
+
+// SQL returns the SQL filters.
+func (f DeviceProfileFilters) SQL() string {
+	var filters []string
+
+	if f.ApplicationID != 0 {
+		// Filter on organization_id too since dp > network-server > service-profile > application
+		// join.
+		filters = append(filters, "a.id = :application_id and dp.organization_id = a.organization_id")
+	}
+
+	if f.OrganizationID != 0 {
+		filters = append(filters, "o.id = :organization_id")
+	}
+
+	if f.UserID != 0 {
+		filters = append(filters, "u.id = :user_id")
+	}
+
+	if len(filters) == 0 {
+		return ""
+	}
+
+	return "where " + strings.Join(filters, " and ")
 }

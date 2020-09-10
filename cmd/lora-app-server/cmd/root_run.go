@@ -6,11 +6,14 @@ import (
 	"os/signal"
 	"syscall"
 
+	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota_deployment"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -191,7 +194,7 @@ func migrateGatewayStats() error {
 }
 
 func migrateToClusterKeys() error {
-	return code.Migrate("migrate_to_cluster_keys", func(db sqlx.Ext) error {
+	return code.Migrate("migrate_to_cluster_keys", func(handler *store.Handler) error {
 		return code.MigrateToClusterKeys(config.C)
 	})
 }
@@ -276,6 +279,14 @@ func setupModules() (err error) {
 	}
 
 	if err = serviceprofile.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = multicast.Setup(pgstore.New(storage.DB().DB)); err != nil {
+		return err
+	}
+
+	if err = fuotamod.Setup(pgstore.New(storage.DB().DB)); err != nil {
 		return err
 	}
 

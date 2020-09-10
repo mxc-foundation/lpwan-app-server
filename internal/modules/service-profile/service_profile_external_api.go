@@ -8,7 +8,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -71,7 +70,7 @@ func (a *ServiceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateSer
 
 	// as this also performs a remote call to create the service-profile
 	// on the network-server, wrap it in a transaction
-	err := storage.Transaction(func(tx sqlx.Ext) error {
+	err := storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		return storage.CreateServiceProfile(ctx, tx, &sp)
 	})
 	if err != nil {
@@ -190,7 +189,7 @@ func (a *ServiceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateSer
 
 	// as this also performs a remote call to create the service-profile
 	// on the network-server, wrap it in a transaction
-	err = storage.Transaction(func(tx sqlx.Ext) error {
+	err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		return storage.UpdateServiceProfile(ctx, tx, &sp)
 	})
 	if err != nil {
@@ -211,7 +210,7 @@ func (a *ServiceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteSer
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
+	err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		return storage.DeleteServiceProfile(ctx, tx, spID)
 	})
 	if err != nil {

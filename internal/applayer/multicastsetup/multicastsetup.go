@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -48,8 +49,8 @@ func SyncRemoteMulticastSetupLoop() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-		err = storage.Transaction(func(tx sqlx.Ext) error {
-			return syncRemoteMulticastSetup(ctx, tx)
+		err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+			return syncRemoteMulticastSetup(ctx, handler)
 		})
 
 		if err != nil {
@@ -71,8 +72,8 @@ func SyncRemoteMulticastClassCSessionLoop() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-		err = storage.Transaction(func(tx sqlx.Ext) error {
-			return syncRemoteMulticastClassCSession(ctx, tx)
+		err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+			return syncRemoteMulticastClassCSession(ctx, handler)
 		})
 
 		if err != nil {
@@ -83,7 +84,7 @@ func SyncRemoteMulticastClassCSessionLoop() {
 }
 
 // HandleRemoteMulticastSetupCommand handles an uplink remote multicast setup command.
-func HandleRemoteMulticastSetupCommand(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, b []byte) error {
+func HandleRemoteMulticastSetupCommand(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, b []byte) error {
 	var cmd multicastsetup.Command
 
 	if err := cmd.UnmarshalBinary(true, b); err != nil {
@@ -96,7 +97,7 @@ func HandleRemoteMulticastSetupCommand(ctx context.Context, db sqlx.Ext, devEUI 
 		if !ok {
 			return fmt.Errorf("expected *multicastsetup.McGroupSetupAnsPayload, got: %T", cmd.Payload)
 		}
-		if err := handleMcGroupSetupAns(ctx, db, devEUI, pl); err != nil {
+		if err := handleMcGroupSetupAns(ctx, handler, devEUI, pl); err != nil {
 			return errors.Wrap(err, "handle McGroupSetupAns error")
 		}
 	case multicastsetup.McGroupDeleteAns:
@@ -104,7 +105,7 @@ func HandleRemoteMulticastSetupCommand(ctx context.Context, db sqlx.Ext, devEUI 
 		if !ok {
 			return fmt.Errorf("expected *multicastsetup.McGroupDeleteAnsPayload, got: %T", cmd.Payload)
 		}
-		if err := handleMcGroupDeleteAns(ctx, db, devEUI, pl); err != nil {
+		if err := handleMcGroupDeleteAns(ctx, handler, devEUI, pl); err != nil {
 			return errors.Wrap(err, "handle McGroupDeleteAns error")
 		}
 	case multicastsetup.McClassCSessionAns:
@@ -112,7 +113,7 @@ func HandleRemoteMulticastSetupCommand(ctx context.Context, db sqlx.Ext, devEUI 
 		if !ok {
 			return fmt.Errorf("expected *multicastsetup.McClassCSessionAnsPayload, got: %T", cmd.Payload)
 		}
-		if err := handleMcClassCSessionAns(ctx, db, devEUI, pl); err != nil {
+		if err := handleMcClassCSessionAns(ctx, handler, devEUI, pl); err != nil {
 			return errors.Wrap(err, "handle McClassCSessionAns error")
 		}
 	default:
@@ -122,7 +123,7 @@ func HandleRemoteMulticastSetupCommand(ctx context.Context, db sqlx.Ext, devEUI 
 	return nil
 }
 
-func handleMcGroupSetupAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, pl *multicastsetup.McGroupSetupAnsPayload) error {
+func handleMcGroupSetupAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *multicastsetup.McGroupSetupAnsPayload) error {
 	log.WithFields(log.Fields{
 		"dev_eui":     devEUI,
 		"id_error":    pl.McGroupIDHeader.IDError,
@@ -134,20 +135,20 @@ func handleMcGroupSetupAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI6
 		return fmt.Errorf("IDError for McGroupID: %d", pl.McGroupIDHeader.McGroupID)
 	}
 
-	rms, err := storage.GetRemoteMulticastSetupByGroupID(ctx, db, devEUI, int(pl.McGroupIDHeader.McGroupID), true)
+	rms, err := storage.GetRemoteMulticastSetupByGroupID(ctx, handler, devEUI, int(pl.McGroupIDHeader.McGroupID), true)
 	if err != nil {
 		return errors.Wrap(err, "get remote multicast-setup by group id error")
 	}
 
 	rms.StateProvisioned = true
-	if err := storage.UpdateRemoteMulticastSetup(ctx, db, &rms); err != nil {
+	if err := storage.UpdateRemoteMulticastSetup(ctx, handler, &rms); err != nil {
 		return errors.Wrap(err, "update remote multicast-setup error")
 	}
 
 	return nil
 }
 
-func handleMcGroupDeleteAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, pl *multicastsetup.McGroupDeleteAnsPayload) error {
+func handleMcGroupDeleteAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *multicastsetup.McGroupDeleteAnsPayload) error {
 	log.WithFields(log.Fields{
 		"dev_eui":            devEUI,
 		"mc_group_id":        pl.McGroupIDHeader.McGroupID,
@@ -159,17 +160,17 @@ func handleMcGroupDeleteAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI
 		return fmt.Errorf("McGroupUndefined for McGroupID: %d", pl.McGroupIDHeader.McGroupID)
 	}
 
-	rms, err := storage.GetRemoteMulticastSetupByGroupID(ctx, db, devEUI, int(pl.McGroupIDHeader.McGroupID), true)
+	rms, err := storage.GetRemoteMulticastSetupByGroupID(ctx, handler, devEUI, int(pl.McGroupIDHeader.McGroupID), true)
 	if err != nil {
 		return errors.Wrap(err, "get remote multicast-setup by group id error")
 	}
 
 	rms.StateProvisioned = true
-	if err := storage.UpdateRemoteMulticastSetup(ctx, db, &rms); err != nil {
+	if err := storage.UpdateRemoteMulticastSetup(ctx, handler, &rms); err != nil {
 		return errors.Wrap(err, "update remote multicast-setup error")
 	}
 
-	if err := storage.RemoveDeviceFromMulticastGroup(ctx, db, rms.MulticastGroupID, devEUI); err != nil {
+	if err := storage.RemoveDeviceFromMulticastGroup(ctx, handler, rms.MulticastGroupID, devEUI); err != nil {
 		if err == storage.ErrDoesNotExist {
 			log.WithFields(log.Fields{
 				"dev_eui":            devEUI,
@@ -184,7 +185,7 @@ func handleMcGroupDeleteAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI
 	return nil
 }
 
-func handleMcClassCSessionAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.EUI64, pl *multicastsetup.McClassCSessionAnsPayload) error {
+func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, pl *multicastsetup.McClassCSessionAnsPayload) error {
 	log.WithFields(log.Fields{
 		"dev_eui":            devEUI,
 		"time_to_start":      pl.TimeToStart,
@@ -199,17 +200,17 @@ func handleMcClassCSessionAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.E
 		return fmt.Errorf("DRError: %t, FreqError: %t, McGroupUndefined: %t for McGroupID: %d", pl.StatusAndMcGroupID.DRError, pl.StatusAndMcGroupID.FreqError, pl.StatusAndMcGroupID.McGroupUndefined, pl.StatusAndMcGroupID.McGroupID)
 	}
 
-	sess, err := storage.GetRemoteMulticastClassCSessionByGroupID(ctx, db, devEUI, int(pl.StatusAndMcGroupID.McGroupID), true)
+	sess, err := storage.GetRemoteMulticastClassCSessionByGroupID(ctx, handler, devEUI, int(pl.StatusAndMcGroupID.McGroupID), true)
 	if err != nil {
 		return errors.Wrap(err, "get remote multicast class-c session error")
 	}
 
 	sess.StateProvisioned = true
-	if err := storage.UpdateRemoteMulticastClassCSession(ctx, db, &sess); err != nil {
+	if err := storage.UpdateRemoteMulticastClassCSession(ctx, handler, &sess); err != nil {
 		return errors.Wrap(err, "update remote multicast class-c session error")
 	}
 
-	if err := storage.AddDeviceToMulticastGroup(ctx, db, sess.MulticastGroupID, devEUI); err != nil {
+	if err := storage.AddDeviceToMulticastGroup(ctx, handler, sess.MulticastGroupID, devEUI); err != nil {
 		if err == storage.ErrAlreadyExists {
 			log.WithFields(log.Fields{
 				"dev_eui":            devEUI,
@@ -224,14 +225,14 @@ func handleMcClassCSessionAns(ctx context.Context, db sqlx.Ext, devEUI lorawan.E
 	return nil
 }
 
-func syncRemoteMulticastSetup(ctx context.Context, db sqlx.Ext) error {
-	items, err := storage.GetPendingRemoteMulticastSetupItems(ctx, db, syncBatchSize, syncRetries)
+func syncRemoteMulticastSetup(ctx context.Context, handler *store.Handler) error {
+	items, err := storage.GetPendingRemoteMulticastSetupItems(ctx, handler, syncBatchSize, syncRetries)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := syncRemoteMulticastSetupItem(ctx, db, item); err != nil {
+		if err := syncRemoteMulticastSetupItem(ctx, handler, item); err != nil {
 			return errors.Wrap(err, "sync remote multicast-setup error")
 		}
 	}
@@ -239,7 +240,7 @@ func syncRemoteMulticastSetup(ctx context.Context, db sqlx.Ext) error {
 	return nil
 }
 
-func syncRemoteMulticastSetupItem(ctx context.Context, db sqlx.Ext, item storage.RemoteMulticastSetup) error {
+func syncRemoteMulticastSetupItem(ctx context.Context, handler *store.Handler, item storage.RemoteMulticastSetup) error {
 	var cmd multicastsetup.Command
 
 	switch item.State {
@@ -274,7 +275,7 @@ func syncRemoteMulticastSetupItem(ctx context.Context, db sqlx.Ext, item storage
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, db, item.DevEUI, false, multicastsetup.DefaultFPort, b)
+	_, err = storage.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, multicastsetup.DefaultFPort, b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}
@@ -288,7 +289,7 @@ func syncRemoteMulticastSetupItem(ctx context.Context, db sqlx.Ext, item storage
 	item.RetryCount++
 	item.RetryAfter = time.Now().Add(item.RetryInterval)
 
-	err = storage.UpdateRemoteMulticastSetup(ctx, db, &item)
+	err = storage.UpdateRemoteMulticastSetup(ctx, handler, &item)
 	if err != nil {
 		return errors.Wrap(err, "update remote multicast-setup error")
 	}
@@ -296,14 +297,14 @@ func syncRemoteMulticastSetupItem(ctx context.Context, db sqlx.Ext, item storage
 	return nil
 }
 
-func syncRemoteMulticastClassCSession(ctx context.Context, db sqlx.Ext) error {
-	items, err := storage.GetPendingRemoteMulticastClassCSessions(ctx, db, syncBatchSize, syncRetries)
+func syncRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler) error {
+	items, err := storage.GetPendingRemoteMulticastClassCSessions(ctx, handler, syncBatchSize, syncRetries)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range items {
-		if err := syncRemoteMulticastClassCSessionItem(ctx, db, item); err != nil {
+		if err := syncRemoteMulticastClassCSessionItem(ctx, handler, item); err != nil {
 			return errors.Wrap(err, "sync remote multicast class-c session error")
 		}
 	}
@@ -311,7 +312,7 @@ func syncRemoteMulticastClassCSession(ctx context.Context, db sqlx.Ext) error {
 	return nil
 }
 
-func syncRemoteMulticastClassCSessionItem(ctx context.Context, db sqlx.Ext, item storage.RemoteMulticastClassCSession) error {
+func syncRemoteMulticastClassCSessionItem(ctx context.Context, handler *store.Handler, item storage.RemoteMulticastClassCSession) error {
 	cmd := multicastsetup.Command{
 		CID: multicastsetup.McClassCSessionReq,
 		Payload: &multicastsetup.McClassCSessionReqPayload{
@@ -332,7 +333,7 @@ func syncRemoteMulticastClassCSessionItem(ctx context.Context, db sqlx.Ext, item
 		return errors.Wrap(err, "marshal binary error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, db, item.DevEUI, false, multicastsetup.DefaultFPort, b)
+	_, err = storage.EnqueueDownlinkPayload(ctx, handler, item.DevEUI, false, multicastsetup.DefaultFPort, b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}
@@ -345,7 +346,7 @@ func syncRemoteMulticastClassCSessionItem(ctx context.Context, db sqlx.Ext, item
 	item.RetryCount++
 	item.RetryAfter = time.Now().Add(item.RetryInterval)
 
-	err = storage.UpdateRemoteMulticastClassCSession(ctx, db, &item)
+	err = storage.UpdateRemoteMulticastClassCSession(ctx, handler, &item)
 	if err != nil {
 		return errors.Wrap(err, "update remote multicast class-c session error")
 	}

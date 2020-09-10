@@ -308,7 +308,6 @@
         },
         "addGWMetaData": {
           "type": "boolean",
-          "format": "boolean",
           "description": "GW metadata (RSSI, SNR, GW geoloc., etc.) are added to the packet sent to AS."
         },
         "devStatusReqFreq": {
@@ -318,12 +317,10 @@
         },
         "reportDevStatusBattery": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Report End-Device battery level to AS."
         },
         "reportDevStatusMargin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Report End-Device margin to AS."
         },
         "drMin": {
@@ -343,22 +340,18 @@
         },
         "prAllowed": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Passive Roaming allowed."
         },
         "hrAllowed": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Handover Roaming allowed."
         },
         "raAllowed": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Roaming Activation allowed."
         },
         "nwkGeoLoc": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Enable network geolocation service."
         },
         "targetPER": {

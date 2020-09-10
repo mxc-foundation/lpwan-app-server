@@ -533,7 +533,6 @@
         },
         "canHaveGateways": {
           "type": "boolean",
-          "format": "boolean",
           "title": "Can the organization create and \"own\" Gateways?"
         },
         "maxGatewayCount": {
@@ -566,7 +565,6 @@
         },
         "canHaveGateways": {
           "type": "boolean",
-          "format": "boolean",
           "title": "Can the organization create and \"own\" Gateways?"
         },
         "createdAt": {
@@ -596,17 +594,14 @@
         },
         "isAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is admin within the context of the organization.\nThere is no need to set the is_device_admin and is_gateway_admin flags."
         },
         "isDeviceAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is able to modify device related resources (applications,\ndevice-profiles, devices, multicast-groups)."
         },
         "isGatewayAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is able to modify gateways."
         },
         "username": {
@@ -629,17 +624,14 @@
         },
         "isAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is admin within the context of the organization.\nThere is no need to set the is_device_admin and is_gateway_admin flags."
         },
         "isDeviceAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is able to modify device related resources (applications,\ndevice-profiles, devices, multicast-groups)."
         },
         "isGatewayAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is able to modify gateways."
         },
         "createdAt": {

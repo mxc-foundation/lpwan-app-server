@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // Integration represents an integration.
@@ -25,7 +26,7 @@ type Integration struct {
 }
 
 // CreateIntegration creates the given Integration.
-func CreateIntegration(ctx context.Context, db sqlx.Queryer, i *Integration) error {
+func CreateIntegration(ctx context.Context, handler *store.Handler, i *Integration) error {
 	now := time.Now()
 	err := sqlx.Get(db, &i.ID, `
 		insert into integration (
@@ -67,7 +68,7 @@ func CreateIntegration(ctx context.Context, db sqlx.Queryer, i *Integration) err
 }
 
 // GetIntegration returns the Integration for the given id.
-func GetIntegration(ctx context.Context, db sqlx.Queryer, id int64) (Integration, error) {
+func GetIntegration(ctx context.Context, handler *store.Handler, id int64) (Integration, error) {
 	var i Integration
 	err := sqlx.Get(db, &i, "select * from integration where id = $1", id)
 	if err != nil {
@@ -81,7 +82,7 @@ func GetIntegration(ctx context.Context, db sqlx.Queryer, id int64) (Integration
 
 // GetIntegrationByApplicationID returns the Integration for the given
 // application id and kind.
-func GetIntegrationByApplicationID(ctx context.Context, db sqlx.Queryer, applicationID int64, kind string) (Integration, error) {
+func GetIntegrationByApplicationID(ctx context.Context, handler *store.Handler, applicationID int64, kind string) (Integration, error) {
 	var i Integration
 	err := sqlx.Get(db, &i, "select * from integration where application_id = $1 and kind = $2", applicationID, kind)
 	if err != nil {
@@ -95,7 +96,7 @@ func GetIntegrationByApplicationID(ctx context.Context, db sqlx.Queryer, applica
 
 // GetIntegrationsForApplicationID returns the integrations for the given
 // application id.
-func GetIntegrationsForApplicationID(ctx context.Context, db sqlx.Queryer, applicationID int64) ([]Integration, error) {
+func GetIntegrationsForApplicationID(ctx context.Context, handler *store.Handler, applicationID int64) ([]Integration, error) {
 	var is []Integration
 	err := sqlx.Select(db, &is, `
 		select *
@@ -111,7 +112,7 @@ func GetIntegrationsForApplicationID(ctx context.Context, db sqlx.Queryer, appli
 }
 
 // UpdateIntegration updates the given Integration.
-func UpdateIntegration(ctx context.Context, db sqlx.Execer, i *Integration) error {
+func UpdateIntegration(ctx context.Context, handler *store.Handler, i *Integration) error {
 	now := time.Now()
 	res, err := db.Exec(`
 		update integration
@@ -162,7 +163,7 @@ func UpdateIntegration(ctx context.Context, db sqlx.Execer, i *Integration) erro
 }
 
 // DeleteIntegration deletes the integration matching the given id.
-func DeleteIntegration(ctx context.Context, db sqlx.Execer, id int64) error {
+func DeleteIntegration(ctx context.Context, handler *store.Handler, id int64) error {
 	res, err := db.Exec("delete from integration where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")

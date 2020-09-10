@@ -557,17 +557,14 @@
         },
         "isAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is admin within the context of this organization.\nThere is no need to set the is_device_admin and is_gateway_admin flags."
         },
         "isDeviceAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is able to modify device related resources (applications,\ndevice-profiles, devices, multicast-groups)."
         },
         "isGatewayAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "User is able to modify gateways."
         },
         "createdAt": {
@@ -618,12 +615,10 @@
         },
         "isAdmin": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Set to true to make the user a global administrator."
         },
         "isActive": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Set to false to disable the user."
         },
         "email": {

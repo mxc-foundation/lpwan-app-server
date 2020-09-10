@@ -224,7 +224,7 @@ func (ps *pgstore) CreateApplication(ctx context.Context, item *store.Applicatio
 		item.PayloadDecoderScript,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -241,7 +241,7 @@ func (ps *pgstore) GetApplication(ctx context.Context, id int64) (store.Applicat
 	var app store.Application
 	err := sqlx.GetContext(ctx, ps.db, &app, "select * from application where id = $1", id)
 	if err != nil {
-		return app, errors.Wrap(err, "select error")
+		return app, handlePSQLError(Select, err, "select error")
 	}
 
 	return app, nil
@@ -270,7 +270,7 @@ func (ps *pgstore) GetApplicationCount(ctx context.Context, filters store.Applic
 	var count int
 	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "select error")
+		return 0, handlePSQLError(Select, err, "select error")
 	}
 
 	return count, nil
@@ -311,7 +311,7 @@ func (ps *pgstore) GetApplications(ctx context.Context, filters store.Applicatio
 	var apps []store.ApplicationListItem
 	err = sqlx.SelectContext(ctx, ps.db, &apps, query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "select error")
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	return apps, nil
@@ -344,14 +344,14 @@ func (ps *pgstore) UpdateApplication(ctx context.Context, item store.Application
 		item.PayloadDecoderScript,
 	)
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -365,16 +365,21 @@ func (ps *pgstore) UpdateApplication(ctx context.Context, item store.Application
 
 // DeleteApplication deletes the Application matching the given ID.
 func (ps *pgstore) DeleteApplication(ctx context.Context, id int64) error {
+	err := ps.DeleteAllDevicesForApplicationID(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "delete all nodes error")
+	}
+
 	res, err := ps.db.ExecContext(ctx, "delete from application where id = $1", id)
 	if err != nil {
-		return errors.Wrap(err, "delete error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{

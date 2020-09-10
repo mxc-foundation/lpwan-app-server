@@ -6,9 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
-	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -24,8 +21,6 @@ import (
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 )
 
 func (ps *pgstore) CheckCreateNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
@@ -259,14 +254,14 @@ func (ps *pgstore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EU
 		appSKey[:],
 	)
 	if err != nil {
-		return errors.Wrap(err, "update last-seen and dr error")
+		return handlePSQLError(Update, err, "update last-seen and dr error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -279,7 +274,7 @@ func (ps *pgstore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EU
 }
 
 // CreateDevice creates the given device.
-func (ps *pgstore) CreateDevice(ctx context.Context, d *store.Device, applicationServerID uuid.UUID) error {
+func (ps *pgstore) CreateDevice(ctx context.Context, d *store.Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -330,7 +325,7 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *store.Device, applicatio
 		d.AppSKey,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -355,7 +350,7 @@ func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdat
 	err := sqlx.GetContext(ctx, ps.db, &d, "select * from device where dev_eui = $1"+fu, devEUI[:])
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return d, storage.ErrDoesNotExist
+			return d, store.ErrDoesNotExist
 		}
 		return d, errors.Wrap(err, "select error")
 	}
@@ -385,7 +380,7 @@ func (ps *pgstore) GetDeviceCount(ctx context.Context, filters store.DeviceFilte
 	var count int
 	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "select query error")
+		return 0, handlePSQLError(Select, err, "select error")
 	}
 
 	return count, nil
@@ -438,7 +433,7 @@ func (ps *pgstore) GetDevices(ctx context.Context, filters store.DeviceFilters) 
 	var devices []store.DeviceListItem
 	err = sqlx.SelectContext(ctx, ps.db, &devices, query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "select error")
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	return devices, nil
@@ -470,7 +465,9 @@ func (ps *pgstore) UpdateDevice(ctx context.Context, d *store.Device) error {
 			device_status_external_power_source = $13,
 			dr = $14,
 			variables = $15,
-			tags = $16
+			tags = $16,
+			dev_addr = $17,
+			app_s_key = $18
         where
             dev_eui = $1`,
 		d.DevEUI[:],
@@ -489,16 +486,18 @@ func (ps *pgstore) UpdateDevice(ctx context.Context, d *store.Device) error {
 		d.DR,
 		d.Variables,
 		d.Tags,
+		d.DevAddr,
+		d.AppSKey,
 	)
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -509,16 +508,48 @@ func (ps *pgstore) UpdateDevice(ctx context.Context, d *store.Device) error {
 	return nil
 }
 
+// UpdateDeviceLastSeenAndDR updates the device last-seen timestamp and data-rate.
+func (ps *pgstore) UpdateDeviceLastSeenAndDR(ctx context.Context, devEUI lorawan.EUI64, ts time.Time, dr int) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update device
+		set
+			last_seen_at = $2,
+			dr = $3
+		where
+			dev_eui = $1`,
+		devEUI[:],
+		ts,
+		dr,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update last-seen and dr error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return store.ErrDoesNotExist
+	}
+
+	log.WithFields(log.Fields{
+		"dev_eui": devEUI,
+		"ctx_id":  ctx.Value(logging.ContextIDKey),
+	}).Info("device last-seen and dr updated")
+
+	return nil
+}
+
 // DeleteDevice deletes the device matching the given DevEUI.
 func (ps *pgstore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
-	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := ps.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
 
 	res, err := ps.db.ExecContext(ctx, "delete from device where dev_eui = $1", devEUI[:])
 	if err != nil {
-		return errors.Wrap(err, "delete error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
@@ -594,7 +625,7 @@ func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *store.DeviceKeys) e
 		dc.GenAppKey[:],
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -611,7 +642,7 @@ func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (sto
 
 	err := sqlx.GetContext(ctx, ps.db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
-		return dc, errors.Wrap(err, "select error")
+		return dc, handlePSQLError(Select, err, "select error")
 	}
 
 	return dc, nil
@@ -639,7 +670,7 @@ func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *store.DeviceKeys) e
 		dc.GenAppKey[:],
 	)
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
@@ -661,14 +692,14 @@ func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *store.DeviceKeys) e
 func (ps *pgstore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error {
 	res, err := ps.db.ExecContext(ctx, "delete from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
-		return errors.Wrap(err, "delete error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected errro")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -746,4 +777,134 @@ func (ps *pgstore) DeleteAllDevicesForApplicationID(ctx context.Context, applica
 	}
 
 	return nil
+}
+
+// EnqueueDownlinkPayload adds the downlink payload to the network-server
+// device-queue.
+func (ps *pgstore) EnqueueDownlinkPayload(ctx context.Context, devEUI lorawan.EUI64, confirmed bool, fPort uint8, data []byte) (uint32, error) {
+	// get network-server and network-server api client
+	n, err := ps.GetNetworkServerForDevEUI(ctx, devEUI)
+	if err != nil {
+		return 0, errors.Wrap(err, "get network-server error")
+	}
+
+	nstruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+
+	nsClient, err := nstruct.GetNetworkServiceClient()
+	if err != nil {
+		return 0, errors.Wrap(err, "get network-server client error")
+	}
+
+	// get fCnt to use for encrypting and enqueueing
+	resp, err := nsClient.GetNextDownlinkFCntForDevEUI(context.Background(), &ns.GetNextDownlinkFCntForDevEUIRequest{
+		DevEui: devEUI[:],
+	})
+	if err != nil {
+		return 0, errors.Wrap(err, "get next downlink fcnt for deveui error")
+	}
+
+	// get device
+	d, err := ps.GetDevice(ctx, devEUI, false)
+	if err != nil {
+		return 0, errors.Wrap(err, "get device error")
+	}
+
+	// encrypt payload
+	b, err := lorawan.EncryptFRMPayload(d.AppSKey, false, d.DevAddr, resp.FCnt, data)
+	if err != nil {
+		return 0, errors.Wrap(err, "encrypt frmpayload error")
+	}
+
+	// enqueue device-queue item
+	_, err = nsClient.CreateDeviceQueueItem(ctx, &ns.CreateDeviceQueueItemRequest{
+		Item: &ns.DeviceQueueItem{
+			DevAddr:    d.DevAddr[:],
+			DevEui:     devEUI[:],
+			FrmPayload: b,
+			FCnt:       resp.FCnt,
+			FPort:      uint32(fPort),
+			Confirmed:  confirmed,
+		},
+	})
+	if err != nil {
+		return 0, errors.Wrap(err, "create device-queue item error")
+	}
+
+	log.WithFields(log.Fields{
+		"f_cnt":     resp.FCnt,
+		"dev_eui":   devEUI,
+		"confirmed": confirmed,
+	}).Info("downlink device-queue item handled")
+
+	return resp.FCnt, nil
+}
+
+// GetDevicesActiveInactive returns the active / inactive devices.
+func (ps *pgstore) GetDevicesActiveInactive(ctx context.Context, organizationID int64) (store.DevicesActiveInactive, error) {
+	var out store.DevicesActiveInactive
+	err := sqlx.GetContext(ctx, ps.db, &out, `
+		with device_active_inactive as (
+			select
+				make_interval(secs => dp.uplink_interval / 1000000000) * 1.5 as uplink_interval,
+				d.last_seen_at as last_seen_at
+			from
+				device d
+			inner join device_profile dp
+				on d.device_profile_id = dp.device_profile_id
+			inner join application a
+				on d.application_id = a.id
+			where
+				$1 = 0 or a.organization_id = $1
+		)
+		select
+			coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
+			coalesce(sum(case when (now() - uplink_interval) > last_seen_at then 1 end), 0) as inactive_count,
+			coalesce(sum(case when (now() - uplink_interval) <= last_seen_at then 1 end), 0) as active_count
+		from
+			device_active_inactive
+	`, organizationID)
+	if err != nil {
+		return out, errors.Wrap(err, "get device active/inactive count error")
+	}
+
+	return out, nil
+}
+
+// GetDevicesDataRates returns the device counts by data-rate.
+func (ps *pgstore) GetDevicesDataRates(ctx context.Context, organizationID int64) (store.DevicesDataRates, error) {
+	out := make(store.DevicesDataRates)
+
+	rows, err := ps.db.QueryxContext(ctx, `
+		select
+			d.dr,
+			count(1)
+		from
+			device d
+		inner join application a
+			on d.application_id = a.id
+		where
+			($1 = 0 or a.organization_id = $1)
+			and d.dr is not null
+		group by d.dr
+	`, organizationID)
+	if err != nil {
+		return out, errors.Wrap(err, "get device count per data-rate error")
+	}
+
+	for rows.Next() {
+		var dr, count uint32
+
+		if err := rows.Scan(&dr, &count); err != nil {
+			return out, errors.Wrap(err, "scan row error")
+		}
+
+		out[dr] = count
+	}
+
+	return out, nil
 }

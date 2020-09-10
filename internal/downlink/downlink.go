@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gofrs/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
@@ -15,6 +14,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -43,7 +43,7 @@ func HandleDataDownPayloads(downChan chan models.DataDownPayload) {
 }
 
 func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error {
-	return storage.Transaction(func(tx sqlx.Ext) error {
+	return storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		// lock the device so that a concurrent Enqueue action will block
 		// until this transaction has been completed
 		d, err := storage.GetDevice(ctx, tx, pl.DevEUI, true, true)
@@ -78,7 +78,7 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error
 			payloadEncoderScript := app.PayloadEncoderScript
 
 			if dp.PayloadCodec != "" {
-				payloadCodec = dp.PayloadCodec
+				payloadCodec = string(dp.PayloadCodec)
 				payloadEncoderScript = dp.PayloadEncoderScript
 			}
 

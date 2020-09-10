@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/golang/protobuf/ptypes"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -195,14 +196,14 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 		return nil
 	}
 
-	return storage.Transaction(func(db sqlx.Ext) error {
+	return storage.Transaction(func(context context.Context, handler *store.Handler) error {
 		switch ctx.uplinkDataReq.FPort {
 		case 200:
-			if err := multicastsetup.HandleRemoteMulticastSetupCommand(ctx.ctx, db, ctx.device.DevEUI, ctx.data); err != nil {
+			if err := multicastsetup.HandleRemoteMulticastSetupCommand(ctx.ctx, handler, ctx.device.DevEUI, ctx.data); err != nil {
 				return errors.Wrap(err, "handle remote multicast setup command error")
 			}
 		case 201:
-			if err := fragmentation.HandleRemoteFragmentationSessionCommand(ctx.ctx, db, ctx.device.DevEUI, ctx.data); err != nil {
+			if err := fragmentation.HandleRemoteFragmentationSessionCommand(ctx.ctx, handler, ctx.device.DevEUI, ctx.data); err != nil {
 				return errors.Wrap(err, "handle remote fragmentation session command error")
 			}
 		case 202:
@@ -235,7 +236,7 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 				timeSinceGPSEpoch = gps.Time(timeField).TimeSinceGPSEpoch()
 			}
 
-			if err := clocksync.HandleClockSyncCommand(ctx.ctx, db, ctx.device.DevEUI, timeSinceGPSEpoch, ctx.data); err != nil {
+			if err := clocksync.HandleClockSyncCommand(ctx.ctx, handler, ctx.device.DevEUI, timeSinceGPSEpoch, ctx.data); err != nil {
 				return errors.Wrap(err, "handle clocksync command error")
 			}
 		}

@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"errors"
 	"regexp"
 	"strings"
 
@@ -87,7 +86,7 @@ type ApplicationListItem struct {
 // Validate validates the data of the Application.
 func (a Application) Validate() error {
 	if !applicationNameRegexp.MatchString(a.Name) {
-		return errors.New("ErrApplicationInvalidName")
+		return ErrApplicationInvalidName
 	}
 
 	return nil

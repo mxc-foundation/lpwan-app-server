@@ -7,10 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -19,6 +15,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 )
 
 const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
@@ -295,7 +292,7 @@ func (ps *pgstore) GetUser(ctx context.Context, id int64) (store.User, error) {
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where id = $1", id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, storage.ErrDoesNotExist
+			return user, store.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -310,7 +307,7 @@ func (ps *pgstore) GetUserByExternalID(ctx context.Context, externalID string) (
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, storage.ErrDoesNotExist
+			return user, store.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -324,7 +321,7 @@ func (ps *pgstore) GetUserByUsername(ctx context.Context, userEmail string) (sto
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, storage.ErrDoesNotExist
+			return user, store.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -339,7 +336,7 @@ func (ps *pgstore) GetUserByEmail(ctx context.Context, userEmail string) (store.
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, storage.ErrDoesNotExist
+			return user, store.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -488,7 +485,7 @@ func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, pa
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return storage.ErrDoesNotExist
+			return store.ErrDoesNotExist
 		}
 		return errors.Wrap(err, "select error")
 	}
@@ -622,7 +619,7 @@ func (ps *pgstore) GetUserByToken(ctx context.Context, token string) (store.User
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where security_token = $1", token)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return user, storage.ErrDoesNotExist
+			return user, store.ErrDoesNotExist
 		}
 		return user, errors.Wrap(err, "select error")
 	}
@@ -637,7 +634,7 @@ func (ps *pgstore) GetTokenByUsername(ctx context.Context, userEmail string) (st
 	err := sqlx.GetContext(ctx, ps.db, &otp, "select security_token from \"user\" where email = $1", userEmail)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return otp, storage.ErrDoesNotExist
+			return otp, store.ErrDoesNotExist
 		}
 		return otp, errors.Wrap(err, "select error")
 	}

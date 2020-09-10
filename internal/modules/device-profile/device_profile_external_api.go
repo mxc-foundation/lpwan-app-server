@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"time"
 
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
+
 	"google.golang.org/grpc/status"
 
 	"github.com/gofrs/uuid"
@@ -11,7 +13,6 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/lib/pq/hstore"
 
-	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 
@@ -20,9 +21,7 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // DeviceProfileServiceAPI exports the ServiceProfile related functions.
@@ -56,11 +55,11 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 		}
 	}
 
-	dp := storage.DeviceProfile{
+	dp := store.DeviceProfile{
 		OrganizationID:       req.DeviceProfile.OrganizationId,
 		NetworkServerID:      req.DeviceProfile.NetworkServerId,
 		Name:                 req.DeviceProfile.Name,
-		PayloadCodec:         codec.Type(req.DeviceProfile.PayloadCodec),
+		PayloadCodec:         req.DeviceProfile.PayloadCodec,
 		PayloadEncoderScript: req.DeviceProfile.PayloadEncoderScript,
 		PayloadDecoderScript: req.DeviceProfile.PayloadDecoderScript,
 		Tags: hstore.Hstore{
@@ -96,8 +95,8 @@ func (a *DeviceProfileServiceAPI) Create(ctx context.Context, req *pb.CreateDevi
 
 	// as this also performs a remote call to create the device-profile
 	// on the network-server, wrap it in a transaction
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		return storage.CreateDeviceProfile(ctx, tx, &dp)
+	err = a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		return handler.CreateDeviceProfile(ctx, &dp)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -124,10 +123,39 @@ func (a *DeviceProfileServiceAPI) Get(ctx context.Context, req *pb.GetDeviceProf
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	dp, err := storage.GetDeviceProfile(ctx, storage.DB(), dpID, false, false)
+	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
+
+	n, err := a.st.GetNetworkServer(ctx, dp.NetworkServerID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	nstruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+
+	nsClient, err := nstruct.GetNetworkServiceClient()
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	res, err := nsClient.GetDeviceProfile(ctx, &ns.GetDeviceProfileRequest{
+		Id: dpID.Bytes(),
+	})
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	if res.DeviceProfile == nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+
+	dp.DeviceProfile = *res.DeviceProfile
 
 	resp := pb.GetDeviceProfileResponse{
 		DeviceProfile: &pb.DeviceProfile{
@@ -196,11 +224,40 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 	// As this also performs a remote call to update the device-profile
 	// on the network-server, wrap it in a transaction.
 	// This also locks the local device-profile record in the database.
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		dp, err := storage.GetDeviceProfile(ctx, tx, dpID, true, false)
+	err = a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		dp, err := handler.GetDeviceProfile(ctx, dpID, true)
 		if err != nil {
 			return err
 		}
+
+		n, err := a.st.GetNetworkServer(ctx, dp.NetworkServerID)
+		if err != nil {
+			return err
+		}
+
+		nstruct := nscli.NSStruct{
+			Server:  n.Server,
+			CACert:  n.CACert,
+			TLSCert: n.TLSCert,
+			TLSKey:  n.TLSKey,
+		}
+
+		nsClient, err := nstruct.GetNetworkServiceClient()
+		if err != nil {
+			return err
+		}
+
+		res, err := nsClient.GetDeviceProfile(ctx, &ns.GetDeviceProfileRequest{
+			Id: dpID.Bytes(),
+		})
+		if err != nil {
+			return err
+		}
+		if res.DeviceProfile == nil {
+			return err
+		}
+
+		dp.DeviceProfile = *res.DeviceProfile
 
 		var uplinkInterval time.Duration
 		if req.DeviceProfile.UplinkInterval != nil {
@@ -211,7 +268,7 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 		}
 
 		dp.Name = req.DeviceProfile.Name
-		dp.PayloadCodec = codec.Type(req.DeviceProfile.PayloadCodec)
+		dp.PayloadCodec = req.DeviceProfile.PayloadCodec
 		dp.PayloadEncoderScript = req.DeviceProfile.PayloadEncoderScript
 		dp.PayloadDecoderScript = req.DeviceProfile.PayloadDecoderScript
 		dp.Tags = hstore.Hstore{
@@ -245,7 +302,7 @@ func (a *DeviceProfileServiceAPI) Update(ctx context.Context, req *pb.UpdateDevi
 			dp.Tags.Map[k] = sql.NullString{Valid: true, String: v}
 		}
 
-		return storage.UpdateDeviceProfile(ctx, tx, &dp)
+		return handler.UpdateDeviceProfile(ctx, &dp)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -266,8 +323,8 @@ func (a *DeviceProfileServiceAPI) Delete(ctx context.Context, req *pb.DeleteDevi
 	}
 	// as this also performs a remote call to delete the device-profile
 	// on the network-server, wrap it in a transaction
-	err = storage.Transaction(func(tx sqlx.Ext) error {
-		return storage.DeleteDeviceProfile(ctx, tx, dpID)
+	err = a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		return handler.DeleteDeviceProfile(ctx, dpID)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -288,7 +345,7 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		}
 	}
 
-	filters := storage.DeviceProfileFilters{
+	filters := store.DeviceProfileFilters{
 		Limit:          int(req.Limit),
 		Offset:         int(req.Offset),
 		OrganizationID: req.OrganizationId,
@@ -306,12 +363,12 @@ func (a *DeviceProfileServiceAPI) List(ctx context.Context, req *pb.ListDevicePr
 		filters.UserID = user.ID
 	}
 
-	count, err := storage.GetDeviceProfileCount(ctx, storage.DB(), filters)
+	count, err := a.st.GetDeviceProfileCount(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	dps, err := storage.GetDeviceProfiles(ctx, storage.DB(), filters)
+	dps, err := a.st.GetDeviceProfiles(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

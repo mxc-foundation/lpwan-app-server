@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // APIKey represents an API key.
@@ -25,7 +26,7 @@ type APIKey struct {
 }
 
 // CreateAPIKey creates the given API key and returns the JWT.
-func CreateAPIKey(ctx context.Context, db sqlx.Ext, a *APIKey) (string, error) {
+func CreateAPIKey(ctx context.Context, handler *store.Handler, a *APIKey) (string, error) {
 	id, err := uuid.NewV4()
 	if err != nil {
 		return "", errors.Wrap(err, "new uuid error")
@@ -96,7 +97,7 @@ func GetAPIKey(ctx context.Context, db sqlx.Queryer, id uuid.UUID) (APIKey, erro
 }
 
 // DeleteAPIKey deletes the API key for the given ID.
-func DeleteAPIKey(ctx context.Context, db sqlx.Ext, id uuid.UUID) error {
+func DeleteAPIKey(ctx context.Context, handler *store.Handler, id uuid.UUID) error {
 	res, err := db.Exec(`
 		delete
 		from

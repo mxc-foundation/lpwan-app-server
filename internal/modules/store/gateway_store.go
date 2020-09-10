@@ -237,6 +237,23 @@ type Gateway struct {
 	AutoUpdateFirmware bool          `db:"auto_update_firmware"`
 }
 
+// GatewayListItem defines the gateway as list item.
+type GatewayListItem struct {
+	MAC               lorawan.EUI64 `db:"mac"`
+	Name              string        `db:"name"`
+	Description       string        `db:"description"`
+	CreatedAt         time.Time     `db:"created_at"`
+	UpdatedAt         time.Time     `db:"updated_at"`
+	FirstSeenAt       *time.Time    `db:"first_seen_at"`
+	LastSeenAt        *time.Time    `db:"last_seen_at"`
+	OrganizationID    int64         `db:"organization_id"`
+	NetworkServerID   int64         `db:"network_server_id"`
+	Latitude          float64       `db:"latitude"`
+	Longitude         float64       `db:"longitude"`
+	Altitude          float64       `db:"altitude"`
+	NetworkServerName string        `db:"network_server_name"`
+}
+
 type GatewayFirmware struct {
 	Model        string       `db:"model"`
 	ResourceLink string       `db:"resource_link"`
@@ -276,6 +293,13 @@ type GatewayPingRX struct {
 type GPSPoint struct {
 	Latitude  float64
 	Longitude float64
+}
+
+// GatewaysActiveInactive holds the avtive and inactive counts.
+type GatewaysActiveInactive struct {
+	NeverSeenCount uint32 `db:"never_seen_count"`
+	ActiveCount    uint32 `db:"active_count"`
+	InactiveCount  uint32 `db:"inactive_count"`
 }
 
 // GatewayFilters provides filters for filtering gateways.
@@ -332,7 +356,7 @@ func (l *GPSPoint) Scan(src interface{}) error {
 // Validate validates the gateway data.
 func (g Gateway) Validate() error {
 	if !gatewayNameRegexp.MatchString(g.Name) {
-		return errors.New("invalid gateway name")
+		return ErrGatewayInvalidName
 	}
 
 	if strings.HasPrefix(g.Model, "MX19") {

@@ -303,7 +303,6 @@
         },
         "gatewayDiscoveryEnabled": {
           "type": "boolean",
-          "format": "boolean",
           "description": "Enable gateway discovery for this network-server."
         },
         "gatewayDiscoveryInterval": {

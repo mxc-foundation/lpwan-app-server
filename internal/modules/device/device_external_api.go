@@ -140,7 +140,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 			}
 		}
 
-		err = handler.CreateDevice(ctx, &d, a.ApplicationServerID)
+		err = handler.CreateDevice(ctx, &d)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -341,7 +341,7 @@ func (a *DeviceAPI) List(ctx context.Context, req *api.ListDeviceRequest) (*api.
 		idFilter = true
 
 		// validate that the client has access to the given application
-		if valid, err := application.NewValidator().ValidateApplicationAccess(ctx, application.Read, req.ApplicationId); !valid || err != nil {
+		if valid, err := application.NewValidator().ValidateApplicationAccess(ctx, authcus.Read, req.ApplicationId); !valid || err != nil {
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 		}
 	}

@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 var organizationNameRegexp = regexp.MustCompile(`^[\w-]+$`)
@@ -47,7 +48,7 @@ type OrganizationUser struct {
 }
 
 // CreateOrganization creates the given Organization.
-func CreateOrganization(ctx context.Context, db sqlx.Queryer, org *Organization) error {
+func CreateOrganization(ctx context.Context, handler *store.Handler, org *Organization) error {
 	if err := org.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -87,7 +88,7 @@ func CreateOrganization(ctx context.Context, db sqlx.Queryer, org *Organization)
 
 // GetOrganization returns the Organization for the given id.
 // When forUpdate is set to true, then db must be a db transaction.
-func GetOrganization(ctx context.Context, db sqlx.Queryer, id int64, forUpdate bool) (Organization, error) {
+func GetOrganization(ctx context.Context, handler *store.Handler, id int64, forUpdate bool) (Organization, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -132,7 +133,7 @@ func (f OrganizationFilters) SQL() string {
 }
 
 // GetOrganizationCount returns the total number of organizations.
-func GetOrganizationCount(ctx context.Context, db sqlx.Queryer, filters OrganizationFilters) (int, error) {
+func GetOrganizationCount(ctx context.Context, handler *store.Handler, filters OrganizationFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -161,7 +162,7 @@ func GetOrganizationCount(ctx context.Context, db sqlx.Queryer, filters Organiza
 }
 
 // GetOrganizations returns a slice of organizations, sorted by name.
-func GetOrganizations(ctx context.Context, db sqlx.Queryer, filters OrganizationFilters) ([]Organization, error) {
+func GetOrganizations(ctx context.Context, handler *store.Handler, filters OrganizationFilters) ([]Organization, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -197,7 +198,7 @@ func GetOrganizations(ctx context.Context, db sqlx.Queryer, filters Organization
 }
 
 // UpdateOrganization updates the given organization.
-func UpdateOrganization(ctx context.Context, db sqlx.Execer, org *Organization) error {
+func UpdateOrganization(ctx context.Context, handler *store.Handler, org *Organization) error {
 	if err := org.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -243,7 +244,7 @@ func UpdateOrganization(ctx context.Context, db sqlx.Execer, org *Organization) 
 }
 
 // DeleteOrganization deletes the organization matching the given id.
-func DeleteOrganization(ctx context.Context, db sqlx.Ext, id int64) error {
+func DeleteOrganization(ctx context.Context, handler *store.Handler, id int64) error {
 	err := DeleteAllApplicationsForOrganizationID(ctx, db, id)
 	if err != nil {
 		return errors.Wrap(err, "delete all applications error")
@@ -279,7 +280,7 @@ func DeleteOrganization(ctx context.Context, db sqlx.Ext, id int64) error {
 }
 
 // CreateOrganizationUser adds the given user to the organization.
-func CreateOrganizationUser(ctx context.Context, db sqlx.Execer, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
+func CreateOrganizationUser(ctx context.Context, handler *store.Handler, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
 	_, err := db.Exec(`
 		insert into organization_user (
 			organization_id,
@@ -312,7 +313,7 @@ func CreateOrganizationUser(ctx context.Context, db sqlx.Execer, organizationID,
 }
 
 // UpdateOrganizationUser updates the given user of the organization.
-func UpdateOrganizationUser(ctx context.Context, db sqlx.Execer, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
+func UpdateOrganizationUser(ctx context.Context, handler *store.Handler, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
 	res, err := db.Exec(`
 		update organization_user
 		set
@@ -347,7 +348,7 @@ func UpdateOrganizationUser(ctx context.Context, db sqlx.Execer, organizationID,
 }
 
 // DeleteOrganizationUser deletes the given organization user.
-func DeleteOrganizationUser(ctx context.Context, db sqlx.Execer, organizationID, userID int64) error {
+func DeleteOrganizationUser(ctx context.Context, handler *store.Handler, organizationID, userID int64) error {
 	res, err := db.Exec(`delete from organization_user where organization_id = $1 and user_id = $2`, organizationID, userID)
 	if err != nil {
 		return handlePSQLError(Delete, err, "delete error")
@@ -369,7 +370,7 @@ func DeleteOrganizationUser(ctx context.Context, db sqlx.Execer, organizationID,
 }
 
 // GetOrganizationUser gets the information of the given organization user.
-func GetOrganizationUser(ctx context.Context, db sqlx.Queryer, organizationID, userID int64) (OrganizationUser, error) {
+func GetOrganizationUser(ctx context.Context, handler *store.Handler, organizationID, userID int64) (OrganizationUser, error) {
 	var u OrganizationUser
 	err := sqlx.Get(db, &u, `
 		select
@@ -396,7 +397,7 @@ func GetOrganizationUser(ctx context.Context, db sqlx.Queryer, organizationID, u
 }
 
 // GetOrganizationUserCount returns the number of users for the given organization.
-func GetOrganizationUserCount(ctx context.Context, db sqlx.Queryer, organizationID int64) (int, error) {
+func GetOrganizationUserCount(ctx context.Context, handler *store.Handler, organizationID int64) (int, error) {
 	var count int
 	err := sqlx.Get(db, &count, `
 		select count(*)
@@ -412,7 +413,7 @@ func GetOrganizationUserCount(ctx context.Context, db sqlx.Queryer, organization
 }
 
 // GetOrganizationUsers returns the users for the given organization.
-func GetOrganizationUsers(ctx context.Context, db sqlx.Queryer, organizationID int64, limit, offset int) ([]OrganizationUser, error) {
+func GetOrganizationUsers(ctx context.Context, handler *store.Handler, organizationID int64, limit, offset int) ([]OrganizationUser, error) {
 	var users []OrganizationUser
 	err := sqlx.Select(db, &users, `
 		select

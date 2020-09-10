@@ -4,7 +4,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/jmoiron/sqlx"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -86,7 +85,7 @@ func (a *MulticastGroupAPI) Create(ctx context.Context, req *pb.CreateMulticastG
 		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
-	if err = storage.Transaction(func(tx sqlx.Ext) error {
+	if err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		if err := storage.CreateMulticastGroup(ctx, tx, &mg); err != nil {
 			return status.Errorf(codes.Unknown, "%s", err)
 		}
@@ -202,7 +201,7 @@ func (a *MulticastGroupAPI) Update(ctx context.Context, req *pb.UpdateMulticastG
 		return nil, status.Errorf(codes.InvalidArgument, "mc_app_s_key: %s", err)
 	}
 
-	if err = storage.Transaction(func(tx sqlx.Ext) error {
+	if err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		if err := storage.UpdateMulticastGroup(ctx, tx, &mg); err != nil {
 			return status.Errorf(codes.Unknown, "%s", err)
 		}
@@ -222,7 +221,7 @@ func (a *MulticastGroupAPI) Delete(ctx context.Context, req *pb.DeleteMulticastG
 		return nil, status.Errorf(codes.InvalidArgument, "id: %s", err)
 	}
 
-	if err = storage.Transaction(func(tx sqlx.Ext) error {
+	if err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		if err := storage.DeleteMulticastGroup(ctx, tx, mgID); err != nil {
 			return status.Errorf(codes.Unknown, "%s", err)
 		}
@@ -356,7 +355,7 @@ func (a *MulticastGroupAPI) AddDevice(ctx context.Context, req *pb.AddDeviceToMu
 		return nil, status.Errorf(codes.FailedPrecondition, "service-profile of device != service-profile of multicast-group")
 	}
 
-	if err = storage.Transaction(func(tx sqlx.Ext) error {
+	if err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		if err := storage.AddDeviceToMulticastGroup(ctx, tx, mgID, devEUI); err != nil {
 			return status.Errorf(codes.Unknown, "%s", err)
 		}
@@ -384,7 +383,7 @@ func (a *MulticastGroupAPI) RemoveDevice(ctx context.Context, req *pb.RemoveDevi
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err = storage.Transaction(func(tx sqlx.Ext) error {
+	if err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		if err := storage.RemoveDeviceFromMulticastGroup(ctx, tx, mgID, devEUI); err != nil {
 			return status.Errorf(codes.Unknown, "%s", err)
 		}
@@ -417,7 +416,7 @@ func (a *MulticastGroupAPI) Enqueue(ctx context.Context, req *pb.EnqueueMulticas
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err = storage.Transaction(func(tx sqlx.Ext) error {
+	if err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		var err error
 		fCnt, err = multicast.Enqueue(ctx, tx, mgID, uint8(req.MulticastQueueItem.FPort), req.MulticastQueueItem.Data)
 		if err != nil {

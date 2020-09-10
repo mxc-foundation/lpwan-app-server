@@ -77,10 +77,11 @@ static/swagger/api.swagger.json:
 
 
 # shortcuts for development
-devel-tools:
+debug:
 	go get github.com/go-delve/delve/cmd/dlv
 
 dev-requirements:
+	go get -u github.com/golang/protobuf/protoc-gen-go
 	go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 	go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
 	go install github.com/jteeuwen/go-bindata/go-bindata

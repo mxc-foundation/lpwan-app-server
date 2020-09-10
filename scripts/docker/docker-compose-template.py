@@ -16,7 +16,7 @@ localDevelopTemplate = \
       mxprotocol-server:
         build:
           context: ../mxprotocol-server
-          dockerfile: Dockerfile
+          dockerfile: Dockerfile-devel
         volumes:
           - ../mxprotocol-server/configuration:/etc/mxprotocol-server
           - ../mxprotocol-server:/mxprotocol-server
@@ -94,18 +94,18 @@ localDevelopTemplate = \
       rabbitmq:
         image: rabbitmq:3-alpine
     
-      zookeeper:
-        image: 'bitnami/zookeeper:3'
-        environment:
-          - ALLOW_ANONYMOUS_LOGIN=yes
+      #zookeeper:
+      #  image: 'bitnami/zookeeper:3'
+      #  environment:
+      #    - ALLOW_ANONYMOUS_LOGIN=yes
           
-      kafka:
-        image: 'bitnami/kafka:2'
-        environment:
-          - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-          - ALLOW_PLAINTEXT_LISTENER=yes
-        depends_on:
-          - zookeeper
+      #kafka:
+      #  image: 'bitnami/kafka:2'
+      #  environment:
+      #    - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      #    - ALLOW_PLAINTEXT_LISTENER=yes
+      #  depends_on:
+      #    - zookeeper
     '''
 
 remoteDevelopTemplate = \

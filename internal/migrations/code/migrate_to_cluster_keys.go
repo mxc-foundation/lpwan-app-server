@@ -15,7 +15,6 @@ import (
 
 // MigrateToClusterKeys migrates the keys to Redis Cluster compatible keys.
 func MigrateToClusterKeys(conf config.Config) error {
-
 	keys, err := storage.RedisClient().Keys("lora:as:metrics:*").Result()
 	if err != nil {
 		return errors.Wrap(err, "get keys error")

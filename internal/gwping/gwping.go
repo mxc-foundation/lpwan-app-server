@@ -19,6 +19,7 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -64,7 +65,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 		return errors.Wrap(err, "get gateway ping error")
 	}
 
-	err = storage.Transaction(func(tx sqlx.Ext) error {
+	err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		for _, rx := range req.RxInfo {
 			var mac lorawan.EUI64
 			copy(mac[:], rx.GatewayId)
@@ -116,7 +117,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 // sendGatewayPing selects the next gateway to ping, creates the "ping"
 // frame and sends this frame to the network-server for transmission.
 func sendGatewayPing(ctx context.Context) error {
-	return storage.Transaction(func(tx sqlx.Ext) error {
+	return storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
 		gw, err := getGatewayForPing(tx)
 		if err != nil {
 			return errors.Wrap(err, "get gateway for ping error")

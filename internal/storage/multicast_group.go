@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -48,7 +50,7 @@ func (mg MulticastGroup) Validate() error {
 }
 
 // CreateMulticastGroup creates the given multicast-group.
-func CreateMulticastGroup(ctx context.Context, db sqlx.Ext, mg *MulticastGroup) error {
+func CreateMulticastGroup(ctx context.Context, handler *store.Handler, mg *MulticastGroup) error {
 	if err := mg.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -107,7 +109,7 @@ func CreateMulticastGroup(ctx context.Context, db sqlx.Ext, mg *MulticastGroup) 
 }
 
 // GetMulticastGroup returns the multicast-group given an id.
-func GetMulticastGroup(ctx context.Context, db sqlx.Queryer, id uuid.UUID, forUpdate, localOnly bool) (MulticastGroup, error) {
+func GetMulticastGroup(ctx context.Context, handler *store.Handler, id uuid.UUID, forUpdate, localOnly bool) (MulticastGroup, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -158,7 +160,7 @@ func GetMulticastGroup(ctx context.Context, db sqlx.Queryer, id uuid.UUID, forUp
 }
 
 // UpdateMulticastGroup updates the given multicast-group.
-func UpdateMulticastGroup(ctx context.Context, db sqlx.Ext, mg *MulticastGroup) error {
+func UpdateMulticastGroup(ctx context.Context, handler *store.Handler, mg *MulticastGroup) error {
 	if err := mg.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -218,7 +220,7 @@ func UpdateMulticastGroup(ctx context.Context, db sqlx.Ext, mg *MulticastGroup) 
 }
 
 // DeleteMulticastGroup deletes a multicast-group given an id.
-func DeleteMulticastGroup(ctx context.Context, db sqlx.Ext, id uuid.UUID) error {
+func DeleteMulticastGroup(ctx context.Context, handler *store.Handler, id uuid.UUID) error {
 	nsClient, err := getNSClientForMulticastGroup(ctx, db, id)
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
@@ -298,7 +300,7 @@ func (f MulticastGroupFilters) SQL() string {
 
 // GetMulticastGroupCount returns the total number of multicast-groups given
 // the provided filters. Note that empty values are not used as filters.
-func GetMulticastGroupCount(ctx context.Context, db sqlx.Queryer, filters MulticastGroupFilters) (int, error) {
+func GetMulticastGroupCount(ctx context.Context, handler *store.Handler, filters MulticastGroupFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -330,7 +332,7 @@ func GetMulticastGroupCount(ctx context.Context, db sqlx.Queryer, filters Multic
 
 // GetMulticastGroups returns a slice of multicast-groups, given the privded
 // filters. Note that empty values are not used as filters.
-func GetMulticastGroups(ctx context.Context, db sqlx.Queryer, filters MulticastGroupFilters) ([]MulticastGroupListItem, error) {
+func GetMulticastGroups(ctx context.Context, handler *store.Handler, filters MulticastGroupFilters) ([]MulticastGroupListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -372,7 +374,7 @@ func GetMulticastGroups(ctx context.Context, db sqlx.Queryer, filters MulticastG
 
 // AddDeviceToMulticastGroup adds the given device to the given multicast-group.
 // It is recommended that db is a transaction.
-func AddDeviceToMulticastGroup(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func AddDeviceToMulticastGroup(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
 	_, err := db.Exec(`
 		insert into device_multicast_group (
 			dev_eui,
@@ -408,7 +410,7 @@ func AddDeviceToMulticastGroup(ctx context.Context, db sqlx.Ext, multicastGroupI
 
 // RemoveDeviceFromMulticastGroup removes the given device from the given
 // multicast-group.
-func RemoveDeviceFromMulticastGroup(ctx context.Context, db sqlx.Ext, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func RemoveDeviceFromMulticastGroup(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
 	res, err := db.Exec(`
 		delete from
 			device_multicast_group
@@ -452,7 +454,7 @@ func RemoveDeviceFromMulticastGroup(ctx context.Context, db sqlx.Ext, multicastG
 
 // GetDeviceCountForMulticastGroup returns the number of devices for the given
 // multicast-group.
-func GetDeviceCountForMulticastGroup(ctx context.Context, db sqlx.Queryer, multicastGroup uuid.UUID) (int, error) {
+func GetDeviceCountForMulticastGroup(ctx context.Context, handler *store.Handler, multicastGroup uuid.UUID) (int, error) {
 	var count int
 
 	err := sqlx.Get(db, &count, `
@@ -472,7 +474,7 @@ func GetDeviceCountForMulticastGroup(ctx context.Context, db sqlx.Queryer, multi
 
 // GetDevicesForMulticastGroup returns a slice of devices for the given
 // multicast-group.
-func GetDevicesForMulticastGroup(ctx context.Context, db sqlx.Queryer, multicastGroupID uuid.UUID, limit, offset int) ([]DeviceListItem, error) {
+func GetDevicesForMulticastGroup(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, limit, offset int) ([]DeviceListItem, error) {
 	var devices []DeviceListItem
 
 	err := sqlx.Select(db, &devices, `

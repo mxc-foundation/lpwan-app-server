@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"github.com/pkg/errors"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
@@ -67,7 +65,7 @@ func (ps *pgstore) GetDefaultGatewayConfig(ctx context.Context, defaultConfig *s
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return storage.ErrDoesNotExist
+			return store.ErrDoesNotExist
 		}
 		return errors.Wrap(err, "select error")
 	}
