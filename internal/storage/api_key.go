@@ -77,7 +77,7 @@ func CreateAPIKey(ctx context.Context, handler *store.Handler, a *APIKey) (strin
 }
 
 // GetAPIKey returns the API key for the given ID.
-func GetAPIKey(ctx context.Context, db sqlx.Queryer, id uuid.UUID) (APIKey, error) {
+func GetAPIKey(ctx context.Context, handler *store.Handler, id uuid.UUID) (APIKey, error) {
 	var a APIKey
 
 	err := sqlx.Get(db, &a, `
@@ -154,7 +154,7 @@ func (f APIKeyFilters) SQL() string {
 }
 
 // GetAPIKeyCount returns the number of API keys.
-func GetAPIKeyCount(ctx context.Context, db sqlx.Queryer, filters APIKeyFilters) (int, error) {
+func GetAPIKeyCount(ctx context.Context, handler *store.Handler, filters APIKeyFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(*)
@@ -175,7 +175,7 @@ func GetAPIKeyCount(ctx context.Context, db sqlx.Queryer, filters APIKeyFilters)
 }
 
 // GetAPIKeys returns a slice of API keys.
-func GetAPIKeys(ctx context.Context, db sqlx.Queryer, filters APIKeyFilters) ([]APIKey, error) {
+func GetAPIKeys(ctx context.Context, handler *store.Handler, filters APIKeyFilters) ([]APIKey, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			*

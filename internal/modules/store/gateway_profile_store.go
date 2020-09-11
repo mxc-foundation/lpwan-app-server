@@ -82,10 +82,11 @@ type GatewayProfile struct {
 
 // GatewayProfileMeta defines the gateway-profile meta record.
 type GatewayProfileMeta struct {
-	GatewayProfileID  uuid.UUID `db:"gateway_profile_id"`
-	NetworkServerID   int64     `db:"network_server_id"`
-	NetworkServerName string    `db:"network_server_name"`
-	CreatedAt         time.Time `db:"created_at"`
-	UpdatedAt         time.Time `db:"updated_at"`
-	Name              string    `db:"name"`
+	GatewayProfileID  uuid.UUID     `db:"gateway_profile_id"`
+	NetworkServerID   int64         `db:"network_server_id"`
+	NetworkServerName string        `db:"network_server_name"`
+	CreatedAt         time.Time     `db:"created_at"`
+	UpdatedAt         time.Time     `db:"updated_at"`
+	Name              string        `db:"name"`
+	StatsInterval     time.Duration `db:"stats_interval"`
 }

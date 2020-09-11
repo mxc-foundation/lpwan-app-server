@@ -90,3 +90,27 @@ func (h *Handler) Tx(ctx context.Context, f func(context.Context, *Handler) erro
 func (h *Handler) IsErrorRepeat(err error) bool {
 	return h.store.IsErrorRepeat(err)
 }
+
+// TxBegin creates a transaction and returns a new instance of Handler that
+// will either commit or rollback all the changes that done using this
+// instance.
+// This is only used in test files
+func (s *Handler) TxBegin(ctx context.Context) (*Handler, error) {
+	if s.inTX {
+		return nil, fmt.Errorf("already in transaction")
+	}
+	store, err := s.store.TxBegin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	btx := *s
+	btx.store = store
+	btx.inTX = true
+	return &btx, nil
+}
+
+// TxRollback
+// This is only used in test files
+func (s *Handler) TxRollback(ctx context.Context) error {
+	return s.store.TxRollback(ctx)
+}

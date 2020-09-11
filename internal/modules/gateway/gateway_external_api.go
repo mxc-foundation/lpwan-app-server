@@ -124,7 +124,8 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 }
 
 func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Context, orgID int64) error {
-	count, err := a.st.GetGatewayCountForOrganizationID(ctx, orgID, "")
+	filters := store.GatewayFilters{OrganizationID: orgID}
+	count, err := a.st.GetGatewayCount(ctx, filters)
 	if err != nil {
 		return err
 	}
@@ -135,13 +136,27 @@ func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Conte
 
 	limit := 100
 	for offset := 0; offset <= count/limit; offset++ {
-		gwList, err := a.st.GetGatewaysForOrganizationID(ctx, orgID, limit, offset, "")
+		filters.Limit = limit
+		filters.Offset = offset
+		gwList, err := a.st.GetGateways(ctx, filters)
 		if err != nil {
 			return err
 		}
 
 		for _, v := range gwList {
-			err := a.getDefaultGatewayConfig(ctx, &v)
+			err := a.getDefaultGatewayConfig(ctx, &store.Gateway{
+				MAC:             v.MAC,
+				CreatedAt:       v.CreatedAt,
+				UpdatedAt:       v.UpdatedAt,
+				FirstSeenAt:     v.FirstSeenAt,
+				LastSeenAt:      v.LastSeenAt,
+				Name:            v.Name,
+				Description:     v.Description,
+				OrganizationID:  v.OrganizationID,
+				NetworkServerID: v.NetworkServerID,
+				Model:           v.Model,
+				Config:          v.Config,
+			})
 			if err != nil {
 				return err
 			}
@@ -410,7 +425,10 @@ func (a *GatewayAPI) storeGateway(ctx context.Context, req *api.Gateway, default
 
 		// Validate max. gateway count when != 0.
 		if org.MaxGatewayCount != 0 {
-			count, err := handler.GetGatewayCount(ctx, "")
+			count, err := handler.GetGatewayCount(ctx, store.GatewayFilters{
+				OrganizationID: org.ID,
+				Search:         "",
+			})
 			if err != nil {
 				return helpers.ErrToRPCError(err)
 			}
@@ -636,12 +654,12 @@ func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*ap
 		filters.UserID = u.ID
 	}
 
-	count, err := a.st.GetGatewayCount(ctx, "")
+	count, err := a.st.GetGatewayCount(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	gws, err := a.st.GetGateways(ctx, req.Limit, req.Offset, "")
+	gws, err := a.st.GetGateways(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

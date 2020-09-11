@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"testing"
 	"time"
 
@@ -273,10 +274,10 @@ func (ts *StorageTestSuite) TestGateway() {
 					ReceivedAt: &now,
 					RSSI:       -10,
 					LoRaSNR:    5.5,
-					Location: GPSPoint{
+					Location: store.GPSPoint(GPSPoint{
 						Latitude:  1.12345,
 						Longitude: 1.23456,
-					},
+					}),
 					Altitude: 10,
 				}
 				assert.NoError(CreateGatewayPingRX(context.Background(), ts.Tx(), &gwPingRX))

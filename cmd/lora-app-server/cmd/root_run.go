@@ -234,59 +234,59 @@ func setupFUOTA() error {
 
 func setupModules() (err error) {
 
-	if err = gwmod.Setup(config.C, pgstore.New(storage.DB().DB)); err != nil {
+	if err = gwmod.Setup(config.C, pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = devmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = devmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = appmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = appmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = gpmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = gpmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = miningmod.Setup(config.C.ApplicationServer.MiningSetUp, pgstore.New(storage.DB().DB)); err != nil {
+	if err = miningmod.Setup(config.C.ApplicationServer.MiningSetUp, pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = nsmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = nsmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = orgmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = orgmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = usermod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = usermod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = servermod.Setup(config.C, pgstore.New(storage.DB().DB)); err != nil {
+	if err = servermod.Setup(config.C, pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = asmod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = asmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = devprofilemod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = devprofilemod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = serviceprofile.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = serviceprofile.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = multicast.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = multicast.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 
-	if err = fuotamod.Setup(pgstore.New(storage.DB().DB)); err != nil {
+	if err = fuotamod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 

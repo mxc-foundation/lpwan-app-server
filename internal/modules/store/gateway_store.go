@@ -34,8 +34,8 @@ type GatewayStore interface {
 	SetAutoUpdateFirmware(ctx context.Context, mac lorawan.EUI64, autoUpdateFirmware bool) error
 	DeleteGateway(ctx context.Context, mac lorawan.EUI64) error
 	GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (Gateway, error)
-	GetGatewayCount(ctx context.Context, search string) (int, error)
-	GetGateways(ctx context.Context, limit, offset int32, search string) ([]Gateway, error)
+	GetGatewayCount(ctx context.Context, filters GatewayFilters) (int, error)
+	GetGateways(ctx context.Context, filters GatewayFilters) ([]GatewayListItem, error)
 	GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI64) (string, error)
 	GetFirstHeartbeat(ctx context.Context, mac lorawan.EUI64) (int64, error)
 	UpdateFirstHeartbeatToZero(ctx context.Context, mac lorawan.EUI64) error
@@ -43,10 +43,6 @@ type GatewayStore interface {
 	GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error)
 	GetGatewaysLoc(ctx context.Context, limit int) ([]GatewayLocation, error)
 	GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64) (map[lorawan.EUI64]Gateway, error)
-	GetGatewayCountForOrganizationID(ctx context.Context, organizationID int64, search string) (int, error)
-	GetGatewaysForOrganizationID(ctx context.Context, organizationID int64, limit, offset int, search string) ([]Gateway, error)
-	GetGatewayCountForUser(ctx context.Context, username string, search string) (int, error)
-	GetGatewaysForUser(ctx context.Context, username string, limit, offset int, search string) ([]Gateway, error)
 	CreateGatewayPing(ctx context.Context, ping *GatewayPing) error
 	GetGatewayPing(ctx context.Context, id int64) (GatewayPing, error)
 	CreateGatewayPingRX(ctx context.Context, rx *GatewayPingRX) error
@@ -54,6 +50,7 @@ type GatewayStore interface {
 	GetAllGatewayMacList(ctx context.Context) ([]string, error)
 	GetGatewayPingRXForPingID(ctx context.Context, pingID int64) ([]GatewayPingRX, error)
 	GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (GatewayPing, []GatewayPingRX, error)
+	GetGatewaysActiveInactive(ctx context.Context, organizationID int64) (GatewaysActiveInactive, error)
 
 	// validator
 	CheckCreateGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
@@ -63,6 +60,10 @@ type GatewayStore interface {
 	CheckUpdateDeleteGatewayAccess(ctx context.Context, username string, mac lorawan.EUI64, userID int64) (bool, error)
 
 	CheckReadOrganizationNetworkServerAccess(ctx context.Context, username string, organizationID, networkserverID, userID int64) (bool, error)
+}
+
+func (h *Handler) GetGatewaysActiveInactive(ctx context.Context, organizationID int64) (GatewaysActiveInactive, error) {
+	return h.store.GetGatewaysActiveInactive(ctx, organizationID)
 }
 
 func (h *Handler) AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
@@ -111,11 +112,11 @@ func (h *Handler) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 func (h *Handler) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (Gateway, error) {
 	return h.store.GetGateway(ctx, mac, forUpdate)
 }
-func (h *Handler) GetGatewayCount(ctx context.Context, search string) (int, error) {
-	return h.store.GetGatewayCount(ctx, search)
+func (h *Handler) GetGatewayCount(ctx context.Context, filters GatewayFilters) (int, error) {
+	return h.store.GetGatewayCount(ctx, filters)
 }
-func (h *Handler) GetGateways(ctx context.Context, limit, offset int32, search string) ([]Gateway, error) {
-	return h.store.GetGateways(ctx, limit, offset, search)
+func (h *Handler) GetGateways(ctx context.Context, filters GatewayFilters) ([]GatewayListItem, error) {
+	return h.store.GetGateways(ctx, filters)
 }
 func (h *Handler) GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI64) (string, error) {
 	return h.store.GetGatewayConfigByGwId(ctx, mac)
@@ -137,18 +138,6 @@ func (h *Handler) GetGatewaysLoc(ctx context.Context, limit int) ([]GatewayLocat
 }
 func (h *Handler) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64) (map[lorawan.EUI64]Gateway, error) {
 	return h.store.GetGatewaysForMACs(ctx, macs)
-}
-func (h *Handler) GetGatewayCountForOrganizationID(ctx context.Context, organizationID int64, search string) (int, error) {
-	return h.store.GetGatewayCountForOrganizationID(ctx, organizationID, search)
-}
-func (h *Handler) GetGatewaysForOrganizationID(ctx context.Context, organizationID int64, limit, offset int, search string) ([]Gateway, error) {
-	return h.store.GetGatewaysForOrganizationID(ctx, organizationID, limit, offset, search)
-}
-func (h *Handler) GetGatewayCountForUser(ctx context.Context, username string, search string) (int, error) {
-	return h.store.GetGatewayCountForUser(ctx, username, search)
-}
-func (h *Handler) GetGatewaysForUser(ctx context.Context, username string, limit, offset int, search string) ([]Gateway, error) {
-	return h.store.GetGatewaysForUser(ctx, username, limit, offset, search)
 }
 func (h *Handler) CreateGatewayPing(ctx context.Context, ping *GatewayPing) error {
 	return h.store.CreateGatewayPing(ctx, ping)
@@ -252,6 +241,8 @@ type GatewayListItem struct {
 	Longitude         float64       `db:"longitude"`
 	Altitude          float64       `db:"altitude"`
 	NetworkServerName string        `db:"network_server_name"`
+	Model             string        `db:"model"`
+	Config            string        `db:"config"`
 }
 
 type GatewayFirmware struct {

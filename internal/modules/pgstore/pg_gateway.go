@@ -395,11 +395,13 @@ func (ps *pgstore) UpdateGateway(ctx context.Context, gw *store.Gateway) error {
 			latitude = $13,
 			longitude = $14,
 			altitude = $15,
-		    model = $16,
-		    config = $17,
-		    os_version = $18,
-		    statistics = $19,
-			firmware_hash = $20
+			tags = $16,
+			metadata = $17
+		    model = $18,
+		    config = $19,
+		    os_version = $20,
+		    statistics = $21,
+			firmware_hash = $22
 		where
 			mac = $1`,
 		gw.MAC[:],
@@ -417,20 +419,22 @@ func (ps *pgstore) UpdateGateway(ctx context.Context, gw *store.Gateway) error {
 		gw.Latitude,
 		gw.Longitude,
 		gw.Altitude,
+		gw.Tags,
+		gw.Metadata,
 		gw.Model,
 		gw.Config,
 		gw.OsVersion,
 		gw.Statistics,
 		gw.FirmwareHash[:])
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	gw.UpdatedAt = now
@@ -573,14 +577,14 @@ func (ps *pgstore) DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 
 	res, err := ps.db.ExecContext(ctx, "delete from gateway where mac = $1", mac[:])
 	if err != nil {
-		return errors.Wrap(err, "delete error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -609,64 +613,83 @@ func (ps *pgstore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate 
 }
 
 // GetGatewayCount returns the total number of gateways.
-func (ps *pgstore) GetGatewayCount(ctx context.Context, search string) (int, error) {
-	var count int
-	if search != "" {
-		search = "%" + search + "%"
+func (ps *pgstore) GetGatewayCount(ctx context.Context, filters store.GatewayFilters) (int, error) {
+	if filters.Search != "" {
+		filters.Search = "%" + filters.Search + "%"
 	}
 
-	err := sqlx.GetContext(ctx, ps.db, &count, `
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
-			count(*)
-		from gateway
-		where
-			$1 = ''
-			or (
-				$1 != ''
-				and (
-					name ilike $1
-					or encode(mac, 'hex') ilike $1
-				)
-			)
-		`,
-		search,
-	)
+			count(distinct g.*)
+		from
+			gateway g
+		inner join organization o
+			on o.id = g.organization_id
+		left join organization_user ou
+			on o.id = ou.organization_id
+		left join "user" u
+			on ou.user_id = u.id
+	`+filters.SQL(), filters)
 	if err != nil {
-		return 0, errors.Wrap(err, "select error")
+		return 0, errors.Wrap(err, "named query error")
 	}
+
+	var count int
+	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
+	if err != nil {
+
+		return 0, errors.Wrap(err, "named query error")
+	}
+
 	return count, nil
 }
 
 // GetGateways returns a slice of gateways sorted by name.
-func (ps *pgstore) GetGateways(ctx context.Context, limit, offset int32, search string) ([]store.Gateway, error) {
-	var gws []store.Gateway
-	if search != "" {
-		search = "%" + search + "%"
+func (ps *pgstore) GetGateways(ctx context.Context, filters store.GatewayFilters) ([]store.GatewayListItem, error) {
+	if filters.Search != "" {
+		filters.Search = "%" + filters.Search + "%"
 	}
 
-	err := sqlx.SelectContext(ctx, ps.db, &gws, `
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
-			*
-		from gateway
-		where
-			$3 = ''
-			or (
-				$3 != ''
-				and (
-					name ilike $3
-					or encode(mac, 'hex') ilike $3
-				)
-			)
+			distinct g.mac,
+			g.name,
+			g.description,
+			g.created_at,
+			g.updated_at,
+			g.first_seen_at,
+			g.last_seen_at,
+			g.organization_id,
+			g.network_server_id,
+			g.latitude,
+			g.longitude,
+			g.altitude,
+			g.model,
+			g.config,
+			n.name as network_server_name
+		from
+			gateway g
+		inner join organization o
+			on o.id = g.organization_id
+		inner join network_server n
+			on n.id = g.network_server_id
+		left join organization_user ou
+			on o.id = ou.organization_id
+		left join "user" u
+			on ou.user_id = u.id
+	`+filters.SQL()+`
 		order by
-			name
-		limit $1 offset $2`,
-		limit,
-		offset,
-		search,
-	)
+			g.name
+		limit :limit
+		offset :offset
+	`, filters)
+
+	var gws []store.GatewayListItem
+	err = sqlx.SelectContext(ctx, ps.db, &gws, query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "select error")
+		return nil, handlePSQLError(Select, err, "select error")
 	}
+
 	return gws, nil
 }
 
@@ -794,7 +817,7 @@ func (ps *pgstore) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64)
 	var gws []store.Gateway
 	err := sqlx.SelectContext(ctx, ps.db, &gws, "select * from gateway where mac = any($1)", pq.ByteaArray(macsB))
 	if err != nil {
-		return nil, errors.Wrap(err, "select error")
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	if len(gws) != len(macs) {
@@ -810,39 +833,6 @@ func (ps *pgstore) GetGatewaysForMACs(ctx context.Context, macs []lorawan.EUI64)
 	}
 
 	return out, nil
-}
-
-// GetGatewayCountForOrganizationID returns the total number of gateways
-// given an organization ID.
-func (ps *pgstore) GetGatewayCountForOrganizationID(ctx context.Context, organizationID int64, search string) (int, error) {
-	var count int
-	if search != "" {
-		search = "%" + search + "%"
-	}
-
-	err := sqlx.GetContext(ctx, ps.db, &count, `
-		select
-			count(*)
-		from gateway
-		where
-			organization_id = $1
-			and (
-				$2 = ''
-				or (
-					$2 != ''
-					and (
-						name ilike $2
-						or encode(mac, 'hex') ilike $2
-					)
-				)
-			)`,
-		organizationID,
-		search,
-	)
-	if err != nil {
-		return 0, errors.Wrap(err, "select error")
-	}
-	return count, nil
 }
 
 // GetGatewaysForOrganizationID returns a slice of gateways sorted by name
@@ -984,7 +974,7 @@ func (ps *pgstore) CreateGatewayPing(ctx context.Context, ping *store.GatewayPin
 		ping.DR,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -1003,7 +993,7 @@ func (ps *pgstore) GetGatewayPing(ctx context.Context, id int64) (store.GatewayP
 	var ping store.GatewayPing
 	err := sqlx.GetContext(ctx, ps.db, &ping, "select * from gateway_ping where id = $1", id)
 	if err != nil {
-		return ping, errors.Wrap(err, "select error")
+		return ping, handlePSQLError(Select, err, "select error")
 	}
 
 	return ping, nil
@@ -1035,7 +1025,7 @@ func (ps *pgstore) CreateGatewayPingRX(ctx context.Context, rx *store.GatewayPin
 		rx.Altitude,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	return nil
@@ -1047,7 +1037,7 @@ func (ps *pgstore) DeleteAllGatewaysForOrganizationID(ctx context.Context, organ
 	var gws []store.Gateway
 	err := sqlx.SelectContext(ctx, ps.db, &gws, "select * from gateway where organization_id = $1", organizationID)
 	if err != nil {
-		return errors.Wrap(err, "select error")
+		return handlePSQLError(Select, err, "select error")
 	}
 
 	for _, gw := range gws {
@@ -1082,7 +1072,7 @@ func (ps *pgstore) GetGatewayPingRXForPingID(ctx context.Context, pingID int64) 
 
 	err := sqlx.SelectContext(ctx, ps.db, &rx, "select * from gateway_ping_rx where ping_id = $1", pingID)
 	if err != nil {
-		return nil, errors.Wrap(err, "select error")
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	return rx, nil
@@ -1111,4 +1101,33 @@ func (ps *pgstore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI6
 	}
 
 	return ping, rx, nil
+}
+
+// GetGatewaysActiveInactive returns the active / inactive gateways.
+func (ps *pgstore) GetGatewaysActiveInactive(ctx context.Context, organizationID int64) (store.GatewaysActiveInactive, error) {
+	var out store.GatewaysActiveInactive
+	err := sqlx.GetContext(ctx, ps.db, &out, `
+		with gateway_active_inactive as (
+			select
+				g.last_seen_at as last_seen_at,
+				make_interval(secs => coalesce(gp.stats_interval / 1000000000, 30)) * 1.5 as stats_interval
+			from
+				gateway g
+			left join gateway_profile gp
+				on g.gateway_profile_id = gp.gateway_profile_id
+			where
+				$1 = 0 or g.organization_id = $1
+		)
+		select
+			coalesce(sum(case when last_seen_at is null then 1 end), 0) as never_seen_count,
+			coalesce(sum(case when (now() - stats_interval) > last_seen_at then 1 end), 0) as inactive_count,
+			coalesce(sum(case when (now() - stats_interval) <= last_seen_at then 1 end), 0) as active_count
+		from
+			gateway_active_inactive
+	`, organizationID)
+	if err != nil {
+		return out, errors.Wrap(err, "get gateway active/inactive count error")
+	}
+
+	return out, nil
 }

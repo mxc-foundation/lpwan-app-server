@@ -3,6 +3,7 @@ package pgstore
 import (
 	"context"
 	"database/sql"
+	"github.com/golang/protobuf/ptypes"
 	"strings"
 	"time"
 
@@ -85,23 +86,33 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *store.GatewayPr
 	gp.CreatedAt = now
 	gp.UpdatedAt = now
 
+	var statsInterval time.Duration
+	if gp.GatewayProfile.StatsInterval != nil {
+		statsInterval, err = ptypes.Duration(gp.GatewayProfile.StatsInterval)
+		if err != nil {
+			return errors.Wrap(err, "stats interval error")
+		}
+	}
+
 	_, err = ps.db.ExecContext(ctx, `
 		insert into gateway_profile (
 			gateway_profile_id,
 			network_server_id,
 			created_at,
 			updated_at,
-			name
-		) values ($1, $2, $3, $4, $5)`,
+			name,
+			stats_interval
+		) values ($1, $2, $3, $4, $5, $6)`,
 
 		gpID,
 		gp.NetworkServerID,
 		gp.CreatedAt,
 		gp.UpdatedAt,
 		gp.Name,
+		statsInterval,
 	)
 	if err != nil {
-		return err
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	n, err := ps.GetNetworkServer(ctx, gp.NetworkServerID)
@@ -150,7 +161,7 @@ func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (store.G
 		id,
 	)
 	if err != nil {
-		return gp, err
+		return gp, handlePSQLError(Select, err, "select error")
 	}
 
 	n, err := ps.GetNetworkServer(ctx, gp.NetworkServerID)
@@ -193,21 +204,31 @@ func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *store.GatewayPr
 		return errors.Wrap(err, "uuid from bytes error")
 	}
 
+	var statsInterval time.Duration
+	if gp.GatewayProfile.StatsInterval != nil {
+		statsInterval, err = ptypes.Duration(gp.GatewayProfile.StatsInterval)
+		if err != nil {
+			return errors.Wrap(err, "stats interval error")
+		}
+	}
+
 	res, err := ps.db.ExecContext(ctx, `
 		update gateway_profile
 		set
 			updated_at = $2,
 			network_server_id = $3,
-			name = $4
+			name = $4,
+			stats_interval = $5
 		where
 			gateway_profile_id = $1`,
 		gpID,
 		gp.UpdatedAt,
 		gp.NetworkServerID,
 		gp.Name,
+		statsInterval,
 	)
 	if err != nil {
-		return err
+		return handlePSQLError(Update, err, "update gateway-profile error")
 	}
 
 	ra, err := res.RowsAffected()
@@ -215,7 +236,7 @@ func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *store.GatewayPr
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	n, err := ps.GetNetworkServer(ctx, gp.NetworkServerID)
@@ -258,7 +279,7 @@ func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
 		id,
 	)
 	if err != nil {
-		return err
+		return handlePSQLError(Delete, err, "delete gateway-profile error")
 	}
 
 	ra, err := res.RowsAffected()
@@ -266,7 +287,7 @@ func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	nsStruct := nscli.NSStruct{
@@ -300,7 +321,7 @@ func (ps *pgstore) GetGatewayProfileCount(ctx context.Context) (int, error) {
 		if err == sql.ErrNoRows {
 			return 0, store.ErrDoesNotExist
 		}
-		return 0, err
+		return 0, handlePSQLError(Select, err, "select error")
 	}
 
 	return count, nil
@@ -319,7 +340,7 @@ func (ps *pgstore) GetGatewayProfileCountForNetworkServerID(ctx context.Context,
 		networkServerID,
 	)
 	if err != nil {
-		return 0, err
+		return 0, handlePSQLError(Select, err, "select error")
 	}
 
 	return count, nil
@@ -345,7 +366,7 @@ func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([
 		offset,
 	)
 	if err != nil {
-		return nil, err
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	return gps, nil
@@ -375,7 +396,7 @@ func (ps *pgstore) GetGatewayProfilesForNetworkServerID(ctx context.Context, net
 		offset,
 	)
 	if err != nil {
-		return nil, err
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	return gps, nil

@@ -38,11 +38,11 @@ import (
 
 func SetupCusAPI(grpcServer *grpc.Server, rpID uuid.UUID) error {
 	jwtValidator := jwt.NewJWTValidator("HS256", []byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
-	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, pgstore.New(storage.DB().DB.DB))
+	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, pgstore.New(storage.DBTest().DB.DB))
 	if err != nil {
 		return err
 	}
-	authcus.SetupCred(authPg.New(storage.DB().DB), jwtValidator, otpValidator)
+	authcus.SetupCred(authPg.New(storage.DBTest().DB), jwtValidator, otpValidator)
 
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, fuotamod.NewFUOTADeploymentAPI())
 	pb.RegisterDeviceQueueServiceServer(grpcServer, device.NewDeviceQueueAPI())
