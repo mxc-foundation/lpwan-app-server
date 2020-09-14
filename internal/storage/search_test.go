@@ -25,7 +25,7 @@ func TestSearch(t *testing.T) {
 	networkserver.SetPool(mock.NewPool(nsClient))
 
 	Convey("Given a clean database with test-data", t, func() {
-		test.MustResetDB(DB().DB)
+		test.MustResetDB(DBTest().DB)
 
 		u := User{
 			Email: "test@example.com",

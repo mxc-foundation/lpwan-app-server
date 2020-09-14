@@ -13,8 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // defaultSessionTTL defines the default session TTL
@@ -137,24 +135,6 @@ func getTokenFromContext(ctx context.Context) (string, error) {
 // GetSubject returns the claim subject.
 func (v JWTValidator) GetSubject(ctx context.Context) (string, error) {
 	return "user", nil
-}
-
-// GetUser returns the user object.
-func (v JWTValidator) GetUser(ctx context.Context) (storage.User, error) {
-	claims, err := v.GetClaims(ctx, "")
-	if err != nil {
-		return storage.User{}, err
-	}
-
-	if claims.UserID != 0 {
-		return storage.GetUser(ctx, storage.DB().DB, claims.UserID)
-	}
-
-	if claims.Username != "" {
-		return storage.GetUserByEmail(ctx, storage.DB().DB, claims.Username)
-	}
-
-	return storage.User{}, errors.New("no username or user_id in claims")
 }
 
 // GetAPIKeyID returns the API key ID.

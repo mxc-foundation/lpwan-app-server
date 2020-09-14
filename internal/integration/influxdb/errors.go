@@ -1,8 +1,10 @@
 package influxdb
 
-import "errors"
+import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/errors"
+)
 
 // errors
 var (
-	ErrInvalidPrecision = errors.New("invalid precision value")
+	ErrInvalidPrecision = errors.ErrInvalidPrecision
 )

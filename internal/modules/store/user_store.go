@@ -10,7 +10,7 @@ import (
 )
 
 type UserStore interface {
-	CreateUser(ctx context.Context, user *User, pwh *pwhash.PasswordHasher) error
+	CreateUser(ctx context.Context, user *User) error
 	GetUser(ctx context.Context, id int64) (User, error)
 	GetUserByExternalID(ctx context.Context, externalID string) (User, error)
 	GetUserByUsername(ctx context.Context, userEmail string) (User, error)
@@ -19,7 +19,7 @@ type UserStore interface {
 	GetUsers(ctx context.Context, limit, offset int) ([]User, error)
 	UpdateUser(ctx context.Context, u *User) error
 	DeleteUser(ctx context.Context, id int64) error
-	LoginUserByPassword(ctx context.Context, userEmail string, password string, pwh *pwhash.PasswordHasher) error
+	LoginUserByPassword(ctx context.Context, userEmail string, password string) error
 	GetProfile(ctx context.Context, id int64) (UserProfile, error)
 	GetUserToken(ctx context.Context, u User) (string, error)
 	RegisterUser(ctx context.Context, user *User, token string) error
@@ -45,8 +45,8 @@ type UserStore interface {
 	CheckUpdatePasswordUserAccess(ctx context.Context, userEmail string, userID, operatorUserID int64) (bool, error)
 }
 
-func (h *Handler) CreateUser(ctx context.Context, user *User, pwh *pwhash.PasswordHasher) error {
-	return h.store.CreateUser(ctx, user, pwh)
+func (h *Handler) CreateUser(ctx context.Context, user *User) error {
+	return h.store.CreateUser(ctx, user)
 }
 func (h *Handler) GetUser(ctx context.Context, id int64) (User, error) {
 	return h.store.GetUser(ctx, id)
@@ -72,8 +72,8 @@ func (h *Handler) UpdateUser(ctx context.Context, u *User) error {
 func (h *Handler) DeleteUser(ctx context.Context, id int64) error {
 	return h.store.DeleteUser(ctx, id)
 }
-func (h *Handler) LoginUserByPassword(ctx context.Context, userEmail string, password string, pwh *pwhash.PasswordHasher) error {
-	return h.store.LoginUserByPassword(ctx, userEmail, password, pwh)
+func (h *Handler) LoginUserByPassword(ctx context.Context, userEmail string, password string) error {
+	return h.store.LoginUserByPassword(ctx, userEmail, password)
 }
 func (h *Handler) GetProfile(ctx context.Context, id int64) (UserProfile, error) {
 	return h.store.GetProfile(ctx, id)
@@ -144,7 +144,7 @@ type UserProfile struct {
 // UserProfileUser contains the user information of the profile.
 type UserProfileUser struct {
 	ID         int64     `db:"id"`
-	UserEmail  string    `db:"email"`
+	Email      string    `db:"email"`
 	IsAdmin    bool      `db:"is_admin"`
 	IsActive   bool      `db:"is_active"`
 	SessionTTL int32     `db:"session_ttl"`
@@ -174,12 +174,21 @@ type User struct {
 	UpdatedAt     time.Time `db:"updated_at"`
 	Password      string
 	PasswordHash  string  `db:"password_hash"`
-	UserEmail     string  `db:"email"`
+	Email         string  `db:"email"`
 	EmailVerified bool    `db:"email_verified"`
 	EmailOld      string  `db:"email_old"`
 	Note          string  `db:"note"`
 	ExternalID    *string `db:"external_id"` // must be pointer for unique index
 	SecurityToken *string `db:"security_token"`
+}
+
+// Validate validates the user data.
+func (u User) Validate() error {
+	if !emailValidator.MatchString(u.Email) {
+		return ErrInvalidEmail
+	}
+
+	return nil
 }
 
 const (
@@ -196,19 +205,6 @@ var (
 	// Must contain @ (this is far from perfect)
 	emailValidator = regexp.MustCompile(`.+@.+`)
 )
-
-// Validate validates the user data.
-func (u *User) Validate() error {
-	if u.UserEmail == "" || !emailValidator.MatchString(u.UserEmail) {
-		return errors.New("invalid email")
-	}
-
-	if u.Password != "" && !passwordValidator.MatchString(u.Password) {
-		return errors.New("invalid password")
-	}
-
-	return nil
-}
 
 func ValidatePassword(password string) error {
 	if !passwordValidator.MatchString(password) {

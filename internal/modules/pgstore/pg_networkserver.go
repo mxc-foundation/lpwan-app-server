@@ -2,7 +2,6 @@ package pgstore
 
 import (
 	"context"
-	"database/sql"
 	"strings"
 	"time"
 
@@ -214,7 +213,7 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *store.NetworkServ
 		n.Version,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	nsStruct := nscli.NSStruct{
@@ -257,13 +256,13 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *store.NetworkServ
 
 // GetNetworkServer returns the network-server matching the given id.
 func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (store.NetworkServer, error) {
-	var ns store.NetworkServer
-	err := sqlx.GetContext(ctx, ps.db, &ns, "select * from network_server where id = $1", id)
+	var networkServer store.NetworkServer
+	err := sqlx.GetContext(ctx, ps.db, &networkServer, "select * from network_server where id = $1", id)
 	if err != nil {
-		return ns, errors.Wrap(err, "select error")
+		return networkServer, handlePSQLError(Select, err, "select error")
 	}
 
-	return ns, nil
+	return networkServer, nil
 }
 
 // UpdateNetworkServer updates the given network-server.
@@ -307,7 +306,7 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *store.NetworkServ
 		n.GatewayDiscoveryDR,
 	)
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 
 	ra, err := res.RowsAffected()
@@ -315,7 +314,7 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *store.NetworkServ
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	nsStruct := nscli.NSStruct{
@@ -365,7 +364,7 @@ func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 
 	res, err := ps.db.ExecContext(ctx, "delete from network_server where id = $1", id)
 	if err != nil {
-		return errors.Wrap(err, "delete error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
@@ -406,11 +405,23 @@ func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 }
 
 // GetNetworkServerCount returns the total number of network-servers.
-func (ps *pgstore) GetNetworkServerCount(ctx context.Context) (int, error) {
-	var count int
-	err := sqlx.GetContext(ctx, ps.db, &count, "select count(*) from network_server")
+func (ps *pgstore) GetNetworkServerCount(ctx context.Context, filters store.NetworkServerFilters) (int, error) {
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
+		select
+			count(distinct ns.id)
+		from
+			network_server ns
+		left join service_profile sp
+			on ns.id = sp.network_server_id
+	`+filters.SQL(), filters)
 	if err != nil {
-		return 0, errors.Wrap(err, "select error")
+		return 0, errors.Wrap(err, "named query error")
+	}
+
+	var count int
+	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
 	}
 
 	return count, nil
@@ -440,21 +451,27 @@ func (ps *pgstore) GetNetworkServerCountForOrganizationID(ctx context.Context, o
 }
 
 // GetNetworkServers returns a slice of network-servers.
-func (ps *pgstore) GetNetworkServers(ctx context.Context, limit, offset int) ([]store.NetworkServer, error) {
-	var nss []store.NetworkServer
-	err := sqlx.SelectContext(ctx, ps.db, &nss, `
-		select *
-		from network_server
-		order by name
-		limit $1 offset $2`,
-		limit,
-		offset,
-	)
+func (ps *pgstore) GetNetworkServers(ctx context.Context, filters store.NetworkServerFilters) ([]store.NetworkServer, error) {
+	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
+		select
+			distinct ns.*
+		from
+			network_server ns
+		left join service_profile sp
+			on ns.id = sp.network_server_id
+	`+filters.SQL()+`
+		order by ns.name
+		limit :limit
+		offset :offset
+	`, filters)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.ErrDoesNotExist
-		}
-		return nil, errors.Wrap(err, "select error")
+		return nil, errors.Wrap(err, "named query error")
+	}
+
+	var nss []store.NetworkServer
+	err = sqlx.SelectContext(ctx, ps.db, &nss, query, args...)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	return nss, nil
@@ -506,7 +523,7 @@ func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan
 		devEUI,
 	)
 	if err != nil {
-		return n, errors.Wrap(err, "select error")
+		return n, handlePSQLError(Select, err, "select error")
 	}
 	return n, nil
 }
@@ -532,27 +549,6 @@ func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uu
 	return n, nil
 }
 
-// GetNetworkServerForServiceProfileID returns the network-server for the given
-// service-profile id.
-func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (store.NetworkServer, error) {
-	var n store.NetworkServer
-	err := sqlx.GetContext(ctx, ps.db, &n, `
-		select
-			ns.*
-		from
-			network_server ns
-		inner join service_profile sp
-			on sp.network_server_id = ns.id
-		where
-			sp.service_profile_id = $1`,
-		id,
-	)
-	if err != nil {
-		return n, errors.Wrap(err, "select error")
-	}
-	return n, nil
-}
-
 // GetNetworkServerForGatewayMAC returns the network-server for a given
 // gateway mac.
 func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (store.NetworkServer, error) {
@@ -568,7 +564,7 @@ func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawa
 		mac[:],
 	)
 	if err != nil {
-		return n, errors.Wrap(err, "select error")
+		return n, handlePSQLError(Select, err, "select error")
 	}
 	return n, nil
 }
@@ -589,7 +585,7 @@ func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id u
 		id,
 	)
 	if err != nil {
-		return n, errors.Wrap(err, "select errror")
+		return n, handlePSQLError(Select, err, "select errror")
 	}
 	return n, nil
 }
@@ -611,7 +607,28 @@ func (ps *pgstore) GetNetworkServerForMulticastGroupID(ctx context.Context, id u
 			mg.id = $1
 	`, id)
 	if err != nil {
-		return n, errors.Wrap(err, "select error")
+		return n, handlePSQLError(Select, err, "select error")
+	}
+	return n, nil
+}
+
+// GetNetworkServerForServiceProfileID returns the network-server for the given
+// service-profile id.
+func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (store.NetworkServer, error) {
+	var n store.NetworkServer
+	err := sqlx.GetContext(ctx, ps.db, &n, `
+		select
+			ns.*
+		from
+			network_server ns
+		inner join service_profile sp
+			on sp.network_server_id = ns.id
+		where
+			sp.service_profile_id = $1`,
+		id,
+	)
+	if err != nil {
+		return n, handlePSQLError(Select, err, "select error")
 	}
 	return n, nil
 }

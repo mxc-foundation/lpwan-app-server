@@ -62,7 +62,7 @@ func TestServiceProfile(t *testing.T) {
 	networkserver.SetPool(mock.NewPool(nsClient))
 
 	Convey("Given a clean database with organization and network-server", t, func() {
-		test.MustResetDB(DB().DB)
+		test.MustResetDB(DBTest().DB)
 
 		org := Organization{
 			Name: "test-org",

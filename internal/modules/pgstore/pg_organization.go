@@ -371,7 +371,7 @@ func (ps *pgstore) CreateOrganization(ctx context.Context, org *store.Organizati
 		org.MaxDeviceCount,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 	org.CreatedAt = now
 	org.UpdatedAt = now
@@ -394,13 +394,17 @@ func (ps *pgstore) GetOrganization(ctx context.Context, id int64, forUpdate bool
 	var org store.Organization
 	err := sqlx.GetContext(ctx, ps.db, &org, "select * from organization where id = $1"+fu, id)
 	if err != nil {
-		return org, errors.Wrap(err, "select error")
+		return org, handlePSQLError(Select, err, "select error")
 	}
 	return org, nil
 }
 
 // GetOrganizationCount returns the total number of organizations.
 func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters store.OrganizationFilters) (int, error) {
+	if filters.Search != "" {
+		filters.Search = "%" + filters.Search + "%"
+	}
+
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct o.*)
@@ -418,7 +422,7 @@ func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters store.Organ
 	var count int
 	err = sqlx.GetContext(ctx, ps.db, &count, query, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "select error")
+		return 0, handlePSQLError(Select, err, "select error")
 	}
 
 	return count, nil
@@ -426,6 +430,10 @@ func (ps *pgstore) GetOrganizationCount(ctx context.Context, filters store.Organ
 
 // GetOrganizations returns a slice of organizations, sorted by name.
 func (ps *pgstore) GetOrganizations(ctx context.Context, filters store.OrganizationFilters) ([]store.Organization, error) {
+	if filters.Search != "" {
+		filters.Search = "%" + filters.Search + "%"
+	}
+
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			o.*
@@ -450,7 +458,7 @@ func (ps *pgstore) GetOrganizations(ctx context.Context, filters store.Organizat
 	var orgs []store.Organization
 	err = sqlx.SelectContext(ctx, ps.db, &orgs, query, args...)
 	if err != nil {
-		return nil, errors.Wrap(err, "select error")
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 
 	return orgs, nil
@@ -483,14 +491,14 @@ func (ps *pgstore) UpdateOrganization(ctx context.Context, org *store.Organizati
 	)
 
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	org.UpdatedAt = now
@@ -504,16 +512,31 @@ func (ps *pgstore) UpdateOrganization(ctx context.Context, org *store.Organizati
 
 // DeleteOrganization deletes the organization matching the given id.
 func (ps *pgstore) DeleteOrganization(ctx context.Context, id int64) error {
+	err := ps.DeleteAllApplicationsForOrganizationID(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "delete all applications error")
+	}
+
+	err = ps.DeleteAllServiceProfilesForOrganizationID(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "delete all service-profiles error")
+	}
+
+	err = ps.DeleteAllDeviceProfilesForOrganizationID(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "delete all device-profiles error")
+	}
+
 	res, err := ps.db.ExecContext(ctx, "delete from organization where id = $1", id)
 	if err != nil {
-		return errors.Wrap(err, "delete error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -524,16 +547,8 @@ func (ps *pgstore) DeleteOrganization(ctx context.Context, id int64) error {
 }
 
 // CreateOrganizationUser adds the given user to the organization.
-func (ps *pgstore) CreateOrganizationUser(ctx context.Context, organizationID int64, username string, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
-	var userID int64
-	err := ps.db.QueryRowContext(ctx, `
-		select id from public.user where email = $1;
-	`, username).Scan(&userID)
-	if err != nil {
-		return errors.Wrap(err, "select error")
-	}
-
-	_, err = ps.db.ExecContext(ctx, `
+func (ps *pgstore) CreateOrganizationUser(ctx context.Context, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
+	_, err := ps.db.ExecContext(ctx, `
 		insert into organization_user (
 			organization_id,
 			user_id,
@@ -550,11 +565,10 @@ func (ps *pgstore) CreateOrganizationUser(ctx context.Context, organizationID in
 		isGatewayAdmin,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
-		"email":            username,
 		"user id":          userID,
 		"organization_id":  organizationID,
 		"is_admin":         isAdmin,
@@ -579,14 +593,14 @@ func (ps *pgstore) UpdateOrganizationUser(ctx context.Context, organizationID, u
 			and user_id = $2
 	`, organizationID, userID, isAdmin, isDeviceAdmin, isGatewayAdmin)
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -604,14 +618,14 @@ func (ps *pgstore) UpdateOrganizationUser(ctx context.Context, organizationID, u
 func (ps *pgstore) DeleteOrganizationUser(ctx context.Context, organizationID, userID int64) error {
 	res, err := ps.db.ExecContext(ctx, `delete from organization_user where organization_id = $1 and user_id = $2`, organizationID, userID)
 	if err != nil {
-		return errors.Wrap(err, "delete error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("ErrDoesNotExist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -644,7 +658,7 @@ func (ps *pgstore) GetOrganizationUser(ctx context.Context, organizationID, user
 		userID,
 	)
 	if err != nil {
-		return u, errors.Wrap(err, "select error")
+		return u, handlePSQLError(Select, err, "select error")
 	}
 	return u, nil
 }
@@ -660,7 +674,7 @@ func (ps *pgstore) GetOrganizationUserCount(ctx context.Context, organizationID 
 		organizationID,
 	)
 	if err != nil {
-		return count, errors.Wrap(err, "select error")
+		return count, handlePSQLError(Select, err, "select error")
 	}
 	return count, nil
 }
@@ -689,7 +703,7 @@ func (ps *pgstore) GetOrganizationUsers(ctx context.Context, organizationID int6
 		offset,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "select error")
+		return nil, handlePSQLError(Select, err, "select error")
 	}
 	return users, nil
 }

@@ -42,19 +42,19 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 		SessionTTL: req.User.SessionTtl,
 		IsAdmin:    req.User.IsAdmin,
 		IsActive:   req.User.IsActive,
-		UserEmail:  req.User.Email,
+		Email:      req.User.Email,
 		Note:       req.User.Note,
 		Password:   req.Password,
 	}
 
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		err := handler.CreateUser(ctx, &user, Service.pwh)
+		err := handler.CreateUser(ctx, &user)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
 
 		for _, org := range req.Organizations {
-			if err := handler.CreateOrganizationUser(ctx, org.OrganizationId, user.UserEmail,
+			if err := handler.CreateOrganizationUser(ctx, org.OrganizationId, user.ID,
 				org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
 				return status.Errorf(codes.Unknown, "%v", err)
 			}
@@ -85,7 +85,7 @@ func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetU
 			SessionTtl: user.SessionTTL,
 			IsAdmin:    user.IsAdmin,
 			IsActive:   user.IsActive,
-			Username:   user.UserEmail,
+			Username:   user.Email,
 			Email:      user.EmailOld,
 			Note:       user.Note,
 		},
@@ -143,7 +143,7 @@ func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Li
 
 	for _, u := range users {
 		row := inpb.UserListItem{
-			Username:   u.UserEmail,
+			Username:   u.Email,
 			Id:         u.ID,
 			SessionTtl: u.SessionTTL,
 			IsAdmin:    u.IsAdmin,
@@ -183,7 +183,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 	user.IsAdmin = req.User.IsAdmin
 	user.IsActive = req.User.IsActive
 	user.SessionTTL = req.User.SessionTtl
-	user.UserEmail = req.User.Username
+	user.Email = req.User.Username
 	user.Note = req.User.Note
 
 	err = a.st.UpdateUser(ctx, &user)

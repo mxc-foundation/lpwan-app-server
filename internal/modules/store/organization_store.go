@@ -15,7 +15,7 @@ type OrganizationStore interface {
 	GetOrganizations(ctx context.Context, filters OrganizationFilters) ([]Organization, error)
 	UpdateOrganization(ctx context.Context, org *Organization) error
 	DeleteOrganization(ctx context.Context, id int64) error
-	CreateOrganizationUser(ctx context.Context, organizationID int64, username string, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error
+	CreateOrganizationUser(ctx context.Context, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error
 	UpdateOrganizationUser(ctx context.Context, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error
 	DeleteOrganizationUser(ctx context.Context, organizationID, userID int64) error
 	GetOrganizationUser(ctx context.Context, organizationID, userID int64) (OrganizationUser, error)
@@ -57,8 +57,8 @@ func (h *Handler) UpdateOrganization(ctx context.Context, org *Organization) err
 func (h *Handler) DeleteOrganization(ctx context.Context, id int64) error {
 	return h.store.DeleteOrganization(ctx, id)
 }
-func (h *Handler) CreateOrganizationUser(ctx context.Context, organizationID int64, username string, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
-	return h.store.CreateOrganizationUser(ctx, organizationID, username, isAdmin, isDeviceAdmin, isGatewayAdmin)
+func (h *Handler) CreateOrganizationUser(ctx context.Context, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
+	return h.store.CreateOrganizationUser(ctx, organizationID, userID, isAdmin, isDeviceAdmin, isGatewayAdmin)
 }
 func (h *Handler) UpdateOrganizationUser(ctx context.Context, organizationID, userID int64, isAdmin, isDeviceAdmin, isGatewayAdmin bool) error {
 	return h.store.UpdateOrganizationUser(ctx, organizationID, userID, isAdmin, isDeviceAdmin, isGatewayAdmin)

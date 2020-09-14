@@ -23,3 +23,17 @@ func Setup(s store.Store) (err error) {
 
 	return nil
 }
+
+func SetUserPassword(user *store.User, pw string) error {
+	pwHash, err := Service.pwh.HashPassword(pw)
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = pwHash
+	return nil
+}
+
+func VerifyUserPassword(pw string, pwHash string) error {
+	return Service.pwh.Validate(pw, pwHash)
+}

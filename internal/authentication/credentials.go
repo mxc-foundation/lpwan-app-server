@@ -20,8 +20,8 @@ type Store interface {
 
 /*// Credentials provides methods to assert the user's Credentials
 type Credentials interface {
-	// UserEmail returns user's username
-	UserEmail() string
+	// Email returns user's username
+	Email() string
 	// UserID returns id of the user
 	UserID() int64
 	// IsGlobalAdmin returns an error if user is not global admin

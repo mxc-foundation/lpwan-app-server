@@ -117,14 +117,15 @@ func (ts *StorageTestSuite) TestRemoteMulticastSetup() {
 
 			// start a new transaction and make sure that we do not get the locked
 			// items in the result-set.
-			newTX, err := DB().Beginx()
+			ctx := context.Background()
+			newTX, err := DB().TxBegin(ctx)
 			assert.NoError(err)
 
 			items, err = GetPendingRemoteMulticastSetupItems(context.Background(), newTX, 10, 2)
 			assert.NoError(err)
 			assert.Len(items, 0)
 
-			assert.NoError(newTX.Rollback())
+			assert.NoError(newTX.TxRollback(ctx))
 		})
 
 		t.Run("Update", func(t *testing.T) {

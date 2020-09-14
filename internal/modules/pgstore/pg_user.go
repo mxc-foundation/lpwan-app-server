@@ -15,6 +15,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	usermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 )
 
@@ -225,19 +226,18 @@ func (ps *pgstore) CheckUpdateProfileUserAccess(ctx context.Context, userEmail s
 }
 
 // CreateUser creates the given user.
-func (ps *pgstore) CreateUser(ctx context.Context, user *store.User, pwh *pwhash.PasswordHasher) error {
+func (ps *pgstore) CreateUser(ctx context.Context, user *store.User) error {
 	if err := user.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := pwh.HashPassword(user.Password)
+	err := usermod.SetUserPassword(user, user.Password)
 	if err != nil {
 		return err
 	}
 
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-	user.PasswordHash = pwHash
 
 	err = sqlx.GetContext(ctx, ps.db, &user.ID, `
 		insert into "user" (
@@ -262,13 +262,13 @@ func (ps *pgstore) CreateUser(ctx context.Context, user *store.User, pwh *pwhash
 		user.CreatedAt,
 		user.UpdatedAt,
 		user.PasswordHash,
-		user.UserEmail,
+		user.Email,
 		user.EmailVerified,
 		user.Note,
 		user.ExternalID,
 	)
 	if err != nil {
-		return errors.Wrap(err, "insert error")
+		return handlePSQLError(Insert, err, "insert error")
 	}
 
 	var externalID string
@@ -279,7 +279,7 @@ func (ps *pgstore) CreateUser(ctx context.Context, user *store.User, pwh *pwhash
 	log.WithFields(log.Fields{
 		"id":          user.ID,
 		"external_id": externalID,
-		"email":       user.UserEmail,
+		"email":       user.Email,
 		"ctx_id":      ctx.Value(logging.ContextIDKey),
 	}).Info("storage: user created")
 
@@ -396,20 +396,20 @@ func (ps *pgstore) UpdateUser(ctx context.Context, u *store.User) error {
 		u.IsAdmin,
 		u.IsActive,
 		u.SessionTTL,
-		u.UserEmail,
+		u.Email,
 		u.EmailVerified,
 		u.Note,
 		u.ExternalID,
 	)
 	if err != nil {
-		return errors.Wrap(err, "update error")
+		return handlePSQLError(Update, err, "update error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	var extUser string
@@ -442,7 +442,7 @@ func (ps *pgstore) DeleteUser(ctx context.Context, id int64) error {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -479,7 +479,7 @@ func (ps *pgstore) UpdatePassword(ctx context.Context, id int64, newpassword str
 }
 
 // LoginUserByPassword checks the password for the user matching the given email
-func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, password string, pwh *pwhash.PasswordHasher) error {
+func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, password string) error {
 	// get the user by userEmail
 	var user store.User
 	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
@@ -491,7 +491,7 @@ func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, pa
 	}
 
 	// Compare the passed in password with the hash in the database.
-	if err := pwh.Validate(password, user.PasswordHash); err != nil {
+	if err := usermod.VerifyUserPassword(password, user.PasswordHash); err != nil {
 		return errors.Wrap(err, "password doesn't match email")
 	}
 
@@ -509,7 +509,7 @@ func (ps *pgstore) GetProfile(ctx context.Context, id int64) (store.UserProfile,
 	}
 	prof.User = store.UserProfileUser{
 		ID:         user.ID,
-		UserEmail:  user.UserEmail,
+		Email:      user.Email,
 		SessionTTL: user.SessionTTL,
 		IsAdmin:    user.IsAdmin,
 		IsActive:   user.IsActive,
@@ -558,7 +558,7 @@ func (ps *pgstore) GetUserToken(ctx context.Context, u store.User) (string, erro
 		"exp":   expSecondsSinceEpoch,
 		"sub":   "user",
 		"id":    u.ID,
-		"email": u.UserEmail, // backwards compatibility
+		"email": u.Email, // backwards compatibility
 	})
 
 	jwt, err := token.SignedString([]byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
@@ -590,7 +590,7 @@ func (ps *pgstore) RegisterUser(ctx context.Context, user *store.User, token str
 			external_id,
 			security_token)
 		values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)	returning id`,
-		user.UserEmail,
+		user.Email,
 		user.IsAdmin,
 		user.IsActive,
 		user.SessionTTL,
@@ -606,7 +606,7 @@ func (ps *pgstore) RegisterUser(ctx context.Context, user *store.User, token str
 	}
 
 	log.WithFields(log.Fields{
-		"email":       user.UserEmail,
+		"email":       user.Email,
 		"session_ttl": user.SessionTTL,
 		"is_admin":    user.IsAdmin,
 	}).Info("Registration: user created")

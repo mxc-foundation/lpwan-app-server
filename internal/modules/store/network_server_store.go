@@ -2,7 +2,7 @@ package store
 
 import (
 	"context"
-	"errors"
+	"strings"
 	"time"
 
 	"github.com/brocaar/lorawan"
@@ -14,12 +14,11 @@ type NetworkServerStore interface {
 	GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error)
 	UpdateNetworkServer(ctx context.Context, n *NetworkServer) error
 	DeleteNetworkServer(ctx context.Context, id int64) error
-	GetNetworkServerCount(ctx context.Context) (int, error)
+	GetNetworkServerCount(ctx context.Context, filters NetworkServerFilters) (int, error)
 	GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error)
-	GetNetworkServers(ctx context.Context, limit, offset int) ([]NetworkServer, error)
+	GetNetworkServers(ctx context.Context, filters NetworkServerFilters) ([]NetworkServer, error)
 	GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error)
 	GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error)
-	GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
 	GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
 	GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error)
 	GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
@@ -46,23 +45,20 @@ func (h *Handler) UpdateNetworkServer(ctx context.Context, n *NetworkServer) err
 func (h *Handler) DeleteNetworkServer(ctx context.Context, id int64) error {
 	return h.store.DeleteNetworkServer(ctx, id)
 }
-func (h *Handler) GetNetworkServerCount(ctx context.Context) (int, error) {
-	return h.store.GetNetworkServerCount(ctx)
+func (h *Handler) GetNetworkServerCount(ctx context.Context, filters NetworkServerFilters) (int, error) {
+	return h.store.GetNetworkServerCount(ctx, filters)
 }
 func (h *Handler) GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
 	return h.store.GetNetworkServerCountForOrganizationID(ctx, organizationID)
 }
-func (h *Handler) GetNetworkServers(ctx context.Context, limit, offset int) ([]NetworkServer, error) {
-	return h.store.GetNetworkServers(ctx, limit, offset)
+func (h *Handler) GetNetworkServers(ctx context.Context, filters NetworkServerFilters) ([]NetworkServer, error) {
+	return h.store.GetNetworkServers(ctx, filters)
 }
 func (h *Handler) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error) {
 	return h.store.GetNetworkServersForOrganizationID(ctx, organizationID, limit, offset)
 }
 func (h *Handler) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error) {
 	return h.store.GetNetworkServerForDevEUI(ctx, devEUI)
-}
-func (h *Handler) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
-	return h.store.GetNetworkServerForDeviceProfileID(ctx, id)
 }
 func (h *Handler) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
 	return h.store.GetNetworkServerForServiceProfileID(ctx, id)
@@ -118,8 +114,37 @@ type NetworkServer struct {
 
 // Validate validates the network-server data.
 func (ns NetworkServer) Validate() error {
+	if strings.TrimSpace(ns.Name) == "" || len(ns.Name) > 100 {
+		return ErrNetworkServerInvalidName
+	}
+
 	if ns.GatewayDiscoveryEnabled && ns.GatewayDiscoveryInterval <= 0 {
-		return errors.New("ErrInvalidGatewayDiscoveryInterval")
+		return ErrInvalidGatewayDiscoveryInterval
 	}
 	return nil
+}
+
+// NetworkServerFilters provides filters for filtering network-servers.
+type NetworkServerFilters struct {
+	OrganizationID int64 `db:"organization_id"`
+
+	// Limit and Offset are added for convenience so that this struct can
+	// be given as the arguments.
+	Limit  int `db:"limit"`
+	Offset int `db:"offset"`
+}
+
+// SQL returns the SQL filters.
+func (f NetworkServerFilters) SQL() string {
+	var filters []string
+
+	if f.OrganizationID != 0 {
+		filters = append(filters, "sp.organization_id = :organization_id")
+	}
+
+	if len(filters) == 0 {
+		return ""
+	}
+
+	return "where " + strings.Join(filters, " and ")
 }

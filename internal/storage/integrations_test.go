@@ -29,12 +29,12 @@ func TestIntegration(t *testing.T) {
 	networkserver.SetPool(mock.NewPool(nsClient))
 
 	Convey("Given a clean database with an organization, network-server, service-profile, and application", t, func() {
-		test.MustResetDB(DB().DB)
+		test.MustResetDB(DBTest().DB)
 
 		org := Organization{
 			Name: "test-org",
 		}
-		So(CreateOrganization(context.Background(), db, &org), ShouldBeNil)
+		So(CreateOrganization(context.Background(), DB(), &org), ShouldBeNil)
 
 		n := NetworkServer{
 			Name:   "test-ns",
@@ -56,7 +56,7 @@ func TestIntegration(t *testing.T) {
 			Name:             "test-app",
 			ServiceProfileID: spID,
 		}
-		So(CreateApplication(context.Background(), db, &app), ShouldBeNil)
+		So(CreateApplication(context.Background(), DB(), &app), ShouldBeNil)
 
 		Convey("When creating an integration", func() {
 			settings := testIntegrationSettings{
@@ -69,12 +69,12 @@ func TestIntegration(t *testing.T) {
 			}
 			intgr.Settings, err = json.Marshal(settings)
 			So(err, ShouldBeNil)
-			So(CreateIntegration(context.Background(), db, &intgr), ShouldBeNil)
+			So(CreateIntegration(context.Background(), DB(), &intgr), ShouldBeNil)
 			intgr.CreatedAt = intgr.CreatedAt.UTC().Truncate(time.Millisecond)
 			intgr.UpdatedAt = intgr.UpdatedAt.UTC().Truncate(time.Millisecond)
 
 			Convey("Then it can be retrieved", func() {
-				i, err := GetIntegration(context.Background(), db, intgr.ID)
+				i, err := GetIntegration(context.Background(), DB(), intgr.ID)
 				So(err, ShouldBeNil)
 
 				var s testIntegrationSettings
@@ -91,7 +91,7 @@ func TestIntegration(t *testing.T) {
 			})
 
 			Convey("Then it can be retrieved by the application ID", func() {
-				i, err := GetIntegrationByApplicationID(context.Background(), db, app.ID, "REST")
+				i, err := GetIntegrationByApplicationID(context.Background(), DB(), app.ID, "REST")
 				So(err, ShouldBeNil)
 
 				var s testIntegrationSettings
@@ -108,7 +108,7 @@ func TestIntegration(t *testing.T) {
 			})
 
 			Convey("Then it can be retrieved by the application id", func() {
-				ints, err := GetIntegrationsForApplicationID(context.Background(), db, app.ID)
+				ints, err := GetIntegrationsForApplicationID(context.Background(), DB(), app.ID)
 				So(err, ShouldBeNil)
 
 				So(ints, ShouldHaveLength, 1)
@@ -119,9 +119,9 @@ func TestIntegration(t *testing.T) {
 				settings.URL = "http://foo.bar/updated"
 				intgr.Settings, err = json.Marshal(settings)
 				So(err, ShouldBeNil)
-				So(UpdateIntegration(context.Background(), db, &intgr), ShouldBeNil)
+				So(UpdateIntegration(context.Background(), DB(), &intgr), ShouldBeNil)
 
-				i, err := GetIntegration(context.Background(), db, intgr.ID)
+				i, err := GetIntegration(context.Background(), DB(), intgr.ID)
 				So(err, ShouldBeNil)
 
 				var s testIntegrationSettings
@@ -130,8 +130,8 @@ func TestIntegration(t *testing.T) {
 			})
 
 			Convey("Then it can be deleted", func() {
-				So(DeleteIntegration(context.Background(), db, intgr.ID), ShouldBeNil)
-				_, err := GetIntegration(context.Background(), db, intgr.ID)
+				So(DeleteIntegration(context.Background(), DB(), intgr.ID), ShouldBeNil)
+				_, err := GetIntegration(context.Background(), DB(), intgr.ID)
 				So(err, ShouldResemble, ErrDoesNotExist)
 			})
 		})

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/require"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
@@ -201,7 +200,7 @@ func (ts *StorageTestSuite) TestNetworkServer() {
 				Id: rpID.Bytes(),
 			}, <-nsClient.DeleteRoutingProfileChan)
 
-			_, err := GetNetworkServer(context.Background(), db, n.ID)
+			_, err := GetNetworkServer(context.Background(), ts.Tx(), n.ID)
 			assert.Equal(ErrDoesNotExist, err)
 		})
 	})

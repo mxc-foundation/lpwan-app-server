@@ -1,8 +1,10 @@
 package http
 
-import "errors"
+import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/errors"
+)
 
 // errors
 var (
-	ErrInvalidHeaderName = errors.New("Invalid header name")
+	ErrInvalidHeaderName = errors.ErrInvalidHeaderName
 )

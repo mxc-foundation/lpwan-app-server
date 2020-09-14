@@ -3,6 +3,7 @@ package pgstore
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -147,21 +148,193 @@ func (ps *pgstore) CheckListServiceProfilesAccess(ctx context.Context, username 
 	return count > 0, nil
 }
 
-// DeleteAllServiceProfilesForOrganizationID deletes all service-profiles
-// given an organization id.
-func (ps *pgstore) DeleteAllServiceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {
-	var sps []store.ServiceProfileMeta
-	err := sqlx.SelectContext(ctx, ps.db, &sps, "select * from service_profile where organization_id = $1", organizationID)
-	if err != nil {
-		return errors.Wrap(err, "select error")
+// CreateServiceProfile creates the given service-profile.
+func (ps *pgstore) CreateServiceProfile(ctx context.Context, sp *store.ServiceProfile) error {
+	if err := sp.Validate(); err != nil {
+		return errors.Wrap(err, "validate error")
 	}
 
-	for _, sp := range sps {
-		err = ps.DeleteServiceProfile(ctx, sp.ServiceProfileID)
-		if err != nil {
-			return errors.Wrap(err, "delete service-profile error")
-		}
+	spID, err := uuid.NewV4()
+	if err != nil {
+		return errors.Wrap(err, "new uuid v4 error")
 	}
+
+	now := time.Now()
+	sp.CreatedAt = now
+	sp.UpdatedAt = now
+	sp.ServiceProfile.Id = spID.Bytes()
+
+	_, err = ps.db.ExecContext(ctx, `
+		insert into service_profile (
+			service_profile_id,
+			network_server_id,
+			organization_id,
+			created_at,
+			updated_at,
+			name
+		) values ($1, $2, $3, $4, $5, $6)`,
+		spID,
+		sp.NetworkServerID,
+		sp.OrganizationID,
+		sp.CreatedAt,
+		sp.UpdatedAt,
+		sp.Name,
+	)
+	if err != nil {
+		return handlePSQLError(Insert, err, "insert error")
+	}
+
+	n, err := ps.GetNetworkServer(ctx, sp.NetworkServerID)
+	if err != nil {
+		return errors.Wrap(err, "get network-server error")
+	}
+
+	// delete device from networkserver
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
+	if err != nil {
+		return errors.Wrap(err, "get network-server client error")
+	}
+	_, err = nsClient.CreateServiceProfile(ctx, &ns.CreateServiceProfileRequest{
+		ServiceProfile: &sp.ServiceProfile,
+	})
+	if err != nil {
+		return errors.Wrap(err, "create service-profile error")
+	}
+
+	log.WithFields(log.Fields{
+		"id":     spID,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
+	}).Info("service-profile created")
+	return nil
+}
+
+// GetServiceProfile returns the service-profile matching the given id.
+func (ps *pgstore) GetServiceProfile(ctx context.Context, id uuid.UUID, localOnly bool) (store.ServiceProfile, error) {
+	var sp store.ServiceProfile
+	row := ps.db.QueryRowxContext(ctx, `
+		select
+			network_server_id,
+			organization_id,
+			created_at,
+			updated_at,
+			name
+		from service_profile
+		where
+			service_profile_id = $1`,
+		id,
+	)
+	if err := row.Err(); err != nil {
+		return sp, handlePSQLError(Select, err, "select error")
+	}
+
+	err := row.Scan(&sp.NetworkServerID, &sp.OrganizationID, &sp.CreatedAt, &sp.UpdatedAt, &sp.Name)
+	if err != nil {
+		return sp, handlePSQLError(Scan, err, "scan error")
+	}
+
+	if localOnly {
+		return sp, nil
+	}
+
+	n, err := ps.GetNetworkServer(ctx, sp.NetworkServerID)
+	if err != nil {
+		return sp, errors.Wrap(err, "get network-server errror")
+	}
+
+	// delete device from networkserver
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
+	if err != nil {
+		return sp, errors.Wrap(err, "get network-server client error")
+	}
+
+	resp, err := nsClient.GetServiceProfile(ctx, &ns.GetServiceProfileRequest{
+		Id: id.Bytes(),
+	})
+	if err != nil {
+		return sp, errors.Wrap(err, "get service-profile error")
+	}
+
+	if resp.ServiceProfile == nil {
+		return sp, errors.New("service_profile must not be nil")
+	}
+
+	sp.ServiceProfile = *resp.ServiceProfile
+
+	return sp, nil
+}
+
+// UpdateServiceProfile updates the given service-profile.
+func (ps *pgstore) UpdateServiceProfile(ctx context.Context, sp *store.ServiceProfile) error {
+	if err := sp.Validate(); err != nil {
+		return errors.Wrap(err, "validate error")
+	}
+
+	spID, err := uuid.FromBytes(sp.ServiceProfile.Id)
+	if err != nil {
+		return errors.Wrap(err, "uuid from bytes error")
+	}
+
+	sp.UpdatedAt = time.Now()
+	res, err := ps.db.ExecContext(ctx, `
+		update service_profile
+		set
+			updated_at = $2,
+			name = $3
+		where service_profile_id = $1`,
+		spID,
+		sp.UpdatedAt,
+		sp.Name,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return store.ErrDoesNotExist
+	}
+
+	n, err := ps.GetNetworkServer(ctx, sp.NetworkServerID)
+	if err != nil {
+		return errors.Wrap(err, "get network-server error")
+	}
+
+	// delete device from networkserver
+	nsStruct := nscli.NSStruct{
+		Server:  n.Server,
+		CACert:  n.CACert,
+		TLSCert: n.TLSCert,
+		TLSKey:  n.TLSKey,
+	}
+	nsClient, err := nsStruct.GetNetworkServiceClient()
+	if err != nil {
+		return errors.Wrap(err, "get network-server client error")
+	}
+	_, err = nsClient.UpdateServiceProfile(ctx, &ns.UpdateServiceProfileRequest{
+		ServiceProfile: &sp.ServiceProfile,
+	})
+	if err != nil {
+		return errors.Wrap(err, "update service-profile error")
+	}
+
+	log.WithFields(log.Fields{
+		"id":     spID,
+		"ctx_id": ctx.Value(logging.ContextIDKey),
+	}).Info("service-profile updated")
 
 	return nil
 }
@@ -186,14 +359,14 @@ func (ps *pgstore) DeleteServiceProfile(ctx context.Context, id uuid.UUID) error
 
 	res, err := ps.db.ExecContext(ctx, "delete from service_profile where service_profile_id = $1", id)
 	if err != nil {
-		return errors.Wrap(err, "select error")
+		return handlePSQLError(Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return errors.New("not exist")
+		return store.ErrDoesNotExist
 	}
 
 	_, err = nsClient.DeleteServiceProfile(ctx, &ns.DeleteServiceProfileRequest{
@@ -207,6 +380,144 @@ func (ps *pgstore) DeleteServiceProfile(ctx context.Context, id uuid.UUID) error
 		"id":     id,
 		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("service-profile deleted")
+
+	return nil
+}
+
+// GetServiceProfileCount returns the total number of service-profiles.
+func (ps *pgstore) GetServiceProfileCount(ctx context.Context) (int, error) {
+	var count int
+	err := sqlx.GetContext(ctx, ps.db, &count, "select count(*) from service_profile")
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+	return count, nil
+}
+
+// GetServiceProfileCountForOrganizationID returns the total number of
+// service-profiles for the given organization id.
+func (ps *pgstore) GetServiceProfileCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
+	var count int
+	err := sqlx.GetContext(ctx, ps.db, &count, "select count(*) from service_profile where organization_id = $1", organizationID)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+	return count, nil
+}
+
+// GetServiceProfileCountForUser returns the total number of service-profiles
+// for the given user ID.
+func (ps *pgstore) GetServiceProfileCountForUser(ctx context.Context, userID int64) (int, error) {
+	var count int
+	err := sqlx.GetContext(ctx, ps.db, &count, `
+		select
+			count(sp.*)
+		from service_profile sp
+		inner join organization o
+			on o.id = sp.organization_id
+		inner join organization_user ou
+			on ou.organization_id = o.id
+		inner join "user" u
+			on u.id = ou.user_id
+		where
+			u.id = $1`,
+		userID,
+	)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+	return count, nil
+}
+
+// GetServiceProfiles returns a slice of service-profiles.
+func (ps *pgstore) GetServiceProfiles(ctx context.Context, limit, offset int) ([]store.ServiceProfileMeta, error) {
+	var sps []store.ServiceProfileMeta
+	err := sqlx.SelectContext(ctx, ps.db, &sps, `
+		select *
+		from service_profile
+		order by name
+		limit $1 offset $2`,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	return sps, nil
+}
+
+// GetServiceProfilesForOrganizationID returns a slice of service-profiles
+// for the given organization id.
+func (ps *pgstore) GetServiceProfilesForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]store.ServiceProfileMeta, error) {
+	var sps []store.ServiceProfileMeta
+	err := sqlx.SelectContext(ctx, ps.db, &sps, `
+		select
+			sp.*,
+			ns.name as network_server_name
+		from
+			service_profile sp
+		inner join network_server ns
+			on sp.network_server_id = ns.id
+		where
+			sp.organization_id = $1
+		order by sp.name
+		limit $2 offset $3`,
+		organizationID,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	return sps, nil
+}
+
+// GetServiceProfilesForUser returns a slice of service-profile for the given
+// user ID.
+func (ps *pgstore) GetServiceProfilesForUser(ctx context.Context, userID int64, limit, offset int) ([]store.ServiceProfileMeta, error) {
+	var sps []store.ServiceProfileMeta
+	err := sqlx.SelectContext(ctx, ps.db, &sps, `
+		select
+			sp.*
+		from service_profile sp
+		inner join organization o
+			on o.id = sp.organization_id
+		inner join organization_user ou
+			on ou.organization_id = o.id
+		inner join "user" u
+			on u.id = ou.user_id
+		where
+			u.id = $1
+		order by sp.name
+		limit $2 offset $3`,
+		userID,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	return sps, nil
+}
+
+// DeleteAllServiceProfilesForOrganizationID deletes all service-profiles
+// given an organization id.
+func (ps *pgstore) DeleteAllServiceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {
+	var sps []store.ServiceProfileMeta
+	err := sqlx.SelectContext(ctx, ps.db, &sps, "select * from service_profile where organization_id = $1", organizationID)
+	if err != nil {
+		return handlePSQLError(Select, err, "select error")
+	}
+
+	for _, sp := range sps {
+		err = ps.DeleteServiceProfile(ctx, sp.ServiceProfileID)
+		if err != nil {
+			return errors.Wrap(err, "delete service-profile error")
+		}
+	}
 
 	return nil
 }

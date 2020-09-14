@@ -13,10 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
@@ -29,6 +25,8 @@ import (
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -47,7 +45,7 @@ func NewInternalUserAPI() *InternalUserAPI {
 // Login validates the login request and returns a JWT token.
 func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
 	userEmail := normalizeUsername(req.Username)
-	err := a.st.LoginUserByPassword(ctx, userEmail, req.Password, Service.pwh)
+	err := a.st.LoginUserByPassword(ctx, userEmail, req.Password)
 	if nil != err {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -64,7 +62,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 	ttl := 60 * int64(user.SessionTTL)
 	var audience []string
 
-	is2fa, err := NewValidator().Is2FAEnabled(ctx, user.UserEmail)
+	is2fa, err := NewValidator().Is2FAEnabled(ctx, user.Email)
 	if err != nil {
 		ctxlogrus.Extract(ctx).WithError(err).Error("couldn't get 2fa status")
 		return nil, status.Error(codes.Internal, "couldn't get 2fa status")
@@ -81,7 +79,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 		audience = []string{"login-2fa"}
 	}
 
-	jwt, err := NewValidator().SignJWToken(user.UserEmail, ttl, audience)
+	jwt, err := NewValidator().SignJWToken(user.Email, ttl, audience)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
@@ -193,7 +191,7 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 	resp := inpb.ProfileResponse{
 		User: &inpb.User{
 			Id:         prof.User.ID,
-			Email:      prof.User.UserEmail,
+			Email:      prof.User.Email,
 			SessionTtl: prof.User.SessionTTL,
 			IsAdmin:    prof.User.IsAdmin,
 			IsActive:   prof.User.IsActive,
@@ -307,7 +305,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 	}).Info(logInfo)
 
 	user := store.User{
-		UserEmail:  userEmail,
+		Email:      userEmail,
 		SessionTTL: 0,
 		IsAdmin:    false,
 		IsActive:   false,
@@ -315,7 +313,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 
 	token := OTPgen()
 
-	obj, err := a.st.GetUserByEmail(ctx, user.UserEmail)
+	obj, err := a.st.GetUserByEmail(ctx, user.Email)
 	if err == storage.ErrDoesNotExist {
 		if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 			// user has never been created yet
@@ -326,14 +324,14 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 			}
 
 			// get user again
-			obj, err = handler.GetUserByEmail(ctx, user.UserEmail)
+			obj, err = handler.GetUserByEmail(ctx, user.Email)
 			if err != nil {
 				log.WithError(err).Error(logInfo)
 				// internal error
 				return status.Errorf(codes.Unknown, "%v", err)
 			}
 
-			err = email.SendInvite(obj.UserEmail, email.Param{Token: *obj.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
+			err = email.SendInvite(obj.Email, email.Param{Token: *obj.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
 			if err != nil {
 				log.WithError(err).Error(logInfo)
 				return helpers.ErrToRPCError(err)
@@ -537,16 +535,16 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.Con
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	log.Println("Confirming GetJwt", user.UserEmail)
+	log.Println("Confirming GetJwt", user.Email)
 	// give user a token that is valid only to finish the registration process
-	jwt, err := NewValidator().SignJWToken(user.UserEmail, 86400, []string{"registration", "lora-app-server"})
+	jwt, err := NewValidator().SignJWToken(user.Email, 86400, []string{"registration", "lora-app-server"})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	return &inpb.ConfirmRegistrationResponse{
 		Id:       user.ID,
-		Username: user.UserEmail,
+		Username: user.Email,
 		IsAdmin:  user.IsAdmin,
 		IsActive: user.IsActive,
 		Jwt:      jwt,
@@ -593,7 +591,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
 
-		err = handler.CreateOrganizationUser(ctx, org.ID, user.UserEmail, true, false, false)
+		err = handler.CreateOrganizationUser(ctx, org.ID, user.ID, true, false, false)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}

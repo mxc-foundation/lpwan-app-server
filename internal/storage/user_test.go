@@ -106,17 +106,8 @@ func (ts *StorageTestSuite) TestUser() {
 		t.Run("LoginUserByPassword", func(t *testing.T) {
 			assert := require.New(t)
 
-			jwt, err := LoginUserByPassword(context.Background(), DB(), user.Email, password)
+			err := LoginUserByPassword(context.Background(), DB(), user.Email, password)
 			assert.NoError(err)
-			assert.NotEqual("", jwt)
-		})
-
-		t.Run("GetUserToken", func(t *testing.T) {
-			assert := require.New(t)
-
-			token, err := GetUserToken(user)
-			assert.NoError(err)
-			assert.NotEqual("", token)
 		})
 
 		t.Run("Update password", func(t *testing.T) {
@@ -125,12 +116,11 @@ func (ts *StorageTestSuite) TestUser() {
 			assert.NoError(user.SetPasswordHash("newrandompassword"))
 			assert.NoError(UpdateUser(context.Background(), DB(), &user))
 
-			_, err := LoginUserByPassword(context.Background(), DB(), user.Email, password)
+			err := LoginUserByPassword(context.Background(), DB(), user.Email, password)
 			assert.Error(err)
 
-			jwt, err := LoginUserByPassword(context.Background(), DB(), user.Email, "newrandompassword")
+			err = LoginUserByPassword(context.Background(), DB(), user.Email, "newrandompassword")
 			assert.NoError(err)
-			assert.NotEqual("", jwt)
 		})
 
 		t.Run("UpdateUser", func(t *testing.T) {
