@@ -52,6 +52,8 @@ type GatewayStore interface {
 	GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (GatewayPing, []GatewayPingRX, error)
 	GetGatewaysActiveInactive(ctx context.Context, organizationID int64) (GatewaysActiveInactive, error)
 
+	GetGatewayForPing(ctx context.Context) (*Gateway, error)
+
 	// validator
 	CheckCreateGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
 	CheckListGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
@@ -62,6 +64,9 @@ type GatewayStore interface {
 	CheckReadOrganizationNetworkServerAccess(ctx context.Context, username string, organizationID, networkserverID, userID int64) (bool, error)
 }
 
+func (h *Handler) GetGatewayForPing(ctx context.Context) (*Gateway, error) {
+	return h.store.GetGatewayForPing(ctx)
+}
 func (h *Handler) GetGatewaysActiveInactive(ctx context.Context, organizationID int64) (GatewaysActiveInactive, error) {
 	return h.store.GetGatewaysActiveInactive(ctx, organizationID)
 }

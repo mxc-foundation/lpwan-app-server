@@ -37,26 +37,6 @@ type DevicesActiveInactive store.DevicesActiveInactive
 // DevicesDataRates holds the device counts by data-rate.
 type DevicesDataRates store.DevicesDataRates
 
-func SetupTest(ctx context.Context) error {
-	_, err := GetDevice(ctx, DB(), lorawan.EUI64{}, false, true)
-	if err != nil {
-		return err
-	}
-
-	if err := Transaction(func(ctx context.Context, handler *store.Handler) error {
-		_, err := GetDevice(ctx, handler, lorawan.EUI64{}, false, true)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // CreateDevice creates the given device.
 func CreateDevice(ctx context.Context, handler *store.Handler, d *Device) error {
 	return handler.CreateDevice(ctx, (*store.Device)(d))

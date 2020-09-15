@@ -2,8 +2,12 @@ package gwping
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"testing"
 	"time"
+
+	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 
 	"github.com/golang/protobuf/ptypes"
 	. "github.com/smartystreets/goconvey/convey"
@@ -15,28 +19,169 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
+type gwInterface struct {
+	gwmod.GatewayModuleInterface
+	h *store.Handler
+}
+
+func (i *gwInterface) Handler() *store.Handler {
+	return i.h
+}
+
+type testStore struct {
+	store.Store
+	inTx           bool
+	expectRollback bool
+	Organization   map[int64]*store.Organization
+	Gateway        map[lorawan.EUI64]*store.Gateway
+	GatewayPing    map[int64]*store.GatewayPing
+	NetworkServer  map[int64]*store.NetworkServer
+	GatewayPingRX  map[int64]*store.GatewayPingRX
+}
+
+func (ts *testStore) TxBegin(ctx context.Context) (store.Store, error) {
+	ts.inTx = true
+	return ts, nil
+}
+
+func (ts *testStore) TxCommit(ctx context.Context) error {
+	ts.inTx = false
+	if ts.expectRollback {
+		ts.expectRollback = false
+		panic("expected rollback")
+	}
+	return nil
+}
+
+func (ts *testStore) TxRollback(ctx context.Context) error {
+	if ts.inTx {
+		if ts.expectRollback {
+			ts.expectRollback = false
+			ts.inTx = false
+		} else {
+			panic("can't really rollback")
+		}
+	}
+	return nil
+}
+
+func (ts *testStore) IsErrorRepeat(err error) bool {
+	return false
+}
+
+type testEnv struct {
+	ctx context.Context
+	h   *store.Handler
+	t   *testing.T
+}
+
+func newTestEnv(t *testing.T) *testEnv {
+	te := &testEnv{
+		ctx: context.Background(),
+		t:   t,
+	}
+
+	te.h, _ = store.New(&testStore{
+		Organization:  make(map[int64]*store.Organization),
+		Gateway:       make(map[lorawan.EUI64]*store.Gateway),
+		GatewayPing:   make(map[int64]*store.GatewayPing),
+		NetworkServer: make(map[int64]*store.NetworkServer),
+	})
+	return te
+}
+
+func (ts *testStore) CreateOrganization(ctx context.Context, org *store.Organization) error {
+	ts.Organization[org.ID] = org
+	return nil
+}
+func (ts *testStore) CreateNetworkServer(ctx context.Context, n *store.NetworkServer) error {
+	ts.NetworkServer[n.ID] = n
+	return nil
+}
+func (ts *testStore) CreateGateway(ctx context.Context, gw *store.Gateway) error {
+	ts.Gateway[gw.MAC] = gw
+	return nil
+}
+func (ts *testStore) UpdateNetworkServer(ctx context.Context, n *store.NetworkServer) error {
+	ts.NetworkServer[n.ID] = n
+	return nil
+}
+func (ts *testStore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (store.Gateway, error) {
+	return *ts.Gateway[mac], nil
+}
+func (ts *testStore) GetGatewayPing(ctx context.Context, id int64) (store.GatewayPing, error) {
+	return *ts.GatewayPing[id], nil
+}
+func (ts *testStore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (store.GatewayPing, []store.GatewayPingRX, error) {
+	var pingID int64
+	var pingRXList []store.GatewayPingRX
+
+	if v, ok := ts.Gateway[mac]; !ok {
+		panic("no gateway found with mac " + mac.String())
+	} else {
+		pingID = *v.LastPingID
+	}
+
+	for _, v := range ts.GatewayPingRX {
+		if v.PingID == pingID {
+			pingRXList = append(pingRXList, *v)
+		}
+	}
+
+	return *ts.GatewayPing[pingID], pingRXList, nil
+}
+func (ts *testStore) GetGatewayForPing(ctx context.Context) (*store.Gateway, error) {
+	for _, v := range ts.NetworkServer {
+		if v.GatewayDiscoveryEnabled == false {
+			continue
+		}
+
+		for _, item := range ts.Gateway {
+			if item.NetworkServerID == v.ID && item.Ping == true {
+				if item.LastPingSentAt == nil || item.LastPingSentAt.Second() <= (time.Now().Second()-24/v.GatewayDiscoveryInterval) {
+					return item, nil
+				}
+			}
+		}
+	}
+
+	return nil, nil
+}
+func (ts *testStore) GetNetworkServer(ctx context.Context, id int64) (store.NetworkServer, error) {
+	return *ts.NetworkServer[id], nil
+}
+func (ts *testStore) CreateGatewayPing(ctx context.Context, ping *store.GatewayPing) error {
+	ts.GatewayPing[ping.ID] = ping
+	return nil
+}
+func (ts *testStore) UpdateGateway(ctx context.Context, gw *store.Gateway) error {
+	ts.Gateway[gw.MAC] = gw
+	return nil
+}
+
 func TestGatewayPing(t *testing.T) {
-	conf := test.GetConfig()
-	if err := storage.Setup(conf); err != nil {
-		t.Fatal(err)
+	te := newTestEnv(t)
+	err := storage.SetupRedis(config.RedisStruct{
+		Servers: []string{"redis:6379"},
+	})
+	if err != nil {
+		panic(err)
 	}
 
 	Convey("Given a clean database and a gateway", t, func() {
 		nsClient := mock.NewClient()
-		test.MustResetDB(storage.DB().DB)
-		storage.RedisClient().FlushAll()
 		networkserver.SetPool(mock.NewPool(nsClient))
 
-		org := storage.Organization{
+		org := store.Organization{
+			ID:   1,
 			Name: "test-org",
 		}
-		So(storage.CreateOrganization(context.Background(), storage.DB(), &org), ShouldBeNil)
+		So(te.h.CreateOrganization(te.ctx, &org), ShouldBeNil)
 
-		n := storage.NetworkServer{
+		n := store.NetworkServer{
 			Name:                        "test-ns",
 			Server:                      "test-ns:1234",
 			GatewayDiscoveryEnabled:     true,
@@ -44,9 +189,9 @@ func TestGatewayPing(t *testing.T) {
 			GatewayDiscoveryTXFrequency: 868100000,
 			GatewayDiscoveryInterval:    1,
 		}
-		So(storage.CreateNetworkServer(context.Background(), storage.DB(), &n), ShouldBeNil)
+		So(te.h.CreateNetworkServer(te.ctx, &n), ShouldBeNil)
 
-		gw1 := storage.Gateway{
+		gw1 := store.Gateway{
 			MAC:             lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
 			Name:            "test-gw",
 			Description:     "test gateway",
@@ -54,18 +199,20 @@ func TestGatewayPing(t *testing.T) {
 			Ping:            true,
 			NetworkServerID: n.ID,
 		}
-		So(storage.CreateGateway(context.Background(), storage.DB(), &gw1), ShouldBeNil)
+		So(te.h.CreateGateway(te.ctx, &gw1), ShouldBeNil)
 
 		Convey("When gateway discovery is disabled on the network-server", func() {
 			n.GatewayDiscoveryEnabled = false
-			So(storage.UpdateNetworkServer(context.Background(), storage.DB(), &n), ShouldBeNil)
+			So(te.h.UpdateNetworkServer(te.ctx, &n), ShouldBeNil)
 
 			Convey("When calling sendGatewayPing", func() {
-				So(sendGatewayPing(context.Background()), ShouldBeNil)
+				So(sendGatewayPing(te.ctx, &gwInterface{
+					h: te.h,
+				}), ShouldBeNil)
 			})
 
 			Convey("Then no ping was sent", func() {
-				gwGet, err := storage.GetGateway(context.Background(), storage.DB(), gw1.MAC, false)
+				gwGet, err := te.h.GetGateway(te.ctx, gw1.MAC, false)
 				So(err, ShouldBeNil)
 				So(gwGet.LastPingID, ShouldBeNil)
 				So(gwGet.LastPingSentAt, ShouldBeNil)
@@ -73,16 +220,18 @@ func TestGatewayPing(t *testing.T) {
 		})
 
 		Convey("When calling sendGatewayPing", func() {
-			So(sendGatewayPing(context.Background()), ShouldBeNil)
+			So(sendGatewayPing(te.ctx, &gwInterface{
+				h: te.h,
+			}), ShouldBeNil)
 
 			Convey("Then the gateway ping fields have been set", func() {
-				gwGet, err := storage.GetGateway(context.Background(), storage.DB(), gw1.MAC, false)
+				gwGet, err := te.h.GetGateway(te.ctx, gw1.MAC, false)
 				So(err, ShouldBeNil)
 				So(gwGet.LastPingID, ShouldNotBeNil)
 				So(gwGet.LastPingSentAt, ShouldNotBeNil)
 
 				Convey("Then a gateway ping records has been created", func() {
-					gwPing, err := storage.GetGatewayPing(context.Background(), storage.DB(), *gwGet.LastPingID)
+					gwPing, err := te.h.GetGatewayPing(te.ctx, *gwGet.LastPingID)
 					So(err, ShouldBeNil)
 					So(gwPing.GatewayMAC, ShouldEqual, gwGet.MAC)
 					So(gwPing.DR, ShouldEqual, n.GatewayDiscoveryDR)
@@ -108,14 +257,14 @@ func TestGatewayPing(t *testing.T) {
 					})
 
 					Convey("When calling HandleReceivedPing", func() {
-						gw2 := storage.Gateway{
+						gw2 := store.Gateway{
 							MAC:             lorawan.EUI64{8, 7, 6, 5, 4, 3, 2, 1},
 							Name:            "test-gw-2",
 							Description:     "test gateway 2",
 							OrganizationID:  org.ID,
 							NetworkServerID: n.ID,
 						}
-						So(storage.CreateGateway(context.Background(), storage.DB(), &gw2), ShouldBeNil)
+						So(te.h.CreateGateway(te.ctx, &gw2), ShouldBeNil)
 
 						now := time.Now().UTC().Truncate(time.Millisecond)
 
@@ -135,7 +284,7 @@ func TestGatewayPing(t *testing.T) {
 							},
 						}
 						pong.RxInfo[0].Time, _ = ptypes.TimestampProto(now)
-						So(HandleReceivedPing(context.Background(), &pong), ShouldBeNil)
+						So(HandleReceivedPing(te.ctx, &pong), ShouldBeNil)
 
 						Convey("Then the ping lookup has been deleted", func() {
 							_, err := getPingLookup(mic)
@@ -143,7 +292,7 @@ func TestGatewayPing(t *testing.T) {
 						})
 
 						Convey("Then the received ping has been stored to the database", func() {
-							ping, rx, err := storage.GetLastGatewayPingAndRX(context.Background(), storage.DB(), gw1.MAC)
+							ping, rx, err := te.h.GetLastGatewayPingAndRX(te.ctx, gw1.MAC)
 							So(err, ShouldBeNil)
 
 							So(ping.ID, ShouldEqual, *gwGet.LastPingID)
@@ -152,7 +301,7 @@ func TestGatewayPing(t *testing.T) {
 							So(rx[0].ReceivedAt.Equal(now), ShouldBeTrue)
 							So(rx[0].RSSI, ShouldEqual, -10)
 							So(rx[0].LoRaSNR, ShouldEqual, 5.5)
-							So(rx[0].Location, ShouldResemble, storage.GPSPoint{
+							So(rx[0].Location, ShouldResemble, store.GPSPoint{
 								Latitude:  1.12345,
 								Longitude: 1.23456,
 							})

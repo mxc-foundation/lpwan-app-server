@@ -48,7 +48,7 @@ type GatewayAPI struct {
 // NewGatewayAPI creates a new GatewayAPI.
 func NewGatewayAPI(applicationID uuid.UUID) *GatewayAPI {
 	return &GatewayAPI{
-		st:                  Service.St,
+		st:                  service.st,
 		ApplicationServerID: applicationID,
 	}
 }

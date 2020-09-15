@@ -1131,3 +1131,32 @@ func (ps *pgstore) GetGatewaysActiveInactive(ctx context.Context, organizationID
 
 	return out, nil
 }
+
+// GetGatewayForPing returns the next gateway for sending a ping. If no gateway
+// matches the filter criteria, nil is returned.
+func (ps *pgstore) GetGatewayForPing(ctx context.Context) (*store.Gateway, error) {
+	var gw store.Gateway
+
+	err := sqlx.GetContext(ctx, ps.db, &gw, `
+		select
+			g.*
+		from gateway g
+		inner join network_server ns
+			on ns.id = g.network_server_id
+		where
+			ns.gateway_discovery_enabled = true
+			and g.ping = true
+			and (g.last_ping_sent_at is null or g.last_ping_sent_at <= (now() - (interval '24 hours' / ns.gateway_discovery_interval)))
+		order by last_ping_sent_at
+		limit 1
+		for update`,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, errors.Wrap(err, "select error")
+	}
+
+	return &gw, nil
+}

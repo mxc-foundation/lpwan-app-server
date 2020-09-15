@@ -33,7 +33,7 @@ type HeartbeatAPI struct {
 func NewHeartbeatAPI(bind string) *HeartbeatAPI {
 	return &HeartbeatAPI{
 		BindPort: bind,
-		st:       Service.St,
+		st:       service.st,
 	}
 }
 

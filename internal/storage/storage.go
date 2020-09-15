@@ -56,33 +56,8 @@ func Setup(c config.Config) error {
 		c.Metrics.Redis.MonthAggregationTTL,
 	)
 
-	log.Info("storage: setting up Redis client")
-	if len(c.Redis.Servers) == 0 {
-		return errors.New("at least one redis server must be configured")
-	}
-
-	if c.Redis.Cluster {
-		redisClient = redis.NewClusterClient(&redis.ClusterOptions{
-			Addrs:    c.Redis.Servers,
-			PoolSize: c.Redis.PoolSize,
-			Password: c.Redis.Password,
-		})
-	} else if c.Redis.MasterName != "" {
-		redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:       c.Redis.MasterName,
-			SentinelAddrs:    c.Redis.Servers,
-			SentinelPassword: c.Redis.Password,
-			DB:               c.Redis.Database,
-			PoolSize:         c.Redis.PoolSize,
-			Password:         c.Redis.Password,
-		})
-	} else {
-		redisClient = redis.NewClient(&redis.Options{
-			Addr:     c.Redis.Servers[0],
-			DB:       c.Redis.Database,
-			Password: c.Redis.Password,
-			PoolSize: c.Redis.PoolSize,
-		})
+	if err := SetupRedis(c.Redis); err != nil {
+		return errors.Wrap(err, "set up redis error")
 	}
 
 	log.Info("storage: connecting to PostgreSQL database")
@@ -115,6 +90,40 @@ func Setup(c config.Config) error {
 			return errors.Wrap(err, "storage: applying PostgreSQL data migrations error")
 		}
 		log.WithField("count", n).Info("storage: PostgreSQL data migrations applied")
+	}
+
+	return nil
+}
+
+// SetupRedis :
+func SetupRedis(conf config.RedisStruct) error {
+	log.Info("storage: setting up Redis client")
+	if len(conf.Servers) == 0 {
+		return errors.New("at least one redis server must be configured")
+	}
+
+	if conf.Cluster {
+		redisClient = redis.NewClusterClient(&redis.ClusterOptions{
+			Addrs:    conf.Servers,
+			PoolSize: conf.PoolSize,
+			Password: conf.Password,
+		})
+	} else if conf.MasterName != "" {
+		redisClient = redis.NewFailoverClient(&redis.FailoverOptions{
+			MasterName:       conf.MasterName,
+			SentinelAddrs:    conf.Servers,
+			SentinelPassword: conf.Password,
+			DB:               conf.Database,
+			PoolSize:         conf.PoolSize,
+			Password:         conf.Password,
+		})
+	} else {
+		redisClient = redis.NewClient(&redis.Options{
+			Addr:     conf.Servers[0],
+			DB:       conf.Database,
+			Password: conf.Password,
+			PoolSize: conf.PoolSize,
+		})
 	}
 
 	return nil

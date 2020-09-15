@@ -278,7 +278,7 @@ func (a *OrganizationAPI) AddUser(ctx context.Context, req *pb.AddOrganizationUs
 
 	err := a.st.CreateOrganizationUser(ctx,
 		req.OrganizationUser.OrganizationId,
-		req.OrganizationUser.Username,
+		req.OrganizationUser.UserId,
 		req.OrganizationUser.IsAdmin,
 		req.OrganizationUser.IsDeviceAdmin,
 		req.OrganizationUser.IsGatewayAdmin,

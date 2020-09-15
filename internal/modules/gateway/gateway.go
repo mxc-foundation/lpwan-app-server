@@ -27,17 +27,30 @@ type Pserver struct {
 }
 
 type Controller struct {
-	St                 *store.Handler
+	GatewayModuleInterface
+	st                 *store.Handler
 	ps                 Pserver
 	bindPortOldGateway string
 	bindPortNewGateway string
 }
 
-var Service = &Controller{}
+var service = &Controller{}
 
-func Setup(conf config.Config, s store.Store) error {
-	Service.St, _ = store.New(s)
-	Service.ps = Pserver{
+func Get() GatewayModuleInterface {
+	return service
+}
+
+type GatewayModuleInterface interface {
+	Handler() *store.Handler
+}
+
+func (c *Controller) Handler() *store.Handler {
+	return c.st
+}
+
+func Setup(conf config.Config, h *store.Handler) error {
+	service.st = h
+	service.ps = Pserver{
 		ProvisionServer: conf.ProvisionServer.ProvisionServer,
 		CACert:          conf.ProvisionServer.CACert,
 		TLSCert:         conf.ProvisionServer.TLSCert,
@@ -48,16 +61,16 @@ func Setup(conf config.Config, s store.Store) error {
 	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.OldGateway.Bind, ":"); len(strArray) != 2 {
 		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", conf.ApplicationServer.APIForGateway.OldGateway.Bind))
 	} else {
-		Service.bindPortOldGateway = strArray[1]
+		service.bindPortOldGateway = strArray[1]
 	}
 
 	if strArray := strings.Split(conf.ApplicationServer.APIForGateway.NewGateway.Bind, ":"); len(strArray) != 2 {
 		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", conf.ApplicationServer.APIForGateway.NewGateway.Bind))
 	} else {
-		Service.bindPortNewGateway = strArray[1]
+		service.bindPortNewGateway = strArray[1]
 	}
 
-	return nil
+	return service.UpdateFirmwareFromProvisioningServer(context.Background())
 }
 
 func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context) error {
@@ -74,7 +87,7 @@ func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context) e
 	cron := cron.New()
 	err := cron.AddFunc(c.ps.UpdateSchedule, func() {
 		log.Info("Check firmware update...")
-		gwFwList, err := c.St.GetGatewayFirmwareList(ctx)
+		gwFwList, err := c.st.GetGatewayFirmwareList(ctx)
 		if err != nil {
 			log.WithError(err).Errorf("Failed to get gateway firmware list.")
 			return
@@ -111,7 +124,7 @@ func (c *Controller) UpdateFirmwareFromProvisioningServer(ctx context.Context) e
 				FirmwareHash: md5sum,
 			}
 
-			model, _ := c.St.UpdateGatewayFirmware(ctx, &gatewayFw)
+			model, _ := c.st.UpdateGatewayFirmware(ctx, &gatewayFw)
 			if model == "" {
 				log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
 			}

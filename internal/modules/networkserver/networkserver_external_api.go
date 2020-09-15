@@ -54,7 +54,10 @@ func (a *NetworkServerAPI) SetupDefault() error {
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		// none default_gateway_profile exists, add one
 		var networkServer store.NetworkServer
-		n, err := handler.GetNetworkServers(ctx, 1, 0)
+		n, err := handler.GetNetworkServers(ctx, store.NetworkServerFilters{
+			Limit:  1,
+			Offset: 0,
+		})
 		if err != nil && err != storage.ErrDoesNotExist {
 			return errors.Wrap(err, "Load network server internal error")
 		}
@@ -294,11 +297,14 @@ func (a *NetworkServerAPI) List(ctx context.Context, req *pb.ListNetworkServerRe
 
 	if req.OrganizationId == 0 {
 		if u.IsGlobalAdmin {
-			count, err = a.st.GetNetworkServerCount(ctx)
+			count, err = a.st.GetNetworkServerCount(ctx, store.NetworkServerFilters{})
 			if err != nil {
 				return nil, status.Errorf(codes.Unknown, "%s", err)
 			}
-			nss, err = a.st.GetNetworkServers(ctx, int(req.Limit), int(req.Offset))
+			nss, err = a.st.GetNetworkServers(ctx, store.NetworkServerFilters{
+				Limit:  int(req.Limit),
+				Offset: int(req.Offset),
+			})
 			if err != nil {
 				return nil, status.Errorf(codes.Unknown, "%s", err)
 			}

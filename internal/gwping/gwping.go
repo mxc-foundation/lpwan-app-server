@@ -3,13 +3,12 @@ package gwping
 import (
 	"context"
 	"crypto/rand"
-	"database/sql"
 	"fmt"
+	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -39,7 +38,7 @@ func SendPingLoop() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-		if err := sendGatewayPing(ctx); err != nil {
+		if err := sendGatewayPing(ctx, gwmod.Get()); err != nil {
 			log.Errorf("send gateway ping error: %s", err)
 		}
 		time.Sleep(time.Second)
@@ -84,7 +83,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 				receivedAt = &ts
 			}
 
-			pingRX := storage.GatewayPingRX{
+			pingRX := store.GatewayPingRX{
 				PingID:     id,
 				GatewayMAC: mac,
 				ReceivedAt: receivedAt,
@@ -93,14 +92,14 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 			}
 
 			if rx.Location != nil {
-				pingRX.Location = storage.GPSPoint{
+				pingRX.Location = store.GPSPoint{
 					Latitude:  rx.Location.Latitude,
 					Longitude: rx.Location.Longitude,
 				}
 				pingRX.Altitude = rx.Location.Altitude
 			}
 
-			err := storage.CreateGatewayPingRX(ctx, tx, &pingRX)
+			err := handler.CreateGatewayPingRX(ctx, &pingRX)
 			if err != nil {
 				return errors.Wrap(err, "create gateway ping rx error")
 			}
@@ -116,9 +115,9 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 
 // sendGatewayPing selects the next gateway to ping, creates the "ping"
 // frame and sends this frame to the network-server for transmission.
-func sendGatewayPing(ctx context.Context) error {
-	return storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
-		gw, err := getGatewayForPing(tx)
+func sendGatewayPing(ctx context.Context, mod gwmod.GatewayModuleInterface) error {
+	err := mod.Handler().Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		gw, err := handler.GetGatewayForPing(ctx)
 		if err != nil {
 			return errors.Wrap(err, "get gateway for ping error")
 		}
@@ -126,17 +125,17 @@ func sendGatewayPing(ctx context.Context) error {
 			return nil
 		}
 
-		n, err := storage.GetNetworkServer(ctx, storage.DB(), gw.NetworkServerID)
+		n, err := handler.GetNetworkServer(ctx, gw.NetworkServerID)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
 		}
 
-		ping := storage.GatewayPing{
+		ping := store.GatewayPing{
 			GatewayMAC: gw.MAC,
 			Frequency:  n.GatewayDiscoveryTXFrequency,
 			DR:         n.GatewayDiscoveryDR,
 		}
-		err = storage.CreateGatewayPing(ctx, tx, &ping)
+		err = handler.CreateGatewayPing(ctx, &ping)
 		if err != nil {
 			return errors.Wrap(err, "create gateway ping error")
 		}
@@ -159,45 +158,18 @@ func sendGatewayPing(ctx context.Context) error {
 		gw.LastPingID = &ping.ID
 		gw.LastPingSentAt = &ping.CreatedAt
 
-		err = storage.UpdateGateway(ctx, tx, gw)
+		err = handler.UpdateGateway(ctx, gw)
 		if err != nil {
 			return errors.Wrap(err, "update gateway error")
 		}
 
 		return nil
 	})
+
+	return err
 }
 
-// getGatewayForPing returns the next gateway for sending a ping. If no gateway
-// matches the filter criteria, nil is returned.
-func getGatewayForPing(tx sqlx.Ext) (*storage.Gateway, error) {
-	var gw storage.Gateway
-
-	err := sqlx.Get(tx, &gw, `
-		select
-			g.*
-		from gateway g
-		inner join network_server ns
-			on ns.id = g.network_server_id
-		where
-			ns.gateway_discovery_enabled = true
-			and g.ping = true
-			and (g.last_ping_sent_at is null or g.last_ping_sent_at <= (now() - (interval '24 hours' / ns.gateway_discovery_interval)))
-		order by last_ping_sent_at
-		limit 1
-		for update`,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, errors.Wrap(err, "select error")
-	}
-
-	return &gw, nil
-}
-
-func sendPing(mic lorawan.MIC, n storage.NetworkServer, ping storage.GatewayPing) error {
+func sendPing(mic lorawan.MIC, n store.NetworkServer, ping store.GatewayPing) error {
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")

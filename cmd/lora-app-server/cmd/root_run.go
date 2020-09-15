@@ -76,7 +76,6 @@ func run(cmd *cobra.Command, args []string) error {
 		setupFUOTA,
 
 		setupModules,
-		setupUpdateFirmwareFromPs,
 		setupAPI,
 		setupMonitoring,
 	}
@@ -178,13 +177,6 @@ func setupClient() error {
 	return nil
 }
 
-func setupUpdateFirmwareFromPs() error {
-	if err := gwmod.Service.UpdateFirmwareFromProvisioningServer(context.TODO()); err != nil {
-		return errors.Wrap(err, "setup update firmware error")
-	}
-	return nil
-}
-
 func migrateGatewayStats() error {
 	if err := code.Migrate("migrate_gw_stats", code.MigrateGatewayStats); err != nil {
 		return errors.Wrap(err, "migration error")
@@ -233,8 +225,9 @@ func setupFUOTA() error {
 }
 
 func setupModules() (err error) {
+	handler, _ := store.New(pgstore.New(storage.DBTest().DB))
 
-	if err = gwmod.Setup(config.C, pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = gwmod.Setup(config.C, handler); err != nil {
 		return err
 	}
 
@@ -242,7 +235,7 @@ func setupModules() (err error) {
 		return err
 	}
 
-	if err = appmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = appmod.Setup(handler); err != nil {
 		return err
 	}
 
