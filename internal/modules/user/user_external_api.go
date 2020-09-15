@@ -13,7 +13,6 @@ import (
 
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // UserAPI exports the User related functions.
@@ -108,7 +107,7 @@ func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailReques
 	username := normalizeUsername(req.UserEmail)
 	u, err := a.st.GetUserByEmail(ctx, username)
 	if err != nil {
-		if err == storage.ErrDoesNotExist {
+		if err == store.ErrDoesNotExist {
 			return &inpb.GetUserEmailResponse{Status: true}, nil
 		}
 		return nil, helpers.ErrToRPCError(err)

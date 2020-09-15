@@ -27,7 +27,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // InternalUserAPI exports the internal User related functions.
@@ -242,7 +241,7 @@ func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *inpb.GlobalSear
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	results, err := storage.GlobalSearch(ctx, storage.DB(), user.ID, user.IsGlobalAdmin, req.Search, int(req.Limit), int(req.Offset))
+	results, err := a.st.GlobalSearch(ctx, user.ID, user.IsGlobalAdmin, req.Search, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -314,7 +313,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 	token := OTPgen()
 
 	obj, err := a.st.GetUserByEmail(ctx, user.Email)
-	if err == storage.ErrDoesNotExist {
+	if err == store.ErrDoesNotExist {
 		if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 			// user has never been created yet
 			err = handler.RegisterUser(ctx, &user, token)
@@ -342,12 +341,12 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 			return nil, status.Errorf(codes.Unknown, err.Error())
 		}
 
-	} else if err != nil && err != storage.ErrDoesNotExist {
+	} else if err != nil && err != store.ErrDoesNotExist {
 		// internal error
 		return nil, helpers.ErrToRPCError(err)
 	} else if err == nil && obj.SecurityToken == nil {
 		// user exists and finished registration
-		return nil, helpers.ErrToRPCError(storage.ErrAlreadyExists)
+		return nil, helpers.ErrToRPCError(store.ErrAlreadyExists)
 	}
 
 	return &empty.Empty{}, nil
@@ -453,7 +452,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 		userEmail := normalizeUsername(req.Username)
 		user, err := handler.GetUserByUsername(ctx, userEmail)
 		if err != nil {
-			if err == storage.ErrDoesNotExist {
+			if err == store.ErrDoesNotExist {
 				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", userEmail)
 				if err := email.SendInvite(userEmail, email.Param{}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
 					return status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
@@ -494,7 +493,7 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 		userEmail := normalizeUsername(req.Username)
 		user, err := handler.GetUserByUsername(ctx, userEmail)
 		if err != nil {
-			if err == storage.ErrDoesNotExist {
+			if err == store.ErrDoesNotExist {
 				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", userEmail)
 				return status.Errorf(codes.PermissionDenied, "no match found")
 			}
