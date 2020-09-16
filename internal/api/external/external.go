@@ -27,34 +27,52 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 )
 
-var (
-	bind            string
-	tlsCert         string
-	tlsKey          string
-	corsAllowOrigin string
-)
+type ExternalAPIStruct struct {
+	Bind            string
+	TLSCert         string `mapstructure:"tls_cert"`
+	TLSKey          string `mapstructure:"tls_key"`
+	JWTSecret       string `mapstructure:"jwt_secret"`
+	OTPSecret       string `mapstructure:"otp_secret"`
+	CORSAllowOrigin string `mapstructure:"cors_allow_origin"`
+}
+
+type controller struct {
+	s                   ExternalAPIStruct
+	applicationServerID string
+}
+
+var ctrl *controller
+
+func SettingsSetup(apiStruct ExternalAPIStruct, applicationServerID string) error {
+	ctrl = &controller{
+		s:                   apiStruct,
+		applicationServerID: applicationServerID,
+	}
+
+	return nil
+}
+func GetApplicationServerID() string {
+	return ctrl.applicationServerID
+}
+func GetJWTSecret() string {
+	return ctrl.s.JWTSecret
+}
 
 // Setup configures the API package.
-func Setup(conf config.Config) error {
-	if conf.ApplicationServer.ExternalAPI.JWTSecret == "" {
+func Setup() error {
+	if ctrl.s.JWTSecret == "" {
 		return errors.New("jwt_secret must be set")
 	}
 
-	bind = conf.ApplicationServer.ExternalAPI.Bind
-	tlsCert = conf.ApplicationServer.ExternalAPI.TLSCert
-	tlsKey = conf.ApplicationServer.ExternalAPI.TLSKey
-	corsAllowOrigin = conf.ApplicationServer.ExternalAPI.CORSAllowOrigin
-
-	return setupAPI(conf)
+	return setupAPI()
 }
 
-func setupAPI(conf config.Config) (err error) {
+func setupAPI() (err error) {
 	/*	validator := auth.NewJWTValidator(storage.DB(), "HS256", jwtSecret)*/
-	rpID, err := uuid.FromString(conf.ApplicationServer.ID)
+	rpID, err := uuid.FromString(ctrl.applicationServerID)
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
 	}
@@ -81,8 +99,8 @@ func setupAPI(conf config.Config) (err error) {
 				return
 			}
 
-			if corsAllowOrigin != "" {
-				w.Header().Set("Access-Control-Allow-Origin", corsAllowOrigin)
+			if ctrl.s.CORSAllowOrigin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", ctrl.s.CORSAllowOrigin)
 				w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 				w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Grpc-Metadata-Authorization")
 
@@ -98,18 +116,18 @@ func setupAPI(conf config.Config) (err error) {
 	// start the API server
 	go func() {
 		log.WithFields(log.Fields{
-			"bind":     bind,
-			"tls-cert": tlsCert,
-			"tls-key":  tlsKey,
+			"bind":     ctrl.s.Bind,
+			"tls-cert": ctrl.s.TLSCert,
+			"tls-key":  ctrl.s.TLSKey,
 		}).Info("api/external: starting api server")
 
-		if tlsCert == "" || tlsKey == "" {
-			log.Fatal(http.ListenAndServe(bind, h2c.NewHandler(handler, &http2.Server{})))
+		if ctrl.s.TLSCert == "" || ctrl.s.TLSKey == "" {
+			log.Fatal(http.ListenAndServe(ctrl.s.Bind, h2c.NewHandler(handler, &http2.Server{})))
 		} else {
 			log.Fatal(http.ListenAndServeTLS(
-				bind,
-				tlsCert,
-				tlsKey,
+				ctrl.s.Bind,
+				ctrl.s.TLSCert,
+				ctrl.s.TLSKey,
 				h2c.NewHandler(handler, &http2.Server{}),
 			))
 		}
@@ -119,7 +137,7 @@ func setupAPI(conf config.Config) (err error) {
 	time.Sleep(time.Millisecond * 100)
 
 	// setup the HTTP handler
-	clientHTTPHandler, err = setupHTTPAPI(conf)
+	clientHTTPHandler, err = setupHTTPAPI()
 	if err != nil {
 		return err
 	}
@@ -127,7 +145,7 @@ func setupAPI(conf config.Config) (err error) {
 	return nil
 }
 
-func setupHTTPAPI(conf config.Config) (http.Handler, error) {
+func setupHTTPAPI() (http.Handler, error) {
 	r := mux.NewRouter()
 
 	// setup json api handler
@@ -148,7 +166,7 @@ func setupHTTPAPI(conf config.Config) (http.Handler, error) {
 	}).Methods("get")
 	r.PathPrefix("/api").Handler(jsonHandler)
 
-	if err := oidc.Setup(conf, r); err != nil {
+	if err := oidc.Setup(r); err != nil {
 		return nil, errors.Wrap(err, "setup openid connect error")
 	}
 
@@ -167,10 +185,10 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	// dial options for the grpc-gateway
 	var grpcDialOpts []grpc.DialOption
 
-	if tlsCert == "" || tlsKey == "" {
+	if ctrl.s.TLSCert == "" || ctrl.s.TLSKey == "" {
 		grpcDialOpts = append(grpcDialOpts, grpc.WithInsecure())
 	} else {
-		b, err := ioutil.ReadFile(tlsCert)
+		b, err := ioutil.ReadFile(ctrl.s.TLSCert)
 		if err != nil {
 			return nil, errors.Wrap(err, "read external api tls cert error")
 		}
@@ -186,7 +204,7 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		})))
 	}
 
-	bindParts := strings.SplitN(bind, ":", 2)
+	bindParts := strings.SplitN(ctrl.s.Bind, ":", 2)
 	if len(bindParts) != 2 {
 		log.Fatal("get port from bind failed")
 	}

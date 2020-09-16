@@ -25,7 +25,7 @@ func Setup(conf config.Config) error {
 		return errors.Wrap(err, "setup join-server api error")
 	}
 
-	if err := gws.Setup(conf); err != nil {
+	if err := gws.Setup(); err != nil {
 		return errors.Wrap(err, "setup gateway api error")
 	}
 

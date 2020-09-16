@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"time"
 
 	"github.com/brocaar/lorawan"
@@ -12,7 +13,6 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
@@ -153,7 +153,7 @@ func UpdateDevice(ctx context.Context, handler *store.Handler, d *Device, localO
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
+	rpID, err := uuid.FromString(external.GetApplicationServerID())
 	if err != nil {
 		return errors.Wrap(err, "uuid from string error")
 	}

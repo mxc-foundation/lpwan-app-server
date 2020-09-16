@@ -3,11 +3,9 @@ package gwping
 import (
 	"context"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"testing"
 	"time"
-
-	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 
 	"github.com/golang/protobuf/ptypes"
 	. "github.com/smartystreets/goconvey/convey"
@@ -19,17 +17,9 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
-
-type gwInterface struct {
-	gwmod.GatewayModuleInterface
-	h *store.Handler
-}
-
-func (i *gwInterface) Handler() *store.Handler {
-	return i.h
-}
 
 type testStore struct {
 	store.Store
@@ -164,12 +154,8 @@ func (ts *testStore) UpdateGateway(ctx context.Context, gw *store.Gateway) error
 
 func TestGatewayPing(t *testing.T) {
 	te := newTestEnv(t)
-	err := storage.SetupRedis(config.RedisStruct{
-		Servers: []string{"redis:6379"},
-	})
-	if err != nil {
-		panic(err)
-	}
+	gwmod.SetupStore(te.h)
+	_ = rs.SetupRedis(config.RedisStruct{})
 
 	Convey("Given a clean database and a gateway", t, func() {
 		nsClient := mock.NewClient()
@@ -206,9 +192,7 @@ func TestGatewayPing(t *testing.T) {
 			So(te.h.UpdateNetworkServer(te.ctx, &n), ShouldBeNil)
 
 			Convey("When calling sendGatewayPing", func() {
-				So(sendGatewayPing(te.ctx, &gwInterface{
-					h: te.h,
-				}), ShouldBeNil)
+				So(sendGatewayPing(te.ctx), ShouldBeNil)
 			})
 
 			Convey("Then no ping was sent", func() {
@@ -220,9 +204,7 @@ func TestGatewayPing(t *testing.T) {
 		})
 
 		Convey("When calling sendGatewayPing", func() {
-			So(sendGatewayPing(te.ctx, &gwInterface{
-				h: te.h,
-			}), ShouldBeNil)
+			So(sendGatewayPing(te.ctx), ShouldBeNil)
 
 			Convey("Then the gateway ping fields have been set", func() {
 				gwGet, err := te.h.GetGateway(te.ctx, gw1.MAC, false)
@@ -251,7 +233,7 @@ func TestGatewayPing(t *testing.T) {
 					So(mic, ShouldNotEqual, lorawan.MIC{})
 
 					Convey("Then a ping lookup has been created", func() {
-						id, err := getPingLookup(mic)
+						id, err := store.GatewayPing{}.GetPingLookup(mic)
 						So(err, ShouldBeNil)
 						So(id, ShouldEqual, *gwGet.LastPingID)
 					})
@@ -287,7 +269,7 @@ func TestGatewayPing(t *testing.T) {
 						So(HandleReceivedPing(te.ctx, &pong), ShouldBeNil)
 
 						Convey("Then the ping lookup has been deleted", func() {
-							_, err := getPingLookup(mic)
+							_, err := store.GatewayPing{}.GetPingLookup(mic)
 							So(err, ShouldNotBeNil)
 						})
 

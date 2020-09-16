@@ -18,7 +18,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	devprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
-	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota_deployment"
+	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota-deployment"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
@@ -37,7 +37,7 @@ import (
 )
 
 func SetupCusAPI(grpcServer *grpc.Server, rpID uuid.UUID) error {
-	jwtValidator := jwt.NewJWTValidator("HS256", []byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
+	jwtValidator := jwt.NewJWTValidator("HS256", []byte(ctrl.s.JWTSecret))
 	otpValidator, err := otp.NewValidator("lpwan-app-server", config.C.ApplicationServer.ExternalAPI.OTPSecret, pgstore.New(storage.DBTest().DB.DB))
 	if err != nil {
 		return err

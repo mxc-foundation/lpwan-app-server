@@ -68,7 +68,7 @@ func CreateAPIKey(ctx context.Context, handler *store.Handler, a *APIKey) (strin
 		"api_key_id": a.ID.String(),
 	})
 
-	jwt, err := token.SignedString(jwtsecret)
+	jwt, err := token.SignedString(ctrl.jwtsecret)
 	if err != nil {
 		return jwt, errors.Wrap(err, "sign jwt token error")
 	}

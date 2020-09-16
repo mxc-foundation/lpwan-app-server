@@ -94,7 +94,7 @@ func (v *Validator) ValidateActiveUser(ctx context.Context) (bool, error) {
 		return false, errors.Wrap(err, "ValidateActiveUser")
 	}
 
-	return Service.St.CheckActiveUser(ctx, u.UserEmail, u.ID)
+	return ctrl.st.CheckActiveUser(ctx, u.UserEmail, u.ID)
 }
 
 // ValidateUsersGlobalAccess validates if the client has access to the global users
@@ -107,9 +107,9 @@ func (v *Validator) ValidateUsersGlobalAccess(ctx context.Context, flag authcus.
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateUserAcess(ctx, u.UserEmail, u.ID)
+		return ctrl.st.CheckCreateUserAcess(ctx, u.UserEmail, u.ID)
 	case authcus.List:
-		return Service.St.CheckListUserAcess(ctx, u.UserEmail, u.ID)
+		return ctrl.st.CheckListUserAcess(ctx, u.UserEmail, u.ID)
 	default:
 		panic("unsupported flag")
 	}
@@ -125,15 +125,15 @@ func (v *Validator) ValidateUserAccess(ctx context.Context, flag authcus.Flag, u
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadUserAccess(ctx, u.UserEmail, userID, u.ID)
+		return ctrl.st.CheckReadUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.Update:
-		return Service.St.CheckUpdateUserAccess(ctx, u.UserEmail, userID, u.ID)
+		return ctrl.st.CheckUpdateUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.Delete:
-		return Service.St.CheckDeleteUserAccess(ctx, u.UserEmail, userID, u.ID)
+		return ctrl.st.CheckDeleteUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.UpdateProfile:
-		return Service.St.CheckUpdateProfileUserAccess(ctx, u.UserEmail, userID, u.ID)
+		return ctrl.st.CheckUpdateProfileUserAccess(ctx, u.UserEmail, userID, u.ID)
 	case authcus.UpdatePassword:
-		return Service.St.CheckUpdatePasswordUserAccess(ctx, u.UserEmail, userID, u.ID)
+		return ctrl.st.CheckUpdatePasswordUserAccess(ctx, u.UserEmail, userID, u.ID)
 	default:
 		panic("unsupported flag")
 	}

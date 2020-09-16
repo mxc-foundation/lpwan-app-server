@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
+
 	"github.com/stretchr/testify/suite"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
@@ -41,7 +43,7 @@ func (b *DatabaseTestSuiteBase) SetupTest() {
 	b.tx = tx
 
 	test.MustResetDB(DBTest().DB)
-	RedisClient().FlushAll()
+	rs.RedisClient().FlushAll()
 }
 
 // TearDownTest is called after every test.

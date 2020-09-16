@@ -1,22 +1,39 @@
 package user
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 )
 
-type Controller struct {
-	St  *store.Handler
+type RecaptchaStruct struct {
+	HostServer string `mapstructure:"host_server"`
+	Secret     string `mapstructure:"secret"`
+}
+
+type controller struct {
+	s   RecaptchaStruct
+	st  *store.Handler
 	pwh *pwhash.PasswordHasher
 }
 
-var Service = &Controller{}
+var ctrl *controller
+
+func SettingsSetup(s RecaptchaStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+
+	return nil
+}
+func GetSettings() RecaptchaStruct {
+	return ctrl.s
+}
 
 func Setup(s store.Store) (err error) {
-	Service.St, _ = store.New(s)
+	ctrl.st, _ = store.New(s)
 
-	Service.pwh, err = pwhash.New(16, config.C.General.PasswordHashIterations)
+	ctrl.pwh, err = pwhash.New(16, serverinfo.GetSettings().PasswordHashIterations)
 	if err != nil {
 		return err
 	}
@@ -25,7 +42,7 @@ func Setup(s store.Store) (err error) {
 }
 
 func SetUserPassword(user *store.User, pw string) error {
-	pwHash, err := Service.pwh.HashPassword(pw)
+	pwHash, err := ctrl.pwh.HashPassword(pw)
 	if err != nil {
 		return err
 	}
@@ -35,5 +52,5 @@ func SetUserPassword(user *store.User, pw string) error {
 }
 
 func VerifyUserPassword(pw string, pwHash string) error {
-	return Service.pwh.Validate(pw, pwHash)
+	return ctrl.pwh.Validate(pw, pwHash)
 }

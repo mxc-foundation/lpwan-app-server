@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/rand"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"time"
 
 	"github.com/gofrs/uuid"
@@ -34,11 +35,16 @@ var (
 	routingProfileID                  uuid.UUID
 )
 
+type FuotaStruct struct {
+	McGroupID int `mapstructure:"mc_group_id"`
+	FragIndex int `mapstructure:"frag_index"`
+}
+
 // Setup configures the package.
 func Setup(conf config.Config) error {
 	var err error
 
-	routingProfileID, err = uuid.FromString(conf.ApplicationServer.ID)
+	routingProfileID, err = uuid.FromString(external.GetApplicationServerID())
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
 	}
@@ -64,7 +70,7 @@ func fuotaDeploymentLoop() {
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
 		err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
-			return fuotaDeployments(ctx, tx)
+			return fuotaDeployments(ctx, handler)
 		})
 		if err != nil {
 			log.WithError(err).Error("fuota deployment error")

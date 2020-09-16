@@ -8,16 +8,12 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
-	"github.com/go-redis/redis/v7"
 	"github.com/jmoiron/sqlx"
 
 	// register postgresql driver
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 )
-
-// redisClient holds the Redis client.
-var redisClient redis.UniversalClient
 
 // db holds the PostgreSQL connection pool.
 var db *DBLogger
@@ -119,11 +115,6 @@ func DB() *store.Handler {
 
 func DBTest() *DBLogger {
 	return db
-}
-
-// RedisClient returns the RedisClient.
-func RedisClient() redis.UniversalClient {
-	return redisClient
 }
 
 // Transaction wraps the given function in a transaction. In case the given

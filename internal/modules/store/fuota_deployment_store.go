@@ -14,9 +14,9 @@ type FUOTADeploymentStore interface {
 }
 
 func (h *Handler) CheckReadFUOTADeploymentAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
-	return h.CheckReadFUOTADeploymentAccess(ctx, username, id, userID)
+	return h.store.CheckReadFUOTADeploymentAccess(ctx, username, id, userID)
 }
 
 func (h *Handler) CheckCreateFUOTADeploymentsAccess(ctx context.Context, username string, applicationID int64, devEUI lorawan.EUI64, userID int64) (bool, error) {
-	return h.CheckCreateFUOTADeploymentsAccess(ctx, username, applicationID, devEUI, userID)
+	return h.store.CheckCreateFUOTADeploymentsAccess(ctx, username, applicationID, devEUI, userID)
 }

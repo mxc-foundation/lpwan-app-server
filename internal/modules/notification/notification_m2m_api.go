@@ -3,12 +3,12 @@ package notification
 import (
 	"context"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 )
@@ -47,7 +47,7 @@ func (a *NotificationAPI) SendStakeIncomeNotification(ctx context.Context, req *
 			Amount: amountMap,
 			ItemID: itemIDMap,
 			Date:   dateMap,
-		}, email.EmailLanguage(config.C.General.DefaultLanguage), email.StakingIncome)
+		}, email.EmailLanguage(serverinfo.GetSettings().DefaultLanguage), email.StakingIncome)
 
 	}
 

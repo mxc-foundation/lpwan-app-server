@@ -37,6 +37,14 @@ var (
 	tlsKey  string
 )
 
+type AppserverStruct struct {
+	Bind       string `mapstructure:"bind"`
+	CACert     string `mapstructure:"ca_cert"`
+	TLSCert    string `mapstructure:"tls_cert"`
+	TLSKey     string `mapstructure:"tls_key"`
+	PublicHost string `mapstructure:"public_host"`
+}
+
 // Setup configures the package.
 func Setup(conf config.Config) error {
 	bind = conf.ApplicationServer.API.Bind

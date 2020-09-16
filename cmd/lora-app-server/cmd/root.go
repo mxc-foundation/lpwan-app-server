@@ -2,14 +2,13 @@ package cmd
 
 import (
 	"bytes"
+	"github.com/go-redis/redis/v7"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
-	"time"
-
-	"github.com/go-redis/redis/v7"
-	"github.com/spf13/viper"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
@@ -37,7 +36,7 @@ func init() {
 	// bind flag to config vars
 	viper.BindPFlag("general.log_level", rootCmd.PersistentFlags().Lookup("log-level"))
 
-	// defaults
+	/*// defaults
 	viper.SetDefault("general.password_hash_iterations", 100000)
 	viper.SetDefault("postgresql.dsn", "postgres://localhost/chirpstack_as?sslmode=disable")
 	viper.SetDefault("postgresql.automigrate", true)
@@ -82,7 +81,7 @@ func init() {
 	viper.SetDefault("metrics.redis.minute_aggregation_ttl", time.Hour*2)
 	viper.SetDefault("metrics.redis.hour_aggregation_ttl", time.Hour*48)
 	viper.SetDefault("metrics.redis.day_aggregation_ttl", time.Hour*24*90)
-	viper.SetDefault("metrics.redis.month_aggregation_ttl", time.Hour*24*730)
+	viper.SetDefault("metrics.redis.month_aggregation_ttl", time.Hour*24*730)*/
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
@@ -158,6 +157,10 @@ func initConfig() {
 	}
 	config.AppserverVersion = version
 
+	// init config in all modules
+	if err := serverinfo.SettingsSetup(config.C); err != nil {
+		log.WithError(err).Fatal("set up configuration error")
+	}
 }
 
 func viperBindEnvs(iface interface{}, parts ...string) {

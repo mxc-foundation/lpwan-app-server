@@ -23,7 +23,7 @@ type GatewayM2MAPI struct {
 // NewGatewayM2MAPI creates new GatewayM2MAPI
 func NewGatewayM2MAPI() *GatewayM2MAPI {
 	return &GatewayM2MAPI{
-		st: service.st,
+		st: ctrl.st,
 	}
 }
 

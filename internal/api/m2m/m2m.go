@@ -17,6 +17,13 @@ import (
 
 var serviceName = "m2m server"
 
+type M2MStruct struct {
+	Bind    string `mapstructure:"bind"`
+	CACert  string `mapstructure:"ca_cert"`
+	TLSCert string `mapstructure:"tls_cert"`
+	TLSKey  string `mapstructure:"tls_key"`
+}
+
 // Setup :
 func Setup(conf config.Config) error {
 	log.Info("Set up API for m2m server")

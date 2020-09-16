@@ -2,6 +2,7 @@ package code
 
 import (
 	"fmt"
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"strconv"
 	"strings"
 	"time"
@@ -10,12 +11,11 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // MigrateToClusterKeys migrates the keys to Redis Cluster compatible keys.
 func MigrateToClusterKeys(conf config.Config) error {
-	keys, err := storage.RedisClient().Keys("lora:as:metrics:*").Result()
+	keys, err := rs.RedisClient().Keys("lora:as:metrics:*").Result()
 	if err != nil {
 		return errors.Wrap(err, "get keys error")
 	}
@@ -56,12 +56,12 @@ func migrateKey(conf config.Config, key string) error {
 
 	newKey := fmt.Sprintf("lora:as:metrics:{%s}:%s", strings.Join(keyParts[3:len(keyParts)-2], ":"), strings.Join(keyParts[len(keyParts)-2:], ":"))
 
-	val, err := storage.RedisClient().HGetAll(key).Result()
+	val, err := rs.RedisClient().HGetAll(key).Result()
 	if err != nil {
 		return errors.Wrap(err, "hgetall error")
 	}
 
-	pipe := storage.RedisClient().TxPipeline()
+	pipe := rs.RedisClient().TxPipeline()
 	for k, v := range val {
 		f, err := strconv.ParseFloat(v, 64)
 		if err != nil {

@@ -48,13 +48,21 @@ type pool struct {
 
 var ctrl *controller
 
-func Setup(conf MxprotocolServerStruct) error {
+func SettingsSetup(s MxprotocolServerStruct) error {
+	ctrl = &controller{
+		mxprotocolServer: s,
+	}
+
+	return nil
+}
+
+func Setup() error {
 	ctrl = &controller{
 		mxprotocolServer: MxprotocolServerStruct{
-			Server:  conf.Server,
-			CACert:  conf.CACert,
-			TLSCert: conf.TLSCert,
-			TLSKey:  conf.TLSKey,
+			Server:  ctrl.mxprotocolServer.Server,
+			CACert:  ctrl.mxprotocolServer.CACert,
+			TLSCert: ctrl.mxprotocolServer.TLSCert,
+			TLSKey:  ctrl.mxprotocolServer.TLSKey,
 		},
 		p: &pool{
 			mxprotocolServiceClients: make(map[string]mxprotocolServiceClient),

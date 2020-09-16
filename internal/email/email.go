@@ -17,8 +17,6 @@ import (
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 var cli = map[string]*Client{}
@@ -53,9 +51,50 @@ var email struct {
 	mailTemplates    map[EmailOptions]*template.Template
 }
 
+type SMTPStruct struct {
+	Email    string `mapstructure:"email"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+	AuthType string `mapstructure:"auth_type"`
+	Host     string `mapstructure:"host"`
+	Port     string `mapstructure:"port"`
+}
+
+type OperatorStruct struct {
+	Operator           string `mapstructure:"name"`
+	PrimaryColor       string `mapstructure:"primary_color"`
+	SecondaryColor     string `mapstructure:"secondary_color"`
+	DownloadAppStore   string `mapstructure:"download_appstore"`
+	DownloadGoogle     string `mapstructure:"download_google"`
+	DownloadTestFlight string `mapstructure:"download_testflight"`
+	DownloadAPK        string `mapstructure:"download_apk"`
+	OperatorAddress    string `mapstructure:"operator_address"`
+	OperatorLegal      string `mapstructure:"operator_legal_name"`
+	OperatorLogo       string `mapstructure:"operator_logo"`
+	OperatorContact    string `mapstructure:"operator_contact"`
+	OperatorSupport    string `mapstructure:"operator_support"`
+}
+
+type controller struct {
+	operator OperatorStruct
+	smtp     map[string]SMTPStruct
+	cli      map[string]*Client
+}
+
+var ctrl *controller
+
+func SettingsSetup(smtp map[string]SMTPStruct, operator OperatorStruct) error {
+	ctrl = &controller{
+		operator: operator,
+		smtp:     smtp,
+	}
+
+	return nil
+}
+
 // Setup configures the package.
-func Setup(c config.Config) error {
-	for key, value := range c.SMTP {
+func Setup() error {
+	for key, value := range ctrl.smtp {
 		port := value.Port
 		if port == "" {
 			port = "25"
@@ -74,18 +113,18 @@ func Setup(c config.Config) error {
 	}
 
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
-	email.host = "https://" + serverinfo.Service.SupernodeAddr
+	email.host = "https://" + serverinfo.GetSettings().ServerAddr
 	email.operator = operatorInfo{
-		operatorName:       c.Operator.Operator,
-		downloadAppStore:   c.Operator.DownloadAppStore,
-		downloadGoogle:     c.Operator.DownloadGoogle,
-		downloadTestFlight: c.Operator.DownloadTestFlight,
-		downloadAPK:        c.Operator.DownloadAPK,
-		operatorAddress:    c.Operator.OperatorAddress,
-		operatorLegal:      c.Operator.OperatorLegal,
-		operatorLogo:       c.Operator.OperatorLogo,
-		operatorContact:    c.Operator.OperatorContact,
-		operatorSupport:    c.Operator.OperatorSupport,
+		operatorName:       ctrl.operator.Operator,
+		downloadAppStore:   ctrl.operator.DownloadAppStore,
+		downloadGoogle:     ctrl.operator.DownloadGoogle,
+		downloadTestFlight: ctrl.operator.DownloadTestFlight,
+		downloadAPK:        ctrl.operator.DownloadAPK,
+		operatorAddress:    ctrl.operator.OperatorAddress,
+		operatorLegal:      ctrl.operator.OperatorLegal,
+		operatorLogo:       ctrl.operator.OperatorLogo,
+		operatorContact:    ctrl.operator.OperatorContact,
+		operatorSupport:    ctrl.operator.OperatorSupport,
 	}
 
 	if err := loadEmailTemplates(); err != nil {

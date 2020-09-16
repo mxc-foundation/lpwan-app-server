@@ -26,6 +26,12 @@ var (
 	syncBatchSize int
 )
 
+type MulticastStruct struct {
+	SyncInterval  time.Duration `mapstructure:"sync_interval"`
+	SyncRetries   int           `mapstructure:"sync_retries"`
+	SyncBatchSize int           `mapstructure:"sync_batch_size"`
+}
+
 // Setup configures the package.
 func Setup(conf config.Config) error {
 	syncInterval = conf.ApplicationServer.RemoteMulticastSetup.SyncInterval

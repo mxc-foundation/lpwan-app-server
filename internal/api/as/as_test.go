@@ -37,7 +37,7 @@ func (ts *ASTestSuite) SetupSuite() {
 	conf := test.GetConfig()
 	assert.NoError(storage.Setup(conf))
 	test.MustResetDB(storage.DBTest().DB)
-	storage.RedisClient().FlushAll()
+	rs.RedisClient().FlushAll()
 }
 
 func (ts *ASTestSuite) TestApplicationServer() {

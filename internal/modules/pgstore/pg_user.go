@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"strings"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	usermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
@@ -561,7 +561,7 @@ func (ps *pgstore) GetUserToken(ctx context.Context, u store.User) (string, erro
 		"email": u.Email, // backwards compatibility
 	})
 
-	jwt, err := token.SignedString([]byte(config.C.ApplicationServer.ExternalAPI.JWTSecret))
+	jwt, err := token.SignedString([]byte(external.GetJWTSecret()))
 	if err != nil {
 		return jwt, errors.Wrap(err, "get jwt signed string error")
 	}

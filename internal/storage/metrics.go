@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"strconv"
 	"time"
 
@@ -118,7 +119,7 @@ func SaveMetricsForInterval(ctx context.Context, agg AggregationInterval, name s
 
 	key := fmt.Sprintf(metricsKeyTempl, name, agg, ts.Unix())
 
-	pipe := RedisClient().TxPipeline()
+	pipe := rs.RedisClient().TxPipeline()
 	for k, v := range metrics.Metrics {
 		pipe.HIncrByFloat(key, k, v)
 	}
@@ -194,7 +195,7 @@ func GetMetrics(ctx context.Context, agg AggregationInterval, name string, start
 		return nil, nil
 	}
 
-	pipe := RedisClient().Pipeline()
+	pipe := rs.RedisClient().Pipeline()
 	var vals []*redis.StringStringMapCmd
 	for _, k := range keys {
 		vals = append(vals, pipe.HGetAll(k))

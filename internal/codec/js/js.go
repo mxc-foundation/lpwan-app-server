@@ -16,6 +16,12 @@ var (
 	maxExecutionTime = 10 * time.Millisecond
 )
 
+type CodecStruct struct {
+	JS struct {
+		MaxExecutionTime time.Duration `mapstructure:"max_execution_time"`
+	} `mapstructure:"js"`
+}
+
 // Setup configures the JS codec.
 func Setup(conf config.Config) error {
 	maxExecutionTime = conf.ApplicationServer.Codec.JS.MaxExecutionTime

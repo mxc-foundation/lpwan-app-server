@@ -9,11 +9,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	lsyslog "github.com/sirupsen/logrus/hooks/syslog"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 )
 
 func setSyslog() error {
-	if !config.C.General.LogToSyslog {
+	if !serverinfo.GetSettings().LogToSyslog {
 		return nil
 	}
 

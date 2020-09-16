@@ -3,6 +3,7 @@ package device
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"strconv"
 	"time"
 
@@ -27,7 +28,6 @@ import (
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
@@ -502,7 +502,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
 
-		rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
+		rpID, err := uuid.FromString(external.GetApplicationServerID())
 		if err != nil {
 			return status.Errorf(codes.Unknown, "uuid from string error: %v", err)
 		}

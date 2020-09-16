@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"net/http"
 	"time"
 
@@ -14,8 +15,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 var (
@@ -39,10 +38,37 @@ type User struct {
 	EmailVerified bool   `json:"email_verified"`
 }
 
+type UserAuthenticationStruct struct {
+	OpenIDConnect struct {
+		Enabled                 bool   `mapstructure:"enabled"`
+		RegistrationEnabled     bool   `mapstructure:"registration_enabled"`
+		RegistrationCallbackURL string `mapstructure:"registration_callback_url"`
+		ProviderURL             string `mapstructure:"provider_url"`
+		ClientID                string `mapstructure:"client_id"`
+		ClientSecret            string `mapstructure:"client_secret"`
+		RedirectURL             string `mapstructure:"redirect_url"`
+		LogoutURL               string `mapstructure:"logout_url"`
+		LoginLabel              string `mapstructure:"login_label"`
+	} `mapstructure:"openid_connect"`
+}
+
+type controller struct {
+	s UserAuthenticationStruct
+}
+
+var ctrl *controller
+
+func SettingsSetup(s UserAuthenticationStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+
+	return nil
+}
+
 // Setup configured the OpenID Connect endpoint handlers.
-func Setup(conf config.Config, r *mux.Router) error {
-	oidcConfig := conf.ApplicationServer.UserAuthentication.OpenIDConnect
-	externalAPIConfig := conf.ApplicationServer.ExternalAPI
+func Setup(r *mux.Router) error {
+	oidcConfig := ctrl.s.OpenIDConnect
 
 	if !oidcConfig.Enabled {
 		return nil
@@ -56,7 +82,7 @@ func Setup(conf config.Config, r *mux.Router) error {
 	clientID = oidcConfig.ClientID
 	clientSecret = oidcConfig.ClientSecret
 	redirectURL = oidcConfig.RedirectURL
-	jwtSecret = externalAPIConfig.JWTSecret
+	jwtSecret = external.GetJWTSecret()
 
 	r.HandleFunc("/auth/oidc/login", loginHandler)
 	r.HandleFunc("/auth/oidc/callback", callbackHandler)

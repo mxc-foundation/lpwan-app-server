@@ -10,8 +10,6 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/clocksync"
 )
@@ -65,7 +63,7 @@ func handleAppTimeReq(ctx context.Context, handler *store.Handler, devEUI lorawa
 		return errors.Wrap(err, "marshal command error")
 	}
 
-	_, err = storage.EnqueueDownlinkPayload(ctx, handler, devEUI, false, uint8(clocksync.DefaultFPort), b)
+	_, err = handler.EnqueueDownlinkPayload(ctx, devEUI, false, uint8(clocksync.DefaultFPort), b)
 	if err != nil {
 		return errors.Wrap(err, "enqueue downlink payload error")
 	}

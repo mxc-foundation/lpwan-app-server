@@ -25,6 +25,22 @@ var (
 	tlsKey  string
 )
 
+type JoinServerStruct struct {
+	Bind    string
+	CACert  string `mapstructure:"ca_cert"`
+	TLSCert string `mapstructure:"tls_cert"`
+	TLSKey  string `mapstructure:"tls_key"`
+
+	KEK struct {
+		ASKEKLabel string `mapstructure:"as_kek_label"`
+
+		Set []struct {
+			Label string `mapstructure:"label"`
+			KEK   string `mapstructure:"kek"`
+		}
+	} `mapstructure:"kek"`
+}
+
 // Setup configures the package.
 func Setup(conf config.Config) error {
 	bind = conf.JoinServer.Bind

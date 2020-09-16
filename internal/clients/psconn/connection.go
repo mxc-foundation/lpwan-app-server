@@ -12,29 +12,40 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 type controller struct {
-	provisioningServer provisioningServerStruct
+	provisioningServer ProvisioningServerStruct
 }
 
-type provisioningServerStruct struct {
-	Server  string
-	CACert  string
-	TLSCert string
-	TLSKey  string
+type ProvisioningServerStruct struct {
+	Server         string `mapstructure:"provision_server"`
+	CACert         string `mapstructure:"ca_cert"`
+	TLSCert        string `mapstructure:"tls_cert"`
+	TLSKey         string `mapstructure:"tls_key"`
+	UpdateSchedule string `mapstructure:"update_schedule"`
 }
 
 var ctrl *controller
 
-func Setup(conf config.Config) error {
+func SettingsSetup(s ProvisioningServerStruct) error {
 	ctrl = &controller{
-		provisioningServer: provisioningServerStruct{
-			Server:  conf.ProvisionServer.ProvisionServer,
-			CACert:  conf.ProvisionServer.CACert,
-			TLSCert: conf.ProvisionServer.TLSCert,
-			TLSKey:  conf.ProvisionServer.TLSKey,
+		provisioningServer: s,
+	}
+
+	return nil
+}
+func GetSettings() ProvisioningServerStruct {
+	return ctrl.provisioningServer
+}
+
+func Setup() error {
+	ctrl = &controller{
+		provisioningServer: ProvisioningServerStruct{
+			Server:  ctrl.provisioningServer.Server,
+			CACert:  ctrl.provisioningServer.CACert,
+			TLSCert: ctrl.provisioningServer.TLSCert,
+			TLSKey:  ctrl.provisioningServer.TLSKey,
 		},
 	}
 	return nil

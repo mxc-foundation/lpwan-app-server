@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota_deployment"
+	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota-deployment"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
@@ -109,7 +109,7 @@ func startPProf() error {
 }
 
 func setLogLevel() error {
-	log.SetLevel(log.Level(uint8(config.C.General.LogLevel)))
+	log.SetLevel(log.Level(uint8(servermod.GetSettings().LogLevel)))
 	return nil
 }
 
@@ -122,7 +122,7 @@ func printStartMessage() error {
 }
 
 func setupStorage() error {
-	if err := storage.Setup(config.C); err != nil {
+	if err := storage.Setup(); err != nil {
 		return errors.Wrap(err, "setup storage error")
 	}
 
@@ -130,7 +130,7 @@ func setupStorage() error {
 }
 
 func setupSMTP() error {
-	if err := email.Setup(config.C); err != nil {
+	if err := email.Setup(); err != nil {
 		return errors.Wrap(err, "setup SMTP error")
 	}
 
@@ -166,11 +166,11 @@ func setupClient() error {
 		return errors.Wrap(err, "setup networkserver connection error")
 	}
 
-	if err := m2mcli.Setup(config.C.M2MServer); err != nil {
+	if err := m2mcli.Setup(); err != nil {
 		return errors.Wrap(err, "setup m2m-server connection error")
 	}
 
-	if err := pscli.Setup(config.C); err != nil {
+	if err := pscli.Setup(); err != nil {
 		return errors.Wrap(err, "setup provisioning server connection error")
 	}
 
@@ -259,7 +259,7 @@ func setupModules() (err error) {
 		return err
 	}
 
-	if err = servermod.Setup(config.C, pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = servermod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
 		return err
 	}
 

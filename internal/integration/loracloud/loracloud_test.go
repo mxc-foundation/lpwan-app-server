@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
+
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
@@ -48,7 +50,7 @@ func (ts *LoRaCloudTestSuite) SetupSuite() {
 	conf := test.GetConfig()
 
 	assert.NoError(storage.Setup(conf))
-	test.MustResetDB(storage.DB().DB)
+	test.MustResetDB(storage.DBTest().DB)
 
 	ts.server = httptest.NewServer(http.HandlerFunc(ts.apiHandler))
 	ts.integration = mock.New()
@@ -1322,7 +1324,7 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 		for _, tst := range tests {
 			t.Run(tst.name, func(t *testing.T) {
 				assert := require.New(t)
-				storage.RedisClient().FlushAll()
+				rs.RedisClient().FlushAll()
 
 				var devEUI lorawan.EUI64
 				copy(devEUI[:], tst.uplinkEvent.DevEui)

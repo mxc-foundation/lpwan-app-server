@@ -11,8 +11,6 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/gw"
 	"github.com/brocaar/lorawan"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 const (
@@ -29,7 +27,7 @@ func SaveGeolocBuffer(ctx context.Context, devEUI lorawan.EUI64, items [][]*gw.U
 	}
 
 	key := fmt.Sprintf(geolocBufferKeyTempl, devEUI)
-	pipe := storage.RedisClient().TxPipeline()
+	pipe := rs.RedisClient().TxPipeline()
 	pipe.Del(key)
 
 	for i := range items {
@@ -64,7 +62,7 @@ func GetGeolocBuffer(ctx context.Context, devEUI lorawan.EUI64, ttl time.Duratio
 	}
 
 	key := fmt.Sprintf(geolocBufferKeyTempl, devEUI)
-	resp, err := storage.RedisClient().LRange(key, 0, -1).Result()
+	resp, err := rs.RedisClient().LRange(key, 0, -1).Result()
 	if err != nil {
 		return nil, errors.Wrap(err, "read buffer error")
 	}

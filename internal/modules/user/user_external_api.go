@@ -23,7 +23,7 @@ type UserAPI struct {
 // NewUserAPI creates a new UserAPI.
 func NewUserAPI() *UserAPI {
 	return &UserAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 
@@ -213,7 +213,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswo
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.st.UpdatePassword(ctx, req.UserId, req.Password, Service.pwh)
+	err := a.st.UpdatePassword(ctx, req.UserId, req.Password, ctrl.pwh)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

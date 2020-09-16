@@ -1,14 +1,20 @@
 package monitoring
 
 import (
-	"net/http"
-
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
+
+type MonitoringStruct struct {
+	Bind                         string `mapstructure:"bind"`
+	PrometheusEndpoint           bool   `mapstructure:"prometheus_endpoint"`
+	PrometheusAPITimingHistogram bool   `mapstructure:"prometheus_api_timing_histogram"`
+	HealthcheckEndpoint          bool   `mapstructure:"healthcheck_endpoint"`
+}
 
 // Setup setsup the metrics server.
 func Setup(c config.Config) error {

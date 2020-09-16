@@ -52,7 +52,7 @@ func (ts *IntegrationTestSuite) SetupSuite() {
 	conf := test.GetConfig()
 	assert.NoError(storage.Setup(conf))
 	test.MustResetDB(storage.DB().DB)
-	storage.RedisClient().FlushAll()
+	rs.RedisClient().FlushAll()
 
 	// http request channel
 	ts.httpRequests = make(chan *http.Request, 100)

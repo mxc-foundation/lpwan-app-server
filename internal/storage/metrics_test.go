@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"github.com/stretchr/testify/require"
 )
 
@@ -362,7 +363,7 @@ func (ts *StorageTestSuite) TestMetrics() {
 			assert := require.New(t)
 			assert.NoError(SetTimeLocation(tst.LocationName))
 
-			RedisClient().FlushAll()
+			rs.RedisClient().FlushAll()
 
 			for _, metrics := range tst.SaveMetrics {
 				assert.NoError(SaveMetricsForInterval(context.Background(), tst.Interval, "metrics_test", metrics))

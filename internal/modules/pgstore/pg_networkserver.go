@@ -2,6 +2,7 @@ package pgstore
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"strings"
 	"time"
 
@@ -227,7 +228,7 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *store.NetworkServ
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
+	rpID, err := uuid.FromString(external.GetApplicationServerID())
 	if err != nil {
 		return errors.Wrap(err, "uuid from string error")
 	}
@@ -328,7 +329,7 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *store.NetworkServ
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
+	rpID, err := uuid.FromString(external.GetApplicationServerID())
 	if err != nil {
 		return errors.Wrap(err, "uuid from string error")
 	}
@@ -385,7 +386,7 @@ func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(config.C.ApplicationServer.ID)
+	rpID, err := uuid.FromString(external.GetApplicationServerID())
 	if err != nil {
 		return errors.Wrap(err, "uuid from string error")
 	}
