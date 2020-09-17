@@ -23,14 +23,49 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 )
 
 const downlinkLockTTL = time.Millisecond * 100
+
+// IntegrationMQTTConfig holds the configuration for the MQTT integration.
+type IntegrationMQTTConfig struct {
+	Server               string        `mapstructure:"server"`
+	Username             string        `mapstructure:"username"`
+	Password             string        `mapstructure:"password"`
+	MaxReconnectInterval time.Duration `mapstructure:"max_reconnect_interval"`
+	QOS                  uint8         `mapstructure:"qos"`
+	CleanSession         bool          `mapstructure:"clean_session"`
+	ClientID             string        `mapstructure:"client_id"`
+	CACert               string        `mapstructure:"ca_cert"`
+	TLSCert              string        `mapstructure:"tls_cert"`
+	TLSKey               string        `mapstructure:"tls_key"`
+	EventTopicTemplate   string        `mapstructure:"event_topic_template"`
+	CommandTopicTemplate string        `mapstructure:"command_topic_template"`
+	RetainEvents         bool          `mapstructure:"retain_events"`
+
+	// For backards compatibility
+	UplinkTopicTemplate        string `mapstructure:"uplink_topic_template"`
+	DownlinkTopicTemplate      string `mapstructure:"downlink_topic_template"`
+	JoinTopicTemplate          string `mapstructure:"join_topic_template"`
+	AckTopicTemplate           string `mapstructure:"ack_topic_template"`
+	ErrorTopicTemplate         string `mapstructure:"error_topic_template"`
+	StatusTopicTemplate        string `mapstructure:"status_topic_template"`
+	LocationTopicTemplate      string `mapstructure:"location_topic_template"`
+	TxAckTopicTemplate         string `mapstructure:"tx_ack_topic_template"`
+	IntegrationTopicTemplate   string `mapstructure:"integration_topic_template"`
+	UplinkRetainedMessage      bool   `mapstructure:"uplink_retained_message"`
+	JoinRetainedMessage        bool   `mapstructure:"join_retained_message"`
+	AckRetainedMessage         bool   `mapstructure:"ack_retained_message"`
+	ErrorRetainedMessage       bool   `mapstructure:"error_retained_message"`
+	StatusRetainedMessage      bool   `mapstructure:"status_retained_message"`
+	LocationRetainedMessage    bool   `mapstructure:"location_retained_message"`
+	TxAckRetainedMessage       bool   `mapstructure:"tx_ack_retained_message"`
+	IntegrationRetainedMessage bool   `mapstructure:"integration_retained_message"`
+}
 
 // Integration implements a MQTT integration.
 type Integration struct {
@@ -38,7 +73,7 @@ type Integration struct {
 	conn                 mqtt.Client
 	dataDownChan         chan models.DataDownPayload
 	wg                   sync.WaitGroup
-	config               config.IntegrationMQTTConfig
+	config               IntegrationMQTTConfig
 	eventTopicTemplate   *template.Template
 	commandTopicTemplate *template.Template
 	downlinkTopic        string
@@ -66,7 +101,7 @@ type Integration struct {
 }
 
 // New creates a new MQTT integration.
-func New(m marshaler.Type, conf config.IntegrationMQTTConfig) (*Integration, error) {
+func New(m marshaler.Type, conf IntegrationMQTTConfig) (*Integration, error) {
 	var err error
 	i := Integration{
 		marshaler:    m,

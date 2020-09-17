@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
-
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
@@ -222,7 +220,7 @@ func (a *GatewayAPI) InsertNewDefaultGatewayConfig(ctx context.Context, req *api
 	defaultGatewayConfig := store.DefaultGatewayConfig{
 		Model:         req.Model,
 		Region:        req.Region,
-		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", serverinfo.GetSettings().ServerAddr, -1),
+		DefaultConfig: strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", ctrl.s.ServerAddr, -1),
 	}
 
 	err = a.st.GetDefaultGatewayConfig(ctx, &defaultGatewayConfig)
@@ -264,7 +262,7 @@ func (a *GatewayAPI) UpdateDefaultGatewayConfig(ctx context.Context, req *api.Up
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	defaultGatewayConfig.DefaultConfig = strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", serverinfo.GetSettings().ServerAddr, -1)
+	defaultGatewayConfig.DefaultConfig = strings.Replace(req.DefaultConfig, "{{ .ServerAddr }}", ctrl.s.ServerAddr, -1)
 	err = a.st.UpdateDefaultGatewayConfig(ctx, &defaultGatewayConfig)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
@@ -1108,7 +1106,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 	// register gateway with current supernode on remote provisioning server
 	provReq := psPb.RegisterGWRequest{
 		Sn:            req.Sn,
-		SuperNodeAddr: serverinfo.GetSettings().ServerAddr,
+		SuperNodeAddr: ctrl.s.ServerAddr,
 		OrgId:         req.OrganizationId,
 	}
 

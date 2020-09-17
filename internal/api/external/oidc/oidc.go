@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"net/http"
 	"time"
 
@@ -18,12 +17,6 @@ import (
 )
 
 var (
-	providerURL  string
-	clientID     string
-	clientSecret string
-	redirectURL  string
-	jwtSecret    string
-
 	// MockGetUserUser contains a possible mocked GetUser User
 	MockGetUserUser *User
 	// MockGetUserError contains a possible mocked GetUser error
@@ -53,14 +46,16 @@ type UserAuthenticationStruct struct {
 }
 
 type controller struct {
-	s UserAuthenticationStruct
+	s         UserAuthenticationStruct
+	jwtSecret string
 }
 
 var ctrl *controller
 
-func SettingsSetup(s UserAuthenticationStruct) error {
+func SettingsSetup(s UserAuthenticationStruct, jwtSecret string) error {
 	ctrl = &controller{
-		s: s,
+		s:         s,
+		jwtSecret: jwtSecret,
 	}
 
 	return nil
@@ -78,12 +73,6 @@ func Setup(r *mux.Router) error {
 		"login": "/auth/oidc/login",
 	}).Info("oidc: setting up openid connect endpoints")
 
-	providerURL = oidcConfig.ProviderURL
-	clientID = oidcConfig.ClientID
-	clientSecret = oidcConfig.ClientSecret
-	redirectURL = oidcConfig.RedirectURL
-	jwtSecret = external.GetJWTSecret()
-
 	r.HandleFunc("/auth/oidc/login", loginHandler)
 	r.HandleFunc("/auth/oidc/callback", callbackHandler)
 
@@ -96,19 +85,20 @@ type authenticator struct {
 }
 
 func newAuthenticator(ctx context.Context) (*authenticator, error) {
-	if providerURL == "" || clientID == "" || clientSecret == "" || redirectURL == "" {
+	if ctrl.s.OpenIDConnect.ProviderURL == "" || ctrl.s.OpenIDConnect.ClientID == "" ||
+		ctrl.s.OpenIDConnect.ClientSecret == "" || ctrl.s.OpenIDConnect.RedirectURL == "" {
 		return nil, errors.New("openid connect is not properly configured")
 	}
 
-	provider, err := oidc.NewProvider(ctx, providerURL)
+	provider, err := oidc.NewProvider(ctx, ctrl.s.OpenIDConnect.ProviderURL)
 	if err != nil {
 		return nil, errors.Wrap(err, "get provider error")
 	}
 
 	conf := oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		RedirectURL:  redirectURL,
+		ClientID:     ctrl.s.OpenIDConnect.ClientID,
+		ClientSecret: ctrl.s.OpenIDConnect.ClientSecret,
+		RedirectURL:  ctrl.s.OpenIDConnect.RedirectURL,
 		Endpoint:     provider.Endpoint(),
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
 	}
@@ -164,7 +154,7 @@ func getState() (string, error) {
 		Id:        state,
 	})
 
-	return token.SignedString([]byte(jwtSecret))
+	return token.SignedString([]byte(ctrl.jwtSecret))
 }
 
 func validateState(state string) (bool, error) {
@@ -173,7 +163,7 @@ func validateState(state string) (bool, error) {
 			return false, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		return []byte(jwtSecret), nil
+		return []byte(ctrl.jwtSecret), nil
 	})
 	if err != nil {
 		return false, errors.Wrap(err, "parse state error")
@@ -213,7 +203,7 @@ func GetUser(ctx context.Context, code string, state string) (User, error) {
 	}
 
 	oidcConfig := &oidc.Config{
-		ClientID: clientID,
+		ClientID: ctrl.s.OpenIDConnect.ClientID,
 	}
 
 	idToken, err := auth.provider.Verifier(oidcConfig).Verify(ctx, rawIDToken)

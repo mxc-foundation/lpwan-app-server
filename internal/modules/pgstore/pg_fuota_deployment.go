@@ -9,6 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 func (ps *pgstore) CheckReadFUOTADeploymentAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
@@ -83,4 +85,26 @@ func (ps *pgstore) CheckCreateFUOTADeploymentsAccess(ctx context.Context, userna
 		return false, errors.Wrap(err, "select error")
 	}
 	return count > 0, nil
+}
+
+func (ps *pgstore) GetDeviceKeysFromFuotaDevelopmentDevice(ctx context.Context, id uuid.UUID) ([]store.DeviceKeys, error) {
+	// query all device-keys that relate to this FUOTA deployment
+	var deviceKeys []store.DeviceKeys
+	err := sqlx.SelectContext(ctx, ps.db, &deviceKeys, `
+		select
+			dk.*
+		from
+			fuota_deployment_device dd
+		inner join
+			device_keys dk
+			on dd.dev_eui = dk.dev_eui
+		where
+			dd.fuota_deployment_id = $1`,
+		id,
+	)
+	if err != nil {
+		return nil, handlePSQLError(Select, err, "select error")
+	}
+
+	return deviceKeys, nil
 }

@@ -10,7 +10,7 @@ type Controller struct {
 
 var Service = &Controller{}
 
-func Setup(s store.Store) error {
-	Service.St, _ = store.New(s)
+func Setup(h *store.Handler) error {
+	Service.St = h
 	return nil
 }

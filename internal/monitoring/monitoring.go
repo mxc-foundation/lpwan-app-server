@@ -1,12 +1,12 @@
 package monitoring
 
 import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"net/http"
+
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 type MonitoringStruct struct {
@@ -15,39 +15,51 @@ type MonitoringStruct struct {
 	PrometheusAPITimingHistogram bool   `mapstructure:"prometheus_api_timing_histogram"`
 	HealthcheckEndpoint          bool   `mapstructure:"healthcheck_endpoint"`
 }
-
-// Setup setsup the metrics server.
-func Setup(c config.Config) error {
-	if c.Monitoring.Bind != "" {
-		return setupNew(c)
-	}
-	return setupLegacy(c)
+type controller struct {
+	s MonitoringStruct
 }
 
-func setupNew(c config.Config) error {
-	if c.Monitoring.Bind == "" {
+var ctrl *controller
+
+func SettingsSerup(s MonitoringStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
+}
+
+// Setup setsup the metrics server.
+func Setup() error {
+	if ctrl.s.Bind != "" {
+		return setupNew()
+	}
+	return setupLegacy()
+}
+
+func setupNew() error {
+	if ctrl.s.Bind == "" {
 		return nil
 	}
 
 	log.WithFields(log.Fields{
-		"bind": c.Monitoring.Bind,
+		"bind": ctrl.s.Bind,
 	}).Info("monitoring: setting up monitoring endpoint")
 
 	mux := http.NewServeMux()
 
-	if c.Monitoring.PrometheusAPITimingHistogram {
+	if ctrl.s.PrometheusAPITimingHistogram {
 		log.Info("monitoring: enabling Prometheus api timing histogram")
 		grpc_prometheus.EnableHandlingTimeHistogram()
 	}
 
-	if c.Monitoring.PrometheusEndpoint {
+	if ctrl.s.PrometheusEndpoint {
 		log.WithFields(log.Fields{
 			"endpoint": "/metrics",
 		}).Info("monitoring: registering Prometheus endpoint")
 		mux.Handle("/metrics", promhttp.Handler())
 	}
 
-	if c.Monitoring.HealthcheckEndpoint {
+	if ctrl.s.HealthcheckEndpoint {
 		log.WithFields(log.Fields{
 			"endpoint": "/healthcheck",
 		}).Info("monitoring: registering healthcheck endpoint")
@@ -56,7 +68,7 @@ func setupNew(c config.Config) error {
 
 	server := http.Server{
 		Handler: mux,
-		Addr:    c.Monitoring.Bind,
+		Addr:    ctrl.s.Bind,
 	}
 
 	go func() {
@@ -67,22 +79,23 @@ func setupNew(c config.Config) error {
 	return nil
 }
 
-func setupLegacy(c config.Config) error {
-	if !c.Metrics.Prometheus.EndpointEnabled {
+func setupLegacy() error {
+	metricsStruct := storage.GetMetricsSettings()
+	if !metricsStruct.Prometheus.EndpointEnabled {
 		return nil
 	}
 
-	if c.Metrics.Prometheus.APITimingHistogram {
+	if metricsStruct.Prometheus.APITimingHistogram {
 		grpc_prometheus.EnableHandlingTimeHistogram()
 	}
 
 	log.WithFields(log.Fields{
-		"bind": c.Metrics.Prometheus.Bind,
+		"bind": metricsStruct.Prometheus.Bind,
 	}).Info("metrics: starting prometheus metrics server")
 
 	server := http.Server{
 		Handler: promhttp.Handler(),
-		Addr:    c.Metrics.Prometheus.Bind,
+		Addr:    metricsStruct.Prometheus.Bind,
 	}
 
 	go func() {

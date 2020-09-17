@@ -5,8 +5,6 @@ import (
 	"crypto/rand"
 	"time"
 
-	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
-
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
@@ -19,11 +17,16 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
+var ctrl struct {
+	handler *store.Handler
+}
+
 // SendPingLoop is a never returning function sending the gateway pings.
-func SendPingLoop() {
+func SendPingLoop(handler *store.Handler) {
+	ctrl.handler = handler
+
 	for {
 		ctxID, err := uuid.NewV4()
 		if err != nil {
@@ -33,7 +36,7 @@ func SendPingLoop() {
 		ctx := context.Background()
 		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-		if err := sendGatewayPing(ctx); err != nil {
+		if err := sendGatewayPing(ctx, ctrl.handler); err != nil {
 			log.Errorf("send gateway ping error: %s", err)
 		}
 		time.Sleep(time.Second)
@@ -55,12 +58,12 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 		log.Errorf("delete ping lookup error: %s", err)
 	}
 
-	ping, err := storage.GetGatewayPing(ctx, storage.DB(), id)
+	ping, err := ctrl.handler.GetGatewayPing(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "get gateway ping error")
 	}
 
-	err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+	err = ctrl.handler.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		for _, rx := range req.RxInfo {
 			var mac lorawan.EUI64
 			copy(mac[:], rx.GatewayId)
@@ -111,8 +114,8 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 
 // sendGatewayPing selects the next gateway to ping, creates the "ping"
 // frame and sends this frame to the network-server for transmission.
-func sendGatewayPing(ctx context.Context) error {
-	err := gwmod.Get().Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+func sendGatewayPing(ctx context.Context, handler *store.Handler) error {
+	err := handler.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		gw, err := handler.GetGatewayForPing(ctx)
 		if err != nil {
 			return errors.Wrap(err, "get gateway for ping error")

@@ -17,7 +17,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
@@ -26,9 +25,19 @@ import (
 
 var AppserverVersion string
 
+type ServerSettingsStruct struct {
+	LogLevel               int    `mapstructure:"log_level"`
+	LogToSyslog            bool   `mapstructure:"log_to_syslog"`
+	PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
+	Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
+	DefaultLanguage        string `mapstructure:"defualt_language"`
+	ServerAddr             string `mapstructure:"server_addr"`
+	ServerRegion           string `mapstructure:"server_region"`
+}
+
 // Config defines the configuration structure.
 type Config struct {
-	General serverinfo.ServerSettingsStruct `mapstructure:"general"`
+	General ServerSettingsStruct `mapstructure:"general"`
 
 	PostgreSQL storage.PostgreSQLStruct `mapstructure:"postgresql"`
 

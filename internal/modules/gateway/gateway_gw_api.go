@@ -3,6 +3,7 @@ package gateway
 import (
 	"bytes"
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 
 	/* #nosec */
 	"crypto/md5"
@@ -17,7 +18,6 @@ import (
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
@@ -38,7 +38,7 @@ func NewHeartbeatAPI(bind string) *HeartbeatAPI {
 }
 
 func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatRequest) (*gwpb.HeartbeatResponse, error) {
-	if obj.BindPort == config.C.ApplicationServer.APIForGateway.OldGateway.Bind {
+	if obj.BindPort == ctrl.bindPortOldGateway {
 		return nil, status.Error(codes.PermissionDenied, "")
 	}
 
@@ -102,7 +102,7 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 
 		// if offline longer than 10 mins, last heartbeat and first heartbeat = current heartbeat
 		//if current_heartbeat-last_heartbeat > 600 {
-		if currentHeartbeat-lastHeartbeat > config.C.ApplicationServer.MiningSetUp.HeartbeatOfflineLimit {
+		if currentHeartbeat-lastHeartbeat > mining.GetSettings().HeartbeatOfflineLimit {
 			err := obj.st.UpdateLastHeartbeat(ctx, gatewayEUI, currentHeartbeat)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update last heartbeat error")

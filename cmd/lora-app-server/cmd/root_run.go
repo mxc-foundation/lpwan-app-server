@@ -6,19 +6,14 @@ import (
 	"os/signal"
 	"syscall"
 
-	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota-deployment"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/as"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 
-	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
@@ -38,16 +33,23 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	appmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	asmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
 	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	devprofilemod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
+	fuotamod "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota-deployment"
 	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	gpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	miningmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	orgmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	servermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
+	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	usermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 )
 
@@ -56,34 +58,78 @@ func run(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	tasks := []func() error{
-		setLogLevel,
-		setSyslog,
-		printStartMessage,
-		startPProf,
-		setupStorage,
-		setupNetworkserver,
-		setupClient,
-		migrateGatewayStats,
-		migrateToClusterKeys,
-		setupIntegration,
-		setupSMTP,
-		setupCodec,
-		handleDataDownPayloads,
-		startGatewayPing,
-		setupMulticastSetup,
-		setupFragmentation,
-		setupFUOTA,
-
-		setupModules,
-		setupAPI,
-		setupMonitoring,
+	pwh, err := pwhash.New(16, serverinfo.GetSettings().PasswordHashIterations)
+	if err != nil {
+		return err
 	}
 
-	for _, t := range tasks {
-		if err := t(); err != nil {
-			log.Fatal(err)
-		}
+	handler, _ := store.New(pgstore.New(storage.DBTest().DB, pgstore.Settings{
+		ApplicationServerID:         external.GetApplicationServerID(),
+		JWTSecret:                   external.GetJWTSecret(),
+		ApplicationServerPublicHost: as.GetSettings().PublicHost,
+		PWH:                         pwh,
+	}))
+
+	if err := setLogLevel(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setSyslog(); err != nil {
+		log.Fatal(err)
+	}
+	if err := printStartMessage(); err != nil {
+		log.Fatal(err)
+	}
+	if err := startPProf(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupStorage(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupNetworkserver(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupClient(); err != nil {
+		log.Fatal(err)
+	}
+	if err := migrateGatewayStats(); err != nil {
+		log.Fatal(err)
+	}
+	if err := migrateToClusterKeys(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupIntegration(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupSMTP(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupCodec(); err != nil {
+		log.Fatal(err)
+	}
+	if err := handleDataDownPayloads(); err != nil {
+		log.Fatal(err)
+	}
+	if err := startGatewayPing(handler); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupMulticastSetup(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupFragmentation(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupFUOTA(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := setupModules(handler); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupAPI(); err != nil {
+		log.Fatal(err)
+	}
+	if err := setupMonitoring(); err != nil {
+		log.Fatal(err)
 	}
 
 	sigChan := make(chan os.Signal)
@@ -105,7 +151,7 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func startPProf() error {
-	return pprof.Setup(config.C.PProf)
+	return pprof.Setup()
 }
 
 func setLogLevel() error {
@@ -138,7 +184,7 @@ func setupSMTP() error {
 }
 
 func setupIntegration() error {
-	if err := integration.Setup(config.C); err != nil {
+	if err := integration.Setup(); err != nil {
 		return errors.Wrap(err, "setup integration error")
 	}
 
@@ -146,7 +192,7 @@ func setupIntegration() error {
 }
 
 func setupCodec() error {
-	if err := jscodec.Setup(config.C); err != nil {
+	if err := jscodec.Setup(); err != nil {
 		return errors.Wrap(err, "setup codec error")
 	}
 
@@ -154,7 +200,7 @@ func setupCodec() error {
 }
 
 func setupNetworkserver() error {
-	if err := networkserver.Setup(config.C); err != nil {
+	if err := networkserver.Setup(); err != nil {
 		return errors.Wrap(err, "setup networkserver pool error")
 	}
 
@@ -197,89 +243,87 @@ func handleDataDownPayloads() error {
 	return nil
 }
 
-func startGatewayPing() error {
-	go gwping.SendPingLoop()
+func startGatewayPing(h *store.Handler) error {
+	go gwping.SendPingLoop(h)
 
 	return nil
 }
 
 func setupMulticastSetup() error {
-	if err := multicastsetup.Setup(config.C); err != nil {
+	if err := multicastsetup.Setup(); err != nil {
 		return errors.Wrap(err, "multicastsetup setup error")
 	}
 	return nil
 }
 
 func setupFragmentation() error {
-	if err := fragmentation.Setup(config.C); err != nil {
+	if err := fragmentation.Setup(); err != nil {
 		return errors.Wrap(err, "fragmentation setup error")
 	}
 	return nil
 }
 
 func setupFUOTA() error {
-	if err := fuota.Setup(config.C); err != nil {
+	if err := fuota.Setup(); err != nil {
 		return errors.Wrap(err, "fuota setup error")
 	}
 	return nil
 }
 
-func setupModules() (err error) {
-	handler, _ := store.New(pgstore.New(storage.DBTest().DB))
-
-	if err = gwmod.Setup(config.C, handler); err != nil {
+func setupModules(h *store.Handler) (err error) {
+	if err = gwmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = devmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = devmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = appmod.Setup(handler); err != nil {
+	if err = appmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = gpmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = gpmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = miningmod.Setup(config.C.ApplicationServer.MiningSetUp, pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = miningmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = nsmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = nsmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = orgmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = orgmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = usermod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = usermod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = servermod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = servermod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = asmod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = asmod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = devprofilemod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = devprofilemod.Setup(h); err != nil {
 		return err
 	}
 
-	if err = serviceprofile.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = serviceprofile.Setup(h); err != nil {
 		return err
 	}
 
-	if err = multicast.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = multicast.Setup(h); err != nil {
 		return err
 	}
 
-	if err = fuotamod.Setup(pgstore.New(storage.DBTest().DB)); err != nil {
+	if err = fuotamod.Setup(h); err != nil {
 		return err
 	}
 
@@ -294,7 +338,7 @@ func setupAPI() error {
 }
 
 func setupMonitoring() error {
-	if err := monitoring.Setup(config.C); err != nil {
+	if err := monitoring.Setup(); err != nil {
 		return errors.Wrap(err, "setup monitoring error")
 	}
 	return nil

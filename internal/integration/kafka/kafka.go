@@ -18,22 +18,31 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
+
+// IntegrationKafkaConfig holds the Kafka integration configuration.
+type IntegrationKafkaConfig struct {
+	Brokers          []string `mapstructure:"brokers"`
+	TLS              bool     `mapstructure:"tls"`
+	Topic            string   `mapstructure:"topic"`
+	EventKeyTemplate string   `mapstructure:"event_key_template"`
+	Username         string   `mapstructure:"username"`
+	Password         string   `mapstructure:"password"`
+}
 
 // Integration implements an Kafka integration.
 type Integration struct {
 	marshaler        marshaler.Type
 	writer           *kafka.Writer
 	eventKeyTemplate *template.Template
-	config           config.IntegrationKafkaConfig
+	config           IntegrationKafkaConfig
 }
 
 // New creates a new Kafka integration.
-func New(m marshaler.Type, conf config.IntegrationKafkaConfig) (*Integration, error) {
+func New(m marshaler.Type, conf IntegrationKafkaConfig) (*Integration, error) {
 	wc := kafka.WriterConfig{
 		Brokers:  conf.Brokers,
 		Topic:    conf.Topic,

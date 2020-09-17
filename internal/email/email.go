@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 
 	"github.com/pkg/errors"
@@ -75,7 +73,13 @@ type OperatorStruct struct {
 	OperatorSupport    string `mapstructure:"operator_support"`
 }
 
+type ServerInfoStruct struct {
+	ServerAddr      string
+	DefaultLanguage string
+}
+
 type controller struct {
+	s        ServerInfoStruct
 	operator OperatorStruct
 	smtp     map[string]SMTPStruct
 	cli      map[string]*Client
@@ -83,13 +87,20 @@ type controller struct {
 
 var ctrl *controller
 
-func SettingsSetup(smtp map[string]SMTPStruct, operator OperatorStruct) error {
+func SettingsSetup(smtp map[string]SMTPStruct, operator OperatorStruct, s ServerInfoStruct) error {
 	ctrl = &controller{
 		operator: operator,
 		smtp:     smtp,
+		s:        s,
 	}
 
 	return nil
+}
+func GetSettings() ServerInfoStruct {
+	return ctrl.s
+}
+func GetOperatorInfo() OperatorStruct {
+	return ctrl.operator
 }
 
 // Setup configures the package.
@@ -113,7 +124,7 @@ func Setup() error {
 	}
 
 	email.base32endocoding = base32.StdEncoding.WithPadding(base32.NoPadding)
-	email.host = "https://" + serverinfo.GetSettings().ServerAddr
+	email.host = "https://" + ctrl.s.ServerAddr
 	email.operator = operatorInfo{
 		operatorName:       ctrl.operator.Operator,
 		downloadAppStore:   ctrl.operator.DownloadAppStore,

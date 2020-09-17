@@ -8,8 +8,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
@@ -22,19 +20,12 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/events/uplink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	asmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/as"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-)
-
-var (
-	bind    string
-	caCert  string
-	tlsCert string
-	tlsKey  string
 )
 
 type AppserverStruct struct {
@@ -45,23 +36,34 @@ type AppserverStruct struct {
 	PublicHost string `mapstructure:"public_host"`
 }
 
-// Setup configures the package.
-func Setup(conf config.Config) error {
-	bind = conf.ApplicationServer.API.Bind
-	caCert = conf.ApplicationServer.API.CACert
-	tlsCert = conf.ApplicationServer.API.TLSCert
-	tlsKey = conf.ApplicationServer.API.TLSKey
+type controller struct {
+	s AppserverStruct
+}
 
+var ctrl *controller
+
+func SettingsSetup(s AppserverStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
+}
+func GetSettings() AppserverStruct {
+	return ctrl.s
+}
+
+// Setup configures the package.
+func Setup() error {
 	log.WithFields(log.Fields{
-		"bind":     bind,
-		"ca_cert":  caCert,
-		"tls_cert": tlsCert,
-		"tls_key":  tlsKey,
+		"bind":     ctrl.s.Bind,
+		"ca_cert":  ctrl.s.CACert,
+		"tls_cert": ctrl.s.TLSCert,
+		"tls_key":  ctrl.s.TLSKey,
 	}).Info("api/as: starting application-server api")
 
 	grpcOpts := helpers.GetgRPCServerOptions()
-	if caCert != "" && tlsCert != "" && tlsKey != "" {
-		creds, err := helpers.GetTransportCredentials(caCert, tlsCert, tlsKey, true)
+	if ctrl.s.CACert != "" && ctrl.s.TLSCert != "" && ctrl.s.TLSKey != "" {
+		creds, err := helpers.GetTransportCredentials(ctrl.s.CACert, ctrl.s.TLSCert, ctrl.s.TLSKey, true)
 		if err != nil {
 			return errors.Wrap(err, "get transport credentials error")
 		}
@@ -70,7 +72,7 @@ func Setup(conf config.Config) error {
 	server := grpc.NewServer(grpcOpts...)
 	as.RegisterApplicationServerServiceServer(server, asmod.NewApplicationServerAPI())
 
-	ln, err := net.Listen("tcp", bind)
+	ln, err := net.Listen("tcp", ctrl.s.Bind)
 	if err != nil {
 		return errors.Wrap(err, "start application-server api listener error")
 	}

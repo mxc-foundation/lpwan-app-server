@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -14,8 +12,8 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/fragmentation"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -31,11 +29,27 @@ type FragmentationStruct struct {
 	SyncBatchSize int           `mapstructure:"sync_batch_size"`
 }
 
+type controller struct {
+	s FragmentationStruct
+}
+
+var ctrl *controller
+
+func SettingsSetup(s FragmentationStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
+}
+func GetSettings() FragmentationStruct {
+	return ctrl.s
+}
+
 // Setup configures the package.
-func Setup(conf config.Config) error {
-	syncInterval = conf.ApplicationServer.FragmentationSession.SyncInterval
-	syncBatchSize = conf.ApplicationServer.FragmentationSession.SyncBatchSize
-	syncRetries = conf.ApplicationServer.FragmentationSession.SyncRetries
+func Setup() error {
+	syncInterval = ctrl.s.SyncInterval
+	syncBatchSize = ctrl.s.SyncBatchSize
+	syncRetries = ctrl.s.SyncRetries
 
 	go SyncRemoteFragmentationSessionsLoop()
 

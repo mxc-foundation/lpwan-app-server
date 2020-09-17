@@ -1,7 +1,9 @@
 package gws
 
 import (
+	"fmt"
 	"net"
+	"strings"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -37,6 +39,22 @@ func SettingsSetup(bindStruct GatewayBindStruct) error {
 	ctrl = &controller{
 		s: bindStruct,
 	}
+
+	var bindPortOldGateway string
+	var bindPortNewGateway string
+	if strArray := strings.Split(bindStruct.OldGateway.Bind, ":"); len(strArray) != 2 {
+		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", bindStruct.OldGateway.Bind))
+	} else {
+		bindPortOldGateway = strArray[1]
+	}
+
+	if strArray := strings.Split(bindStruct.NewGateway.Bind, ":"); len(strArray) != 2 {
+		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", bindStruct.NewGateway.Bind))
+	} else {
+		bindPortNewGateway = strArray[1]
+	}
+
+	gateway.SetupFirmware(bindPortOldGateway, bindPortNewGateway)
 
 	return nil
 }

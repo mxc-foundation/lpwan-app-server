@@ -18,7 +18,6 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -43,8 +42,17 @@ type Integration struct {
 	client              *http.Client
 }
 
+// IntegrationGCPConfig holds the GCP Pub/Sub integration configuration.
+type IntegrationGCPConfig struct {
+	Marshaler            string `mapstructure:"marshaler" json:"marshaler"`
+	CredentialsFile      string `mapstructure:"credentials_file" json:"-"`
+	CredentialsFileBytes []byte `mapstructure:"-" json:"credentialsFile"`
+	ProjectID            string `mapstructure:"project_id" json:"projectID"`
+	TopicName            string `mapstructure:"topic_name" json:"topicName"`
+}
+
 // New creates a new Pub/Sub integration.
-func New(m marshaler.Type, conf config.IntegrationGCPConfig) (*Integration, error) {
+func New(m marshaler.Type, conf IntegrationGCPConfig) (*Integration, error) {
 	if conf.Marshaler != "" {
 		switch conf.Marshaler {
 		case "PROTOBUF":

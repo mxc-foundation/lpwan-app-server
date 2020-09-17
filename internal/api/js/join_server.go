@@ -14,15 +14,7 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/backend/joinserver"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-)
-
-var (
-	bind    string
-	caCert  string
-	tlsCert string
-	tlsKey  string
 )
 
 type JoinServerStruct struct {
@@ -41,32 +33,43 @@ type JoinServerStruct struct {
 	} `mapstructure:"kek"`
 }
 
-// Setup configures the package.
-func Setup(conf config.Config) error {
-	bind = conf.JoinServer.Bind
-	caCert = conf.JoinServer.CACert
-	tlsCert = conf.JoinServer.TLSCert
-	tlsKey = conf.JoinServer.TLSKey
+type controller struct {
+	s JoinServerStruct
+}
 
+var ctrl *controller
+
+func SettingsSetup(s JoinServerStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
+}
+func GetSettings() JoinServerStruct {
+	return ctrl.s
+}
+
+// Setup configures the package.
+func Setup() error {
 	log.WithFields(log.Fields{
-		"bind":     bind,
-		"ca_cert":  caCert,
-		"tls_cert": tlsCert,
-		"tls_key":  tlsKey,
+		"bind":     ctrl.s.Bind,
+		"ca_cert":  ctrl.s.CACert,
+		"tls_cert": ctrl.s.TLSCert,
+		"tls_key":  ctrl.s.TLSKey,
 	}).Info("api/js: starting join-server api")
 
-	handler, err := getHandler(conf)
+	handler, err := getHandler()
 	if err != nil {
 		return errors.Wrap(err, "get join-server handler error")
 	}
 
 	server := http.Server{
 		Handler:   handler,
-		Addr:      bind,
+		Addr:      ctrl.s.Bind,
 		TLSConfig: &tls.Config{},
 	}
 
-	if caCert == "" && tlsCert == "" && tlsKey == "" {
+	if ctrl.s.CACert == "" && ctrl.s.TLSCert == "" && ctrl.s.TLSKey == "" {
 		go func() {
 			err := server.ListenAndServe()
 			log.WithError(err).Fatal("join-server api error")
@@ -74,8 +77,8 @@ func Setup(conf config.Config) error {
 		return nil
 	}
 
-	if caCert != "" {
-		caCert, err := ioutil.ReadFile(caCert)
+	if ctrl.s.CACert != "" {
+		caCert, err := ioutil.ReadFile(ctrl.s.CACert)
 		if err != nil {
 			return errors.Wrap(err, "read ca certificate error")
 		}
@@ -89,18 +92,18 @@ func Setup(conf config.Config) error {
 		server.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 
 		log.WithFields(log.Fields{
-			"ca_cert": caCert,
+			"ca_cert": ctrl.s.CACert,
 		}).Info("api/js: join-server is configured with client-certificate authentication")
 	}
 
 	go func() {
-		err := server.ListenAndServeTLS(tlsCert, tlsKey)
+		err := server.ListenAndServeTLS(ctrl.s.TLSCert, ctrl.s.TLSKey)
 		log.WithError(err).Fatal("api/js: join-server api error")
 	}()
 
 	return nil
 }
-func getHandler(conf config.Config) (http.Handler, error) {
+func getHandler() (http.Handler, error) {
 	jsConf := joinserver.HandlerConfig{
 		Logger: log.StandardLogger(),
 		GetDeviceKeysByDevEUIFunc: func(devEUI lorawan.EUI64) (joinserver.DeviceKeys, error) {
@@ -125,7 +128,7 @@ func getHandler(conf config.Config) (http.Handler, error) {
 			}, nil
 		},
 		GetKEKByLabelFunc: func(label string) ([]byte, error) {
-			for _, kek := range conf.JoinServer.KEK.Set {
+			for _, kek := range ctrl.s.KEK.Set {
 				if label == kek.Label {
 					b, err := hex.DecodeString(kek.KEK)
 					if err != nil {
@@ -139,7 +142,7 @@ func getHandler(conf config.Config) (http.Handler, error) {
 			return nil, nil
 		},
 		GetASKEKLabelByDevEUIFunc: func(devEUI lorawan.EUI64) (string, error) {
-			return conf.JoinServer.KEK.ASKEKLabel, nil
+			return ctrl.s.KEK.ASKEKLabel, nil
 		},
 		GetHomeNetIDByDevEUIFunc: func(devEUI lorawan.EUI64) (lorawan.NetID, error) {
 			d, err := storage.GetDevice(context.TODO(), storage.DB(), devEUI, false, true)
@@ -173,6 +176,6 @@ func getHandler(conf config.Config) (http.Handler, error) {
 
 	return &prometheusMiddleware{
 		handler:         handler,
-		timingHistogram: conf.Metrics.Prometheus.APITimingHistogram,
+		timingHistogram: storage.GetMetricsSettings().Prometheus.APITimingHistogram,
 	}, nil
 }

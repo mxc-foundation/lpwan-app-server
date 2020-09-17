@@ -24,7 +24,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
@@ -65,7 +64,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 		ctxlogrus.Extract(ctx).WithError(err).Error("couldn't get 2fa status")
 		return nil, status.Error(codes.Internal, "couldn't get 2fa status")
 	}
-	if !serverinfo.GetSettings().Enable2FALogin {
+	if !ctrl.s.Enable2FALogin {
 		is2fa = false
 	}
 	if is2fa {
@@ -111,8 +110,8 @@ func (a *InternalUserAPI) Login2FA(ctx context.Context, req *inpb.Login2FAReques
 
 // IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
 func IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*inpb.GoogleRecaptchaResponse, error) {
-	secret := ctrl.s.Secret
-	postURL := ctrl.s.HostServer
+	secret := ctrl.s.Recaptcha.Secret
+	postURL := ctrl.s.Recaptcha.HostServer
 
 	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
 	/* #nosec */
@@ -223,7 +222,7 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 // Branding returns UI branding.
 func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
 	resp := inpb.BrandingResponse{
-		LogoPath: "https://" + serverinfo.GetSettings().ServerAddr + "/branding.png",
+		LogoPath: email.GetOperatorInfo().OperatorLogo,
 	}
 
 	return &resp, nil
@@ -512,7 +511,7 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 			if err := pr.SetOTP(ctx, ""); err != nil {
 				return status.Errorf(codes.Internal, "couldn't update db: %v", err)
 			}
-			if err := handler.UpdatePassword(ctx, pr.UserID, req.NewPassword, ctrl.pwh); err != nil {
+			if err := handler.UpdatePassword(ctx, pr.UserID, req.NewPassword); err != nil {
 				return status.Errorf(codes.Internal, "couldn't update db: %v", err)
 			}
 			return nil
@@ -579,7 +578,7 @@ func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.Fini
 			CanHaveGateways: true,
 		}
 
-		err = handler.FinishRegistration(ctx, req.UserId, req.Password, ctrl.pwh)
+		err = handler.FinishRegistration(ctx, req.UserId, req.Password)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}

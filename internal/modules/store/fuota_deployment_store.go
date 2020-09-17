@@ -9,8 +9,15 @@ import (
 )
 
 type FUOTADeploymentStore interface {
+	GetDeviceKeysFromFuotaDevelopmentDevice(ctx context.Context, id uuid.UUID) ([]DeviceKeys, error)
+
+	// validator
 	CheckReadFUOTADeploymentAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
 	CheckCreateFUOTADeploymentsAccess(ctx context.Context, username string, applicationID int64, devEUI lorawan.EUI64, userID int64) (bool, error)
+}
+
+func (h *Handler) GetDeviceKeysFromFuotaDevelopmentDevice(ctx context.Context, id uuid.UUID) ([]DeviceKeys, error) {
+	return h.store.GetDeviceKeysFromFuotaDevelopmentDevice(ctx, id)
 }
 
 func (h *Handler) CheckReadFUOTADeploymentAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {

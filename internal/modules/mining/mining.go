@@ -27,34 +27,41 @@ type Config struct {
 	Period int64 `mapstructure:"period"`
 }
 
-// Controller regularly checks what gateways should be paid for mining and
+// controller regularly checks what gateways should be paid for mining and
 // sends request to m2m to pay them
-type Controller struct {
-	gwOnlineLimit int64
-	period        int64
-	m2mClient     api.MiningServiceClient
-	st            *store.Handler
+type controller struct {
+	s         Config
+	m2mClient api.MiningServiceClient
+	st        *store.Handler
 }
 
-func Setup(conf Config, s store.Store) (err error) {
-	if !conf.Enabled {
+var ctrl *controller
+
+func SettingsSetup(s Config) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
+}
+func GetSettings() Config {
+	return ctrl.s
+}
+
+func Setup(h *store.Handler) (err error) {
+	if !ctrl.s.Enabled {
 		return nil
 	}
 
 	log.Info("mining cron task begin...")
 
-	ctrl := &Controller{
-		gwOnlineLimit: conf.GwOnlineLimit,
-		period:        conf.Period,
-	}
-	ctrl.st, _ = store.New(s)
+	ctrl.st = h
 	ctrl.m2mClient, err = mxprotocolconn.GetMiningServiceClient()
 	if err != nil {
 		return errors.Wrap(err, "get m2m mining service client error")
 	}
 
 	go func() {
-		period := time.Duration(ctrl.period) * time.Second
+		period := time.Duration(ctrl.s.Period) * time.Second
 		for {
 			nextRun := time.Now().Add(period).Truncate(period)
 			time.Sleep(time.Until(nextRun))
@@ -67,13 +74,13 @@ func Setup(conf Config, s store.Store) (err error) {
 	return nil
 }
 
-func (ctrl *Controller) submitMining(ctx context.Context) error {
+func (ctrl *controller) submitMining(ctx context.Context) error {
 	current_time := time.Now().Unix()
 	log.Infof("processing mining")
 
 	// get the gateway list that should receive the mining tokens
 	miningGws, err := ctrl.st.GetGatewayMiningList(
-		ctx, current_time, ctrl.gwOnlineLimit,
+		ctx, current_time, ctrl.s.GwOnlineLimit,
 	)
 	if err != nil {
 		log.WithError(err).Error("Cannot get mining gateway list from DB.")
@@ -109,10 +116,10 @@ func (ctrl *Controller) submitMining(ctx context.Context) error {
 	return nil
 }
 
-func (ctrl *Controller) sendMining(ctx context.Context, macs []string) error {
+func (ctrl *controller) sendMining(ctx context.Context, macs []string) error {
 	_, err := ctrl.m2mClient.Mining(ctx, &api.MiningRequest{
 		GatewayMac:    macs,
-		PeriodSeconds: ctrl.period,
+		PeriodSeconds: ctrl.s.Period,
 	})
 
 	return err

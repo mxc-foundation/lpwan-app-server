@@ -5,8 +5,6 @@ import (
 	"errors"
 	"regexp"
 	"time"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 )
 
 type UserStore interface {
@@ -25,8 +23,8 @@ type UserStore interface {
 	RegisterUser(ctx context.Context, user *User, token string) error
 	GetUserByToken(ctx context.Context, token string) (User, error)
 	GetTokenByUsername(ctx context.Context, userEmail string) (string, error)
-	FinishRegistration(ctx context.Context, userID int64, password string, pwh *pwhash.PasswordHasher) error
-	UpdatePassword(ctx context.Context, id int64, newpassword string, pwh *pwhash.PasswordHasher) error
+	FinishRegistration(ctx context.Context, userID int64, password string) error
+	UpdatePassword(ctx context.Context, id int64, newpassword string) error
 	GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error)
 
 	SetOTP(ctx context.Context, pr *PasswordResetRecord) error
@@ -90,11 +88,11 @@ func (h *Handler) GetUserByToken(ctx context.Context, token string) (User, error
 func (h *Handler) GetTokenByUsername(ctx context.Context, userEmail string) (string, error) {
 	return h.store.GetTokenByUsername(ctx, userEmail)
 }
-func (h *Handler) FinishRegistration(ctx context.Context, userID int64, password string, pwh *pwhash.PasswordHasher) error {
-	return h.store.FinishRegistration(ctx, userID, password, pwh)
+func (h *Handler) FinishRegistration(ctx context.Context, userID int64, password string) error {
+	return h.store.FinishRegistration(ctx, userID, password)
 }
-func (h *Handler) UpdatePassword(ctx context.Context, id int64, newpassword string, pwh *pwhash.PasswordHasher) error {
-	return h.store.UpdatePassword(ctx, id, newpassword, pwh)
+func (h *Handler) UpdatePassword(ctx context.Context, id int64, newpassword string) error {
+	return h.store.UpdatePassword(ctx, id, newpassword)
 }
 func (h *Handler) GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error) {
 	return h.store.GetPasswordResetRecord(ctx, userID)

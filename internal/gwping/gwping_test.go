@@ -2,8 +2,6 @@ package gwping
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"testing"
 	"time"
 
@@ -17,7 +15,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	gwmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
@@ -154,8 +151,6 @@ func (ts *testStore) UpdateGateway(ctx context.Context, gw *store.Gateway) error
 
 func TestGatewayPing(t *testing.T) {
 	te := newTestEnv(t)
-	gwmod.SetupStore(te.h)
-	_ = rs.SetupRedis(config.RedisStruct{})
 
 	Convey("Given a clean database and a gateway", t, func() {
 		nsClient := mock.NewClient()
@@ -192,7 +187,7 @@ func TestGatewayPing(t *testing.T) {
 			So(te.h.UpdateNetworkServer(te.ctx, &n), ShouldBeNil)
 
 			Convey("When calling sendGatewayPing", func() {
-				So(sendGatewayPing(te.ctx), ShouldBeNil)
+				So(sendGatewayPing(te.ctx, te.h), ShouldBeNil)
 			})
 
 			Convey("Then no ping was sent", func() {
@@ -204,7 +199,7 @@ func TestGatewayPing(t *testing.T) {
 		})
 
 		Convey("When calling sendGatewayPing", func() {
-			So(sendGatewayPing(te.ctx), ShouldBeNil)
+			So(sendGatewayPing(te.ctx, te.h), ShouldBeNil)
 
 			Convey("Then the gateway ping fields have been set", func() {
 				gwGet, err := te.h.GetGateway(te.ctx, gw1.MAC, false)

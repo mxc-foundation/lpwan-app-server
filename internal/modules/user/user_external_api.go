@@ -213,7 +213,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswo
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	err := a.st.UpdatePassword(ctx, req.UserId, req.Password, ctrl.pwh)
+	err := a.st.UpdatePassword(ctx, req.UserId, req.Password)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

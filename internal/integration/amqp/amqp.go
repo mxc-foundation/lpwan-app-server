@@ -13,7 +13,6 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/streadway/amqp"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -27,8 +26,14 @@ type Integration struct {
 	eventRoutingKey *template.Template
 }
 
+// IntegrationAMQPConfig holds the AMQP integration configuration.
+type IntegrationAMQPConfig struct {
+	URL                     string `mapstructure:"url"`
+	EventRoutingKeyTemplate string `mapstructure:"event_routing_key_template"`
+}
+
 // New creates a new AMQP integration.
-func New(m marshaler.Type, conf config.IntegrationAMQPConfig) (*Integration, error) {
+func New(m marshaler.Type, conf IntegrationAMQPConfig) (*Integration, error) {
 	var err error
 	i := Integration{
 		marshaler: m,

@@ -18,7 +18,6 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/gw"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
@@ -29,8 +28,15 @@ type Integration struct {
 	db *sqlx.DB
 }
 
+// IntegrationPostgreSQLConfig holds the PostgreSQL integration configuration.
+type IntegrationPostgreSQLConfig struct {
+	DSN                string `json:"dsn"`
+	MaxOpenConnections int    `mapstructure:"max_open_connections"`
+	MaxIdleConnections int    `mapstructure:"max_idle_connections"`
+}
+
 // New creates a new PostgreSQL integration.
-func New(conf config.IntegrationPostgreSQLConfig) (*Integration, error) {
+func New(conf IntegrationPostgreSQLConfig) (*Integration, error) {
 	log.Info("integration/postgresql: connecting to PostgreSQL database")
 	d, err := sqlx.Open("postgres", conf.DSN)
 	if err != nil {

@@ -2,11 +2,9 @@ package storage
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"time"
 
 	"github.com/brocaar/lorawan"
-	uuid "github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -153,11 +151,7 @@ func UpdateDevice(ctx context.Context, handler *store.Handler, d *Device, localO
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(external.GetApplicationServerID())
-	if err != nil {
-		return errors.Wrap(err, "uuid from string error")
-	}
-
+	rpID := ctrl.applicationServerID
 	_, err = nsClient.UpdateDevice(ctx, &ns.UpdateDeviceRequest{
 		Device: &ns.Device{
 			DevEui:            d.DevEUI[:],

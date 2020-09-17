@@ -109,7 +109,9 @@ func logQuery(query string, duration time.Duration, args ...interface{}) {
 
 // DB returns the PostgreSQL database object.
 func DB() *store.Handler {
-	h, _ := store.New(pgstore.New(db))
+	h, _ := store.New(pgstore.New(db, pgstore.Settings{
+		ApplicationServerID: ctrl.applicationServerID,
+	}))
 	return h
 }
 

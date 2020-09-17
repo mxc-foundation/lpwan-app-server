@@ -1,46 +1,45 @@
 package serverinfo
 
 import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/as"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/gws"
+	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/m2m"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
+	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
 	"github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
+	jscodec "github.com/mxc-foundation/lpwan-app-server/internal/codec/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
+	"github.com/mxc-foundation/lpwan-app-server/internal/fuota"
+	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
+	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 type controller struct {
-	st      *store.Handler
-	general ServerSettingsStruct
+	st *store.Handler
 }
 
 var ctrl *controller
 
-func Setup(s store.Store) error {
-	ctrl.st, _ = store.New(s)
+func Setup(h *store.Handler) error {
+	ctrl.st = h
 	return nil
-}
-
-type ServerSettingsStruct struct {
-	LogLevel               int    `mapstructure:"log_level"`
-	LogToSyslog            bool   `mapstructure:"log_to_syslog"`
-	PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
-	Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
-	DefaultLanguage        string `mapstructure:"defualt_language"`
-	ServerAddr             string `mapstructure:"server_addr"`
-	ServerRegion           string `mapstructure:"server_region"`
 }
 
 // SettingsSetup init settings extracted values from toml file then assign each modules
 func SettingsSetup(conf config.Config) error {
-	ctrl = &controller{
-		general: conf.General,
-	}
+	ctrl = &controller{}
 
 	if err := storage.SettingsSetup(storage.SettingStruct{
 		Db:                  conf.PostgreSQL,
@@ -55,7 +54,10 @@ func SettingsSetup(conf config.Config) error {
 		return err
 	}
 
-	if err := email.SettingsSetup(conf.SMTP, conf.Operator); err != nil {
+	if err := email.SettingsSetup(conf.SMTP, conf.Operator, email.ServerInfoStruct{
+		ServerAddr:      conf.General.ServerAddr,
+		DefaultLanguage: conf.General.DefaultLanguage,
+	}); err != nil {
 		return err
 	}
 
@@ -71,7 +73,10 @@ func SettingsSetup(conf config.Config) error {
 		return err
 	}
 
-	if err := user.SettingsSetup(conf.Recaptcha); err != nil {
+	if err := user.SettingsSetup(user.Config{
+		Recaptcha:      conf.Recaptcha,
+		Enable2FALogin: conf.General.Enable2FALogin,
+	}); err != nil {
 		return err
 	}
 
@@ -79,13 +84,58 @@ func SettingsSetup(conf config.Config) error {
 		return err
 	}
 
-	if err := oidc.SettingsSetup(conf.ApplicationServer.UserAuthentication); err != nil {
+	if err := oidc.SettingsSetup(conf.ApplicationServer.UserAuthentication, conf.ApplicationServer.ExternalAPI.JWTSecret); err != nil {
 		return err
 	}
 
-	return nil
-}
+	if err := jscodec.SettingsSetup(conf.ApplicationServer.Codec); err != nil {
+		return err
+	}
 
-func GetSettings() ServerSettingsStruct {
-	return ctrl.general
+	if err := integration.SettingsSetup(conf.ApplicationServer.Integration); err != nil {
+		return err
+	}
+
+	if err := as.SettingsSetup(conf.ApplicationServer.API); err != nil {
+		return err
+	}
+
+	if err := m2m.SettingsSetup(conf.ApplicationServer.APIForM2M); err != nil {
+		return err
+	}
+
+	if err := multicastsetup.SettingsSetup(conf.ApplicationServer.RemoteMulticastSetup); err != nil {
+		return err
+	}
+
+	if err := fragmentation.SettingsSetup(conf.ApplicationServer.FragmentationSession); err != nil {
+		return err
+	}
+
+	if err := fuota.SettingsSetup(conf.ApplicationServer.FUOTADeployment); err != nil {
+		return err
+	}
+
+	if err := mining.SettingsSetup(conf.ApplicationServer.MiningSetUp); err != nil {
+		return err
+	}
+
+	if err := joinserver.SettingsSetup(conf.JoinServer); err != nil {
+		return err
+	}
+
+	if err := monitoring.SettingsSerup(conf.Monitoring); err != nil {
+		return err
+	}
+
+	if err := pprof.SettingsSetup(conf.PProf); err != nil {
+		return err
+	}
+
+	if err := gateway.SettingsSetup(gateway.Config{
+		ServerAddr: conf.General.ServerAddr,
+	}); err != nil {
+		return err
+	}
+	return nil
 }

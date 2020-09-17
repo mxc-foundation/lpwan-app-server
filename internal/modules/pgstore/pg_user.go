@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"strings"
 	"time"
 
@@ -15,8 +14,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	usermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 )
 
 const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
@@ -231,7 +228,7 @@ func (ps *pgstore) CreateUser(ctx context.Context, user *store.User) error {
 		return errors.Wrap(err, "validation error")
 	}
 
-	err := usermod.SetUserPassword(user, user.Password)
+	err := ps.SetUserPassword(user, user.Password)
 	if err != nil {
 		return err
 	}
@@ -453,12 +450,12 @@ func (ps *pgstore) DeleteUser(ctx context.Context, id int64) error {
 }
 
 // UpdatePassword updates the user with the new password.
-func (ps *pgstore) UpdatePassword(ctx context.Context, id int64, newpassword string, pwh *pwhash.PasswordHasher) error {
+func (ps *pgstore) UpdatePassword(ctx context.Context, id int64, newpassword string) error {
 	if err := store.ValidatePassword(newpassword); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwHash, err := pwh.HashPassword(newpassword)
+	pwHash, err := ps.s.PWH.HashPassword(newpassword)
 	if err != nil {
 		return err
 	}
@@ -491,7 +488,7 @@ func (ps *pgstore) LoginUserByPassword(ctx context.Context, userEmail string, pa
 	}
 
 	// Compare the passed in password with the hash in the database.
-	if err := usermod.VerifyUserPassword(password, user.PasswordHash); err != nil {
+	if err := ps.VerifyUserPassword(password, user.PasswordHash); err != nil {
 		return errors.Wrap(err, "password doesn't match email")
 	}
 
@@ -561,7 +558,7 @@ func (ps *pgstore) GetUserToken(ctx context.Context, u store.User) (string, erro
 		"email": u.Email, // backwards compatibility
 	})
 
-	jwt, err := token.SignedString([]byte(external.GetJWTSecret()))
+	jwt, err := token.SignedString([]byte(ps.s.JWTSecret))
 	if err != nil {
 		return jwt, errors.Wrap(err, "get jwt signed string error")
 	}
@@ -643,12 +640,12 @@ func (ps *pgstore) GetTokenByUsername(ctx context.Context, userEmail string) (st
 }
 
 // FinishRegistration ...
-func (ps *pgstore) FinishRegistration(ctx context.Context, userID int64, password string, pwh *pwhash.PasswordHasher) error {
+func (ps *pgstore) FinishRegistration(ctx context.Context, userID int64, password string) error {
 	if err := store.ValidatePassword(password); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
 
-	pwdHash, err := pwh.HashPassword(password)
+	pwdHash, err := ps.s.PWH.HashPassword(password)
 	if err != nil {
 		return err
 	}
@@ -766,4 +763,18 @@ func (ps *pgstore) GetPasswordResetRecord(ctx context.Context, userID int64) (*s
 		}
 	}
 	return res, nil
+}
+
+func (ps *pgstore) SetUserPassword(user *store.User, pw string) error {
+	pwHash, err := ps.s.PWH.HashPassword(pw)
+	if err != nil {
+		return err
+	}
+
+	user.PasswordHash = pwHash
+	return nil
+}
+
+func (ps *pgstore) VerifyUserPassword(pw string, pwHash string) error {
+	return ps.s.PWH.Validate(pw, pwHash)
 }

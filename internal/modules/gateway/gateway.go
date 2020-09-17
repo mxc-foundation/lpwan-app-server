@@ -2,9 +2,6 @@ package gateway
 
 import (
 	"context"
-	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/gws"
-	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/robfig/cron"
@@ -14,80 +11,59 @@ import (
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
+type Config struct {
+	ServerAddr string
+}
+
 type controller struct {
-	GatewayModuleInterface
 	st                 *store.Handler
 	ps                 pscli.ProvisioningServerStruct
 	bindPortOldGateway string
 	bindPortNewGateway string
+	s                  Config
 }
 
 var ctrl *controller
 
-func Get() GatewayModuleInterface {
-	return ctrl
-}
-
-type GatewayModuleInterface interface {
-	Tx(ctx context.Context, f func(context.Context, *store.Handler) error) error
-}
-
-func (c *controller) Tx(ctx context.Context, f func(context.Context, *store.Handler) error) error {
-	return c.st.Tx(ctx, f)
+func SettingsSetup(s Config) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
 }
 
 func Setup(h *store.Handler) error {
-	ctrl = &controller{}
-	SetupStore(h)
-	return SetupFirmware()
-}
+	// must be called after setup gateway API
+	if ctrl.bindPortNewGateway == "" || ctrl.bindPortOldGateway == "" {
+		return errors.New("bindPortNewGateway and bindPortOldGateway not initiated")
+	}
 
-func SetupStore(h *store.Handler) {
 	ctrl.st = h
+	ctrl.ps = pscli.GetSettings()
+	return ctrl.updateFirmwareFromProvisioningServer(context.Background())
 }
 
-func SetupFirmware() error {
-	ctrl.ps = pscli.ProvisioningServerStruct{
-		Server:         ctrl.ps.Server,
-		CACert:         ctrl.ps.CACert,
-		TLSCert:        ctrl.ps.TLSCert,
-		TLSKey:         ctrl.ps.TLSKey,
-		UpdateSchedule: ctrl.ps.UpdateSchedule,
-	}
-
-	gwAPI := gws.GetSettings()
-	if strArray := strings.Split(gwAPI.OldGateway.Bind, ":"); len(strArray) != 2 {
-		return errors.New(fmt.Sprintf("Invalid API Bind settings for OldGateway: %s", gwAPI.OldGateway.Bind))
-	} else {
-		ctrl.bindPortOldGateway = strArray[1]
-	}
-
-	if strArray := strings.Split(gwAPI.NewGateway.Bind, ":"); len(strArray) != 2 {
-		return errors.New(fmt.Sprintf("Invalid API Bind settings for NewGateway: %s", gwAPI.NewGateway.Bind))
-	} else {
-		ctrl.bindPortNewGateway = strArray[1]
-	}
-
-	return ctrl.updateFirmwareFromProvisioningServer(context.Background())
+func SetupFirmware(bindOld, bindNew string) {
+	ctrl.bindPortNewGateway = bindNew
+	ctrl.bindPortOldGateway = bindOld
 }
 
 func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) error {
 	log.WithFields(log.Fields{
-		"provisioning-server": c.ps.Server,
-		"caCert":              c.ps.CACert,
-		"tlsCert":             c.ps.TLSCert,
-		"tlsKey":              c.ps.TLSKey,
-		"schedule":            c.ps.UpdateSchedule,
+		"provisioning-server": ctrl.ps.Server,
+		"caCert":              ctrl.ps.CACert,
+		"tlsCert":             ctrl.ps.TLSCert,
+		"tlsKey":              ctrl.ps.TLSKey,
+		"schedule":            ctrl.ps.UpdateSchedule,
 	}).Info("Start schedule to update gateway firmware...")
 
-	supernodeAddr := serverinfo.GetSettings().ServerAddr
+	supernodeAddr := ctrl.s.ServerAddr
 
 	cron := cron.New()
-	err := cron.AddFunc(c.ps.UpdateSchedule, func() {
+	err := cron.AddFunc(ctrl.ps.UpdateSchedule, func() {
 		log.Info("Check firmware update...")
 		gwFwList, err := c.st.GetGatewayFirmwareList(ctx)
 		if err != nil {

@@ -17,7 +17,6 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
@@ -30,8 +29,17 @@ type Integration struct {
 	topicARN  string
 }
 
+// IntegrationAWSSNSConfig holds the AWS SNS integration configuration.
+type IntegrationAWSSNSConfig struct {
+	Marshaler          string `mapstructure:"marshaler" json:"marshaler"`
+	AWSRegion          string `mapstructure:"aws_region" json:"region"`
+	AWSAccessKeyID     string `mapstructure:"aws_access_key_id" json:"accessKeyID"`
+	AWSSecretAccessKey string `mapstructure:"aws_secret_access_key" json:"secretAccessKey"`
+	TopicARN           string `mapstructure:"topic_arn" json:"topicARN"`
+}
+
 // New creates a new AWS SNS integration.
-func New(m marshaler.Type, conf config.IntegrationAWSSNSConfig) (*Integration, error) {
+func New(m marshaler.Type, conf IntegrationAWSSNSConfig) (*Integration, error) {
 	if conf.Marshaler != "" {
 		switch conf.Marshaler {
 		case "PROTOBUF":

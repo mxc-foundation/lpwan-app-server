@@ -3,6 +3,7 @@ package code
 import (
 	"fmt"
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strconv"
 	"strings"
 	"time"
@@ -42,11 +43,12 @@ func migrateKey(conf config.Config, key string) error {
 		return fmt.Errorf("key %s is invalid", key)
 	}
 
+	metricsStruct := storage.GetMetricsSettings()
 	ttlMap := map[string]time.Duration{
-		"MINUTE": conf.Metrics.Redis.MinuteAggregationTTL,
-		"HOUR":   conf.Metrics.Redis.HourAggregationTTL,
-		"DAY":    conf.Metrics.Redis.DayAggregationTTL,
-		"MONTH":  conf.Metrics.Redis.MonthAggregationTTL,
+		"MINUTE": metricsStruct.Redis.MinuteAggregationTTL,
+		"HOUR":   metricsStruct.Redis.HourAggregationTTL,
+		"DAY":    metricsStruct.Redis.DayAggregationTTL,
+		"MONTH":  metricsStruct.Redis.MonthAggregationTTL,
 	}
 
 	ttl, ok := ttlMap[keyParts[len(keyParts)-2]]

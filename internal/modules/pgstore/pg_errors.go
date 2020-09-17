@@ -1,6 +1,8 @@
 package pgstore
 
-import "github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+import (
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+)
 
 type Action store.Action
 

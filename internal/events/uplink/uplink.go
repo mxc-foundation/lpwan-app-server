@@ -5,9 +5,8 @@ import (
 	"crypto/aes"
 	"encoding/hex"
 	"fmt"
+	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
 	"time"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/golang/protobuf/ptypes"
@@ -24,9 +23,9 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -363,9 +362,10 @@ func unwrapASKey(ke *common.KeyEnvelope) (lorawan.AES128Key, error) {
 		return key, nil
 	}
 
-	for i := range config.C.JoinServer.KEK.Set {
-		if config.C.JoinServer.KEK.Set[i].Label == ke.KekLabel {
-			kek, err := hex.DecodeString(config.C.JoinServer.KEK.Set[i].KEK)
+	joinServer := joinserver.GetSettings()
+	for i := range joinServer.KEK.Set {
+		if joinServer.KEK.Set[i].Label == ke.KekLabel {
+			kek, err := hex.DecodeString(joinServer.KEK.Set[i].KEK)
 			if err != nil {
 				return key, errors.Wrap(err, "decode kek error")
 			}

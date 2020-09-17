@@ -3,16 +3,14 @@ package m2m
 import (
 	"net"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/notification"
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/tls"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/notification"
 )
 
 var serviceName = "m2m server"
@@ -24,14 +22,27 @@ type M2MStruct struct {
 	TLSKey  string `mapstructure:"tls_key"`
 }
 
+type controller struct {
+	s M2MStruct
+}
+
+var ctrl *controller
+
+func SettingsSetup(s M2MStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
+}
+
 // Setup :
-func Setup(conf config.Config) error {
+func Setup() error {
 	log.Info("Set up API for m2m server")
 
-	if err := listenWithCredentials(conf.ApplicationServer.APIForM2M.Bind,
-		conf.ApplicationServer.APIForM2M.CACert,
-		conf.ApplicationServer.APIForM2M.TLSCert,
-		conf.ApplicationServer.APIForM2M.TLSKey); err != nil {
+	if err := listenWithCredentials(ctrl.s.Bind,
+		ctrl.s.CACert,
+		ctrl.s.TLSCert,
+		ctrl.s.TLSKey); err != nil {
 		return err
 	}
 

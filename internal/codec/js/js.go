@@ -8,8 +8,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
 var (
@@ -21,10 +19,23 @@ type CodecStruct struct {
 		MaxExecutionTime time.Duration `mapstructure:"max_execution_time"`
 	} `mapstructure:"js"`
 }
+type controller struct {
+	s CodecStruct
+}
+
+var ctrl *controller
+
+func SettingsSetup(s CodecStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+
+	return nil
+}
 
 // Setup configures the JS codec.
-func Setup(conf config.Config) error {
-	maxExecutionTime = conf.ApplicationServer.Codec.JS.MaxExecutionTime
+func Setup() error {
+	maxExecutionTime = ctrl.s.JS.MaxExecutionTime
 	return nil
 }
 

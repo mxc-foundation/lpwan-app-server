@@ -22,11 +22,27 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
+
+// Publish modes.
+const (
+	AzurePublishModeTopic AzurePublishMode = "topic"
+	AzurePublishModeQueue AzurePublishMode = "queue"
+)
+
+// AzurePublishMode defines the publish-mode type.
+type AzurePublishMode string
+
+// IntegrationAzureConfig holds the Azure Service-Bus integration configuration.
+type IntegrationAzureConfig struct {
+	Marshaler        string           `mapstructure:"marshaler" json:"marshaler"`
+	ConnectionString string           `mapstructure:"connection_string" json:"connectionString"`
+	PublishMode      AzurePublishMode `mapstructure:"publish_mode" json:"-"`
+	PublishName      string           `mapstructure:"publish_name" json:"publishName"`
+}
 
 // Integration implements an Azure Service-Bus integration.
 type Integration struct {
@@ -34,7 +50,7 @@ type Integration struct {
 
 	marshaler   marshaler.Type
 	publishName string
-	publishMode config.AzurePublishMode
+	publishMode AzurePublishMode
 
 	uri     string
 	keyName string
@@ -42,7 +58,7 @@ type Integration struct {
 }
 
 // New creates a new Azure Service-Bus integration.
-func New(m marshaler.Type, conf config.IntegrationAzureConfig) (*Integration, error) {
+func New(m marshaler.Type, conf IntegrationAzureConfig) (*Integration, error) {
 	if conf.Marshaler != "" {
 		switch conf.Marshaler {
 		case "PROTOBUF":

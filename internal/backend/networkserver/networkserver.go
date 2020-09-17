@@ -17,7 +17,6 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
@@ -37,7 +36,7 @@ type client struct {
 }
 
 // Setup configures the networkserver package.
-func Setup(conf config.Config) error {
+func Setup() error {
 	p = &pool{
 		clients: make(map[string]client),
 	}

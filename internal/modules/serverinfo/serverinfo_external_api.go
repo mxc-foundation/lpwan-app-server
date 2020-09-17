@@ -28,7 +28,7 @@ func (s *ServerInfoAPI) GetAppserverVersion(ctx context.Context, req *empty.Empt
 }
 
 func (s *ServerInfoAPI) GetServerRegion(ctx context.Context, req *empty.Empty) (*pb.GetServerRegionResponse, error) {
-	region := Service.ServerRegion
+	region := ctrl.general.ServerRegion
 
 	if region == pb.ServerRegion_name[int32(pb.ServerRegion_AVERAGE)] {
 		return &pb.GetServerRegionResponse{ServerRegion: pb.ServerRegion_name[int32(pb.ServerRegion_AVERAGE)]}, nil

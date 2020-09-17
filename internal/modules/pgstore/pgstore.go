@@ -6,6 +6,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
+
+	"github.com/gofrs/uuid"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 
@@ -36,15 +40,24 @@ type txDB interface {
 	Rollback() error
 }
 
+type Settings struct {
+	ApplicationServerID         uuid.UUID
+	JWTSecret                   string
+	ApplicationServerPublicHost string
+	PWH                         *pwhash.PasswordHasher
+}
+
 type pgstore struct {
 	db   DB
 	txDB txDB
+	s    Settings
 }
 
 // New returns a new database access layer for other stores
-func New(db DB) store.Store {
+func New(db DB, s Settings) store.Store {
 	return &pgstore{
 		db: db,
+		s:  s,
 	}
 }
 

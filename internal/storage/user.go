@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	"time"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
@@ -20,11 +19,6 @@ type User store.User
 // Validate validates the user data.
 func (u User) Validate() error {
 	return store.User(u).Validate()
-}
-
-// SetPasswordHash hashes the given password and sets it.
-func (u *User) SetPasswordHash(pw string) error {
-	return user.SetUserPassword((*store.User)(u), pw)
 }
 
 // UserProfile contains the profile of the user.

@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/applayer/clocksync"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // HandleClockSyncCommand handles an uplink clock synchronization command.

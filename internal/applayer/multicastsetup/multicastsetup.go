@@ -15,7 +15,6 @@ import (
 	"github.com/brocaar/lorawan/applayer/multicastsetup"
 	"github.com/brocaar/lorawan/gps"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
@@ -32,11 +31,27 @@ type MulticastStruct struct {
 	SyncBatchSize int           `mapstructure:"sync_batch_size"`
 }
 
+type controller struct {
+	s MulticastStruct
+}
+
+var ctrl *controller
+
+func SettingsSetup(s MulticastStruct) error {
+	ctrl = &controller{
+		s: s,
+	}
+	return nil
+}
+func GetSettings() MulticastStruct {
+	return ctrl.s
+}
+
 // Setup configures the package.
-func Setup(conf config.Config) error {
-	syncInterval = conf.ApplicationServer.RemoteMulticastSetup.SyncInterval
-	syncBatchSize = conf.ApplicationServer.RemoteMulticastSetup.SyncBatchSize
-	syncRetries = conf.ApplicationServer.RemoteMulticastSetup.SyncRetries
+func Setup() error {
+	syncInterval = ctrl.s.SyncInterval
+	syncBatchSize = ctrl.s.SyncBatchSize
+	syncRetries = ctrl.s.SyncRetries
 
 	go SyncRemoteMulticastSetupLoop()
 	go SyncRemoteMulticastClassCSessionLoop()

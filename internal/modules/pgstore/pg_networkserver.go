@@ -2,7 +2,6 @@ package pgstore
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"strings"
 	"time"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/brocaar/lorawan"
 
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
@@ -228,15 +226,12 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *store.NetworkServ
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(external.GetApplicationServerID())
-	if err != nil {
-		return errors.Wrap(err, "uuid from string error")
-	}
+	rpID := ps.s.ApplicationServerID
 
 	_, err = nsClient.CreateRoutingProfile(ctx, &ns.CreateRoutingProfileRequest{
 		RoutingProfile: &ns.RoutingProfile{
 			Id:      rpID.Bytes(),
-			AsId:    config.C.ApplicationServer.API.PublicHost,
+			AsId:    ps.s.ApplicationServerPublicHost,
 			CaCert:  n.RoutingProfileCACert,
 			TlsCert: n.RoutingProfileTLSCert,
 			TlsKey:  n.RoutingProfileTLSKey,
@@ -329,15 +324,12 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *store.NetworkServ
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(external.GetApplicationServerID())
-	if err != nil {
-		return errors.Wrap(err, "uuid from string error")
-	}
+	rpID := ps.s.ApplicationServerID
 
 	_, err = nsClient.UpdateRoutingProfile(ctx, &ns.UpdateRoutingProfileRequest{
 		RoutingProfile: &ns.RoutingProfile{
 			Id:      rpID.Bytes(),
-			AsId:    config.C.ApplicationServer.API.PublicHost,
+			AsId:    ps.s.ApplicationServerPublicHost,
 			CaCert:  n.RoutingProfileCACert,
 			TlsCert: n.RoutingProfileTLSCert,
 			TlsKey:  n.RoutingProfileTLSKey,
@@ -386,10 +378,7 @@ func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 		return errors.Wrap(err, "get network-server client error")
 	}
 
-	rpID, err := uuid.FromString(external.GetApplicationServerID())
-	if err != nil {
-		return errors.Wrap(err, "uuid from string error")
-	}
+	rpID := ps.s.ApplicationServerID
 
 	_, err = nsClient.DeleteRoutingProfile(ctx, &ns.DeleteRoutingProfileRequest{
 		Id: rpID.Bytes(),

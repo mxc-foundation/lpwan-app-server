@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/golang/protobuf/ptypes"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
@@ -16,7 +14,7 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
@@ -34,7 +32,7 @@ func MigrateGatewayStats(handler *store.Handler) error {
 	}
 
 	for _, id := range ids {
-		if err := migrateGatewayStatsForGatewayID(db, id); err != nil {
+		if err := migrateGatewayStatsForGatewayID(handler, id); err != nil {
 			log.WithError(err).WithFields(log.Fields{
 				"gateway_id": id,
 			}).Error("migrate gateway stats error")
@@ -44,13 +42,13 @@ func MigrateGatewayStats(handler *store.Handler) error {
 	return nil
 }
 
-func migrateGatewayStatsForGatewayID(db sqlx.Ext, gatewayID lorawan.EUI64) error {
-	gw, err := storage.GetGateway(context.Background(), db, gatewayID, true)
+func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.EUI64) error {
+	gw, err := storage.GetGateway(context.Background(), handler, gatewayID, true)
 	if err != nil {
 		return errors.Wrap(err, "get gateway error")
 	}
 
-	n, err := storage.GetNetworkServer(context.Background(), db, gw.NetworkServerID)
+	n, err := storage.GetNetworkServer(context.Background(), handler, gw.NetworkServerID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -73,23 +71,24 @@ func migrateGatewayStatsForGatewayID(db sqlx.Ext, gatewayID lorawan.EUI64) error
 		gw.Altitude = nsGw.Gateway.Location.Altitude
 	}
 
-	if err := storage.UpdateGateway(context.Background(), db, &gw); err != nil {
+	if err := storage.UpdateGateway(context.Background(), handler, &gw); err != nil {
 		return errors.Wrap(err, "update gateway error")
 	}
 
-	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_MINUTE, time.Now().Add(-config.C.Metrics.Redis.MinuteAggregationTTL), time.Now()); err != nil {
+	metricsStruct := storage.GetMetricsSettings()
+	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_MINUTE, time.Now().Add(-metricsStruct.Redis.MinuteAggregationTTL), time.Now()); err != nil {
 		return err
 	}
 
-	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_HOUR, time.Now().Add(-config.C.Metrics.Redis.HourAggregationTTL), time.Now()); err != nil {
+	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_HOUR, time.Now().Add(-metricsStruct.Redis.HourAggregationTTL), time.Now()); err != nil {
 		return err
 	}
 
-	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_DAY, time.Now().Add(-config.C.Metrics.Redis.DayAggregationTTL), time.Now()); err != nil {
+	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_DAY, time.Now().Add(-metricsStruct.Redis.DayAggregationTTL), time.Now()); err != nil {
 		return err
 	}
 
-	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_MONTH, time.Now().Add(-config.C.Metrics.Redis.MonthAggregationTTL), time.Now()); err != nil {
+	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_MONTH, time.Now().Add(-metricsStruct.Redis.MonthAggregationTTL), time.Now()); err != nil {
 		return err
 	}
 
