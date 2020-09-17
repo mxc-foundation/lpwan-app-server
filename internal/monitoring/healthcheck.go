@@ -1,8 +1,9 @@
 package monitoring
 
 import (
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"net/http"
+
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 
 	"github.com/pkg/errors"
 

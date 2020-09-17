@@ -2,7 +2,9 @@ package storage
 
 import (
 	"context"
+
 	"github.com/gofrs/uuid"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 

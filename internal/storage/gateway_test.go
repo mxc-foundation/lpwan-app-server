@@ -3,9 +3,10 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"testing"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"

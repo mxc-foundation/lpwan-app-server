@@ -3,6 +3,7 @@ package gateway
 import (
 	"bytes"
 	"context"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 
 	/* #nosec */

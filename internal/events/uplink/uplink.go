@@ -5,8 +5,9 @@ import (
 	"crypto/aes"
 	"encoding/hex"
 	"fmt"
-	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
 	"time"
+
+	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
 
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/golang/protobuf/ptypes"

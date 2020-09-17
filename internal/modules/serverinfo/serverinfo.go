@@ -27,7 +27,8 @@ import (
 )
 
 type controller struct {
-	st *store.Handler
+	st      *store.Handler
+	general config.ServerSettingsStruct
 }
 
 var ctrl *controller
@@ -37,9 +38,15 @@ func Setup(h *store.Handler) error {
 	return nil
 }
 
+func GetSettings() config.ServerSettingsStruct {
+	return ctrl.general
+}
+
 // SettingsSetup init settings extracted values from toml file then assign each modules
 func SettingsSetup(conf config.Config) error {
-	ctrl = &controller{}
+	ctrl = &controller{
+		general: conf.General,
+	}
 
 	if err := storage.SettingsSetup(storage.SettingStruct{
 		Db:                  conf.PostgreSQL,
@@ -112,7 +119,11 @@ func SettingsSetup(conf config.Config) error {
 		return err
 	}
 
-	if err := fuota.SettingsSetup(conf.ApplicationServer.FUOTADeployment); err != nil {
+	if err := fuota.SettingsSetup(conf.ApplicationServer.FUOTADeployment, fuota.Config{
+		RemoteMulticastSetupRetries:       conf.ApplicationServer.RemoteMulticastSetup.SyncRetries,
+		RemoteFragmentationSessionRetries: conf.ApplicationServer.FragmentationSession.SyncRetries,
+		ApplicationServerID:               conf.ApplicationServer.ID,
+	}); err != nil {
 		return err
 	}
 

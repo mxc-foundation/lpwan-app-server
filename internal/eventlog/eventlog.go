@@ -13,7 +13,7 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 )
 
 const (

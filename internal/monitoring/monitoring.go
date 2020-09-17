@@ -1,8 +1,9 @@
 package monitoring
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"net/http"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

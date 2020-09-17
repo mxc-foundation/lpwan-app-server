@@ -3,9 +3,10 @@ package pgstore
 import (
 	"context"
 	"database/sql"
-	"github.com/golang/protobuf/ptypes"
 	"strings"
 	"time"
+
+	"github.com/golang/protobuf/ptypes"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"

@@ -20,8 +20,9 @@ import (
 
 // MigrateGatewayStats imports the gateway stats from the network-server.
 func MigrateGatewayStats(handler *store.Handler) error {
+	ctx := context.Background()
 	var ids []lorawan.EUI64
-	err := sqlx.Select(db, &ids, `
+	err := sqlx.SelectContext(ctx, db, &ids, `
 		select
 			mac
 		from

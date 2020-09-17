@@ -2,13 +2,15 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/go-redis/redis/v7"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
+
+	"github.com/go-redis/redis/v7"
+	"github.com/spf13/viper"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 

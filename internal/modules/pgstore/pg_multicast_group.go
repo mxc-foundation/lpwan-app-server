@@ -2,11 +2,12 @@ package pgstore
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/brocaar/lorawan"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"strings"
-	"time"
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"

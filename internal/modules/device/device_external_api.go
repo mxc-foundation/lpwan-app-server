@@ -3,9 +3,10 @@ package device
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 	"strconv"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
 
 	"google.golang.org/grpc/status"
 

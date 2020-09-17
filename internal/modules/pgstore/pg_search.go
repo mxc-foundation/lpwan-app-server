@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 

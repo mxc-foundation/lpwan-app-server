@@ -2,9 +2,10 @@ package store
 
 import (
 	"context"
-	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"strings"
 	"time"
+
+	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	"github.com/gofrs/uuid"
 )

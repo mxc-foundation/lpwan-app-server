@@ -12,14 +12,12 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 func (ts *StorageTestSuite) TestApplication() {
 	assert := require.New(ts.T())
 
-	conf := test.GetConfig()
-	assert.NoError(Setup(conf))
+	assert.NoError(Setup())
 
 	nsClient := mock.NewClient()
 	networkserver.SetPool(mock.NewPool(nsClient))

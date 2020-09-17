@@ -3,9 +3,10 @@ package storage
 import (
 	"context"
 	"fmt"
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"strconv"
 	"time"
+
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 
 	"github.com/go-redis/redis/v7"
 	"github.com/pkg/errors"

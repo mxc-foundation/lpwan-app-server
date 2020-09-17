@@ -34,6 +34,7 @@ type Store interface {
 	MulticastGroupStore
 	FUOTADeploymentStore
 	SearchStore
+	IntegrationsStore
 }
 
 type Handler struct {

@@ -46,7 +46,6 @@ import (
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver"
 	orgmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/pgstore"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	servermod "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
@@ -58,7 +57,7 @@ func run(cmd *cobra.Command, args []string) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	pwh, err := pwhash.New(16, serverinfo.GetSettings().PasswordHashIterations)
+	pwh, err := pwhash.New(16, servermod.GetSettings().PasswordHashIterations)
 	if err != nil {
 		return err
 	}
@@ -331,7 +330,7 @@ func setupModules(h *store.Handler) (err error) {
 }
 
 func setupAPI() error {
-	if err := api.Setup(config.C); err != nil {
+	if err := api.Setup(); err != nil {
 		return errors.Wrap(err, "setup api error")
 	}
 	return nil

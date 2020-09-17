@@ -2,11 +2,12 @@ package code
 
 import (
 	"fmt"
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"strconv"
 	"strings"
 	"time"
+
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

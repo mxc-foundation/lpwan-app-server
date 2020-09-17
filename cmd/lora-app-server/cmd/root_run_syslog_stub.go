@@ -3,8 +3,9 @@
 package cmd
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 )
 
 func setSyslog() error {
