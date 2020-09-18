@@ -38,9 +38,9 @@ func (v *Validator) ValidateGlobalApplicationsAccess(ctx context.Context, flag a
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateApplicationAccess(ctx, u.UserEmail, u.ID, organizationID)
+		return ctrl.st.CheckCreateApplicationAccess(ctx, u.UserEmail, u.ID, organizationID)
 	case authcus.List:
-		return Service.St.CheckListApplicationAccess(ctx, u.UserEmail, u.ID, organizationID)
+		return ctrl.st.CheckListApplicationAccess(ctx, u.UserEmail, u.ID, organizationID)
 	default:
 		panic("unsupported flag")
 	}
@@ -56,11 +56,11 @@ func (v *Validator) ValidateApplicationAccess(ctx context.Context, flag authcus.
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
+		return ctrl.st.CheckReadApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
 	case authcus.Update:
-		return Service.St.CheckUpdateApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
+		return ctrl.st.CheckUpdateApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
 	case authcus.Delete:
-		return Service.St.CheckDeleteApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
+		return ctrl.st.CheckDeleteApplicationAccess(ctx, u.UserEmail, u.ID, applicationID)
 	default:
 		panic("unsupported flag")
 	}

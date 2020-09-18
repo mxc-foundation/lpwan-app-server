@@ -32,9 +32,9 @@ func (v *Validator) ValidateGatewayProfileAccess(ctx context.Context, flag authc
 
 	switch flag {
 	case authcus.Create, authcus.Update, authcus.Delete:
-		return Service.St.CheckCreateUpdateDeleteGatewayProfileAccess(ctx, u.UserEmail, u.ID)
+		return ctrl.st.CheckCreateUpdateDeleteGatewayProfileAccess(ctx, u.UserEmail, u.ID)
 	case authcus.Read, authcus.List:
-		return Service.St.CheckReadListGatewayProfileAccess(ctx, u.UserEmail, u.ID)
+		return ctrl.st.CheckReadListGatewayProfileAccess(ctx, u.UserEmail, u.ID)
 	default:
 		panic("ValidateGatewayProfileAccess: unsupported flag")
 	}

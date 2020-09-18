@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
-
 	"google.golang.org/grpc/status"
 
 	"github.com/gofrs/uuid"
@@ -36,7 +34,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	serviceprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // DeviceAPI exports the Node related functions.
@@ -48,7 +45,7 @@ type DeviceAPI struct {
 // NewDeviceAPI creates a new NodeAPI.
 func NewDeviceAPI(applicationID uuid.UUID) *DeviceAPI {
 	return &DeviceAPI{
-		st:                  Service.St,
+		st:                  ctrl.st,
 		ApplicationServerID: applicationID,
 	}
 }
@@ -80,11 +77,11 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 
 	// Validate that application and device-profile are under the same
 	// organization ID.
-	app, err := application.Service.GetApplication(ctx, req.Device.ApplicationId)
+	app, err := application.GetApplication(ctx, req.Device.ApplicationId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	dp, err := storage.GetDeviceProfile(ctx, storage.DB(), dpID, false, true)
+	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -137,7 +134,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 			}
 
 			if count >= org.MaxDeviceCount {
-				return status.Errorf(codes.Unknown, "%v", storage.ErrOrganizationMaxDeviceCount)
+				return status.Errorf(codes.Unknown, "%v", store.ErrOrganizationMaxDeviceCount)
 			}
 		}
 
@@ -224,7 +221,7 @@ func (a *DeviceAPI) Get(ctx context.Context, req *api.GetDeviceRequest) (*api.Ge
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	n, err := networkserver.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -409,12 +406,12 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	app, err := application.Service.GetApplication(ctx, req.Device.ApplicationId)
+	app, err := application.GetApplication(ctx, req.Device.ApplicationId)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	dp, err := storage.GetDeviceProfile(ctx, storage.DB(), dpID, false, true)
+	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -503,7 +500,7 @@ func (a *DeviceAPI) Update(ctx context.Context, req *api.UpdateDeviceRequest) (*
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
 
-		rpID, err := uuid.FromString(external.GetApplicationServerID())
+		rpID, err := uuid.FromString(ctrl.s.ApplicationServerID)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "uuid from string error: %v", err)
 		}
@@ -717,7 +714,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *api.DeactivateDeviceReq
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	n, err := networkserver.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -858,7 +855,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *api.GetDeviceActivat
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := networkserver.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -914,7 +911,7 @@ func (a *DeviceAPI) StreamFrameLogs(req *api.StreamDeviceFrameLogsRequest, srv a
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(srv.Context(), devEUI)
+	n, err := networkserver.GetNetworkServerForDevEUI(srv.Context(), devEUI)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -1023,7 +1020,7 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *api.GetRandomDevA
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := networkserver.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

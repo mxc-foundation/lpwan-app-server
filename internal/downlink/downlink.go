@@ -15,12 +15,11 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // HandleDataDownPayloads handles received downlink payloads to be emitted to the
 // devices.
-func HandleDataDownPayloads(downChan chan models.DataDownPayload) {
+func HandleDataDownPayloads(downChan chan models.DataDownPayload, handler *store.Handler) {
 	for pl := range downChan {
 		go func(pl models.DataDownPayload) {
 			ctxID, err := uuid.NewV4()
@@ -32,7 +31,7 @@ func HandleDataDownPayloads(downChan chan models.DataDownPayload) {
 			ctx := context.Background()
 			ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-			if err := handleDataDownPayload(ctx, pl); err != nil {
+			if err := handleDataDownPayload(ctx, pl, handler); err != nil {
 				log.WithFields(log.Fields{
 					"dev_eui":        pl.DevEUI,
 					"application_id": pl.ApplicationID,
@@ -42,11 +41,11 @@ func HandleDataDownPayloads(downChan chan models.DataDownPayload) {
 	}
 }
 
-func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error {
-	return storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
+func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload, handler *store.Handler) error {
+	return handler.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		// lock the device so that a concurrent Enqueue action will block
 		// until this transaction has been completed
-		d, err := storage.GetDevice(ctx, tx, pl.DevEUI, true, true)
+		d, err := handler.GetDevice(ctx, pl.DevEUI, true)
 		if err != nil {
 			return fmt.Errorf("get device error: %s", err)
 		}
@@ -62,12 +61,12 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error
 		// if Object is set, try to encode it to bytes using the application codec
 		//if pl.Object != nil && string(pl.Object) != "null" {
 		if pl.Object != nil && string(pl.Object) != "null" {
-			app, err := storage.GetApplication(ctx, tx, d.ApplicationID)
+			app, err := handler.GetApplication(ctx, d.ApplicationID)
 			if err != nil {
 				return errors.Wrap(err, "get application error")
 			}
 
-			dp, err := storage.GetDeviceProfile(ctx, storage.DB(), d.DeviceProfileID, false, true)
+			dp, err := handler.GetDeviceProfile(ctx, d.DeviceProfileID, false)
 			if err != nil {
 				return errors.Wrap(err, "get device-profile error")
 			}
@@ -82,14 +81,14 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error
 				payloadEncoderScript = dp.PayloadEncoderScript
 			}
 
-			pl.Data, err = codec.JSONToBinary(payloadCodec, pl.FPort, d.Variables, payloadEncoderScript, []byte(pl.Object))
+			pl.Data, err = codec.JSONToBinary(codec.Type(payloadCodec), pl.FPort, d.Variables, payloadEncoderScript, pl.Object)
 			if err != nil {
 				logCodecError(ctx, app, d, err)
 				return errors.Wrap(err, "encode object error")
 			}
 		}
 
-		if _, err := storage.EnqueueDownlinkPayload(ctx, tx, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data); err != nil {
+		if _, err := handler.EnqueueDownlinkPayload(ctx, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data); err != nil {
 			return errors.Wrap(err, "enqueue downlink device-queue item error")
 		}
 
@@ -97,7 +96,7 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload) error
 	})
 }
 
-func logCodecError(ctx context.Context, a storage.Application, d storage.Device, err error) {
+func logCodecError(ctx context.Context, a store.Application, d store.Device, err error) {
 	errEvent := pb.ErrorEvent{
 		ApplicationId:   uint64(a.ID),
 		ApplicationName: a.Name,

@@ -6,18 +6,18 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
-type Controller struct {
-	St *store.Handler
+type controller struct {
+	st *store.Handler
 }
 
-var Service = &Controller{}
+var ctrl *controller
 
 func Setup(s *store.Handler) error {
-	Service.St = s
+	ctrl.st = s
 
 	return nil
 }
 
-func (c *Controller) GetApplication(ctx context.Context, applicationID int64) (store.Application, error) {
-	return c.St.GetApplication(ctx, applicationID)
+func GetApplication(ctx context.Context, applicationID int64) (store.Application, error) {
+	return ctrl.st.GetApplication(ctx, applicationID)
 }

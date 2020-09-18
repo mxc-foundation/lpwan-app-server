@@ -21,7 +21,7 @@ type OrganizationAPI struct {
 // NewOrganizationAPI creates a new OrganizationAPI.
 func NewOrganizationAPI() *OrganizationAPI {
 	return &OrganizationAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 

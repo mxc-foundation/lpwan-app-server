@@ -11,7 +11,6 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
@@ -24,7 +23,7 @@ type GatewayProfileAPI struct {
 // NewGatewayProfileAPI creates a new GatewayProfileAPI.
 func NewGatewayProfileAPI() *GatewayProfileAPI {
 	return &GatewayProfileAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 

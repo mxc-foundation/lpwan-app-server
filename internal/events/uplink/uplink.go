@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
-
 	keywrap "github.com/NickBall/go-aes-key-wrap"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/pkg/errors"
@@ -20,6 +18,7 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
 
+	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
@@ -27,16 +26,17 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 type uplinkContext struct {
+	handler *store.Handler
+
 	uplinkDataReq as.HandleUplinkDataRequest
 
 	ctx           context.Context
-	device        storage.Device
-	application   storage.Application
-	deviceProfile storage.DeviceProfile
+	device        store.Device
+	application   store.Application
+	deviceProfile store.DeviceProfile
 
 	data       []byte
 	objectJSON string
@@ -55,8 +55,9 @@ var tasks = []func(*uplinkContext) error{
 }
 
 // Handle handles the uplink event.
-func Handle(ctx context.Context, req as.HandleUplinkDataRequest) error {
+func Handle(ctx context.Context, req as.HandleUplinkDataRequest, handler *store.Handler) error {
 	uc := uplinkContext{
+		handler:       handler,
 		ctx:           ctx,
 		uplinkDataReq: req,
 	}
@@ -78,7 +79,7 @@ func getDevice(ctx *uplinkContext) error {
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], ctx.uplinkDataReq.DevEui)
 
-	ctx.device, err = storage.GetDevice(ctx.ctx, storage.DB(), devEUI, false, true)
+	ctx.device, err = ctx.handler.GetDevice(ctx.ctx, devEUI, false)
 	if err != nil {
 		return errors.Wrap(err, "get device error")
 	}
@@ -87,7 +88,7 @@ func getDevice(ctx *uplinkContext) error {
 
 func getDeviceProfile(ctx *uplinkContext) error {
 	var err error
-	ctx.deviceProfile, err = storage.GetDeviceProfile(ctx.ctx, storage.DB(), ctx.device.DeviceProfileID, false, true)
+	ctx.deviceProfile, err = ctx.handler.GetDeviceProfile(ctx.ctx, ctx.device.DeviceProfileID, false)
 	if err != nil {
 		return errors.Wrap(err, "get device-profile error")
 	}
@@ -96,7 +97,7 @@ func getDeviceProfile(ctx *uplinkContext) error {
 
 func getApplication(ctx *uplinkContext) error {
 	var err error
-	ctx.application, err = storage.GetApplication(ctx.ctx, storage.DB(), ctx.device.ApplicationID)
+	ctx.application, err = ctx.handler.GetApplication(ctx.ctx, ctx.device.ApplicationID)
 	if err != nil {
 		return errors.Wrap(err, "get application error")
 	}
@@ -104,7 +105,7 @@ func getApplication(ctx *uplinkContext) error {
 }
 
 func updateDeviceLastSeenAndDR(ctx *uplinkContext) error {
-	if err := storage.UpdateDeviceLastSeenAndDR(ctx.ctx, storage.DB(), ctx.device.DevEUI, time.Now(), int(ctx.uplinkDataReq.Dr)); err != nil {
+	if err := ctx.handler.UpdateDeviceLastSeenAndDR(ctx.ctx, ctx.device.DevEUI, time.Now(), int(ctx.uplinkDataReq.Dr)); err != nil {
 		return errors.Wrap(err, "update device last-seen and dr error")
 	}
 
@@ -140,7 +141,7 @@ func updateDeviceActivation(ctx *uplinkContext) error {
 	ctx.device.DevAddr = devAddr
 	ctx.device.AppSKey = appSKey
 
-	if err := storage.UpdateDeviceActivation(ctx.ctx, storage.DB(), ctx.device.DevEUI, ctx.device.DevAddr, ctx.device.AppSKey); err != nil {
+	if err := ctx.handler.UpdateDeviceActivation(ctx.ctx, ctx.device.DevEUI, ctx.device.DevAddr, ctx.device.AppSKey); err != nil {
 		return errors.Wrap(err, "update device activation error")
 	}
 
@@ -196,7 +197,7 @@ func handleApplicationLayers(ctx *uplinkContext) error {
 		return nil
 	}
 
-	return storage.Transaction(func(context context.Context, handler *store.Handler) error {
+	return ctx.handler.Tx(context.Background(), func(context context.Context, handler *store.Handler) error {
 		switch ctx.uplinkDataReq.FPort {
 		case 200:
 			if err := multicastsetup.HandleRemoteMulticastSetupCommand(ctx.ctx, handler, ctx.device.DevEUI, ctx.data); err != nil {
@@ -258,7 +259,7 @@ func handleCodec(ctx *uplinkContext) error {
 	}
 
 	start := time.Now()
-	b, err := codec.BinaryToJSON(codecType, uint8(ctx.uplinkDataReq.FPort), ctx.device.Variables, decoderScript, ctx.data)
+	b, err := codec.BinaryToJSON(codec.Type(codecType), uint8(ctx.uplinkDataReq.FPort), ctx.device.Variables, decoderScript, ctx.data)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"codec":          codecType,

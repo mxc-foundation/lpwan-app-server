@@ -62,13 +62,6 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	handler, _ := store.New(pgstore.New(storage.DBTest().DB, pgstore.Settings{
-		ApplicationServerID:         external.GetApplicationServerID(),
-		JWTSecret:                   external.GetJWTSecret(),
-		ApplicationServerPublicHost: as.GetSettings().PublicHost,
-		PWH:                         pwh,
-	}))
-
 	if err := setLogLevel(); err != nil {
 		log.Fatal(err)
 	}
@@ -90,10 +83,18 @@ func run(cmd *cobra.Command, args []string) error {
 	if err := setupClient(); err != nil {
 		log.Fatal(err)
 	}
-	if err := migrateGatewayStats(); err != nil {
+
+	handler, _ := store.New(pgstore.New(storage.DBTest().DB, pgstore.Settings{
+		ApplicationServerID:         external.GetApplicationServerID(),
+		JWTSecret:                   external.GetJWTSecret(),
+		ApplicationServerPublicHost: as.GetSettings().PublicHost,
+		PWH:                         pwh,
+	}))
+	
+	if err := migrateGatewayStats(handler); err != nil {
 		log.Fatal(err)
 	}
-	if err := migrateToClusterKeys(); err != nil {
+	if err := migrateToClusterKeys(handler); err != nil {
 		log.Fatal(err)
 	}
 	if err := setupIntegration(); err != nil {
@@ -105,7 +106,7 @@ func run(cmd *cobra.Command, args []string) error {
 	if err := setupCodec(); err != nil {
 		log.Fatal(err)
 	}
-	if err := handleDataDownPayloads(); err != nil {
+	if err := handleDataDownPayloads(handler); err != nil {
 		log.Fatal(err)
 	}
 	if err := startGatewayPing(handler); err != nil {
@@ -117,14 +118,14 @@ func run(cmd *cobra.Command, args []string) error {
 	if err := setupFragmentation(); err != nil {
 		log.Fatal(err)
 	}
-	if err := setupFUOTA(); err != nil {
+	if err := setupFUOTA(handler); err != nil {
 		log.Fatal(err)
 	}
 
 	if err := setupModules(handler); err != nil {
 		log.Fatal(err)
 	}
-	if err := setupAPI(); err != nil {
+	if err := setupAPI(handler); err != nil {
 		log.Fatal(err)
 	}
 	if err := setupMonitoring(); err != nil {
@@ -222,23 +223,23 @@ func setupClient() error {
 	return nil
 }
 
-func migrateGatewayStats() error {
-	if err := code.Migrate("migrate_gw_stats", code.MigrateGatewayStats); err != nil {
+func migrateGatewayStats(handler *store.Handler) error {
+	if err := code.Migrate("migrate_gw_stats", handler, code.MigrateGatewayStats); err != nil {
 		return errors.Wrap(err, "migration error")
 	}
 
 	return nil
 }
 
-func migrateToClusterKeys() error {
-	return code.Migrate("migrate_to_cluster_keys", func(handler *store.Handler) error {
+func migrateToClusterKeys(handler *store.Handler) error {
+	return code.Migrate("migrate_to_cluster_keys", handler, func(handler *store.Handler) error {
 		return code.MigrateToClusterKeys(config.C)
 	})
 }
 
-func handleDataDownPayloads() error {
+func handleDataDownPayloads(h *store.Handler) error {
 	downChan := integration.ForApplicationID(0).DataDownChan()
-	go downlink.HandleDataDownPayloads(downChan)
+	go downlink.HandleDataDownPayloads(downChan, h)
 	return nil
 }
 
@@ -262,8 +263,8 @@ func setupFragmentation() error {
 	return nil
 }
 
-func setupFUOTA() error {
-	if err := fuota.Setup(); err != nil {
+func setupFUOTA(h *store.Handler) error {
+	if err := fuota.Setup(h); err != nil {
 		return errors.Wrap(err, "fuota setup error")
 	}
 	return nil
@@ -329,8 +330,8 @@ func setupModules(h *store.Handler) (err error) {
 	return nil
 }
 
-func setupAPI() error {
-	if err := api.Setup(); err != nil {
+func setupAPI(handler *store.Handler) error {
+	if err := api.Setup(handler); err != nil {
 		return errors.Wrap(err, "setup api error")
 	}
 	return nil

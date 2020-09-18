@@ -24,7 +24,7 @@ type DeviceM2MAPI struct {
 // NewDeviceM2MAPI creates new DeviceM2MAPI
 func NewDeviceM2MAPI() *DeviceM2MAPI {
 	return &DeviceM2MAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 
@@ -54,7 +54,7 @@ func (a *DeviceM2MAPI) GetDeviceByDevEui(ctx context.Context, req *pb.GetDeviceB
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	app, err := application.Service.St.GetApplication(ctx, device.ApplicationID)
+	app, err := application.GetApplication(ctx, device.ApplicationID)
 	if err != nil {
 		return &resp, status.Errorf(codes.Unknown, err.Error())
 	}

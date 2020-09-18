@@ -18,7 +18,6 @@ import (
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // DeviceQueueAPI exposes the downlink queue methods.
@@ -29,7 +28,7 @@ type DeviceQueueAPI struct {
 // NewDeviceQueueAPI creates a new DeviceQueueAPI.
 func NewDeviceQueueAPI() *DeviceQueueAPI {
 	return &DeviceQueueAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 
@@ -117,7 +116,7 @@ func (d *DeviceQueueAPI) Flush(ctx context.Context, req *pb.FlushDeviceQueueRequ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
+	n, err := d.st.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -155,12 +154,12 @@ func (d *DeviceQueueAPI) List(ctx context.Context, req *pb.ListDeviceQueueItemsR
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	device, err := storage.GetDevice(ctx, storage.DB(), devEUI, false, true)
+	device, err := d.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
+	n, err := d.st.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

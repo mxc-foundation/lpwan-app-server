@@ -70,14 +70,14 @@ func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *ap
 
 	if req.OrganizationList == "all" {
 		// reset for all organizations
-		count, err := organization.Service.St.GetOrganizationCount(ctx, store.OrganizationFilters{})
+		count, err := organization.GetOrganizationCount(ctx, store.OrganizationFilters{})
 		if err != nil {
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
 		limit := 100
 		for offset := 0; offset <= count/limit; offset++ {
-			list, err := organization.Service.St.GetOrganizationIDList(ctx, limit, offset, "")
+			list, err := organization.GetOrganizationIDList(ctx, limit, offset, "")
 			if err != nil {
 				return nil, status.Error(codes.Internal, err.Error())
 			}
@@ -329,7 +329,7 @@ func (a *GatewayAPI) getDefaultGatewayConfig(ctx context.Context, gw *store.Gate
 		return nil
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServer(ctx, gw.NetworkServerID)
+	n, err := networkserver.GetNetworkServer(ctx, gw.NetworkServerID)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get network server %d", gw.NetworkServerID)
 		return errors.Wrapf(err, "GetDefaultGatewayConfig")
@@ -526,7 +526,7 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServer(ctx, gw.NetworkServerID)
+	n, err := networkserver.GetNetworkServer(ctx, gw.NetworkServerID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -835,7 +835,7 @@ func (a *GatewayAPI) Update(ctx context.Context, req *api.UpdateGatewayRequest) 
 			updateReq.Gateway.Boards = append(updateReq.Gateway.Boards, &gwBoard)
 		}
 
-		n, err := networkserver.Service.St.GetNetworkServer(ctx, gw.NetworkServerID)
+		n, err := networkserver.GetNetworkServer(ctx, gw.NetworkServerID)
 		if err != nil {
 			return status.Errorf(codes.Unknown, "%v", err)
 		}
@@ -993,7 +993,7 @@ func (a *GatewayAPI) StreamFrameLogs(req *api.StreamGatewayFrameLogsRequest, srv
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := networkserver.Service.St.GetNetworkServerForGatewayMAC(srv.Context(), mac)
+	n, err := networkserver.GetNetworkServerForGatewayMAC(srv.Context(), mac)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -1149,14 +1149,14 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 	}
 
 	// get gateway profile id, always use the default one
-	count, err := gp.Service.St.GetGatewayProfileCount(ctx)
+	count, err := gp.GetGatewayProfileCount(ctx)
 	if err != nil && err != storage.ErrDoesNotExist {
 		return nil, status.Error(codes.Internal, err.Error())
 	} else if err == storage.ErrDoesNotExist {
 		return nil, status.Error(codes.NotFound, "")
 	}
 
-	gpList, err := gp.Service.St.GetGatewayProfiles(ctx, count, 0)
+	gpList, err := gp.GetGatewayProfiles(ctx, count, 0)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
 	}
@@ -1180,7 +1180,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		return nil, status.Error(codes.DataLoss, "Gateway profile ID invalid")
 	}
 
-	nServers, err := networkserver.Service.St.GetNetworkServerForGatewayProfileID(ctx, gpID)
+	nServers, err := networkserver.GetNetworkServerForGatewayProfileID(ctx, gpID)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "Failed to load network servers: %s", err.Error())
 	}

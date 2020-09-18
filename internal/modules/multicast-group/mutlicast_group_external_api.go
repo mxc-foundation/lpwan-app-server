@@ -29,7 +29,7 @@ type MulticastGroupAPI struct {
 // NewMulticastGroupAPI creates a new multicast-group API.
 func NewMulticastGroupAPI(routingProfileID uuid.UUID) *MulticastGroupAPI {
 	return &MulticastGroupAPI{
-		st:               Service.St,
+		st:               ctrl.st,
 		routingProfileID: routingProfileID,
 	}
 }

@@ -22,6 +22,8 @@ type Store interface {
 	// repeated
 	IsErrorRepeat(err error) bool
 
+	MigrateCodeStore
+
 	ApplicationStore
 	DeviceStore
 	GatewayStore
@@ -35,6 +37,9 @@ type Store interface {
 	FUOTADeploymentStore
 	SearchStore
 	IntegrationsStore
+	RemoteMulticastSetupStore
+	RemoteFragmentaionSessionStore
+	RemoteMulticastClassCSessionStore
 }
 
 type Handler struct {

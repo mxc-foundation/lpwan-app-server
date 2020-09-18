@@ -8,19 +8,17 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 	"github.com/brocaar/chirpstack-api/go/v3/common"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/band"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // FUOTADeploymentAPI exports the FUOTA deployment related functions.
@@ -31,7 +29,7 @@ type FUOTADeploymentAPI struct {
 // NewFUOTADeploymentAPI creates a new FUOTADeploymentAPI.
 func NewFUOTADeploymentAPI() *FUOTADeploymentAPI {
 	return &FUOTADeploymentAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 
@@ -50,7 +48,7 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := storage.GetNetworkServerForDevEUI(ctx, storage.DB(), devEUI)
+	n, err := f.st.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -127,7 +125,7 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	fd := storage.FUOTADeployment{
+	fd := store.FUOTADeployment{
 		Name:             req.FuotaDeployment.Name,
 		DR:               int(req.FuotaDeployment.Dr),
 		Frequency:        int(req.FuotaDeployment.Frequency),
@@ -139,7 +137,7 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 
 	switch req.FuotaDeployment.GroupType {
 	case pb.MulticastGroupType_CLASS_C:
-		fd.GroupType = storage.FUOTADeploymentGroupTypeC
+		fd.GroupType = store.FUOTADeploymentGroupTypeC
 	default:
 		return nil, status.Errorf(codes.InvalidArgument, "group_type %s is not supported", req.FuotaDeployment.GroupType)
 	}
@@ -149,8 +147,8 @@ func (f *FUOTADeploymentAPI) CreateForDevice(ctx context.Context, req *pb.Create
 		return nil, status.Errorf(codes.InvalidArgument, "unicast_timeout: %s", err)
 	}
 
-	err = storage.Transaction(func(ctx context.Context, handler *store.Handler) error {
-		return storage.CreateFUOTADeploymentForDevice(ctx, handler, &fd, devEUI)
+	err = f.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		return handler.CreateFUOTADeploymentForDevice(ctx, &fd, devEUI)
 	})
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
@@ -172,7 +170,7 @@ func (f *FUOTADeploymentAPI) Get(ctx context.Context, req *pb.GetFUOTADeployment
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	fd, err := storage.GetFUOTADeployment(ctx, storage.DB(), id, false)
+	fd, err := f.st.GetFUOTADeployment(ctx, id, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -205,9 +203,9 @@ func (f *FUOTADeploymentAPI) Get(ctx context.Context, req *pb.GetFUOTADeployment
 	}
 
 	switch fd.GroupType {
-	case storage.FUOTADeploymentGroupTypeB:
+	case store.FUOTADeploymentGroupTypeB:
 		resp.FuotaDeployment.GroupType = pb.MulticastGroupType_CLASS_B
-	case storage.FUOTADeploymentGroupTypeC:
+	case store.FUOTADeploymentGroupTypeC:
 		resp.FuotaDeployment.GroupType = pb.MulticastGroupType_CLASS_C
 	default:
 		return nil, status.Errorf(codes.Internal, "unexpected group-type: %s", fd.GroupType)
@@ -221,7 +219,7 @@ func (f *FUOTADeploymentAPI) List(ctx context.Context, req *pb.ListFUOTADeployme
 	var err error
 	var idFilter bool
 
-	filters := storage.FUOTADeploymentFilters{
+	filters := store.FUOTADeploymentFilters{
 		Limit:  int(req.Limit),
 		Offset: int(req.Offset),
 	}
@@ -259,12 +257,12 @@ func (f *FUOTADeploymentAPI) List(ctx context.Context, req *pb.ListFUOTADeployme
 		}
 	}
 
-	count, err := storage.GetFUOTADeploymentCount(ctx, storage.DB(), filters)
+	count, err := f.st.GetFUOTADeploymentCount(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	deployments, err := storage.GetFUOTADeployments(ctx, storage.DB(), filters)
+	deployments, err := f.st.GetFUOTADeployments(ctx, filters)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -289,12 +287,12 @@ func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *pb.Ge
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	d, err := storage.GetDevice(ctx, storage.DB(), devEUI, false, true)
+	d, err := f.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	fdd, err := storage.GetFUOTADeploymentDevice(ctx, storage.DB(), fuotaDeploymentID, devEUI)
+	fdd, err := f.st.GetFUOTADeploymentDevice(ctx, fuotaDeploymentID, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -308,11 +306,11 @@ func (f *FUOTADeploymentAPI) GetDeploymentDevice(ctx context.Context, req *pb.Ge
 	}
 
 	switch fdd.State {
-	case storage.FUOTADeploymentDevicePending:
+	case store.FUOTADeploymentDevicePending:
 		resp.DeploymentDevice.State = pb.FUOTADeploymentDeviceState_PENDING
-	case storage.FUOTADeploymentDeviceSuccess:
+	case store.FUOTADeploymentDeviceSuccess:
 		resp.DeploymentDevice.State = pb.FUOTADeploymentDeviceState_SUCCESS
-	case storage.FUOTADeploymentDeviceError:
+	case store.FUOTADeploymentDeviceError:
 		resp.DeploymentDevice.State = pb.FUOTADeploymentDeviceState_ERROR
 	default:
 		return nil, status.Errorf(codes.Internal, "unexpected state: %s", fdd.State)
@@ -341,12 +339,12 @@ func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	count, err := storage.GetFUOTADeploymentDeviceCount(ctx, storage.DB(), fuotaDeploymentID)
+	count, err := f.st.GetFUOTADeploymentDeviceCount(ctx, fuotaDeploymentID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	devices, err := storage.GetFUOTADeploymentDevices(ctx, storage.DB(), fuotaDeploymentID, int(req.Limit), int(req.Offset))
+	devices, err := f.st.GetFUOTADeploymentDevices(ctx, fuotaDeploymentID, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -366,11 +364,11 @@ func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.
 		}
 
 		switch devices[i].State {
-		case storage.FUOTADeploymentDevicePending:
+		case store.FUOTADeploymentDevicePending:
 			dd.State = pb.FUOTADeploymentDeviceState_PENDING
-		case storage.FUOTADeploymentDeviceSuccess:
+		case store.FUOTADeploymentDeviceSuccess:
 			dd.State = pb.FUOTADeploymentDeviceState_SUCCESS
-		case storage.FUOTADeploymentDeviceError:
+		case store.FUOTADeploymentDeviceError:
 			dd.State = pb.FUOTADeploymentDeviceState_ERROR
 		default:
 			return nil, status.Errorf(codes.Internal, "unexpected state: %s", devices[i].State)
@@ -392,7 +390,7 @@ func (f *FUOTADeploymentAPI) ListDeploymentDevices(ctx context.Context, req *pb.
 	return &out, nil
 }
 
-func (f *FUOTADeploymentAPI) returnList(count int, deployments []storage.FUOTADeploymentListItem) (*pb.ListFUOTADeploymentResponse, error) {
+func (f *FUOTADeploymentAPI) returnList(count int, deployments []store.FUOTADeploymentListItem) (*pb.ListFUOTADeploymentResponse, error) {
 	var err error
 
 	resp := pb.ListFUOTADeploymentResponse{

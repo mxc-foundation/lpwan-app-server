@@ -43,9 +43,9 @@ func (v *Validator) ValidateMulticastGroupAccess(ctx context.Context, flag authc
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
+		return ctrl.st.CheckReadDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
+		return ctrl.st.CheckUpdateDeleteDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
 	default:
 		panic("ValidateMulticastGroupAccess: not supported flag")
 	}
@@ -62,9 +62,9 @@ func (v *Validator) ValidateGlobalNodesAccess(ctx context.Context, flag authcus.
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateNodeAccess(ctx, u.UserEmail, applicationID, u.ID)
+		return ctrl.st.CheckCreateNodeAccess(ctx, u.UserEmail, applicationID, u.ID)
 	case authcus.List:
-		return Service.St.CheckListNodeAccess(ctx, u.UserEmail, applicationID, u.ID)
+		return ctrl.st.CheckListNodeAccess(ctx, u.UserEmail, applicationID, u.ID)
 	default:
 		panic("ValidateGlobalNodesAccess: unsupported flag")
 	}
@@ -80,11 +80,11 @@ func (v *Validator) ValidateNodeAccess(ctx context.Context, flag authcus.Flag, d
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
+		return ctrl.st.CheckReadNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
 	case authcus.Update:
-		return Service.St.CheckUpdateNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
+		return ctrl.st.CheckUpdateNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
 	case authcus.Delete:
-		return Service.St.CheckDeleteNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
+		return ctrl.st.CheckDeleteNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
 	default:
 		panic("ValidateNodeAccess: unsupported flag")
 	}
@@ -101,7 +101,7 @@ func (v *Validator) ValidateDeviceQueueAccess(ctx context.Context, devEUI lorawa
 
 	switch flag {
 	case authcus.Create, authcus.List, authcus.Delete:
-		return Service.St.CheckCreateListDeleteDeviceQueueAccess(ctx, u.UserEmail, devEUI, u.ID)
+		return ctrl.st.CheckCreateListDeleteDeviceQueueAccess(ctx, u.UserEmail, devEUI, u.ID)
 	default:
 		panic("ValidateNodeAccess: unsupported flag")
 	}

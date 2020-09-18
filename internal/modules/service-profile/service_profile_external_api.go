@@ -4,9 +4,6 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
@@ -16,6 +13,8 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // ServiceProfileServiceAPI export the ServiceProfile related functions.
@@ -26,7 +25,7 @@ type ServiceProfileServiceAPI struct {
 // NewServiceProfileServiceAPI creates a new ServiceProfileServiceAPI.
 func NewServiceProfileServiceAPI() *ServiceProfileServiceAPI {
 	return &ServiceProfileServiceAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 

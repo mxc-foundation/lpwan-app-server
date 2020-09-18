@@ -16,6 +16,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/fuota"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
@@ -148,5 +149,12 @@ func SettingsSetup(conf config.Config) error {
 	}); err != nil {
 		return err
 	}
+
+	if err := device.SettingsSetup(device.Config{
+		ApplicationServerID: conf.ApplicationServer.ID,
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }

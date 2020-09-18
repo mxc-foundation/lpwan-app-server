@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
-
 	/* #nosec */
 	"crypto/md5"
 	"strings"
@@ -19,8 +17,8 @@ import (
 	gwpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway"
 	pspb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
@@ -61,7 +59,7 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 
 	gw, err := obj.st.GetGateway(ctx, gatewayEUI, true)
 	if err != nil {
-		if err == storage.ErrDoesNotExist {
+		if err == store.ErrDoesNotExist {
 			return nil, status.Errorf(codes.Unauthenticated, "Object does not exist: %s", gatewayEUI.String())
 		}
 		log.WithError(err).Errorf("Failed to select gateway by mac: %s", gatewayEUI.String())
@@ -110,7 +108,6 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 				return nil, status.Errorf(codes.Unimplemented, "Update last heartbeat error")
 			}
 
-			//err = storage.UpdateFirstHeartbeat(ctx, storage.DB(), mac, current_heartbeat)
 			err = obj.st.UpdateFirstHeartbeatToZero(ctx, gatewayEUI)
 			if err != nil {
 				log.WithError(err).Error("Heartbeat/Update first heartbeat to zero error")
@@ -161,7 +158,7 @@ Next:
 		if gw.AutoUpdateFirmware {
 			firmware, err := handler.GetGatewayFirmware(ctx, gw.Model, false)
 			if err != nil {
-				if err == storage.ErrDoesNotExist {
+				if err == store.ErrDoesNotExist {
 					return status.Errorf(codes.NotFound, "Firmware not found for model: %s", gw.Model)
 				}
 				log.WithError(err).Errorf("Failed to get firmware information for model: %s", gw.Model)

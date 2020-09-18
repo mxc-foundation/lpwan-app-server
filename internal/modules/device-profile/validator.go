@@ -39,9 +39,9 @@ func (v *Validator) ValidateDeviceProfilesAccess(ctx context.Context, flag authc
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateDeviceProfilesAccess(ctx, u.UserEmail, organizationID, applicationID, u.ID)
+		return ctrl.st.CheckCreateDeviceProfilesAccess(ctx, u.UserEmail, organizationID, applicationID, u.ID)
 	case authcus.List:
-		return Service.St.CheckListDeviceProfilesAccess(ctx, u.UserEmail, organizationID, applicationID, u.ID)
+		return ctrl.st.CheckListDeviceProfilesAccess(ctx, u.UserEmail, organizationID, applicationID, u.ID)
 	default:
 		panic("ValidateDeviceProfilesAccess: unsupported flag")
 	}
@@ -58,9 +58,9 @@ func (v *Validator) ValidateDeviceProfileAccess(ctx context.Context, flag authcu
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadDeviceProfileAccess(ctx, u.UserEmail, id, u.ID)
+		return ctrl.st.CheckReadDeviceProfileAccess(ctx, u.UserEmail, id, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteDeviceProfileAccess(ctx, u.UserEmail, id, u.ID)
+		return ctrl.st.CheckUpdateDeleteDeviceProfileAccess(ctx, u.UserEmail, id, u.ID)
 	default:
 		panic("ValidateDeviceProfileAccess: unsupported flag")
 	}

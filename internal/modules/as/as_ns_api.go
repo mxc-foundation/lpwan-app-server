@@ -37,13 +37,13 @@ type ApplicationServerAPI struct {
 // NewApplicationServerAPI returns a new ApplicationServerAPI.
 func NewApplicationServerAPI() *ApplicationServerAPI {
 	return &ApplicationServerAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 
 // HandleUplinkData handles incoming (uplink) data.
 func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.HandleUplinkDataRequest) (*empty.Empty, error) {
-	if err := uplink.Handle(ctx, *req); err != nil {
+	if err := uplink.Handle(ctx, *req, a.st); err != nil {
 		return nil, grpc.Errorf(codes.Internal, "handle uplink data error: %s", err)
 	}
 
@@ -55,13 +55,13 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := device.Service.St.GetDevice(ctx, devEUI, false)
+	d, err := device.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
-	app, err := application.Service.St.GetApplication(ctx, d.ApplicationID)
+	app, err := application.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -109,13 +109,13 @@ func (a *ApplicationServerAPI) HandleTxAck(ctx context.Context, req *as.HandleTx
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := device.Service.St.GetDevice(ctx, devEUI, false)
+	d, err := device.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
-	app, err := application.Service.St.GetApplication(ctx, d.ApplicationID)
+	app, err := application.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -162,14 +162,14 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := device.Service.St.GetDevice(ctx, devEUI, false)
+	d, err := device.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	app, err := application.Service.St.GetApplication(ctx, d.ApplicationID)
+	app, err := application.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -288,7 +288,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 		return nil, err
 	}
 
-	app, err := application.Service.St.GetApplication(ctx, d.ApplicationID)
+	app, err := application.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "get application error"))
 	}
@@ -359,7 +359,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 		return nil, err
 	}
 
-	app, err := application.Service.St.GetApplication(ctx, d.ApplicationID)
+	app, err := application.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "get application error"))
 	}

@@ -4,13 +4,15 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
-type Controller struct {
-	St *store.Handler
+type controller struct {
+	st *store.Handler
 }
 
-var Service = &Controller{}
+var ctrl *controller
 
 func Setup(h *store.Handler) error {
-	Service.St = h
+	ctrl = &controller{
+		st: h,
+	}
 	return nil
 }

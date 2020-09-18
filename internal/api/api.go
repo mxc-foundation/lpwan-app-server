@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gofrs/uuid"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
@@ -39,8 +40,8 @@ import (
 )
 
 // Setup configures the API endpoints.
-func Setup() error {
-	if err := as.Setup(); err != nil {
+func Setup(h *store.Handler) error {
+	if err := as.Setup(h); err != nil {
 		return errors.Wrap(err, "setup application-server api error")
 	}
 

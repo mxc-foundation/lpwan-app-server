@@ -43,11 +43,11 @@ func (v *Validator) ValidateNodeAccess(ctx context.Context, flag authcus.Flag, d
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
+		return ctrl.st.CheckReadNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
 	case authcus.Update:
-		return Service.St.CheckUpdateNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
+		return ctrl.st.CheckUpdateNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
 	case authcus.Delete:
-		return Service.St.CheckDeleteNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
+		return ctrl.st.CheckDeleteNodeAccess(ctx, u.UserEmail, devEUI, u.ID)
 	default:
 		panic("ValidateNodeAccess: unsupported flag")
 	}
@@ -64,9 +64,9 @@ func (v *Validator) ValidateMulticastGroupsAccess(ctx context.Context, flag auth
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
+		return ctrl.st.CheckCreateServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
 	case authcus.List:
-		return Service.St.CheckListServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
+		return ctrl.st.CheckListServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
 	default:
 		panic("ValidateMulticastGroupsAccess: not supported flag")
 	}
@@ -83,9 +83,9 @@ func (v *Validator) ValidateMulticastGroupAccess(ctx context.Context, flag authc
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
+		return ctrl.st.CheckReadDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
+		return ctrl.st.CheckUpdateDeleteDeviceProfileAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
 	default:
 		panic("ValidateMulticastGroupAccess: not supported flag")
 	}
@@ -102,7 +102,7 @@ func (v *Validator) ValidateMulticastGroupQueueAccess(ctx context.Context, flag 
 
 	switch flag {
 	case authcus.Create, authcus.Read, authcus.List, authcus.Delete:
-		return Service.St.CheckMulticastGroupQueueAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
+		return ctrl.st.CheckMulticastGroupQueueAccess(ctx, u.UserEmail, multicastGroupID, u.ID)
 	default:
 		panic("ValidateMulticastGroupQueueAccess: not supported flag")
 	}

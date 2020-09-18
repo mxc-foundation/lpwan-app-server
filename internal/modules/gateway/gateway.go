@@ -29,9 +29,7 @@ type controller struct {
 var ctrl *controller
 
 func SettingsSetup(s Config) error {
-	ctrl = &controller{
-		s: s,
-	}
+	ctrl.s = s
 	return nil
 }
 
@@ -47,8 +45,10 @@ func Setup(h *store.Handler) error {
 }
 
 func SetupFirmware(bindOld, bindNew string) {
-	ctrl.bindPortNewGateway = bindNew
-	ctrl.bindPortOldGateway = bindOld
+	ctrl = &controller{
+		bindPortOldGateway: bindOld,
+		bindPortNewGateway: bindNew,
+	}
 }
 
 func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) error {

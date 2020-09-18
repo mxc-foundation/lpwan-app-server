@@ -39,9 +39,9 @@ func (v *Validator) ValidateServiceProfilesAccess(ctx context.Context, flag auth
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
+		return ctrl.st.CheckCreateServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
 	case authcus.List:
-		return Service.St.CheckListServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
+		return ctrl.st.CheckListServiceProfilesAccess(ctx, u.UserEmail, organizationID, u.ID)
 	default:
 		panic("ValidateServiceProfilesAccess: not supported flag")
 	}
@@ -58,9 +58,9 @@ func (v *Validator) ValidateServiceProfileAccess(ctx context.Context, flag authc
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadServiceProfileAccess(ctx, u.UserEmail, id, u.ID)
+		return ctrl.st.CheckReadServiceProfileAccess(ctx, u.UserEmail, id, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteServiceProfileAccess(ctx, u.UserEmail, id, u.ID)
+		return ctrl.st.CheckUpdateDeleteServiceProfileAccess(ctx, u.UserEmail, id, u.ID)
 	default:
 		panic("ValidateServiceProfileAccess: not supported flag")
 	}

@@ -3,8 +3,6 @@ package gateway
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -12,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
 // GatewayM2MAPI exports the API for mxprotocol-server
@@ -47,7 +45,7 @@ func (a *GatewayM2MAPI) GetGatewayByMac(ctx context.Context, req *pb.GetGatewayB
 	}
 
 	gateway, err := a.st.GetGateway(ctx, mac, false)
-	if err == storage.ErrDoesNotExist {
+	if err == store.ErrDoesNotExist {
 		return &resp, nil
 	} else if err != nil {
 		return &resp, status.Errorf(codes.InvalidArgument, err.Error())

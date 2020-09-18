@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
@@ -21,13 +20,7 @@ import (
 // MigrateGatewayStats imports the gateway stats from the network-server.
 func MigrateGatewayStats(handler *store.Handler) error {
 	ctx := context.Background()
-	var ids []lorawan.EUI64
-	err := sqlx.SelectContext(ctx, db, &ids, `
-		select
-			mac
-		from
-			gateway
-	`)
+	ids, err := handler.GetAllGatewayIDs(ctx)
 	if err != nil {
 		return errors.Wrap(err, "select gateway ids error")
 	}
@@ -44,12 +37,12 @@ func MigrateGatewayStats(handler *store.Handler) error {
 }
 
 func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.EUI64) error {
-	gw, err := storage.GetGateway(context.Background(), handler, gatewayID, true)
+	gw, err := handler.GetGateway(context.Background(), gatewayID, true)
 	if err != nil {
 		return errors.Wrap(err, "get gateway error")
 	}
 
-	n, err := storage.GetNetworkServer(context.Background(), handler, gw.NetworkServerID)
+	n, err := handler.GetNetworkServer(context.Background(), gw.NetworkServerID)
 	if err != nil {
 		return errors.Wrap(err, "get network-server error")
 	}
@@ -72,7 +65,7 @@ func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.E
 		gw.Altitude = nsGw.Gateway.Location.Altitude
 	}
 
-	if err := storage.UpdateGateway(context.Background(), handler, &gw); err != nil {
+	if err := handler.UpdateGateway(context.Background(), &gw); err != nil {
 		return errors.Wrap(err, "update gateway error")
 	}
 

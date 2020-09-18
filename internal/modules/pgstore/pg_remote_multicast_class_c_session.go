@@ -1,30 +1,26 @@
-package storage
+package pgstore
 
 import (
 	"context"
 	"time"
 
-	uuid "github.com/gofrs/uuid"
+	"github.com/brocaar/lorawan"
+	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-
-	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
-// RemoteMulticastClassCSession defines a remote multicast-setup Class-C session record.
-type RemoteMulticastClassCSession store.RemoteMulticastClassCSession
-
 // CreateRemoteMulticastClassCSession creates the given multicast Class-C session.
-func CreateRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler, sess *RemoteMulticastClassCSession) error {
+func (ps *pgstore) CreateRemoteMulticastClassCSession(ctx context.Context, sess *store.RemoteMulticastClassCSession) error {
 	now := time.Now()
 	sess.CreatedAt = now
 	sess.UpdatedAt = now
 
-	_, err := db.Exec(`
+	_, err := ps.db.ExecContext(ctx, `
 		insert into remote_multicast_class_c_session (
 			dev_eui,
 			multicast_group_id,
@@ -69,14 +65,14 @@ func CreateRemoteMulticastClassCSession(ctx context.Context, handler *store.Hand
 
 // GetRemoteMulticastClassCSession returns the multicast Class-C session given
 // a DevEUI and multicast-group ID.
-func GetRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (RemoteMulticastClassCSession, error) {
+func (ps *pgstore) GetRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (store.RemoteMulticastClassCSession, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
-	var sess RemoteMulticastClassCSession
-	if err := sqlx.Get(db, &sess, `
+	var sess store.RemoteMulticastClassCSession
+	if err := sqlx.GetContext(ctx, ps.db, &sess, `
 		select
 			*
 		from
@@ -95,14 +91,14 @@ func GetRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler
 
 // GetRemoteMulticastClassCSessionByGroupID returns the multicast Class-C session given
 // a DevEUI and McGroupID.
-func GetRemoteMulticastClassCSessionByGroupID(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (RemoteMulticastClassCSession, error) {
+func (ps *pgstore) GetRemoteMulticastClassCSessionByGroupID(ctx context.Context, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (store.RemoteMulticastClassCSession, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
 	}
 
-	var sess RemoteMulticastClassCSession
-	if err := sqlx.Get(db, &sess, `
+	var sess store.RemoteMulticastClassCSession
+	if err := sqlx.GetContext(ctx, ps.db, &sess, `
 		select
 			*
 		from
@@ -121,10 +117,10 @@ func GetRemoteMulticastClassCSessionByGroupID(ctx context.Context, handler *stor
 
 // GetPendingRemoteMulticastClassCSessions returns a slice of pending remote
 // multicast Class-C sessions.
-func GetPendingRemoteMulticastClassCSessions(ctx context.Context, handler *store.Handler, limit, maxRetryCount int) ([]RemoteMulticastClassCSession, error) {
-	var items []RemoteMulticastClassCSession
+func (ps *pgstore) GetPendingRemoteMulticastClassCSessions(ctx context.Context, limit, maxRetryCount int) ([]store.RemoteMulticastClassCSession, error) {
+	var items []store.RemoteMulticastClassCSession
 
-	if err := sqlx.Select(db, &items, `
+	if err := sqlx.SelectContext(ctx, ps.db, &items, `
 		select
 			sess.*
 		from
@@ -146,7 +142,7 @@ func GetPendingRemoteMulticastClassCSessions(ctx context.Context, handler *store
 		skip locked`,
 		maxRetryCount,
 		time.Now(),
-		RemoteMulticastSetupSetup,
+		store.RemoteMulticastSetupSetup,
 		limit,
 	); err != nil {
 		return nil, handlePSQLError(Select, err, "select error")
@@ -157,10 +153,10 @@ func GetPendingRemoteMulticastClassCSessions(ctx context.Context, handler *store
 
 // UpdateRemoteMulticastClassCSession updates the given remote multicast
 // Class-C session.
-func UpdateRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler, sess *RemoteMulticastClassCSession) error {
+func (ps *pgstore) UpdateRemoteMulticastClassCSession(ctx context.Context, sess *store.RemoteMulticastClassCSession) error {
 	sess.UpdatedAt = time.Now()
 
-	res, err := db.Exec(`
+	res, err := ps.db.ExecContext(ctx, `
 		update
 			remote_multicast_class_c_session
 		set
@@ -198,7 +194,7 @@ func UpdateRemoteMulticastClassCSession(ctx context.Context, handler *store.Hand
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return store.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -211,8 +207,8 @@ func UpdateRemoteMulticastClassCSession(ctx context.Context, handler *store.Hand
 
 // DeleteRemoteMulticastClassCSession deletes the multicast Class-C session
 // given a DevEUI and multicast-group ID.
-func DeleteRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error {
-	res, err := db.Exec(`
+func (ps *pgstore) DeleteRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error {
+	res, err := ps.db.ExecContext(ctx, `
 		delete from remote_multicast_class_c_session
 		where
 			dev_eui = $1
@@ -228,7 +224,7 @@ func DeleteRemoteMulticastClassCSession(ctx context.Context, handler *store.Hand
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return store.ErrDoesNotExist
 	}
 	log.WithFields(log.Fields{
 		"dev_eui":            devEUI,

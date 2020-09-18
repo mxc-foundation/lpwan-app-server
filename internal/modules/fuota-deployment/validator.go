@@ -40,7 +40,7 @@ func (v *Validator) ValidateFUOTADeploymentAccess(ctx context.Context, flag auth
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadFUOTADeploymentAccess(ctx, u.UserEmail, id, u.ID)
+		return ctrl.st.CheckReadFUOTADeploymentAccess(ctx, u.UserEmail, id, u.ID)
 	default:
 		panic("ValidateFUOTADeploymentAccess: unsupported flag")
 	}
@@ -56,7 +56,7 @@ func (v *Validator) ValidateFUOTADeploymentsAccess(ctx context.Context, flag aut
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateFUOTADeploymentsAccess(ctx, u.UserEmail, applicationID, devEUI, u.ID)
+		return ctrl.st.CheckCreateFUOTADeploymentsAccess(ctx, u.UserEmail, applicationID, devEUI, u.ID)
 	default:
 		panic("ValidateFUOTADeploymentsAccess: unsupported flag")
 	}

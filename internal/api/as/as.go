@@ -37,7 +37,8 @@ type AppserverStruct struct {
 }
 
 type controller struct {
-	s AppserverStruct
+	st *store.Handler
+	s  AppserverStruct
 }
 
 var ctrl *controller
@@ -53,7 +54,9 @@ func GetSettings() AppserverStruct {
 }
 
 // Setup configures the package.
-func Setup() error {
+func Setup(h *store.Handler) error {
+	ctrl.st = h
+
 	log.WithFields(log.Fields{
 		"bind":     ctrl.s.Bind,
 		"ca_cert":  ctrl.s.CACert,
@@ -83,16 +86,19 @@ func Setup() error {
 
 // ApplicationServerAPI implements the as.ApplicationServerServer interface.
 type ApplicationServerAPI struct {
+	st *store.Handler
 }
 
 // NewApplicationServerAPI returns a new ApplicationServerAPI.
 func NewApplicationServerAPI() *ApplicationServerAPI {
-	return &ApplicationServerAPI{}
+	return &ApplicationServerAPI{
+		st: ctrl.st,
+	}
 }
 
 // HandleUplinkData handles incoming (uplink) data.
 func (a *ApplicationServerAPI) HandleUplinkData(ctx context.Context, req *as.HandleUplinkDataRequest) (*empty.Empty, error) {
-	if err := uplink.Handle(ctx, *req); err != nil {
+	if err := uplink.Handle(ctx, *req, a.st); err != nil {
 		return nil, grpc.Errorf(codes.Internal, "handle uplink data error: %s", err)
 	}
 

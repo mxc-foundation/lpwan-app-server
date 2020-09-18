@@ -22,7 +22,7 @@ func NewNotificationAPI() *NotificationAPI {
 func (a *NotificationAPI) SendStakeIncomeNotification(ctx context.Context, req *pb.SendStakeIncomeNotificationRequest) (*pb.SendStakeIncomeNotificationResponse, error) {
 	resp := pb.SendStakeIncomeNotificationResponse{}
 	// get user id from organization id
-	users, err := organization.Service.St.GetOrganizationUsers(ctx, req.OrganizationId, 999, 0)
+	users, err := organization.GetOrganizationUsers(ctx, req.OrganizationId, 999, 0)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "failed to get users for organization")
 	}

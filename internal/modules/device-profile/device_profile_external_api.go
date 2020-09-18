@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"time"
 
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
-
 	"google.golang.org/grpc/status"
 
 	"github.com/gofrs/uuid"
@@ -21,6 +19,7 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
@@ -32,7 +31,7 @@ type DeviceProfileServiceAPI struct {
 // NewDeviceProfileServiceAPI creates a new DeviceProfileServiceAPI.
 func NewDeviceProfileServiceAPI() *DeviceProfileServiceAPI {
 	return &DeviceProfileServiceAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 

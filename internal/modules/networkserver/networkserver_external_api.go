@@ -15,7 +15,6 @@ import (
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 )
 
 // NetworkServerAPI exports the NetworkServer related functions.
@@ -26,20 +25,20 @@ type NetworkServerAPI struct {
 // NewNetworkServerAPI creates a new NetworkServerAPI.
 func NewNetworkServerAPI() *NetworkServerAPI {
 	return &NetworkServerAPI{
-		st: Service.St,
+		st: ctrl.st,
 	}
 }
 
 func (a *NetworkServerAPI) SetupDefault() error {
 	ctx := context.Background()
-	count, err := gatewayprofile.Service.St.GetGatewayProfileCount(ctx)
-	if err != nil && err != storage.ErrDoesNotExist {
+	count, err := gatewayprofile.GetGatewayProfileCount(ctx)
+	if err != nil && err != store.ErrDoesNotExist {
 		return errors.Wrap(err, "Failed to load gateway profiles")
 	}
 
 	if count != 0 {
 		// check if default gateway profile already exists
-		gpList, err := gatewayprofile.Service.St.GetGatewayProfiles(ctx, count, 0)
+		gpList, err := gatewayprofile.GetGatewayProfiles(ctx, count, 0)
 		if err != nil {
 			return errors.Wrap(err, "Failed to load gateway profiles")
 		}
@@ -58,7 +57,7 @@ func (a *NetworkServerAPI) SetupDefault() error {
 			Limit:  1,
 			Offset: 0,
 		})
-		if err != nil && err != storage.ErrDoesNotExist {
+		if err != nil && err != store.ErrDoesNotExist {
 			return errors.Wrap(err, "Load network server internal error")
 		}
 

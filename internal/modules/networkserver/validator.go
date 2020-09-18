@@ -37,9 +37,9 @@ func (v *Validator) ValidateGlobalNetworkServersAccess(ctx context.Context, flag
 
 	switch flag {
 	case authcus.Create:
-		return Service.St.CheckCreateNetworkServersAccess(ctx, u.UserEmail, orginizationID, u.ID)
+		return ctrl.st.CheckCreateNetworkServersAccess(ctx, u.UserEmail, orginizationID, u.ID)
 	case authcus.List:
-		return Service.St.CheckListNetworkServersAccess(ctx, u.UserEmail, orginizationID, u.ID)
+		return ctrl.st.CheckListNetworkServersAccess(ctx, u.UserEmail, orginizationID, u.ID)
 	default:
 		panic("ValidateGlobalNetworkServersAccess: unsupported flag")
 	}
@@ -55,9 +55,9 @@ func (v *Validator) ValidateNetworkServerAccess(ctx context.Context, flag authcu
 
 	switch flag {
 	case authcus.Read:
-		return Service.St.CheckReadNetworkServerAccess(ctx, u.UserEmail, networkserverID, u.ID)
+		return ctrl.st.CheckReadNetworkServerAccess(ctx, u.UserEmail, networkserverID, u.ID)
 	case authcus.Update, authcus.Delete:
-		return Service.St.CheckUpdateDeleteNetworkServerAccess(ctx, u.UserEmail, networkserverID, u.ID)
+		return ctrl.st.CheckUpdateDeleteNetworkServerAccess(ctx, u.UserEmail, networkserverID, u.ID)
 	default:
 		panic("ValidateNetworkServerAccess: unsupported flag")
 	}
