@@ -90,7 +90,7 @@ func run(cmd *cobra.Command, args []string) error {
 		ApplicationServerPublicHost: as.GetSettings().PublicHost,
 		PWH:                         pwh,
 	}))
-	
+
 	if err := migrateGatewayStats(handler); err != nil {
 		log.Fatal(err)
 	}

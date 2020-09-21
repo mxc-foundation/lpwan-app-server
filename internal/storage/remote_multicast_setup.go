@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
 

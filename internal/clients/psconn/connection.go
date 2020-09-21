@@ -40,14 +40,6 @@ func GetSettings() ProvisioningServerStruct {
 }
 
 func Setup() error {
-	ctrl = &controller{
-		provisioningServer: ProvisioningServerStruct{
-			Server:  ctrl.provisioningServer.Server,
-			CACert:  ctrl.provisioningServer.CACert,
-			TLSCert: ctrl.provisioningServer.TLSCert,
-			TLSKey:  ctrl.provisioningServer.TLSKey,
-		},
-	}
 	return nil
 }
 

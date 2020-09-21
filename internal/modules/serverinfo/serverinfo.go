@@ -25,6 +25,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type controller struct {
@@ -45,6 +46,8 @@ func GetSettings() config.ServerSettingsStruct {
 
 // SettingsSetup init settings extracted values from toml file then assign each modules
 func SettingsSetup(conf config.Config) error {
+	log.Info("Set up system settings...")
+
 	ctrl = &controller{
 		general: conf.General,
 	}

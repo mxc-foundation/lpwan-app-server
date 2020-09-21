@@ -12,7 +12,10 @@ type controller struct {
 var ctrl *controller
 
 func Setup(h *store.Handler) error {
-	ctrl.st = h
+	ctrl = &controller{
+		st: h,
+	}
+
 	return nil
 }
 

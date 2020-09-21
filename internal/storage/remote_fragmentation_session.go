@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"

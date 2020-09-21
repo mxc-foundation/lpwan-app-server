@@ -30,6 +30,7 @@ var ctrl *controller
 
 func SettingsSetup(s Config) error {
 	ctrl.s = s
+
 	return nil
 }
 

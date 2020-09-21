@@ -2,9 +2,10 @@ package pgstore
 
 import (
 	"context"
+	"time"
+
 	"github.com/brocaar/lorawan"
 	"github.com/jmoiron/sqlx"
-	"time"
 
 	"github.com/lib/pq"
 	"github.com/pkg/errors"

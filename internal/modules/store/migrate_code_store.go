@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
 )
 
