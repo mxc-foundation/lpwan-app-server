@@ -396,7 +396,7 @@ func (ps *pgstore) UpdateGateway(ctx context.Context, gw *store.Gateway) error {
 			longitude = $14,
 			altitude = $15,
 			tags = $16,
-			metadata = $17
+			metadata = $17,
 		    model = $18,
 		    config = $19,
 		    os_version = $20,

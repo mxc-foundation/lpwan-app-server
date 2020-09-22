@@ -29,7 +29,7 @@ func SaveGeolocBuffer(ctx context.Context, devEUI lorawan.EUI64, items [][]*gw.U
 	}
 
 	key := fmt.Sprintf(geolocBufferKeyTempl, devEUI)
-	pipe := rs.RedisClient().TxPipeline()
+	pipe := rs.RedisClient().S.TxPipeline()
 	pipe.Del(key)
 
 	for i := range items {
@@ -64,7 +64,7 @@ func GetGeolocBuffer(ctx context.Context, devEUI lorawan.EUI64, ttl time.Duratio
 	}
 
 	key := fmt.Sprintf(geolocBufferKeyTempl, devEUI)
-	resp, err := rs.RedisClient().LRange(key, 0, -1).Result()
+	resp, err := rs.RedisClient().S.LRange(key, 0, -1).Result()
 	if err != nil {
 		return nil, errors.Wrap(err, "read buffer error")
 	}

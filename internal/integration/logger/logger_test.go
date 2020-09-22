@@ -15,7 +15,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 type LoggerTestSuite struct {
@@ -30,8 +29,7 @@ type LoggerTestSuite struct {
 
 func (ts *LoggerTestSuite) SetupSuite() {
 	assert := require.New(ts.T())
-	conf := test.GetConfig()
-	assert.NoError(storage.Setup(conf))
+	assert.NoError(storage.Setup())
 
 	ts.logChannel = make(chan eventlog.EventLog, 1)
 	ts.ctx, ts.cancelFunc = context.WithCancel(context.Background())

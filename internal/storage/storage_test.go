@@ -22,8 +22,7 @@ type DatabaseTestSuiteBase struct {
 
 // SetupSuite is called once before starting the test-suite.
 func (b *DatabaseTestSuiteBase) SetupSuite() {
-	conf := test.GetConfig()
-	if err := Setup(conf); err != nil {
+	if err := Setup(); err != nil {
 		panic(err)
 	}
 }
@@ -31,7 +30,7 @@ func (b *DatabaseTestSuiteBase) SetupSuite() {
 // SetupTest is called before every test.
 func (b *DatabaseTestSuiteBase) SetupTest() {
 	b.ctx = context.Background()
-	handler, err := store.New(pgstore.New(DBTest().DB))
+	handler, err := store.New(pgstore.New(DBTest().DB, pgstore.Settings{}))
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +42,7 @@ func (b *DatabaseTestSuiteBase) SetupTest() {
 	b.tx = tx
 
 	test.MustResetDB(DBTest().DB)
-	rs.RedisClient().FlushAll()
+	rs.RedisClient().S.FlushAll()
 }
 
 // TearDownTest is called after every test.

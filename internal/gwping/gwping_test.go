@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-redis/redis/v7"
+
 	"github.com/golang/protobuf/ptypes"
 	. "github.com/smartystreets/goconvey/convey"
 
@@ -15,6 +17,7 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 )
 
@@ -57,27 +60,6 @@ func (ts *testStore) TxRollback(ctx context.Context) error {
 
 func (ts *testStore) IsErrorRepeat(err error) bool {
 	return false
-}
-
-type testEnv struct {
-	ctx context.Context
-	h   *store.Handler
-	t   *testing.T
-}
-
-func newTestEnv(t *testing.T) *testEnv {
-	te := &testEnv{
-		ctx: context.Background(),
-		t:   t,
-	}
-
-	te.h, _ = store.New(&testStore{
-		Organization:  make(map[int64]*store.Organization),
-		Gateway:       make(map[lorawan.EUI64]*store.Gateway),
-		GatewayPing:   make(map[int64]*store.GatewayPing),
-		NetworkServer: make(map[int64]*store.NetworkServer),
-	})
-	return te
 }
 
 func (ts *testStore) CreateOrganization(ctx context.Context, org *store.Organization) error {
@@ -149,8 +131,87 @@ func (ts *testStore) UpdateGateway(ctx context.Context, gw *store.Gateway) error
 	return nil
 }
 
+type testEnv struct {
+	ctx context.Context
+	h   *store.Handler
+	t   *testing.T
+}
+
+func newTestEnv(t *testing.T) *testEnv {
+	te := &testEnv{
+		ctx: context.Background(),
+		t:   t,
+	}
+
+	te.h, _ = store.New(&testStore{
+		Organization:  make(map[int64]*store.Organization),
+		Gateway:       make(map[lorawan.EUI64]*store.Gateway),
+		GatewayPing:   make(map[int64]*store.GatewayPing),
+		NetworkServer: make(map[int64]*store.NetworkServer),
+	})
+	return te
+}
+
+type testRedisClient struct {
+	Data map[string]string
+}
+
+func (t testRedisClient) Subscribe(channels ...string) *redis.PubSub {
+	panic("implement me")
+}
+
+func (t testRedisClient) Publish(channel string, message interface{}) *redis.IntCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) FlushAll() *redis.StatusCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) Del(keys ...string) *redis.IntCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) Get(key string) *redis.StringCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) LRange(key string, start, stop int64) *redis.StringSliceCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) TxPipeline() redis.Pipeliner {
+	panic("implement me")
+}
+
+func (t testRedisClient) Pipeline() redis.Pipeliner {
+	panic("implement me")
+}
+
+func (t testRedisClient) SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) HGetAll(key string) *redis.StringStringMapCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) Keys(pattern string) *redis.StringSliceCmd {
+	panic("implement me")
+}
+
+func (t testRedisClient) Ping() *redis.StatusCmd {
+	panic("implement me")
+}
+
 func TestGatewayPing(t *testing.T) {
 	te := newTestEnv(t)
+	_ = rs.SettingsSetup(rs.RedisStruct{})
+	rs.SetupRedisHandler(rs.NewRedisStore(&testRedisClient{}))
 
 	Convey("Given a clean database and a gateway", t, func() {
 		nsClient := mock.NewClient()
@@ -228,7 +289,7 @@ func TestGatewayPing(t *testing.T) {
 					So(mic, ShouldNotEqual, lorawan.MIC{})
 
 					Convey("Then a ping lookup has been created", func() {
-						id, err := store.GatewayPing{}.GetPingLookup(mic)
+						id, err := GetPingLookup(mic)
 						So(err, ShouldBeNil)
 						So(id, ShouldEqual, *gwGet.LastPingID)
 					})
@@ -264,7 +325,7 @@ func TestGatewayPing(t *testing.T) {
 						So(HandleReceivedPing(te.ctx, &pong), ShouldBeNil)
 
 						Convey("Then the ping lookup has been deleted", func() {
-							_, err := store.GatewayPing{}.GetPingLookup(mic)
+							_, err := GetPingLookup(mic)
 							So(err, ShouldNotBeNil)
 						})
 

@@ -47,9 +47,8 @@ type LoRaCloudTestSuite struct {
 
 func (ts *LoRaCloudTestSuite) SetupSuite() {
 	assert := require.New(ts.T())
-	conf := test.GetConfig()
 
-	assert.NoError(storage.Setup(conf))
+	assert.NoError(storage.Setup())
 	test.MustResetDB(storage.DBTest().DB)
 
 	ts.server = httptest.NewServer(http.HandlerFunc(ts.apiHandler))
@@ -1324,7 +1323,7 @@ func (ts *LoRaCloudTestSuite) TestHandleUplinkEvent() {
 		for _, tst := range tests {
 			t.Run(tst.name, func(t *testing.T) {
 				assert := require.New(t)
-				rs.RedisClient().FlushAll()
+				rs.RedisClient().S.FlushAll()
 
 				var devEUI lorawan.EUI64
 				copy(devEUI[:], tst.uplinkEvent.DevEui)

@@ -101,7 +101,7 @@ func Setup() error {
 		ctrl.Metrics.Redis.MonthAggregationTTL,
 	)
 
-	if err := rs.SetupRedis(); err != nil {
+	if err := rs.Setup(); err != nil {
 		return errors.Wrap(err, "set up redis error")
 	}
 

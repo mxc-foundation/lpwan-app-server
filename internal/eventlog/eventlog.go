@@ -56,7 +56,7 @@ func LogEventForDevice(devEUI lorawan.EUI64, t string, msg proto.Message) error 
 		return errors.Wrap(err, "json encode error")
 	}
 
-	err = rs.RedisClient().Publish(key, b).Err()
+	err = rs.RedisClient().S.Publish(key, b).Err()
 	if err != nil {
 		return errors.Wrap(err, "publish device event error")
 	}
@@ -69,7 +69,7 @@ func LogEventForDevice(devEUI lorawan.EUI64, t string, msg proto.Message) error 
 func GetEventLogForDevice(ctx context.Context, devEUI lorawan.EUI64, eventsChan chan EventLog) error {
 	key := fmt.Sprintf(deviceEventUplinkPubSubKeyTempl, devEUI)
 
-	sub := rs.RedisClient().Subscribe(key)
+	sub := rs.RedisClient().S.Subscribe(key)
 	_, err := sub.Receive()
 	if err != nil {
 		return errors.Wrap(err, "subscribe error")

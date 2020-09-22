@@ -28,7 +28,7 @@ type HeartbeatAPI struct {
 	st       *store.Handler
 }
 
-// NewGatewayAPI creates new HeartbeatAPI
+// NewHeartbeatAPI creates new HeartbeatAPI
 func NewHeartbeatAPI(bind string) *HeartbeatAPI {
 	return &HeartbeatAPI{
 		BindPort: bind,

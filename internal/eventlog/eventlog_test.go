@@ -16,16 +16,14 @@ import (
 
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 func TestEventLog(t *testing.T) {
 	assert := require.New(t)
 
-	conf := test.GetConfig()
-	assert.NoError(storage.Setup(conf))
+	assert.NoError(storage.Setup())
 
-	rs.RedisClient().FlushAll()
+	rs.RedisClient().S.FlushAll()
 
 	upEvent := pb.UplinkEvent{
 		Data: []byte{0x01, 0x02, 0x03, 0x03},

@@ -14,7 +14,6 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
@@ -32,7 +31,7 @@ type MQTTHandlerTestSuite struct {
 func (ts *MQTTHandlerTestSuite) SetupSuite() {
 	assert := require.New(ts.T())
 	conf := test.GetConfig()
-	assert.NoError(storage.Setup(conf))
+	assert.NoError(storage.Setup())
 
 	mqttServer := conf.ApplicationServer.Integration.MQTT.Server
 	username := conf.ApplicationServer.Integration.MQTT.Username
@@ -47,7 +46,7 @@ func (ts *MQTTHandlerTestSuite) SetupSuite() {
 	var err error
 	ts.integration, err = New(
 		marshaler.Protobuf,
-		config.IntegrationMQTTConfig{
+		IntegrationMQTTConfig{
 			Server:               mqttServer,
 			Username:             username,
 			Password:             password,
@@ -66,7 +65,7 @@ func (ts *MQTTHandlerTestSuite) TearDownSuite() {
 }
 
 func (ts *MQTTHandlerTestSuite) SetupTest() {
-	rs.RedisClient().FlushAll()
+	rs.RedisClient().S.FlushAll()
 }
 
 func (ts *MQTTHandlerTestSuite) TestUplink() {

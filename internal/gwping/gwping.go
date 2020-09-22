@@ -3,7 +3,10 @@ package gwping
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"time"
+
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes"
@@ -48,13 +51,12 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 	var mic lorawan.MIC
 	copy(mic[:], req.Mic)
 
-	gp := store.GatewayPing{}
-	id, err := gp.GetPingLookup(mic)
+	id, err := GetPingLookup(mic)
 	if err != nil {
 		return errors.Wrap(err, "get ping lookup error")
 	}
 
-	if err = gp.DeletePingLookup(mic); err != nil {
+	if err = DeletePingLookup(mic); err != nil {
 		log.Errorf("delete ping lookup error: %s", err)
 	}
 
@@ -144,7 +146,7 @@ func sendGatewayPing(ctx context.Context, handler *store.Handler) error {
 			return errors.Wrap(err, "read random bytes error")
 		}
 
-		err = ping.CreatePingLookup(mic)
+		err = CreatePingLookup(mic, ping.ID)
 		if err != nil {
 			return errors.Wrap(err, "store mic lookup error")
 		}
@@ -191,4 +193,20 @@ func sendPing(mic lorawan.MIC, n store.NetworkServer, ping store.GatewayPing) er
 	}).Info("gateway ping sent to network-server")
 
 	return nil
+}
+
+// CreatePingLookup creates an automatically expiring MIC to ping id lookup.
+func CreatePingLookup(mic lorawan.MIC, id int64) error {
+	keyWord := fmt.Sprintf("%s", mic)
+	return rs.RedisClient().S.Set(fmt.Sprintf(rs.MicLookupTempl, keyWord), id, rs.MicLookupExpire).Err()
+}
+
+// GetPingLookup :
+func GetPingLookup(mic lorawan.MIC) (int64, error) {
+	return rs.RedisClient().S.Get(fmt.Sprintf("%s", mic)).Int64()
+}
+
+// DeletePingLookup :
+func DeletePingLookup(mic lorawan.MIC) error {
+	return rs.RedisClient().S.Del(fmt.Sprintf("%s", mic)).Err()
 }

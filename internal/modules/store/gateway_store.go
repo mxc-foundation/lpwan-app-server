@@ -14,7 +14,6 @@ import (
 
 	"github.com/brocaar/lorawan"
 
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"github.com/mxc-foundation/lpwan-app-server/internal/types"
 )
 
@@ -271,22 +270,6 @@ type GatewayPing struct {
 	GatewayMAC lorawan.EUI64 `db:"gateway_mac"`
 	Frequency  int           `db:"frequency"`
 	DR         int           `db:"dr"`
-}
-
-// CreatePingLookup creates an automatically expiring MIC to ping id lookup.
-func (gp GatewayPing) CreatePingLookup(mic lorawan.MIC) error {
-	redisClient := rs.RedisClientType{}
-	return redisClient.RSSet(fmt.Sprintf("%s", mic), gp.ID)
-}
-
-func (gp GatewayPing) GetPingLookup(mic lorawan.MIC) (int64, error) {
-	redisClient := rs.RedisClientType{}
-	return redisClient.RSGet(fmt.Sprintf("%s", mic)).Int64()
-}
-
-func (gp GatewayPing) DeletePingLookup(mic lorawan.MIC) error {
-	redisClient := rs.RedisClientType{}
-	return redisClient.RSDelete(fmt.Sprintf("%s", mic))
 }
 
 // GatewayPingRX represents a ping received by one of the gateways.

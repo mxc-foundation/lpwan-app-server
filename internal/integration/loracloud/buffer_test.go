@@ -14,14 +14,12 @@ import (
 
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 func TestGeolocBuffer(t *testing.T) {
 	assert := require.New(t)
 
-	conf := test.GetConfig()
-	assert.NoError(storage.Setup(conf))
+	assert.NoError(storage.Setup())
 
 	now, _ := ptypes.TimestampProto(time.Now())
 	tenMinAgo, _ := ptypes.TimestampProto(time.Now().Add(-10 * time.Minute))
@@ -101,7 +99,7 @@ func TestGeolocBuffer(t *testing.T) {
 
 	for _, tst := range tests {
 		t.Run(tst.Name, func(t *testing.T) {
-			rs.RedisClient().FlushAll()
+			rs.RedisClient().S.FlushAll()
 			assert := require.New(t)
 
 			assert.NoError(SaveGeolocBuffer(context.Background(), tst.DevEUI, tst.Items, tst.AddTTL))

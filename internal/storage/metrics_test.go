@@ -364,7 +364,7 @@ func (ts *StorageTestSuite) TestMetrics() {
 			assert := require.New(t)
 			assert.NoError(SetTimeLocation(tst.LocationName))
 
-			rs.RedisClient().FlushAll()
+			rs.RedisClient().S.FlushAll()
 
 			for _, metrics := range tst.SaveMetrics {
 				assert.NoError(SaveMetricsForInterval(context.Background(), tst.Interval, "metrics_test", metrics))
