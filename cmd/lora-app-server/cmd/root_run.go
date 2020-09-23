@@ -244,7 +244,8 @@ func handleDataDownPayloads(h *store.Handler) error {
 }
 
 func startGatewayPing(h *store.Handler) error {
-	go gwping.SendPingLoop(h)
+	gwping.Setup(h)
+	go gwping.SendPingLoop()
 
 	return nil
 }

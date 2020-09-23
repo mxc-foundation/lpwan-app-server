@@ -26,10 +26,12 @@ var ctrl struct {
 	handler *store.Handler
 }
 
-// SendPingLoop is a never returning function sending the gateway pings.
-func SendPingLoop(handler *store.Handler) {
+func Setup(handler *store.Handler) {
 	ctrl.handler = handler
+}
 
+// SendPingLoop is a never returning function sending the gateway pings.
+func SendPingLoop() {
 	for {
 		ctxID, err := uuid.NewV4()
 		if err != nil {
@@ -198,15 +200,17 @@ func sendPing(mic lorawan.MIC, n store.NetworkServer, ping store.GatewayPing) er
 // CreatePingLookup creates an automatically expiring MIC to ping id lookup.
 func CreatePingLookup(mic lorawan.MIC, id int64) error {
 	keyWord := fmt.Sprintf("%s", mic)
-	return rs.RedisClient().S.Set(fmt.Sprintf(rs.MicLookupTempl, keyWord), id, rs.MicLookupExpire).Err()
+	return rs.RedisClient().Set(fmt.Sprintf(rs.MicLookupTempl, keyWord), id, rs.MicLookupExpire).Err()
 }
 
 // GetPingLookup :
 func GetPingLookup(mic lorawan.MIC) (int64, error) {
-	return rs.RedisClient().S.Get(fmt.Sprintf("%s", mic)).Int64()
+	keyWord := fmt.Sprintf("%s", mic)
+	return rs.RedisClient().Get(fmt.Sprintf(rs.MicLookupTempl, keyWord)).Int64()
 }
 
 // DeletePingLookup :
 func DeletePingLookup(mic lorawan.MIC) error {
-	return rs.RedisClient().S.Del(fmt.Sprintf("%s", mic)).Err()
+	keyWord := fmt.Sprintf("%s", mic)
+	return rs.RedisClient().Del(fmt.Sprintf(rs.MicLookupTempl, keyWord)).Err()
 }

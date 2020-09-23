@@ -13,14 +13,44 @@ type RedisStore interface {
 	Del(keys ...string) RedisIntCmd
 	Get(key string) RedisStringCmd
 	LRange(key string, start, stop int64) RedisStringSliceCmd
-	TxPipeline() redis.Pipeliner
-	Pipeline() redis.Pipeliner
-	SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd
-	HGetAll(key string) *redis.StringStringMapCmd
+	TxPipeline() RedisPipeliner
+	Pipeline() RedisPipeliner
+	SetNX(key string, value interface{}, expiration time.Duration) RedisBoolCmd
+	HGetAll(key string) RedisStringStringMapCmd
 	Keys(pattern string) RedisStringSliceCmd
 	Ping() RedisStatusCmd
 }
 
+type RedisCmder interface {
+	Name() string
+	Args() []interface{}
+	String() string
+	SetErr(error)
+	Err() error
+}
+type RedisPipeliner interface {
+	Del(keys ...string) *redis.IntCmd
+	RPush(key string, values ...interface{}) *redis.IntCmd
+	PExpire(key string, expiration time.Duration) *redis.BoolCmd
+	Exec() ([]redis.Cmder, error)
+	HIncrByFloat(key string, field string, incr float64) *redis.FloatCmd
+	HGetAll(key string) *redis.StringStringMapCmd
+}
+type RedisFloatCmd interface {
+	Val() float64
+	Result() (float64, error)
+	String() string
+}
+type RedisStringStringMapCmd interface {
+	Val() map[string]string
+	Result() (map[string]string, error)
+	String() string
+}
+type RedisBoolCmd interface {
+	Val() bool
+	Result() (bool, error)
+	String() string
+}
 type RedisPubSub interface {
 	Receive() (interface{}, error)
 	Channel() <-chan *redis.Message

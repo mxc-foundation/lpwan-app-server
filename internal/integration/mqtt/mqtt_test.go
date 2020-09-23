@@ -65,7 +65,7 @@ func (ts *MQTTHandlerTestSuite) TearDownSuite() {
 }
 
 func (ts *MQTTHandlerTestSuite) SetupTest() {
-	rs.RedisClient().S.FlushAll()
+	rs.RedisClient().FlushAll()
 }
 
 func (ts *MQTTHandlerTestSuite) TestUplink() {

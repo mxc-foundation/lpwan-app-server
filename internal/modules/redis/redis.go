@@ -2,11 +2,26 @@ package redis
 
 import (
 	"errors"
-	"time"
-
 	"github.com/go-redis/redis/v7"
 	log "github.com/sirupsen/logrus"
 )
+
+type RedisStruct struct {
+	URL        string   `mapstructure:"url"` // deprecated
+	Servers    []string `mapstructure:"servers"`
+	Cluster    bool     `mapstructure:"cluster"`
+	MasterName string   `mapstructure:"master_name"`
+	PoolSize   int      `mapstructure:"pool_size"`
+	Password   string   `mapstructure:"password"`
+	Database   int      `mapstructure:"database"`
+}
+
+type controller struct {
+	redis   RedisStruct
+	handler *RedisHandler
+}
+
+var ctrl *controller
 
 func SettingsSetup(s RedisStruct) error {
 	ctrl = &controller{
@@ -26,7 +41,7 @@ func Setup() (err error) {
 
 	var st RedisStore
 	if ctrl.redis.Cluster {
-		st = NewRedisStore(&redisClient{
+		st = NewRedisStore(&client{
 			rc: redis.NewClusterClient(&redis.ClusterOptions{
 				Addrs:    ctrl.redis.Servers,
 				PoolSize: ctrl.redis.PoolSize,
@@ -34,7 +49,7 @@ func Setup() (err error) {
 			}),
 		})
 	} else if ctrl.redis.MasterName != "" {
-		st = NewRedisStore(&redisClient{
+		st = NewRedisStore(&client{
 			rc: redis.NewFailoverClient(&redis.FailoverOptions{
 				MasterName:       ctrl.redis.MasterName,
 				SentinelAddrs:    ctrl.redis.Servers,
@@ -45,7 +60,7 @@ func Setup() (err error) {
 			}),
 		})
 	} else {
-		st = NewRedisStore(&redisClient{
+		st = NewRedisStore(&client{
 			rc: redis.NewClient(&redis.Options{
 				Addr:     ctrl.redis.Servers[0],
 				DB:       ctrl.redis.Database,
@@ -69,39 +84,6 @@ type RedisHandler struct {
 }
 
 // RedisClient returns the RedisClient.
-func RedisClient() *RedisHandler {
-	return ctrl.handler
-}
-
-type RedisStruct struct {
-	URL        string   `mapstructure:"url"` // deprecated
-	Servers    []string `mapstructure:"servers"`
-	Cluster    bool     `mapstructure:"cluster"`
-	MasterName string   `mapstructure:"master_name"`
-	PoolSize   int      `mapstructure:"pool_size"`
-	Password   string   `mapstructure:"password"`
-	Database   int      `mapstructure:"database"`
-}
-
-type controller struct {
-	redis   RedisStruct
-	handler *RedisHandler
-}
-
-var ctrl *controller
-
-type RedisStore interface {
-	Subscribe(channels ...string) *redis.PubSub
-	Publish(channel string, message interface{}) *redis.IntCmd
-	FlushAll() *redis.StatusCmd
-	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
-	Del(keys ...string) *redis.IntCmd
-	Get(key string) *redis.StringCmd
-	LRange(key string, start, stop int64) *redis.StringSliceCmd
-	TxPipeline() redis.Pipeliner
-	Pipeline() redis.Pipeliner
-	SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd
-	HGetAll(key string) *redis.StringStringMapCmd
-	Keys(pattern string) *redis.StringSliceCmd
-	Ping() *redis.StatusCmd
+func RedisClient() RedisStore {
+	return ctrl.handler.S
 }

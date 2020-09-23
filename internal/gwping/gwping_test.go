@@ -2,10 +2,9 @@ package gwping
 
 import (
 	"context"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 	"testing"
 	"time"
-
-	"github.com/go-redis/redis/v7"
 
 	"github.com/golang/protobuf/ptypes"
 	. "github.com/smartystreets/goconvey/convey"
@@ -130,6 +129,10 @@ func (ts *testStore) UpdateGateway(ctx context.Context, gw *store.Gateway) error
 	ts.Gateway[gw.MAC] = gw
 	return nil
 }
+func (ts *testStore) CreateGatewayPingRX(ctx context.Context, rx *store.GatewayPingRX) error {
+	ts.GatewayPingRX[rx.ID] = rx
+	return nil
+}
 
 type testEnv struct {
 	ctx context.Context
@@ -148,70 +151,20 @@ func newTestEnv(t *testing.T) *testEnv {
 		Gateway:       make(map[lorawan.EUI64]*store.Gateway),
 		GatewayPing:   make(map[int64]*store.GatewayPing),
 		NetworkServer: make(map[int64]*store.NetworkServer),
+		GatewayPingRX: make(map[int64]*store.GatewayPingRX),
 	})
 	return te
 }
 
-type testRedisClient struct {
-	Data map[string]string
-}
-
-func (t testRedisClient) Subscribe(channels ...string) *redis.PubSub {
-	panic("implement me")
-}
-
-func (t testRedisClient) Publish(channel string, message interface{}) *redis.IntCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) FlushAll() *redis.StatusCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) Del(keys ...string) *redis.IntCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) Get(key string) *redis.StringCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) LRange(key string, start, stop int64) *redis.StringSliceCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) TxPipeline() redis.Pipeliner {
-	panic("implement me")
-}
-
-func (t testRedisClient) Pipeline() redis.Pipeliner {
-	panic("implement me")
-}
-
-func (t testRedisClient) SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) HGetAll(key string) *redis.StringStringMapCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) Keys(pattern string) *redis.StringSliceCmd {
-	panic("implement me")
-}
-
-func (t testRedisClient) Ping() *redis.StatusCmd {
-	panic("implement me")
-}
-
 func TestGatewayPing(t *testing.T) {
 	te := newTestEnv(t)
+	Setup(te.h)
 	_ = rs.SettingsSetup(rs.RedisStruct{})
-	rs.SetupRedisHandler(rs.NewRedisStore(&testRedisClient{}))
+
+	rc := &test.TestRedisClient{
+		Data: make(map[string]test.TestRedisResult),
+	}
+	rs.SetupRedisHandler(rs.NewRedisStore(rc))
 
 	Convey("Given a clean database and a gateway", t, func() {
 		nsClient := mock.NewClient()
