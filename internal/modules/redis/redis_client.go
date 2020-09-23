@@ -20,53 +20,53 @@ type redisClient struct {
 }
 
 func (r redisClient) Subscribe(channels ...string) *redis.PubSub {
-	return r.Subscribe(channels...)
+	return r.rc.Subscribe(channels...)
 }
 
 func (r redisClient) Publish(channel string, message interface{}) *redis.IntCmd {
-	return r.Publish(channel, message)
+	return r.rc.Publish(channel, message)
 }
 
 func (r redisClient) FlushAll() *redis.StatusCmd {
-	return r.FlushAll()
+	return r.rc.FlushAll()
 }
 
 func (r redisClient) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
-	return r.Set(key, value, expiration)
+	return r.rc.Set(key, value, expiration)
 }
 
 func (r redisClient) Del(keys ...string) *redis.IntCmd {
-	return r.Del(keys...)
+	return r.rc.Del(keys...)
 }
 
 func (r redisClient) Get(key string) *redis.StringCmd {
-	return r.Get(key)
+	return r.rc.Get(key)
 }
 
 func (r redisClient) LRange(key string, start, stop int64) *redis.StringSliceCmd {
-	return r.LRange(key, stop, stop)
+	return r.rc.LRange(key, start, stop)
 }
 
 func (r redisClient) TxPipeline() redis.Pipeliner {
-	return r.TxPipeline()
+	return r.rc.TxPipeline()
 }
 
 func (r redisClient) Pipeline() redis.Pipeliner {
-	return r.Pipeline()
+	return r.rc.Pipeline()
 }
 
 func (r redisClient) SetNX(key string, value interface{}, expiration time.Duration) *redis.BoolCmd {
-	return r.SetNX(key, value, expiration)
+	return r.rc.SetNX(key, value, expiration)
 }
 
 func (r redisClient) HGetAll(key string) *redis.StringStringMapCmd {
-	return r.HGetAll(key)
+	return r.rc.HGetAll(key)
 }
 
 func (r redisClient) Keys(pattern string) *redis.StringSliceCmd {
-	return r.Keys(pattern)
+	return r.rc.Keys(pattern)
 }
 
 func (r redisClient) Ping() *redis.StatusCmd {
-	return r.Ping()
+	return r.rc.Ping()
 }
