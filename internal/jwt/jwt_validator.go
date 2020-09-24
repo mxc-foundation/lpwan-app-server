@@ -3,6 +3,7 @@ package jwt
 import (
 	"fmt"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 
@@ -90,6 +91,7 @@ func (v JWTValidator) GetClaims(ctx context.Context, audience string) (*Claims, 
 	if audience == "" {
 		audience = "lora-app-server"
 	}
+	runtime.Breakpoint()
 	if err := jwt.Verify(token, jwt.WithAudience(audience)); err != nil {
 		return nil, err
 	}

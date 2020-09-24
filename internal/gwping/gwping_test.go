@@ -2,7 +2,6 @@ package gwping
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 	"testing"
 	"time"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
 
 type testStore struct {

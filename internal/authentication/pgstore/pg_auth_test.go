@@ -2,6 +2,7 @@ package pgstore
 
 import (
 	"context"
+	"github.com/jmoiron/sqlx"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -12,6 +13,8 @@ func TestGetUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	dbx := sqlx.NewDb(db, "postgresql")
+
 	query := `SELECT id, is_admin FROM "user".*`
 	cols := []string{"id", "is_admin"}
 	// no user alice
@@ -23,17 +26,17 @@ func TestGetUser(t *testing.T) {
 	mock.ExpectQuery(query).WithArgs("carol").WillReturnRows(
 		sqlmock.NewRows(cols).AddRow(43, false))
 
-	s := New(db)
+	s := New(dbx)
 	ctx := context.Background()
 	if alice, err := s.GetUser(ctx, "alice"); err == nil {
 		t.Errorf("got success for alice: %#v", alice)
 	}
 
-	if bob, err := s.GetUser(ctx, "bob"); err != nil || bob == nil || bob.ID != 42 || !bob.IsGlobalAdmin {
+	if bob, err := s.GetUser(ctx, "bob"); err != nil || bob.ID != 42 || !bob.IsGlobalAdmin {
 		t.Errorf("failed for bob: %v: %#v", err, bob)
 	}
 
-	if carol, err := s.GetUser(ctx, "carol"); err != nil || carol == nil || carol.ID != 43 || carol.IsGlobalAdmin {
+	if carol, err := s.GetUser(ctx, "carol"); err != nil || carol.ID != 43 || carol.IsGlobalAdmin {
 		t.Errorf("failed for carol: %v: %#v", err, carol)
 	}
 
@@ -47,6 +50,8 @@ func TestGetOrgUser(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	dbx := sqlx.NewDb(db, "postgresql")
+
 	query := `SELECT is_admin, is_device_admin, is_gateway_admin.*`
 	cols := []string{"is_admin", "is_dev", "is_gw"}
 	// user is not in org
@@ -61,7 +66,7 @@ func TestGetOrgUser(t *testing.T) {
 	mock.ExpectQuery(query).WithArgs(44, 100).WillReturnRows(
 		sqlmock.NewRows(cols).AddRow(false, false, false))
 
-	s := New(db)
+	s := New(dbx)
 	ctx := context.Background()
 	if ou, err := s.GetOrgUser(ctx, 42, 23); err == nil {
 		t.Errorf("expected an error, got %#v", ou)

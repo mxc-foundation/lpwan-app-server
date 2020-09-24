@@ -10,6 +10,4 @@ CONFIG_FILE_PATH="$PARENT_PATH"/../static/gateway-config/"$1"
 
 echo "Format config file $CONFIG_FILE_PATH "
 
-echo "$(echo "$(cat $CONFIG_FILE_PATH)"|tr -d '\n')" > $CONFIG_FILE_PATH
-echo "$(echo "$(cat $CONFIG_FILE_PATH)"|tr -d '\\')" > $CONFIG_FILE_PATH
-cat $CONFIG_FILE_PATH
+cat $CONFIG_FILE_PATH | awk '{$1=$1;print}' | tr -d '\n' | tr -d '\\'
