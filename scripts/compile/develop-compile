@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+make clean || { echo "Make clean failed, please deal with error"; exit $ERRCODE; }
+
+make build || { echo "Make build failed, please deal with error"; exit $ERRCODE; }
+
+/lora-app-server/build/lora-app-server -c configuration/lora-app-server.toml
+

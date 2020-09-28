@@ -1,0 +1,473 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "staking.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/staking/staking_percentage": {
+      "get": {
+        "summary": "Get information about staking percentage and boosts for lockin stake",
+        "operationId": "GetStakingPercentage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakingPercentageResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "currency",
+            "description": "int64 org_id = 1;.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
+    "/api/staking/{orgId}/activestakes": {
+      "get": {
+        "summary": "Get list of active stakes",
+        "operationId": "GetActiveStakes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetActiveStakesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
+    "/api/staking/{orgId}/history": {
+      "get": {
+        "operationId": "GetStakingHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakingHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
+    "/api/staking/{orgId}/revenue": {
+      "get": {
+        "operationId": "GetStakingRevenue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakingRevenueResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
+    "/api/staking/{orgId}/stake": {
+      "post": {
+        "summary": "Make new stake",
+        "operationId": "Stake",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
+    "/api/staking/{orgId}/unstake": {
+      "post": {
+        "summary": "Unstake existing stake",
+        "operationId": "Unstake",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiUnstakeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiUnstakeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiBoost": {
+      "type": "object",
+      "properties": {
+        "lockPeriods": {
+          "type": "string",
+          "format": "int64",
+          "title": "for how many periods (normally months) stake will be locked"
+        },
+        "boost": {
+          "type": "string",
+          "title": "what boost will apply to this stake [0, 1]"
+        }
+      },
+      "title": "information about boost for locking the stake"
+    },
+    "appserver_serves_uiGetActiveStakesResponse": {
+      "type": "object",
+      "properties": {
+        "actStake": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiStake"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiStake": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "when stake was placed"
+        },
+        "endTime": {
+          "type": "string",
+          "format": "date-time",
+          "title": "when stake was withdrawn"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount staked"
+        },
+        "active": {
+          "type": "boolean",
+          "title": "if stake is active"
+        },
+        "lockTill": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the time till which the stake is locked and can't be withdrawn"
+        },
+        "boost": {
+          "type": "string",
+          "title": "boost [0, 1]"
+        }
+      }
+    },
+    "appserver_serves_uiStakeRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "lockPeriods": {
+          "type": "string",
+          "format": "int64",
+          "title": "for how many periods stake should be locked"
+        },
+        "boost": {
+          "type": "string",
+          "title": "the boost [0,1]"
+        }
+      }
+    },
+    "appserver_serves_uiStakeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiStakingHistory": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "stake": {
+          "$ref": "#/definitions/appserver_serves_uiStake"
+        }
+      }
+    },
+    "appserver_serves_uiStakingHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "stakingHist": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiStakingHistory"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiStakingPercentageResponse": {
+      "type": "object",
+      "properties": {
+        "stakingInterest": {
+          "type": "number",
+          "format": "double",
+          "title": "base staking interest"
+        },
+        "lockBoosts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiBoost"
+          },
+          "title": "list of boosts for locking stake for different periods"
+        }
+      },
+      "title": "information about staking share and boosts"
+    },
+    "appserver_serves_uiStakingRevenueResponse": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiUnstakeRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "stakeId": {
+          "type": "string",
+          "format": "int64",
+          "title": "string currency = 2;"
+        }
+      }
+    },
+    "appserver_serves_uiUnstakeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

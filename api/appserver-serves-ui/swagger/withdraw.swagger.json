@@ -1,0 +1,290 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "withdraw.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/withdraw/get-withdraw-fee": {
+      "get": {
+        "summary": "GetWithdrawFee data for current withdraw fee",
+        "operationId": "GetWithdrawFee",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawFeeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "currency",
+            "description": "type of crypto currency.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/history": {
+      "get": {
+        "operationId": "GetWithdrawHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawHistoryResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "till",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/modify-withdraw-fee": {
+      "put": {
+        "operationId": "ModifyWithdrawFee",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiModifyWithdrawFeeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiModifyWithdrawFeeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    },
+    "/api/withdraw/req": {
+      "post": {
+        "summary": "after user clicks withdraw, send withdraw request to cobo directly",
+        "operationId": "GetWithdraw",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiGetWithdrawRequest"
+            }
+          }
+        ],
+        "tags": [
+          "WithdrawService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiGetWithdrawFeeResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawFee": {
+          "type": "string",
+          "description": "Withdraw object."
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawHistoryResponse": {
+      "type": "object",
+      "properties": {
+        "withdrawHistory": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiWithdrawHistory"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawRequest": {
+      "type": "object",
+      "properties": {
+        "orgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "ethAddress": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiGetWithdrawResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean"
+        }
+      }
+    },
+    "appserver_serves_uiModifyWithdrawFeeRequest": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string"
+        },
+        "withdrawFee": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiModifyWithdrawFeeResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean"
+        }
+      }
+    },
+    "appserver_serves_uiWithdrawHistory": {
+      "type": "object",
+      "properties": {
+        "txStatus": {
+          "type": "string"
+        },
+        "txHash": {
+          "type": "string"
+        },
+        "denyComment": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "withdrawFee": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

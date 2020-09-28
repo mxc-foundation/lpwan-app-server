@@ -1,0 +1,188 @@
+syntax = "proto3";
+
+package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "internal.proto";
+
+service WalletService {
+    rpc GetWalletBalance (GetWalletBalanceRequest) returns (GetWalletBalanceResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/balance"
+		};
+    }
+
+    rpc GetVmxcTxHistory (GetVmxcTxHistoryRequest) returns (GetVmxcTxHistoryResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/{org_id}/tx-history"
+		};
+    }
+
+    rpc GetNetworkUsageHist (GetNetworkUsageHistRequest) returns (GetNetworkUsageHistResponse) {
+        option (google.api.http) = {
+    		get: "/api/wallet/{org_id}/usage-history"
+    	};
+    }
+
+    rpc GetDlPrice (GetDownLinkPriceRequest) returns (GetDownLinkPriceResponse) {
+        option (google.api.http) = {
+    		get: "/api/wallet/{org_id}/downlink_price"
+    	};
+    }
+
+    rpc GetWalletMiningIncome (GetWalletMiningIncomeRequest) returns (GetWalletMiningIncomeResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mining_income"
+		};
+    }
+
+    // return daily and total mining amounts for the given gateway and period of time
+    rpc GetGatewayMiningIncome (GetGatewayMiningIncomeRequest) returns (GetGatewayMiningIncomeResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mining_income_gw"
+		};
+    }
+
+    rpc GetMiningInfo (GetMiningInfoRequest) returns (GetMiningInfoResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mining_info"
+		};
+    }
+
+    rpc GetMXCprice (GetMXCpriceRequest) returns (GetMXCpriceResponse) {
+        option (google.api.http) = {
+			get: "/api/wallet/mxc_price"
+		};
+    }
+}
+
+message GetWalletBalanceRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+    string currency = 3;
+}
+
+message GetWalletBalanceResponse {
+    string balance = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message GetWalletMiningIncomeRequest {
+    int64 org_id = 2;
+    string currency = 3;
+    google.protobuf.Timestamp from = 4;
+    google.protobuf.Timestamp till = 5;
+}
+
+message GetWalletMiningIncomeResponse {
+    string mining_income = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message GetGatewayMiningIncomeRequest {
+    // MAC address of the gateway
+    string gateway_mac = 1;
+    // Organization ID
+    int64 org_id = 2;
+    // Return mining stats for the period starting at from_date and ending at
+    // till_date inclusive
+    google.protobuf.Timestamp from_date = 3;
+    google.protobuf.Timestamp till_date = 4;
+}
+
+// Mining stats for a single date
+message MiningStats {
+    // date on which the mining happened
+    google.protobuf.Timestamp date = 1;
+    // amount mined on the specified day
+    string amount = 2;
+}
+
+message GetGatewayMiningIncomeResponse {
+    // daily mining stats for each day the mining happened
+    repeated MiningStats daily_stats = 1;
+    // total amount mined by gateway during the requested period
+    string total = 2;
+}
+
+message MiningData {
+    string month = 1;
+    string amount = 2;
+}
+
+message GetMiningInfoRequest {
+    int64 org_id = 2;
+}
+
+message GetMiningInfoResponse {
+    string todayRev = 1;
+    repeated MiningData data = 2;
+}
+
+message GetVmxcTxHistoryRequest {
+    int64 org_id = 1;
+    int64 offset = 2;
+    int64 limit = 3;
+}
+
+message VmxcTxHistory {
+    string from = 1;
+    string to = 2;
+    string tx_type = 3;
+    double amount = 4;
+    string created_at = 5;
+}
+
+message GetVmxcTxHistoryResponse {
+    int64 count = 1;
+    repeated VmxcTxHistory tx_history = 2;
+    ProfileResponse user_profile = 3;
+}
+
+message GetNetworkUsageHistRequest {
+    int64 org_id = 1;
+    string currency = 2;
+    google.protobuf.Timestamp from = 3;
+    google.protobuf.Timestamp till = 4;
+}
+
+message NetworkUsage {
+    google.protobuf.Timestamp timestamp = 1;
+    string amount = 2;
+
+    int64 dl_cnt_dev = 3;
+    int64 dl_cnt_dev_free = 4;
+    int64 ul_cnt_dev = 5;
+    int64 ul_cnt_dev_free = 6;
+    int64 dl_cnt_gw = 7;
+    int64 dl_cnt_gw_free = 8;
+    int64 ul_cnt_gw = 9;
+    int64 ul_cnt_gw_free = 10;
+}
+
+message GetNetworkUsageHistResponse {
+    repeated NetworkUsage network_usage = 1;
+    ProfileResponse user_profile = 2;
+    int64 count = 3;
+}
+
+message GetDownLinkPriceRequest {
+    int64 org_id = 1;
+}
+
+message GetDownLinkPriceResponse {
+    double down_link_price = 1;
+    ProfileResponse user_profile = 2;
+}
+
+message GetMXCpriceRequest {
+    int64 user_id = 1;
+    int64 org_id = 2;
+    string mxc_price = 3;
+}
+
+message GetMXCpriceResponse {
+    string mxc_price = 1;
+}

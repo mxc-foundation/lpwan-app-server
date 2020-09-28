@@ -1,0 +1,45 @@
+project_name: chirpstack-application-server
+
+builds:
+  - main: cmd/chirpstack-application-server/main.go
+    binary: chirpstack-application-server
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - 386
+      - arm
+      - arm64
+    goarm:
+      - 5
+      - 6
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: 386
+
+release:
+  disable: true
+
+nfpm:
+  vendor: ChirpStack
+  homepage: https://www.loraserver.io/
+  maintainer: Orne Brocaar <info@brocaar.com>
+  description: ChirpStack Application Server
+  license: MIT
+  formats:
+    - deb
+    - rpm
+  bindir: /usr/bin
+  files:
+    "packaging/files/chirpstack-application-server.rotate": "/etc/logrotate.d/chirpstack-application-server"
+    "packaging/files/chirpstack-application-server.init": "/usr/lib/chirpstack-application-server/scripts/chirpstack-application-server.init"
+    "packaging/files/chirpstack-application-server.service": "/usr/lib/chirpstack-application-server/scripts/chirpstack-application-server.service"
+  config_files:
+    "packaging/files/chirpstack-application-server.toml": "/etc/chirpstack-application-server/chirpstack-application-server.toml"
+  scripts:
+    preinstall: "packaging/scripts/pre-install.sh"
+    postinstall: "packaging/scripts/post-install.sh"
+    postremove: "packaging/scripts/post-remove.sh"

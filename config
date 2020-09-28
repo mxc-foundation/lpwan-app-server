@@ -1,0 +1,2 @@
+POSTGRES_PASSWORD=postgres
+GODEBUG=x509ignoreCN=0

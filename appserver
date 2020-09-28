@@ -1,0 +1,169 @@
+#!/bin/bash
+
+PARENT_PATH=$(dirname $0)
+MXPROTOCOL_SERVER_PATH=$PARENT_PATH/../mxprotocol-server
+CONFIG=$PARENT_PATH/config
+TAG=$(git describe --tags)
+SERVICENAME=appserver
+
+
+if [ -f "$CONFIG" ]; then
+  supernode_mode="development"
+
+else
+  echo "Config file does not exist. Nothing is done. "
+  exit
+fi
+
+if [ "$1" = "-h" ]; then
+  echo "Usage : appserver [local|remote|create_image|build]"
+  echo ""
+  echo "Commands : "
+  echo "   local                        Start docker container with local database and mqtt service"
+  echo "   remote                       Start docker container with remote database and mqtt service;"
+  echo "   create_image                 Create compiled docker image for LPWAN-app-server"
+  echo "   build                        Command for building the code, only run in docker container"
+  echo ""
+  exit
+fi
+
+build_image()
+{
+  echo "build image with version $TAG"
+
+  rm -f out.txt error.txt
+  # build image
+  docker-compose -f docker-compose-create-image.yml build $SERVICENAME 2>>error.txt 1>>out.txt|tee
+  # it error.txt contains error, exit
+  ERROR=$(cat error.txt| awk '/^Building /{next}{print "error occurs"; exit}')
+  if [ "$ERROR"x = "error occurs"x ]; then
+    echo "Failed to build image, error occurs..."
+    exit
+  fi
+
+  IMAGE_ID=$(cat out.txt |awk '/ *Successfully built */{print $NF}')
+  if [ "$IMAGE_ID"x = x ]; then
+    echo "Failed to build image, unable to get image_id..."
+    exit
+  else
+    echo "Successfully built image $IMAGE_ID"
+  fi
+
+  echo "re-login docker.io"
+  # push image to docker hub
+  docker logout
+  docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD docker.io
+
+  echo "docker push image"
+  docker tag $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+  docker push $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+  docker image rm $IMAGE_ID $DOCKER_HUB_REPOSITORY:$SERVICENAME.$TAG
+
+  echo "Build image successfully, rm error.txt"
+  # delete error message only when everything is done successfully
+  rm error.txt
+}
+
+obtain_certificate()
+{
+  [ -d "$PARENT_PATH"/configuration/ecc ] &&  echo "$PARENT_PATH/configuration/ecc already exists, skip generate certificates" && return
+  [ -f "$PARENT_PATH"/configuration/pass.txt ] || ( echo "$PARENT_PATH/configuration/pass.txt is required, failed to obtain certificates" && return )
+
+  echo "$PARENT_PATH/configuration/pass.txt exists"
+  mkdir -p "$PARENT_PATH"/configuration/ecc || ( echo "Failed to do mkdir -p $PARENT_PATH/configuration/ecc" && return )
+  SERVER_HOSTNAME=$(hostname -f)
+
+  git clone git@gitlab.com:MXCFoundation/cloud/testing-framework.git
+  mv "$PARENT_PATH"/configuration/pass.txt "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/
+  "$PARENT_PATH"/testing-framework/gRPC-client/certificates/gen-ecc-server-certificates.sh ps-staging.matchx.io "$SERVER_HOSTNAME" || return
+
+  cp "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/"$SERVER_HOSTNAME"/*.crt "$PARENT_PATH"/configuration/ecc/ecc_client.crt
+  cp "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/"$SERVER_HOSTNAME"/*.key "$PARENT_PATH"/configuration/ecc/ecc_client.key
+  cp "$PARENT_PATH"/testing-framework/gRPC-client/certificates/ps-staging.matchx.io/ecc_rootCA.pem "$PARENT_PATH"/configuration/ecc/ecc_rootCA.pem
+}
+
+if [ "$*" = "remote" ] || [ "$*" = "local" ]; then
+  if [ -f "/.dockerenv" ]; then
+     echo "Command '$0 $*' only runs outside of a docker container, nothing is executed. "
+     exit
+  fi
+
+  python "$PARENT_PATH"/scripts/docker/docker-compose-template.py \
+    "env_file"=$CONFIG \
+    "supernode_data_service"="$*" \
+    "supernode_mode"=$supernode_mode |tee tmp
+
+  [ "$(cat tmp)" = "invalid argument" ] && exit
+
+  if [ -f "$PARENT_PATH"/docker-compose.yml ]; then
+    mv "$PARENT_PATH"/docker-compose.yml "$PARENT_PATH"/docker-compose.yml.bak
+  fi
+
+  mv tmp "$PARENT_PATH"/docker-compose.yml
+
+  # obtain certificate
+  obtain_certificate
+  [ -d "$PARENT_PATH"/testing-framework/ ] && rm -rf "$PARENT_PATH"/testing-framework/
+
+  docker-compose -f "$PARENT_PATH"/docker-compose.yml up -d --remove-orphans
+
+  if [ "$supernode_mode" = "development" ]; then
+    # build mxprotocol-server
+    if [ -d "$MXPROTOCOL_SERVER_PATH" ]; then
+      docker-compose exec -d mxprotocol-server bash --init-file "$MXPROTOCOL_SERVER_PATH"/scripts/compile/develop-compile
+    fi
+    # build appserver
+    docker-compose exec appserver bash --init-file "$PARENT_PATH"/scripts/compile/develop-compile
+  fi
+
+elif [ "$*" = "create_image" ]; then
+  if [ -f "/.dockerenv" ]; then
+     echo "Command '$0 $*' only runs outside of a docker container, nothing is executed. "
+     exit
+  fi
+
+  python "$PARENT_PATH"/scripts/docker/docker-compose-template.py \
+    "env_file"=$CONFIG \
+    "supernode_data_service"='image' \
+    "supernode_mode"='image' |tee tmp
+
+  [ "$(cat tmp)" = "invalid argument" ] && exit
+
+  if [ -f "$PARENT_PATH"/docker-compose-create-image.yml ]; then
+    mv "$PARENT_PATH"/docker-compose-create-image.yml "$PARENT_PATH"/docker-compose-create-image.ymlbak
+  fi
+
+  mv tmp "$PARENT_PATH"/docker-compose-create-image.yml
+
+  if [ -z "$DOCKER_HUB_USERNAME" ]; then
+    read -p "Insert docker hub username: " USERNAME
+    export DOCKER_HUB_USERNAME=$USERNAME
+  fi
+
+  if [ -z "$DOCKER_HUB_PASSWORD" ]; then
+    read -p "Insert docker hub password: " PASSWORD
+    export DOCKER_HUB_PASSWORD=$PASSWORD
+  fi
+
+  if [ -z "$DOCKER_HUB_REPOSITORY" ]; then
+    read -p "Insert docker hub repository: " REPOSITORY
+    export DOCKER_HUB_REPOSITORY=$REPOSITORY
+  fi
+
+  build_image
+  echo "Before exit, rm out.txt"
+  rm out.txt
+
+elif [ "$*" = "build" ]; then
+  if ! [ -f "/.dockerenv" ]; then
+     echo "Command '$0 $*' only runs inside of a docker container to rebuild service, nothing is executed. "
+     exit
+  fi
+  "$PARENT_PATH"/scripts/compile/develop-compile
+
+else
+  "$PARENT_PATH"/appserver -h
+  exit
+
+fi
+

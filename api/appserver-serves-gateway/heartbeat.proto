@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package appserver_serves_gateway;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-gateway;appserver_serves_gateway";
+
+service HeartbeatService {
+    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+// MiningRequest sends gateway list to m2m
+message HeartbeatRequest {
+    string gateway_mac = 1;
+    string model = 2;
+    string config_hash = 3;
+    string os_version = 4;
+    string statistics = 5;
+}
+
+message HeartbeatResponse {
+    string new_firmware_link = 1;
+    string config = 2;
+}

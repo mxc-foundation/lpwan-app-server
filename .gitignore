@@ -1,0 +1,51 @@
+# hidden files
+.*
+*.bak
+# logs
+*.log
+# config files
+*.toml
+/configuration
+# coverage file
+/coverage.out
+# builds
+/dist
+build
+/cache
+/internal/static/static_gen.go
+/internal/migrations/migrations_gen.go
+/static/logo
+/static/img
+/static/static
+/static/swagger/*.json
+/static/index.html
+/static/asset-manifest.json
+/static/service-worker.js
+/static/manifest.json
+/static/icon.png
+/static/precache-manifest.*.js
+/ui/build
+/docs/public
+
+# dependencies
+/vendor
+api/appserver-serves-ui/as/
+api/appserver-serves-ui/common/
+api/appserver-serves-ui/geo/
+api/appserver-serves-ui/gw/
+api/appserver-serves-ui/nc/
+api/appserver-serves-ui/ns/
+
+# certificates
+/certs
+
+# node modules
+node_modules
+ui/node_modules
+#docker-compose
+/*.yml
+*.sum
+
+#python
+__pycache__
+*.pyc

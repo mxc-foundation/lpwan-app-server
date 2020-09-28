@@ -1,0 +1,152 @@
+stages:
+  - test
+  - build
+  - release-private
+  - release-public
+  - deploy
+
+.golangci-lint:
+  image: golangci/golangci-lint:v1.26.0
+  stage: test
+  before_script:
+    - go install github.com/jteeuwen/go-bindata/go-bindata
+    - make internal/statics
+  script:
+    - golangci-lint run --new-from-rev origin/master ./...
+  tags:
+    - kubernetes
+  except:
+    - master
+    - /crowdin/
+    - /l10n/
+
+variables:
+  CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  SERVICE_NAME: $APP_NAME
+
+build_image:
+  stage: build
+  image: docker:19.03.0
+  before_script:
+    - apk add --no-cache ca-certificates make git bash
+  services:
+    - docker:19.03.0-dind
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
+    - echo $CONTAINER_IMAGE
+    - echo $VERSION
+    - echo $SERVICE_NAME
+    - git describe --tags --always --long |sed -e "s/^v//"
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --pull -t $CONTAINER_IMAGE .
+    - docker push $CONTAINER_IMAGE
+  except:
+    - /crowdin/
+    - /l10n/
+  tags:
+    - kubernetes
+
+tag_gitlab_image:
+  stage: release-private
+  image: docker:19.03.0
+  before_script:
+    - apk add --no-cache ca-certificates make git bash
+  services:
+    - docker:19.03.0-dind
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CONTAINER_IMAGE
+    - echo $CONTAINER_IMAGE
+    - echo $VERSION
+    - echo $SERVICE_NAME
+    - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+    - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+  only:
+    - master
+    - develop
+    - buildserver
+    - tags
+  tags:
+    - kubernetes
+
+tag_dockerhub_image:
+  stage: release-public
+  image: docker:19.03.0
+  before_script:
+    - apk add --no-cache ca-certificates make git bash
+  services:
+    - docker:19.03.0-dind
+  variables:
+    DOCKER_HOST: tcp://localhost:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
+    - echo $CONTAINER_IMAGE
+    - echo $VERSION
+    - echo $SERVICE_NAME
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $CONTAINER_IMAGE
+    - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
+    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
+    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.latest
+    - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
+    - docker push $DOCKER_REPO:$SERVICE_NAME.latest
+  only:
+    - master
+    - tags
+  tags:
+    - kubernetes
+
+deploy_review:
+  stage: deploy
+  image: alpine
+  environment:
+    name: staging
+    url: $STAGINGURL
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCH https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+  only:
+    - buildserver
+  tags:
+    - kubernetes
+
+deploy_test_cloud:
+  stage: deploy
+  image: alpine
+  environment:
+    name: preprod
+    url: $PREPRODURL
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCLOUD https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+  only:
+    - master
+    - tags
+  tags:
+    - kubernetes
+
+deploy_test_china:
+  stage: deploy
+  image: alpine
+  environment:
+    name: preprodcn
+    url: $PREPRODCNURL
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCHINA https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
+  only:
+    - master
+    - tags
+  tags:
+    - kubernetes
