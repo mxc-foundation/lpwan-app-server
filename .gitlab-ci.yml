@@ -72,6 +72,7 @@ tag_gitlab_image:
     - master
     - develop
     - buildserver
+    - tags
   tags:
     - kubernetes
 
@@ -99,6 +100,7 @@ tag_dockerhub_image:
     - docker push $DOCKER_REPO:$SERVICE_NAME.latest
   only:
     - master
+    - tags
   tags:
     - kubernetes
 
@@ -129,6 +131,7 @@ deploy_test_cloud:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCLOUD https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
     - master
+    - tags
   tags:
     - kubernetes
 
@@ -144,5 +147,6 @@ deploy_test_china:
     - "curl -X POST -F token=$TRIGGERTOKEN -F ref=$TRIGGERBRANCHTESTCHINA https://gitlab.com/api/v4/projects/13773920/trigger/pipeline"
   only:
     - master
+    - tags
   tags:
     - kubernetes
