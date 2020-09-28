@@ -5,20 +5,20 @@ stages:
   - release-public
   - deploy
 
-#golangci-lint:
-#  image: golangci/golangci-lint:v1.26.0
-#  stage: test
-#  before_script:
-#    - go install github.com/jteeuwen/go-bindata/go-bindata
-#    - make internal/statics
-#  script:
-#    - golangci-lint run --new-from-rev origin/master ./...
-#  tags:
-#    - kubernetes
-#  except:
-#    - master
-#    - /crowdin/
-#    - /l10n/
+.golangci-lint:
+  image: golangci/golangci-lint:v1.26.0
+  stage: test
+  before_script:
+    - go install github.com/jteeuwen/go-bindata/go-bindata
+    - make internal/statics
+  script:
+    - golangci-lint run --new-from-rev origin/master ./...
+  tags:
+    - kubernetes
+  except:
+    - master
+    - /crowdin/
+    - /l10n/
 
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
