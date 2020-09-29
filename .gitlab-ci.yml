@@ -22,7 +22,6 @@ stages:
 
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  SERVICE_NAME: $APP_NAME
 
 build_image:
   stage: build
@@ -65,9 +64,8 @@ tag_gitlab_image:
     - docker pull $CONTAINER_IMAGE
     - echo $CONTAINER_IMAGE
     - echo $VERSION
-    - echo $SERVICE_NAME
-    - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
-    - docker push $CI_REGISTRY_IMAGE:$SERVICE_NAME.$VERSION
+    - docker tag $CONTAINER_IMAGE $CI_REGISTRY_IMAGE:$VERSION
+    - docker push $CI_REGISTRY_IMAGE:$VERSION
   only:
     - master
     - develop
@@ -90,14 +88,13 @@ tag_dockerhub_image:
     - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - echo $CONTAINER_IMAGE
     - echo $VERSION
-    - echo $SERVICE_NAME
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker pull $CONTAINER_IMAGE
     - docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_URL
-    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.$VERSION
-    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$SERVICE_NAME.latest
-    - docker push $DOCKER_REPO:$SERVICE_NAME.$VERSION
-    - docker push $DOCKER_REPO:$SERVICE_NAME.latest
+    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:$VERSION
+    - docker tag $CONTAINER_IMAGE $DOCKER_REPO:latest
+    - docker push $DOCKER_REPO:$VERSION
+    - docker push $DOCKER_REPO:latest
   only:
     - master
     - tags
