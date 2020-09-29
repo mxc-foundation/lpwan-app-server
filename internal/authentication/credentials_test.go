@@ -5,7 +5,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"log"
 	"math/rand"
-	"runtime"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -223,7 +222,6 @@ func TestCredentials(t *testing.T) {
 
 	Convey("Check GetUser", t, func() {
 		aliceRaw := te.ts.users[aliceAdminDisable2FA.userEmail]
-		runtime.Breakpoint()
 		alice, err := te.cred.GetUser(te.ts.users[aliceAdminDisable2FA.userEmail].ctx)
 		So(err, ShouldBeNil)
 		So(alice.UserEmail, ShouldEqual, aliceRaw.userEmail)
