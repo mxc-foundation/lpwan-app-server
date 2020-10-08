@@ -4,6 +4,13 @@ localDevelopTemplate = \
     '''
     version: "3"
     services:  
+      web-ui:
+        image: mxcdocker/webui:latest  
+        container_name: web-ui
+        ports:
+          - 3001:3001
+        restart: always
+      
       appserver:
         build:
           context: .
