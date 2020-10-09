@@ -3,63 +3,42 @@ package storage
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
-	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
+
+	mcgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // MulticastGroup defines the multicast-group.
-type MulticastGroup store.MulticastGroup
+type MulticastGroup mcgs.MulticastGroup
 
 // MulticastGroupListItem defines the multicast-group for listing.
-type MulticastGroupListItem store.MulticastGroupListItem
+type MulticastGroupListItem mcgs.MulticastGroupListItem
 
 // Validate validates the service-profile data.
 func (mg MulticastGroup) Validate() error {
-	return store.MulticastGroup(mg).Validate()
-}
-
-// CreateMulticastGroup creates the given multicast-group.
-func CreateMulticastGroup(ctx context.Context, handler *store.Handler, mg *MulticastGroup) error {
-	return handler.CreateMulticastGroup(ctx, (*store.MulticastGroup)(mg))
-}
-
-// GetMulticastGroup returns the multicast-group given an id.
-func GetMulticastGroup(ctx context.Context, handler *store.Handler, id uuid.UUID, forUpdate, localOnly bool) (MulticastGroup, error) {
-	res, err := handler.GetMulticastGroup(ctx, id, forUpdate, localOnly)
-	return MulticastGroup(res), err
-}
-
-// UpdateMulticastGroup updates the given multicast-group.
-func UpdateMulticastGroup(ctx context.Context, handler *store.Handler, mg *MulticastGroup) error {
-	return handler.UpdateMulticastGroup(ctx, (*store.MulticastGroup)(mg))
-}
-
-// DeleteMulticastGroup deletes a multicast-group given an id.
-func DeleteMulticastGroup(ctx context.Context, handler *store.Handler, id uuid.UUID) error {
-	return handler.DeleteMulticastGroup(ctx, id)
+	return mcgs.MulticastGroup(mg).Validate()
 }
 
 // MulticastGroupFilters provide filters that can be used to filter on
 // multicast-groups. Note that empty values are not used as filters.
-type MulticastGroupFilters store.MulticastGroupFilters
+type MulticastGroupFilters mcgs.MulticastGroupFilters
 
 // SQL returns the SQL filter.
 func (f MulticastGroupFilters) SQL() string {
-	return store.MulticastGroupFilters(f).SQL()
+	return mcgs.MulticastGroupFilters(f).SQL()
 }
 
 // GetMulticastGroupCount returns the total number of multicast-groups given
 // the provided filters. Note that empty values are not used as filters.
 func GetMulticastGroupCount(ctx context.Context, handler *store.Handler, filters MulticastGroupFilters) (int, error) {
-	return handler.GetMulticastGroupCount(ctx, store.MulticastGroupFilters(filters))
+	return handler.GetMulticastGroupCount(ctx, mcgs.MulticastGroupFilters(filters))
 }
 
 // GetMulticastGroups returns a slice of multicast-groups, given the privded
 // filters. Note that empty values are not used as filters.
 func GetMulticastGroups(ctx context.Context, handler *store.Handler, filters MulticastGroupFilters) ([]MulticastGroupListItem, error) {
-	res, err := handler.GetMulticastGroups(ctx, store.MulticastGroupFilters(filters))
+	res, err := handler.GetMulticastGroups(ctx, mcgs.MulticastGroupFilters(filters))
 	if err != nil {
 		return nil, err
 	}
@@ -70,18 +49,6 @@ func GetMulticastGroups(ctx context.Context, handler *store.Handler, filters Mul
 		mgList = append(mgList, mgItem)
 	}
 	return mgList, nil
-}
-
-// AddDeviceToMulticastGroup adds the given device to the given multicast-group.
-// It is recommended that db is a transaction.
-func AddDeviceToMulticastGroup(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
-	return handler.AddDeviceToMulticastGroup(ctx, multicastGroupID, devEUI)
-}
-
-// RemoveDeviceFromMulticastGroup removes the given device from the given
-// multicast-group.
-func RemoveDeviceFromMulticastGroup(ctx context.Context, handler *store.Handler, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
-	return handler.RemoveDeviceFromMulticastGroup(ctx, multicastGroupID, devEUI)
 }
 
 // GetDeviceCountForMulticastGroup returns the number of devices for the given

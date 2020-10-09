@@ -16,19 +16,23 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/test"
+
+	gws "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
+	nss "github.com/mxc-foundation/lpwan-app-server/internal/modules/networkserver_portal/data"
+	orgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
 )
 
 type testStore struct {
 	store.Store
 	inTx           bool
 	expectRollback bool
-	Organization   map[int64]*store.Organization
-	Gateway        map[lorawan.EUI64]*store.Gateway
-	GatewayPing    map[int64]*store.GatewayPing
-	NetworkServer  map[int64]*store.NetworkServer
-	GatewayPingRX  map[int64]*store.GatewayPingRX
+	Organization   map[int64]*orgs.Organization
+	Gateway        map[lorawan.EUI64]*gws.Gateway
+	GatewayPing    map[int64]*gws.GatewayPing
+	NetworkServer  map[int64]*nss.NetworkServer
+	GatewayPingRX  map[int64]*gws.GatewayPingRX
 }
 
 func (ts *testStore) TxBegin(ctx context.Context) (store.Store, error) {
@@ -61,31 +65,31 @@ func (ts *testStore) IsErrorRepeat(err error) bool {
 	return false
 }
 
-func (ts *testStore) CreateOrganization(ctx context.Context, org *store.Organization) error {
+func (ts *testStore) CreateOrganization(ctx context.Context, org *orgs.Organization) error {
 	ts.Organization[org.ID] = org
 	return nil
 }
-func (ts *testStore) CreateNetworkServer(ctx context.Context, n *store.NetworkServer) error {
+func (ts *testStore) CreateNetworkServer(ctx context.Context, n *nss.NetworkServer) error {
 	ts.NetworkServer[n.ID] = n
 	return nil
 }
-func (ts *testStore) CreateGateway(ctx context.Context, gw *store.Gateway) error {
+func (ts *testStore) CreateGateway(ctx context.Context, gw *gws.Gateway) error {
 	ts.Gateway[gw.MAC] = gw
 	return nil
 }
-func (ts *testStore) UpdateNetworkServer(ctx context.Context, n *store.NetworkServer) error {
+func (ts *testStore) UpdateNetworkServer(ctx context.Context, n *nss.NetworkServer) error {
 	ts.NetworkServer[n.ID] = n
 	return nil
 }
-func (ts *testStore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (store.Gateway, error) {
+func (ts *testStore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate bool) (gws.Gateway, error) {
 	return *ts.Gateway[mac], nil
 }
-func (ts *testStore) GetGatewayPing(ctx context.Context, id int64) (store.GatewayPing, error) {
+func (ts *testStore) GetGatewayPing(ctx context.Context, id int64) (gws.GatewayPing, error) {
 	return *ts.GatewayPing[id], nil
 }
-func (ts *testStore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (store.GatewayPing, []store.GatewayPingRX, error) {
+func (ts *testStore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EUI64) (gws.GatewayPing, []gws.GatewayPingRX, error) {
 	var pingID int64
-	var pingRXList []store.GatewayPingRX
+	var pingRXList []gws.GatewayPingRX
 
 	if v, ok := ts.Gateway[mac]; !ok {
 		panic("no gateway found with mac " + mac.String())
@@ -101,7 +105,7 @@ func (ts *testStore) GetLastGatewayPingAndRX(ctx context.Context, mac lorawan.EU
 
 	return *ts.GatewayPing[pingID], pingRXList, nil
 }
-func (ts *testStore) GetGatewayForPing(ctx context.Context) (*store.Gateway, error) {
+func (ts *testStore) GetGatewayForPing(ctx context.Context) (*gws.Gateway, error) {
 	for _, v := range ts.NetworkServer {
 		if v.GatewayDiscoveryEnabled == false {
 			continue
@@ -118,18 +122,18 @@ func (ts *testStore) GetGatewayForPing(ctx context.Context) (*store.Gateway, err
 
 	return nil, nil
 }
-func (ts *testStore) GetNetworkServer(ctx context.Context, id int64) (store.NetworkServer, error) {
+func (ts *testStore) GetNetworkServer(ctx context.Context, id int64) (nss.NetworkServer, error) {
 	return *ts.NetworkServer[id], nil
 }
-func (ts *testStore) CreateGatewayPing(ctx context.Context, ping *store.GatewayPing) error {
+func (ts *testStore) CreateGatewayPing(ctx context.Context, ping *gws.GatewayPing) error {
 	ts.GatewayPing[ping.ID] = ping
 	return nil
 }
-func (ts *testStore) UpdateGateway(ctx context.Context, gw *store.Gateway) error {
+func (ts *testStore) UpdateGateway(ctx context.Context, gw *gws.Gateway) error {
 	ts.Gateway[gw.MAC] = gw
 	return nil
 }
-func (ts *testStore) CreateGatewayPingRX(ctx context.Context, rx *store.GatewayPingRX) error {
+func (ts *testStore) CreateGatewayPingRX(ctx context.Context, rx *gws.GatewayPingRX) error {
 	ts.GatewayPingRX[rx.ID] = rx
 	return nil
 }
@@ -146,13 +150,7 @@ func newTestEnv(t *testing.T) *testEnv {
 		t:   t,
 	}
 
-	te.h, _ = store.New(&testStore{
-		Organization:  make(map[int64]*store.Organization),
-		Gateway:       make(map[lorawan.EUI64]*store.Gateway),
-		GatewayPing:   make(map[int64]*store.GatewayPing),
-		NetworkServer: make(map[int64]*store.NetworkServer),
-		GatewayPingRX: make(map[int64]*store.GatewayPingRX),
-	})
+	te.h = store.NewStore()
 	return te
 }
 
@@ -170,13 +168,13 @@ func TestGatewayPing(t *testing.T) {
 		nsClient := mock.NewClient()
 		networkserver.SetPool(mock.NewPool(nsClient))
 
-		org := store.Organization{
+		org := orgs.Organization{
 			ID:   1,
 			Name: "test-org",
 		}
 		So(te.h.CreateOrganization(te.ctx, &org), ShouldBeNil)
 
-		n := store.NetworkServer{
+		n := nss.NetworkServer{
 			Name:                        "test-ns",
 			Server:                      "test-ns:1234",
 			GatewayDiscoveryEnabled:     true,
@@ -186,7 +184,7 @@ func TestGatewayPing(t *testing.T) {
 		}
 		So(te.h.CreateNetworkServer(te.ctx, &n), ShouldBeNil)
 
-		gw1 := store.Gateway{
+		gw1 := gws.Gateway{
 			MAC:             lorawan.EUI64{1, 2, 3, 4, 5, 6, 7, 8},
 			Name:            "test-gw",
 			Description:     "test gateway",
@@ -248,7 +246,7 @@ func TestGatewayPing(t *testing.T) {
 					})
 
 					Convey("When calling HandleReceivedPing", func() {
-						gw2 := store.Gateway{
+						gw2 := gws.Gateway{
 							MAC:             lorawan.EUI64{8, 7, 6, 5, 4, 3, 2, 1},
 							Name:            "test-gw-2",
 							Description:     "test gateway 2",
@@ -292,7 +290,7 @@ func TestGatewayPing(t *testing.T) {
 							So(rx[0].ReceivedAt.Equal(now), ShouldBeTrue)
 							So(rx[0].RSSI, ShouldEqual, -10)
 							So(rx[0].LoRaSNR, ShouldEqual, 5.5)
-							So(rx[0].Location, ShouldResemble, store.GPSPoint{
+							So(rx[0].Location, ShouldResemble, gws.GPSPoint{
 								Latitude:  1.12345,
 								Longitude: 1.23456,
 							})

@@ -2,10 +2,11 @@ package authentication
 
 import (
 	"fmt"
-	"google.golang.org/grpc/metadata"
 	"log"
 	"math/rand"
 	"testing"
+
+	"google.golang.org/grpc/metadata"
 
 	. "github.com/smartystreets/goconvey/convey"
 	"golang.org/x/net/context"
@@ -224,14 +225,14 @@ func TestCredentials(t *testing.T) {
 		aliceRaw := te.ts.users[aliceAdminDisable2FA.userEmail]
 		alice, err := te.cred.GetUser(te.ts.users[aliceAdminDisable2FA.userEmail].ctx)
 		So(err, ShouldBeNil)
-		So(alice.UserEmail, ShouldEqual, aliceRaw.userEmail)
+		So(alice.Email, ShouldEqual, aliceRaw.userEmail)
 		So(alice.IsGlobalAdmin, ShouldBeTrue)
 		So(alice.ID, ShouldEqual, aliceRaw.id)
 
 		bobRaw := te.ts.users[bobAdminEnable2FA.userEmail]
 		bob, err := te.cred.GetUser(te.ts.users[bobAdminEnable2FA.userEmail].ctx)
 		So(err, ShouldBeNil)
-		So(bob.UserEmail, ShouldEqual, bobRaw.userEmail)
+		So(bob.Email, ShouldEqual, bobRaw.userEmail)
 		So(bob.IsGlobalAdmin, ShouldBeTrue)
 		So(bob.ID, ShouldEqual, bobRaw.id)
 	})

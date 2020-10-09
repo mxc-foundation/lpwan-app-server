@@ -2,9 +2,38 @@ package code
 
 import (
 	"context"
+	"fmt"
+	"log"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+	"github.com/pkg/errors"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
+
+func init() {
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "migrations"
+
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
+	if err := Migrate("migrate_gw_stats", h, MigrateGatewayStats); err != nil {
+		log.Fatal(errors.Wrap(err, "migration error"))
+	}
+
+	if err := Migrate("migrate_to_cluster_keys", h, func(handler *store.Handler) error {
+		return MigrateToClusterKeys(config.C)
+	}); err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}
 
 // Migrate checks if the given function code has been applied and if not
 // it will execute the given function.

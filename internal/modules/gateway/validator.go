@@ -6,69 +6,70 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/pkg/errors"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
 )
 
 type Validator struct {
-	Credentials *authcus.Credentials
+	Credentials *cred.Credentials
 }
 
 type Validate interface {
-	ValidateGlobalGatewaysAccess(ctx context.Context, flag authcus.Flag, organizationID int64) (bool, error)
-	ValidateGatewayAccess(ctx context.Context, flag authcus.Flag, mac lorawan.EUI64) (bool, error)
-	ValidateOrganizationNetworkServerAccess(ctx context.Context, flag authcus.Flag, organizationID, networkServerID int64) (bool, error)
-	GetUser(ctx context.Context) (authcus.User, error)
-	IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error
-	IsOrgAdmin(ctx context.Context, organizationID int64, opts ...authcus.Option) error
+	ValidateGlobalGatewaysAccess(ctx context.Context, flag auth.Flag, organizationID int64) (bool, error)
+	ValidateGatewayAccess(ctx context.Context, flag auth.Flag, mac lorawan.EUI64) (bool, error)
+	ValidateOrganizationNetworkServerAccess(ctx context.Context, flag auth.Flag, organizationID, networkServerID int64) (bool, error)
+	GetUser(ctx context.Context) (auth.User, error)
+	IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error
+	IsOrgAdmin(ctx context.Context, organizationID int64, opts ...cred.Option) error
 }
 
 func NewValidator() Validate {
 	return &Validator{
-		Credentials: authcus.NewCredentials(),
+		Credentials: cred.NewCredentials(),
 	}
 }
 
-func (v *Validator) GetUser(ctx context.Context) (authcus.User, error) {
+func (v *Validator) GetUser(ctx context.Context) (auth.User, error) {
 	return v.Credentials.GetUser(ctx)
 }
 
-func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error {
+func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error {
 	return v.Credentials.IsGlobalAdmin(ctx, opts...)
 }
 
-func (v *Validator) IsOrgAdmin(ctx context.Context, organizationID int64, opts ...authcus.Option) error {
+func (v *Validator) IsOrgAdmin(ctx context.Context, organizationID int64, opts ...cred.Option) error {
 	return v.Credentials.IsOrgAdmin(ctx, organizationID, opts...)
 }
 
 // ValidateGatewaysAccess validates if the client has access to the gateways.
-func (v *Validator) ValidateGlobalGatewaysAccess(ctx context.Context, flag authcus.Flag, organizationID int64) (bool, error) {
+func (v *Validator) ValidateGlobalGatewaysAccess(ctx context.Context, flag auth.Flag, organizationID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateGlobalGatewaysAccess")
 	}
 
 	switch flag {
-	case authcus.Create:
-		return ctrl.st.CheckCreateGatewayAccess(ctx, u.UserEmail, organizationID, u.ID)
-	case authcus.List:
-		return ctrl.st.CheckListGatewayAccess(ctx, u.UserEmail, organizationID, u.ID)
+	case auth.Create:
+		return ctrl.st.CheckCreateGatewayAccess(ctx, u.Email, organizationID, u.ID)
+	case auth.List:
+		return ctrl.st.CheckListGatewayAccess(ctx, u.Email, organizationID, u.ID)
 	default:
 		panic("ValidateGlobalGatewaysAccess: unsupported flag")
 	}
 }
 
 // ValidateGatewayAccess validates if the client has access to the given gateway.
-func (v *Validator) ValidateGatewayAccess(ctx context.Context, flag authcus.Flag, mac lorawan.EUI64) (bool, error) {
+func (v *Validator) ValidateGatewayAccess(ctx context.Context, flag auth.Flag, mac lorawan.EUI64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateGatewayAccess")
 	}
 
 	switch flag {
-	case authcus.Read:
-		return ctrl.st.CheckReadGatewayAccess(ctx, u.UserEmail, mac, u.ID)
-	case authcus.Update, authcus.Delete:
-		return ctrl.st.CheckUpdateDeleteGatewayAccess(ctx, u.UserEmail, mac, u.ID)
+	case auth.Read:
+		return ctrl.st.CheckReadGatewayAccess(ctx, u.Email, mac, u.ID)
+	case auth.Update, auth.Delete:
+		return ctrl.st.CheckUpdateDeleteGatewayAccess(ctx, u.Email, mac, u.ID)
 	default:
 		panic("ValidateGatewayAccess: unsupported flag")
 	}
@@ -76,15 +77,15 @@ func (v *Validator) ValidateGatewayAccess(ctx context.Context, flag authcus.Flag
 
 // ValidateOrganizationNetworkServerAccess validates if the given client has
 // access to the given organization id / network server id combination.
-func (v *Validator) ValidateOrganizationNetworkServerAccess(ctx context.Context, flag authcus.Flag, organizationID, networkServerID int64) (bool, error) {
+func (v *Validator) ValidateOrganizationNetworkServerAccess(ctx context.Context, flag auth.Flag, organizationID, networkServerID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateOrganizationNetworkServerAccess")
 	}
 
 	switch flag {
-	case authcus.Read:
-		return ctrl.st.CheckReadOrganizationNetworkServerAccess(ctx, u.UserEmail, organizationID, networkServerID, u.ID)
+	case auth.Read:
+		return ctrl.st.CheckReadOrganizationNetworkServerAccess(ctx, u.Email, organizationID, networkServerID, u.ID)
 	default:
 		panic("ValidateOrganizationNetworkServerAccess: unsupported flag")
 	}

@@ -1,18 +1,22 @@
 package user
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"fmt"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
+	"github.com/pkg/errors"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-type RecaptchaStruct struct {
-	HostServer string `mapstructure:"host_server"`
-	Secret     string `mapstructure:"secret"`
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
 }
 
-type Config struct {
-	Recaptcha      RecaptchaStruct
-	Enable2FALogin bool
-}
+const moduleName = "user"
 
 type controller struct {
 	s  Config
@@ -21,15 +25,26 @@ type controller struct {
 
 var ctrl *controller
 
-func SettingsSetup(s Config) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		s: Config{
+			Recaptcha:      conf.Recaptcha,
+			Enable2FALogin: conf.General.Enable2FALogin,
+		},
 	}
 
 	return nil
 }
 
-func Setup(h *store.Handler) (err error) {
+func Setup(name string, h *store.Handler) (err error) {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
 	ctrl.st = h
 
 	return nil

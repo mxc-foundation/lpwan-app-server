@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 	"time"
 
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
@@ -19,15 +20,30 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
+	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
+
+func init() {
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "gwping"
 
 var ctrl struct {
 	handler *store.Handler
 }
 
-func Setup(handler *store.Handler) {
-	ctrl.handler = handler
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
+	ctrl.handler = h
+
+	go SendPingLoop()
+	return nil
 }
 
 // SendPingLoop is a never returning function sending the gateway pings.
@@ -86,7 +102,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 				receivedAt = &ts
 			}
 
-			pingRX := store.GatewayPingRX{
+			pingRX := gwd.GatewayPingRX{
 				PingID:     id,
 				GatewayMAC: mac,
 				ReceivedAt: receivedAt,
@@ -95,7 +111,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 			}
 
 			if rx.Location != nil {
-				pingRX.Location = store.GPSPoint{
+				pingRX.Location = gwd.GPSPoint{
 					Latitude:  rx.Location.Latitude,
 					Longitude: rx.Location.Longitude,
 				}
@@ -133,7 +149,7 @@ func sendGatewayPing(ctx context.Context, handler *store.Handler) error {
 			return errors.Wrap(err, "get network-server error")
 		}
 
-		ping := store.GatewayPing{
+		ping := gwd.GatewayPing{
 			GatewayMAC: gw.MAC,
 			Frequency:  n.GatewayDiscoveryTXFrequency,
 			DR:         n.GatewayDiscoveryDR,
@@ -172,7 +188,7 @@ func sendGatewayPing(ctx context.Context, handler *store.Handler) error {
 	return err
 }
 
-func sendPing(mic lorawan.MIC, n store.NetworkServer, ping store.GatewayPing) error {
+func sendPing(mic lorawan.MIC, n nsd.NetworkServer, ping gwd.GatewayPing) error {
 	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")

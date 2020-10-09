@@ -21,18 +21,13 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql/data"
 )
 
 // Integration implements a PostgreSQL integration.
 type Integration struct {
 	db *sqlx.DB
-}
-
-// IntegrationPostgreSQLConfig holds the PostgreSQL integration configuration.
-type IntegrationPostgreSQLConfig struct {
-	DSN                string `json:"dsn"`
-	MaxOpenConnections int    `mapstructure:"max_open_connections"`
-	MaxIdleConnections int    `mapstructure:"max_idle_connections"`
 }
 
 // New creates a new PostgreSQL integration.

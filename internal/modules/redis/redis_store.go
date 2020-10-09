@@ -1,8 +1,9 @@
 package redis
 
 import (
-	"github.com/go-redis/redis/v7"
 	"time"
+
+	"github.com/go-redis/redis/v7"
 )
 
 type RedisStore interface {

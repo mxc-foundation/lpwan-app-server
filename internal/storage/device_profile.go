@@ -7,27 +7,21 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // DeviceProfile defines the device-profile.
-type DeviceProfile store.DeviceProfile
+type DeviceProfile dps.DeviceProfile
 
 // DeviceProfileMeta defines the device-profile meta record.
-type DeviceProfileMeta store.DeviceProfileMeta
+type DeviceProfileMeta dps.DeviceProfileMeta
 
 // Validate validates the device-profile data.
 func (dp DeviceProfile) Validate() error {
-	return store.DeviceProfile(dp).Validate()
-}
-
-// CreateDeviceProfile creates the given device-profile.
-// This will create the device-profile at the network-server side and will
-// create a local reference record.
-func CreateDeviceProfile(ctx context.Context, handler *store.Handler, dp *DeviceProfile) error {
-	return handler.CreateDeviceProfile(ctx, (*store.DeviceProfile)(dp))
+	return dps.DeviceProfile(dp).Validate()
 }
 
 // GetDeviceProfile returns the device-profile matching the given id.
@@ -76,32 +70,22 @@ func GetDeviceProfile(ctx context.Context, handler *store.Handler, id uuid.UUID,
 	return DeviceProfile(dp), nil
 }
 
-// UpdateDeviceProfile updates the given device-profile.
-func UpdateDeviceProfile(ctx context.Context, handler *store.Handler, dp *DeviceProfile) error {
-	return handler.UpdateDeviceProfile(ctx, (*store.DeviceProfile)(dp))
-}
-
-// DeleteDeviceProfile deletes the device-profile matching the given id.
-func DeleteDeviceProfile(ctx context.Context, handler *store.Handler, id uuid.UUID) error {
-	return handler.DeleteDeviceProfile(ctx, id)
-}
-
 // DeviceProfileFilters provide filders for filtering device-profiles.
-type DeviceProfileFilters store.DeviceProfileFilters
+type DeviceProfileFilters dps.DeviceProfileFilters
 
 // SQL returns the SQL filters.
 func (f DeviceProfileFilters) SQL() string {
-	return store.DeviceProfileFilters(f).SQL()
+	return dps.DeviceProfileFilters(f).SQL()
 }
 
 // GetDeviceProfileCount returns the total number of device-profiles.
 func GetDeviceProfileCount(ctx context.Context, handler *store.Handler, filters DeviceProfileFilters) (int, error) {
-	return handler.GetDeviceProfileCount(ctx, (store.DeviceProfileFilters)(filters))
+	return handler.GetDeviceProfileCount(ctx, (dps.DeviceProfileFilters)(filters))
 }
 
 // GetDeviceProfiles returns a slice of device-profiles.
 func GetDeviceProfiles(ctx context.Context, handler *store.Handler, filters DeviceProfileFilters) ([]DeviceProfileMeta, error) {
-	res, err := handler.GetDeviceProfiles(ctx, (store.DeviceProfileFilters)(filters))
+	res, err := handler.GetDeviceProfiles(ctx, (dps.DeviceProfileFilters)(filters))
 	if err != nil {
 		return nil, err
 	}

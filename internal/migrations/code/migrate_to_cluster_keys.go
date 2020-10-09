@@ -7,12 +7,12 @@ import (
 	"time"
 
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
 )
 
 // MigrateToClusterKeys migrates the keys to Redis Cluster compatible keys.
@@ -44,7 +44,7 @@ func migrateKey(conf config.Config, key string) error {
 		return fmt.Errorf("key %s is invalid", key)
 	}
 
-	metricsStruct := storage.GetMetricsSettings()
+	metricsStruct := metricsmod.GetMetricsSettings()
 	ttlMap := map[string]time.Duration{
 		"MINUTE": metricsStruct.Redis.MinuteAggregationTTL,
 		"HOUR":   metricsStruct.Redis.HourAggregationTTL,

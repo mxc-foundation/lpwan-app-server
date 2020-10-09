@@ -2,6 +2,8 @@ package mining
 
 import (
 	"context"
+	"fmt"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 	"time"
 
 	"github.com/pkg/errors"
@@ -10,22 +12,19 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	mxprotocolconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
+	mxprotocolconn "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 )
 
-// Config contains mining configuration
-type Config struct {
-	// If mining is enabled or not
-	Enabled bool `mapstructure:"enabled"`
-	// If we haven't got heartbeat for HeartbeatOfflineLimit seconds, we
-	// consider gateway to be offline
-	HeartbeatOfflineLimit int64 `mapstructure:"heartbeat_offline_limit"`
-	// Gateway must be online for at leasts GwOnlineLimit seconds to receive mining reward
-	GwOnlineLimit int64 `mapstructure:"gw_online_limit"`
-	// Period is the length of the mining period in seconds
-	Period int64 `mapstructure:"period"`
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
 }
+
+const moduleName = "mining"
 
 // controller regularly checks what gateways should be paid for mining and
 // sends request to m2m to pay them
@@ -37,9 +36,14 @@ type controller struct {
 
 var ctrl *controller
 
-func SettingsSetup(s Config) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, s config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		s: s.ApplicationServer.MiningSetUp,
 	}
 	return nil
 }
@@ -47,7 +51,11 @@ func GetSettings() Config {
 	return ctrl.s
 }
 
-func Setup(h *store.Handler) (err error) {
+func Setup(name string, h *store.Handler) (err error) {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	if !ctrl.s.Enabled {
 		return nil
 	}

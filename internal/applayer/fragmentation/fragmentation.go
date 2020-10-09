@@ -13,43 +13,49 @@ import (
 	"github.com/brocaar/lorawan/applayer/fragmentation"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
-var (
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "fragmentation"
+
+type controller struct {
+	name          string
+	s             FragmentationStruct
 	syncInterval  time.Duration
 	syncRetries   int
 	syncBatchSize int
-)
-
-type FragmentationStruct struct {
-	SyncInterval  time.Duration `mapstructure:"sync_interval"`
-	SyncRetries   int           `mapstructure:"sync_retries"`
-	SyncBatchSize int           `mapstructure:"sync_batch_size"`
-}
-
-type controller struct {
-	s FragmentationStruct
 }
 
 var ctrl *controller
 
-func SettingsSetup(s FragmentationStruct) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		name: moduleName,
+		s:    conf.ApplicationServer.FragmentationSession,
 	}
 	return nil
 }
-func GetSettings() FragmentationStruct {
-	return ctrl.s
-}
 
 // Setup configures the package.
-func Setup() error {
-	syncInterval = ctrl.s.SyncInterval
-	syncBatchSize = ctrl.s.SyncBatchSize
-	syncRetries = ctrl.s.SyncRetries
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
 
 	go SyncRemoteFragmentationSessionsLoop()
 
@@ -73,7 +79,7 @@ func SyncRemoteFragmentationSessionsLoop() {
 		if err != nil {
 			log.WithError(err).Error("sync remote fragmentation setup error")
 		}
-		time.Sleep(syncInterval)
+		time.Sleep(ctrl.syncInterval)
 	}
 }
 
@@ -118,7 +124,7 @@ func HandleRemoteFragmentationSessionCommand(ctx context.Context, handler *store
 }
 
 func syncRemoteFragmentationSessions(ctx context.Context, handler *store.Handler) error {
-	items, err := storage.GetPendingRemoteFragmentationSessions(ctx, handler, syncBatchSize, syncRetries)
+	items, err := storage.GetPendingRemoteFragmentationSessions(ctx, handler, ctrl.syncBatchSize, ctrl.syncRetries)
 	if err != nil {
 		return err
 	}

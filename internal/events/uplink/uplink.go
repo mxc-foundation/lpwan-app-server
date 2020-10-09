@@ -18,14 +18,18 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/gps"
 
-	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/clocksync"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
 	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
 	"github.com/mxc-foundation/lpwan-app-server/internal/codec"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
+	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+
+	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+	dps "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
+	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 type uplinkContext struct {
@@ -34,9 +38,9 @@ type uplinkContext struct {
 	uplinkDataReq as.HandleUplinkDataRequest
 
 	ctx           context.Context
-	device        store.Device
-	application   store.Application
-	deviceProfile store.DeviceProfile
+	device        ds.Device
+	application   apps.Application
+	deviceProfile dps.DeviceProfile
 
 	data       []byte
 	objectJSON string

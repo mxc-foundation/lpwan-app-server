@@ -6,21 +6,22 @@ import (
 	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	mcss "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Possible states
 const (
-	RemoteMulticastSetupSetup  = store.RemoteMulticastSetupSetup
-	RemoteMulticastSetupDelete = store.RemoteMulticastSetupDelete
+	RemoteMulticastSetupSetup  = mcss.RemoteMulticastSetupSetup
+	RemoteMulticastSetupDelete = mcss.RemoteMulticastSetupDelete
 )
 
 // RemoteMulticastSetup defines a remote multicast-setup record.
-type RemoteMulticastSetup store.RemoteMulticastSetup
+type RemoteMulticastSetup mcss.RemoteMulticastSetup
 
 // CreateRemoteMulticastSetup creates the given multicast-setup.
 func CreateRemoteMulticastSetup(ctx context.Context, handler *store.Handler, dms *RemoteMulticastSetup) error {
-	return handler.CreateRemoteMulticastSetup(ctx, (*store.RemoteMulticastSetup)(dms))
+	return handler.CreateRemoteMulticastSetup(ctx, (*mcss.RemoteMulticastSetup)(dms))
 }
 
 // GetRemoteMulticastSetup returns the multicast-setup given a multicast-group ID and DevEUI.
@@ -54,7 +55,7 @@ func GetPendingRemoteMulticastSetupItems(ctx context.Context, handler *store.Han
 
 // UpdateRemoteMulticastSetup updates the given update multicast-group setup.
 func UpdateRemoteMulticastSetup(ctx context.Context, handler *store.Handler, dmg *RemoteMulticastSetup) error {
-	return handler.UpdateRemoteMulticastSetup(ctx, (*store.RemoteMulticastSetup)(dmg))
+	return handler.UpdateRemoteMulticastSetup(ctx, (*mcss.RemoteMulticastSetup)(dmg))
 }
 
 // DeleteRemoteMulticastSetup deletes the multicast-setup given a multicast-group ID and DevEUI.

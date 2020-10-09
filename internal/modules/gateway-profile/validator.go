@@ -5,36 +5,37 @@ import (
 
 	"github.com/pkg/errors"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
 )
 
 type Validator struct {
-	Credentials *authcus.Credentials
+	Credentials *cred.Credentials
 }
 
 type Validate interface {
-	ValidateGatewayProfileAccess(ctx context.Context, flag authcus.Flag) (bool, error)
+	ValidateGatewayProfileAccess(ctx context.Context, flag auth.Flag) (bool, error)
 }
 
 func NewValidator() Validate {
 	return &Validator{
-		Credentials: authcus.NewCredentials(),
+		Credentials: cred.NewCredentials(),
 	}
 }
 
 // ValidateGatewayProfileAccess validates if the client has access
 // to the gateway-profiles.
-func (v *Validator) ValidateGatewayProfileAccess(ctx context.Context, flag authcus.Flag) (bool, error) {
+func (v *Validator) ValidateGatewayProfileAccess(ctx context.Context, flag auth.Flag) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateGatewayProfileAccess")
 	}
 
 	switch flag {
-	case authcus.Create, authcus.Update, authcus.Delete:
-		return ctrl.st.CheckCreateUpdateDeleteGatewayProfileAccess(ctx, u.UserEmail, u.ID)
-	case authcus.Read, authcus.List:
-		return ctrl.st.CheckReadListGatewayProfileAccess(ctx, u.UserEmail, u.ID)
+	case auth.Create, auth.Update, auth.Delete:
+		return ctrl.st.CheckCreateUpdateDeleteGatewayProfileAccess(ctx, u.Email, u.ID)
+	case auth.Read, auth.List:
+		return ctrl.st.CheckReadListGatewayProfileAccess(ctx, u.Email, u.ID)
 	default:
 		panic("ValidateGatewayProfileAccess: unsupported flag")
 	}

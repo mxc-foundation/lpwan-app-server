@@ -1,45 +1,36 @@
 package config
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/as"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/gws"
-	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/api/js"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/m2m"
-	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation"
-	"github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup"
-	mxprotocolconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/mxprotocol-server"
-	"github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
-	"github.com/mxc-foundation/lpwan-app-server/internal/codec/js"
-	"github.com/mxc-foundation/lpwan-app-server/internal/email"
-	"github.com/mxc-foundation/lpwan-app-server/internal/fuota"
-	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
-	"github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
-	"github.com/mxc-foundation/lpwan-app-server/internal/pprof"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	external "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	fragmentation "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
+	multicastsetup "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
+	psconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
+	js "github.com/mxc-foundation/lpwan-app-server/internal/codec/js/data"
+	email "github.com/mxc-foundation/lpwan-app-server/internal/email/data"
+	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
+	integration "github.com/mxc-foundation/lpwan-app-server/internal/integration/data"
+	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js/data"
+	as "github.com/mxc-foundation/lpwan-app-server/internal/modules/as/data"
+	gws "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
+	metrics "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics/data"
+	mining "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
+	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis/data"
+	serverinfo "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo/data"
+	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	monitoring "github.com/mxc-foundation/lpwan-app-server/internal/monitoring/data"
+	mxpm "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal/data"
+	oidc "github.com/mxc-foundation/lpwan-app-server/internal/oidc/data"
+	pprof "github.com/mxc-foundation/lpwan-app-server/internal/pprof/data"
+	pgstore "github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore/data"
 )
 
 var AppserverVersion string
 
-type ServerSettingsStruct struct {
-	LogLevel               int    `mapstructure:"log_level"`
-	LogToSyslog            bool   `mapstructure:"log_to_syslog"`
-	PasswordHashIterations int    `mapstructure:"password_hash_iterations"`
-	Enable2FALogin         bool   `mapstructure:"enable_2fa_login"`
-	DefaultLanguage        string `mapstructure:"defualt_language"`
-	ServerAddr             string `mapstructure:"server_addr"`
-	ServerRegion           string `mapstructure:"server_region"`
-}
-
 // Config defines the configuration structure.
 type Config struct {
-	General ServerSettingsStruct `mapstructure:"general"`
+	General serverinfo.GeneralSettingsStruct `mapstructure:"general"`
 
-	PostgreSQL storage.PostgreSQLStruct `mapstructure:"postgresql"`
+	PostgreSQL pgstore.PostgreSQLStruct `mapstructure:"postgresql"`
 
 	Redis rs.RedisStruct `mapstructure:"redis"`
 
@@ -47,7 +38,7 @@ type Config struct {
 
 	SMTP map[string]email.SMTPStruct `mapstructure:"smtp"`
 
-	M2MServer mxprotocolconn.MxprotocolServerStruct `mapstructure:"m2m_server"`
+	M2MServer mxpm.MxprotocolServerStruct `mapstructure:"m2m_server"`
 
 	ProvisionServer psconn.ProvisioningServerStruct `mapstructure:"provision_server"`
 
@@ -64,7 +55,7 @@ type Config struct {
 
 		API as.AppserverStruct `mapstructure:"api"`
 
-		APIForM2M m2m.M2MStruct `mapstructure:"api_for_m2m"`
+		APIForM2M mxpm.MxprotocolClientStruct `mapstructure:"api_for_m2m"`
 
 		APIForGateway gws.GatewayBindStruct `mapstructure:"api_for_gateway"`
 
@@ -81,7 +72,7 @@ type Config struct {
 
 	JoinServer joinserver.JoinServerStruct `mapstructure:"join_server"`
 
-	Metrics storage.MetricsStruct `mapstructure:"metrics"`
+	Metrics metrics.MetricsStruct `mapstructure:"metrics"`
 
 	PProf pprof.Config `mapstructure:"pprof"`
 

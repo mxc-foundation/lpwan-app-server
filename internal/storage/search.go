@@ -3,11 +3,12 @@ package storage
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // SearchResult defines a search result.
-type SearchResult store.SearchResult
+type SearchResult data.SearchResult
 
 // GlobalSearch performs a search on organizations, applications, gateways
 // and devices.

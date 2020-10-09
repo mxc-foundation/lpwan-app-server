@@ -3,43 +3,19 @@ package storage
 import (
 	"context"
 
-	"github.com/gofrs/uuid"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	sps "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // ServiceProfile defines the service-profile.
-type ServiceProfile store.ServiceProfile
+type ServiceProfile sps.ServiceProfile
 
 // ServiceProfileMeta defines the service-profile meta record.
-type ServiceProfileMeta store.ServiceProfileMeta
+type ServiceProfileMeta sps.ServiceProfileMeta
 
 // Validate validates the service-profile data.
 func (sp ServiceProfile) Validate() error {
-	return store.ServiceProfile(sp).Validate()
-}
-
-// CreateServiceProfile creates the given service-profile.
-func CreateServiceProfile(ctx context.Context, handler *store.Handler, sp *ServiceProfile) error {
-	return handler.CreateServiceProfile(ctx, (*store.ServiceProfile)(sp))
-
-}
-
-// GetServiceProfile returns the service-profile matching the given id.
-func GetServiceProfile(ctx context.Context, handler *store.Handler, id uuid.UUID, localOnly bool) (ServiceProfile, error) {
-	res, err := handler.GetServiceProfile(ctx, id, localOnly)
-	return ServiceProfile(res), err
-
-}
-
-// UpdateServiceProfile updates the given service-profile.
-func UpdateServiceProfile(ctx context.Context, handler *store.Handler, sp *ServiceProfile) error {
-	return handler.UpdateServiceProfile(ctx, (*store.ServiceProfile)(sp))
-}
-
-// DeleteServiceProfile deletes the service-profile matching the given id.
-func DeleteServiceProfile(ctx context.Context, handler *store.Handler, id uuid.UUID) error {
-	return handler.DeleteServiceProfile(ctx, id)
+	return sps.ServiceProfile(sp).Validate()
 }
 
 // GetServiceProfileCount returns the total number of service-profiles.

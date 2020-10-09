@@ -3,48 +3,24 @@ package storage
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-
-	"github.com/gofrs/uuid"
+	gwps "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Modulations
 const (
-	ModulationFSK  = store.ModulationFSK
-	ModulationLoRa = store.ModulationLoRa
+	ModulationFSK  = gwps.ModulationFSK
+	ModulationLoRa = gwps.ModulationLoRa
 )
 
 // ExtraChannel defines an extra channel for the gateway-profile.
-type ExtraChannel store.ExtraChannel
+type ExtraChannel gwps.ExtraChannel
 
 // GatewayProfile defines a gateway-profile.
-type GatewayProfile store.GatewayProfile
+type GatewayProfile gwps.GatewayProfile
 
 // GatewayProfileMeta defines the gateway-profile meta record.
-type GatewayProfileMeta store.GatewayProfileMeta
-
-// CreateGatewayProfile creates the given gateway-profile.
-// This will create the gateway-profile at the network-server side and will
-// create a local reference record.
-func CreateGatewayProfile(ctx context.Context, handler *store.Handler, gp *GatewayProfile) error {
-	return handler.CreateGatewayProfile(ctx, (*store.GatewayProfile)(gp))
-}
-
-// GetGatewayProfile returns the gateway-profile matching the given id.
-func GetGatewayProfile(ctx context.Context, handler *store.Handler, id uuid.UUID) (GatewayProfile, error) {
-	res, err := handler.GetGatewayProfile(ctx, id)
-	return GatewayProfile(res), err
-}
-
-// UpdateGatewayProfile updates the given gateway-profile.
-func UpdateGatewayProfile(ctx context.Context, handler *store.Handler, gp *GatewayProfile) error {
-	return handler.UpdateGatewayProfile(ctx, (*store.GatewayProfile)(gp))
-}
-
-// DeleteGatewayProfile deletes the gateway-profile matching the given id.
-func DeleteGatewayProfile(ctx context.Context, handler *store.Handler, id uuid.UUID) error {
-	return handler.DeleteGatewayProfile(ctx, id)
-}
+type GatewayProfileMeta gwps.GatewayProfileMeta
 
 // GetGatewayProfileCount returns the total number of gateway-profiles.
 func GetGatewayProfileCount(ctx context.Context, handler *store.Handler) (int, error) {

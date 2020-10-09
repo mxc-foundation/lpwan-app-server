@@ -6,50 +6,51 @@ import (
 
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	gws "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Gateway represents a gateway.
-type Gateway store.Gateway
+type Gateway gws.Gateway
 
 // GatewayListItem defines the gateway as list item.
-type GatewayListItem store.GatewayListItem
+type GatewayListItem gws.GatewayListItem
 
 // GatewayPing represents a gateway ping.
-type GatewayPing store.GatewayPing
+type GatewayPing gws.GatewayPing
 
 // GatewayPingRX represents a ping received by one of the gateways.
-type GatewayPingRX store.GatewayPingRX
+type GatewayPingRX gws.GatewayPingRX
 
 // GPSPoint contains a GPS point.
-type GPSPoint store.GPSPoint
+type GPSPoint gws.GPSPoint
 
 // GatewaysActiveInactive holds the avtive and inactive counts.
-type GatewaysActiveInactive store.GatewaysActiveInactive
+type GatewaysActiveInactive gws.GatewaysActiveInactive
 
 // Value implements the driver.Valuer interface.
 func (l GPSPoint) Value() (driver.Value, error) {
-	return store.GPSPoint(l).Value()
+	return gws.GPSPoint(l).Value()
 }
 
 // Scan implements the sql.Scanner interface.
 func (l *GPSPoint) Scan(src interface{}) error {
-	return (*store.GPSPoint)(l).Scan(src)
+	return (*gws.GPSPoint)(l).Scan(src)
 }
 
 // Validate validates the gateway data.
 func (g Gateway) Validate() error {
-	return store.Gateway(g).Validate()
+	return gws.Gateway(g).Validate()
 }
 
 // CreateGateway creates the given Gateway.
 func CreateGateway(ctx context.Context, handler *store.Handler, gw *Gateway) error {
-	return handler.CreateGateway(ctx, (*store.Gateway)(gw))
+	return handler.CreateGateway(ctx, (*gws.Gateway)(gw))
 }
 
 // UpdateGateway updates the given Gateway.
 func UpdateGateway(ctx context.Context, handler *store.Handler, gw *Gateway) error {
-	return handler.UpdateGateway(ctx, (*store.Gateway)(gw))
+	return handler.UpdateGateway(ctx, (*gws.Gateway)(gw))
 }
 
 // DeleteGateway deletes the gateway matching the given MAC.
@@ -64,21 +65,21 @@ func GetGateway(ctx context.Context, handler *store.Handler, mac lorawan.EUI64, 
 }
 
 // GatewayFilters provides filters for filtering gateways.
-type GatewayFilters store.GatewayFilters
+type GatewayFilters gws.GatewayFilters
 
 // SQL returns the SQL filters.
 func (f GatewayFilters) SQL() string {
-	return store.GatewayFilters(f).SQL()
+	return gws.GatewayFilters(f).SQL()
 }
 
 // GetGatewayCount returns the total number of gateways.
 func GetGatewayCount(ctx context.Context, handler *store.Handler, filters GatewayFilters) (int, error) {
-	return handler.GetGatewayCount(ctx, (store.GatewayFilters)(filters))
+	return handler.GetGatewayCount(ctx, (gws.GatewayFilters)(filters))
 }
 
 // GetGateways returns a slice of gateways sorted by name.
 func GetGateways(ctx context.Context, handler *store.Handler, filters GatewayFilters) ([]GatewayListItem, error) {
-	res, err := handler.GetGateways(ctx, store.GatewayFilters(filters))
+	res, err := handler.GetGateways(ctx, gws.GatewayFilters(filters))
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +109,7 @@ func GetGatewaysForMACs(ctx context.Context, handler *store.Handler, macs []lora
 
 // CreateGatewayPing creates the given gateway ping.
 func CreateGatewayPing(ctx context.Context, handler *store.Handler, ping *GatewayPing) error {
-	return handler.CreateGatewayPing(ctx, (*store.GatewayPing)(ping))
+	return handler.CreateGatewayPing(ctx, (*gws.GatewayPing)(ping))
 }
 
 // GetGatewayPing returns the ping matching the given id.
@@ -119,7 +120,7 @@ func GetGatewayPing(ctx context.Context, handler *store.Handler, id int64) (Gate
 
 // CreateGatewayPingRX creates the received ping.
 func CreateGatewayPingRX(ctx context.Context, handler *store.Handler, rx *GatewayPingRX) error {
-	return handler.CreateGatewayPingRX(ctx, (*store.GatewayPingRX)(rx))
+	return handler.CreateGatewayPingRX(ctx, (*gws.GatewayPingRX)(rx))
 }
 
 // DeleteAllGatewaysForOrganizationID deletes all gateways for a given

@@ -1,8 +1,18 @@
 package fuotamod
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"errors"
+	"fmt"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
+
+func init() {
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "fuota_deployment"
 
 type controller struct {
 	st *store.Handler
@@ -10,7 +20,10 @@ type controller struct {
 
 var ctrl *controller
 
-func Setup(h *store.Handler) error {
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
 	ctrl = &controller{
 		st: h,
 	}

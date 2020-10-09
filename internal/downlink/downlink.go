@@ -2,6 +2,8 @@ package downlink
 
 import (
 	"fmt"
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -14,8 +16,26 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
+
+func init() {
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "downlink"
+
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
+	downChan := integration.ForApplicationID(0).DataDownChan()
+	go HandleDataDownPayloads(downChan, store.NewStore())
+	return nil
+}
 
 // HandleDataDownPayloads handles received downlink payloads to be emitted to the
 // devices.
@@ -88,7 +108,7 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload, handl
 			}
 		}
 
-		if _, err := handler.EnqueueDownlinkPayload(ctx, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data); err != nil {
+		if _, err := devmod.EnqueueDownlinkPayload(ctx, handler, pl.DevEUI, pl.Confirmed, pl.FPort, pl.Data); err != nil {
 			return errors.Wrap(err, "enqueue downlink device-queue item error")
 		}
 
@@ -96,7 +116,7 @@ func handleDataDownPayload(ctx context.Context, pl models.DataDownPayload, handl
 	})
 }
 
-func logCodecError(ctx context.Context, a store.Application, d store.Device, err error) {
+func logCodecError(ctx context.Context, a apps.Application, d ds.Device, err error) {
 	errEvent := pb.ErrorEvent{
 		ApplicationId:   uint64(a.ID),
 		ApplicationName: a.Name,

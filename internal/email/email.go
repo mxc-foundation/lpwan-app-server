@@ -6,20 +6,29 @@ import (
 	"encoding/base32"
 	"encoding/json"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"html/template"
 	"net/smtp"
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/static"
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/email/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/static"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
-var cli = map[string]*Client{}
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
 
-type Client struct {
+const moduleName = "email"
+
+type client struct {
 	senderID string
 	username string
 	password string
@@ -49,69 +58,57 @@ var email struct {
 	mailTemplates    map[EmailOptions]*template.Template
 }
 
-type SMTPStruct struct {
-	Email    string `mapstructure:"email"`
-	Username string `mapstructure:"username"`
-	Password string `mapstructure:"password"`
-	AuthType string `mapstructure:"auth_type"`
-	Host     string `mapstructure:"host"`
-	Port     string `mapstructure:"port"`
-}
-
-type OperatorStruct struct {
-	Operator           string `mapstructure:"name"`
-	PrimaryColor       string `mapstructure:"primary_color"`
-	SecondaryColor     string `mapstructure:"secondary_color"`
-	DownloadAppStore   string `mapstructure:"download_appstore"`
-	DownloadGoogle     string `mapstructure:"download_google"`
-	DownloadTestFlight string `mapstructure:"download_testflight"`
-	DownloadAPK        string `mapstructure:"download_apk"`
-	OperatorAddress    string `mapstructure:"operator_address"`
-	OperatorLegal      string `mapstructure:"operator_legal_name"`
-	OperatorLogo       string `mapstructure:"operator_logo"`
-	OperatorContact    string `mapstructure:"operator_contact"`
-	OperatorSupport    string `mapstructure:"operator_support"`
-}
-
-type ServerInfoStruct struct {
-	ServerAddr      string
-	DefaultLanguage string
-}
-
 type controller struct {
 	s        ServerInfoStruct
 	operator OperatorStruct
 	smtp     map[string]SMTPStruct
-	cli      map[string]*Client
+	cli      map[string]*client
 }
 
 var ctrl *controller
 
-func SettingsSetup(smtp map[string]SMTPStruct, operator OperatorStruct, s ServerInfoStruct) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		operator: operator,
-		smtp:     smtp,
-		s:        s,
+		operator: conf.Operator,
+		smtp:     conf.SMTP,
+		s: ServerInfoStruct{
+			ServerAddr:      conf.General.ServerAddr,
+			DefaultLanguage: conf.General.DefaultLanguage,
+		},
+		cli: make(map[string]*client),
 	}
 
 	return nil
 }
+
+// GetSettings returns ServerInfoStruct
 func GetSettings() ServerInfoStruct {
 	return ctrl.s
 }
+
+// GetOperatorInfo returns OperatorStruct
 func GetOperatorInfo() OperatorStruct {
 	return ctrl.operator
 }
 
 // Setup configures the package.
-func Setup() error {
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	for key, value := range ctrl.smtp {
 		port := value.Port
 		if port == "" {
 			port = "25"
 		}
 
-		cli[key] = &Client{
+		ctrl.cli[key] = &client{
 			senderID: value.Email,
 			username: value.Username,
 			password: value.Password,
@@ -149,7 +146,7 @@ func Setup() error {
 func SendInvite(user string, param Param, language EmailLanguage, option EmailOptions) error {
 	var err error
 
-	if cli == nil {
+	if ctrl.cli == nil {
 		log.Error("Tried to send registration email, but SMTP is not configured")
 		return errors.New("Unable to send confirmation email")
 	}
@@ -219,7 +216,7 @@ func SendInvite(user string, param Param, language EmailLanguage, option EmailOp
 	str := strings.Replace(msg.String(), "=\"", "=3D\"", -1)
 	out := bytes.NewBufferString(str)
 
-	for k, v := range cli {
+	for k, v := range ctrl.cli {
 		if v != nil {
 			err = v.send(user, *out)
 			if err == nil {
@@ -234,7 +231,7 @@ func SendInvite(user string, param Param, language EmailLanguage, option EmailOp
 
 }
 
-func (c *Client) send(user string, msg bytes.Buffer) error {
+func (c *client) send(user string, msg bytes.Buffer) error {
 	var auth smtp.Auth
 	if c.authType == "PLAIN" {
 		auth = smtp.PlainAuth("", c.username, c.password, c.smtpHost)

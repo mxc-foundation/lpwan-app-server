@@ -3,9 +3,8 @@ package multicastsetup
 import (
 	"context"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 	"time"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -15,43 +14,50 @@ import (
 	"github.com/brocaar/lorawan/applayer/multicastsetup"
 	"github.com/brocaar/lorawan/gps"
 
+	. "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
-var (
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "multicastsetup"
+
+type controller struct {
+	name          string
+	s             MulticastStruct
 	syncInterval  time.Duration
 	syncRetries   int
 	syncBatchSize int
-)
-
-type MulticastStruct struct {
-	SyncInterval  time.Duration `mapstructure:"sync_interval"`
-	SyncRetries   int           `mapstructure:"sync_retries"`
-	SyncBatchSize int           `mapstructure:"sync_batch_size"`
-}
-
-type controller struct {
-	s MulticastStruct
 }
 
 var ctrl *controller
 
-func SettingsSetup(s MulticastStruct) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		name: moduleName,
+		s:    conf.ApplicationServer.RemoteMulticastSetup,
 	}
 	return nil
 }
-func GetSettings() MulticastStruct {
-	return ctrl.s
-}
 
 // Setup configures the package.
-func Setup() error {
-	syncInterval = ctrl.s.SyncInterval
-	syncBatchSize = ctrl.s.SyncBatchSize
-	syncRetries = ctrl.s.SyncRetries
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
 
 	go SyncRemoteMulticastSetupLoop()
 	go SyncRemoteMulticastClassCSessionLoop()
@@ -77,7 +83,7 @@ func SyncRemoteMulticastSetupLoop() {
 		if err != nil {
 			log.WithError(err).Error("sync remote multicast setup error")
 		}
-		time.Sleep(syncInterval)
+		time.Sleep(ctrl.syncInterval)
 	}
 }
 
@@ -100,7 +106,7 @@ func SyncRemoteMulticastClassCSessionLoop() {
 		if err != nil {
 			log.WithError(err).Error("sync remote multicast class-c session error")
 		}
-		time.Sleep(syncInterval)
+		time.Sleep(ctrl.syncInterval)
 	}
 }
 
@@ -191,8 +197,8 @@ func handleMcGroupDeleteAns(ctx context.Context, handler *store.Handler, devEUI 
 		return errors.Wrap(err, "update remote multicast-setup error")
 	}
 
-	if err := storage.RemoveDeviceFromMulticastGroup(ctx, handler, rms.MulticastGroupID, devEUI); err != nil {
-		if err == storage.ErrDoesNotExist {
+	if err := multicast.RemoveDeviceFromMulticastGroup(ctx, rms.MulticastGroupID, devEUI); err != nil {
+		if err == errHandler.ErrDoesNotExist {
 			log.WithFields(log.Fields{
 				"dev_eui":            devEUI,
 				"multicast_group_id": rms.MulticastGroupID,
@@ -231,8 +237,8 @@ func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEU
 		return errors.Wrap(err, "update remote multicast class-c session error")
 	}
 
-	if err := storage.AddDeviceToMulticastGroup(ctx, handler, sess.MulticastGroupID, devEUI); err != nil {
-		if err == storage.ErrAlreadyExists {
+	if err := multicast.AddDeviceToMulticastGroup(ctx, sess.MulticastGroupID, devEUI); err != nil {
+		if err == errHandler.ErrAlreadyExists {
 			log.WithFields(log.Fields{
 				"dev_eui":            devEUI,
 				"multicast_group_id": sess.MulticastGroupID,
@@ -247,7 +253,7 @@ func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEU
 }
 
 func syncRemoteMulticastSetup(ctx context.Context, handler *store.Handler) error {
-	items, err := storage.GetPendingRemoteMulticastSetupItems(ctx, handler, syncBatchSize, syncRetries)
+	items, err := storage.GetPendingRemoteMulticastSetupItems(ctx, handler, ctrl.syncBatchSize, ctrl.syncRetries)
 	if err != nil {
 		return err
 	}
@@ -319,7 +325,7 @@ func syncRemoteMulticastSetupItem(ctx context.Context, handler *store.Handler, i
 }
 
 func syncRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler) error {
-	items, err := storage.GetPendingRemoteMulticastClassCSessions(ctx, handler, syncBatchSize, syncRetries)
+	items, err := storage.GetPendingRemoteMulticastClassCSessions(ctx, handler, ctrl.syncBatchSize, ctrl.syncRetries)
 	if err != nil {
 		return err
 	}

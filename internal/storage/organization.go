@@ -3,23 +3,24 @@ package storage
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	orgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Organization represents an organization.
-type Organization store.Organization
+type Organization orgs.Organization
 
 // Validate validates the data of the Organization.
 func (o Organization) Validate() error {
-	return store.Organization(o).Validate()
+	return orgs.Organization(o).Validate()
 }
 
 // OrganizationUser represents an organization user.
-type OrganizationUser store.OrganizationUser
+type OrganizationUser orgs.OrganizationUser
 
 // CreateOrganization creates the given Organization.
 func CreateOrganization(ctx context.Context, handler *store.Handler, org *Organization) error {
-	return handler.CreateOrganization(ctx, (*store.Organization)(org))
+	return handler.CreateOrganization(ctx, (*orgs.Organization)(org))
 }
 
 // GetOrganization returns the Organization for the given id.
@@ -30,21 +31,21 @@ func GetOrganization(ctx context.Context, handler *store.Handler, id int64, forU
 }
 
 // OrganizationFilters provides filters for filtering organizations.
-type OrganizationFilters store.OrganizationFilters
+type OrganizationFilters orgs.OrganizationFilters
 
 // SQL returns the SQL filters.
 func (f OrganizationFilters) SQL() string {
-	return store.OrganizationFilters(f).SQL()
+	return orgs.OrganizationFilters(f).SQL()
 }
 
 // GetOrganizationCount returns the total number of organizations.
 func GetOrganizationCount(ctx context.Context, handler *store.Handler, filters OrganizationFilters) (int, error) {
-	return handler.GetOrganizationCount(ctx, store.OrganizationFilters(filters))
+	return handler.GetOrganizationCount(ctx, orgs.OrganizationFilters(filters))
 }
 
 // GetOrganizations returns a slice of organizations, sorted by name.
 func GetOrganizations(ctx context.Context, handler *store.Handler, filters OrganizationFilters) ([]Organization, error) {
-	res, err := handler.GetOrganizations(ctx, store.OrganizationFilters(filters))
+	res, err := handler.GetOrganizations(ctx, orgs.OrganizationFilters(filters))
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,7 @@ func GetOrganizations(ctx context.Context, handler *store.Handler, filters Organ
 
 // UpdateOrganization updates the given organization.
 func UpdateOrganization(ctx context.Context, handler *store.Handler, org *Organization) error {
-	return handler.UpdateOrganization(ctx, (*store.Organization)(org))
+	return handler.UpdateOrganization(ctx, (*orgs.Organization)(org))
 }
 
 // DeleteOrganization deletes the organization matching the given id.

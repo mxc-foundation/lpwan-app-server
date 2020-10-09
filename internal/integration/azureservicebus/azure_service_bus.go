@@ -25,6 +25,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus/data"
 )
 
 // Publish modes.
@@ -32,17 +34,6 @@ const (
 	AzurePublishModeTopic AzurePublishMode = "topic"
 	AzurePublishModeQueue AzurePublishMode = "queue"
 )
-
-// AzurePublishMode defines the publish-mode type.
-type AzurePublishMode string
-
-// IntegrationAzureConfig holds the Azure Service-Bus integration configuration.
-type IntegrationAzureConfig struct {
-	Marshaler        string           `mapstructure:"marshaler" json:"marshaler"`
-	ConnectionString string           `mapstructure:"connection_string" json:"connectionString"`
-	PublishMode      AzurePublishMode `mapstructure:"publish_mode" json:"-"`
-	PublishName      string           `mapstructure:"publish_name" json:"publishName"`
-}
 
 // Integration implements an Azure Service-Bus integration.
 type Integration struct {

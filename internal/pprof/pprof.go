@@ -1,28 +1,50 @@
 package pprof
 
 import (
+	"errors"
+	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"net/http"
 	"net/http/pprof"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/pprof/data"
 )
 
-type Config struct {
-	Enabled bool   `mapstructure:"enabled"`
-	Bind    string `mapstructure:"bind"`
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
 }
+
+const moduleName = "pprof"
+
 type controller struct {
-	s Config
+	name string
+	s    Config
 }
 
 var ctrl *controller
 
-func SettingsSetup(s Config) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		name: moduleName,
+		s:    conf.PProf,
 	}
 	return nil
 }
 
-func Setup() error {
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	if !ctrl.s.Enabled {
 		return nil
 	}
@@ -38,7 +60,9 @@ func Setup() error {
 		Addr:    ctrl.s.Bind,
 		Handler: mux,
 	}
-	go srv.ListenAndServe()
+	go func() {
+		_ = srv.ListenAndServe()
+	}()
 
 	return nil
 }
