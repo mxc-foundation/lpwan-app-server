@@ -2,12 +2,13 @@ package data
 
 // SMTPStruct defines smtp service settings
 type SMTPStruct struct {
-	Email    string `mapstructure:"email"`
-	Username string `mapstructure:"username"`
-	Password string `mapstructure:"password"`
-	AuthType string `mapstructure:"auth_type"`
-	Host     string `mapstructure:"host"`
-	Port     string `mapstructure:"port"`
+	Email       string `mapstructure:"email"`
+	Username    string `mapstructure:"username"`
+	Password    string `mapstructure:"password"`
+	AuthType    string `mapstructure:"auth_type"`
+	Host        string `mapstructure:"host"`
+	Port        string `mapstructure:"port"`
+	TLSRequired bool   `mapstructure:"tls_required"`
 }
 
 // OperatorStruct defines basic settings of operator of this supernode
