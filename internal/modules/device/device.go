@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 

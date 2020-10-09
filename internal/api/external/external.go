@@ -44,7 +44,6 @@ import (
 )
 
 func init() {
-	fmt.Println("init external")
 	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
 	mgr.RegisterModuleSetup(moduleName, Setup)
 }

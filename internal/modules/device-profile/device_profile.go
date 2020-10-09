@@ -3,19 +3,20 @@ package devprofile
 import (
 	"context"
 	"fmt"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
+	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 )
 
 func init() {

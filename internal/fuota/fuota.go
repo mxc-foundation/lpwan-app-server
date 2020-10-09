@@ -5,8 +5,9 @@ import (
 	"crypto/aes"
 	"crypto/rand"
 	"fmt"
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"time"
+
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"

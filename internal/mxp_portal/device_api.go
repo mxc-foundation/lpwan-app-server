@@ -2,6 +2,7 @@ package mxp_portal
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"

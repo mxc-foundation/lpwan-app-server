@@ -29,11 +29,8 @@ func init() {
 const moduleName = "fragmentation"
 
 type controller struct {
-	name          string
-	s             FragmentationStruct
-	syncInterval  time.Duration
-	syncRetries   int
-	syncBatchSize int
+	name string
+	s    FragmentationStruct
 }
 
 var ctrl *controller
@@ -79,7 +76,7 @@ func SyncRemoteFragmentationSessionsLoop() {
 		if err != nil {
 			log.WithError(err).Error("sync remote fragmentation setup error")
 		}
-		time.Sleep(ctrl.syncInterval)
+		time.Sleep(ctrl.s.SyncInterval)
 	}
 }
 
@@ -124,7 +121,7 @@ func HandleRemoteFragmentationSessionCommand(ctx context.Context, handler *store
 }
 
 func syncRemoteFragmentationSessions(ctx context.Context, handler *store.Handler) error {
-	items, err := storage.GetPendingRemoteFragmentationSessions(ctx, handler, ctrl.syncBatchSize, ctrl.syncRetries)
+	items, err := storage.GetPendingRemoteFragmentationSessions(ctx, handler, ctrl.s.SyncBatchSize, ctrl.s.SyncRetries)
 	if err != nil {
 		return err
 	}

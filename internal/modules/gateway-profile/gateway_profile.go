@@ -3,13 +3,14 @@ package gatewayprofile
 import (
 	"fmt"
 
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/pkg/errors"
 
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 
 	"github.com/gofrs/uuid"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 	"golang.org/x/net/context"
 
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"

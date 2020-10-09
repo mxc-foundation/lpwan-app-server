@@ -3,8 +3,9 @@ package mining
 import (
 	"context"
 	"fmt"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 	"time"
+
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/pkg/errors"
 

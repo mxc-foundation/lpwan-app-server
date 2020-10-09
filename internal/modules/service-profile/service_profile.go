@@ -3,8 +3,11 @@ package serviceprofile
 import (
 	"context"
 	"fmt"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/gofrs/uuid"
@@ -12,10 +15,8 @@ import (
 
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 func init() {

@@ -3,9 +3,10 @@ package pprof
 import (
 	"errors"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"net/http"
 	"net/http/pprof"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"

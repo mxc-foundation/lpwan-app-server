@@ -9,11 +9,12 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 type GatewayPgStore interface {

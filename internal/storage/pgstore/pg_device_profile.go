@@ -7,11 +7,12 @@ import (
 
 	"github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 type DeviceProfilePgStore interface {

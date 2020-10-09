@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/brocaar/lorawan"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"

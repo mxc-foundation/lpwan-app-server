@@ -6,11 +6,12 @@ import (
 	"encoding/base32"
 	"encoding/json"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"html/template"
 	"net/smtp"
 	"strings"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

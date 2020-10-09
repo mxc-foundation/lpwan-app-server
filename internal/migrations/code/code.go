@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
 	"github.com/pkg/errors"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )

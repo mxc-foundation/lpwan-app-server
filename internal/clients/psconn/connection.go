@@ -5,11 +5,12 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"io/ioutil"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	log "github.com/sirupsen/logrus"

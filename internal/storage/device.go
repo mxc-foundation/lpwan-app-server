@@ -2,8 +2,9 @@ package storage
 
 import (
 	"context"
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"time"
+
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 
 	"github.com/brocaar/lorawan"
 	"github.com/pkg/errors"

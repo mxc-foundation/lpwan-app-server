@@ -1,10 +1,11 @@
 package system_manager
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 type SettingsSetupFunc func(string, config.Config) error
@@ -54,7 +55,7 @@ func SetupSystemModules() error {
 		if n == "storage" {
 			continue
 		}
-		
+
 		if err := (*f)(n, store.NewStore()); err != nil {
 			return err
 		}

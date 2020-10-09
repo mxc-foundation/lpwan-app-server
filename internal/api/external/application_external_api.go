@@ -3,8 +3,9 @@ package external
 import (
 	"context"
 	"encoding/json"
-	spmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	"strings"
+
+	spmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"

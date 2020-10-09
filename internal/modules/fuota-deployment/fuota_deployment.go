@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 func init() {
