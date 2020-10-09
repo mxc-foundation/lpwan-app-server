@@ -4,8 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 	"time"
+
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/lib/pq/hstore"
+
 	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
 
 	"github.com/brocaar/chirpstack-api/go/v3/common"

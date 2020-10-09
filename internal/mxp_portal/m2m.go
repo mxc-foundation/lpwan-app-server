@@ -2,8 +2,9 @@ package mxp_portal
 
 import (
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"net"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

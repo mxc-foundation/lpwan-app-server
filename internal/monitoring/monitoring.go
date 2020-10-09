@@ -3,8 +3,9 @@ package monitoring
 import (
 	"errors"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"net/http"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
 

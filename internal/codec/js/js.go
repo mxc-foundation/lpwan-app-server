@@ -3,9 +3,10 @@ package js
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"reflect"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"

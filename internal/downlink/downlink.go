@@ -2,13 +2,14 @@ package downlink
 
 import (
 	"fmt"
-	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/integration"
 

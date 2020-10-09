@@ -3,8 +3,9 @@ package multicastsetup
 import (
 	"context"
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 	"time"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group"
 
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
@@ -31,11 +32,8 @@ func init() {
 const moduleName = "multicastsetup"
 
 type controller struct {
-	name          string
-	s             MulticastStruct
-	syncInterval  time.Duration
-	syncRetries   int
-	syncBatchSize int
+	name string
+	s    MulticastStruct
 }
 
 var ctrl *controller
@@ -83,7 +81,7 @@ func SyncRemoteMulticastSetupLoop() {
 		if err != nil {
 			log.WithError(err).Error("sync remote multicast setup error")
 		}
-		time.Sleep(ctrl.syncInterval)
+		time.Sleep(ctrl.s.SyncInterval)
 	}
 }
 
@@ -106,7 +104,7 @@ func SyncRemoteMulticastClassCSessionLoop() {
 		if err != nil {
 			log.WithError(err).Error("sync remote multicast class-c session error")
 		}
-		time.Sleep(ctrl.syncInterval)
+		time.Sleep(ctrl.s.SyncInterval)
 	}
 }
 
@@ -253,7 +251,7 @@ func handleMcClassCSessionAns(ctx context.Context, handler *store.Handler, devEU
 }
 
 func syncRemoteMulticastSetup(ctx context.Context, handler *store.Handler) error {
-	items, err := storage.GetPendingRemoteMulticastSetupItems(ctx, handler, ctrl.syncBatchSize, ctrl.syncRetries)
+	items, err := storage.GetPendingRemoteMulticastSetupItems(ctx, handler, ctrl.s.SyncBatchSize, ctrl.s.SyncRetries)
 	if err != nil {
 		return err
 	}
@@ -325,7 +323,7 @@ func syncRemoteMulticastSetupItem(ctx context.Context, handler *store.Handler, i
 }
 
 func syncRemoteMulticastClassCSession(ctx context.Context, handler *store.Handler) error {
-	items, err := storage.GetPendingRemoteMulticastClassCSessions(ctx, handler, ctrl.syncBatchSize, ctrl.syncRetries)
+	items, err := storage.GetPendingRemoteMulticastClassCSessions(ctx, handler, ctrl.s.SyncBatchSize, ctrl.s.SyncRetries)
 	if err != nil {
 		return err
 	}

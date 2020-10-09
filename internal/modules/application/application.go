@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
 	"golang.org/x/net/context"
 
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"

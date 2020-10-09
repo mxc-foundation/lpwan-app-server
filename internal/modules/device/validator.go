@@ -2,6 +2,7 @@ package device
 
 import (
 	"context"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/brocaar/lorawan"

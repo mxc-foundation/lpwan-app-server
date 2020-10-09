@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-	
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics/data"

@@ -2,11 +2,12 @@ package cmd
 
 import (
 	"context"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
