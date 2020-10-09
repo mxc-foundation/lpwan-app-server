@@ -2,19 +2,22 @@ package redis
 
 import (
 	"errors"
+	"fmt"
+
 	"github.com/go-redis/redis/v7"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis/data"
 )
 
-type RedisStruct struct {
-	URL        string   `mapstructure:"url"` // deprecated
-	Servers    []string `mapstructure:"servers"`
-	Cluster    bool     `mapstructure:"cluster"`
-	MasterName string   `mapstructure:"master_name"`
-	PoolSize   int      `mapstructure:"pool_size"`
-	Password   string   `mapstructure:"password"`
-	Database   int      `mapstructure:"database"`
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
 }
+
+const moduleName = "redis"
 
 type controller struct {
 	redis   RedisStruct
@@ -23,10 +26,14 @@ type controller struct {
 
 var ctrl *controller
 
-func SettingsSetup(s RedisStruct) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, s config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		redis:   s,
-		handler: &RedisHandler{},
+		redis: s.Redis,
 	}
 
 	return nil
@@ -76,7 +83,9 @@ func Setup() (err error) {
 }
 
 func SetupRedisHandler(store RedisStore) {
-	ctrl.handler.S = store
+	ctrl.handler = &RedisHandler{
+		S: store,
+	}
 }
 
 type RedisHandler struct {

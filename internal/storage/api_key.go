@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
+
 	jwt "github.com/dgrijalva/jwt-go"
 	uuid "github.com/gofrs/uuid"
 	"github.com/jmoiron/sqlx"
@@ -12,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // APIKey represents an API key.
@@ -52,7 +54,7 @@ func CreateAPIKey(ctx context.Context, handler *store.Handler, a *APIKey) (strin
 		a.ApplicationID,
 	)
 	if err != nil {
-		return "", handlePSQLError(Insert, err, "insert error")
+		return "", errHandler.HandlePSQLError(errHandler.Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -90,7 +92,7 @@ func GetAPIKey(ctx context.Context, handler *store.Handler, id uuid.UUID) (APIKe
 		id,
 	)
 	if err != nil {
-		return a, handlePSQLError(Select, err, "select error")
+		return a, errHandler.HandlePSQLError(errHandler.Select, err, "select error")
 	}
 
 	return a, nil
@@ -107,14 +109,14 @@ func DeleteAPIKey(ctx context.Context, handler *store.Handler, id uuid.UUID) err
 		id,
 	)
 	if err != nil {
-		return handlePSQLError(Delete, err, "delete error")
+		return errHandler.HandlePSQLError(errHandler.Delete, err, "delete error")
 	}
 	ra, err := res.RowsAffected()
 	if err != nil {
 		return errors.Wrap(err, "get rows affected error")
 	}
 	if ra == 0 {
-		return ErrDoesNotExist
+		return errHandler.ErrDoesNotExist
 	}
 
 	log.WithFields(log.Fields{
@@ -168,7 +170,7 @@ func GetAPIKeyCount(ctx context.Context, handler *store.Handler, filters APIKeyF
 	var count int
 	err = sqlx.Get(db, &count, query, args...)
 	if err != nil {
-		return 0, handlePSQLError(Select, err, "select error")
+		return 0, errHandler.HandlePSQLError(errHandler.Select, err, "select error")
 	}
 
 	return count, nil
@@ -194,7 +196,7 @@ func GetAPIKeys(ctx context.Context, handler *store.Handler, filters APIKeyFilte
 	var keys []APIKey
 	err = sqlx.Select(db, &keys, query, args...)
 	if err != nil {
-		return nil, handlePSQLError(Select, err, "select error")
+		return nil, errHandler.HandlePSQLError(errHandler.Select, err, "select error")
 	}
 
 	return keys, nil

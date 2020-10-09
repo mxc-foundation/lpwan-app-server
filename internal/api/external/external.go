@@ -26,31 +26,58 @@ import (
 	pb "github.com/brocaar/chirpstack-api/go/v3/as/external/api"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/oidc"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
+	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
+	otpst "github.com/mxc-foundation/lpwan-app-server/internal/otp/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-type ExternalAPIStruct struct {
-	Bind            string
-	TLSCert         string `mapstructure:"tls_cert"`
-	TLSKey          string `mapstructure:"tls_key"`
-	JWTSecret       string `mapstructure:"jwt_secret"`
-	OTPSecret       string `mapstructure:"otp_secret"`
-	CORSAllowOrigin string `mapstructure:"cors_allow_origin"`
+func init() {
+	fmt.Println("init external")
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
 }
 
+const moduleName = "external"
+
 type controller struct {
+	name                string
 	s                   ExternalAPIStruct
 	applicationServerID uuid.UUID
+	serverAddr          string
+	recaptcha           user.RecaptchaStruct
+	enable2FA           bool
+	serverRegion        string
 }
 
 var ctrl *controller
 
-func SettingsSetup(apiStruct ExternalAPIStruct, applicationServerID string) (err error) {
-	ctrl = &controller{
-		s: apiStruct,
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) (err error) {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
-	ctrl.applicationServerID, err = uuid.FromString(applicationServerID)
+
+	ctrl = &controller{
+		name:         moduleName,
+		s:            conf.ApplicationServer.ExternalAPI,
+		serverAddr:   conf.General.ServerAddr,
+		recaptcha:    conf.Recaptcha,
+		enable2FA:    conf.General.Enable2FALogin,
+		serverRegion: conf.General.ServerRegion,
+	}
+	ctrl.applicationServerID, err = uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
 		return errors.Wrap(err, "application-server id to uuid error")
 	}
@@ -67,8 +94,20 @@ func GetOTPSecret() string {
 	return ctrl.s.OTPSecret
 }
 
-// Setup configures the API package.
-func Setup(grpcServer *grpc.Server) (err error) {
+// Setup configures the API endpoints.
+func Setup(name string, h *store.Handler) (err error) {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("intend to call Setup function for %s, actually calling %s", name, moduleName))
+	}
+
+	// Bind external api port to listen to requests to all services
+	grpcOpts := helpers.GetgRPCServerOptions()
+	grpcServer := grpc.NewServer(grpcOpts...)
+
+	if err := SetupCusAPI(h, grpcServer, GetApplicationServerID()); err != nil {
+		return err
+	}
+
 	// setup the client http interface variable
 	// we need to start the gRPC service first, as it is used by the
 	// grpc-gateway
@@ -130,6 +169,53 @@ func Setup(grpcServer *grpc.Server) (err error) {
 	return nil
 }
 
+func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) error {
+	jwtSecret := GetJWTSecret()
+	if jwtSecret == "" {
+		return errors.New("jwt_secret must be set")
+	}
+
+	jwtValidator := jwt.NewJWTValidator("HS256", []byte(jwtSecret))
+	otpValidator, err := otp.NewValidator("lpwan-app-server", GetOTPSecret(), otpst.NewStore(pgstore.New()))
+	if err != nil {
+		return err
+	}
+	authcus.SetupCred(authPg.NewStore(pgstore.New()), jwtValidator, otpValidator)
+
+	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(h))
+	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(h))
+	pb.RegisterMulticastGroupServiceServer(grpcServer, NewMulticastGroupAPI(rpID, h))
+	pb.RegisterServiceProfileServiceServer(grpcServer, NewServiceProfileServiceAPI(h))
+	pb.RegisterDeviceProfileServiceServer(grpcServer, NewDeviceProfileServiceAPI(h))
+	// device
+	api.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(rpID, h))
+	// gateway
+	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(rpID, h, ctrl.serverAddr))
+	// gateway profile
+	api.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(h))
+	// application
+	api.RegisterApplicationServiceServer(grpcServer, NewApplicationAPI(h))
+	// network server
+	api.RegisterNetworkServerServiceServer(grpcServer, NewNetworkServerAPI(h))
+	// orgnization
+	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(h))
+	// user
+	api.RegisterUserServiceServer(grpcServer, NewUserAPI(h))
+	api.RegisterInternalServiceServer(grpcServer, NewInternalUserAPI(h, user.Config{
+		Recaptcha:      ctrl.recaptcha,
+		Enable2FALogin: ctrl.enable2FA,
+	}))
+
+	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(ctrl.serverRegion))
+	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())
+	api.RegisterStakingServiceServer(grpcServer, NewStakingServerAPI())
+	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI())
+	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI())
+	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI())
+
+	return nil
+}
+
 func setupHTTPAPI() (http.Handler, error) {
 	r := mux.NewRouter()
 
@@ -147,7 +233,7 @@ func setupHTTPAPI() (http.Handler, error) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.Write(data)
+		_, _ = w.Write(data)
 	}).Methods("get")
 	r.PathPrefix("/api").Handler(jsonHandler)
 
@@ -219,58 +305,49 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 		return nil, errors.Wrap(err, "register fuota deployment handler error")
 	}
 
-	if err := cusGetJSONGateway(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return nil, err
-	}
-
-	return mux, nil
-}
-
-func cusGetJSONGateway(ctx context.Context, mux *runtime.ServeMux, apiEndpoint string, grpcDialOpts []grpc.DialOption) error {
-
 	if err := api.RegisterServerInfoServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register server info handler error")
+		return nil, errors.Wrap(err, "register server info handler error")
 	}
 	if err := api.RegisterStakingServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
+		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := api.RegisterTopUpServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
+		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := api.RegisterWalletServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
+		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := api.RegisterWithdrawServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
+		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 	if err := api.RegisterSettingsServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register proxy request handler error")
+		return nil, errors.Wrap(err, "register proxy request handler error")
 	}
 
 	if err := api.RegisterApplicationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register application handler error")
+		return nil, errors.Wrap(err, "register application handler error")
 	}
 	if err := api.RegisterDeviceServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register node handler error")
+		return nil, errors.Wrap(err, "register node handler error")
 	}
 	if err := api.RegisterUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register user handler error")
+		return nil, errors.Wrap(err, "register user handler error")
 	}
 	if err := api.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register internal handler error")
+		return nil, errors.Wrap(err, "register internal handler error")
 	}
 	if err := api.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register gateway handler error")
+		return nil, errors.Wrap(err, "register gateway handler error")
 	}
 	if err := api.RegisterGatewayProfileServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register gateway-profile handler error")
+		return nil, errors.Wrap(err, "register gateway-profile handler error")
 	}
 	if err := api.RegisterOrganizationServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register organization handler error")
+		return nil, errors.Wrap(err, "register organization handler error")
 	}
 	if err := api.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
-		return errors.Wrap(err, "register network-server handler error")
+		return nil, errors.Wrap(err, "register network-server handler error")
 	}
 
-	return nil
+	return mux, nil
 }

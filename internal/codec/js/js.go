@@ -3,39 +3,51 @@ package js
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"reflect"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/robertkrimen/otto"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
-var (
-	maxExecutionTime = 10 * time.Millisecond
-)
-
-type CodecStruct struct {
-	JS struct {
-		MaxExecutionTime time.Duration `mapstructure:"max_execution_time"`
-	} `mapstructure:"js"`
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
 }
+
+const moduleName = "codec_js"
+
 type controller struct {
-	s CodecStruct
+	name             string
+	maxExecutionTime time.Duration
 }
 
 var ctrl *controller
 
-func SettingsSetup(s CodecStruct) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		name:             moduleName,
+		maxExecutionTime: conf.ApplicationServer.Codec.JS.MaxExecutionTime,
 	}
 
 	return nil
 }
 
 // Setup configures the JS codec.
-func Setup() error {
-	maxExecutionTime = ctrl.s.JS.MaxExecutionTime
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	return nil
 }
 
@@ -98,7 +110,7 @@ func executeJS(script string, vars map[string]interface{}) (out interface{}, err
 	}
 
 	go func() {
-		time.Sleep(maxExecutionTime)
+		time.Sleep(ctrl.maxExecutionTime)
 		vm.Interrupt <- func() {
 			panic(errors.New("execution timeout"))
 		}

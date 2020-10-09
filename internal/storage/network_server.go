@@ -6,20 +6,16 @@ import (
 	"github.com/brocaar/lorawan"
 	uuid "github.com/gofrs/uuid"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	nss "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // NetworkServer defines the information to connect to a network-server.
-type NetworkServer store.NetworkServer
+type NetworkServer nss.NetworkServer
 
 // Validate validates the network-server data.
 func (ns NetworkServer) Validate() error {
-	return store.NetworkServer(ns).Validate()
-}
-
-// CreateNetworkServer creates the given network-server.
-func CreateNetworkServer(ctx context.Context, handler *store.Handler, n *NetworkServer) error {
-	return handler.CreateNetworkServer(ctx, (*store.NetworkServer)(n))
+	return nss.NetworkServer(ns).Validate()
 }
 
 // GetNetworkServer returns the network-server matching the given id.
@@ -28,32 +24,22 @@ func GetNetworkServer(ctx context.Context, handler *store.Handler, id int64) (Ne
 	return NetworkServer(res), err
 }
 
-// UpdateNetworkServer updates the given network-server.
-func UpdateNetworkServer(ctx context.Context, handler *store.Handler, n *NetworkServer) error {
-	return handler.UpdateNetworkServer(ctx, (*store.NetworkServer)(n))
-}
-
-// DeleteNetworkServer deletes the network-server matching the given id.
-func DeleteNetworkServer(ctx context.Context, handler *store.Handler, id int64) error {
-	return handler.DeleteNetworkServer(ctx, id)
-}
-
 // NetworkServerFilters provides filters for filtering network-servers.
-type NetworkServerFilters store.NetworkServerFilters
+type NetworkServerFilters nss.NetworkServerFilters
 
 // SQL returns the SQL filters.
 func (f NetworkServerFilters) SQL() string {
-	return store.NetworkServerFilters(f).SQL()
+	return nss.NetworkServerFilters(f).SQL()
 }
 
 // GetNetworkServerCount returns the total number of network-servers.
 func GetNetworkServerCount(ctx context.Context, handler *store.Handler, filters NetworkServerFilters) (int, error) {
-	return handler.GetNetworkServerCount(ctx, store.NetworkServerFilters(filters))
+	return handler.GetNetworkServerCount(ctx, nss.NetworkServerFilters(filters))
 }
 
 // GetNetworkServers returns a slice of network-servers.
 func GetNetworkServers(ctx context.Context, handler *store.Handler, filters NetworkServerFilters) ([]NetworkServer, error) {
-	res, err := handler.GetNetworkServers(ctx, store.NetworkServerFilters(filters))
+	res, err := handler.GetNetworkServers(ctx, nss.NetworkServerFilters(filters))
 	if err != nil {
 		return nil, err
 	}

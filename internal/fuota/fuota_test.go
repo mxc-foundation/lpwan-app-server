@@ -14,6 +14,7 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	nsmock "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver/mock"
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
 	"github.com/mxc-foundation/lpwan-app-server/internal/test"
 )
@@ -740,7 +741,7 @@ func (ts *FUOTATestSuite) TestFUOTADeploymentCleanup() {
 	assert.Nil(fdUpdated.MulticastGroupID)
 
 	_, err = storage.GetMulticastGroup(context.Background(), ts.tx, mcgID, false, false)
-	assert.Equal(storage.ErrDoesNotExist, err)
+	assert.Equal(errHandler.ErrDoesNotExist, err)
 }
 
 func TestFUOTA(t *testing.T) {

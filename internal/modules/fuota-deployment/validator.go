@@ -7,40 +7,41 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
 )
 
 type Validator struct {
-	Credentials *authcus.Credentials
+	Credentials *cred.Credentials
 }
 
 type Validate interface {
-	ValidateFUOTADeploymentAccess(ctx context.Context, flag authcus.Flag, id uuid.UUID) (bool, error)
-	ValidateFUOTADeploymentsAccess(ctx context.Context, flag authcus.Flag, applicationID int64, devEUI lorawan.EUI64) (bool, error)
-	GetUser(ctx context.Context) (authcus.User, error)
+	ValidateFUOTADeploymentAccess(ctx context.Context, flag auth.Flag, id uuid.UUID) (bool, error)
+	ValidateFUOTADeploymentsAccess(ctx context.Context, flag auth.Flag, applicationID int64, devEUI lorawan.EUI64) (bool, error)
+	GetUser(ctx context.Context) (auth.User, error)
 }
 
 func NewValidator() Validate {
 	return &Validator{
-		Credentials: authcus.NewCredentials(),
+		Credentials: cred.NewCredentials(),
 	}
 }
 
-func (v *Validator) GetUser(ctx context.Context) (authcus.User, error) {
+func (v *Validator) GetUser(ctx context.Context) (auth.User, error) {
 	return v.Credentials.GetUser(ctx)
 }
 
 // ValidateFUOTADeploymentAccess validates if the client has access to the
 // given fuota deployment.
-func (v *Validator) ValidateFUOTADeploymentAccess(ctx context.Context, flag authcus.Flag, id uuid.UUID) (bool, error) {
+func (v *Validator) ValidateFUOTADeploymentAccess(ctx context.Context, flag auth.Flag, id uuid.UUID) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateFUOTADeploymentAccess")
 	}
 
 	switch flag {
-	case authcus.Read:
-		return ctrl.st.CheckReadFUOTADeploymentAccess(ctx, u.UserEmail, id, u.ID)
+	case auth.Read:
+		return ctrl.st.CheckReadFUOTADeploymentAccess(ctx, u.Email, id, u.ID)
 	default:
 		panic("ValidateFUOTADeploymentAccess: unsupported flag")
 	}
@@ -48,15 +49,15 @@ func (v *Validator) ValidateFUOTADeploymentAccess(ctx context.Context, flag auth
 
 // ValidateFUOTADeploymentsAccess validates if the client has access to the
 // fuota deployments.
-func (v *Validator) ValidateFUOTADeploymentsAccess(ctx context.Context, flag authcus.Flag, applicationID int64, devEUI lorawan.EUI64) (bool, error) {
+func (v *Validator) ValidateFUOTADeploymentsAccess(ctx context.Context, flag auth.Flag, applicationID int64, devEUI lorawan.EUI64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {
 		return false, errors.Wrap(err, "ValidateFUOTADeploymentsAccess")
 	}
 
 	switch flag {
-	case authcus.Create:
-		return ctrl.st.CheckCreateFUOTADeploymentsAccess(ctx, u.UserEmail, applicationID, devEUI, u.ID)
+	case auth.Create:
+		return ctrl.st.CheckCreateFUOTADeploymentsAccess(ctx, u.Email, applicationID, devEUI, u.ID)
 	default:
 		panic("ValidateFUOTADeploymentsAccess: unsupported flag")
 	}

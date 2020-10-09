@@ -4,7 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	usrs "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // saltSize defines the salt size
@@ -14,26 +15,26 @@ const saltSize = 16
 const defaultSessionTTL = time.Hour * 24
 
 // User defines the user structure.
-type User store.User
+type User usrs.User
 
 // Validate validates the user data.
 func (u User) Validate() error {
-	return store.User(u).Validate()
+	return usrs.User(u).Validate()
 }
 
 // UserProfile contains the profile of the user.
-type UserProfile store.UserProfile
+type UserProfile usrs.UserProfile
 
 // UserProfileUser contains the user information of the profile.
-type UserProfileUser store.UserProfileUser
+type UserProfileUser usrs.UserProfileUser
 
 // UserProfileOrganization contains the organizations to which the user
 // is linked.
-type UserProfileOrganization store.UserProfileOrganization
+type UserProfileOrganization usrs.UserProfileOrganization
 
 // CreateUser creates the given user.
 func CreateUser(ctx context.Context, handler *store.Handler, user *User) error {
-	return handler.CreateUser(ctx, (*store.User)(user))
+	return handler.CreateUser(ctx, (*usrs.User)(user))
 }
 
 // GetUser returns the User for the given id.
@@ -77,7 +78,7 @@ func GetUsers(ctx context.Context, handler *store.Handler, limit, offset int) ([
 
 // UpdateUser updates the given User.
 func UpdateUser(ctx context.Context, handler *store.Handler, u *User) error {
-	return handler.UpdateUser(ctx, (*store.User)(u))
+	return handler.UpdateUser(ctx, (*usrs.User)(u))
 }
 
 // DeleteUser deletes the User record matching the given ID.

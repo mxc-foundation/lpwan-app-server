@@ -6,33 +6,32 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	err "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
 var errToCode = map[error]codes.Code{
-	store.ErrAlreadyExists:                   codes.AlreadyExists,
-	store.ErrDoesNotExist:                    codes.NotFound,
-	store.ErrUsedByOtherObjects:              codes.FailedPrecondition,
-	store.ErrApplicationInvalidName:          codes.InvalidArgument,
-	store.ErrNodeInvalidName:                 codes.InvalidArgument,
-	store.ErrNodeMaxRXDelay:                  codes.InvalidArgument,
-	store.ErrCFListTooManyChannels:           codes.InvalidArgument,
-	store.ErrUserInvalidUsername:             codes.InvalidArgument,
-	store.ErrUserPasswordLength:              codes.InvalidArgument,
-	store.ErrInvalidUsernameOrPassword:       codes.Unauthenticated,
-	store.ErrInvalidEmail:                    codes.InvalidArgument,
-	store.ErrInvalidGatewayDiscoveryInterval: codes.InvalidArgument,
-	store.ErrDeviceProfileInvalidName:        codes.InvalidArgument,
-	store.ErrServiceProfileInvalidName:       codes.InvalidArgument,
-	store.ErrMulticastGroupInvalidName:       codes.InvalidArgument,
-	store.ErrOrganizationMaxDeviceCount:      codes.FailedPrecondition,
-	store.ErrOrganizationMaxGatewayCount:     codes.FailedPrecondition,
-	store.ErrNetworkServerInvalidName:        codes.InvalidArgument,
-	store.ErrFUOTADeploymentInvalidName:      codes.InvalidArgument,
-	store.ErrFUOTADeploymentNullPayload:      codes.InvalidArgument,
-	err.ErrInvalidHeaderName:                 codes.InvalidArgument,
-	err.ErrInvalidPrecision:                  codes.InvalidArgument,
+	errHandler.ErrAlreadyExists:                   codes.AlreadyExists,
+	errHandler.ErrDoesNotExist:                    codes.NotFound,
+	errHandler.ErrUsedByOtherObjects:              codes.FailedPrecondition,
+	errHandler.ErrApplicationInvalidName:          codes.InvalidArgument,
+	errHandler.ErrNodeInvalidName:                 codes.InvalidArgument,
+	errHandler.ErrNodeMaxRXDelay:                  codes.InvalidArgument,
+	errHandler.ErrCFListTooManyChannels:           codes.InvalidArgument,
+	errHandler.ErrUserInvalidUsername:             codes.InvalidArgument,
+	errHandler.ErrUserPasswordLength:              codes.InvalidArgument,
+	errHandler.ErrInvalidUsernameOrPassword:       codes.Unauthenticated,
+	errHandler.ErrInvalidEmail:                    codes.InvalidArgument,
+	errHandler.ErrInvalidGatewayDiscoveryInterval: codes.InvalidArgument,
+	errHandler.ErrDeviceProfileInvalidName:        codes.InvalidArgument,
+	errHandler.ErrServiceProfileInvalidName:       codes.InvalidArgument,
+	errHandler.ErrMulticastGroupInvalidName:       codes.InvalidArgument,
+	errHandler.ErrOrganizationMaxDeviceCount:      codes.FailedPrecondition,
+	errHandler.ErrOrganizationMaxGatewayCount:     codes.FailedPrecondition,
+	errHandler.ErrNetworkServerInvalidName:        codes.InvalidArgument,
+	errHandler.ErrFUOTADeploymentInvalidName:      codes.InvalidArgument,
+	errHandler.ErrFUOTADeploymentNullPayload:      codes.InvalidArgument,
+	errHandler.ErrInvalidHeaderName:               codes.InvalidArgument,
+	errHandler.ErrInvalidPrecision:                codes.InvalidArgument,
 }
 
 // ErrToRPCError converts the given error into a gRPC error.

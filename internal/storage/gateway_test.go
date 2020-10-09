@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"

@@ -34,7 +34,7 @@ func setSyslog() error {
 		prio = syslog.LOG_USER | syslog.LOG_CRIT
 	}
 
-	hook, err := lsyslog.NewSyslogHook("", "", prio, "chirpstack-application-server")
+	hook, err := lsyslog.NewSyslogHook("", "", prio, "lpwan-app-server")
 	if err != nil {
 		return errors.Wrap(err, "get syslog hook error")
 	}

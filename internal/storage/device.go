@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	devmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
 	"time"
 
 	"github.com/brocaar/lorawan"
@@ -10,16 +11,18 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
-	nscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
+
+	ds "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Device defines a LoRaWAN device.
-type Device store.Device
+type Device ds.Device
 
 // DeviceListItem defines the Device as list item.
-type DeviceListItem store.DeviceListItem
+type DeviceListItem ds.DeviceListItem
 
 // Validate validates the device data.
 func (d Device) Validate() error {
@@ -27,17 +30,17 @@ func (d Device) Validate() error {
 }
 
 // DeviceKeys defines the keys for a LoRaWAN device.
-type DeviceKeys store.DeviceKeys
+type DeviceKeys ds.DeviceKeys
 
 // DevicesActiveInactive holds the active and inactive counts.
-type DevicesActiveInactive store.DevicesActiveInactive
+type DevicesActiveInactive ds.DevicesActiveInactive
 
 // DevicesDataRates holds the device counts by data-rate.
-type DevicesDataRates store.DevicesDataRates
+type DevicesDataRates ds.DevicesDataRates
 
 // CreateDevice creates the given device.
 func CreateDevice(ctx context.Context, handler *store.Handler, d *Device) error {
-	return handler.CreateDevice(ctx, (*store.Device)(d))
+	return handler.CreateDevice(ctx, (*ds.Device)(d))
 }
 
 // GetDevice returns the device matching the given DevEUI.
@@ -88,22 +91,22 @@ func GetDevice(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64
 
 // DeviceFilters provide filters that can be used to filter on devices.
 // Note that empty values are not used as filter.
-type DeviceFilters store.DeviceFilters
+type DeviceFilters ds.DeviceFilters
 
 // SQL returns the SQL filter.
 func (f DeviceFilters) SQL() string {
-	df := store.DeviceFilters(f)
+	df := ds.DeviceFilters(f)
 	return df.SQL()
 }
 
 // GetDeviceCount returns the number of devices.
 func GetDeviceCount(ctx context.Context, handler *store.Handler, filters DeviceFilters) (int, error) {
-	return handler.GetDeviceCount(ctx, store.DeviceFilters(filters))
+	return handler.GetDeviceCount(ctx, ds.DeviceFilters(filters))
 }
 
 // GetDevices returns a slice of devices.
 func GetDevices(ctx context.Context, handler *store.Handler, filters DeviceFilters) ([]DeviceListItem, error) {
-	res, err := handler.GetDevices(ctx, store.DeviceFilters(filters))
+	res, err := handler.GetDevices(ctx, ds.DeviceFilters(filters))
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +123,7 @@ func GetDevices(ctx context.Context, handler *store.Handler, filters DeviceFilte
 // UpdateDevice updates the given device.
 // When localOnly is set, it will not update the device on the network-server.
 func UpdateDevice(ctx context.Context, handler *store.Handler, d *Device, localOnly bool) error {
-	err := handler.UpdateDevice(ctx, (*store.Device)(d))
+	err := handler.UpdateDevice(ctx, (*ds.Device)(d))
 	if err != nil {
 		return err
 	}
@@ -192,7 +195,7 @@ func DeleteDevice(ctx context.Context, handler *store.Handler, devEUI lorawan.EU
 
 // CreateDeviceKeys creates the keys for the given device.
 func CreateDeviceKeys(ctx context.Context, handler *store.Handler, dc *DeviceKeys) error {
-	return handler.CreateDeviceKeys(ctx, (*store.DeviceKeys)(dc))
+	return handler.CreateDeviceKeys(ctx, (*ds.DeviceKeys)(dc))
 }
 
 // GetDeviceKeys returns the device-keys for the given DevEUI.
@@ -203,7 +206,7 @@ func GetDeviceKeys(ctx context.Context, handler *store.Handler, devEUI lorawan.E
 
 // UpdateDeviceKeys updates the given device-keys.
 func UpdateDeviceKeys(ctx context.Context, handler *store.Handler, dc *DeviceKeys) error {
-	return handler.UpdateDeviceKeys(ctx, (*store.DeviceKeys)(dc))
+	return handler.UpdateDeviceKeys(ctx, (*ds.DeviceKeys)(dc))
 }
 
 // DeleteDeviceKeys deletes the device-keys for the given DevEUI.
@@ -219,7 +222,7 @@ func DeleteAllDevicesForApplicationID(ctx context.Context, handler *store.Handle
 // EnqueueDownlinkPayload adds the downlink payload to the network-server
 // device-queue.
 func EnqueueDownlinkPayload(ctx context.Context, handler *store.Handler, devEUI lorawan.EUI64, confirmed bool, fPort uint8, data []byte) (uint32, error) {
-	return handler.EnqueueDownlinkPayload(ctx, devEUI, confirmed, fPort, data)
+	return devmod.EnqueueDownlinkPayload(ctx, handler, devEUI, confirmed, fPort, data)
 }
 
 // GetDevicesActiveInactive returns the active / inactive devices.

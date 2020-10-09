@@ -21,6 +21,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub/data"
 )
 
 type publishRequest struct {
@@ -40,15 +42,6 @@ type Integration struct {
 	topic               string
 	jsonCredentialsFile []byte
 	client              *http.Client
-}
-
-// IntegrationGCPConfig holds the GCP Pub/Sub integration configuration.
-type IntegrationGCPConfig struct {
-	Marshaler            string `mapstructure:"marshaler" json:"marshaler"`
-	CredentialsFile      string `mapstructure:"credentials_file" json:"-"`
-	CredentialsFileBytes []byte `mapstructure:"-" json:"credentialsFile"`
-	ProjectID            string `mapstructure:"project_id" json:"projectID"`
-	TopicName            string `mapstructure:"topic_name" json:"topicName"`
 }
 
 // New creates a new Pub/Sub integration.

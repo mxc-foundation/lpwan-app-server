@@ -1,9 +1,21 @@
 package organization
 
 import (
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	"fmt"
+
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
+
+func init() {
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "organization"
 
 type controller struct {
 	st *store.Handler
@@ -11,7 +23,11 @@ type controller struct {
 
 var ctrl *controller
 
-func Setup(h *store.Handler) error {
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
 		st: h,
 	}
@@ -20,7 +36,7 @@ func Setup(h *store.Handler) error {
 }
 
 // GetOrganizationCount :
-func GetOrganizationCount(ctx context.Context, filters store.OrganizationFilters) (int, error) {
+func GetOrganizationCount(ctx context.Context, filters OrganizationFilters) (int, error) {
 	return ctrl.st.GetOrganizationCount(ctx, filters)
 }
 
@@ -30,6 +46,6 @@ func GetOrganizationIDList(ctx context.Context, limit, offset int, search string
 }
 
 // GetOrganizationUsers :
-func GetOrganizationUsers(ctx context.Context, organizationID int64, limit, offset int) ([]store.OrganizationUser, error) {
+func GetOrganizationUsers(ctx context.Context, organizationID int64, limit, offset int) ([]OrganizationUser, error) {
 	return ctrl.st.GetOrganizationUsers(ctx, organizationID, limit, offset)
 }

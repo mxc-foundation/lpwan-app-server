@@ -1,36 +1,55 @@
 package monitoring
 
 import (
+	"errors"
+	"fmt"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	"net/http"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/monitoring/data"
 )
 
-type MonitoringStruct struct {
-	Bind                         string `mapstructure:"bind"`
-	PrometheusEndpoint           bool   `mapstructure:"prometheus_endpoint"`
-	PrometheusAPITimingHistogram bool   `mapstructure:"prometheus_api_timing_histogram"`
-	HealthcheckEndpoint          bool   `mapstructure:"healthcheck_endpoint"`
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
 }
+
+const moduleName = "monitoring"
+
 type controller struct {
-	s MonitoringStruct
+	name string
+	s    MonitoringStruct
 }
 
 var ctrl *controller
 
-func SettingsSerup(s MonitoringStruct) error {
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		name: moduleName,
+		s:    conf.Monitoring,
 	}
 	return nil
 }
 
 // Setup setsup the metrics server.
-func Setup() error {
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	if ctrl.s.Bind != "" {
 		return setupNew()
 	}
@@ -81,7 +100,7 @@ func setupNew() error {
 }
 
 func setupLegacy() error {
-	metricsStruct := storage.GetMetricsSettings()
+	metricsStruct := metrics.GetMetricsSettings()
 	if !metricsStruct.Prometheus.EndpointEnabled {
 		return nil
 	}

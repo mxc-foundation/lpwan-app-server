@@ -52,6 +52,7 @@ localDevelopTemplate = \
           dockerfile: Dockerfile-devel
         volumes:
           - ../../mxprotocol-server/configuration:/etc/mxprotocol-server
+          - ../../mxprotocol-server/configuration/ecc:/etc/ecc
           - ../../mxprotocol-server:/mxprotocol-server
         environment:
           - APPSERVER=http://localhost:8080

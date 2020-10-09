@@ -10,8 +10,6 @@ import (
 	"github.com/go-redis/redis/v7"
 	"github.com/spf13/viper"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	log "github.com/sirupsen/logrus"
@@ -87,7 +85,6 @@ func init() {
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
-	rootCmd.AddCommand(testNsAPICmd)
 }
 
 // Execute executes the root command.
@@ -159,10 +156,6 @@ func initConfig() {
 	}
 	config.AppserverVersion = version
 
-	// init config in all modules
-	if err := serverinfo.SettingsSetup(config.C); err != nil {
-		log.WithError(err).Fatal("set up configuration error")
-	}
 }
 
 func viperBindEnvs(iface interface{}, parts ...string) {

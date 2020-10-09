@@ -5,15 +5,16 @@ import (
 
 	"github.com/brocaar/lorawan"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	fss "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // RemoteFragmentationSession defines a remote fragmentation session record.
-type RemoteFragmentationSession store.RemoteFragmentationSession
+type RemoteFragmentationSession fss.RemoteFragmentationSession
 
 // CreateRemoteFragmentationSession creates the given fragmentation session.
 func CreateRemoteFragmentationSession(ctx context.Context, handler *store.Handler, sess *RemoteFragmentationSession) error {
-	return handler.CreateRemoteFragmentationSession(ctx, (*store.RemoteFragmentationSession)(sess))
+	return handler.CreateRemoteFragmentationSession(ctx, (*fss.RemoteFragmentationSession)(sess))
 }
 
 // GetRemoteFragmentationSession returns the fragmentation session given a
@@ -41,7 +42,7 @@ func GetPendingRemoteFragmentationSessions(ctx context.Context, handler *store.H
 
 // UpdateRemoteFragmentationSession updates the given fragmentation session.
 func UpdateRemoteFragmentationSession(ctx context.Context, handler *store.Handler, sess *RemoteFragmentationSession) error {
-	return handler.UpdateRemoteFragmentationSession(ctx, (*store.RemoteFragmentationSession)(sess))
+	return handler.UpdateRemoteFragmentationSession(ctx, (*fss.RemoteFragmentationSession)(sess))
 }
 
 // DeleteRemoteFragmentationSession removes the fragmentation session for the

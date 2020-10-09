@@ -6,12 +6,18 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/amqp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/awssns"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/http"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/influxdb"
@@ -26,7 +32,19 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/postgresql"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/thingsboard"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/awssns/data"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/azureservicebus/data"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/data"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/gcppubsub/data"
 )
+
+func init() {
+	mgr.RegisterSettingsSetup(moduleName, SettingsSetup)
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "integration"
 
 // Handler kinds
 const (
@@ -40,41 +58,37 @@ const (
 	AzureServiceBus = "AZURE_SERVICE_BUS"
 )
 
-var (
+type controller struct {
+	h                  *store.Handler
+	name               string
 	mockIntegration    models.Integration
 	marshalType        marshaler.Type
 	globalIntegrations []models.IntegrationHandler
-)
-
-type IntegrationStruct struct {
-	Marshaler       string                                 `mapstructure:"marshaler"`
-	Backend         string                                 `mapstructure:"backend"` // deprecated
-	Enabled         []string                               `mapstructure:"enabled"`
-	AWSSNS          awssns.IntegrationAWSSNSConfig         `mapstructure:"aws_sns"`
-	AzureServiceBus azureservicebus.IntegrationAzureConfig `mapstructure:"azure_service_bus"`
-	MQTT            mqtt.IntegrationMQTTConfig             `mapstructure:"mqtt"`
-	GCPPubSub       gcppubsub.IntegrationGCPConfig         `mapstructure:"gcp_pub_sub"`
-	Kafka           kafka.IntegrationKafkaConfig           `mapstructure:"kafka"`
-	PostgreSQL      postgresql.IntegrationPostgreSQLConfig `mapstructure:"postgresql"`
-	AMQP            amqp.IntegrationAMQPConfig             `mapstructure:"amqp"`
-}
-
-type controller struct {
-	s IntegrationStruct
+	s                  IntegrationStruct
 }
 
 var ctrl *controller
 
-func SettingsSetup(s IntegrationStruct) error {
+// SettingsSetup initialize module settings on start
+func SettingsSetup(name string, conf config.Config) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
-		s: s,
+		name: moduleName,
+		s:    conf.ApplicationServer.Integration,
 	}
 
 	return nil
 }
 
 // Setup configures the integration package.
-func Setup() error {
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	log.Info("integration: configuring global integrations")
 
 	var ints []models.IntegrationHandler
@@ -82,13 +96,14 @@ func Setup() error {
 	// setup marshaler
 	switch ctrl.s.Marshaler {
 	case "protobuf":
-		marshalType = marshaler.Protobuf
+		ctrl.marshalType = marshaler.Protobuf
 	case "json":
-		marshalType = marshaler.ProtobufJSON
+		ctrl.marshalType = marshaler.ProtobufJSON
 	case "json_v3":
-		marshalType = marshaler.JSONV3
+		ctrl.marshalType = marshaler.JSONV3
 	}
 
+	ctrl.h = h
 	// configure logger integration (for device events in web-interface)
 	i, err := logger.New(logger.Config{})
 	if err != nil {
@@ -103,19 +118,19 @@ func Setup() error {
 
 		switch name {
 		case "aws_sns":
-			i, err = awssns.New(marshalType, ctrl.s.AWSSNS)
+			i, err = awssns.New(ctrl.marshalType, ctrl.s.AWSSNS)
 		case "azure_service_bus":
-			i, err = azureservicebus.New(marshalType, ctrl.s.AzureServiceBus)
+			i, err = azureservicebus.New(ctrl.marshalType, ctrl.s.AzureServiceBus)
 		case "mqtt":
-			i, err = mqtt.New(marshalType, ctrl.s.MQTT)
+			i, err = mqtt.New(ctrl.marshalType, ctrl.s.MQTT)
 		case "gcp_pub_sub":
-			i, err = gcppubsub.New(marshalType, ctrl.s.GCPPubSub)
+			i, err = gcppubsub.New(ctrl.marshalType, ctrl.s.GCPPubSub)
 		case "kafka":
-			i, err = kafka.New(marshalType, ctrl.s.Kafka)
+			i, err = kafka.New(ctrl.marshalType, ctrl.s.Kafka)
 		case "postgresql":
 			i, err = postgresql.New(ctrl.s.PostgreSQL)
 		case "amqp":
-			i, err = amqp.New(marshalType, ctrl.s.AMQP)
+			i, err = amqp.New(ctrl.marshalType, ctrl.s.AMQP)
 		default:
 			return fmt.Errorf("unknonwn integration type: %s", name)
 		}
@@ -126,7 +141,7 @@ func Setup() error {
 
 		ints = append(ints, i)
 	}
-	globalIntegrations = ints
+	ctrl.globalIntegrations = ints
 
 	return nil
 }
@@ -139,8 +154,8 @@ func Setup() error {
 // returned.
 func ForApplicationID(id int64) models.Integration {
 	// for testing, return mock integration
-	if mockIntegration != nil {
-		return mockIntegration
+	if ctrl.mockIntegration != nil {
+		return ctrl.mockIntegration
 	}
 
 	var appints []storage.Integration
@@ -174,7 +189,7 @@ func ForApplicationID(id int64) models.Integration {
 			}
 
 			// create new http integration
-			i, err = http.New(marshalType, conf)
+			i, err = http.New(ctrl.marshalType, conf)
 		case InfluxDB:
 			// read config
 			var conf influxdb.Config
@@ -225,7 +240,7 @@ func ForApplicationID(id int64) models.Integration {
 			i, err = loracloud.New(conf)
 		case GCPPubSub:
 			// read config
-			var conf gcppubsub.IntegrationGCPConfig
+			var conf IntegrationGCPConfig
 			if err := json.NewDecoder(bytes.NewReader(appint.Settings)).Decode(&conf); err != nil {
 				log.WithError(err).WithFields(log.Fields{
 					"application_id": id,
@@ -234,10 +249,10 @@ func ForApplicationID(id int64) models.Integration {
 			}
 
 			// create new gcp pubsub integration
-			i, err = gcppubsub.New(marshalType, conf)
+			i, err = gcppubsub.New(ctrl.marshalType, conf)
 		case AWSSNS:
 			// read config
-			var conf awssns.IntegrationAWSSNSConfig
+			var conf IntegrationAWSSNSConfig
 			if err := json.NewDecoder(bytes.NewReader(appint.Settings)).Decode(&conf); err != nil {
 				log.WithError(err).WithFields(log.Fields{
 					"application_id": id,
@@ -246,10 +261,10 @@ func ForApplicationID(id int64) models.Integration {
 			}
 
 			// create new aws sns integration
-			i, err = awssns.New(marshalType, conf)
+			i, err = awssns.New(ctrl.marshalType, conf)
 		case AzureServiceBus:
 			// read config
-			var conf azureservicebus.IntegrationAzureConfig
+			var conf IntegrationAzureConfig
 			if err := json.NewDecoder(bytes.NewReader(appint.Settings)).Decode(&conf); err != nil {
 				log.WithError(err).WithFields(log.Fields{
 					"application_id": id,
@@ -258,7 +273,7 @@ func ForApplicationID(id int64) models.Integration {
 			}
 
 			// create new aws sns integration
-			i, err = azureservicebus.New(marshalType, conf)
+			i, err = azureservicebus.New(ctrl.marshalType, conf)
 		default:
 			log.WithFields(log.Fields{
 				"application_id": id,
@@ -278,10 +293,10 @@ func ForApplicationID(id int64) models.Integration {
 		ints = append(ints, i)
 	}
 
-	return multi.New(globalIntegrations, ints)
+	return multi.New(ctrl.globalIntegrations, ints)
 }
 
 // SetMockIntegration mocks the integration.
 func SetMockIntegration(i models.Integration) {
-	mockIntegration = i
+	ctrl.mockIntegration = i
 }

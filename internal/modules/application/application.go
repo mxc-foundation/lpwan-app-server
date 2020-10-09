@@ -1,10 +1,21 @@
 package application
 
 import (
+	"errors"
+	"fmt"
+
+	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 	"golang.org/x/net/context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
+
+func init() {
+	mgr.RegisterModuleSetup(moduleName, Setup)
+}
+
+const moduleName = "application"
 
 type controller struct {
 	st *store.Handler
@@ -12,7 +23,11 @@ type controller struct {
 
 var ctrl *controller
 
-func Setup(h *store.Handler) error {
+func Setup(name string, h *store.Handler) error {
+	if name != moduleName {
+		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
+	}
+
 	ctrl = &controller{
 		st: h,
 	}
@@ -21,6 +36,6 @@ func Setup(h *store.Handler) error {
 	return nil
 }
 
-func GetApplication(ctx context.Context, applicationID int64) (store.Application, error) {
+func GetApplication(ctx context.Context, applicationID int64) (Application, error) {
 	return ctrl.st.GetApplication(ctx, applicationID)
 }

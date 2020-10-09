@@ -3,28 +3,28 @@ package wallet
 import (
 	"context"
 
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
 type Validator struct {
-	Credentials *authcus.Credentials
+	Credentials *cred.Credentials
 }
 
 type Validate interface {
-	IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error
-	IsOrgAdmin(ctx context.Context, ordID int64, opts ...authcus.Option) error
+	IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error
+	IsOrgAdmin(ctx context.Context, ordID int64, opts ...cred.Option) error
 }
 
 func NewValidator() Validate {
 	return &Validator{
-		Credentials: authcus.NewCredentials(),
+		Credentials: cred.NewCredentials(),
 	}
 }
 
-func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...authcus.Option) error {
+func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error {
 	return v.Credentials.IsGlobalAdmin(ctx, opts...)
 }
 
-func (v *Validator) IsOrgAdmin(ctx context.Context, ordID int64, opts ...authcus.Option) error {
+func (v *Validator) IsOrgAdmin(ctx context.Context, ordID int64, opts ...cred.Option) error {
 	return v.Credentials.IsOrgAdmin(ctx, ordID, opts...)
 }

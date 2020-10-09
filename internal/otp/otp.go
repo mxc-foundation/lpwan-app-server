@@ -19,33 +19,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/otp/data"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/otp/store"
 )
-
-// TOTPInfo contains user's TOTP configuration
-type TOTPInfo struct {
-	Enabled       bool
-	Secret        string
-	LastTimeSlot  int64
-	RecoveryCodes map[int64]string
-}
-
-// Store provides methods to access TOTP information for users stored in the database
-type Store interface {
-	// GetTOTPInfo returns TOTP configuration info for the user
-	GetTOTPInfo(ctx context.Context, username string) (TOTPInfo, error)
-	// Enable enables TOTP for the user
-	Enable(ctx context.Context, username string) error
-	// Delete removes TOTP configuration for the user
-	Delete(ctx context.Context, username string) error
-	// StoreNewSecret stores new secret for user in the database
-	StoreNewSecret(ctx context.Context, username, secret string) error
-	// DeleteRecoveryCode removes recovery code from the database
-	DeleteRecoveryCode(ctx context.Context, username string, codeID int64) error
-	// AddRecoveryCodes adds new recovery codes to the database
-	AddRecoveryCodes(ctx context.Context, username string, codes []string) error
-	// UpdateLastTimeSlot updates last time slot value in the database
-	UpdateLastTimeSlot(ctx context.Context, username string, previousValue, newValue int64) error
-}
 
 const (
 	errOTPNotValid  = "The OTP is not valid"

@@ -13,8 +13,8 @@ import (
 	"github.com/brocaar/lorawan"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // MigrateGatewayStats imports the gateway stats from the network-server.
@@ -69,7 +69,7 @@ func migrateGatewayStatsForGatewayID(handler *store.Handler, gatewayID lorawan.E
 		return errors.Wrap(err, "update gateway error")
 	}
 
-	metricsStruct := storage.GetMetricsSettings()
+	metricsStruct := metricsmod.GetMetricsSettings()
 	if err := migrateGatewayStatsForGatewayIDInterval(nsClient, gatewayID, ns.AggregationInterval_MINUTE, time.Now().Add(-metricsStruct.Redis.MinuteAggregationTTL), time.Now()); err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func migrateGatewayStatsForGatewayIDInterval(nsClient ns.NetworkServerServiceCli
 			return err
 		}
 
-		err = storage.SaveMetricsForInterval(context.Background(), storage.AggregationInterval(interval.String()), fmt.Sprintf("gw:%s", gatewayID), storage.MetricsRecord{
+		err = metricsmod.SaveMetricsForInterval(context.Background(), metricsmod.AggregationInterval(interval.String()), fmt.Sprintf("gw:%s", gatewayID), metricsmod.MetricsRecord{
 			Time: ts,
 			Metrics: map[string]float64{
 				"rx_count":    float64(m.RxPacketsReceived),

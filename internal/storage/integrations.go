@@ -3,15 +3,16 @@ package storage
 import (
 	"context"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
+	apps "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Integration represents an integration.
-type Integration store.Integration
+type Integration apps.Integration
 
 // CreateIntegration creates the given Integration.
 func CreateIntegration(ctx context.Context, handler *store.Handler, i *Integration) error {
-	return handler.CreateIntegration(ctx, (*store.Integration)(i))
+	return handler.CreateIntegration(ctx, (*apps.Integration)(i))
 }
 
 // GetIntegration returns the Integration for the given id.
@@ -46,7 +47,7 @@ func GetIntegrationsForApplicationID(ctx context.Context, handler *store.Handler
 
 // UpdateIntegration updates the given Integration.
 func UpdateIntegration(ctx context.Context, handler *store.Handler, i *Integration) error {
-	return handler.UpdateIntegration(ctx, (*store.Integration)(i))
+	return handler.UpdateIntegration(ctx, (*apps.Integration)(i))
 }
 
 // DeleteIntegration deletes the integration matching the given id.

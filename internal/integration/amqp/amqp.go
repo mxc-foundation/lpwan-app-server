@@ -16,6 +16,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/marshaler"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration/models"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+
+	. "github.com/mxc-foundation/lpwan-app-server/internal/integration/amqp/data"
 )
 
 // Integration implements an AMQP integration.
@@ -24,12 +26,6 @@ type Integration struct {
 
 	marshaler       marshaler.Type
 	eventRoutingKey *template.Template
-}
-
-// IntegrationAMQPConfig holds the AMQP integration configuration.
-type IntegrationAMQPConfig struct {
-	URL                     string `mapstructure:"url"`
-	EventRoutingKeyTemplate string `mapstructure:"event_routing_key_template"`
 }
 
 // New creates a new AMQP integration.

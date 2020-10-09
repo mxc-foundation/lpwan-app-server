@@ -10,7 +10,6 @@ import (
 	"github.com/apex/log"
 	"github.com/brocaar/chirpstack-api/go/v3/as"
 	"github.com/brocaar/lorawan"
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/lib/pq/hstore"
 	"github.com/pkg/errors"
@@ -23,10 +22,9 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/events/uplink"
 	"github.com/mxc-foundation/lpwan-app-server/internal/gwping"
 	"github.com/mxc-foundation/lpwan-app-server/internal/integration"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/store"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage"
+	dev "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
+	metricsmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/metrics"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // ApplicationServerAPI implements the as.ApplicationServerServer interface.
@@ -55,13 +53,13 @@ func (a *ApplicationServerAPI) HandleDownlinkACK(ctx context.Context, req *as.Ha
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := device.GetDevice(ctx, devEUI, false)
+	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
-	app, err := application.GetApplication(ctx, d.ApplicationID)
+	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -109,13 +107,13 @@ func (a *ApplicationServerAPI) HandleTxAck(ctx context.Context, req *as.HandleTx
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := device.GetDevice(ctx, devEUI, false)
+	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
-	app, err := application.GetApplication(ctx, d.ApplicationID)
+	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -162,14 +160,14 @@ func (a *ApplicationServerAPI) HandleError(ctx context.Context, req *as.HandleEr
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	d, err := device.GetDevice(ctx, devEUI, false)
+	d, err := a.st.GetDevice(ctx, devEUI, false)
 	if err != nil {
 		errStr := fmt.Sprintf("get device error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	app, err := application.GetApplication(ctx, d.ApplicationID)
+	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		errStr := fmt.Sprintf("get application error: %s", err)
 		log.WithField("id", d.ApplicationID).Error(errStr)
@@ -255,7 +253,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	var d store.Device
+	var d dev.Device
 	var err error
 
 	err = a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
@@ -288,7 +286,7 @@ func (a *ApplicationServerAPI) SetDeviceStatus(ctx context.Context, req *as.SetD
 		return nil, err
 	}
 
-	app, err := application.GetApplication(ctx, d.ApplicationID)
+	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "get application error"))
 	}
@@ -336,7 +334,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 	var devEUI lorawan.EUI64
 	copy(devEUI[:], req.DevEui)
 
-	var d store.Device
+	var d dev.Device
 	var err error
 
 	err = a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
@@ -359,7 +357,7 @@ func (a *ApplicationServerAPI) SetDeviceLocation(ctx context.Context, req *as.Se
 		return nil, err
 	}
 
-	app, err := application.GetApplication(ctx, d.ApplicationID)
+	app, err := a.st.GetApplication(ctx, d.ApplicationID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "get application error"))
 	}
@@ -401,24 +399,9 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 	var gatewayID lorawan.EUI64
 	copy(gatewayID[:], req.GatewayId)
 
-	ts, err := ptypes.Timestamp(req.Time)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(errors.Wrap(err, "time error"))
-	}
+	ts := time.Now()
 
-	if diff := time.Since(ts); diff > time.Minute || diff < -time.Minute {
-		log.WithFields(log.Fields{
-			"gatewayID":   gatewayID.String(),
-			"gatewayTime": ts.Format(time.RFC3339),
-			"appsrvTime":  time.Now().Format(time.RFC3339),
-		}).Warn("time difference with gateway")
-	}
-	log.WithFields(log.Fields{
-		"gatewayID": gatewayID.String(),
-		"time":      ts.Format(time.RFC3339),
-	}).Info("processing gateway stats")
-
-	err = a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+	err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		gw, err := handler.GetGateway(ctx, gatewayID, true)
 		if err != nil {
 			return helpers.ErrToRPCError(errors.Wrap(err, "get gateway error"))
@@ -452,7 +435,7 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 		return nil, err
 	}
 
-	metrics := storage.MetricsRecord{
+	metrics := metricsmod.MetricsRecord{
 		Time: ts,
 		Metrics: map[string]float64{
 			"rx_count":    float64(req.RxPacketsReceived),
@@ -461,7 +444,7 @@ func (a *ApplicationServerAPI) HandleGatewayStats(ctx context.Context, req *as.H
 			"tx_ok_count": float64(req.TxPacketsEmitted),
 		},
 	}
-	if err := storage.SaveMetrics(ctx, fmt.Sprintf("gw:%s", gatewayID), metrics); err != nil {
+	if err := metricsmod.SaveMetrics(ctx, fmt.Sprintf("gw:%s", gatewayID), metrics); err != nil {
 		return nil, helpers.ErrToRPCError(errors.Wrap(err, "save metrics error"))
 	}
 

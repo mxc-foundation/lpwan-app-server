@@ -2,20 +2,15 @@ package authentication
 
 import (
 	"context"
+
 	"github.com/pkg/errors"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-)
 
-// Store provides access to information about users and their roles
-type Store interface {
-	// GetUser returns user's information given that there is an active user
-	// with the given username
-	GetUser(ctx context.Context, username string) (User, error)
-	// GetOrgUser returns user's role in the listed organization
-	GetOrgUser(ctx context.Context, userID int64, orgID int64) (OrgUser, error)
-}
+	. "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	. "github.com/mxc-foundation/lpwan-app-server/internal/authentication/store"
+)
 
 /*// Credentials provides methods to assert the user's Credentials
 type Credentials interface {
@@ -159,13 +154,13 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		// and user registration process should be fixed to not require this hack
 		cred.h = c.h
 		cred.user.ID = -1
-		cred.user.UserEmail = jwtClaims.Username
+		cred.user.Email = jwtClaims.Username
 		cred.user.IsGlobalAdmin = false
 
 	} else {
 		cred.h = c.h
 		cred.user.ID = u.ID
-		cred.user.UserEmail = jwtClaims.Username
+		cred.user.Email = jwtClaims.Username
 		cred.user.IsGlobalAdmin = u.IsGlobalAdmin
 	}
 
@@ -198,7 +193,7 @@ func (c *Credentials) Username(ctx context.Context, opts ...Option) (string, err
 		return "", errors.Wrap(err, "failed to get credentials")
 	}
 
-	return cred.user.UserEmail, nil
+	return cred.user.Email, nil
 }
 
 // UserID returns user id of the user
