@@ -49,10 +49,6 @@ func Setup(name string, h *store.Handler) error {
 		ctrl.moduleUp = true
 	}()
 
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
-
 	downChan := integration.ForApplicationID(0).DataDownChan()
 	go HandleDataDownPayloads(downChan, store.NewStore())
 

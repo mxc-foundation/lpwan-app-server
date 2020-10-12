@@ -1,9 +1,6 @@
 package fuotamod
 
 import (
-	"errors"
-	"fmt"
-
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -37,9 +34,6 @@ func Setup(name string, h *store.Handler) error {
 		ctrl.moduleUp = true
 	}()
 
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 	ctrl.st = h
 
 	return nil

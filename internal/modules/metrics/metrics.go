@@ -58,10 +58,6 @@ type controller struct {
 var ctrl *controller
 
 func SettingsSetup(name string, s config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
-
 	ctrl = &controller{
 		timeLocation: time.Local,
 		metrics:      s.Metrics,

@@ -1,8 +1,6 @@
 package networkserver_portal
 
 import (
-	"fmt"
-
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	"github.com/brocaar/lorawan"
@@ -37,9 +35,6 @@ type controller struct {
 var ctrl *controller
 
 func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	appServerID, err := uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
@@ -61,10 +56,6 @@ func Setup(name string, h *store.Handler) error {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	if err := nscliLegacy.Setup(); err != nil {
 		return err

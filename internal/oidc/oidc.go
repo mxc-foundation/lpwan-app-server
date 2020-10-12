@@ -48,9 +48,6 @@ var ctrl *controller
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl = &controller{
 		name:      moduleName,

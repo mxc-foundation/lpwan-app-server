@@ -2,8 +2,6 @@ package redis
 
 import (
 	"errors"
-	"fmt"
-
 	"github.com/go-redis/redis/v7"
 	log "github.com/sirupsen/logrus"
 
@@ -28,9 +26,6 @@ var ctrl *controller
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, s config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl = &controller{
 		redis: s.Redis,

@@ -1,7 +1,6 @@
 package gatewayprofile
 
 import (
-	"fmt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
@@ -44,10 +43,6 @@ func Setup(name string, h *store.Handler) error {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl.st = h
 

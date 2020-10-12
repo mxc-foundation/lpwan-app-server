@@ -2,8 +2,6 @@ package multicast
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/brocaar/lorawan"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -49,9 +47,6 @@ func Setup(name string, h *store.Handler) error {
 		ctrl.moduleUp = true
 	}()
 
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 	ctrl.st = h
 
 	return nil

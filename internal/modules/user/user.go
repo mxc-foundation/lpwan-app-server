@@ -1,11 +1,7 @@
 package user
 
 import (
-	"fmt"
-
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
-	"github.com/pkg/errors"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
@@ -30,10 +26,6 @@ var ctrl *controller
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
-
 	ctrl = &controller{
 		s: Config{
 			Recaptcha:      conf.Recaptcha,
@@ -52,9 +44,6 @@ func Setup(name string, h *store.Handler) (err error) {
 		ctrl.moduleUp = true
 	}()
 
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 	ctrl.st = h
 
 	return nil

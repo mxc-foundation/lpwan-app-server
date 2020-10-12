@@ -1,9 +1,6 @@
 package serverinfo
 
 import (
-	"errors"
-	"fmt"
-
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
@@ -36,10 +33,6 @@ func Setup(name string, h *store.Handler) error {
 		ctrl.moduleUp = true
 	}()
 
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
-
 	ctrl.st = h
 
 	return nil
@@ -51,9 +44,6 @@ func GetSettings() GeneralSettingsStruct {
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) (err error) {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl = &controller{
 		name:    moduleName,

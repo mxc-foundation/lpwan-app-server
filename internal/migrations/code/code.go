@@ -2,7 +2,6 @@ package code
 
 import (
 	"context"
-	"fmt"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
@@ -34,10 +33,6 @@ type controller struct {
 var ctrl *controller
 
 func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
-
 	ctrl = &controller{
 		name:        moduleName,
 		autoMigrate: conf.PostgreSQL.Automigrate,
@@ -53,10 +48,6 @@ func Setup(name string, h *store.Handler) error {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl.st = h
 	if ctrl.autoMigrate {

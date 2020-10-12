@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -44,10 +43,6 @@ var ctrl *controller
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
-
 	ctrl = &controller{
 		name: moduleName,
 		s:    conf.JoinServer,
@@ -66,10 +61,6 @@ func Setup(name string, h *store.Handler) error {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	log.WithFields(log.Fields{
 		"bind":     ctrl.s.Bind,

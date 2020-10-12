@@ -1,7 +1,6 @@
 package as
 
 import (
-	"fmt"
 	"net"
 
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
@@ -39,9 +38,6 @@ var ctrl *controller
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl = &controller{
 		name: moduleName,
@@ -58,10 +54,6 @@ func Setup(name string, h *store.Handler) error {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl.st = h
 

@@ -66,10 +66,6 @@ var ctrl *controller
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) (err error) {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
-
 	ctrl = &controller{
 		name:         moduleName,
 		s:            conf.ApplicationServer.ExternalAPI,
@@ -103,10 +99,6 @@ func Setup(name string, h *store.Handler) (err error) {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("intend to call Setup function for %s, actually calling %s", name, moduleName))
-	}
 
 	// Bind external api port to listen to requests to all services
 	grpcOpts := helpers.GetgRPCServerOptions()

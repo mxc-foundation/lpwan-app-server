@@ -1,8 +1,6 @@
 package monitoring
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
@@ -36,9 +34,6 @@ type controller struct {
 var ctrl *controller
 
 func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl = &controller{
 		name: moduleName,
@@ -55,10 +50,6 @@ func Setup(name string, h *store.Handler) error {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	if ctrl.s.Bind != "" {
 		if err := setupNew(); err != nil {

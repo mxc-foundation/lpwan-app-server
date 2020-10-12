@@ -1,12 +1,10 @@
 package organization
 
 import (
-	"fmt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
-	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
@@ -39,10 +37,6 @@ func Setup(name string, h *store.Handler) error {
 	defer func() {
 		ctrl.moduleUp = true
 	}()
-
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
 
 	ctrl.st = h
 
