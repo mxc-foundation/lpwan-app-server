@@ -29,6 +29,8 @@ const moduleName = "monitoring"
 type controller struct {
 	name string
 	s    MonitoringStruct
+
+	moduleUp bool
 }
 
 var ctrl *controller
@@ -47,14 +49,30 @@ func SettingsSetup(name string, conf config.Config) error {
 
 // Setup setsup the metrics server.
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
 
 	if ctrl.s.Bind != "" {
-		return setupNew()
+		if err := setupNew(); err != nil {
+			return err
+		}
+
+		return nil
 	}
-	return setupLegacy()
+
+	if err := setupLegacy(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func setupNew() error {

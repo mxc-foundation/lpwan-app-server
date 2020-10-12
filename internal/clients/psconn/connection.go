@@ -36,6 +36,8 @@ type controller struct {
 	name               string
 	p                  Pool
 	provisioningServer ProvisioningServerStruct
+
+	moduleUp bool
 }
 
 // Pool defines a set of interfaces to operate with internal resource
@@ -70,12 +72,23 @@ func SettingsSetup(name string, conf config.Config) error {
 
 // Setup initialize module on start
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
 
 	ctrl.p = &pool{
 		provisioningServerClients: make(map[string]provisioningServerClient),
+	}
+
+	if _, err := ctrl.p.get(); err != nil {
+		return err
 	}
 
 	return nil

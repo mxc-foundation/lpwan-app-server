@@ -31,6 +31,8 @@ type controller struct {
 	name string
 	st   *store.Handler
 	s    AppserverStruct
+
+	moduleUp bool
 }
 
 var ctrl *controller
@@ -50,6 +52,13 @@ func SettingsSetup(name string, conf config.Config) error {
 
 // Setup configures the package.
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
@@ -78,7 +87,9 @@ func Setup(name string, h *store.Handler) error {
 	if err != nil {
 		return errors.Wrap(err, "start application-server api listener error")
 	}
-	go server.Serve(ln)
+	go func() {
+		_ = server.Serve(ln)
+	}()
 
 	return nil
 }

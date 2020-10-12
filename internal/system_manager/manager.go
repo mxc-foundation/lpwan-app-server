@@ -1,11 +1,11 @@
 package system_manager
 
 import (
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-
+	"fmt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type SettingsSetupFunc func(string, config.Config) error
@@ -43,7 +43,7 @@ func SetupSystemSettings(conf config.Config) error {
 
 func SetupSystemModules() error {
 	if _, ok := moduleSetupCallbackFunc["storage"]; !ok {
-		return errors.New("storage setup function is not found")
+		return errors.New(fmt.Sprintf("setup function is not found for %s", "storage"))
 	}
 
 	f := moduleSetupCallbackFunc["storage"]
@@ -51,11 +51,19 @@ func SetupSystemModules() error {
 		return err
 	}
 
-	for n, f := range moduleSetupCallbackFunc {
-		if n == "storage" {
-			continue
+	criticalStartUpList := []string{"migrations", "mxp_portal", "network_server", "provisioning_server_portal"}
+	for _, v := range criticalStartUpList {
+		if _, ok := moduleSetupCallbackFunc[v]; !ok {
+			return errors.New(fmt.Sprintf("setup function is not found for %s", v))
 		}
 
+		f := moduleSetupCallbackFunc[v]
+		if err := (*f)(v, store.NewStore()); err != nil {
+			return err
+		}
+	}
+
+	for n, f := range moduleSetupCallbackFunc {
 		if err := (*f)(n, store.NewStore()); err != nil {
 			return err
 		}

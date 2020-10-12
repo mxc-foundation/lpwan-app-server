@@ -53,6 +53,8 @@ type controller struct {
 	bindPortNewGateway string
 	serverAddr         string
 	conf               GatewayBindStruct
+
+	moduleUp bool
 }
 
 var ctrl *controller
@@ -87,6 +89,13 @@ func SettingsSetup(name string, s config.Config) error {
 }
 
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
@@ -114,7 +123,11 @@ func Setup(name string, h *store.Handler) error {
 		return err
 	}
 
-	return ctrl.updateFirmwareFromProvisioningServer(context.Background())
+	if err := ctrl.updateFirmwareFromProvisioningServer(context.Background()); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error {

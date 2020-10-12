@@ -27,6 +27,8 @@ type controller struct {
 	// HashIterations denfines the number of times a password is hashed.
 	HashIterations      int
 	applicationServerID uuid.UUID
+
+	moduleUp bool
 }
 
 type SettingStruct struct {
@@ -52,7 +54,7 @@ func SettingsSetup(name string, conf config.Config) error {
 		return errors.Wrap(err, "decode application_server.id error")
 	}
 
-	if err := pgstore.SettingsSetup(moduleName, conf); err != nil {
+	if err := pgstore.SettingsSetup(conf); err != nil {
 		return err
 	}
 	return nil
@@ -60,10 +62,17 @@ func SettingsSetup(name string, conf config.Config) error {
 
 // Setup configures the storage package.
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
 
+	// redis client is set up in metrics setup function
 	if err := metrics.Setup(); err != nil {
 		return err
 	}

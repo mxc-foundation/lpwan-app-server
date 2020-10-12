@@ -1,23 +1,18 @@
 package pgstore
 
 import (
-	"fmt"
 	"time"
 
 	// register postgresql driver
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
-	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
 	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore/data"
 )
-
-const moduleName = "storage"
 
 type dbsql struct {
 	*sqlx.DB
@@ -31,10 +26,7 @@ type controller struct {
 
 var ctrl *controller
 
-func SettingsSetup(name string, conf config.Config) error {
-	if name != moduleName {
-		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
-	}
+func SettingsSetup(conf config.Config) error {
 	var err error
 
 	// set up pgstore settings
@@ -75,20 +67,6 @@ func Setup() error {
 	}
 
 	ctrl.db = dbsql{d}
-
-	if ctrl.s.Automigrate {
-		log.Info("storage: applying PostgreSQL data migrations")
-		m := &migrate.AssetMigrationSource{
-			Asset:    migrations.Asset,
-			AssetDir: migrations.AssetDir,
-			Dir:      "",
-		}
-		n, err := migrate.Exec(ctrl.db.DB.DB, "postgres", m, migrate.Up)
-		if err != nil {
-			return errors.Wrap(err, "storage: applying PostgreSQL data migrations error")
-		}
-		log.WithField("count", n).Info("storage: PostgreSQL data migrations applied")
-	}
 
 	return nil
 }

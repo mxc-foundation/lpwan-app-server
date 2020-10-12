@@ -58,6 +58,8 @@ type controller struct {
 	recaptcha           user.RecaptchaStruct
 	enable2FA           bool
 	serverRegion        string
+
+	moduleUp bool
 }
 
 var ctrl *controller
@@ -95,6 +97,13 @@ func GetOTPSecret() string {
 
 // Setup configures the API endpoints.
 func Setup(name string, h *store.Handler) (err error) {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("intend to call Setup function for %s, actually calling %s", name, moduleName))
 	}

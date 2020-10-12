@@ -22,16 +22,26 @@ type controller struct {
 	name    string
 	st      *store.Handler
 	general GeneralSettingsStruct
+
+	moduleUp bool
 }
 
 var ctrl *controller
 
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
 
 	ctrl.st = h
+
 	return nil
 }
 

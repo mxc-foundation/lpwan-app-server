@@ -36,6 +36,8 @@ const moduleName = "join_server"
 type controller struct {
 	name string
 	s    JoinServerStruct
+
+	moduleUp bool
 }
 
 var ctrl *controller
@@ -58,6 +60,13 @@ func GetSettings() JoinServerStruct {
 
 // Setup configures the package.
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
@@ -85,6 +94,7 @@ func Setup(name string, h *store.Handler) error {
 			err := server.ListenAndServe()
 			log.WithError(err).Fatal("join-server api error")
 		}()
+
 		return nil
 	}
 

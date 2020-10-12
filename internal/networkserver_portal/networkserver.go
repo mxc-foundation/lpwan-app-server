@@ -30,6 +30,8 @@ type controller struct {
 	applicationServerID         uuid.UUID
 	p                           Pool
 	applicationServerPublicHost string
+
+	moduleUp bool
 }
 
 var ctrl *controller
@@ -53,6 +55,13 @@ func SettingsSetup(name string, conf config.Config) error {
 }
 
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}

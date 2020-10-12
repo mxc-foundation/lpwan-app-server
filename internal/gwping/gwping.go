@@ -34,9 +34,18 @@ const moduleName = "gwping"
 
 var ctrl struct {
 	handler *store.Handler
+
+	moduleUp bool
 }
 
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
@@ -44,6 +53,7 @@ func Setup(name string, h *store.Handler) error {
 	ctrl.handler = h
 
 	go SendPingLoop()
+
 	return nil
 }
 

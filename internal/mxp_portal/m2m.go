@@ -32,6 +32,8 @@ type controller struct {
 	mxpServer MxprotocolServerStruct
 	name      string
 	p         Pool
+
+	moduleUp bool
 }
 
 var ctrl *controller
@@ -52,6 +54,13 @@ func SettingsSetup(name string, conf config.Config) error {
 
 // Setup :
 func Setup(name string, h *store.Handler) error {
+	if ctrl.moduleUp == true {
+		return nil
+	}
+	defer func() {
+		ctrl.moduleUp = true
+	}()
+
 	if name != moduleName {
 		return errors.New(fmt.Sprintf("Calling SettingsSetup for %s, but %s is called", name, moduleName))
 	}
@@ -67,6 +76,10 @@ func Setup(name string, h *store.Handler) error {
 		ctrl.mxpCli.CACert,
 		ctrl.mxpCli.TLSCert,
 		ctrl.mxpCli.TLSKey); err != nil {
+		return err
+	}
+
+	if _, err := ctrl.p.get(); err != nil {
 		return err
 	}
 
