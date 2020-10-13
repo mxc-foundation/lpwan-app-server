@@ -2,20 +2,27 @@ package code
 
 import (
 	"context"
+	log "github.com/sirupsen/logrus"
 	"sort"
 
 	"github.com/pkg/errors"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
+	pgerr "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
 // MigrateGorpMigrations must be called before db migration in pgstore/db.go
 func MigrateGorpMigrations(handler *store.Handler) error {
 	ctx := context.Background()
-
 	itemList, err := handler.GetAllFromGorpMigrations(ctx)
 	if err != nil {
+		if err == pgerr.ErrEmptyGorpMigrations {
+			log.Info("gorp_migrations table does not exist, no need to run migrate_gorp_migrations")
+			return nil
+		}
+
 		return errors.Wrap(err, "failed to get item list of gorp_migrations table")
 	}
 

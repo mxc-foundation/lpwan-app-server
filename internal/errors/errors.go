@@ -31,6 +31,7 @@ const (
 
 // errors
 var (
+	ErrEmptyGorpMigrations             = errors.New("gorp_migrations table does not exist")
 	ErrAlreadyExists                   = errors.New("object already exists")
 	ErrDoesNotExist                    = errors.New("object does not exist")
 	ErrUsedByOtherObjects              = errors.New("this object is used by other objects, remove them first")

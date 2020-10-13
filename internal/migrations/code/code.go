@@ -54,8 +54,9 @@ func Setup(name string, h *store.Handler) error {
 
 	ctrl.st = h
 	if ctrl.autoMigrate {
-		if err := Migrate("migrate_gorp_migrations", ctrl.st, MigrateGorpMigrations); err != nil {
-			log.Fatal(err, "fix gorp_migrations table error")
+
+		if err := MigrateGorpMigrations(ctrl.st); err != nil {
+			log.Fatal(err, " fix gorp_migrations table error")
 		}
 
 		log.Info("applying PostgreSQL data migrations")

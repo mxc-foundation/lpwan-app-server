@@ -11,6 +11,8 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	migrate "github.com/rubenv/sql-migrate"
+	
+	pgerr "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
 type MigrateCodePgStore interface {
@@ -53,8 +55,15 @@ func (ps *pgstore) FixGorpMigrationsItemId(ctx context.Context, oldID, newID str
 }
 
 func (ps *pgstore) GetAllFromGorpMigrations(ctx context.Context) ([]string, error) {
+	_, err := ps.db.ExecContext(ctx, `
+		select exists ( select from gorp_migrations)
+	`)
+	if err != nil {
+		return nil, pgerr.ErrEmptyGorpMigrations
+	}
+
 	var items []string
-	err := sqlx.SelectContext(ctx, ps.db, &items, `
+	err = sqlx.SelectContext(ctx, ps.db, &items, `
 		select
 			id
 		from
