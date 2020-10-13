@@ -2,7 +2,6 @@ package code
 
 import (
 	"context"
-
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 
@@ -14,6 +13,7 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
+	pgerr "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/migrations"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -24,6 +24,10 @@ func init() {
 }
 
 const moduleName = "migrations"
+const (
+	migrateGatewayStats  = "migrate_gw_stats"
+	migrateToClusterKeys = "migrate_to_cluster_keys"
+)
 
 type controller struct {
 	name        string
@@ -75,11 +79,11 @@ func Setup(name string, h *store.Handler) error {
 		return err
 	}
 
-	if err := Migrate("migrate_gw_stats", ctrl.st, MigrateGatewayStats); err != nil {
+	if err := Migrate(migrateGatewayStats, ctrl.st, MigrateGatewayStats); err != nil {
 		log.Fatal(errors.Wrap(err, "migration error"))
 	}
 
-	if err := Migrate("migrate_to_cluster_keys", ctrl.st, func(handler *store.Handler) error {
+	if err := Migrate(migrateToClusterKeys, ctrl.st, func(handler *store.Handler) error {
 		return MigrateToClusterKeys(config.C)
 	}); err != nil {
 		log.Fatal(err)
@@ -93,6 +97,9 @@ func Migrate(name string, hander *store.Handler, f func(handler *store.Handler) 
 	return hander.Tx(context.Background(), func(ctx context.Context, handler *store.Handler) error {
 		err := handler.Migrate(ctx, name)
 		if err != nil {
+			if err == pgerr.ErrAlreadyExists {
+				return nil
+			}
 			return err
 		}
 

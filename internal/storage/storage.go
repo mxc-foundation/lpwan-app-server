@@ -29,11 +29,6 @@ type controller struct {
 	moduleUp bool
 }
 
-type SettingStruct struct {
-	JWTSecret           string
-	ApplicationServerID string
-}
-
 var ctrl *controller
 
 // SettingsSetup initialize module settings on start

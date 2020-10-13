@@ -178,13 +178,13 @@ func UpdateServiceProfile(ctx context.Context, sp *ServiceProfile) error {
 // DeleteServiceProfile deletes the service-profile matching the given id.
 func DeleteServiceProfile(ctx context.Context, id uuid.UUID) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		if err := handler.DeleteServiceProfile(ctx, id); err != nil {
-			return err
-		}
-
 		n, err := handler.GetNetworkServerForServiceProfileID(ctx, id)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
+		}
+
+		if err := handler.DeleteServiceProfile(ctx, id); err != nil {
+			return err
 		}
 
 		nsStruct := nscli.NSStruct{

@@ -11,7 +11,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/pkg/errors"
 	migrate "github.com/rubenv/sql-migrate"
-	
+
 	pgerr "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
@@ -80,6 +80,13 @@ func (ps *pgstore) Migrate(ctx context.Context, name string) error {
 	_, err := ps.db.ExecContext(ctx, `lock table code_migration`)
 	if err != nil {
 		return errors.Wrap(err, "lock code migration table error")
+	}
+
+	row := ps.db.QueryRowxContext(ctx, `
+		select * from code_migration where id = $1
+	`, name)
+	if row.Err() == nil {
+		return pgerr.ErrAlreadyExists
 	}
 
 	res, err := ps.db.ExecContext(ctx, `

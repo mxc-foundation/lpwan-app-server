@@ -165,6 +165,11 @@ func CreateDevice(ctx context.Context, d *Device, app *appd.Application, applica
 
 func DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+		n, err := handler.GetNetworkServerForDevEUI(ctx, devEUI)
+		if err != nil {
+			return errors.Wrap(err, "get network-server error")
+		}
+
 		if err := handler.DeleteDevice(ctx, devEUI); err != nil {
 			return err
 		}
@@ -183,11 +188,6 @@ func DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
 		if err != nil && status.Code(err) != codes.NotFound {
 			log.WithError(err).Error("m2m-server delete device api error")
 			return err
-		}
-
-		n, err := handler.GetNetworkServerForDevEUI(ctx, devEUI)
-		if err != nil {
-			return errors.Wrap(err, "get network-server error")
 		}
 
 		// delete device from networkserver

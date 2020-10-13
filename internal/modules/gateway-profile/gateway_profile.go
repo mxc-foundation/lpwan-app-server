@@ -181,13 +181,13 @@ func UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
 // DeleteGatewayProfile deletes the gateway-profile matching the given id.
 func DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		if err := handler.DeleteGatewayProfile(ctx, id); err != nil {
-			return err
-		}
-
 		n, err := handler.GetNetworkServerForGatewayProfileID(ctx, id)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
+		}
+
+		if err := handler.DeleteGatewayProfile(ctx, id); err != nil {
+			return err
 		}
 
 		nsStruct := nscli.NSStruct{
