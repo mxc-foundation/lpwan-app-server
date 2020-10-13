@@ -2,6 +2,7 @@ package multicast
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

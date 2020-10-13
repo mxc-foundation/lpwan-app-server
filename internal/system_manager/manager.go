@@ -2,10 +2,12 @@ package system_manager
 
 import (
 	"fmt"
-	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 type SettingsSetupFunc func(string, config.Config) error

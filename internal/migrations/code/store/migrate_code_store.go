@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+
 	migrate "github.com/rubenv/sql-migrate"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"

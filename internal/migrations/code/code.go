@@ -2,8 +2,11 @@ package code
 
 import (
 	"context"
+
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
@@ -65,6 +68,10 @@ func Setup(name string, h *store.Handler) error {
 		if err := ctrl.st.ExecuteMigrateUp(m); err != nil {
 			log.Fatal(err, "faile to migrate postgresql data")
 		}
+	}
+
+	if err := networkserver.Setup(); err != nil {
+		return err
 	}
 
 	if err := Migrate("migrate_gw_stats", ctrl.st, MigrateGatewayStats); err != nil {

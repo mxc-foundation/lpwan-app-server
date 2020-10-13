@@ -2,6 +2,7 @@ package downlink
 
 import (
 	"fmt"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 
 	"github.com/gofrs/uuid"

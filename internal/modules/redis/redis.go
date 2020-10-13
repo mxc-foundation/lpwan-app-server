@@ -2,6 +2,7 @@ package redis
 
 import (
 	"errors"
+
 	"github.com/go-redis/redis/v7"
 	log "github.com/sirupsen/logrus"
 

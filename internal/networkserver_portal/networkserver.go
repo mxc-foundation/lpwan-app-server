@@ -12,8 +12,6 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
-	nscliLegacy "github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 )
 
 func init() {
@@ -57,9 +55,9 @@ func Setup(name string, h *store.Handler) error {
 		ctrl.moduleUp = true
 	}()
 
-	if err := nscliLegacy.Setup(); err != nil {
+	/*	if err := nscliLegacy.Setup(); err != nil {
 		return err
-	}
+	}*/
 
 	ctrl.st = h
 	ctrl.p = &pool{
