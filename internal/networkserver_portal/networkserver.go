@@ -169,13 +169,13 @@ func UpdateNetworkServer(ctx context.Context, n *NetworkServer) error {
 
 func DeleteNetworkServer(ctx context.Context, id int64) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		if err := handler.DeleteNetworkServer(ctx, id); err != nil {
-			return err
-		}
-
 		n, err := handler.GetNetworkServer(ctx, id)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
+		}
+
+		if err := handler.DeleteNetworkServer(ctx, id); err != nil {
+			return err
 		}
 
 		nsStruct := NSStruct{

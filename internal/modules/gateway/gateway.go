@@ -307,6 +307,11 @@ func DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 			return errors.Wrap(err, "get gateway error")
 		}
 
+		n, err := handler.GetNetworkServerForGatewayMAC(ctx, mac)
+		if err != nil {
+			return errors.Wrap(err, "get network-server error")
+		}
+
 		if err := handler.DeleteGateway(ctx, obj.MAC); err != nil {
 			return err
 		}
@@ -322,11 +327,6 @@ func DeleteGateway(ctx context.Context, mac lorawan.EUI64) error {
 		})
 		if err != nil && status.Code(err) != codes.NotFound {
 			log.WithError(err).Error("delete gateway from m2m-server error")
-		}
-
-		n, err := handler.GetNetworkServerForGatewayMAC(ctx, mac)
-		if err != nil {
-			return errors.Wrap(err, "get network-server error")
 		}
 
 		nsStruct := nscli.NSStruct{

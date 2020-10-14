@@ -177,13 +177,13 @@ func UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
 // DeleteMulticastGroup deletes a multicast-group given an id.
 func DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		if err := handler.DeleteMulticastGroup(ctx, id); err != nil {
-			return err
-		}
-
 		n, err := handler.GetNetworkServerForMulticastGroupID(ctx, id)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
+		}
+
+		if err := handler.DeleteMulticastGroup(ctx, id); err != nil {
+			return err
 		}
 		nsStruct := nscli.NSStruct{
 			Server:  n.Server,

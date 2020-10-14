@@ -132,13 +132,13 @@ func UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
 // DeleteDeviceProfile deletes the device-profile matching the given id.
 func DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		if err := handler.DeleteDeviceProfile(ctx, id); err != nil {
-			return err
-		}
-
 		n, err := handler.GetNetworkServerForDeviceProfileID(ctx, id)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")
+		}
+
+		if err := handler.DeleteDeviceProfile(ctx, id); err != nil {
+			return err
 		}
 
 		nsStruct := nscli.NSStruct{
