@@ -21,7 +21,7 @@ import (
 type GatewayProfilePgStore interface {
 	CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error)
 	CheckReadListGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error)
-	CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error
+	CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error)
 	GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error)
 	UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error
 	DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
@@ -86,10 +86,10 @@ func (ps *pgstore) CheckReadListGatewayProfileAccess(ctx context.Context, userna
 // CreateGatewayProfile creates the given gateway-profile.
 // This will create the gateway-profile at the network-server side and will
 // create a local reference record.
-func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error) {
 	gpID, err := uuid.NewV4()
 	if err != nil {
-		return errors.Wrap(err, "new uuid v4 error")
+		return uuid.UUID{}, errors.Wrap(err, "new uuid v4 error")
 	}
 
 	now := time.Now()
@@ -102,7 +102,7 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 	if gp.GatewayProfile.StatsInterval != nil {
 		statsInterval, err = ptypes.Duration(gp.GatewayProfile.StatsInterval)
 		if err != nil {
-			return errors.Wrap(err, "stats interval error")
+			return uuid.UUID{}, errors.Wrap(err, "stats interval error")
 		}
 	}
 
@@ -124,7 +124,7 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 		statsInterval,
 	)
 	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
+		return uuid.UUID{}, handlePSQLError(Insert, err, "insert error")
 	}
 
 	log.WithFields(log.Fields{
@@ -132,7 +132,7 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 		"ctx_id": ctx.Value(logging.ContextIDKey),
 	}).Info("gateway-profile created")
 
-	return nil
+	return gpID, nil
 }
 
 // GetGatewayProfile returns the gateway-profile matching the given id.

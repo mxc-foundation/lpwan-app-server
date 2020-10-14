@@ -20,7 +20,7 @@ type gwps struct {
 }
 
 type GatewayProfileStore interface {
-	CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error
+	CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error)
 	GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error)
 	UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error
 	DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
@@ -34,7 +34,7 @@ type GatewayProfileStore interface {
 	CheckReadListGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error)
 }
 
-func (h *gwps) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+func (h *gwps) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error) {
 	return h.pg.CreateGatewayProfile(ctx, gp)
 }
 func (h *gwps) GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error) {
@@ -49,6 +49,9 @@ func (h *gwps) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error {
 func (h *gwps) GetGatewayProfileCount(ctx context.Context) (int, error) {
 	return h.pg.GetGatewayProfileCount(ctx)
 }
+
+// GetGatewayProfileCountForNetworkServerID returns the total number of
+// gateway-profiles given a network-server ID.
 func (h *gwps) GetGatewayProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error) {
 	return h.pg.GetGatewayProfileCountForNetworkServerID(ctx, networkServerID)
 }

@@ -49,20 +49,13 @@ func Setup(name string, h *store.Handler) error {
 	return nil
 }
 
-func GetGatewayProfileCount(ctx context.Context) (int, error) {
-	return ctrl.st.GetGatewayProfileCount(ctx)
-}
-
-func GetGatewayProfiles(ctx context.Context, limit, offset int) ([]GatewayProfileMeta, error) {
-	return ctrl.st.GetGatewayProfiles(ctx, limit, offset)
-}
-
 // CreateGatewayProfile creates the given gateway-profile.
 // This will create the gateway-profile at the network-server side and will
 // create a local reference record.
-func CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+func CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (err error) {
 	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		if err := handler.CreateGatewayProfile(ctx, gp); err != nil {
+		var gpID uuid.UUID
+		if gpID, err = handler.CreateGatewayProfile(ctx, gp); err != nil {
 			return err
 		}
 
@@ -82,6 +75,7 @@ func CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
 			return errors.Wrap(err, "get network-server client error")
 		}
 
+		gp.GatewayProfile.Id = gpID.Bytes()
 		_, err = nsClient.CreateGatewayProfile(ctx, &ns.CreateGatewayProfileRequest{
 			GatewayProfile: &gp.GatewayProfile,
 		})
