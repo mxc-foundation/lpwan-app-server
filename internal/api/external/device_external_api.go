@@ -137,7 +137,7 @@ func (a *DeviceAPI) Get(ctx context.Context, req *api.GetDeviceRequest) (*api.Ge
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := nscli.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	n, err := a.st.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -625,7 +625,7 @@ func (a *DeviceAPI) Deactivate(ctx context.Context, req *api.DeactivateDeviceReq
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := nscli.GetNetworkServerForDevEUI(ctx, d.DevEUI)
+	n, err := a.st.GetNetworkServerForDevEUI(ctx, d.DevEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -766,7 +766,7 @@ func (a *DeviceAPI) GetActivation(ctx context.Context, req *api.GetDeviceActivat
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	n, err := nscli.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := a.st.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -822,7 +822,7 @@ func (a *DeviceAPI) StreamFrameLogs(req *api.StreamDeviceFrameLogsRequest, srv a
 		return status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	n, err := nscli.GetNetworkServerForDevEUI(srv.Context(), devEUI)
+	n, err := a.st.GetNetworkServerForDevEUI(srv.Context(), devEUI)
 	if err != nil {
 		return helpers.ErrToRPCError(err)
 	}
@@ -931,7 +931,7 @@ func (a *DeviceAPI) GetRandomDevAddr(ctx context.Context, req *api.GetRandomDevA
 		return nil, status.Errorf(codes.InvalidArgument, "devEUI: %s", err)
 	}
 
-	n, err := nscli.GetNetworkServerForDevEUI(ctx, devEUI)
+	n, err := a.st.GetNetworkServerForDevEUI(ctx, devEUI)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

@@ -2,16 +2,13 @@ package networkserver_portal
 
 import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
-	"github.com/brocaar/lorawan"
 	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
-	"golang.org/x/net/context"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+	"github.com/pkg/errors"
+	"golang.org/x/net/context"
 )
 
 func init() {
@@ -55,10 +52,6 @@ func Setup(name string, h *store.Handler) error {
 		ctrl.moduleUp = true
 	}()
 
-	/*	if err := nscliLegacy.Setup(); err != nil {
-		return err
-	}*/
-
 	ctrl.st = h
 	ctrl.p = &pool{
 		nsClients: make(map[string]nsClient),
@@ -67,28 +60,9 @@ func Setup(name string, h *store.Handler) error {
 	return nil
 }
 
-// GetNetworkServerForDevEUI :
-func GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error) {
-	return ctrl.st.GetNetworkServerForDevEUI(ctx, devEUI)
-}
-
-// GetNetworkServer :
-func GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error) {
-	return ctrl.st.GetNetworkServer(ctx, id)
-}
-
-// GetNetworkServerForGatewayProfileID :
-func GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
-	return ctrl.st.GetNetworkServerForGatewayProfileID(ctx, id)
-}
-
-// GetNetworkServerForGatewayMAC :
-func GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error) {
-	return ctrl.st.GetNetworkServerForGatewayMAC(ctx, mac)
-}
-
-func CreateNetworkServer(ctx context.Context, n *NetworkServer) error {
-	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+// CreateNetworkServer :
+func CreateNetworkServer(ctx context.Context, n *NetworkServer, h *store.Handler) error {
+	if err := h.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		if err := handler.CreateNetworkServer(ctx, n); err != nil {
 			return err
 		}
@@ -104,11 +78,9 @@ func CreateNetworkServer(ctx context.Context, n *NetworkServer) error {
 			return errors.Wrap(err, "get network-server client error")
 		}
 
-		rpID := ctrl.applicationServerID
-
 		_, err = nsClient.CreateRoutingProfile(ctx, &ns.CreateRoutingProfileRequest{
 			RoutingProfile: &ns.RoutingProfile{
-				Id:      rpID.Bytes(),
+				Id:      ctrl.applicationServerID.Bytes(),
 				AsId:    ctrl.applicationServerPublicHost,
 				CaCert:  n.RoutingProfileCACert,
 				TlsCert: n.RoutingProfileTLSCert,
@@ -127,8 +99,8 @@ func CreateNetworkServer(ctx context.Context, n *NetworkServer) error {
 	return nil
 }
 
-func UpdateNetworkServer(ctx context.Context, n *NetworkServer) error {
-	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+func UpdateNetworkServer(ctx context.Context, n *NetworkServer, h *store.Handler) error {
+	if err := h.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		if err := handler.UpdateNetworkServer(ctx, n); err != nil {
 			return err
 		}
@@ -167,8 +139,8 @@ func UpdateNetworkServer(ctx context.Context, n *NetworkServer) error {
 	return nil
 }
 
-func DeleteNetworkServer(ctx context.Context, id int64) error {
-	if err := ctrl.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
+func DeleteNetworkServer(ctx context.Context, id int64, h *store.Handler) error {
+	if err := h.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		n, err := handler.GetNetworkServer(ctx, id)
 		if err != nil {
 			return errors.Wrap(err, "get network-server error")

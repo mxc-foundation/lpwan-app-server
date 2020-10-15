@@ -3,19 +3,12 @@ package external
 import (
 	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/brocaar/chirpstack-api/go/v3/ns"
-
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
-	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-	gatewayprofile "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
-
-	gws "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
@@ -33,81 +26,6 @@ func NewNetworkServerAPI(h *store.Handler) *NetworkServerAPI {
 	}
 }
 
-func (a *NetworkServerAPI) SetupDefault() error {
-	ctx := context.Background()
-	count, err := gatewayprofile.GetGatewayProfileCount(ctx)
-	if err != nil && err != errHandler.ErrDoesNotExist {
-		return errors.Wrap(err, "Failed to load gateway profiles")
-	}
-
-	if count != 0 {
-		// check if default gateway profile already exists
-		gpList, err := gatewayprofile.GetGatewayProfiles(ctx, count, 0)
-		if err != nil {
-			return errors.Wrap(err, "Failed to load gateway profiles")
-		}
-
-		for _, v := range gpList {
-			if v.Name == "default_gateway_profile" {
-				return nil
-			}
-		}
-	}
-
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		// none default_gateway_profile exists, add one
-		var networkServer NetworkServer
-		n, err := handler.GetNetworkServers(ctx, NetworkServerFilters{
-			Limit:  1,
-			Offset: 0,
-		})
-		if err != nil && err != errHandler.ErrDoesNotExist {
-			return errors.Wrap(err, "Load network server internal error")
-		}
-
-		if len(n) >= 1 {
-			networkServer = n[0]
-		} else {
-			// insert default one
-			err := handler.CreateNetworkServer(ctx, &NetworkServer{
-				Name:                    "default_network_server",
-				Server:                  "network-server:8000",
-				GatewayDiscoveryEnabled: false,
-			})
-
-			if err != nil {
-				return nil
-			}
-
-			// get network-server id
-			networkServer, err = handler.GetDefaultNetworkServer(ctx)
-			if err != nil {
-				return err
-			}
-		}
-
-		gp := gws.GatewayProfile{
-			NetworkServerID: networkServer.ID,
-			Name:            "default_gateway_profile",
-			GatewayProfile: ns.GatewayProfile{
-				Channels:      []uint32{0, 1, 2},
-				ExtraChannels: []*ns.GatewayProfileExtraChannel{},
-			},
-		}
-
-		err = handler.CreateGatewayProfile(ctx, &gp)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return status.Errorf(codes.Unknown, err.Error())
-	}
-
-	return nil
-}
-
 // Create creates the given network-server.
 func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServerRequest) (*pb.CreateNetworkServerResponse, error) {
 	if req.NetworkServer == nil {
@@ -117,9 +35,6 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 	if valid, err := nsmod.NewValidator().ValidateGlobalNetworkServersAccess(ctx, auth.Create, 0); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-
-	var region string
-	var version string
 
 	nStruct := &nsmod.NSStruct{
 		Server:  req.NetworkServer.Server,
@@ -133,10 +48,13 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 	}
 
 	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
-	if err == nil {
-		region = res.Region.String()
-		version = res.Version
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%s", err)
 	}
+
+	region := res.Region.String()
+	version := res.Version
+
 	networkServer := NetworkServer{
 		Name:                        req.NetworkServer.Name,
 		Server:                      req.NetworkServer.Server,
@@ -154,7 +72,7 @@ func (a *NetworkServerAPI) Create(ctx context.Context, req *pb.CreateNetworkServ
 		Version:                     version,
 	}
 
-	if err := nsmod.CreateNetworkServer(ctx, &networkServer); err != nil {
+	if err := nsmod.CreateNetworkServer(ctx, &networkServer, a.st); err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
@@ -174,26 +92,6 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
-	var region string
-	var version string
-
-	nStruct := &nsmod.NSStruct{
-		Server:  n.Server,
-		CACert:  n.CACert,
-		TLSCert: n.TLSCert,
-		TLSKey:  n.TLSKey,
-	}
-	nsClient, err := nStruct.GetNetworkServiceClient()
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%s", err)
-	}
-
-	res, err := nsClient.GetVersion(ctx, &empty.Empty{})
-	if err == nil {
-		region = res.Region.String()
-		version = res.Version
-	}
-
 	response := pb.GetNetworkServerResponse{
 		NetworkServer: &pb.NetworkServer{
 			Id:                          n.ID,
@@ -208,8 +106,8 @@ func (a *NetworkServerAPI) Get(ctx context.Context, req *pb.GetNetworkServerRequ
 			GatewayDiscoveryTxFrequency: uint32(n.GatewayDiscoveryTXFrequency),
 			GatewayDiscoveryDr:          uint32(n.GatewayDiscoveryDR),
 		},
-		Region:  region,
-		Version: version,
+		Region:  n.Region,
+		Version: n.Version,
 	}
 
 	response.CreatedAt, err = ptypes.TimestampProto(n.CreatedAt)
@@ -264,7 +162,7 @@ func (a *NetworkServerAPI) Update(ctx context.Context, req *pb.UpdateNetworkServ
 		networkServer.RoutingProfileTLSKey = ""
 	}
 
-	if err := nsmod.UpdateNetworkServer(ctx, &networkServer); err != nil {
+	if err := nsmod.UpdateNetworkServer(ctx, &networkServer, a.st); err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
@@ -277,7 +175,7 @@ func (a *NetworkServerAPI) Delete(ctx context.Context, req *pb.DeleteNetworkServ
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if err := nsmod.DeleteNetworkServer(ctx, req.Id); err != nil {
+	if err := nsmod.DeleteNetworkServer(ctx, req.Id, a.st); err != nil {
 		return nil, status.Errorf(codes.Unknown, "%s", err)
 	}
 
