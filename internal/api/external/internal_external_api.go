@@ -317,7 +317,29 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 	token := OTPgen()
 
 	obj, err := a.st.GetUserByEmail(ctx, u.Email)
-	if err == errHandler.ErrDoesNotExist {
+	// internal error
+	if err != nil && err != errHandler.ErrDoesNotExist {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	// u exists and finished registration
+	if (err == nil && obj.SecurityToken == nil) || (err == nil && obj.SecurityToken != nil && *obj.SecurityToken == "") {
+		return nil, status.Errorf(codes.AlreadyExists, "")
+	}
+
+	// u exists but haven't finished registration
+	if err == nil && !obj.IsActive && obj.SecurityToken != nil && *obj.SecurityToken != "" {
+		err = email.SendInvite(obj.Email, email.Param{Token: *obj.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
+		if err != nil {
+			log.WithError(err).Error(logInfo)
+			return nil, helpers.ErrToRPCError(err)
+		}
+
+		return &empty.Empty{}, nil
+	}
+
+	// u doesn't exist
+	if err != nil && err == errHandler.ErrDoesNotExist {
 		if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 			// u has never been created yet
 			err = handler.RegisterUser(ctx, &u, token)
@@ -344,13 +366,6 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 		}); err != nil {
 			return nil, status.Errorf(codes.Unknown, err.Error())
 		}
-
-	} else if err != nil && err != errHandler.ErrDoesNotExist {
-		// internal error
-		return nil, helpers.ErrToRPCError(err)
-	} else if err == nil && obj.SecurityToken == nil {
-		// u exists and finished registration
-		return nil, helpers.ErrToRPCError(errHandler.ErrAlreadyExists)
 	}
 
 	return &empty.Empty{}, nil
