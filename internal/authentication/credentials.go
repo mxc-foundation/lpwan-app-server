@@ -129,6 +129,19 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		}
 	}
 
+	if cfg.limitedCred {
+		// when cfg.limitedCred is true, func returns Credentials that only contain username. All
+		// other checks will fail and possibly panic.
+		//
+		// Deprecated: this is only should be used for the user registration process,
+		// and user registration process should be fixed to not require this hack
+		cred.h = c.h
+		cred.user.ID = -1
+		cred.user.Email = jwtClaims.Username
+		cred.user.IsGlobalAdmin = false
+		return cred, nil
+	}
+
 	u, err := c.h.st.GetUser(ctx, jwtClaims.Username)
 	if err != nil {
 		return cred, errors.Wrap(err, "getCredentials")
@@ -145,24 +158,11 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		cred.orgUser.IsOrgAdmin = orgUser.IsOrgAdmin
 		cred.orgUser.IsOrgUser = true
 	}
-
-	if cfg.limitedCred {
-		// when cfg.limitedCred is true, func returns Credentials that only contain username. All
-		// other checks will fail and possibly panic.
-		//
-		// Deprecated: this is only should be used for the user registration process,
-		// and user registration process should be fixed to not require this hack
-		cred.h = c.h
-		cred.user.ID = -1
-		cred.user.Email = jwtClaims.Username
-		cred.user.IsGlobalAdmin = false
-
-	} else {
-		cred.h = c.h
-		cred.user.ID = u.ID
-		cred.user.Email = jwtClaims.Username
-		cred.user.IsGlobalAdmin = u.IsGlobalAdmin
-	}
+	
+	cred.h = c.h
+	cred.user.ID = u.ID
+	cred.user.Email = jwtClaims.Username
+	cred.user.IsGlobalAdmin = u.IsGlobalAdmin
 
 	return cred, nil
 }
