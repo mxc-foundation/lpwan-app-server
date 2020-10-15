@@ -87,7 +87,7 @@ func Setup(name string, h *store.Handler) error {
 	return nil
 }
 
-// get returns a M2MServerServiceClient for the given server (hostname:ip).
+// get returns a provisioning serverclient for the given server (hostname:ip).
 func (p *pool) get() (*grpc.ClientConn, error) {
 	defer p.Unlock()
 	p.Lock()
@@ -158,7 +158,7 @@ func (p *pool) createClient(hostname, caCert, tlsCert, tlsKey string) (*grpc.Cli
 		RootCAs:      caCertPool,
 	})))
 
-	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 1000*time.Millisecond)
 	defer cancel()
 
 	grpcClient, err := grpc.DialContext(ctx, hostname, nsOpts...)
