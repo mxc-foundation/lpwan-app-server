@@ -194,6 +194,7 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 	resp := inpb.ProfileResponse{
 		User: &inpb.User{
 			Id:         prof.User.ID,
+			Username:   prof.User.Email,
 			Email:      prof.User.Email,
 			SessionTtl: prof.User.SessionTTL,
 			IsAdmin:    prof.User.IsAdmin,
