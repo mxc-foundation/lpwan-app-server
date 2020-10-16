@@ -25,7 +25,7 @@ func NewStakingServerAPI() *StakingServerAPI {
 
 // GetStakingPercentage defines the request and response to get staking percentage
 func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
-	logInfo, _ := fmt.Print("api/appserver_serves_ui/GetStakingPercentage")
+	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingPercentage")
 
 	stakeClient, err := m2mcli.GetStakingServiceClient()
 	if err != nil {
@@ -55,7 +55,7 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 
 // Stake defines the request and response for staking
 func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/Stake org=%d", req.OrgId)
+	logInfo := fmt.Sprintf("api/appserver_serves_ui/Stake org=%d", req.OrgId)
 
 	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
@@ -86,7 +86,7 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 
 // Unstake defines the request and response to unstake
 func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.UnstakeResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/Unstake org=%d", req.OrgId)
+	logInfo := fmt.Sprintf("api/appserver_serves_ui/Unstake org=%d", req.OrgId)
 
 	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
@@ -114,7 +114,7 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 
 // GetActiveStakes defines the request and response to get active stakes
 func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRequest) (*api.GetActiveStakesResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetActiveStakes org=%d", req.OrgId)
+	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetActiveStakes org=%d", req.OrgId)
 
 	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
@@ -146,6 +146,7 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 				Active:    stake.Active,
 				LockTill:  stake.LockTill,
 				Boost:     stake.Boost,
+				Revenue:   stake.Revenue,
 			})
 	}
 	return gasr, nil
@@ -153,7 +154,7 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 
 // GetStakingRevenue returns the amount earned from staking during the specified period
 func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueRequest) (*api.StakingRevenueResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)
+	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)
 
 	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
@@ -180,7 +181,7 @@ func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.Staki
 
 // GetStakingHistory defines the request and response to get staking history
 func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.StakingHistoryRequest) (*api.StakingHistoryResponse, error) {
-	logInfo, _ := fmt.Printf("api/appserver_serves_ui/GetStakingHistory org=%d", req.OrgId)
+	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingHistory org=%d", req.OrgId)
 
 	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
@@ -215,6 +216,7 @@ func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.Staki
 				EndTime:   st.EndTime,
 				LockTill:  st.LockTill,
 				Boost:     st.Boost,
+				Revenue:   st.Revenue,
 			}
 		}
 		stakeHistory := &api.StakingHistory{

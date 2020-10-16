@@ -104,6 +104,8 @@ message Stake {
     google.protobuf.Timestamp lock_till = 6;
     // boost [0, 1]
     string boost = 7;
+    // total stake revenue so far
+    string revenue = 8;
 }
 
 message GetActiveStakesResponse {
