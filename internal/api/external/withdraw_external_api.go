@@ -2,6 +2,7 @@ package external
 
 import (
 	"context"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -122,7 +123,7 @@ func (s *WithdrawServerAPI) GetWithdrawHistory(ctx context.Context, req *api.Get
 func (s *WithdrawServerAPI) GetWithdraw(ctx context.Context, req *api.GetWithdrawRequest) (*api.GetWithdrawResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetWithdraw org=" + strconv.FormatInt(req.OrgId, 10)
 
-	if err := withdraw.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+	if err := withdraw.NewValidator().IsOrgAdmin(ctx, req.OrgId, authcus.WithValidOTP()); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 

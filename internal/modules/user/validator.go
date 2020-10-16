@@ -25,7 +25,7 @@ type Validate interface {
 	NewConfiguration(ctx context.Context, userEmail string) (*otp.Configuration, error)
 	Enable2FA(ctx context.Context) error
 	Disable2FA(ctx context.Context) error
-	OTPGetRecoveryCodes(ctx context.Context, userEmail string, regenerate bool) ([]string, error)
+	OTPGetRecoveryCodes(ctx context.Context, regenerate bool) ([]string, error)
 }
 
 func NewValidator() Validate {
@@ -34,8 +34,13 @@ func NewValidator() Validate {
 	}
 }
 
-func (v *Validator) OTPGetRecoveryCodes(ctx context.Context, userEmail string, regenerate bool) ([]string, error) {
-	return v.Credentials.OTPGetRecoveryCodes(ctx, userEmail, regenerate)
+func (v *Validator) OTPGetRecoveryCodes(ctx context.Context, regenerate bool) ([]string, error) {
+	u, err := v.Credentials.GetUser(ctx, cred.WithValidOTP())
+	if err != nil {
+		return nil, err
+	}
+
+	return v.Credentials.OTPGetRecoveryCodes(ctx, u.Email, regenerate)
 }
 
 func (v *Validator) Enable2FA(ctx context.Context) error {

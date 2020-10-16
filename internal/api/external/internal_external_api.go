@@ -452,12 +452,7 @@ func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRec
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
 
-	u, err := user.NewValidator().GetUser(ctx, cred.WithValidOTP())
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-
-	codes, err := user.NewValidator().OTPGetRecoveryCodes(ctx, u.Email, req.Regenerate)
+	codes, err := user.NewValidator().OTPGetRecoveryCodes(ctx, req.Regenerate)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
