@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
-
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/email/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email/tlssmtp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 )
 
@@ -30,12 +30,13 @@ func init() {
 const moduleName = "email"
 
 type client struct {
-	senderID string
-	username string
-	password string
-	authType string
-	smtpHost string
-	smtpPort string
+	senderID    string
+	username    string
+	password    string
+	authType    string
+	smtpHost    string
+	smtpPort    string
+	tlsRequired bool
 }
 
 type operatorInfo struct {
@@ -112,12 +113,13 @@ func Setup(name string, h *store.Handler) error {
 		}
 
 		ctrl.cli[key] = &client{
-			senderID: value.Email,
-			username: value.Username,
-			password: value.Password,
-			authType: value.AuthType,
-			smtpHost: value.Host,
-			smtpPort: port,
+			senderID:    value.Email,
+			username:    value.Username,
+			password:    value.Password,
+			authType:    value.AuthType,
+			smtpHost:    value.Host,
+			smtpPort:    port,
+			tlsRequired: value.TLSRequired,
 		}
 
 		email.from = value.Email
@@ -244,7 +246,12 @@ func (c *client) send(user string, msg bytes.Buffer) error {
 		return fmt.Errorf("unsupported authentication type: %s", c.authType)
 	}
 
-	err := smtp.SendMail(c.smtpHost+":"+c.smtpPort, auth, c.senderID, []string{user}, msg.Bytes())
+	var err error
+	if c.tlsRequired {
+		err = tlssmtp.SendMail(c.smtpHost+":"+c.smtpPort, auth, c.senderID, []string{user}, msg.Bytes())
+	} else {
+		err = smtp.SendMail(c.smtpHost+":"+c.smtpPort, auth, c.senderID, []string{user}, msg.Bytes())
+	}
 	if err != nil {
 		return fmt.Errorf("couldn't send an email: %v", err)
 	}
