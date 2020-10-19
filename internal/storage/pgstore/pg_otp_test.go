@@ -2,20 +2,19 @@ package pgstore
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-
-	otp "github.com/mxc-foundation/lpwan-app-server/internal/otp/store"
+	"github.com/jmoiron/sqlx"
 )
 
-func TestInterface(t *testing.T) {
-	var st otp.Store = otp.NewStore(New())
-	_ = st
+func toStore(db *sql.DB) *pgstore {
+	return &pgstore{db: sqlx.NewDb(db, "foo")}
 }
 
 func TestGetTOTPInfo(t *testing.T) {
-	_, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,7 +31,7 @@ func TestGetTOTPInfo(t *testing.T) {
 			AddRow(12, "code_a").AddRow(13, "code_b").AddRow(14, "code_c"),
 	)
 
-	st := otp.NewStore(New())
+	st := toStore(db)
 	ctx := context.Background()
 	ti, err := st.GetTOTPInfo(ctx, "alice")
 	if err != nil {
@@ -57,7 +56,7 @@ func TestGetTOTPInfo(t *testing.T) {
 }
 
 func TestEnable(t *testing.T) {
-	_, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,7 +78,7 @@ func TestEnable(t *testing.T) {
 	)
 	mock.ExpectExec("UPDATE totp_configuration SET is_enabled = true.*").WithArgs(42).WillReturnResult(sqlmock.NewResult(0, 1))
 
-	st := otp.NewStore(New())
+	st := toStore(db)
 	ctx := context.Background()
 	if err := st.Enable(ctx, "alice"); err == nil {
 		t.Fatal("enabled totp for alice")
@@ -97,7 +96,7 @@ func TestEnable(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	_, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +117,7 @@ func TestDelete(t *testing.T) {
 	)
 	mock.ExpectExec("DELETE FROM totp_configuration.*").WithArgs(42).WillReturnResult(sqlmock.NewResult(0, 1))
 
-	st := otp.NewStore(New())
+	st := toStore(db)
 	ctx := context.Background()
 	if err := st.Delete(ctx, "alice"); err != nil {
 		t.Fatalf("couldn't delete totp for alice: %v", err)
@@ -136,7 +135,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestStoreNewSecret(t *testing.T) {
-	_, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,7 +169,7 @@ func TestStoreNewSecret(t *testing.T) {
 	)
 	mock.ExpectRollback()
 
-	st := otp.NewStore(New())
+	st := toStore(db)
 	ctx := context.Background()
 	if err := st.StoreNewSecret(ctx, "alice", "secret_a"); err != nil {
 		t.Fatalf("couldn't store the secret for alice: %v", err)
@@ -191,7 +190,7 @@ func TestStoreNewSecret(t *testing.T) {
 }
 
 func TestDeleteRecoveryCode(t *testing.T) {
-	_, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,7 +205,7 @@ func TestDeleteRecoveryCode(t *testing.T) {
 	)
 	mock.ExpectExec("DELETE FROM totp_recovery_codes.*").WithArgs(42, 321).WillReturnResult(sqlmock.NewResult(0, 1))
 
-	st := otp.NewStore(New())
+	st := toStore(db)
 	ctx := context.Background()
 	if err := st.DeleteRecoveryCode(ctx, "mallory", 432); err == nil {
 		t.Fatal("deleted recovery code for mallory")
@@ -221,7 +220,7 @@ func TestDeleteRecoveryCode(t *testing.T) {
 }
 
 func TestAddRecoveryCodes(t *testing.T) {
-	_, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -263,7 +262,7 @@ func TestAddRecoveryCodes(t *testing.T) {
 	)
 	mock.ExpectRollback()
 
-	st := otp.NewStore(New())
+	st := toStore(db)
 	ctx := context.Background()
 	if err := st.AddRecoveryCodes(ctx, "alice", []string{"alice-1", "alice-2"}); err == nil {
 		t.Fatal("added recovery codes for alice")
@@ -284,7 +283,7 @@ func TestAddRecoveryCodes(t *testing.T) {
 }
 
 func TestUpdateLastTimeSlot(t *testing.T) {
-	_, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,7 +317,7 @@ func TestUpdateLastTimeSlot(t *testing.T) {
 	)
 	mock.ExpectRollback()
 
-	st := otp.NewStore(New())
+	st := toStore(db)
 	ctx := context.Background()
 	if err := st.UpdateLastTimeSlot(ctx, "alice", 52000000, 53000000); err == nil {
 		t.Fatal("updated last ts for alice")
