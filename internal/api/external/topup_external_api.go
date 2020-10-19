@@ -45,7 +45,7 @@ func (s *TopUpServerAPI) GetTopUpHistory(ctx context.Context, req *api.GetTopUpH
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, "call API in m2m failed: &s", err.Error())
+		return &api.GetTopUpHistoryResponse{}, status.Errorf(codes.Unavailable, "call API in m2m failed: %v", err)
 	}
 
 	var topUpHistoryList []*api.TopUpHistory
@@ -83,7 +83,7 @@ func (s *TopUpServerAPI) GetTopUpDestination(ctx context.Context, req *api.GetTo
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
-		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, "call API in m2m failed: &s", err.Error())
+		return &api.GetTopUpDestinationResponse{}, status.Errorf(codes.Unavailable, "call API in m2m failed: %v", err)
 	}
 
 	return &api.GetTopUpDestinationResponse{
