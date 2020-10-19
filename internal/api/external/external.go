@@ -38,7 +38,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-	otpst "github.com/mxc-foundation/lpwan-app-server/internal/otp/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -176,7 +175,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	}
 
 	jwtValidator := jwt.NewJWTValidator("HS256", []byte(jwtSecret))
-	otpValidator, err := otp.NewValidator("lpwan-app-server", GetOTPSecret(), otpst.NewStore(pgstore.New()))
+	otpValidator, err := otp.NewValidator("lpwan-app-server", GetOTPSecret(), pgstore.New())
 	if err != nil {
 		return err
 	}
