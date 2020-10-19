@@ -17,13 +17,7 @@ clean:
 	@rm -rf dist
 
 test: internal/statics internal/migrations
-	@echo "Running tests"
-	@rm -f coverage.out
-	@for pkg in $(PKGS) ; do \
-		golint $$pkg ; \
-	done
-	@go vet $(PKGS)
-	@go test -p 1 -v $(PKGS) -cover -coverprofile coverage.out
+	@go test -cover -coverprofile coverage.out ./...
 
 lint:
 	@echo "Running code syntax check"
