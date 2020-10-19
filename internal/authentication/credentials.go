@@ -2,8 +2,12 @@ package authentication
 
 import (
 	"context"
+	"fmt"
+	"regexp"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
@@ -30,7 +34,7 @@ type Credentials interface {
 	IsGatewayAdmin(context.Context, int64) error
 }*/
 
-func SetupCred(st Store, jwtValidator *jwt.JWTValidator, otpValidator *otp.Validator) {
+func SetupCred(st Store, jwtValidator *jwt.Validator, otpValidator *otp.Validator) {
 	hl.st = st
 	hl.jwtValidator = jwtValidator
 	hl.otpValidator = otpValidator
@@ -40,7 +44,7 @@ var hl handler
 
 type handler struct {
 	st           Store
-	jwtValidator *jwt.JWTValidator
+	jwtValidator *jwt.Validator
 	otpValidator *otp.Validator
 }
 
@@ -107,7 +111,11 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 	for _, o := range opts {
 		o(&cfg)
 	}
-	jwtClaims, err := c.h.jwtValidator.GetClaims(ctx, cfg.audience)
+	token, err := getTokenFromContext(ctx)
+	if err != nil {
+		return cred, err
+	}
+	jwtClaims, err := c.h.jwtValidator.GetClaims(token, cfg.audience)
 	if err != nil {
 		return cred, errors.Wrap(err, "getCredentials")
 	}
@@ -169,6 +177,34 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 	}
 
 	return cred, nil
+}
+
+var validAuthorizationRegexp = regexp.MustCompile(`(?i)^bearer (.*)$`)
+
+func getTokenFromContext(ctx context.Context) (string, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "", fmt.Errorf("no metadata in context")
+	}
+
+	token, ok := md["authorization"]
+	if !ok || len(token) == 0 {
+		return "", fmt.Errorf("missing authorization header")
+	}
+
+	match := validAuthorizationRegexp.FindStringSubmatch(token[0])
+
+	// authorization header should respect RFC1945
+	if len(match) == 0 {
+		l := len(token)
+		if l > 16 {
+			l = 16
+		}
+		logrus.Warnf("Deprecated Authorization header: %s", token[0:l])
+		return token[0], nil
+	}
+
+	return match[1], nil
 }
 
 func (c *Credentials) GetUser(ctx context.Context, opts ...Option) (User, error) {
