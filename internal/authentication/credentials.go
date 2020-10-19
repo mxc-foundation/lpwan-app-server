@@ -147,6 +147,15 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		return cred, errors.Wrap(err, "getCredentials")
 	}
 
+	cred.h = c.h
+	cred.user.ID = u.ID
+	cred.user.Email = jwtClaims.Username
+	cred.user.IsGlobalAdmin = u.IsGlobalAdmin
+
+	if cred.user.IsGlobalAdmin {
+		return cred, nil
+	}
+
 	if cfg.orgID != 0 {
 		orgUser, err := c.h.st.GetOrgUser(ctx, u.ID, cfg.orgID)
 		if err != nil {
@@ -158,11 +167,6 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		cred.orgUser.IsOrgAdmin = orgUser.IsOrgAdmin
 		cred.orgUser.IsOrgUser = true
 	}
-	
-	cred.h = c.h
-	cred.user.ID = u.ID
-	cred.user.Email = jwtClaims.Username
-	cred.user.IsGlobalAdmin = u.IsGlobalAdmin
 
 	return cred, nil
 }
