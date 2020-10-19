@@ -67,8 +67,6 @@ func (obj *HeartbeatAPI) Heartbeat(ctx context.Context, req *gwpb.HeartbeatReque
 		return nil, status.Errorf(codes.Unknown, "Failed to select gateway by mac: %s", gatewayEUI.String())
 	}
 
-	log.Infof("got heartbeat from %s, model %s, last heartbeat %d", gw.MAC.MarshalText, gw.Model, gw.LastHeartbeat)
-
 	// verify gateway model
 	if gw.Model != req.Model {
 		log.Errorf("Request model does not match saved gateway.")
