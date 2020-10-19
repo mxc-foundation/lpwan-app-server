@@ -158,7 +158,7 @@ func (p *pool) createClient(hostname, caCert, tlsCert, tlsKey string) (*grpc.Cli
 		RootCAs:      caCertPool,
 	})))
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1000*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	grpcClient, err := grpc.DialContext(ctx, hostname, nsOpts...)
