@@ -80,12 +80,11 @@ func SettingsSetup(name string, conf config.Config) (err error) {
 
 	return nil
 }
+
 func GetApplicationServerID() uuid.UUID {
 	return ctrl.applicationServerID
 }
-func GetJWTSecret() string {
-	return ctrl.s.JWTSecret
-}
+
 func GetOTPSecret() string {
 	return ctrl.s.OTPSecret
 }
@@ -169,12 +168,13 @@ func Setup(name string, h *store.Handler) (err error) {
 }
 
 func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) error {
-	jwtSecret := GetJWTSecret()
+	jwtSecret := ctrl.s.JWTSecret
 	if jwtSecret == "" {
 		return errors.New("jwt_secret must be set")
 	}
+	jwtTTL := ctrl.s.JWTDefaultTTL
 
-	jwtValidator := jwt.NewJWTValidator("HS256", []byte(jwtSecret))
+	jwtValidator := jwt.NewValidator("HS256", []byte(jwtSecret), jwtTTL)
 	otpValidator, err := otp.NewValidator("lpwan-app-server", GetOTPSecret(), pgstore.New())
 	if err != nil {
 		return err
