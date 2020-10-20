@@ -2,8 +2,9 @@ package code
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"sort"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 
