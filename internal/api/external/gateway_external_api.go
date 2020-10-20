@@ -811,12 +811,20 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
 
+	// check whether gateway exists first
+	if _, err := a.st.GetGateway(ctx, mac, false); err != nil {
+		if err == errHandler.ErrDoesNotExist {
+			return nil, status.Errorf(codes.NotFound, "Gateway does not exist: %s", mac.String())
+		}
+		return nil, status.Errorf(codes.Internal, "Get gateway error: %s", mac.String())
+	}
+
 	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, auth.Delete, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		return nil, status.Errorf(codes.PermissionDenied, "Can not delete this gateway: %s", err)
 	}
 
 	if err := gw.DeleteGateway(ctx, mac); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
 	return &empty.Empty{}, nil
