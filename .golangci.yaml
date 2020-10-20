@@ -11,12 +11,12 @@ linters-settings:
     local-prefixes: github.com/mxc-foundation
 linters:
   enable:
-  #- gosec
-  #- gocyclo
-  #- goimports
-  #- golint
-  #- interfacer
-  #- varcheck
+    - gosec
+    - gocyclo
+    - goimports
+    - golint
+    - interfacer
+    - varcheck
   disable:
     - errcheck
     - unused
