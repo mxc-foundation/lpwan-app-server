@@ -2,54 +2,46 @@ package jwt
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
-	"github.com/gofrs/uuid"
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwt"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc/metadata"
 )
 
-// defaultSessionTTL defines the default session TTL
+// defaultSessionTTL defines the default token ttl if not specified in config
 const defaultSessionTTL = 86400
-
-var validAuthorizationRegexp = regexp.MustCompile(`(?i)^bearer (.*)$`)
 
 // Claims defines the struct containing the token claims.
 type Claims struct {
 	// Username defines the identity of the user.
 	Username string `json:"username"`
-	// UserID defines the ID of th user.
-	UserID int64 `json:"user_id"`
-
-	// APIKeyID defines the API key ID.
-	APIKeyID uuid.UUID `json:"api_key_id"`
 }
 
-// JWTValidator validates JWT tokens.
-type JWTValidator struct {
-	secret    interface{}
-	algorithm jwa.SignatureAlgorithm
+// Validator validates JWT tokens.
+type Validator struct {
+	secret     interface{}
+	defaultTTL int64
+	algorithm  jwa.SignatureAlgorithm
 }
 
-// NewJWTValidator creates a new JWTValidator.
-func NewJWTValidator(algorithm jwa.SignatureAlgorithm, secret interface{}) *JWTValidator {
-	return &JWTValidator{
-		secret:    secret,
-		algorithm: algorithm,
+// NewValidator creates a new jwt.Validator.
+func NewValidator(algorithm jwa.SignatureAlgorithm, secret interface{}, defaultTTL int64) *Validator {
+	if defaultTTL == 0 {
+		defaultTTL = defaultSessionTTL
+	}
+	return &Validator{
+		secret:     secret,
+		algorithm:  algorithm,
+		defaultTTL: defaultTTL,
 	}
 }
 
 // SignToken creates and signs a new JWT token for user
-func (v JWTValidator) SignToken(username string, ttl int64, audience []string) (string, error) {
+func (v Validator) SignToken(username string, ttl int64, audience []string) (string, error) {
 	t := jwt.New()
 	if ttl == 0 {
-		ttl = defaultSessionTTL
+		ttl = v.defaultTTL
 	}
 	t.Set(jwt.IssuerKey, "lora-app-server")
 	if len(audience) == 0 {
@@ -67,23 +59,8 @@ func (v JWTValidator) SignToken(username string, ttl int64, audience []string) (
 	return string(token), nil
 }
 
-// GetUsername returns the username of the authenticated user.
-func (v JWTValidator) GetUsername(ctx context.Context) (string, error) {
-	claims, err := v.GetClaims(ctx, "")
-	if err != nil {
-		return "", err
-	}
-
-	return claims.Username, nil
-}
-
-func (v JWTValidator) GetClaims(ctx context.Context, audience string) (*Claims, error) {
-	tokenStr, err := getTokenFromContext(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "get token from context error")
-	}
-
-	token, err := jwt.ParseVerify(strings.NewReader(tokenStr), v.algorithm, v.secret)
+func (v Validator) GetClaims(tokenEncoded, audience string) (*Claims, error) {
+	token, err := jwt.ParseVerify(strings.NewReader(tokenEncoded), v.algorithm, v.secret)
 	if err != nil {
 		return nil, err
 	}
@@ -109,41 +86,4 @@ func (v JWTValidator) GetClaims(ctx context.Context, audience string) (*Claims, 
 	}
 
 	return claims, nil
-}
-
-func getTokenFromContext(ctx context.Context) (string, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return "", ErrNoMetadataInContext
-	}
-
-	token, ok := md["authorization"]
-	if !ok || len(token) == 0 {
-		return "", ErrNoAuthorizationInMetadata
-	}
-
-	match := validAuthorizationRegexp.FindStringSubmatch(token[0])
-
-	// authorization header should respect RFC1945
-	if len(match) == 0 {
-		log.Warning("Deprecated Authorization header : RFC1945 format expected : Authorization: <type> <credentials>")
-		return token[0], nil
-	}
-
-	return match[1], nil
-}
-
-// GetSubject returns the claim subject.
-func (v JWTValidator) GetSubject(ctx context.Context) (string, error) {
-	return "user", nil
-}
-
-// GetAPIKeyID returns the API key ID.
-func (v JWTValidator) GetAPIKeyID(ctx context.Context) (uuid.UUID, error) {
-	claims, err := v.GetClaims(ctx, "")
-	if err != nil {
-		return uuid.Nil, err
-	}
-
-	return claims.APIKeyID, nil
 }
