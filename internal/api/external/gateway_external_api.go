@@ -820,7 +820,7 @@ func (a *GatewayAPI) Delete(ctx context.Context, req *api.DeleteGatewayRequest) 
 	}
 
 	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, auth.Delete, mac); !valid || err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, "Can not delete this gateway", err)
+		return nil, status.Errorf(codes.PermissionDenied, "Can not delete this gateway: %s", err)
 	}
 
 	if err := gw.DeleteGateway(ctx, mac); err != nil {
