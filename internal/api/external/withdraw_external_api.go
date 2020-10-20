@@ -2,8 +2,9 @@ package external
 
 import (
 	"context"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"strconv"
+
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
