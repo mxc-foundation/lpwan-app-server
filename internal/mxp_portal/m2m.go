@@ -1,19 +1,20 @@
 package mxp_portal
 
 import (
+	"fmt"
 	"net"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-m2m"
-	"github.com/mxc-foundation/lpwan-app-server/internal/tls"
-
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
+	"github.com/mxc-foundation/lpwan-app-server/internal/tls"
 )
 
 var serviceName = "m2m server"
@@ -27,10 +28,10 @@ const moduleName = "mxp_portal"
 
 type controller struct {
 	h         *store.Handler
-	mxpCli    MxprotocolClientStruct
-	mxpServer MxprotocolServerStruct
+	mxpCli    data.MxprotocolClientStruct
+	mxpServer grpccli.ConnectionOpts
 	name      string
-	p         Pool
+	m2mconn   *grpc.ClientConn
 
 	moduleUp bool
 }
@@ -39,7 +40,6 @@ var ctrl *controller
 
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) error {
-
 	ctrl = &controller{
 		mxpCli:    conf.ApplicationServer.APIForM2M,
 		name:      moduleName,
@@ -60,18 +60,16 @@ func Setup(name string, h *store.Handler) error {
 	log.Info("Set up API for m2m server")
 
 	ctrl.h = h
-	ctrl.p = &pool{
-		mxprotocolServiceClients: make(map[string]mxprotocolServiceClient),
+	var err error
+	ctrl.m2mconn, err = grpccli.Connect(ctrl.mxpServer)
+	if err != nil {
+		return fmt.Errorf("couldn't create mxprotocol server client: %v", err)
 	}
 
 	if err := listenWithCredentials(ctrl.mxpCli.Bind,
 		ctrl.mxpCli.CACert,
 		ctrl.mxpCli.TLSCert,
 		ctrl.mxpCli.TLSKey); err != nil {
-		return err
-	}
-
-	if _, err := ctrl.p.get(); err != nil {
 		return err
 	}
 
