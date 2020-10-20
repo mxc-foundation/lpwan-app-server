@@ -152,6 +152,46 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 	return gasr, nil
 }
 
+func (s *StakingServerAPI) StakeInfo(ctx context.Context, req *api.StakeInfoRequest) (*api.StakeInfoResponse, error) {
+	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	}
+
+	stakeClient, err := m2mcli.GetStakingServiceClient()
+	if err != nil {
+		log.WithError(err).Error("couldn't get staking client")
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	resp, err := stakeClient.StakeInfo(ctx, &pb.StakeInfoRequest{
+		OrgId:   req.OrgId,
+		StakeId: req.StakeId,
+	})
+	if err != nil {
+		log.WithError(err).Error("m2m StakeInfo returned an error")
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	stakeInfo := &api.StakeInfoResponse{}
+	stakeInfo.Stake = &api.Stake{
+		Id:        resp.Stake.Id,
+		StartTime: resp.Stake.StartTime,
+		EndTime:   resp.Stake.EndTime,
+		Amount:    resp.Stake.Amount,
+		Active:    resp.Stake.Active,
+		LockTill:  resp.Stake.LockTill,
+		Boost:     resp.Stake.Boost,
+		Revenue:   resp.Stake.Revenue,
+	}
+	for _, revenue := range resp.Revenues {
+		stakeInfo.Revenues = append(stakeInfo.Revenues, &api.StakeRevenue{
+			Time:   revenue.Time,
+			Amount: revenue.Amount,
+		},
+		)
+	}
+	return stakeInfo, nil
+}
+
 // GetStakingRevenue returns the amount earned from staking during the specified period
 func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueRequest) (*api.StakingRevenueResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)

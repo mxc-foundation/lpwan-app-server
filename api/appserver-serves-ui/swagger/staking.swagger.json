@@ -223,6 +223,47 @@
         ]
       }
     },
+    "/api/staking/{orgId}/stake-info": {
+      "get": {
+        "summary": "Returns info about the stake, including all the revenues",
+        "operationId": "StakeInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiStakeInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization id that owns the stake",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "stakeId",
+            "description": "the stake ID.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "StakingService"
+        ]
+      }
+    },
     "/api/staking/{orgId}/unstake": {
       "post": {
         "summary": "Unstake existing stake",
@@ -331,6 +372,22 @@
         }
       }
     },
+    "appserver_serves_uiStakeInfoResponse": {
+      "type": "object",
+      "properties": {
+        "stake": {
+          "$ref": "#/definitions/appserver_serves_uiStake",
+          "title": "information about the stake"
+        },
+        "revenues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiStakeRevenue"
+          },
+          "title": "all the revenues that were paid for this stake"
+        }
+      }
+    },
     "appserver_serves_uiStakeRequest": {
       "type": "object",
       "properties": {
@@ -359,6 +416,18 @@
       "type": "object",
       "properties": {
         "status": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiStakeRevenue": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "amount": {
           "type": "string"
         }
       }
