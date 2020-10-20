@@ -2,6 +2,7 @@ package setdefault
 
 import (
 	"context"
+
 	"github.com/brocaar/lorawan/band"
 	"github.com/gofrs/uuid"
 	"github.com/golang/protobuf/ptypes/empty"

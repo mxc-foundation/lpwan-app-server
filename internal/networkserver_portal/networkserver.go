@@ -3,12 +3,13 @@ package networkserver_portal
 import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
+	"golang.org/x/net/context"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-	"github.com/pkg/errors"
-	"golang.org/x/net/context"
 )
 
 func init() {
