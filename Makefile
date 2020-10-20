@@ -17,13 +17,11 @@ clean:
 	@rm -rf dist
 
 test: internal/statics internal/migrations
-	@echo "Running tests"
-	@rm -f coverage.out
-	@for pkg in $(PKGS) ; do \
-		golint $$pkg ; \
-	done
-	@go vet $(PKGS)
-	@go test -p 1 -v $(PKGS) -cover -coverprofile coverage.out
+	# we only have non-generated code in ./internal, so we only count coverage for it
+	go test -cover -coverprofile coverage.out -coverpkg ./internal/... ./...
+	# IMPORTANT: required coverage can only be increased
+	go tool cover -func coverage.out | \
+		awk 'END { print "Coverage: " $$3; if ($$3+0 < 8.0) { print "Insufficient coverage"; exit 1; } }'
 
 lint:
 	@echo "Running code syntax check"

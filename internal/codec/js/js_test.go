@@ -2,12 +2,14 @@ package js
 
 import (
 	"testing"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )
 
 func TestJSDecode(t *testing.T) {
+	ctrl = &controller{maxExecutionTime: time.Second * 5}
 	tests := []struct {
 		Name           string
 		Script         string

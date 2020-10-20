@@ -7,7 +7,7 @@ import (
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 
-	otp "github.com/mxc-foundation/lpwan-app-server/internal/otp/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
 
 type OTPPgStore interface {
