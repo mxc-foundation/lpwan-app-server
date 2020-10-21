@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/viper"
 
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
+	"github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 
 	"github.com/lib/pq/hstore"
 
@@ -658,7 +658,7 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLoca
 	var result []*api.GatewayLocationListItem
 	var gatewayLocationsRedisKey = "gateway_locations"
 
-	redisConn := rs.RedisClient()
+	redisConn := redis.RedisClient()
 
 	resultJSON, err := redisConn.Get(gatewayLocationsRedisKey).Bytes()
 	if err == nil {
@@ -685,7 +685,7 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLoca
 
 		bytes, err := json.Marshal(&result)
 		if err == nil {
-			if err := redisConn.Set(gatewayLocationsRedisKey, bytes, rs.MicLookupExpire).Err(); err != nil {
+			if err := redisConn.Set(gatewayLocationsRedisKey, bytes, redis.MicLookupExpire).Err(); err != nil {
 				log.WithError(err).Warn("Set gateway location to redis error")
 			}
 		}
