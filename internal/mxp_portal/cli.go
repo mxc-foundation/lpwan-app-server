@@ -30,8 +30,8 @@ func GetSettingsServiceClient() (pb.SettingsServiceClient, error) {
 }
 
 // GetStakingServiceClient returns a new StakingServiceClient of mxprotocol-server
-func GetStakingServiceClient() (pb.StakingServiceClient, error) {
-	return pb.NewStakingServiceClient(ctrl.m2mconn), nil
+func GetStakingServiceClient() pb.StakingServiceClient {
+	return pb.NewStakingServiceClient(ctrl.m2mconn)
 }
 
 // GetTopupServiceClient returns a new TopUpServiceClient of mxprotocol-server
