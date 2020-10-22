@@ -1,4 +1,4 @@
-package external
+package staking
 
 import (
 	"context"
@@ -10,30 +10,28 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/staking"
+	"github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
-// StakingServerAPI defines the Staking Server API structure
-type StakingServerAPI struct{}
+// Server defines the Staking Server API structure
+type Server struct {
+	stakingCli pb.StakingServiceClient
+	validator  *authentication.Credentials
+}
 
-// NewStakingServerAPI defines the Stagking Server API Validator
-func NewStakingServerAPI() *StakingServerAPI {
-	return &StakingServerAPI{}
+// NewServer creates a new staking server
+func NewServer(stakingCli pb.StakingServiceClient, validator *authentication.Credentials) *Server {
+	return &Server{
+		stakingCli: stakingCli,
+		validator:  validator,
+	}
 }
 
 // GetStakingPercentage defines the request and response to get staking percentage
-func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
+func (s *Server) GetStakingPercentage(ctx context.Context, req *api.StakingPercentageRequest) (*api.StakingPercentageResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingPercentage")
 
-	stakeClient, err := m2mcli.GetStakingServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.StakingPercentageResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	resp, err := stakeClient.GetStakingPercentage(ctx, &pb.StakingPercentageRequest{
+	resp, err := s.stakingCli.GetStakingPercentage(ctx, &pb.StakingPercentageRequest{
 		Currency: req.Currency,
 	})
 	if err != nil {
@@ -54,20 +52,14 @@ func (s *StakingServerAPI) GetStakingPercentage(ctx context.Context, req *api.St
 }
 
 // Stake defines the request and response for staking
-func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeResponse, error) {
+func (s *Server) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/Stake org=%d", req.OrgId)
 
-	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	stakeClient, err := m2mcli.GetStakingServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.StakeResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	resp, err := stakeClient.Stake(ctx, &pb.StakeRequest{
+	resp, err := s.stakingCli.Stake(ctx, &pb.StakeRequest{
 		OrgId:       req.OrgId,
 		Currency:    req.Currency,
 		Amount:      req.Amount,
@@ -85,20 +77,14 @@ func (s *StakingServerAPI) Stake(ctx context.Context, req *api.StakeRequest) (*a
 }
 
 // Unstake defines the request and response to unstake
-func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.UnstakeResponse, error) {
+func (s *Server) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.UnstakeResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/Unstake org=%d", req.OrgId)
 
-	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	stakeClient, err := m2mcli.GetStakingServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return nil, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	resp, err := stakeClient.Unstake(ctx, &pb.UnstakeRequest{
+	resp, err := s.stakingCli.Unstake(ctx, &pb.UnstakeRequest{
 		OrgId:   req.OrgId,
 		StakeId: req.StakeId,
 	})
@@ -113,20 +99,14 @@ func (s *StakingServerAPI) Unstake(ctx context.Context, req *api.UnstakeRequest)
 }
 
 // GetActiveStakes defines the request and response to get active stakes
-func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRequest) (*api.GetActiveStakesResponse, error) {
+func (s *Server) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRequest) (*api.GetActiveStakesResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetActiveStakes org=%d", req.OrgId)
 
-	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	stakeClient, err := m2mcli.GetStakingServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.GetActiveStakesResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	resp, err := stakeClient.GetActiveStakes(ctx, &pb.GetActiveStakesRequest{
+	resp, err := s.stakingCli.GetActiveStakes(ctx, &pb.GetActiveStakesRequest{
 		OrgId:    req.OrgId,
 		Currency: req.Currency,
 	})
@@ -152,21 +132,51 @@ func (s *StakingServerAPI) GetActiveStakes(ctx context.Context, req *api.GetActi
 	return gasr, nil
 }
 
-// GetStakingRevenue returns the amount earned from staking during the specified period
-func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueRequest) (*api.StakingRevenueResponse, error) {
-	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)
-
-	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+// StakeInfo returns information about a particular stake, including all
+// received stake revenues
+func (s *Server) StakeInfo(ctx context.Context, req *api.StakeInfoRequest) (*api.StakeInfoResponse, error) {
+	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	stakeClient, err := m2mcli.GetStakingServiceClient()
+	resp, err := s.stakingCli.StakeInfo(ctx, &pb.StakeInfoRequest{
+		OrgId:   req.OrgId,
+		StakeId: req.StakeId,
+	})
 	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.StakingRevenueResponse{}, status.Errorf(codes.Unavailable, err.Error())
+		log.WithError(err).Error("m2m StakeInfo returned an error")
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	stakeInfo := &api.StakeInfoResponse{}
+	stakeInfo.Stake = &api.Stake{
+		Id:        resp.Stake.Id,
+		StartTime: resp.Stake.StartTime,
+		EndTime:   resp.Stake.EndTime,
+		Amount:    resp.Stake.Amount,
+		Active:    resp.Stake.Active,
+		LockTill:  resp.Stake.LockTill,
+		Boost:     resp.Stake.Boost,
+		Revenue:   resp.Stake.Revenue,
+	}
+	for _, revenue := range resp.Revenues {
+		stakeInfo.Revenues = append(stakeInfo.Revenues, &api.StakeRevenue{
+			Time:   revenue.Time,
+			Amount: revenue.Amount,
+		},
+		)
+	}
+	return stakeInfo, nil
+}
+
+// GetStakingRevenue returns the amount earned from staking during the specified period
+func (s *Server) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueRequest) (*api.StakingRevenueResponse, error) {
+	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)
+
+	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
+		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	resp, err := stakeClient.GetStakingRevenue(ctx, &pb.StakingRevenueRequest{
+	resp, err := s.stakingCli.GetStakingRevenue(ctx, &pb.StakingRevenueRequest{
 		OrgId:    req.OrgId,
 		Currency: req.Currency,
 		From:     req.From,
@@ -180,20 +190,14 @@ func (s *StakingServerAPI) GetStakingRevenue(ctx context.Context, req *api.Staki
 }
 
 // GetStakingHistory defines the request and response to get staking history
-func (s *StakingServerAPI) GetStakingHistory(ctx context.Context, req *api.StakingHistoryRequest) (*api.StakingHistoryResponse, error) {
+func (s *Server) GetStakingHistory(ctx context.Context, req *api.StakingHistoryRequest) (*api.StakingHistoryResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingHistory org=%d", req.OrgId)
 
-	if err := staking.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
+	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, err.Error())
 	}
 
-	stakeClient, err := m2mcli.GetStakingServiceClient()
-	if err != nil {
-		log.WithError(err).Error(logInfo)
-		return &api.StakingHistoryResponse{}, status.Errorf(codes.Unavailable, err.Error())
-	}
-
-	resp, err := stakeClient.GetStakingHistory(ctx, &pb.StakingHistoryRequest{
+	resp, err := s.stakingCli.GetStakingHistory(ctx, &pb.StakingHistoryRequest{
 		OrgId:    req.OrgId,
 		Currency: req.Currency,
 		From:     req.From,

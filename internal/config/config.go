@@ -8,6 +8,7 @@ import (
 	js "github.com/mxc-foundation/lpwan-app-server/internal/codec/js/data"
 	email "github.com/mxc-foundation/lpwan-app-server/internal/email/data"
 	fuota "github.com/mxc-foundation/lpwan-app-server/internal/fuota/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/grpccli"
 	integration "github.com/mxc-foundation/lpwan-app-server/internal/integration/data"
 	joinserver "github.com/mxc-foundation/lpwan-app-server/internal/js/data"
 	as "github.com/mxc-foundation/lpwan-app-server/internal/modules/as/data"
@@ -38,7 +39,7 @@ type Config struct {
 
 	SMTP map[string]email.SMTPStruct `mapstructure:"smtp"`
 
-	M2MServer mxpm.MxprotocolServerStruct `mapstructure:"m2m_server"`
+	M2MServer grpccli.ConnectionOpts `mapstructure:"m2m_server"`
 
 	ProvisionServer psconn.ProvisioningServerStruct `mapstructure:"provision_server"`
 

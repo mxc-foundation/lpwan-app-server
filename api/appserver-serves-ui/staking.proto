@@ -42,6 +42,13 @@ service StakingService {
         };
     };
 
+    // Returns info about the stake, including all the revenues
+    rpc StakeInfo (StakeInfoRequest) returns (StakeInfoResponse) {
+        option (google.api.http) = {
+            get: "/api/staking/{org_id}/stake-info"
+        };
+    };
+
     // Get information about staking percentage and boosts for lockin stake
     rpc GetStakingPercentage (StakingPercentageRequest) returns (StakingPercentageResponse) {
         option (google.api.http) = {
@@ -108,6 +115,11 @@ message Stake {
     string revenue = 8;
 }
 
+message StakeRevenue {
+    google.protobuf.Timestamp time = 1;
+    string amount = 2;
+}
+
 message GetActiveStakesResponse {
     repeated Stake act_stake = 1;
 }
@@ -128,6 +140,20 @@ message StakingHistory {
 
 message StakingHistoryResponse {
     repeated StakingHistory staking_hist = 2;
+}
+
+message StakeInfoRequest {
+    // organization id that owns the stake
+    int64 org_id = 1;
+    // the stake ID
+    int64 stake_id = 2;
+}
+
+message StakeInfoResponse {
+    // information about the stake
+    Stake stake = 1;
+    // all the revenues that were paid for this stake
+    repeated StakeRevenue revenues = 2;
 }
 
 message StakingPercentageRequest {

@@ -92,28 +92,13 @@ localDevelopTemplate = \
       mosquitto:
         image: eclipse-mosquitto
     
-      postgres:
-        image: postgres:9.6-alpine
-        environment:
-          - POSTGRES_HOST_AUTH_METHOD=trust
-        volumes:
-          - ./.docker-compose/postgresql/initdb:/docker-entrypoint-initdb.d
-    
       rabbitmq:
         image: rabbitmq:3-alpine
-    
-      #zookeeper:
-      #  image: 'bitnami/zookeeper:3'
-      #  environment:
-      #    - ALLOW_ANONYMOUS_LOGIN=yes
-          
-      #kafka:
-      #  image: 'bitnami/kafka:2'
-      #  environment:
-      #    - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      #    - ALLOW_PLAINTEXT_LISTENER=yes
-      #  depends_on:
-      #    - zookeeper
+      
+      testsmtpd:
+        image: registry.gitlab.com/shaydo/testsmtpd
+        ports:
+          - 8100:80
     '''
 
 inputList = {

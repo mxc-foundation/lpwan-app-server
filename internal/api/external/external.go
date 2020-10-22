@@ -27,7 +27,9 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
@@ -207,10 +209,14 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(ctrl.serverRegion))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())
-	api.RegisterStakingServiceServer(grpcServer, NewStakingServerAPI())
 	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI())
 	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI())
 	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI())
+
+	api.RegisterStakingServiceServer(grpcServer, staking.NewServer(
+		m2mcli.GetStakingServiceClient(),
+		authcus.NewCredentials(),
+	))
 
 	return nil
 }

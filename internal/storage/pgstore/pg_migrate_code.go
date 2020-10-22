@@ -82,10 +82,10 @@ func (ps *pgstore) Migrate(ctx context.Context, name string) error {
 		return errors.Wrap(err, "lock code migration table error")
 	}
 
-	row := ps.db.QueryRowxContext(ctx, `
-		select * from code_migration where id = $1
-	`, name)
-	if row.Err() == nil {
+	var count int
+	if err := ps.db.QueryRowxContext(ctx, `
+		select count(id) from code_migration where id = $1
+	`, name).Scan(&count); err == nil {
 		return pgerr.ErrAlreadyExists
 	}
 
