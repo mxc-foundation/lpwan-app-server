@@ -48,7 +48,6 @@ build_image:
     - export VERSION=$(git describe --tags --always --long |sed -e "s/^v//")
     - echo $CONTAINER_IMAGE
     - echo $VERSION
-    - echo $SERVICE_NAME
     - git describe --tags --always --long |sed -e "s/^v//"
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build --pull -t $CONTAINER_IMAGE .
