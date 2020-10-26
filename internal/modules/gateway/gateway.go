@@ -150,7 +150,61 @@ func listenWithCredentials(service, bind, caCert, tlsCert, tlsKey string) error 
 	return nil
 }
 
+// UpdateFirmware respond to manual operation to update gateway firmware from provisioining server
+func UpdateFirmware(ctx context.Context) error {
+	return ctrl.updateFirmwareFromProvisioningServer(ctx)
+}
+
 func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) error {
+	log.Info("Check firmware update...")
+	gwFwList, err := c.st.GetGatewayFirmwareList(ctx)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to get gateway firmware list.")
+		return err
+	}
+
+	// send update
+	psClient, err := pscli.GetPServerClient()
+	if err != nil {
+		log.WithError(err).Errorf("Create Provisioning server client error")
+		return err
+	}
+
+	for _, v := range gwFwList {
+		res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
+			Model:          v.Model,
+			SuperNodeAddr:  c.serverAddr,
+			PortOldGateway: c.bindPortOldGateway,
+			PortNewGateway: c.bindPortNewGateway,
+		})
+		if err != nil {
+			log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
+			continue
+		}
+
+		var md5sum types.MD5SUM
+		if err := md5sum.UnmarshalText([]byte(res.FirmwareHash)); err != nil {
+			log.WithError(err).Errorf("Failed to unmarshal firmware hash: %s", res.FirmwareHash)
+			continue
+		}
+
+		gatewayFw := GatewayFirmware{
+			Model:        v.Model,
+			ResourceLink: res.ResourceLink,
+			FirmwareHash: md5sum,
+		}
+
+		model, _ := c.st.UpdateGatewayFirmware(ctx, &gatewayFw)
+		if model == "" {
+			log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
+		}
+
+	}
+
+	return nil
+}
+
+func (c *controller) scheduleUpdateFirmwareFromProvisioningServer(ctx context.Context) error {
 	log.WithFields(log.Fields{
 		"provisioning-server": ctrl.ps.Server,
 		"caCert":              ctrl.ps.CACert,
@@ -159,53 +213,10 @@ func (c *controller) updateFirmwareFromProvisioningServer(ctx context.Context) e
 		"schedule":            ctrl.ps.UpdateSchedule,
 	}).Info("Start schedule to update gateway firmware...")
 
-	supernodeAddr := c.serverAddr
-
 	cron := cron.New()
 	err := cron.AddFunc(ctrl.ps.UpdateSchedule, func() {
-		log.Info("Check firmware update...")
-		gwFwList, err := c.st.GetGatewayFirmwareList(ctx)
-		if err != nil {
-			log.WithError(err).Errorf("Failed to get gateway firmware list.")
-			return
-		}
-
-		// send update
-		psClient, err := pscli.GetPServerClient()
-		if err != nil {
-			log.WithError(err).Errorf("Create Provisioning server client error")
-			return
-		}
-
-		for _, v := range gwFwList {
-			res, err := psClient.GetUpdate(context.Background(), &psPb.GetUpdateRequest{
-				Model:          v.Model,
-				SuperNodeAddr:  supernodeAddr,
-				PortOldGateway: c.bindPortOldGateway,
-				PortNewGateway: c.bindPortNewGateway,
-			})
-			if err != nil {
-				log.WithError(err).Errorf("Failed to get update for gateway model: %s", v.Model)
-				continue
-			}
-
-			var md5sum types.MD5SUM
-			if err := md5sum.UnmarshalText([]byte(res.FirmwareHash)); err != nil {
-				log.WithError(err).Errorf("Failed to unmarshal firmware hash: %s", res.FirmwareHash)
-				continue
-			}
-
-			gatewayFw := GatewayFirmware{
-				Model:        v.Model,
-				ResourceLink: res.ResourceLink,
-				FirmwareHash: md5sum,
-			}
-
-			model, _ := c.st.UpdateGatewayFirmware(ctx, &gatewayFw)
-			if model == "" {
-				log.Warnf("No row updated for gateway_firmware at model=%s", v.Model)
-			}
-
+		if err := c.updateFirmwareFromProvisioningServer(ctx); err != nil {
+			log.WithError(err).Error("update firmware on schdule error")
 		}
 	})
 	if err != nil {

@@ -51,7 +51,7 @@ func Setup(name string, h *store.Handler) error {
 	}()
 
 	downChan := integration.ForApplicationID(0).DataDownChan()
-	go HandleDataDownPayloads(downChan, store.NewStore())
+	go HandleDataDownPayloads(downChan, h)
 
 	return nil
 }
