@@ -63,6 +63,16 @@ func NewGatewayAPI(applicationID uuid.UUID, h *store.Handler, serverAddr string)
 	}
 }
 
+func (a *GatewayAPI) ManualTriggerUpdateFirmware(ctx context.Context, req *api.ManualTriggerUpdateFirmwareRequest) (*api.ManualTriggerUpdateFirmwareResponse, error) {
+	log.Info("ManualTriggerUpdateFirmware is called")
+
+	if err := gw.UpdateFirmware(ctx); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &api.ManualTriggerUpdateFirmwareResponse{}, nil
+}
+
 // BatchResetDefaultGatewatConfig reset gateways config to default config matching organization list
 func (a *GatewayAPI) BatchResetDefaultGatewatConfig(ctx context.Context, req *api.BatchResetDefaultGatewatConfigRequest) (*api.BatchResetDefaultGatewatConfigResponse, error) {
 	log.WithFields(log.Fields{

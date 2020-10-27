@@ -11,6 +11,38 @@
     "application/json"
   ],
   "paths": {
+    "/api/gateway/update-firmware": {
+      "post": {
+        "operationId": "ManualTriggerUpdateFirmware",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiManualTriggerUpdateFirmwareResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiManualTriggerUpdateFirmwareRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateway/{orgId}/gateway-history/{gwId}": {
       "get": {
         "operationId": "GetGatewayHistory",
@@ -1328,6 +1360,12 @@
           "description": "Nodes within this result-set."
         }
       }
+    },
+    "appserver_serves_uiManualTriggerUpdateFirmwareRequest": {
+      "type": "object"
+    },
+    "appserver_serves_uiManualTriggerUpdateFirmwareResponse": {
+      "type": "object"
     },
     "appserver_serves_uiPingRX": {
       "type": "object",
