@@ -54,6 +54,7 @@ var (
 	ErrOrganizationMaxDeviceCount      = errors.New("organization reached max. device count")
 	ErrOrganizationMaxGatewayCount     = errors.New("organization reached max. gateway count")
 	ErrNetworkServerInvalidName        = errors.New("invalid network-server name")
+	ErrInvalidOTP                      = errors.New("invalid otp")
 )
 
 func HandlePSQLError(action Action, err error, description string) error {
