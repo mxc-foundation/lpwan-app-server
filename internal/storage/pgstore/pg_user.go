@@ -797,7 +797,7 @@ func (ps *pgstore) ConfirmPasswordReset(ctx context.Context, userID int64, otp s
 		return errors.Wrap(err, "couldn't get password reset record")
 	}
 	if pr.AttemptsLeft < 1 {
-		return errors.New("no match found")
+		return errors.New("exceeded max attempts")
 	}
 	if err := ps.ReduceAttempts(ctx, pr); err != nil {
 		return errors.Wrap(err, "couldn't update db")
@@ -815,7 +815,7 @@ func (ps *pgstore) ConfirmPasswordReset(ctx context.Context, userID int64, otp s
 		return nil
 	}
 
-	return nil
+	return errors.New("no match found")
 }
 
 func (ps *pgstore) GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error) {
