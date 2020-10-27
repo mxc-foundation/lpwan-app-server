@@ -797,7 +797,7 @@ func (ps *pgstore) ConfirmPasswordReset(ctx context.Context, userID int64, otp s
 		return errors.Wrap(err, "couldn't get password reset record")
 	}
 	if pr.AttemptsLeft < 1 {
-		return errors.New("exceeded max attempts")
+		return errors.New("no match found")
 	}
 	if err := ps.ReduceAttempts(ctx, pr); err != nil {
 		return errors.Wrap(err, "couldn't update db")
@@ -805,8 +805,7 @@ func (ps *pgstore) ConfirmPasswordReset(ctx context.Context, userID int64, otp s
 	if subtle.ConstantTimeCompare([]byte(pr.OTP), []byte(otp)) == 1 {
 		// otp matches, unset otp, update password
 		pr.OTP = ""
-		pr.GeneratedAt = time.Now()
-		pr.AttemptsLeft = 3
+		pr.AttemptsLeft = 0
 		if err := ps.SetOTP(ctx, pr); err != nil {
 			return errors.Wrap(err, "couldn't update db")
 		}
@@ -817,8 +816,8 @@ func (ps *pgstore) ConfirmPasswordReset(ctx context.Context, userID int64, otp s
 		return nil
 	}
 
-	// otp does not match, password is not updated, return nil, commit queries of update password_reset
-	return nil
+	// otp does not match, password is not updated, return errHandler.ErrInvalidOTP
+	return errHandler.ErrInvalidOTP
 }
 
 func (ps *pgstore) GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error) {

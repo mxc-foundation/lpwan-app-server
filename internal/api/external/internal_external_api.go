@@ -499,6 +499,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 }
 
 func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
+	var errUI error
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		userEmail := normalizeUsername(req.Username)
 		u, err := handler.GetUserByUsername(ctx, userEmail)
@@ -512,12 +513,22 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 
 		err = a.st.ConfirmPasswordReset(ctx, u.ID, req.Otp, req.NewPassword)
 		if err != nil {
+			if err == errHandler.ErrInvalidOTP {
+				errUI = err
+				// return nil to commit transaction
+				return nil
+			}
 			return status.Errorf(codes.Internal, "%v", err)
 		}
 
+		// password reset successfully, return nil to commit transaction
 		return nil
 	}); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	if errUI != nil {
+		return nil, status.Error(codes.PermissionDenied, errUI.Error())
 	}
 
 	return &inpb.PasswordResetResp{}, nil
