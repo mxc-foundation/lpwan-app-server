@@ -520,7 +520,7 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 		return nil, status.Errorf(codes.Unknown, err.Error())
 	}
 
-	return nil, status.Errorf(codes.PermissionDenied, "no match found")
+	return &inpb.PasswordResetResp{}, nil
 }
 
 // ConfirmRegistration checks provided security token and activates u
