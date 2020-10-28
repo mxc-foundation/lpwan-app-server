@@ -51,7 +51,7 @@ type UserPgStore interface {
 	GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error)
 	SetUserPassword(user *User, pw string) error
 	VerifyUserPassword(pw string, pwHash string) error
-	ResetPassword(ctx context.Context, userID int64, otp string) (string, error)
+	RequestPasswordReset(ctx context.Context, userID int64, otp string) (string, error)
 	ConfirmPasswordReset(ctx context.Context, userID int64, otp string, newPassword string) error
 
 	GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error)
@@ -772,7 +772,7 @@ type PasswordResetRecord struct {
 	AttemptsLeft int64
 }
 
-func (ps *pgstore) ResetPassword(ctx context.Context, userID int64, otp string) (string, error) {
+func (ps *pgstore) RequestPasswordReset(ctx context.Context, userID int64, otp string) (string, error) {
 	pr, err := ps.GetPasswordResetRecord(ctx, userID)
 	if err != nil {
 		return "", errors.Wrap(err, "couldn't get password reset record")

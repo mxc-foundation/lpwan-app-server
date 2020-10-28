@@ -81,7 +81,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	dp, err := a.st.DeviceProfileStore.GetDeviceProfile(ctx, dpID, false)
+	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
