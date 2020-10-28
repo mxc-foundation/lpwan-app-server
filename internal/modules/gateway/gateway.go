@@ -116,7 +116,7 @@ func Setup(name string, h *store.Handler) error {
 		return err
 	}
 
-	if err := ctrl.updateFirmwareFromProvisioningServer(context.Background()); err != nil {
+	if err := ctrl.scheduleUpdateFirmwareFromProvisioningServer(context.Background()); err != nil {
 		return err
 	}
 
