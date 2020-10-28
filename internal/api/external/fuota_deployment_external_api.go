@@ -14,7 +14,7 @@ import (
 	"github.com/brocaar/lorawan/band"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/device"

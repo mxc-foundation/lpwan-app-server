@@ -11,9 +11,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-
-	. "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/authentication/store"
 )
 
 /*// Credentials provides methods to assert the user's Credentials
@@ -33,6 +30,45 @@ type Credentials interface {
 	// IsGatewayAdmin returns an error if user is not gateway admin of the organization
 	IsGatewayAdmin(context.Context, int64) error
 }*/
+
+// User contains information about the user
+type User struct {
+	ID            int64
+	Email         string
+	IsGlobalAdmin bool
+}
+
+// OrgUser contains information about the role of the user in organisation
+type OrgUser struct {
+	IsOrgUser      bool
+	IsOrgAdmin     bool
+	IsDeviceAdmin  bool
+	IsGatewayAdmin bool
+}
+
+// Flag defines the authorization flag.
+type Flag int
+
+// Authorization flags.
+const (
+	Create Flag = iota
+	Read
+	Update
+	Delete
+	List
+	UpdateProfile
+	UpdatePassword
+	FinishRegistration
+)
+
+// Store provides access to information about users and their roles
+type Store interface {
+	// AuthGetUser returns user's information given that there is an active user
+	// with the given username
+	AuthGetUser(ctx context.Context, username string) (User, error)
+	// AuthGetOrgUser returns user's role in the listed organization
+	AuthGetOrgUser(ctx context.Context, userID int64, orgID int64) (OrgUser, error)
+}
 
 func SetupCred(st Store, jwtValidator *jwt.Validator, otpValidator *otp.Validator) {
 	hl.st = st
@@ -150,7 +186,7 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		return cred, nil
 	}
 
-	u, err := c.h.st.GetUser(ctx, jwtClaims.Username)
+	u, err := c.h.st.AuthGetUser(ctx, jwtClaims.Username)
 	if err != nil {
 		return cred, errors.Wrap(err, "getCredentials")
 	}
@@ -165,7 +201,7 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 	}
 
 	if cfg.orgID != 0 {
-		orgUser, err := c.h.st.GetOrgUser(ctx, u.ID, cfg.orgID)
+		orgUser, err := c.h.st.AuthGetOrgUser(ctx, u.ID, cfg.orgID)
 		if err != nil {
 			return cred, errors.Wrap(err, "getCredentials")
 		}

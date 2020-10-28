@@ -14,7 +14,7 @@ import (
 
 // GlobalSearch performs a search on organizations, applications, gateways
 // and devices.
-func (ps *pgstore) GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error) {
+func (ps *PgStore) GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error) {
 	var result []SearchResult
 
 	query, tags := parseSearchQuery(search)

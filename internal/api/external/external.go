@@ -36,7 +36,6 @@ import (
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	authPg "github.com/mxc-foundation/lpwan-app-server/internal/authentication/store"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
@@ -181,7 +180,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	if err != nil {
 		return err
 	}
-	authcus.SetupCred(authPg.NewStore(pgstore.New()), jwtValidator, otpValidator)
+	authcus.SetupCred(pgstore.New(), jwtValidator, otpValidator)
 
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(h))
 	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(h))

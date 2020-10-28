@@ -15,7 +15,7 @@ func NewStore() *Handler {
 }
 
 type Handler struct {
-	pgstore.PgStore
+	*pgstore.PgStore
 	inTX bool
 }
 

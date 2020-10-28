@@ -6,12 +6,11 @@ import (
 	"github.com/brocaar/lorawan"
 	"github.com/pkg/errors"
 
-	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
 type Validator struct {
-	Credentials *cred.Credentials
+	Credentials *auth.Credentials
 }
 
 type Validate interface {
@@ -19,13 +18,13 @@ type Validate interface {
 	ValidateGatewayAccess(ctx context.Context, flag auth.Flag, mac lorawan.EUI64) (bool, error)
 	ValidateOrganizationNetworkServerAccess(ctx context.Context, flag auth.Flag, organizationID, networkServerID int64) (bool, error)
 	GetUser(ctx context.Context) (auth.User, error)
-	IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error
-	IsOrgAdmin(ctx context.Context, organizationID int64, opts ...cred.Option) error
+	IsGlobalAdmin(ctx context.Context, opts ...auth.Option) error
+	IsOrgAdmin(ctx context.Context, organizationID int64, opts ...auth.Option) error
 }
 
 func NewValidator() Validate {
 	return &Validator{
-		Credentials: cred.NewCredentials(),
+		Credentials: auth.NewCredentials(),
 	}
 }
 
@@ -33,11 +32,11 @@ func (v *Validator) GetUser(ctx context.Context) (auth.User, error) {
 	return v.Credentials.GetUser(ctx)
 }
 
-func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error {
+func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...auth.Option) error {
 	return v.Credentials.IsGlobalAdmin(ctx, opts...)
 }
 
-func (v *Validator) IsOrgAdmin(ctx context.Context, organizationID int64, opts ...cred.Option) error {
+func (v *Validator) IsOrgAdmin(ctx context.Context, organizationID int64, opts ...auth.Option) error {
 	return v.Credentials.IsOrgAdmin(ctx, organizationID, opts...)
 }
 

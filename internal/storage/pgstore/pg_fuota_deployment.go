@@ -22,29 +22,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/fuota-deployment/data"
 )
 
-type FuotaDeploymentPgStore interface {
-	CheckReadFUOTADeploymentAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
-	CheckCreateFUOTADeploymentsAccess(ctx context.Context, username string, applicationID int64, devEUI lorawan.EUI64, userID int64) (bool, error)
-	GetDeviceKeysFromFuotaDevelopmentDevice(ctx context.Context, id uuid.UUID) ([]ds.DeviceKeys, error)
-	CreateFUOTADeploymentForDevice(ctx context.Context, fd *FUOTADeployment, devEUI lorawan.EUI64) error
-	GetFUOTADeployment(ctx context.Context, id uuid.UUID, forUpdate bool) (FUOTADeployment, error)
-	GetPendingFUOTADeployments(ctx context.Context, batchSize int) ([]FUOTADeployment, error)
-	UpdateFUOTADeployment(ctx context.Context, fd *FUOTADeployment) error
-	GetFUOTADeploymentCount(ctx context.Context, filters FUOTADeploymentFilters) (int, error)
-	GetFUOTADeployments(ctx context.Context, filters FUOTADeploymentFilters) ([]FUOTADeploymentListItem, error)
-	GetFUOTADeploymentDevice(ctx context.Context, fuotaDeploymentID uuid.UUID, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error)
-	GetPendingFUOTADeploymentDevice(ctx context.Context, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error)
-	UpdateFUOTADeploymentDevice(ctx context.Context, fdd *FUOTADeploymentDevice) error
-	GetFUOTADeploymentDeviceCount(ctx context.Context, fuotaDeploymentID uuid.UUID) (int, error)
-	GetFUOTADeploymentDevices(ctx context.Context, fuotaDeploymentID uuid.UUID, limit, offset int) ([]FUOTADeploymentDeviceListItem, error)
-	GetServiceProfileIDForFUOTADeployment(ctx context.Context, fuotaDeploymentID uuid.UUID) (uuid.UUID, error)
-	scanFUOTADeployment(row sqlx.ColScanner) (FUOTADeployment, error)
-	SetFromRemoteMulticastSetup(ctx context.Context, fuotaDevelopmentID, multicastGroupID uuid.UUID) error
-	SetFromRemoteFragmentationSession(ctx context.Context, fuotaDevelopmentID uuid.UUID, fragIdx int) error
-	SetIncompleteFuotaDevelopment(ctx context.Context, fuotaDevelopmentID uuid.UUID) error
-}
-
-func (ps *pgstore) CheckReadFUOTADeploymentAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckReadFUOTADeploymentAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -83,7 +61,7 @@ func (ps *pgstore) CheckReadFUOTADeploymentAccess(ctx context.Context, username 
 
 }
 
-func (ps *pgstore) CheckCreateFUOTADeploymentsAccess(ctx context.Context, username string, applicationID int64, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateFUOTADeploymentsAccess(ctx context.Context, username string, applicationID int64, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -118,7 +96,7 @@ func (ps *pgstore) CheckCreateFUOTADeploymentsAccess(ctx context.Context, userna
 	return count > 0, nil
 }
 
-func (ps *pgstore) GetDeviceKeysFromFuotaDevelopmentDevice(ctx context.Context, id uuid.UUID) ([]ds.DeviceKeys, error) {
+func (ps *PgStore) GetDeviceKeysFromFuotaDevelopmentDevice(ctx context.Context, id uuid.UUID) ([]ds.DeviceKeys, error) {
 	// query all device-keys that relate to this FUOTA deployment
 	var deviceKeys []ds.DeviceKeys
 	err := sqlx.SelectContext(ctx, ps.db, &deviceKeys, `
@@ -142,7 +120,7 @@ func (ps *pgstore) GetDeviceKeysFromFuotaDevelopmentDevice(ctx context.Context, 
 
 // CreateFUOTADeploymentForDevice creates and initializes a FUOTA deployment
 // for the given device.
-func (ps *pgstore) CreateFUOTADeploymentForDevice(ctx context.Context, fd *FUOTADeployment, devEUI lorawan.EUI64) error {
+func (ps *PgStore) CreateFUOTADeploymentForDevice(ctx context.Context, fd *FUOTADeployment, devEUI lorawan.EUI64) error {
 	if err := fd.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -238,7 +216,7 @@ func (ps *pgstore) CreateFUOTADeploymentForDevice(ctx context.Context, fd *FUOTA
 }
 
 // GetFUOTADeployment returns the FUOTA deployment for the given ID.
-func (ps *pgstore) GetFUOTADeployment(ctx context.Context, id uuid.UUID, forUpdate bool) (FUOTADeployment, error) {
+func (ps *PgStore) GetFUOTADeployment(ctx context.Context, id uuid.UUID, forUpdate bool) (FUOTADeployment, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -276,7 +254,7 @@ func (ps *pgstore) GetFUOTADeployment(ctx context.Context, id uuid.UUID, forUpda
 }
 
 // GetPendingFUOTADeployments returns the pending FUOTA deployments.
-func (ps *pgstore) GetPendingFUOTADeployments(ctx context.Context, batchSize int) ([]FUOTADeployment, error) {
+func (ps *PgStore) GetPendingFUOTADeployments(ctx context.Context, batchSize int) ([]FUOTADeployment, error) {
 	var out []FUOTADeployment
 
 	rows, err := ps.db.QueryxContext(ctx, `
@@ -329,7 +307,7 @@ func (ps *pgstore) GetPendingFUOTADeployments(ctx context.Context, batchSize int
 }
 
 // UpdateFUOTADeployment updates the given FUOTA deployment.
-func (ps *pgstore) UpdateFUOTADeployment(ctx context.Context, fd *FUOTADeployment) error {
+func (ps *PgStore) UpdateFUOTADeployment(ctx context.Context, fd *FUOTADeployment) error {
 	if err := fd.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -398,7 +376,7 @@ func (ps *pgstore) UpdateFUOTADeployment(ctx context.Context, fd *FUOTADeploymen
 }
 
 // GetFUOTADeploymentCount returns the number of FUOTA deployments.
-func (ps *pgstore) GetFUOTADeploymentCount(ctx context.Context, filters FUOTADeploymentFilters) (int, error) {
+func (ps *PgStore) GetFUOTADeploymentCount(ctx context.Context, filters FUOTADeploymentFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct fd.*)
@@ -427,7 +405,7 @@ func (ps *pgstore) GetFUOTADeploymentCount(ctx context.Context, filters FUOTADep
 }
 
 // GetFUOTADeployments returns a slice of fuota deployments.
-func (ps *pgstore) GetFUOTADeployments(ctx context.Context, filters FUOTADeploymentFilters) ([]FUOTADeploymentListItem, error) {
+func (ps *PgStore) GetFUOTADeployments(ctx context.Context, filters FUOTADeploymentFilters) ([]FUOTADeploymentListItem, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			distinct fd.id,
@@ -466,7 +444,7 @@ func (ps *pgstore) GetFUOTADeployments(ctx context.Context, filters FUOTADeploym
 
 // GetFUOTADeploymentDevice returns the FUOTA deployment record for the given
 // device.
-func (ps *pgstore) GetFUOTADeploymentDevice(ctx context.Context, fuotaDeploymentID uuid.UUID, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
+func (ps *PgStore) GetFUOTADeploymentDevice(ctx context.Context, fuotaDeploymentID uuid.UUID, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
 	var out FUOTADeploymentDevice
 	err := sqlx.GetContext(ctx, ps.db, &out, `
 		select
@@ -487,7 +465,7 @@ func (ps *pgstore) GetFUOTADeploymentDevice(ctx context.Context, fuotaDeployment
 
 // GetPendingFUOTADeploymentDevice returns the pending FUOTA deployment record
 // for the given DevEUI.
-func (ps *pgstore) GetPendingFUOTADeploymentDevice(ctx context.Context, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
+func (ps *PgStore) GetPendingFUOTADeploymentDevice(ctx context.Context, devEUI lorawan.EUI64) (FUOTADeploymentDevice, error) {
 	var out FUOTADeploymentDevice
 
 	err := sqlx.GetContext(ctx, ps.db, &out, `
@@ -509,7 +487,7 @@ func (ps *pgstore) GetPendingFUOTADeploymentDevice(ctx context.Context, devEUI l
 }
 
 // UpdateFUOTADeploymentDevice updates the given fuota deployment device record.
-func (ps *pgstore) UpdateFUOTADeploymentDevice(ctx context.Context, fdd *FUOTADeploymentDevice) error {
+func (ps *PgStore) UpdateFUOTADeploymentDevice(ctx context.Context, fdd *FUOTADeploymentDevice) error {
 	fdd.UpdatedAt = time.Now()
 
 	res, err := ps.db.ExecContext(ctx, `
@@ -551,7 +529,7 @@ func (ps *pgstore) UpdateFUOTADeploymentDevice(ctx context.Context, fdd *FUOTADe
 
 // GetFUOTADeploymentDeviceCount returns the device count for the given
 // FUOTA deployment ID.
-func (ps *pgstore) GetFUOTADeploymentDeviceCount(ctx context.Context, fuotaDeploymentID uuid.UUID) (int, error) {
+func (ps *PgStore) GetFUOTADeploymentDeviceCount(ctx context.Context, fuotaDeploymentID uuid.UUID) (int, error) {
 	var count int
 	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
@@ -571,7 +549,7 @@ func (ps *pgstore) GetFUOTADeploymentDeviceCount(ctx context.Context, fuotaDeplo
 
 // GetFUOTADeploymentDevices returns a slice of devices for the given FUOTA
 // deployment ID.
-func (ps *pgstore) GetFUOTADeploymentDevices(ctx context.Context, fuotaDeploymentID uuid.UUID, limit, offset int) ([]FUOTADeploymentDeviceListItem, error) {
+func (ps *PgStore) GetFUOTADeploymentDevices(ctx context.Context, fuotaDeploymentID uuid.UUID, limit, offset int) ([]FUOTADeploymentDeviceListItem, error) {
 	var out []FUOTADeploymentDeviceListItem
 
 	err := sqlx.SelectContext(ctx, ps.db, &out, `
@@ -606,7 +584,7 @@ func (ps *pgstore) GetFUOTADeploymentDevices(ctx context.Context, fuotaDeploymen
 }
 
 // GetServiceProfileIDForFUOTADeployment returns the service-profile ID for the given FUOTA deployment.
-func (ps *pgstore) GetServiceProfileIDForFUOTADeployment(ctx context.Context, fuotaDeploymentID uuid.UUID) (uuid.UUID, error) {
+func (ps *PgStore) GetServiceProfileIDForFUOTADeployment(ctx context.Context, fuotaDeploymentID uuid.UUID) (uuid.UUID, error) {
 	var out uuid.UUID
 
 	err := sqlx.GetContext(ctx, ps.db, &out, `
@@ -634,7 +612,7 @@ func (ps *pgstore) GetServiceProfileIDForFUOTADeployment(ctx context.Context, fu
 	return out, nil
 }
 
-func (ps *pgstore) scanFUOTADeployment(row sqlx.ColScanner) (FUOTADeployment, error) {
+func (ps *PgStore) scanFUOTADeployment(row sqlx.ColScanner) (FUOTADeployment, error) {
 	var fd FUOTADeployment
 
 	var fragmentationMatrix []byte
@@ -679,7 +657,7 @@ func (ps *pgstore) scanFUOTADeployment(row sqlx.ColScanner) (FUOTADeployment, er
 }
 
 // SetFromRemoteMulticastSetup set remote multicast session error
-func (ps *pgstore) SetFromRemoteMulticastSetup(ctx context.Context, fuotaDevelopmentID, multicastGroupID uuid.UUID) error {
+func (ps *PgStore) SetFromRemoteMulticastSetup(ctx context.Context, fuotaDevelopmentID, multicastGroupID uuid.UUID) error {
 	_, err := ps.db.ExecContext(ctx, `
 		update
 			fuota_deployment_device fdd
@@ -713,7 +691,7 @@ func (ps *pgstore) SetFromRemoteMulticastSetup(ctx context.Context, fuotaDevelop
 }
 
 // SetFromRemoteFragmentationSession set remote multicast session error
-func (ps *pgstore) SetFromRemoteFragmentationSession(ctx context.Context, fuotaDevelopmentID uuid.UUID, fragIdx int) error {
+func (ps *PgStore) SetFromRemoteFragmentationSession(ctx context.Context, fuotaDevelopmentID uuid.UUID, fragIdx int) error {
 	_, err := ps.db.ExecContext(ctx, `
 		update
 			fuota_deployment_device fdd
@@ -745,7 +723,7 @@ func (ps *pgstore) SetFromRemoteFragmentationSession(ctx context.Context, fuotaD
 	return nil
 }
 
-func (ps *pgstore) SetIncompleteFuotaDevelopment(ctx context.Context, fuotaDevelopmentID uuid.UUID) error {
+func (ps *PgStore) SetIncompleteFuotaDevelopment(ctx context.Context, fuotaDevelopmentID uuid.UUID) error {
 	_, err := ps.db.ExecContext(ctx, `
 		update
 			fuota_deployment_device

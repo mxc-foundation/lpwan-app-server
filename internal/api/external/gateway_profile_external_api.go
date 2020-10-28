@@ -11,7 +11,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	gwp "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"

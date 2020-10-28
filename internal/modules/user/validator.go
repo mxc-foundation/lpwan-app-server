@@ -5,23 +5,22 @@ import (
 
 	"github.com/pkg/errors"
 
-	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
 
 type Validator struct {
-	Credentials *cred.Credentials
+	Credentials *auth.Credentials
 }
 
 type Validate interface {
 	ValidateActiveUser(ctx context.Context) (bool, error)
 	ValidateUsersGlobalAccess(ctx context.Context, flag auth.Flag) (bool, error)
 	ValidateUserAccess(ctx context.Context, flag auth.Flag, userID int64) (bool, error)
-	IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error
+	IsGlobalAdmin(ctx context.Context, opts ...auth.Option) error
 	Is2FAEnabled(ctx context.Context, userEmail string) (bool, error)
 	SignJWToken(userEmail string, ttl int64, audience []string) (string, error)
-	GetUser(ctx context.Context, opts ...cred.Option) (auth.User, error)
+	GetUser(ctx context.Context, opts ...auth.Option) (auth.User, error)
 	NewConfiguration(ctx context.Context, userEmail string) (*otp.Configuration, error)
 	Enable2FA(ctx context.Context) error
 	Disable2FA(ctx context.Context) error
@@ -30,12 +29,12 @@ type Validate interface {
 
 func NewValidator() Validate {
 	return &Validator{
-		Credentials: cred.NewCredentials(),
+		Credentials: auth.NewCredentials(),
 	}
 }
 
 func (v *Validator) OTPGetRecoveryCodes(ctx context.Context, regenerate bool) ([]string, error) {
-	u, err := v.Credentials.GetUser(ctx, cred.WithValidOTP())
+	u, err := v.Credentials.GetUser(ctx, auth.WithValidOTP())
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +61,7 @@ func (v *Validator) Enable2FA(ctx context.Context) error {
 }
 
 func (v *Validator) Disable2FA(ctx context.Context) error {
-	u, err := v.Credentials.GetUser(ctx, cred.WithValidOTP())
+	u, err := v.Credentials.GetUser(ctx, auth.WithValidOTP())
 	if err != nil {
 		return err
 	}
@@ -77,7 +76,7 @@ func (v *Validator) NewConfiguration(ctx context.Context, userEmail string) (*ot
 	return v.Credentials.NewConfiguration(ctx, userEmail)
 }
 
-func (v *Validator) GetUser(ctx context.Context, opts ...cred.Option) (auth.User, error) {
+func (v *Validator) GetUser(ctx context.Context, opts ...auth.Option) (auth.User, error) {
 	return v.Credentials.GetUser(ctx, opts...)
 }
 
@@ -89,7 +88,7 @@ func (v *Validator) Is2FAEnabled(ctx context.Context, userEmail string) (bool, e
 	return v.Credentials.Is2FAEnabled(ctx, userEmail)
 }
 
-func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...cred.Option) error {
+func (v *Validator) IsGlobalAdmin(ctx context.Context, opts ...auth.Option) error {
 	return v.Credentials.IsGlobalAdmin(ctx, opts...)
 }
 

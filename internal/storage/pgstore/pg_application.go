@@ -14,23 +14,8 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 )
 
-type ApplicationPgStore interface {
-	CheckCreateApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error)
-	CheckListApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error)
-	CheckReadApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error)
-	CheckUpdateApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error)
-	CheckDeleteApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error)
-	CreateApplication(ctx context.Context, item *Application) error
-	GetApplication(ctx context.Context, id int64) (Application, error)
-	GetApplicationCount(ctx context.Context, filters ApplicationFilters) (int, error)
-	GetApplications(ctx context.Context, filters ApplicationFilters) ([]ApplicationListItem, error)
-	UpdateApplication(ctx context.Context, item Application) error
-	DeleteApplication(ctx context.Context, id int64) error
-	DeleteAllApplicationsForOrganizationID(ctx context.Context, organizationID int64) error
-}
-
 // CheckCreateApplicationAccess validate validates if the client has access to the applications resource.
-func (ps *pgstore) CheckCreateApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error) {
+func (ps *PgStore) CheckCreateApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error) {
 	// global admin
 	// organization admin
 	// organization device admin
@@ -68,7 +53,7 @@ func (ps *pgstore) CheckCreateApplicationAccess(ctx context.Context, username st
 }
 
 // CheckListApplicationAccess :
-func (ps *pgstore) CheckListApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error) {
+func (ps *PgStore) CheckListApplicationAccess(ctx context.Context, username string, userID, organizationID int64) (bool, error) {
 	// global admin
 	// organization user (when organization id is given)
 	// any active user (api will filter on user)
@@ -106,7 +91,7 @@ func (ps *pgstore) CheckListApplicationAccess(ctx context.Context, username stri
 }
 
 // CheckReadApplicationAccess :
-func (ps *pgstore) CheckReadApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
+func (ps *PgStore) CheckReadApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -141,7 +126,7 @@ func (ps *pgstore) CheckReadApplicationAccess(ctx context.Context, username stri
 }
 
 // CheckUpdateApplicationAccess :
-func (ps *pgstore) CheckUpdateApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
+func (ps *PgStore) CheckUpdateApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -178,7 +163,7 @@ func (ps *pgstore) CheckUpdateApplicationAccess(ctx context.Context, username st
 }
 
 // CheckDeleteApplicationAccess :
-func (ps *pgstore) CheckDeleteApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
+func (ps *PgStore) CheckDeleteApplicationAccess(ctx context.Context, username string, userID, applicationID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -215,7 +200,7 @@ func (ps *pgstore) CheckDeleteApplicationAccess(ctx context.Context, username st
 }
 
 // CreateApplication creates the given Application.
-func (ps *pgstore) CreateApplication(ctx context.Context, item *Application) error {
+func (ps *PgStore) CreateApplication(ctx context.Context, item *Application) error {
 	if err := item.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -252,7 +237,7 @@ func (ps *pgstore) CreateApplication(ctx context.Context, item *Application) err
 }
 
 // GetApplication returns the Application for the given id.
-func (ps *pgstore) GetApplication(ctx context.Context, id int64) (Application, error) {
+func (ps *PgStore) GetApplication(ctx context.Context, id int64) (Application, error) {
 	var app Application
 	err := sqlx.GetContext(ctx, ps.db, &app, "select * from application where id = $1", id)
 	if err != nil {
@@ -263,7 +248,7 @@ func (ps *pgstore) GetApplication(ctx context.Context, id int64) (Application, e
 }
 
 // GetApplicationCount returns the total number of applications.
-func (ps *pgstore) GetApplicationCount(ctx context.Context, filters ApplicationFilters) (int, error) {
+func (ps *PgStore) GetApplicationCount(ctx context.Context, filters ApplicationFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -293,7 +278,7 @@ func (ps *pgstore) GetApplicationCount(ctx context.Context, filters ApplicationF
 
 // GetApplications returns a slice of applications, sorted by name and
 // respecting the given limit and offset.
-func (ps *pgstore) GetApplications(ctx context.Context, filters ApplicationFilters) ([]ApplicationListItem, error) {
+func (ps *PgStore) GetApplications(ctx context.Context, filters ApplicationFilters) ([]ApplicationListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -333,7 +318,7 @@ func (ps *pgstore) GetApplications(ctx context.Context, filters ApplicationFilte
 }
 
 // UpdateApplication updates the given Application.
-func (ps *pgstore) UpdateApplication(ctx context.Context, item Application) error {
+func (ps *PgStore) UpdateApplication(ctx context.Context, item Application) error {
 	if err := item.Validate(); err != nil {
 		return fmt.Errorf("validate application error: %s", err)
 	}
@@ -379,7 +364,7 @@ func (ps *pgstore) UpdateApplication(ctx context.Context, item Application) erro
 }
 
 // DeleteApplication deletes the Application matching the given ID.
-func (ps *pgstore) DeleteApplication(ctx context.Context, id int64) error {
+func (ps *PgStore) DeleteApplication(ctx context.Context, id int64) error {
 	err := ps.DeleteAllDevicesForApplicationID(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "delete all nodes error")
@@ -407,7 +392,7 @@ func (ps *pgstore) DeleteApplication(ctx context.Context, id int64) error {
 
 // DeleteAllApplicationsForOrganizationID deletes all applications
 // given an organization id.
-func (ps *pgstore) DeleteAllApplicationsForOrganizationID(ctx context.Context, organizationID int64) error {
+func (ps *PgStore) DeleteAllApplicationsForOrganizationID(ctx context.Context, organizationID int64) error {
 	var apps []Application
 	err := sqlx.SelectContext(ctx, ps.db, &apps, "select * from application where organization_id = $1", organizationID)
 	if err != nil {

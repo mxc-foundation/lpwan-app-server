@@ -10,21 +10,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
 
-type OTPPgStore interface {
-	getUserID(ctx context.Context, username string) (int64, error)
-	GetTOTPInfo(ctx context.Context, username string) (otp.TOTPInfo, error)
-	Enable(ctx context.Context, username string) error
-	Delete(ctx context.Context, username string) error
-	StoreNewSecret(ctx context.Context, username, secret string) error
-	storeNewSecret(ctx context.Context, tx *sql.Tx, username, secret string) error
-	DeleteRecoveryCode(ctx context.Context, username string, codeID int64) error
-	AddRecoveryCodes(ctx context.Context, username string, codes []string) error
-	addRecoveryCodes(ctx context.Context, tx *sql.Tx, username string, codes []string) error
-	UpdateLastTimeSlot(ctx context.Context, username string, previousValue, newValue int64) error
-	updateLastTimeSlot(ctx context.Context, tx *sql.Tx, username string, previousValue, newValue int64) error
-}
-
-func (ps *pgstore) getUserID(ctx context.Context, username string) (int64, error) {
+func (ps *PgStore) getUserID(ctx context.Context, username string) (int64, error) {
 	row := ps.db.QueryRowContext(ctx, "SELECT id FROM \"user\" WHERE email = $1", username)
 	var userID int64
 	err := row.Scan(&userID)
@@ -32,7 +18,7 @@ func (ps *pgstore) getUserID(ctx context.Context, username string) (int64, error
 }
 
 // GetTOTPInfo returns TOTP configuration info for the user
-func (ps *pgstore) GetTOTPInfo(ctx context.Context, username string) (otp.TOTPInfo, error) {
+func (ps *PgStore) GetTOTPInfo(ctx context.Context, username string) (otp.TOTPInfo, error) {
 	totpConfigQuery := `
 		SELECT utc.user_id, utc.is_enabled, utc.secret, utc.last_time_slot
 		FROM "user" u JOIN totp_configuration utc ON (u.id = utc.user_id)
@@ -66,7 +52,7 @@ func (ps *pgstore) GetTOTPInfo(ctx context.Context, username string) (otp.TOTPIn
 }
 
 // Enable enables TOTP for the user
-func (ps *pgstore) Enable(ctx context.Context, username string) error {
+func (ps *PgStore) Enable(ctx context.Context, username string) error {
 	userID, err := ps.getUserID(ctx, username)
 	if err != nil {
 		return err
@@ -88,7 +74,7 @@ func (ps *pgstore) Enable(ctx context.Context, username string) error {
 }
 
 // Delete removes TOTP configuration for the user
-func (ps *pgstore) Delete(ctx context.Context, username string) error {
+func (ps *PgStore) Delete(ctx context.Context, username string) error {
 	userID, err := ps.getUserID(ctx, username)
 	if err != nil {
 		return err
@@ -100,7 +86,7 @@ func (ps *pgstore) Delete(ctx context.Context, username string) error {
 }
 
 // StoreNewSecret stores new secret for user in the database
-func (ps *pgstore) StoreNewSecret(ctx context.Context, username, secret string) error {
+func (ps *PgStore) StoreNewSecret(ctx context.Context, username, secret string) error {
 	tx, err := ps.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		return err
@@ -114,7 +100,7 @@ func (ps *pgstore) StoreNewSecret(ctx context.Context, username, secret string) 
 	return tx.Commit()
 }
 
-func (ps *pgstore) storeNewSecret(ctx context.Context, tx *sql.Tx, username, secret string) error {
+func (ps *PgStore) storeNewSecret(ctx context.Context, tx *sql.Tx, username, secret string) error {
 	totpConfigQuery := `
 		SELECT u.id, utc.is_enabled
 		FROM "user" u LEFT JOIN totp_configuration utc ON (u.id = utc.user_id)
@@ -155,7 +141,7 @@ func (ps *pgstore) storeNewSecret(ctx context.Context, tx *sql.Tx, username, sec
 }
 
 // DeleteRecoveryCode removes recovery code from the database
-func (ps *pgstore) DeleteRecoveryCode(ctx context.Context, username string, codeID int64) error {
+func (ps *PgStore) DeleteRecoveryCode(ctx context.Context, username string, codeID int64) error {
 	userID, err := ps.getUserID(ctx, username)
 	if err != nil {
 		return err
@@ -168,7 +154,7 @@ func (ps *pgstore) DeleteRecoveryCode(ctx context.Context, username string, code
 }
 
 // AddRecoveryCodes adds new recovery codes to the database
-func (ps *pgstore) AddRecoveryCodes(ctx context.Context, username string, codes []string) error {
+func (ps *PgStore) AddRecoveryCodes(ctx context.Context, username string, codes []string) error {
 	tx, err := ps.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		return err
@@ -182,7 +168,7 @@ func (ps *pgstore) AddRecoveryCodes(ctx context.Context, username string, codes 
 	return tx.Commit()
 }
 
-func (ps *pgstore) addRecoveryCodes(ctx context.Context, tx *sql.Tx, username string, codes []string) error {
+func (ps *PgStore) addRecoveryCodes(ctx context.Context, tx *sql.Tx, username string, codes []string) error {
 	totpConfigQuery := `
 		SELECT u.id, utc.last_time_slot
 		FROM "user" u LEFT JOIN totp_configuration utc ON (u.id = utc.user_id)
@@ -227,7 +213,7 @@ func (ps *pgstore) addRecoveryCodes(ctx context.Context, tx *sql.Tx, username st
 }
 
 // UpdateLastTimeSlot updates last time slot value in the database
-func (ps *pgstore) UpdateLastTimeSlot(ctx context.Context, username string, previousValue, newValue int64) error {
+func (ps *PgStore) UpdateLastTimeSlot(ctx context.Context, username string, previousValue, newValue int64) error {
 	tx, err := ps.db.BeginTxx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		return err
@@ -241,7 +227,7 @@ func (ps *pgstore) UpdateLastTimeSlot(ctx context.Context, username string, prev
 	return tx.Commit()
 }
 
-func (ps *pgstore) updateLastTimeSlot(ctx context.Context, tx *sql.Tx, username string, previousValue, newValue int64) error {
+func (ps *PgStore) updateLastTimeSlot(ctx context.Context, tx *sql.Tx, username string, previousValue, newValue int64) error {
 	totpConfigQuery := `
 		SELECT u.id, utc.last_time_slot
 		FROM "user" u LEFT JOIN totp_configuration utc ON (u.id = utc.user_id)

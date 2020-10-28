@@ -34,46 +34,19 @@ type txDB interface {
 	Rollback() error
 }
 
-type pgstore struct {
+type PgStore struct {
 	db   DB
 	txDB txDB
 }
 
-type PgStore interface {
-	TxBegin(ctx context.Context) (PgStore, error)
-	TxCommit(ctx context.Context) error
-	TxRollback(ctx context.Context) error
-	IsErrorRepeat(err error) bool
-
-	DevicePgstore
-	DeviceProfilePgStore
-	ApplicationPgStore
-	IntegrationPgStore
-	GatewayPgStore
-	GatewayDefaultConfigPgStore
-	OrganizationPgStore
-	GatewayProfilePgStore
-	FuotaDeploymentPgStore
-	MigrateCodePgStore
-	MulticastClassCSessionPgStore
-	MulticastGroupPgStore
-	MulticastSetupPgStore
-	ServiceProfilePgStore
-	NetworkServerPgStore
-	UserPgStore
-	FragmentationSessionPgStore
-	OTPPgStore
-	AuthenticationPgStore
-}
-
 // New returns a new database access layer for other stores
-func New() PgStore {
-	return &pgstore{
+func New() *PgStore {
+	return &PgStore{
 		db: ctrl.db,
 	}
 }
 
-func (ps *pgstore) TxBegin(ctx context.Context) (PgStore, error) {
+func (ps *PgStore) TxBegin(ctx context.Context) (*PgStore, error) {
 	tx, err := ps.db.BeginTxx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,
 	})
@@ -81,13 +54,13 @@ func (ps *pgstore) TxBegin(ctx context.Context) (PgStore, error) {
 		return nil, err
 	}
 
-	return &pgstore{
+	return &PgStore{
 		db:   ltx{Tx: tx},
 		txDB: tx,
 	}, nil
 }
 
-func (ps *pgstore) TxCommit(ctx context.Context) error {
+func (ps *PgStore) TxCommit(ctx context.Context) error {
 	if ps.txDB == nil {
 		return fmt.Errorf("not in transaction")
 	}
@@ -99,7 +72,7 @@ func (ps *pgstore) TxCommit(ctx context.Context) error {
 	return err
 }
 
-func (ps *pgstore) TxRollback(ctx context.Context) error {
+func (ps *PgStore) TxRollback(ctx context.Context) error {
 	if ps.txDB == nil {
 		return fmt.Errorf("not in transaction")
 	}
@@ -111,7 +84,7 @@ func (ps *pgstore) TxRollback(ctx context.Context) error {
 	return err
 }
 
-func (ps *pgstore) IsErrorRepeat(err error) bool {
+func (ps *PgStore) IsErrorRepeat(err error) bool {
 	var e pq.Error
 	if errors.As(err, &e) {
 		if e.Code == "40001" {

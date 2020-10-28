@@ -9,8 +9,8 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
 )
 
 type Validator struct {

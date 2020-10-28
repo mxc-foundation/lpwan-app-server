@@ -10,7 +10,7 @@ import (
 
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
