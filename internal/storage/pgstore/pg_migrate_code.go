@@ -25,7 +25,7 @@ func (ps *PgStore) ExecuteMigrateUp(m migrate.MigrationSource) error {
 	return nil
 }
 
-func (ps *PgStore) FixGorpMigrationsItemId(ctx context.Context, oldID, newID string) error {
+func (ps *PgStore) FixGorpMigrationsItemID(ctx context.Context, oldID, newID string) error {
 	res, err := ps.db.ExecContext(ctx, `
 			update gorp_migrations 
 			set id=$1 where id=$2

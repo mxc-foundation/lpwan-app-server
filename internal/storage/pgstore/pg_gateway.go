@@ -266,7 +266,7 @@ func (ps *PgStore) UpdateGatewayFirmware(ctx context.Context, gwFw *GatewayFirmw
 	return model, nil
 }
 
-func (ps *PgStore) UpdateGatewayConfigByGwId(ctx context.Context, config string, mac lorawan.EUI64) error {
+func (ps *PgStore) UpdateGatewayConfigByGwID(ctx context.Context, config string, mac lorawan.EUI64) error {
 	res, err := ps.db.ExecContext(ctx, `
 		update gateway
 			set config = $1
@@ -628,7 +628,7 @@ func (ps *PgStore) GetGateways(ctx context.Context, filters GatewayFilters) ([]G
 	return gws, nil
 }
 
-func (ps *PgStore) GetGatewayConfigByGwId(ctx context.Context, mac lorawan.EUI64) (string, error) {
+func (ps *PgStore) GetGatewayConfigByGwID(ctx context.Context, mac lorawan.EUI64) (string, error) {
 	var gwConfig string
 	err := sqlx.GetContext(ctx, ps.db, &gwConfig, `
 		select
