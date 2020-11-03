@@ -14,8 +14,10 @@ func TestGetPrice(t *testing.T) {
 		"mxc": {"usd": 0.01199642},
 		"eth": {"eur": 227.39},
 	}
+	var requestsCnt int
 	m := http.NewServeMux()
 	m.HandleFunc("/simple/price", func(w http.ResponseWriter, r *http.Request) {
+		requestsCnt++
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
@@ -41,6 +43,11 @@ func TestGetPrice(t *testing.T) {
 	}
 	if math.Abs(mup-testPrices["mxc"]["usd"]) > 1e-9 {
 		t.Errorf("wrong mxc/usd price: %f", mup)
+	}
+	// this request should use cached price
+	_, _ = c.GetPrice("mxc", "usd")
+	if requestsCnt > 1 {
+		t.Errorf("expected second mxc/usd request to use cached data")
 	}
 
 	_, err = c.GetPrice("mxc", "eur")
