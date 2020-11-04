@@ -28,6 +28,7 @@ import (
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
@@ -37,7 +38,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
-	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	userdata "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
@@ -55,7 +56,7 @@ type controller struct {
 	s                   ExternalAPIStruct
 	applicationServerID uuid.UUID
 	serverAddr          string
-	recaptcha           user.RecaptchaStruct
+	recaptcha           userdata.RecaptchaStruct
 	enable2FA           bool
 	serverRegion        string
 
@@ -200,11 +201,12 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	// orgnization
 	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(h))
 	// user
-	api.RegisterUserServiceServer(grpcServer, NewUserAPI(h))
-	api.RegisterInternalServiceServer(grpcServer, NewInternalUserAPI(h, user.Config{
+	userSrv := user.NewServer(h, userdata.Config{
 		Recaptcha:      ctrl.recaptcha,
 		Enable2FALogin: ctrl.enable2FA,
-	}))
+	})
+	api.RegisterUserServiceServer(grpcServer, userSrv)
+	api.RegisterInternalServiceServer(grpcServer, userSrv)
 
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(ctrl.serverRegion))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())

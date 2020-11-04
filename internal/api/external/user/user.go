@@ -1,4 +1,5 @@
-package external
+// Package user implements APIs for user's registration and login
+package user
 
 import (
 	"context"
@@ -18,20 +19,22 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-// UserAPI exports the User related functions.
-type UserAPI struct {
-	st *store.Handler
+// Server implements Internal User Service
+type Server struct {
+	st     *store.Handler
+	config Config
 }
 
-// NewUserAPI creates a new UserAPI.
-func NewUserAPI(h *store.Handler) *UserAPI {
-	return &UserAPI{
-		st: h,
+// NewServer creates a new server instance
+func NewServer(h *store.Handler, c Config) *Server {
+	return &Server{
+		st:     h,
+		config: c,
 	}
 }
 
 // Create creates the given user.
-func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inpb.CreateUserResponse, error) {
+func (a *Server) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inpb.CreateUserResponse, error) {
 	if req.User == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
@@ -71,7 +74,7 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 }
 
 // Get returns the user matching the given ID.
-func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUserResponse, error) {
+func (a *Server) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUserResponse, error) {
 	if valid, err := user.NewValidator().ValidateUserAccess(ctx, auth.Read, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -106,7 +109,7 @@ func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetU
 }
 
 // GetUserEmail returns true if user does not exist
-func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailRequest) (*inpb.GetUserEmailResponse, error) {
+func (a *Server) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailRequest) (*inpb.GetUserEmailResponse, error) {
 	username := normalizeUsername(req.UserEmail)
 	u, err := a.st.GetUserByEmail(ctx, username)
 	if err != nil {
@@ -124,7 +127,7 @@ func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailReques
 }
 
 // List lists the users.
-func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.ListUserResponse, error) {
+func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.ListUserResponse, error) {
 	if valid, err := user.NewValidator().ValidateUsersGlobalAccess(ctx, auth.List); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -168,7 +171,7 @@ func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Li
 }
 
 // Update updates the given user.
-func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empty.Empty, error) {
+func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empty.Empty, error) {
 	if req.User == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
@@ -197,7 +200,7 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 }
 
 // Delete deletes the user matching the given ID.
-func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empty.Empty, error) {
+func (a *Server) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empty.Empty, error) {
 	if valid, err := user.NewValidator().ValidateUserAccess(ctx, auth.Delete, req.Id); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -211,7 +214,7 @@ func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*emp
 }
 
 // UpdatePassword updates the password for the user matching the given ID.
-func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswordRequest) (*empty.Empty, error) {
+func (a *Server) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswordRequest) (*empty.Empty, error) {
 	if valid, err := user.NewValidator().ValidateUserAccess(ctx, auth.UpdatePassword, req.UserId); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -224,7 +227,7 @@ func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswo
 	return &empty.Empty{}, nil
 }
 
-func (a *UserAPI) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
+func (a *Server) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
 	userEmail := normalizeUsername(req.UserEmail)
 	otp, err := a.st.GetTokenByUsername(ctx, userEmail)
 	if err != nil {

@@ -1,4 +1,4 @@
-package external
+package user
 
 import (
 	"context"
@@ -31,22 +31,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-// InternalUserAPI exports the internal User related functions.
-type InternalUserAPI struct {
-	st     *store.Handler
-	config Config
-}
-
-// NewInternalUserAPI creates a new InternalUserAPI.
-func NewInternalUserAPI(h *store.Handler, c Config) *InternalUserAPI {
-	return &InternalUserAPI{
-		st:     h,
-		config: c,
-	}
-}
-
 // Login validates the login request and returns a JWT token.
-func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
+func (a *Server) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
 	userEmail := normalizeUsername(req.Username)
 	err := a.st.LoginUserByPassword(ctx, userEmail, req.Password)
 	if nil != err {
@@ -94,7 +80,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 // Login2FA performs second factor authentication. It requires u to have
 // already passed password check and checks if the OTP code is valid. If it is
 // it returns JWT with access to the api.
-func (a *InternalUserAPI) Login2FA(ctx context.Context, req *inpb.Login2FARequest) (*inpb.LoginResponse, error) {
+func (a *Server) Login2FA(ctx context.Context, req *inpb.Login2FARequest) (*inpb.LoginResponse, error) {
 	usr, err := user.NewValidator().GetUser(ctx, cred.WithAudience("login-2fa"), cred.WithValidOTP())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "not authenticated")
@@ -115,7 +101,7 @@ func (a *InternalUserAPI) Login2FA(ctx context.Context, req *inpb.Login2FAReques
 }
 
 // IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
-func (a *InternalUserAPI) IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*inpb.GoogleRecaptchaResponse, error) {
+func (a *Server) IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*inpb.GoogleRecaptchaResponse, error) {
 	secret := a.config.Recaptcha.Secret
 	postURL := a.config.Recaptcha.HostServer
 
@@ -152,7 +138,7 @@ func (a *InternalUserAPI) IsPassVerifyingGoogleRecaptcha(response string, remote
 }
 
 // GetVerifyingGoogleRecaptcha defines the request and response to verify the google recaptcha
-func (a *InternalUserAPI) GetVerifyingGoogleRecaptcha(ctx context.Context, req *inpb.GoogleRecaptchaRequest) (*inpb.GoogleRecaptchaResponse, error) {
+func (a *Server) GetVerifyingGoogleRecaptcha(ctx context.Context, req *inpb.GoogleRecaptchaRequest) (*inpb.GoogleRecaptchaResponse, error) {
 	res, err := a.IsPassVerifyingGoogleRecaptcha(req.Response, req.Remoteip)
 	if err != nil {
 		log.WithError(err).Error("Cannot verify from google recaptcha")
@@ -176,7 +162,7 @@ func OTPgen() string {
 }
 
 // Profile returns the u profile.
-func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileResponse, error) {
+func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileResponse, error) {
 	if valid, err := user.NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -227,7 +213,7 @@ func (a *InternalUserAPI) Profile(ctx context.Context, req *empty.Empty) (*inpb.
 }
 
 // Branding returns UI branding.
-func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
+func (a *Server) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
 	resp := inpb.BrandingResponse{
 		LogoPath: email.GetOperatorInfo().OperatorLogo,
 	}
@@ -236,7 +222,7 @@ func (a *InternalUserAPI) Branding(ctx context.Context, req *empty.Empty) (*inpb
 }
 
 // GlobalSearch performs a global search.
-func (a *InternalUserAPI) GlobalSearch(ctx context.Context, req *inpb.GlobalSearchRequest) (*inpb.GlobalSearchResponse, error) {
+func (a *Server) GlobalSearch(ctx context.Context, req *inpb.GlobalSearchRequest) (*inpb.GlobalSearchResponse, error) {
 	if valid, err := user.NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -298,7 +284,7 @@ func normalizeUsername(userEmail string) string {
 }
 
 // RegisterUser adds new u and sends activation userEmail
-func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest) (*empty.Empty, error) {
+func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest) (*empty.Empty, error) { // nolint: gocyclo
 	logInfo := "api/appserver_serves_ui/RegisterUser"
 
 	userEmail := normalizeUsername(req.Email)
@@ -373,7 +359,7 @@ func (a *InternalUserAPI) RegisterUser(ctx context.Context, req *inpb.RegisterUs
 }
 
 // GetTOTPStatus returns info about TOTP status for the current u
-func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
+func (a *Server) GetTOTPStatus(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
 	if valid, err := user.NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
@@ -392,7 +378,7 @@ func (a *InternalUserAPI) GetTOTPStatus(ctx context.Context, req *inpb.TOTPStatu
 }
 
 // GetTOTPConfiguration generates a new TOTP configuration for the u
-func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *inpb.GetTOTPConfigurationRequest) (*inpb.GetTOTPConfigurationResponse, error) {
+func (a *Server) GetTOTPConfiguration(ctx context.Context, req *inpb.GetTOTPConfigurationRequest) (*inpb.GetTOTPConfigurationResponse, error) {
 	if valid, err := user.NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
@@ -416,7 +402,7 @@ func (a *InternalUserAPI) GetTOTPConfiguration(ctx context.Context, req *inpb.Ge
 }
 
 // EnableTOTP enables TOTP for the u
-func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
+func (a *Server) EnableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
 	if valid, err := user.NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
@@ -432,7 +418,7 @@ func (a *InternalUserAPI) EnableTOTP(ctx context.Context, req *inpb.TOTPStatusRe
 }
 
 // DisableTOTP disables TOTP for the u
-func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
+func (a *Server) DisableTOTP(ctx context.Context, req *inpb.TOTPStatusRequest) (*inpb.TOTPStatusResponse, error) {
 	if valid, err := user.NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
@@ -447,7 +433,7 @@ func (a *InternalUserAPI) DisableTOTP(ctx context.Context, req *inpb.TOTPStatusR
 }
 
 // GetRecoveryCodes returns the list of recovery codes for the u
-func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRecoveryCodesRequest) (*inpb.GetRecoveryCodesResponse, error) {
+func (a *Server) GetRecoveryCodes(ctx context.Context, req *inpb.GetRecoveryCodesRequest) (*inpb.GetRecoveryCodesResponse, error) {
 	if valid, err := user.NewValidator().ValidateActiveUser(ctx); !valid || err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "not authenticated: %v", err)
 	}
@@ -462,7 +448,7 @@ func (a *InternalUserAPI) GetRecoveryCodes(ctx context.Context, req *inpb.GetRec
 	}, nil
 }
 
-func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.PasswordResetReq) (*inpb.PasswordResetResp, error) {
+func (a *Server) RequestPasswordReset(ctx context.Context, req *inpb.PasswordResetReq) (*inpb.PasswordResetResp, error) {
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		userEmail := normalizeUsername(req.Username)
 		u, err := handler.GetUserByUsername(ctx, userEmail)
@@ -498,7 +484,7 @@ func (a *InternalUserAPI) RequestPasswordReset(ctx context.Context, req *inpb.Pa
 	return &inpb.PasswordResetResp{}, nil
 }
 
-func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
+func (a *Server) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
 	var errUI error
 	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
 		userEmail := normalizeUsername(req.Username)
@@ -535,7 +521,7 @@ func (a *InternalUserAPI) ConfirmPasswordReset(ctx context.Context, req *inpb.Co
 }
 
 // ConfirmRegistration checks provided security token and activates u
-func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegistrationRequest) (*inpb.ConfirmRegistrationResponse, error) {
+func (a *Server) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegistrationRequest) (*inpb.ConfirmRegistrationResponse, error) {
 	u, err := a.st.GetUserByToken(ctx, req.Token)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, err.Error())
@@ -558,7 +544,7 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.Con
 }
 
 // FinishRegistration sets new u password and creates a new organization
-func (a *InternalUserAPI) FinishRegistration(ctx context.Context, req *inpb.FinishRegistrationRequest) (*empty.Empty, error) {
+func (a *Server) FinishRegistration(ctx context.Context, req *inpb.FinishRegistrationRequest) (*empty.Empty, error) {
 	u, err := user.NewValidator().GetUser(ctx,
 		cred.WithLimitedCredentials(), // nolint: staticcheck
 		cred.WithAudience("registration"),
