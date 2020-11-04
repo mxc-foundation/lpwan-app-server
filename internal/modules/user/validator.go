@@ -19,7 +19,7 @@ type Validate interface {
 	ValidateUserAccess(ctx context.Context, flag auth.Flag, userID int64) (bool, error)
 	IsGlobalAdmin(ctx context.Context, opts ...auth.Option) error
 	Is2FAEnabled(ctx context.Context, userEmail string) (bool, error)
-	SignJWToken(userEmail string, ttl int64, audience []string) (string, error)
+	SignJWToken(userID int64, userEmail string, ttl int64, audience []string) (string, error)
 	GetUser(ctx context.Context, opts ...auth.Option) (auth.User, error)
 	NewConfiguration(ctx context.Context, userEmail string) (*otp.Configuration, error)
 	Enable2FA(ctx context.Context) error
@@ -80,8 +80,8 @@ func (v *Validator) GetUser(ctx context.Context, opts ...auth.Option) (auth.User
 	return v.Credentials.GetUser(ctx, opts...)
 }
 
-func (v *Validator) SignJWToken(userEmail string, ttl int64, audience []string) (string, error) {
-	return v.Credentials.SignJWToken(userEmail, ttl, audience)
+func (v *Validator) SignJWToken(userID int64, userEmail string, ttl int64, audience []string) (string, error) {
+	return v.Credentials.SignJWToken(userID, userEmail, ttl, audience)
 }
 
 func (v *Validator) Is2FAEnabled(ctx context.Context, userEmail string) (bool, error) {

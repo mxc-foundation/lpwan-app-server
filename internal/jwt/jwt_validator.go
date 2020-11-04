@@ -14,6 +14,8 @@ const defaultSessionTTL = 86400
 
 // Claims defines the struct containing the token claims.
 type Claims struct {
+	// UserID
+	UserID int64 `json:"userId"`
 	// Username defines the identity of the user.
 	Username string `json:"username"`
 }
@@ -38,7 +40,7 @@ func NewValidator(algorithm jwa.SignatureAlgorithm, secret interface{}, defaultT
 }
 
 // SignToken creates and signs a new JWT token for user
-func (v Validator) SignToken(username string, ttl int64, audience []string) (string, error) {
+func (v Validator) SignToken(userID int64, username string, ttl int64, audience []string) (string, error) {
 	t := jwt.New()
 	if ttl == 0 {
 		ttl = v.defaultTTL
@@ -52,6 +54,7 @@ func (v Validator) SignToken(username string, ttl int64, audience []string) (str
 	t.Set(jwt.IssuedAtKey, time.Now())
 	t.Set(jwt.ExpirationKey, time.Now().Add(time.Duration(ttl)*time.Second))
 	t.Set("username", username)
+	t.Set("userId", userID)
 	token, err := jwt.Sign(t, v.algorithm, v.secret)
 	if err != nil {
 		return "", fmt.Errorf("failed to sign JWT: %v", err)
@@ -83,6 +86,16 @@ func (v Validator) GetClaims(tokenEncoded, audience string) (*Claims, error) {
 
 	claims := &Claims{
 		Username: usernameStr,
+	}
+	// at the moment the username is the primary id, so we don't require userId
+	// yet
+	userID, ok := token.Get("userId")
+	if ok {
+		userIDFloat, ok := userID.(float64)
+		if !ok {
+			return nil, fmt.Errorf("userId is not a number")
+		}
+		claims.UserID = int64(userIDFloat)
 	}
 
 	return claims, nil

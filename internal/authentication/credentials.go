@@ -365,8 +365,8 @@ func (c *Credentials) Is2FAEnabled(ctx context.Context, username string) (bool, 
 }
 
 // SignJWToken requires username, since ctx does not contain user info at this point
-func (c *Credentials) SignJWToken(username string, ttl int64, audience []string) (string, error) {
-	return c.h.jwtValidator.SignToken(username, ttl, audience)
+func (c *Credentials) SignJWToken(userID int64, username string, ttl int64, audience []string) (string, error) {
+	return c.h.jwtValidator.SignToken(userID, username, ttl, audience)
 }
 
 // NewConfiguration generates a new TOTP configuration for the user

@@ -82,7 +82,7 @@ func (a *InternalUserAPI) Login(ctx context.Context, req *inpb.LoginRequest) (*i
 		audience = []string{"login-2fa"}
 	}
 
-	jwt, err := user.NewValidator().SignJWToken(u.Email, ttl, audience)
+	jwt, err := user.NewValidator().SignJWToken(u.ID, u.Email, ttl, audience)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
@@ -105,7 +105,7 @@ func (a *InternalUserAPI) Login2FA(ctx context.Context, req *inpb.Login2FAReques
 		return nil, status.Error(codes.Internal, "couldn't get info about the u")
 	}
 
-	jwt, err := user.NewValidator().SignJWToken(u.Email, 60*int64(u.SessionTTL), nil)
+	jwt, err := user.NewValidator().SignJWToken(u.ID, u.Email, 60*int64(u.SessionTTL), nil)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Error(codes.Internal, "couldn't create a token")
@@ -543,7 +543,7 @@ func (a *InternalUserAPI) ConfirmRegistration(ctx context.Context, req *inpb.Con
 
 	log.Println("Confirming GetJwt", u.Email)
 	// give u a token that is valid only to finish the registration process
-	jwt, err := user.NewValidator().SignJWToken(u.Email, 86400, []string{"registration", "lora-app-server"})
+	jwt, err := user.NewValidator().SignJWToken(u.ID, u.Email, 86400, []string{"registration", "lora-app-server"})
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
