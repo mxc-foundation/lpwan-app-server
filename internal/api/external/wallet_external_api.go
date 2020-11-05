@@ -17,13 +17,21 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/wallet"
 )
 
+// Pricer allows you to get the price of crypto currency
+type Pricer interface {
+	GetPrice(crypto, fiat string) (float64, error)
+}
+
 // WalletServerAPI is the structure that contains the validator
 type WalletServerAPI struct {
+	pricer Pricer
 }
 
 // NewWalletServerAPI validates the new wallet server api
 func NewWalletServerAPI() *WalletServerAPI {
-	return &WalletServerAPI{}
+	return &WalletServerAPI{
+		pricer: coingecko.New(),
+	}
 }
 
 // GetWalletBalance gets the wallet balance
@@ -287,7 +295,7 @@ func (s *WalletServerAPI) GetMXCprice(ctx context.Context, req *api.GetMXCpriceR
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "mxcPrice must be a number")
 	}
-	price, err := coingecko.New().GetPrice("mxc", "usd")
+	price, err := s.pricer.GetPrice("mxc", "usd")
 	if err != nil {
 		log.WithError(err).Error(logInfo)
 		return &api.GetMXCpriceResponse{}, status.Errorf(codes.Internal, "unable to get price from CMC")
