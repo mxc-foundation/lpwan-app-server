@@ -30,6 +30,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
@@ -181,6 +182,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	if err != nil {
 		return err
 	}
+	grpcAuth := grpcauth.New(pgstore.New(), jwtValidator, otpValidator)
 	authcus.SetupCred(pgstore.New(), jwtValidator, otpValidator)
 
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(h))
@@ -201,10 +203,15 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	// orgnization
 	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(h))
 	// user
-	userSrv := user.NewServer(h, userdata.Config{
-		Recaptcha:      ctrl.recaptcha,
-		Enable2FALogin: ctrl.enable2FA,
-	})
+	userSrv := user.NewServer(h,
+		grpcAuth,
+		jwtValidator,
+		otpValidator,
+		userdata.Config{
+			Recaptcha:      ctrl.recaptcha,
+			Enable2FALogin: ctrl.enable2FA,
+		},
+	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)
 	api.RegisterInternalServiceServer(grpcServer, userSrv)
 

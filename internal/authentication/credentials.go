@@ -9,27 +9,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 )
-
-/*// Credentials provides methods to assert the user's Credentials
-type Credentials interface {
-	// Email returns user's username
-	Email() string
-	// UserID returns id of the user
-	UserID() int64
-	// IsGlobalAdmin returns an error if user is not global admin
-	IsGlobalAdmin(context.Context) error
-	// IsOrgUser returns an error if user does not belong to the organization
-	IsOrgUser(context.Context, int64) error
-	// IsOrgAdmin returns an error if user is not admin of the organization
-	IsOrgAdmin(context.Context, int64) error
-	// IsDeviceAdmin returns an error if user is not device admin of the organization
-	IsDeviceAdmin(context.Context, int64) error
-	// IsGatewayAdmin returns an error if user is not gateway admin of the organization
-	IsGatewayAdmin(context.Context, int64) error
-}*/
 
 // User contains information about the user
 type User struct {
@@ -61,16 +44,7 @@ const (
 	FinishRegistration
 )
 
-// Store provides access to information about users and their roles
-type Store interface {
-	// AuthGetUser returns user's information given that there is an active user
-	// with the given username
-	AuthGetUser(ctx context.Context, username string) (User, error)
-	// AuthGetOrgUser returns user's role in the listed organization
-	AuthGetOrgUser(ctx context.Context, userID int64, orgID int64) (OrgUser, error)
-}
-
-func SetupCred(st Store, jwtValidator *jwt.Validator, otpValidator *otp.Validator) {
+func SetupCred(st auth.Store, jwtValidator *jwt.Validator, otpValidator *otp.Validator) {
 	hl.st = st
 	hl.jwtValidator = jwtValidator
 	hl.otpValidator = otpValidator
@@ -79,7 +53,7 @@ func SetupCred(st Store, jwtValidator *jwt.Validator, otpValidator *otp.Validato
 var hl handler
 
 type handler struct {
-	st           Store
+	st           auth.Store
 	jwtValidator *jwt.Validator
 	otpValidator *otp.Validator
 }
@@ -205,11 +179,14 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		if err != nil {
 			return cred, errors.Wrap(err, "getCredentials")
 		}
+		if !orgUser.IsOrgUser {
+			return cred, fmt.Errorf("not an org user")
+		}
 
 		cred.orgUser.IsGatewayAdmin = orgUser.IsGatewayAdmin
 		cred.orgUser.IsDeviceAdmin = orgUser.IsDeviceAdmin
 		cred.orgUser.IsOrgAdmin = orgUser.IsOrgAdmin
-		cred.orgUser.IsOrgUser = true
+		cred.orgUser.IsOrgUser = orgUser.IsOrgUser
 	}
 
 	return cred, nil
@@ -369,8 +346,8 @@ func (c *Credentials) SignJWToken(userID int64, username string, ttl int64, audi
 	return c.h.jwtValidator.SignToken(userID, username, ttl, audience)
 }
 
-// NewConfiguration generates a new TOTP configuration for the user
-func (c *Credentials) NewConfiguration(ctx context.Context, username string) (*otp.Configuration, error) {
+// New2FAConfiguration generates a new TOTP configuration for the user
+func (c *Credentials) New2FAConfiguration(ctx context.Context, username string) (*otp.Configuration, error) {
 	return c.h.otpValidator.NewConfiguration(ctx, username)
 }
 
