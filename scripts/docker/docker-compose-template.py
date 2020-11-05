@@ -99,6 +99,15 @@ localDevelopTemplate = \
         image: registry.gitlab.com/shaydo/testsmtpd
         ports:
           - 8100:80
+
+      influxdb:
+        image: influxdb:1.8
+        environment:
+          - INFLUXDB_DB=mxprotocol
+          - INFLUXDB_ADMIN_USER=admin
+          - INFLUXDB_ADMIN_PASSWORD=admin
+          - INFLUXDB_USER=influx
+          - INFLUXDB_USER_PASSWORD=influx
     '''
 
 inputList = {
