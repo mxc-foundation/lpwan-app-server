@@ -223,7 +223,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 
 	api.RegisterStakingServiceServer(grpcServer, staking.NewServer(
 		m2mcli.GetStakingServiceClient(),
-		authcus.NewCredentials(),
+		grpcAuth,
 	))
 
 	return nil
