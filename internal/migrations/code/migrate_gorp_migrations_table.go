@@ -41,7 +41,7 @@ func MigrateGorpMigrations(handler *store.Handler) error {
 				continue
 			}
 
-			if err := handler.FixGorpMigrationsItemId(ctx, v, newItemList[i]); err != nil {
+			if err := handler.FixGorpMigrationsItemID(ctx, v, newItemList[i]); err != nil {
 				return err
 			}
 		}

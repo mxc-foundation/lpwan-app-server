@@ -32,7 +32,7 @@ import (
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	nsmod "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
@@ -181,7 +181,7 @@ func (a *GatewayAPI) resetDefaultGatewayConfigByOrganizationID(ctx context.Conte
 				return err
 			}
 
-			err = a.st.UpdateGatewayConfigByGwId(ctx, v.Config, v.MAC)
+			err = a.st.UpdateGatewayConfigByGwID(ctx, v.Config, v.MAC)
 			if err != nil {
 				return err
 			}
@@ -218,7 +218,7 @@ func (a *GatewayAPI) ResetDefaultGatewatConfigByID(ctx context.Context, req *api
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
 
-	err = a.st.UpdateGatewayConfigByGwId(ctx, gw.Config, gw.MAC)
+	err = a.st.UpdateGatewayConfigByGwID(ctx, gw.Config, gw.MAC)
 	if err != nil {
 		return nil, status.Error(codes.Unknown, err.Error())
 	}
@@ -1018,7 +1018,7 @@ func (a *GatewayAPI) GetGwConfig(ctx context.Context, req *api.GetGwConfigReques
 		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
-	gwConfig, err := a.st.GetGatewayConfigByGwId(ctx, mac)
+	gwConfig, err := a.st.GetGatewayConfigByGwID(ctx, mac)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "GetGwConfig/unable to get gateway config from DB %s", err)
 	}
@@ -1037,7 +1037,7 @@ func (a *GatewayAPI) UpdateGwConfig(ctx context.Context, req *api.UpdateGwConfig
 		return nil, status.Errorf(codes.PermissionDenied, "authentication failed: %s", err)
 	}
 
-	if err := a.st.UpdateGatewayConfigByGwId(ctx, req.Conf, mac); err != nil {
+	if err := a.st.UpdateGatewayConfigByGwID(ctx, req.Conf, mac); err != nil {
 		log.WithError(err).Error("Update conf to gw failed")
 		return &api.UpdateGwConfigResponse{Status: "Update config failed, please check your gateway connection."},
 			status.Errorf(codes.Internal, "cannot update gateway config: %s", err)

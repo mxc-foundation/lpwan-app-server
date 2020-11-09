@@ -18,20 +18,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway-profile/data"
 )
 
-type GatewayProfilePgStore interface {
-	CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error)
-	CheckReadListGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error)
-	CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error)
-	GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error)
-	UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error
-	DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
-	GetGatewayProfileCount(ctx context.Context) (int, error)
-	GetGatewayProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error)
-	GetGatewayProfiles(ctx context.Context, limit, offset int) ([]GatewayProfileMeta, error)
-	GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]GatewayProfileMeta, error)
-}
-
-func (ps *pgstore) CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {
 	query := `
 		select
 			1
@@ -57,7 +44,7 @@ func (ps *pgstore) CheckCreateUpdateDeleteGatewayProfileAccess(ctx context.Conte
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadListGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {
+func (ps *PgStore) CheckReadListGatewayProfileAccess(ctx context.Context, username string, userID int64) (bool, error) {
 	query := `
 		select
 			1
@@ -86,7 +73,7 @@ func (ps *pgstore) CheckReadListGatewayProfileAccess(ctx context.Context, userna
 // CreateGatewayProfile creates the given gateway-profile.
 // This will create the gateway-profile at the network-server side and will
 // create a local reference record.
-func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error) {
+func (ps *PgStore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile) (uuid.UUID, error) {
 	gpID, err := uuid.NewV4()
 	if err != nil {
 		return uuid.UUID{}, errors.Wrap(err, "new uuid v4 error")
@@ -136,7 +123,7 @@ func (ps *pgstore) CreateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 }
 
 // GetGatewayProfile returns the gateway-profile matching the given id.
-func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error) {
+func (ps *PgStore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (GatewayProfile, error) {
 	var gp GatewayProfile
 	err := sqlx.GetContext(ctx, ps.db, &gp, `
 		select
@@ -157,7 +144,7 @@ func (ps *pgstore) GetGatewayProfile(ctx context.Context, id uuid.UUID) (Gateway
 }
 
 // UpdateGatewayProfile updates the given gateway-profile.
-func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
+func (ps *PgStore) UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile) error {
 	gp.UpdatedAt = time.Now()
 	gpID, err := uuid.FromBytes(gp.GatewayProfile.Id)
 	if err != nil {
@@ -203,7 +190,7 @@ func (ps *pgstore) UpdateGatewayProfile(ctx context.Context, gp *GatewayProfile)
 }
 
 // DeleteGatewayProfile deletes the gateway-profile matching the given id.
-func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error {
+func (ps *PgStore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error {
 	res, err := ps.db.ExecContext(ctx, `
 		delete from gateway_profile
 		where
@@ -226,7 +213,7 @@ func (ps *pgstore) DeleteGatewayProfile(ctx context.Context, id uuid.UUID) error
 }
 
 // GetGatewayProfileCount returns the total number of gateway-profiles.
-func (ps *pgstore) GetGatewayProfileCount(ctx context.Context) (int, error) {
+func (ps *PgStore) GetGatewayProfileCount(ctx context.Context) (int, error) {
 	var count int
 	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
@@ -244,7 +231,7 @@ func (ps *pgstore) GetGatewayProfileCount(ctx context.Context) (int, error) {
 
 // GetGatewayProfileCountForNetworkServerID returns the total number of
 // gateway-profiles given a network-server ID.
-func (ps *pgstore) GetGatewayProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error) {
+func (ps *PgStore) GetGatewayProfileCountForNetworkServerID(ctx context.Context, networkServerID int64) (int, error) {
 	var count int
 	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
@@ -262,7 +249,7 @@ func (ps *pgstore) GetGatewayProfileCountForNetworkServerID(ctx context.Context,
 }
 
 // GetGatewayProfiles returns a slice of gateway-profiles.
-func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]GatewayProfileMeta, error) {
+func (ps *PgStore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([]GatewayProfileMeta, error) {
 	var gps []GatewayProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select
@@ -289,7 +276,7 @@ func (ps *pgstore) GetGatewayProfiles(ctx context.Context, limit, offset int) ([
 
 // GetGatewayProfilesForNetworkServerID returns a slice of gateway-profiles
 // for the given network-server ID.
-func (ps *pgstore) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]GatewayProfileMeta, error) {
+func (ps *PgStore) GetGatewayProfilesForNetworkServerID(ctx context.Context, networkServerID int64, limit, offset int) ([]GatewayProfileMeta, error) {
 	var gps []GatewayProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &gps, `
 		select

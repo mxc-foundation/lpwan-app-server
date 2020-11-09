@@ -17,29 +17,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 )
 
-type NetworkServerPgStore interface {
-	CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
-	CheckListNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
-	CheckReadNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error)
-	CheckUpdateDeleteNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error)
-	GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error)
-	CreateNetworkServer(ctx context.Context, n *NetworkServer) error
-	GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error)
-	UpdateNetworkServer(ctx context.Context, n *NetworkServer) error
-	DeleteNetworkServer(ctx context.Context, id int64) error
-	GetNetworkServerCount(ctx context.Context, filters NetworkServerFilters) (int, error)
-	GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error)
-	GetNetworkServers(ctx context.Context, filters NetworkServerFilters) ([]NetworkServer, error)
-	GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error)
-	GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error)
-	GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error)
-	GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-	GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error)
-}
-
-func (ps *pgstore) CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -69,7 +47,7 @@ func (ps *pgstore) CheckCreateNetworkServersAccess(ctx context.Context, username
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckListNetworkServersAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -102,7 +80,7 @@ func (ps *pgstore) CheckListNetworkServersAccess(ctx context.Context, username s
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
+func (ps *PgStore) CheckReadNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -140,7 +118,7 @@ func (ps *pgstore) CheckReadNetworkServerAccess(ctx context.Context, username st
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
+func (ps *PgStore) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, username string, networkserverID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -175,7 +153,7 @@ func (ps *pgstore) CheckUpdateDeleteNetworkServerAccess(ctx context.Context, use
 }
 
 // GetDefaultNetworkServer returns the network-server matching the given name.
-func (ps *pgstore) GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error) {
+func (ps *PgStore) GetDefaultNetworkServer(ctx context.Context) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, "select * from network_server where name = 'default_network_server'")
 	if err != nil {
@@ -186,7 +164,7 @@ func (ps *pgstore) GetDefaultNetworkServer(ctx context.Context) (NetworkServer, 
 }
 
 // CreateNetworkServer creates the given network-server.
-func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *NetworkServer) error {
+func (ps *PgStore) CreateNetworkServer(ctx context.Context, n *NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -246,7 +224,7 @@ func (ps *pgstore) CreateNetworkServer(ctx context.Context, n *NetworkServer) er
 }
 
 // GetNetworkServer returns the network-server matching the given id.
-func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error) {
+func (ps *PgStore) GetNetworkServer(ctx context.Context, id int64) (NetworkServer, error) {
 	var networkServer NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &networkServer, "select * from network_server where id = $1", id)
 	if err != nil {
@@ -257,7 +235,7 @@ func (ps *pgstore) GetNetworkServer(ctx context.Context, id int64) (NetworkServe
 }
 
 // UpdateNetworkServer updates the given network-server.
-func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *NetworkServer) error {
+func (ps *PgStore) UpdateNetworkServer(ctx context.Context, n *NetworkServer) error {
 	if err := n.Validate(); err != nil {
 		return errors.Wrap(err, "validation error")
 	}
@@ -318,7 +296,7 @@ func (ps *pgstore) UpdateNetworkServer(ctx context.Context, n *NetworkServer) er
 }
 
 // DeleteNetworkServer deletes the network-server matching the given id.
-func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
+func (ps *PgStore) DeleteNetworkServer(ctx context.Context, id int64) error {
 	res, err := ps.db.ExecContext(ctx, "delete from network_server where id = $1", id)
 	if err != nil {
 		return handlePSQLError(Delete, err, "delete error")
@@ -339,7 +317,7 @@ func (ps *pgstore) DeleteNetworkServer(ctx context.Context, id int64) error {
 }
 
 // GetNetworkServerCount returns the total number of network-servers.
-func (ps *pgstore) GetNetworkServerCount(ctx context.Context, filters NetworkServerFilters) (int, error) {
+func (ps *PgStore) GetNetworkServerCount(ctx context.Context, filters NetworkServerFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct ns.id)
@@ -365,7 +343,7 @@ func (ps *pgstore) GetNetworkServerCount(ctx context.Context, filters NetworkSer
 // network-servers accessible for the given organization id.
 // A network-server is accessible for an organization when it is used by one
 // of its service-profiles.
-func (ps *pgstore) GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
+func (ps *PgStore) GetNetworkServerCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
 	var count int
 	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
@@ -385,7 +363,7 @@ func (ps *pgstore) GetNetworkServerCountForOrganizationID(ctx context.Context, o
 }
 
 // GetNetworkServers returns a slice of network-servers.
-func (ps *pgstore) GetNetworkServers(ctx context.Context, filters NetworkServerFilters) ([]NetworkServer, error) {
+func (ps *PgStore) GetNetworkServers(ctx context.Context, filters NetworkServerFilters) ([]NetworkServer, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			distinct ns.*
@@ -415,7 +393,7 @@ func (ps *pgstore) GetNetworkServers(ctx context.Context, filters NetworkServerF
 // accessible for the given organization id.
 // A network-server is accessible for an organization when it is used by one
 // of its service-profiles.
-func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error) {
+func (ps *PgStore) GetNetworkServersForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]NetworkServer, error) {
 	var nss []NetworkServer
 	err := sqlx.SelectContext(ctx, ps.db, &nss, `
 		select
@@ -441,7 +419,7 @@ func (ps *pgstore) GetNetworkServersForOrganizationID(ctx context.Context, organ
 }
 
 // GetNetworkServerForDevEUI returns the network-server for the given DevEUI.
-func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error) {
+func (ps *PgStore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
@@ -464,7 +442,7 @@ func (ps *pgstore) GetNetworkServerForDevEUI(ctx context.Context, devEUI lorawan
 
 // GetNetworkServerForDeviceProfileID returns the network-server for the given
 // device-profile id.
-func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+func (ps *PgStore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
@@ -485,7 +463,7 @@ func (ps *pgstore) GetNetworkServerForDeviceProfileID(ctx context.Context, id uu
 
 // GetNetworkServerForGatewayMAC returns the network-server for a given
 // gateway mac.
-func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error) {
+func (ps *PgStore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawan.EUI64) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
@@ -505,7 +483,7 @@ func (ps *pgstore) GetNetworkServerForGatewayMAC(ctx context.Context, mac lorawa
 
 // GetNetworkServerForGatewayProfileID returns the network-server for the given
 // gateway-profile id.
-func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+func (ps *PgStore) GetNetworkServerForGatewayProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
@@ -526,7 +504,7 @@ func (ps *pgstore) GetNetworkServerForGatewayProfileID(ctx context.Context, id u
 
 // GetNetworkServerForMulticastGroupID returns the network-server for the given
 // multicast-group id.
-func (ps *pgstore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+func (ps *PgStore) GetNetworkServerForMulticastGroupID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select
@@ -548,7 +526,7 @@ func (ps *pgstore) GetNetworkServerForMulticastGroupID(ctx context.Context, id u
 
 // GetNetworkServerForServiceProfileID returns the network-server for the given
 // service-profile id.
-func (ps *pgstore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
+func (ps *PgStore) GetNetworkServerForServiceProfileID(ctx context.Context, id uuid.UUID) (NetworkServer, error) {
 	var n NetworkServer
 	err := sqlx.GetContext(ctx, ps.db, &n, `
 		select

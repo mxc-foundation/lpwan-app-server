@@ -10,20 +10,20 @@ import (
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
-	"github.com/mxc-foundation/lpwan-app-server/internal/authentication"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 )
 
 // Server defines the Staking Server API structure
 type Server struct {
 	stakingCli pb.StakingServiceClient
-	validator  *authentication.Credentials
+	auth       auth.Authenticator
 }
 
 // NewServer creates a new staking server
-func NewServer(stakingCli pb.StakingServiceClient, validator *authentication.Credentials) *Server {
+func NewServer(stakingCli pb.StakingServiceClient, auth auth.Authenticator) *Server {
 	return &Server{
 		stakingCli: stakingCli,
-		validator:  validator,
+		auth:       auth,
 	}
 }
 
@@ -54,9 +54,12 @@ func (s *Server) GetStakingPercentage(ctx context.Context, req *api.StakingPerce
 // Stake defines the request and response for staking
 func (s *Server) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/Stake org=%d", req.OrgId)
-
-	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	resp, err := s.stakingCli.Stake(ctx, &pb.StakeRequest{
@@ -80,8 +83,12 @@ func (s *Server) Stake(ctx context.Context, req *api.StakeRequest) (*api.StakeRe
 func (s *Server) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.UnstakeResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/Unstake org=%d", req.OrgId)
 
-	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	resp, err := s.stakingCli.Unstake(ctx, &pb.UnstakeRequest{
@@ -102,8 +109,12 @@ func (s *Server) Unstake(ctx context.Context, req *api.UnstakeRequest) (*api.Uns
 func (s *Server) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRequest) (*api.GetActiveStakesResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetActiveStakes org=%d", req.OrgId)
 
-	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	resp, err := s.stakingCli.GetActiveStakes(ctx, &pb.GetActiveStakesRequest{
@@ -135,8 +146,12 @@ func (s *Server) GetActiveStakes(ctx context.Context, req *api.GetActiveStakesRe
 // StakeInfo returns information about a particular stake, including all
 // received stake revenues
 func (s *Server) StakeInfo(ctx context.Context, req *api.StakeInfoRequest) (*api.StakeInfoResponse, error) {
-	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	resp, err := s.stakingCli.StakeInfo(ctx, &pb.StakeInfoRequest{
@@ -171,9 +186,12 @@ func (s *Server) StakeInfo(ctx context.Context, req *api.StakeInfoRequest) (*api
 // GetStakingRevenue returns the amount earned from staking during the specified period
 func (s *Server) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueRequest) (*api.StakingRevenueResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingRevenue org=%d", req.OrgId)
-
-	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	resp, err := s.stakingCli.GetStakingRevenue(ctx, &pb.StakingRevenueRequest{
@@ -192,9 +210,12 @@ func (s *Server) GetStakingRevenue(ctx context.Context, req *api.StakingRevenueR
 // GetStakingHistory defines the request and response to get staking history
 func (s *Server) GetStakingHistory(ctx context.Context, req *api.StakingHistoryRequest) (*api.StakingHistoryResponse, error) {
 	logInfo := fmt.Sprintf("api/appserver_serves_ui/GetStakingHistory org=%d", req.OrgId)
-
-	if err := s.validator.IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Errorf(codes.PermissionDenied, err.Error())
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	resp, err := s.stakingCli.GetStakingHistory(ctx, &pb.StakingHistoryRequest{

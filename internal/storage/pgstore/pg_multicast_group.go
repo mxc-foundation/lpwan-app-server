@@ -17,25 +17,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/multicast-group/data"
 )
 
-type MulticastGroupPgStore interface {
-	CheckCreateMulticastGroupsAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
-	CheckListMulticastGroupsAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
-	CheckReadMulticastGroupAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error)
-	CheckUpdateDeleteMulticastGroupAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error)
-	CheckMulticastGroupQueueAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error)
-	CreateMulticastGroup(ctx context.Context, mg *MulticastGroup) error
-	GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdate bool) (MulticastGroup, error)
-	UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup) error
-	DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error
-	GetMulticastGroupCount(ctx context.Context, filters MulticastGroupFilters) (int, error)
-	GetMulticastGroups(ctx context.Context, filters MulticastGroupFilters) ([]MulticastGroupListItem, error)
-	AddDeviceToMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error
-	RemoveDeviceFromMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error
-	GetDeviceCountForMulticastGroup(ctx context.Context, multicastGroup uuid.UUID) (int, error)
-	GetDevicesForMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, limit, offset int) ([]ds.DeviceListItem, error)
-}
-
-func (ps *pgstore) CheckCreateMulticastGroupsAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateMulticastGroupsAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -67,7 +49,7 @@ func (ps *pgstore) CheckCreateMulticastGroupsAccess(ctx context.Context, usernam
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListMulticastGroupsAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckListMulticastGroupsAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -99,7 +81,7 @@ func (ps *pgstore) CheckListMulticastGroupsAccess(ctx context.Context, username 
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadMulticastGroupAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckReadMulticastGroupAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -133,7 +115,7 @@ func (ps *pgstore) CheckReadMulticastGroupAccess(ctx context.Context, username s
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateDeleteMulticastGroupAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckUpdateDeleteMulticastGroupAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -167,7 +149,7 @@ func (ps *pgstore) CheckUpdateDeleteMulticastGroupAccess(ctx context.Context, us
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckMulticastGroupQueueAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckMulticastGroupQueueAccess(ctx context.Context, username string, multicastGroupID uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -203,7 +185,7 @@ func (ps *pgstore) CheckMulticastGroupQueueAccess(ctx context.Context, username 
 }
 
 // CreateMulticastGroup creates the given multicast-group.
-func (ps *pgstore) CreateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
+func (ps *PgStore) CreateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
 	if err := mg.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -250,7 +232,7 @@ func (ps *pgstore) CreateMulticastGroup(ctx context.Context, mg *MulticastGroup)
 }
 
 // GetMulticastGroup returns the multicast-group given an id.
-func (ps *pgstore) GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdate bool) (MulticastGroup, error) {
+func (ps *PgStore) GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdate bool) (MulticastGroup, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -279,7 +261,7 @@ func (ps *pgstore) GetMulticastGroup(ctx context.Context, id uuid.UUID, forUpdat
 }
 
 // UpdateMulticastGroup updates the given multicast-group.
-func (ps *pgstore) UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
+func (ps *PgStore) UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup) error {
 	if err := mg.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -327,7 +309,7 @@ func (ps *pgstore) UpdateMulticastGroup(ctx context.Context, mg *MulticastGroup)
 }
 
 // DeleteMulticastGroup deletes a multicast-group given an id.
-func (ps *pgstore) DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error {
+func (ps *PgStore) DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error {
 	res, err := ps.db.ExecContext(ctx, `
 		delete
 		from
@@ -356,7 +338,7 @@ func (ps *pgstore) DeleteMulticastGroup(ctx context.Context, id uuid.UUID) error
 
 // GetMulticastGroupCount returns the total number of multicast-groups given
 // the provided filters. Note that empty values are not used as filters.
-func (ps *pgstore) GetMulticastGroupCount(ctx context.Context, filters MulticastGroupFilters) (int, error) {
+func (ps *PgStore) GetMulticastGroupCount(ctx context.Context, filters MulticastGroupFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -388,7 +370,7 @@ func (ps *pgstore) GetMulticastGroupCount(ctx context.Context, filters Multicast
 
 // GetMulticastGroups returns a slice of multicast-groups, given the privded
 // filters. Note that empty values are not used as filters.
-func (ps *pgstore) GetMulticastGroups(ctx context.Context, filters MulticastGroupFilters) ([]MulticastGroupListItem, error) {
+func (ps *PgStore) GetMulticastGroups(ctx context.Context, filters MulticastGroupFilters) ([]MulticastGroupListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -430,7 +412,7 @@ func (ps *pgstore) GetMulticastGroups(ctx context.Context, filters MulticastGrou
 
 // AddDeviceToMulticastGroup adds the given device to the given multicast-group.
 // It is recommended that db is a transaction.
-func (ps *pgstore) AddDeviceToMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func (ps *PgStore) AddDeviceToMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
 	_, err := ps.db.ExecContext(ctx, `
 		insert into device_multicast_group (
 			dev_eui,
@@ -453,7 +435,7 @@ func (ps *pgstore) AddDeviceToMulticastGroup(ctx context.Context, multicastGroup
 
 // RemoveDeviceFromMulticastGroup removes the given device from the given
 // multicast-group.
-func (ps *pgstore) RemoveDeviceFromMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
+func (ps *PgStore) RemoveDeviceFromMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, devEUI lorawan.EUI64) error {
 	res, err := ps.db.ExecContext(ctx, `
 		delete from
 			device_multicast_group
@@ -484,7 +466,7 @@ func (ps *pgstore) RemoveDeviceFromMulticastGroup(ctx context.Context, multicast
 
 // GetDeviceCountForMulticastGroup returns the number of devices for the given
 // multicast-group.
-func (ps *pgstore) GetDeviceCountForMulticastGroup(ctx context.Context, multicastGroup uuid.UUID) (int, error) {
+func (ps *PgStore) GetDeviceCountForMulticastGroup(ctx context.Context, multicastGroup uuid.UUID) (int, error) {
 	var count int
 
 	err := sqlx.GetContext(ctx, ps.db, &count, `
@@ -504,7 +486,7 @@ func (ps *pgstore) GetDeviceCountForMulticastGroup(ctx context.Context, multicas
 
 // GetDevicesForMulticastGroup returns a slice of devices for the given
 // multicast-group.
-func (ps *pgstore) GetDevicesForMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, limit, offset int) ([]ds.DeviceListItem, error) {
+func (ps *PgStore) GetDevicesForMulticastGroup(ctx context.Context, multicastGroupID uuid.UUID, limit, offset int) ([]ds.DeviceListItem, error) {
 	var devices []ds.DeviceListItem
 
 	err := sqlx.SelectContext(ctx, ps.db, &devices, `

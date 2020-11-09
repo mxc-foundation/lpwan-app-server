@@ -15,15 +15,7 @@ import (
 	pgerr "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
-type MigrateCodePgStore interface {
-	Migrate(ctx context.Context, name string) error
-	ExecuteMigrateUp(m migrate.MigrationSource) error
-	GetAllGatewayIDs(ctx context.Context) ([]lorawan.EUI64, error)
-	GetAllFromGorpMigrations(ctx context.Context) ([]string, error)
-	FixGorpMigrationsItemId(ctx context.Context, oldID, newID string) error
-}
-
-func (ps *pgstore) ExecuteMigrateUp(m migrate.MigrationSource) error {
+func (ps *PgStore) ExecuteMigrateUp(m migrate.MigrationSource) error {
 	n, err := migrate.Exec(ctrl.db.DB.DB, "postgres", m, migrate.Up)
 	if err != nil {
 		return errors.Wrap(err, "storage: applying PostgreSQL data migrations error")
@@ -33,7 +25,7 @@ func (ps *pgstore) ExecuteMigrateUp(m migrate.MigrationSource) error {
 	return nil
 }
 
-func (ps *pgstore) FixGorpMigrationsItemId(ctx context.Context, oldID, newID string) error {
+func (ps *PgStore) FixGorpMigrationsItemID(ctx context.Context, oldID, newID string) error {
 	res, err := ps.db.ExecContext(ctx, `
 			update gorp_migrations 
 			set id=$1 where id=$2
@@ -54,7 +46,7 @@ func (ps *pgstore) FixGorpMigrationsItemId(ctx context.Context, oldID, newID str
 	return nil
 }
 
-func (ps *pgstore) GetAllFromGorpMigrations(ctx context.Context) ([]string, error) {
+func (ps *PgStore) GetAllFromGorpMigrations(ctx context.Context) ([]string, error) {
 	_, err := ps.db.ExecContext(ctx, `
 		select exists ( select from gorp_migrations)
 	`)
@@ -76,7 +68,7 @@ func (ps *pgstore) GetAllFromGorpMigrations(ctx context.Context) ([]string, erro
 	return items, nil
 }
 
-func (ps *pgstore) Migrate(ctx context.Context, name string) error {
+func (ps *PgStore) Migrate(ctx context.Context, name string) error {
 	_, err := ps.db.ExecContext(ctx, `lock table code_migration`)
 	if err != nil {
 		return errors.Wrap(err, "lock code migration table error")
@@ -121,7 +113,7 @@ func (ps *pgstore) Migrate(ctx context.Context, name string) error {
 	return nil
 }
 
-func (ps *pgstore) GetAllGatewayIDs(ctx context.Context) ([]lorawan.EUI64, error) {
+func (ps *PgStore) GetAllGatewayIDs(ctx context.Context) ([]lorawan.EUI64, error) {
 	var ids []lorawan.EUI64
 	err := sqlx.SelectContext(ctx, ps.db, &ids, `
 		select

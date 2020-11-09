@@ -18,7 +18,7 @@ import (
 	"github.com/brocaar/chirpstack-api/go/v3/ns"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	dpmod "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 	nscli "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"

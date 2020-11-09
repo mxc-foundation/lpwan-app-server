@@ -8,12 +8,11 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 
-	cred "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 )
 
 type Validator struct {
-	Credentials *cred.Credentials
+	Credentials *auth.Credentials
 }
 
 type Validate interface {
@@ -27,7 +26,7 @@ type Validate interface {
 
 func NewValidator() Validate {
 	return &Validator{
-		Credentials: cred.NewCredentials(),
+		Credentials: auth.NewCredentials(),
 	}
 }
 

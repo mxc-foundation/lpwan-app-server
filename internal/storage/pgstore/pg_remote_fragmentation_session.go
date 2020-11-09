@@ -17,17 +17,8 @@ import (
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
-type FragmentationSessionPgStore interface {
-	CreateRemoteFragmentationSession(ctx context.Context, sess *RemoteFragmentationSession) error
-	GetRemoteFragmentationSession(ctx context.Context, devEUI lorawan.EUI64, fragIndex int, forUpdate bool) (RemoteFragmentationSession, error)
-	GetPendingRemoteFragmentationSessions(ctx context.Context, limit, maxRetryCount int) ([]RemoteFragmentationSession, error)
-	UpdateRemoteFragmentationSession(ctx context.Context, sess *RemoteFragmentationSession) error
-	DeleteRemoteFragmentationSession(ctx context.Context, devEUI lorawan.EUI64, fragIndex int) error
-	scanRemoteFragmentationSession(row sqlx.ColScanner) (RemoteFragmentationSession, error)
-}
-
 // CreateRemoteFragmentationSession creates the given fragmentation session.
-func (ps *pgstore) CreateRemoteFragmentationSession(ctx context.Context, sess *RemoteFragmentationSession) error {
+func (ps *PgStore) CreateRemoteFragmentationSession(ctx context.Context, sess *RemoteFragmentationSession) error {
 	now := time.Now()
 	sess.CreatedAt = now
 	sess.UpdatedAt = now
@@ -82,7 +73,7 @@ func (ps *pgstore) CreateRemoteFragmentationSession(ctx context.Context, sess *R
 
 // GetRemoteFragmentationSession returns the fragmentation session given a
 // DevEUI and fragmentation index.
-func (ps *pgstore) GetRemoteFragmentationSession(ctx context.Context, devEUI lorawan.EUI64, fragIndex int, forUpdate bool) (RemoteFragmentationSession, error) {
+func (ps *PgStore) GetRemoteFragmentationSession(ctx context.Context, devEUI lorawan.EUI64, fragIndex int, forUpdate bool) (RemoteFragmentationSession, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -120,7 +111,7 @@ func (ps *pgstore) GetRemoteFragmentationSession(ctx context.Context, devEUI lor
 
 // GetPendingRemoteFragmentationSessions returns a slice of pending remote
 // fragmentation sessions.
-func (ps *pgstore) GetPendingRemoteFragmentationSessions(ctx context.Context, limit, maxRetryCount int) ([]RemoteFragmentationSession, error) {
+func (ps *PgStore) GetPendingRemoteFragmentationSessions(ctx context.Context, limit, maxRetryCount int) ([]RemoteFragmentationSession, error) {
 	var items []RemoteFragmentationSession
 
 	rows, err := ps.db.QueryxContext(ctx, `
@@ -187,7 +178,7 @@ func (ps *pgstore) GetPendingRemoteFragmentationSessions(ctx context.Context, li
 }
 
 // UpdateRemoteFragmentationSession updates the given fragmentation session.
-func (ps *pgstore) UpdateRemoteFragmentationSession(ctx context.Context, sess *RemoteFragmentationSession) error {
+func (ps *PgStore) UpdateRemoteFragmentationSession(ctx context.Context, sess *RemoteFragmentationSession) error {
 	sess.UpdatedAt = time.Now()
 
 	res, err := ps.db.ExecContext(ctx, `
@@ -247,7 +238,7 @@ func (ps *pgstore) UpdateRemoteFragmentationSession(ctx context.Context, sess *R
 
 // DeleteRemoteFragmentationSession removes the fragmentation session for the
 // given DevEUI / fragmentation index combination.
-func (ps *pgstore) DeleteRemoteFragmentationSession(ctx context.Context, devEUI lorawan.EUI64, fragIndex int) error {
+func (ps *PgStore) DeleteRemoteFragmentationSession(ctx context.Context, devEUI lorawan.EUI64, fragIndex int) error {
 	res, err := ps.db.ExecContext(ctx, `
 		delete from remote_fragmentation_session
 		where
@@ -275,7 +266,7 @@ func (ps *pgstore) DeleteRemoteFragmentationSession(ctx context.Context, devEUI 
 	return nil
 }
 
-func (ps *pgstore) scanRemoteFragmentationSession(row sqlx.ColScanner) (RemoteFragmentationSession, error) {
+func (ps *PgStore) scanRemoteFragmentationSession(row sqlx.ColScanner) (RemoteFragmentationSession, error) {
 	var sess RemoteFragmentationSession
 
 	var mcGroupIDs []int64

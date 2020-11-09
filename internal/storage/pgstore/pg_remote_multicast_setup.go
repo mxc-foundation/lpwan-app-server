@@ -16,19 +16,8 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 )
 
-type MulticastSetupPgStore interface {
-	CreateRemoteMulticastSetup(ctx context.Context, dms *mg.RemoteMulticastSetup) error
-	GetRemoteMulticastSetup(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (mg.RemoteMulticastSetup, error)
-	GetRemoteMulticastSetupByGroupID(ctx context.Context, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (mg.RemoteMulticastSetup, error)
-	GetPendingRemoteMulticastSetupItems(ctx context.Context, limit, maxRetryCount int) ([]mg.RemoteMulticastSetup, error)
-	UpdateRemoteMulticastSetup(ctx context.Context, dmg *mg.RemoteMulticastSetup) error
-	DeleteRemoteMulticastSetup(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error
-	GetDevEUIsWithMulticastSetup(ctx context.Context, id *uuid.UUID) ([]lorawan.EUI64, error)
-	GetDevEUIsWithFragmentationSessionSetup(ctx context.Context, id *uuid.UUID, fragIdx int) ([]lorawan.EUI64, error)
-}
-
 // CreateRemoteMulticastSetup creates the given multicast-setup.
-func (ps *pgstore) CreateRemoteMulticastSetup(ctx context.Context, dms *mg.RemoteMulticastSetup) error {
+func (ps *PgStore) CreateRemoteMulticastSetup(ctx context.Context, dms *mg.RemoteMulticastSetup) error {
 	now := time.Now()
 	dms.CreatedAt = now
 	dms.UpdatedAt = now
@@ -78,7 +67,7 @@ func (ps *pgstore) CreateRemoteMulticastSetup(ctx context.Context, dms *mg.Remot
 }
 
 // GetRemoteMulticastSetup returns the multicast-setup given a multicast-group ID and DevEUI.
-func (ps *pgstore) GetRemoteMulticastSetup(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (mg.RemoteMulticastSetup, error) {
+func (ps *PgStore) GetRemoteMulticastSetup(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (mg.RemoteMulticastSetup, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -103,7 +92,7 @@ func (ps *pgstore) GetRemoteMulticastSetup(ctx context.Context, devEUI lorawan.E
 }
 
 // GetRemoteMulticastSetupByGroupID returns the multicast-setup given a DevEUI and McGroupID.
-func (ps *pgstore) GetRemoteMulticastSetupByGroupID(ctx context.Context, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (mg.RemoteMulticastSetup, error) {
+func (ps *PgStore) GetRemoteMulticastSetupByGroupID(ctx context.Context, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (mg.RemoteMulticastSetup, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -129,7 +118,7 @@ func (ps *pgstore) GetRemoteMulticastSetupByGroupID(ctx context.Context, devEUI 
 
 // GetPendingRemoteMulticastSetupItems returns a slice of pending remote multicast-setup items.
 // The selected items will be locked.
-func (ps *pgstore) GetPendingRemoteMulticastSetupItems(ctx context.Context, limit, maxRetryCount int) ([]mg.RemoteMulticastSetup, error) {
+func (ps *PgStore) GetPendingRemoteMulticastSetupItems(ctx context.Context, limit, maxRetryCount int) ([]mg.RemoteMulticastSetup, error) {
 	var items []mg.RemoteMulticastSetup
 
 	if err := sqlx.SelectContext(ctx, ps.db, &items, `
@@ -155,7 +144,7 @@ func (ps *pgstore) GetPendingRemoteMulticastSetupItems(ctx context.Context, limi
 }
 
 // UpdateRemoteMulticastSetup updates the given update multicast-group setup.
-func (ps *pgstore) UpdateRemoteMulticastSetup(ctx context.Context, dmg *mg.RemoteMulticastSetup) error {
+func (ps *PgStore) UpdateRemoteMulticastSetup(ctx context.Context, dmg *mg.RemoteMulticastSetup) error {
 	dmg.UpdatedAt = time.Now()
 
 	res, err := ps.db.ExecContext(ctx, `
@@ -210,7 +199,7 @@ func (ps *pgstore) UpdateRemoteMulticastSetup(ctx context.Context, dmg *mg.Remot
 }
 
 // DeleteRemoteMulticastSetup deletes the multicast-setup given a multicast-group ID and DevEUI.
-func (ps *pgstore) DeleteRemoteMulticastSetup(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error {
+func (ps *PgStore) DeleteRemoteMulticastSetup(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error {
 	res, err := ps.db.ExecContext(ctx, `
 		delete from remote_multicast_setup
 		where
@@ -239,7 +228,7 @@ func (ps *pgstore) DeleteRemoteMulticastSetup(ctx context.Context, devEUI lorawa
 }
 
 // GetDevEUIsWithMulticastSetup query all devices with complete multicast setup
-func (ps *pgstore) GetDevEUIsWithMulticastSetup(ctx context.Context, id *uuid.UUID) ([]lorawan.EUI64, error) {
+func (ps *PgStore) GetDevEUIsWithMulticastSetup(ctx context.Context, id *uuid.UUID) ([]lorawan.EUI64, error) {
 	var devEUIs []lorawan.EUI64
 	err := sqlx.SelectContext(ctx, ps.db, &devEUIs, `
 		select
@@ -262,7 +251,7 @@ func (ps *pgstore) GetDevEUIsWithMulticastSetup(ctx context.Context, id *uuid.UU
 }
 
 // GetDevEUIsWithFragmentationSessionSetup query all devices with complete fragmentation session setup
-func (ps *pgstore) GetDevEUIsWithFragmentationSessionSetup(ctx context.Context, id *uuid.UUID, fragIdx int) ([]lorawan.EUI64, error) {
+func (ps *PgStore) GetDevEUIsWithFragmentationSessionSetup(ctx context.Context, id *uuid.UUID, fragIdx int) ([]lorawan.EUI64, error) {
 	var devEUIs []lorawan.EUI64
 	err := sqlx.SelectContext(ctx, ps.db, &devEUIs, `
 		select

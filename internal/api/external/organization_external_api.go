@@ -9,7 +9,7 @@ import (
 
 	pb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 
 	org "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"

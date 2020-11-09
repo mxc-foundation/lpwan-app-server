@@ -16,35 +16,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device/data"
 )
 
-type DevicePgstore interface {
-	CheckCreateNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error)
-	CheckListNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error)
-	CheckReadNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
-	CheckUpdateNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
-	CheckDeleteNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
-	CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error)
-	UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error
-	CreateDevice(ctx context.Context, d *Device) error
-	GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (Device, error)
-	GetDeviceCount(ctx context.Context, filters DeviceFilters) (int, error)
-	GetAllDeviceEuis(ctx context.Context) ([]string, error)
-	GetDevices(ctx context.Context, filters DeviceFilters) ([]DeviceListItem, error)
-	UpdateDevice(ctx context.Context, d *Device) error
-	UpdateDeviceLastSeenAndDR(ctx context.Context, devEUI lorawan.EUI64, ts time.Time, dr int) error
-	DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
-	CreateDeviceKeys(ctx context.Context, dc *DeviceKeys) error
-	GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (DeviceKeys, error)
-	UpdateDeviceKeys(ctx context.Context, dc *DeviceKeys) error
-	DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error
-	CreateDeviceActivation(ctx context.Context, da *DeviceActivation) error
-	GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error)
-	DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error
-	//EnqueueDownlinkPayload(ctx context.Context, devEUI lorawan.EUI64, confirmed bool, fPort uint8, data []byte) (uint32, error)
-	GetDevicesActiveInactive(ctx context.Context, organizationID int64) (DevicesActiveInactive, error)
-	GetDevicesDataRates(ctx context.Context, organizationID int64) (DevicesDataRates, error)
-}
-
-func (ps *pgstore) CheckCreateNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -81,7 +53,7 @@ func (ps *pgstore) CheckCreateNodeAccess(ctx context.Context, username string, a
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
+func (ps *PgStore) CheckListNodeAccess(ctx context.Context, username string, applicationID int64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -115,7 +87,7 @@ func (ps *pgstore) CheckListNodeAccess(ctx context.Context, username string, app
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckReadNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *PgStore) CheckReadNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -151,7 +123,7 @@ func (ps *pgstore) CheckReadNodeAccess(ctx context.Context, username string, dev
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *PgStore) CheckUpdateNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -189,7 +161,7 @@ func (ps *pgstore) CheckUpdateNodeAccess(ctx context.Context, username string, d
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckDeleteNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *PgStore) CheckDeleteNodeAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -227,7 +199,7 @@ func (ps *pgstore) CheckDeleteNodeAccess(ctx context.Context, username string, d
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, username string, devEUI lorawan.EUI64, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -262,7 +234,7 @@ func (ps *pgstore) CheckCreateListDeleteDeviceQueueAccess(ctx context.Context, u
 }
 
 // UpdateDeviceActivation updates the device address and the AppSKey.
-func (ps *pgstore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error {
+func (ps *PgStore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EUI64, devAddr lorawan.DevAddr, appSKey lorawan.AES128Key) error {
 	res, err := ps.db.ExecContext(ctx, `
 		update device
 		set
@@ -295,7 +267,7 @@ func (ps *pgstore) UpdateDeviceActivation(ctx context.Context, devEUI lorawan.EU
 }
 
 // CreateDevice creates the given device.
-func (ps *pgstore) CreateDevice(ctx context.Context, d *Device) error {
+func (ps *PgStore) CreateDevice(ctx context.Context, d *Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -361,7 +333,7 @@ func (ps *pgstore) CreateDevice(ctx context.Context, d *Device) error {
 // When forUpdate is set to true, then tx must be a tx transaction.
 // When localOnly is set to true, no call to the network-server is made to
 // retrieve additional device data.
-func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (Device, error) {
+func (ps *PgStore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdate bool) (Device, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -380,7 +352,7 @@ func (ps *pgstore) GetDevice(ctx context.Context, devEUI lorawan.EUI64, forUpdat
 }
 
 // GetDeviceCount returns the number of devices.
-func (ps *pgstore) GetDeviceCount(ctx context.Context, filters DeviceFilters) (int, error) {
+func (ps *PgStore) GetDeviceCount(ctx context.Context, filters DeviceFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -408,7 +380,7 @@ func (ps *pgstore) GetDeviceCount(ctx context.Context, filters DeviceFilters) (i
 }
 
 // GetAllDeviceEuis returns a slice of devices.
-func (ps *pgstore) GetAllDeviceEuis(ctx context.Context) ([]string, error) {
+func (ps *PgStore) GetAllDeviceEuis(ctx context.Context) ([]string, error) {
 	var devEuiList []string
 	var list []lorawan.EUI64
 	err := sqlx.SelectContext(ctx, ps.db, &list, "select dev_eui from device ORDER BY created_at DESC")
@@ -424,7 +396,7 @@ func (ps *pgstore) GetAllDeviceEuis(ctx context.Context) ([]string, error) {
 }
 
 // GetDevices returns a slice of devices.
-func (ps *pgstore) GetDevices(ctx context.Context, filters DeviceFilters) ([]DeviceListItem, error) {
+func (ps *PgStore) GetDevices(ctx context.Context, filters DeviceFilters) ([]DeviceListItem, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
 	}
@@ -462,7 +434,7 @@ func (ps *pgstore) GetDevices(ctx context.Context, filters DeviceFilters) ([]Dev
 
 // UpdateDevice updates the given device.
 // When localOnly is set, it will not update the device on the network-server.
-func (ps *pgstore) UpdateDevice(ctx context.Context, d *Device) error {
+func (ps *PgStore) UpdateDevice(ctx context.Context, d *Device) error {
 	if err := d.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -530,7 +502,7 @@ func (ps *pgstore) UpdateDevice(ctx context.Context, d *Device) error {
 }
 
 // UpdateDeviceLastSeenAndDR updates the device last-seen timestamp and data-rate.
-func (ps *pgstore) UpdateDeviceLastSeenAndDR(ctx context.Context, devEUI lorawan.EUI64, ts time.Time, dr int) error {
+func (ps *PgStore) UpdateDeviceLastSeenAndDR(ctx context.Context, devEUI lorawan.EUI64, ts time.Time, dr int) error {
 	res, err := ps.db.ExecContext(ctx, `
 		update device
 		set
@@ -562,7 +534,7 @@ func (ps *pgstore) UpdateDeviceLastSeenAndDR(ctx context.Context, devEUI lorawan
 }
 
 // DeleteDevice deletes the device matching the given DevEUI.
-func (ps *pgstore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
+func (ps *PgStore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error {
 	res, err := ps.db.ExecContext(ctx, "delete from device where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return handlePSQLError(Delete, err, "delete error")
@@ -584,7 +556,7 @@ func (ps *pgstore) DeleteDevice(ctx context.Context, devEUI lorawan.EUI64) error
 }
 
 // CreateDeviceKeys creates the keys for the given device.
-func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
+func (ps *PgStore) CreateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
 	now := time.Now()
 	dc.CreatedAt = now
 	dc.UpdatedAt = now
@@ -620,7 +592,7 @@ func (ps *pgstore) CreateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
 }
 
 // GetDeviceKeys returns the device-keys for the given DevEUI.
-func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (DeviceKeys, error) {
+func (ps *PgStore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (DeviceKeys, error) {
 	var dc DeviceKeys
 
 	err := sqlx.GetContext(ctx, ps.db, &dc, "select * from device_keys where dev_eui = $1", devEUI[:])
@@ -632,7 +604,7 @@ func (ps *pgstore) GetDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) (Dev
 }
 
 // UpdateDeviceKeys updates the given device-keys.
-func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
+func (ps *PgStore) UpdateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
 	dc.UpdatedAt = time.Now()
 
 	res, err := ps.db.ExecContext(ctx, `
@@ -672,7 +644,7 @@ func (ps *pgstore) UpdateDeviceKeys(ctx context.Context, dc *DeviceKeys) error {
 }
 
 // DeleteDeviceKeys deletes the device-keys for the given DevEUI.
-func (ps *pgstore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error {
+func (ps *PgStore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) error {
 	res, err := ps.db.ExecContext(ctx, "delete from device_keys where dev_eui = $1", devEUI[:])
 	if err != nil {
 		return handlePSQLError(Delete, err, "delete error")
@@ -694,7 +666,7 @@ func (ps *pgstore) DeleteDeviceKeys(ctx context.Context, devEUI lorawan.EUI64) e
 }
 
 // CreateDeviceActivation creates the given device-activation.
-func (ps *pgstore) CreateDeviceActivation(ctx context.Context, da *DeviceActivation) error {
+func (ps *PgStore) CreateDeviceActivation(ctx context.Context, da *DeviceActivation) error {
 	da.CreatedAt = time.Now()
 
 	err := sqlx.GetContext(ctx, ps.db, &da.ID, `
@@ -724,7 +696,7 @@ func (ps *pgstore) CreateDeviceActivation(ctx context.Context, da *DeviceActivat
 }
 
 // GetLastDeviceActivationForDevEUI returns the most recent device-activation for the given DevEUI.
-func (ps *pgstore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error) {
+func (ps *PgStore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI lorawan.EUI64) (DeviceActivation, error) {
 	var da DeviceActivation
 
 	err := sqlx.GetContext(ctx, ps.db, &da, `
@@ -745,7 +717,7 @@ func (ps *pgstore) GetLastDeviceActivationForDevEUI(ctx context.Context, devEUI 
 }
 
 // DeleteAllDevicesForApplicationID deletes all devices given an application id.
-func (ps *pgstore) DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error {
+func (ps *PgStore) DeleteAllDevicesForApplicationID(ctx context.Context, applicationID int64) error {
 	var devs []Device
 	err := sqlx.SelectContext(ctx, ps.db, &devs, "select * from device where application_id = $1", applicationID)
 	if err != nil {
@@ -763,7 +735,7 @@ func (ps *pgstore) DeleteAllDevicesForApplicationID(ctx context.Context, applica
 }
 
 // GetDevicesActiveInactive returns the active / inactive devices.
-func (ps *pgstore) GetDevicesActiveInactive(ctx context.Context, organizationID int64) (DevicesActiveInactive, error) {
+func (ps *PgStore) GetDevicesActiveInactive(ctx context.Context, organizationID int64) (DevicesActiveInactive, error) {
 	var out DevicesActiveInactive
 	err := sqlx.GetContext(ctx, ps.db, &out, `
 		with device_active_inactive as (
@@ -794,7 +766,7 @@ func (ps *pgstore) GetDevicesActiveInactive(ctx context.Context, organizationID 
 }
 
 // GetDevicesDataRates returns the device counts by data-rate.
-func (ps *pgstore) GetDevicesDataRates(ctx context.Context, organizationID int64) (DevicesDataRates, error) {
+func (ps *PgStore) GetDevicesDataRates(ctx context.Context, organizationID int64) (DevicesDataRates, error) {
 	out := make(DevicesDataRates)
 
 	rows, err := ps.db.QueryxContext(ctx, `

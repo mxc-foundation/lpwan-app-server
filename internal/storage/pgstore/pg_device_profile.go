@@ -15,21 +15,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/device-profile/data"
 )
 
-type DeviceProfilePgStore interface {
-	CheckReadDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
-	CheckUpdateDeleteDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
-	CheckCreateDeviceProfilesAccess(ctx context.Context, username string, organizationID, applicationID, userID int64) (bool, error)
-	CheckListDeviceProfilesAccess(ctx context.Context, username string, organizationID, applicationID, userID int64) (bool, error)
-	DeleteAllDeviceProfilesForOrganizationID(ctx context.Context, organizationID int64) error
-	CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) error
-	DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error
-	GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate bool) (DeviceProfile, error)
-	UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error
-	GetDeviceProfileCount(ctx context.Context, filters DeviceProfileFilters) (int, error)
-	GetDeviceProfiles(ctx context.Context, filters DeviceProfileFilters) ([]DeviceProfileMeta, error)
-}
-
-func (ps *pgstore) CheckReadDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckReadDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -65,7 +51,7 @@ func (ps *pgstore) CheckReadDeviceProfileAccess(ctx context.Context, username st
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckUpdateDeleteDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckUpdateDeleteDeviceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -103,7 +89,7 @@ func (ps *pgstore) CheckUpdateDeleteDeviceProfileAccess(ctx context.Context, use
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckCreateDeviceProfilesAccess(ctx context.Context, username string, organizationID, applicationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateDeviceProfilesAccess(ctx context.Context, username string, organizationID, applicationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -140,7 +126,7 @@ func (ps *pgstore) CheckCreateDeviceProfilesAccess(ctx context.Context, username
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListDeviceProfilesAccess(ctx context.Context, username string, organizationID, applicationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckListDeviceProfilesAccess(ctx context.Context, username string, organizationID, applicationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -180,7 +166,7 @@ func (ps *pgstore) CheckListDeviceProfilesAccess(ctx context.Context, username s
 
 // DeleteAllDeviceProfilesForOrganizationID deletes all device-profiles
 // given an organization id.
-func (ps *pgstore) DeleteAllDeviceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {
+func (ps *PgStore) DeleteAllDeviceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {
 	var dps []DeviceProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &dps, `
 		select
@@ -212,7 +198,7 @@ func (ps *pgstore) DeleteAllDeviceProfilesForOrganizationID(ctx context.Context,
 // CreateDeviceProfile creates the given device-profile.
 // This will create the device-profile at the network-server side and will
 // create a local reference record.
-func (ps *pgstore) CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
+func (ps *PgStore) CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
 	if err := dp.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -266,7 +252,7 @@ func (ps *pgstore) CreateDeviceProfile(ctx context.Context, dp *DeviceProfile) e
 }
 
 // DeleteDeviceProfile deletes the device-profile matching the given id.
-func (ps *pgstore) DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error {
+func (ps *PgStore) DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error {
 	res, err := ps.db.ExecContext(ctx, "delete from device_profile where device_profile_id = $1", id)
 	if err != nil {
 		return handlePSQLError(Delete, err, "delete error")
@@ -291,7 +277,7 @@ func (ps *pgstore) DeleteDeviceProfile(ctx context.Context, id uuid.UUID) error 
 // When forUpdate is set to true, then db must be a db transaction.
 // When localOnly is set to true, no call to the network-server is made to
 // retrieve additional device data.
-func (ps *pgstore) GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate bool) (DeviceProfile, error) {
+func (ps *PgStore) GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate bool) (DeviceProfile, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -340,7 +326,7 @@ func (ps *pgstore) GetDeviceProfile(ctx context.Context, id uuid.UUID, forUpdate
 }
 
 // UpdateDeviceProfile updates the given device-profile.
-func (ps *pgstore) UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
+func (ps *PgStore) UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) error {
 	if err := dp.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -392,7 +378,7 @@ func (ps *pgstore) UpdateDeviceProfile(ctx context.Context, dp *DeviceProfile) e
 }
 
 // GetDeviceProfileCount returns the total number of device-profiles.
-func (ps *pgstore) GetDeviceProfileCount(ctx context.Context, filters DeviceProfileFilters) (int, error) {
+func (ps *PgStore) GetDeviceProfileCount(ctx context.Context, filters DeviceProfileFilters) (int, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			count(distinct dp.*)
@@ -425,7 +411,7 @@ func (ps *pgstore) GetDeviceProfileCount(ctx context.Context, filters DeviceProf
 }
 
 // GetDeviceProfiles returns a slice of device-profiles.
-func (ps *pgstore) GetDeviceProfiles(ctx context.Context, filters DeviceProfileFilters) ([]DeviceProfileMeta, error) {
+func (ps *PgStore) GetDeviceProfiles(ctx context.Context, filters DeviceProfileFilters) ([]DeviceProfileMeta, error) {
 	query, args, err := sqlx.BindNamed(sqlx.DOLLAR, `
 		select
 			dp.device_profile_id,

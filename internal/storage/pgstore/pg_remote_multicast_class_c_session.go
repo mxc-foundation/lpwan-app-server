@@ -17,17 +17,8 @@ import (
 	mg "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
 )
 
-type MulticastClassCSessionPgStore interface {
-	CreateRemoteMulticastClassCSession(ctx context.Context, sess *mg.RemoteMulticastClassCSession) error
-	GetRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (mg.RemoteMulticastClassCSession, error)
-	GetRemoteMulticastClassCSessionByGroupID(ctx context.Context, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (mg.RemoteMulticastClassCSession, error)
-	GetPendingRemoteMulticastClassCSessions(ctx context.Context, limit, maxRetryCount int) ([]mg.RemoteMulticastClassCSession, error)
-	UpdateRemoteMulticastClassCSession(ctx context.Context, sess *mg.RemoteMulticastClassCSession) error
-	DeleteRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error
-}
-
 // CreateRemoteMulticastClassCSession creates the given multicast Class-C session.
-func (ps *pgstore) CreateRemoteMulticastClassCSession(ctx context.Context, sess *mg.RemoteMulticastClassCSession) error {
+func (ps *PgStore) CreateRemoteMulticastClassCSession(ctx context.Context, sess *mg.RemoteMulticastClassCSession) error {
 	now := time.Now()
 	sess.CreatedAt = now
 	sess.UpdatedAt = now
@@ -77,7 +68,7 @@ func (ps *pgstore) CreateRemoteMulticastClassCSession(ctx context.Context, sess 
 
 // GetRemoteMulticastClassCSession returns the multicast Class-C session given
 // a DevEUI and multicast-group ID.
-func (ps *pgstore) GetRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (mg.RemoteMulticastClassCSession, error) {
+func (ps *PgStore) GetRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID, forUpdate bool) (mg.RemoteMulticastClassCSession, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -103,7 +94,7 @@ func (ps *pgstore) GetRemoteMulticastClassCSession(ctx context.Context, devEUI l
 
 // GetRemoteMulticastClassCSessionByGroupID returns the multicast Class-C session given
 // a DevEUI and McGroupID.
-func (ps *pgstore) GetRemoteMulticastClassCSessionByGroupID(ctx context.Context, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (mg.RemoteMulticastClassCSession, error) {
+func (ps *PgStore) GetRemoteMulticastClassCSessionByGroupID(ctx context.Context, devEUI lorawan.EUI64, mcGroupID int, forUpdate bool) (mg.RemoteMulticastClassCSession, error) {
 	var fu string
 	if forUpdate {
 		fu = " for update"
@@ -129,7 +120,7 @@ func (ps *pgstore) GetRemoteMulticastClassCSessionByGroupID(ctx context.Context,
 
 // GetPendingRemoteMulticastClassCSessions returns a slice of pending remote
 // multicast Class-C sessions.
-func (ps *pgstore) GetPendingRemoteMulticastClassCSessions(ctx context.Context, limit, maxRetryCount int) ([]mg.RemoteMulticastClassCSession, error) {
+func (ps *PgStore) GetPendingRemoteMulticastClassCSessions(ctx context.Context, limit, maxRetryCount int) ([]mg.RemoteMulticastClassCSession, error) {
 	var items []mg.RemoteMulticastClassCSession
 
 	if err := sqlx.SelectContext(ctx, ps.db, &items, `
@@ -165,7 +156,7 @@ func (ps *pgstore) GetPendingRemoteMulticastClassCSessions(ctx context.Context, 
 
 // UpdateRemoteMulticastClassCSession updates the given remote multicast
 // Class-C session.
-func (ps *pgstore) UpdateRemoteMulticastClassCSession(ctx context.Context, sess *mg.RemoteMulticastClassCSession) error {
+func (ps *PgStore) UpdateRemoteMulticastClassCSession(ctx context.Context, sess *mg.RemoteMulticastClassCSession) error {
 	sess.UpdatedAt = time.Now()
 
 	res, err := ps.db.ExecContext(ctx, `
@@ -219,7 +210,7 @@ func (ps *pgstore) UpdateRemoteMulticastClassCSession(ctx context.Context, sess 
 
 // DeleteRemoteMulticastClassCSession deletes the multicast Class-C session
 // given a DevEUI and multicast-group ID.
-func (ps *pgstore) DeleteRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error {
+func (ps *PgStore) DeleteRemoteMulticastClassCSession(ctx context.Context, devEUI lorawan.EUI64, multicastGroupID uuid.UUID) error {
 	res, err := ps.db.ExecContext(ctx, `
 		delete from remote_multicast_class_c_session
 		where

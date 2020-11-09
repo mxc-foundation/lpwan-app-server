@@ -17,16 +17,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/application/data"
 )
 
-type IntegrationPgStore interface {
-	CreateIntegration(ctx context.Context, i *Integration) error
-	GetIntegration(ctx context.Context, id int64) (Integration, error)
-	GetIntegrationByApplicationID(ctx context.Context, applicationID int64, kind string) (Integration, error)
-	GetIntegrationsForApplicationID(ctx context.Context, applicationID int64) ([]Integration, error)
-	UpdateIntegration(ctx context.Context, i *Integration) error
-	DeleteIntegration(ctx context.Context, id int64) error
-}
-
-func (ps *pgstore) CreateIntegration(ctx context.Context, i *Integration) error {
+func (ps *PgStore) CreateIntegration(ctx context.Context, i *Integration) error {
 	now := time.Now()
 	err := sqlx.GetContext(ctx, ps.db, &i.ID, `
 		insert into integration (
@@ -68,7 +59,7 @@ func (ps *pgstore) CreateIntegration(ctx context.Context, i *Integration) error 
 }
 
 // GetIntegration returns the Integration for the given id.
-func (ps *pgstore) GetIntegration(ctx context.Context, id int64) (Integration, error) {
+func (ps *PgStore) GetIntegration(ctx context.Context, id int64) (Integration, error) {
 	var i Integration
 	err := sqlx.GetContext(ctx, ps.db, &i, "select * from integration where id = $1", id)
 	if err != nil {
@@ -82,7 +73,7 @@ func (ps *pgstore) GetIntegration(ctx context.Context, id int64) (Integration, e
 
 // GetIntegrationByApplicationID returns the Integration for the given
 // application id and kind.
-func (ps *pgstore) GetIntegrationByApplicationID(ctx context.Context, applicationID int64, kind string) (Integration, error) {
+func (ps *PgStore) GetIntegrationByApplicationID(ctx context.Context, applicationID int64, kind string) (Integration, error) {
 	var i Integration
 	err := sqlx.GetContext(ctx, ps.db, &i, "select * from integration where application_id = $1 and kind = $2", applicationID, kind)
 	if err != nil {
@@ -96,7 +87,7 @@ func (ps *pgstore) GetIntegrationByApplicationID(ctx context.Context, applicatio
 
 // GetIntegrationsForApplicationID returns the integrations for the given
 // application id.
-func (ps *pgstore) GetIntegrationsForApplicationID(ctx context.Context, applicationID int64) ([]Integration, error) {
+func (ps *PgStore) GetIntegrationsForApplicationID(ctx context.Context, applicationID int64) ([]Integration, error) {
 	var is []Integration
 	err := sqlx.SelectContext(ctx, ps.db, &is, `
 		select *
@@ -112,7 +103,7 @@ func (ps *pgstore) GetIntegrationsForApplicationID(ctx context.Context, applicat
 }
 
 // UpdateIntegration updates the given Integration.
-func (ps *pgstore) UpdateIntegration(ctx context.Context, i *Integration) error {
+func (ps *PgStore) UpdateIntegration(ctx context.Context, i *Integration) error {
 	now := time.Now()
 	res, err := ps.db.ExecContext(ctx, `
 		update integration
@@ -163,7 +154,7 @@ func (ps *pgstore) UpdateIntegration(ctx context.Context, i *Integration) error 
 }
 
 // DeleteIntegration deletes the integration matching the given id.
-func (ps *pgstore) DeleteIntegration(ctx context.Context, id int64) error {
+func (ps *PgStore) DeleteIntegration(ctx context.Context, id int64) error {
 	res, err := ps.db.ExecContext(ctx, "delete from integration where id = $1", id)
 	if err != nil {
 		return errors.Wrap(err, "delete error")

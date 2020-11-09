@@ -10,13 +10,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 )
 
-type GatewayDefaultConfigPgStore interface {
-	AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error
-	UpdateDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error
-	GetDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error
-}
-
-func (ps *pgstore) AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
+func (ps *PgStore) AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
 	_, err := ps.db.ExecContext(ctx, `
 		insert into default_gateway_config (
 		    model, region, created_at, updated_at, default_config
@@ -34,7 +28,7 @@ func (ps *pgstore) AddNewDefaultGatewayConfig(ctx context.Context, defaultConfig
 	return errors.Wrap(err, "AddNewDefaultGatewayConfig")
 }
 
-func (ps *pgstore) UpdateDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
+func (ps *PgStore) UpdateDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
 	_, err := ps.db.ExecContext(ctx, `
 		update 
 		    default_gateway_config 
@@ -53,7 +47,7 @@ func (ps *pgstore) UpdateDefaultGatewayConfig(ctx context.Context, defaultConfig
 	return errors.Wrap(err, "UpdateDefaultGatewayConfig")
 }
 
-func (ps *pgstore) GetDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
+func (ps *PgStore) GetDefaultGatewayConfig(ctx context.Context, defaultConfig *DefaultGatewayConfig) error {
 	err := ps.db.QueryRowxContext(ctx, `
 		select 
 		    id, model, region, created_at, updated_at, default_config 

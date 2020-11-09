@@ -13,14 +13,14 @@ import (
 var (
 	testJWTKeyEnc     = []byte("BlV5At5TU+LWXSEkiXZVvjuhWy6zBHJzA1jBvDbses4=")
 	testExpiredToken  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJsb3JhLWFwcC1zZXJ2ZXIiLCJleHAiOjE1OTExMDUzMTcsImlzcyI6ImxvcmEtYXBwLXNlcnZlciIsIm5iZiI6MTU5MTEwMTcxNywic3ViIjoidXNlciIsInVzZXJuYW1lIjoiYWxpY2VAZXhhbXBsZS5jb20ifQ.A9-adLEdBHMQvc_5XcuOk_Xg_YJkWUUnnx20lvwAJzQ" // nolint: gosec
-	testNoExpireToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJsb3JhLWFwcC1zZXJ2ZXIiLCJpc3MiOiJsb3JhLWFwcC1zZXJ2ZXIiLCJuYmYiOjE1OTExMDE2NDgsInN1YiI6InVzZXIiLCJ1c2VybmFtZSI6ImFsaWNlQGV4YW1wbGUuY29tIn0.pFsgDyepoi0hAbxk-mgCOKk_BQtXHbKZyP5isb9gV_M"                        // nolint: gosec
+	testNoExpireToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsibG9yYS1hcHAtc2VydmVyIl0sImlhdCI6MTYwNDQxMTIyMiwidXNlcklkIjo3NywidXNlcm5hbWUiOiJib2JAZXhhbXBsZS5jb20ifQ.6OzYrCKmSNF4qbxfp3q7xyJD70TViUYjggcQg5YR-WM"                                                         // nolint: gosec
 )
 
 func TestValidator(t *testing.T) {
 
 	v := NewValidator(jwa.HS256, testJWTKeyEnc, 86400)
 
-	defExpiry, err := v.SignToken("carol@example.com", 0, nil)
+	defExpiry, err := v.SignToken(42, "carol@example.com", 0, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestValidator(t *testing.T) {
 			time.Until(tok.Expiration()).String())
 	}
 
-	bobToken, err := v.SignToken("bob@example.com", 3600, nil)
+	bobToken, err := v.SignToken(77, "bob@example.com", 3600, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,12 +51,12 @@ func TestValidator(t *testing.T) {
 	}
 
 	v1 := NewValidator(jwa.HS512, testJWTKeyEnc, 86400)
-	bobWrongAlgo, err := v1.SignToken("bob@example.com", 3600, nil)
+	bobWrongAlgo, err := v1.SignToken(77, "bob@example.com", 3600, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	bobTestAudience, err := v.SignToken("bob@example.com", 3600, []string{"test", "foo"})
+	bobTestAudience, err := v.SignToken(77, "bob@example.com", 3600, []string{"test", "foo"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,13 +69,16 @@ func TestValidator(t *testing.T) {
 			return nil
 		}
 	}
-	expectSuccess := func(s string) func(*Claims, error) error {
+	expectSuccess := func(id int64, s string) func(*Claims, error) error {
 		return func(c *Claims, e error) error {
 			if e != nil {
 				return e
 			}
 			if c.Username != s {
 				return fmt.Errorf("unexpected username %s", c.Username)
+			}
+			if c.UserID != id {
+				return fmt.Errorf("unexpected userId: %d", c.UserID)
 			}
 			return nil
 		}
@@ -95,12 +98,12 @@ func TestValidator(t *testing.T) {
 		{
 			name:  "valid token",
 			token: bobToken,
-			check: expectSuccess("bob@example.com"),
+			check: expectSuccess(77, "bob@example.com"),
 		},
 		{
 			name:  "valid token without expiration",
 			token: testNoExpireToken,
-			check: expectSuccess("alice@example.com"),
+			check: expectSuccess(77, "bob@example.com"),
 		},
 		{
 			name:     "valid token, but audience mismatch",

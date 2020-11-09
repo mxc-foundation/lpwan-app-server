@@ -15,25 +15,7 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile/data"
 )
 
-type ServiceProfilePgStore interface {
-	CheckReadServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
-	CheckUpdateDeleteServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error)
-	CheckCreateServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
-	CheckListServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error)
-	CreateServiceProfile(ctx context.Context, sp *ServiceProfile) error
-	GetServiceProfile(ctx context.Context, id uuid.UUID) (ServiceProfile, error)
-	UpdateServiceProfile(ctx context.Context, sp *ServiceProfile) error
-	DeleteServiceProfile(ctx context.Context, id uuid.UUID) error
-	GetServiceProfileCount(ctx context.Context) (int, error)
-	GetServiceProfileCountForOrganizationID(ctx context.Context, organizationID int64) (int, error)
-	GetServiceProfileCountForUser(ctx context.Context, userID int64) (int, error)
-	GetServiceProfiles(ctx context.Context, limit, offset int) ([]ServiceProfileMeta, error)
-	GetServiceProfilesForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]ServiceProfileMeta, error)
-	GetServiceProfilesForUser(ctx context.Context, userID int64, limit, offset int) ([]ServiceProfileMeta, error)
-	DeleteAllServiceProfilesForOrganizationID(ctx context.Context, organizationID int64) error
-}
-
-func (ps *pgstore) CheckReadServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckReadServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -66,7 +48,7 @@ func (ps *pgstore) CheckReadServiceProfileAccess(ctx context.Context, username s
 
 }
 
-func (ps *pgstore) CheckUpdateDeleteServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
+func (ps *PgStore) CheckUpdateDeleteServiceProfileAccess(ctx context.Context, username string, id uuid.UUID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -97,7 +79,7 @@ func (ps *pgstore) CheckUpdateDeleteServiceProfileAccess(ctx context.Context, us
 
 }
 
-func (ps *pgstore) CheckCreateServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckCreateServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -128,7 +110,7 @@ func (ps *pgstore) CheckCreateServiceProfilesAccess(ctx context.Context, usernam
 	return count > 0, nil
 }
 
-func (ps *pgstore) CheckListServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
+func (ps *PgStore) CheckListServiceProfilesAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
 	userQuery := `
 		select
 			1
@@ -163,7 +145,7 @@ func (ps *pgstore) CheckListServiceProfilesAccess(ctx context.Context, username 
 }
 
 // CreateServiceProfile creates the given service-profile.
-func (ps *pgstore) CreateServiceProfile(ctx context.Context, sp *ServiceProfile) error {
+func (ps *PgStore) CreateServiceProfile(ctx context.Context, sp *ServiceProfile) error {
 	if err := sp.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -206,7 +188,7 @@ func (ps *pgstore) CreateServiceProfile(ctx context.Context, sp *ServiceProfile)
 }
 
 // GetServiceProfile returns the service-profile matching the given id.
-func (ps *pgstore) GetServiceProfile(ctx context.Context, id uuid.UUID) (ServiceProfile, error) {
+func (ps *PgStore) GetServiceProfile(ctx context.Context, id uuid.UUID) (ServiceProfile, error) {
 	var sp ServiceProfile
 	row := ps.db.QueryRowxContext(ctx, `
 		select
@@ -233,7 +215,7 @@ func (ps *pgstore) GetServiceProfile(ctx context.Context, id uuid.UUID) (Service
 }
 
 // UpdateServiceProfile updates the given service-profile.
-func (ps *pgstore) UpdateServiceProfile(ctx context.Context, sp *ServiceProfile) error {
+func (ps *PgStore) UpdateServiceProfile(ctx context.Context, sp *ServiceProfile) error {
 	if err := sp.Validate(); err != nil {
 		return errors.Wrap(err, "validate error")
 	}
@@ -274,7 +256,7 @@ func (ps *pgstore) UpdateServiceProfile(ctx context.Context, sp *ServiceProfile)
 }
 
 // DeleteServiceProfile deletes the service-profile matching the given id.
-func (ps *pgstore) DeleteServiceProfile(ctx context.Context, id uuid.UUID) error {
+func (ps *PgStore) DeleteServiceProfile(ctx context.Context, id uuid.UUID) error {
 	res, err := ps.db.ExecContext(ctx, "delete from service_profile where service_profile_id = $1", id)
 	if err != nil {
 		return handlePSQLError(Delete, err, "delete error")
@@ -296,7 +278,7 @@ func (ps *pgstore) DeleteServiceProfile(ctx context.Context, id uuid.UUID) error
 }
 
 // GetServiceProfileCount returns the total number of service-profiles.
-func (ps *pgstore) GetServiceProfileCount(ctx context.Context) (int, error) {
+func (ps *PgStore) GetServiceProfileCount(ctx context.Context) (int, error) {
 	var count int
 	err := sqlx.GetContext(ctx, ps.db, &count, "select count(*) from service_profile")
 	if err != nil {
@@ -307,7 +289,7 @@ func (ps *pgstore) GetServiceProfileCount(ctx context.Context) (int, error) {
 
 // GetServiceProfileCountForOrganizationID returns the total number of
 // service-profiles for the given organization id.
-func (ps *pgstore) GetServiceProfileCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
+func (ps *PgStore) GetServiceProfileCountForOrganizationID(ctx context.Context, organizationID int64) (int, error) {
 	var count int
 	err := sqlx.GetContext(ctx, ps.db, &count, "select count(*) from service_profile where organization_id = $1", organizationID)
 	if err != nil {
@@ -318,7 +300,7 @@ func (ps *pgstore) GetServiceProfileCountForOrganizationID(ctx context.Context, 
 
 // GetServiceProfileCountForUser returns the total number of service-profiles
 // for the given user ID.
-func (ps *pgstore) GetServiceProfileCountForUser(ctx context.Context, userID int64) (int, error) {
+func (ps *PgStore) GetServiceProfileCountForUser(ctx context.Context, userID int64) (int, error) {
 	var count int
 	err := sqlx.GetContext(ctx, ps.db, &count, `
 		select
@@ -341,7 +323,7 @@ func (ps *pgstore) GetServiceProfileCountForUser(ctx context.Context, userID int
 }
 
 // GetServiceProfiles returns a slice of service-profiles.
-func (ps *pgstore) GetServiceProfiles(ctx context.Context, limit, offset int) ([]ServiceProfileMeta, error) {
+func (ps *PgStore) GetServiceProfiles(ctx context.Context, limit, offset int) ([]ServiceProfileMeta, error) {
 	var sps []ServiceProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &sps, `
 		select *
@@ -360,7 +342,7 @@ func (ps *pgstore) GetServiceProfiles(ctx context.Context, limit, offset int) ([
 
 // GetServiceProfilesForOrganizationID returns a slice of service-profiles
 // for the given organization id.
-func (ps *pgstore) GetServiceProfilesForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]ServiceProfileMeta, error) {
+func (ps *PgStore) GetServiceProfilesForOrganizationID(ctx context.Context, organizationID int64, limit, offset int) ([]ServiceProfileMeta, error) {
 	var sps []ServiceProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &sps, `
 		select
@@ -387,7 +369,7 @@ func (ps *pgstore) GetServiceProfilesForOrganizationID(ctx context.Context, orga
 
 // GetServiceProfilesForUser returns a slice of service-profile for the given
 // user ID.
-func (ps *pgstore) GetServiceProfilesForUser(ctx context.Context, userID int64, limit, offset int) ([]ServiceProfileMeta, error) {
+func (ps *PgStore) GetServiceProfilesForUser(ctx context.Context, userID int64, limit, offset int) ([]ServiceProfileMeta, error) {
 	var sps []ServiceProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &sps, `
 		select
@@ -416,7 +398,7 @@ func (ps *pgstore) GetServiceProfilesForUser(ctx context.Context, userID int64, 
 
 // DeleteAllServiceProfilesForOrganizationID deletes all service-profiles
 // given an organization id.
-func (ps *pgstore) DeleteAllServiceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {
+func (ps *PgStore) DeleteAllServiceProfilesForOrganizationID(ctx context.Context, organizationID int64) error {
 	var sps []ServiceProfileMeta
 	err := sqlx.SelectContext(ctx, ps.db, &sps, "select * from service_profile where organization_id = $1", organizationID)
 	if err != nil {

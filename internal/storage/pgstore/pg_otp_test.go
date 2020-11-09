@@ -9,8 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func toStore(db *sql.DB) *pgstore {
-	return &pgstore{db: sqlx.NewDb(db, "foo")}
+func toStore(db *sql.DB) *PgStore {
+	return &PgStore{db: sqlx.NewDb(db, "foo")}
 }
 
 func TestGetTOTPInfo(t *testing.T) {

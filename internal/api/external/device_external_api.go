@@ -23,7 +23,7 @@ import (
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/eventlog"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	"github.com/mxc-foundation/lpwan-app-server/internal/modules/application"
@@ -81,7 +81,7 @@ func (a *DeviceAPI) Create(ctx context.Context, req *api.CreateDeviceRequest) (*
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
-	dp, err := a.st.DeviceProfileStore.GetDeviceProfile(ctx, dpID, false)
+	dp, err := a.st.GetDeviceProfile(ctx, dpID, false)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}

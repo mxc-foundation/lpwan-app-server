@@ -9,32 +9,42 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-
-	. "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/authentication/store"
 )
 
-/*// Credentials provides methods to assert the user's Credentials
-type Credentials interface {
-	// Email returns user's username
-	Email() string
-	// UserID returns id of the user
-	UserID() int64
-	// IsGlobalAdmin returns an error if user is not global admin
-	IsGlobalAdmin(context.Context) error
-	// IsOrgUser returns an error if user does not belong to the organization
-	IsOrgUser(context.Context, int64) error
-	// IsOrgAdmin returns an error if user is not admin of the organization
-	IsOrgAdmin(context.Context, int64) error
-	// IsDeviceAdmin returns an error if user is not device admin of the organization
-	IsDeviceAdmin(context.Context, int64) error
-	// IsGatewayAdmin returns an error if user is not gateway admin of the organization
-	IsGatewayAdmin(context.Context, int64) error
-}*/
+// User contains information about the user
+type User struct {
+	ID            int64
+	Email         string
+	IsGlobalAdmin bool
+}
 
-func SetupCred(st Store, jwtValidator *jwt.Validator, otpValidator *otp.Validator) {
+// OrgUser contains information about the role of the user in organisation
+type OrgUser struct {
+	IsOrgUser      bool
+	IsOrgAdmin     bool
+	IsDeviceAdmin  bool
+	IsGatewayAdmin bool
+}
+
+// Flag defines the authorization flag.
+type Flag int
+
+// Authorization flags.
+const (
+	Create Flag = iota
+	Read
+	Update
+	Delete
+	List
+	UpdateProfile
+	UpdatePassword
+	FinishRegistration
+)
+
+func SetupCred(st auth.Store, jwtValidator *jwt.Validator, otpValidator *otp.Validator) {
 	hl.st = st
 	hl.jwtValidator = jwtValidator
 	hl.otpValidator = otpValidator
@@ -43,7 +53,7 @@ func SetupCred(st Store, jwtValidator *jwt.Validator, otpValidator *otp.Validato
 var hl handler
 
 type handler struct {
-	st           Store
+	st           auth.Store
 	jwtValidator *jwt.Validator
 	otpValidator *otp.Validator
 }
@@ -150,7 +160,7 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 		return cred, nil
 	}
 
-	u, err := c.h.st.GetUser(ctx, jwtClaims.Username)
+	u, err := c.h.st.AuthGetUser(ctx, jwtClaims.Username)
 	if err != nil {
 		return cred, errors.Wrap(err, "getCredentials")
 	}
@@ -165,15 +175,18 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 	}
 
 	if cfg.orgID != 0 {
-		orgUser, err := c.h.st.GetOrgUser(ctx, u.ID, cfg.orgID)
+		orgUser, err := c.h.st.AuthGetOrgUser(ctx, u.ID, cfg.orgID)
 		if err != nil {
 			return cred, errors.Wrap(err, "getCredentials")
+		}
+		if !orgUser.IsOrgUser {
+			return cred, fmt.Errorf("not an org user")
 		}
 
 		cred.orgUser.IsGatewayAdmin = orgUser.IsGatewayAdmin
 		cred.orgUser.IsDeviceAdmin = orgUser.IsDeviceAdmin
 		cred.orgUser.IsOrgAdmin = orgUser.IsOrgAdmin
-		cred.orgUser.IsOrgUser = true
+		cred.orgUser.IsOrgUser = orgUser.IsOrgUser
 	}
 
 	return cred, nil
@@ -329,12 +342,12 @@ func (c *Credentials) Is2FAEnabled(ctx context.Context, username string) (bool, 
 }
 
 // SignJWToken requires username, since ctx does not contain user info at this point
-func (c *Credentials) SignJWToken(username string, ttl int64, audience []string) (string, error) {
-	return c.h.jwtValidator.SignToken(username, ttl, audience)
+func (c *Credentials) SignJWToken(userID int64, username string, ttl int64, audience []string) (string, error) {
+	return c.h.jwtValidator.SignToken(userID, username, ttl, audience)
 }
 
-// NewConfiguration generates a new TOTP configuration for the user
-func (c *Credentials) NewConfiguration(ctx context.Context, username string) (*otp.Configuration, error) {
+// New2FAConfiguration generates a new TOTP configuration for the user
+func (c *Credentials) New2FAConfiguration(ctx context.Context, username string) (*otp.Configuration, error) {
 	return c.h.otpValidator.NewConfiguration(ctx, username)
 }
 

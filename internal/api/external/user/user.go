@@ -1,4 +1,5 @@
-package external
+// Package user implements APIs for user's registration and login
+package user
 
 import (
 	"context"
@@ -10,37 +11,48 @@ import (
 
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
-	auth "github.com/mxc-foundation/lpwan-app-server/internal/authentication/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
+	udata "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
-// UserAPI exports the User related functions.
-type UserAPI struct {
-	st *store.Handler
+// Server implements Internal User Service
+type Server struct {
+	st     *store.Handler
+	config udata.Config
+	auth   auth.Authenticator
+	jwtv   *jwt.Validator
+	otpv   *otp.Validator
 }
 
-// NewUserAPI creates a new UserAPI.
-func NewUserAPI(h *store.Handler) *UserAPI {
-	return &UserAPI{
-		st: h,
+// NewServer creates a new server instance
+func NewServer(h *store.Handler, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, c udata.Config) *Server {
+	return &Server{
+		st:     h,
+		config: c,
+		auth:   auth,
+		jwtv:   jwtv,
+		otpv:   otpv,
 	}
 }
 
 // Create creates the given user.
-func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inpb.CreateUserResponse, error) {
+func (a *Server) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inpb.CreateUserResponse, error) {
 	if req.User == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
-
-	if valid, err := user.NewValidator().ValidateUsersGlobalAccess(ctx, auth.Create); !valid || err != nil {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
 
-	user := User{
+	user := udata.User{
 		SessionTTL: req.User.SessionTtl,
 		IsAdmin:    req.User.IsAdmin,
 		IsActive:   req.User.IsActive,
@@ -71,9 +83,14 @@ func (a *UserAPI) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inp
 }
 
 // Get returns the user matching the given ID.
-func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUserResponse, error) {
-	if valid, err := user.NewValidator().ValidateUserAccess(ctx, auth.Read, req.Id); !valid || err != nil {
+func (a *Server) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUserResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !(cred.IsGlobalAdmin || cred.UserID == req.Id) {
+		// only user themselves and the global admin can do that
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	user, err := a.st.GetUser(ctx, req.Id)
@@ -106,7 +123,7 @@ func (a *UserAPI) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetU
 }
 
 // GetUserEmail returns true if user does not exist
-func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailRequest) (*inpb.GetUserEmailResponse, error) {
+func (a *Server) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailRequest) (*inpb.GetUserEmailResponse, error) {
 	username := normalizeUsername(req.UserEmail)
 	u, err := a.st.GetUserByEmail(ctx, username)
 	if err != nil {
@@ -124,9 +141,13 @@ func (a *UserAPI) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailReques
 }
 
 // List lists the users.
-func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.ListUserResponse, error) {
-	if valid, err := user.NewValidator().ValidateUsersGlobalAccess(ctx, auth.List); !valid || err != nil {
+func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.ListUserResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	users, err := a.st.GetUsers(ctx, int(req.Limit), int(req.Offset))
@@ -168,13 +189,17 @@ func (a *UserAPI) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Li
 }
 
 // Update updates the given user.
-func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empty.Empty, error) {
+func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empty.Empty, error) {
 	if req.User == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
 	}
-
-	if valid, err := user.NewValidator().ValidateUserAccess(ctx, auth.Update, req.User.Id); !valid || err != nil {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !(cred.UserID == req.User.Id) {
+		// only user themselves can do that
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	user, err := a.st.GetUser(ctx, req.User.Id)
@@ -197,13 +222,16 @@ func (a *UserAPI) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*emp
 }
 
 // Delete deletes the user matching the given ID.
-func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empty.Empty, error) {
-	if valid, err := user.NewValidator().ValidateUserAccess(ctx, auth.Delete, req.Id); !valid || err != nil {
+func (a *Server) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empty.Empty, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
+	if !cred.IsGlobalAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
 
-	err := a.st.DeleteUser(ctx, req.Id)
-	if err != nil {
+	if err := a.st.DeleteUser(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -211,20 +239,23 @@ func (a *UserAPI) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*emp
 }
 
 // UpdatePassword updates the password for the user matching the given ID.
-func (a *UserAPI) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswordRequest) (*empty.Empty, error) {
-	if valid, err := user.NewValidator().ValidateUserAccess(ctx, auth.UpdatePassword, req.UserId); !valid || err != nil {
+func (a *Server) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswordRequest) (*empty.Empty, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
+	if !(cred.UserID == req.UserId) {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
 
-	err := a.st.UpdatePassword(ctx, req.UserId, req.Password)
-	if err != nil {
+	if err := a.st.UpdatePassword(ctx, req.UserId, req.Password); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	return &empty.Empty{}, nil
 }
 
-func (a *UserAPI) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
+func (a *Server) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
 	userEmail := normalizeUsername(req.UserEmail)
 	otp, err := a.st.GetTokenByUsername(ctx, userEmail)
 	if err != nil {

@@ -26,7 +26,6 @@ import (
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal"
@@ -41,7 +40,6 @@ import (
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/service-profile"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/set_default"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/modules/user"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/monitoring"
 )
 
