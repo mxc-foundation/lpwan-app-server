@@ -3,9 +3,11 @@ package user
 
 import (
 	"context"
+	"time"
 
-	"github.com/golang/protobuf/ptypes"
+	"github.com/brocaar/lorawan"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -14,25 +16,109 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
-	udata "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 )
+
+// User defines the user structure.
+type User struct {
+	ID            int64
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Email         string
+	PasswordHash  string
+	IsAdmin       bool
+	IsActive      bool
+	EmailVerified bool
+	SecurityToken string
+}
+
+type OrganizationUser struct {
+	UserID           int64
+	OrganizationID   int64
+	OrganizationName string
+	IsOrgAdmin       bool
+	IsDeviceAdmin    bool
+	IsGatewayAdmin   bool
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+}
+
+// SearchResult defines a search result.
+type SearchResult struct {
+	Kind             string         `db:"kind"`
+	Score            float64        `db:"score"`
+	OrganizationID   *int64         `db:"organization_id"`
+	OrganizationName *string        `db:"organization_name"`
+	ApplicationID    *int64         `db:"application_id"`
+	ApplicationName  *string        `db:"application_name"`
+	DeviceDevEUI     *lorawan.EUI64 `db:"device_dev_eui"`
+	DeviceName       *string        `db:"device_name"`
+	GatewayMAC       *lorawan.EUI64 `db:"gateway_mac"`
+	GatewayName      *string        `db:"gateway_name"`
+}
+
+type Store interface {
+	// ActivateUser creates the organization for the new user, adds the user to
+	// the org and activates the user
+	ActivateUser(ctx context.Context, userID int64, passwordHash, orgName, orgDisplayName string) error
+	// CreateUser creates a new user and adds it to all organization listed
+	CreateUser(ctx context.Context, user User, orgUser []OrganizationUser) (User, error)
+	// GetUserByID returns the user with the given ID
+	GetUserByID(ctx context.Context, userID int64) (User, error)
+	// GetUserByEmail returns the user with the given email
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	// GetUserByToken returns the user with the given security token
+	GetUserByToken(ctx context.Context, token string) (User, error)
+	// GetUserOrganizations returns the list of organizations to which the user
+	// belongs and the roles of the user in these organizations
+	GetUserOrganizations(ctx context.Context, userID int64) ([]OrganizationUser, error)
+	// GetUserCount returns the total number of users
+	GetUserCount(ctx context.Context) (int64, error)
+	// GetUsers returns list of users
+	GetUsers(ctx context.Context, offset, limit int) ([]User, error)
+	// If password reset OTP has been generated already then returns it,
+	// otherwise sets the new OTP and returns it
+	GetOrSetPasswordResetOTP(ctx context.Context, userID int64, otp string) (string, error)
+	// SetUserActiveStatus disables or enables the user
+	SetUserActiveStatus(ctx context.Context, userID int64, isActive bool) error
+	// SetUserEmail changes the email address of the user
+	SetUserEmail(ctx context.Context, userID int64, email string) error
+	// SetUserPasswordHash sets the password hash for the user
+	SetUserPasswordHash(ctx context.Context, userID int64, passwordHash string) error
+	// SetUserPasswordIfOTPMatch sets the user's password if the OTP provided is correct
+	SetUserPasswordIfOTPMatch(ctx context.Context, userID int64, otp, passwordHash string) error
+	// DeleteUser deletes the user
+	DeleteUser(ctx context.Context, userID int64) error
+
+	// GlobalSearch performs a search on organizations, applications, gateways
+	// and devices
+	GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error)
+}
+
+// Server configuration
+type Config struct {
+	RecaptchaHost   string
+	RecaptchaSecret string
+	// If true, then users who have 2FA configured must enter OTP to login
+	Enable2FALogin bool
+}
 
 // Server implements Internal User Service
 type Server struct {
-	st     *store.Handler
-	config udata.Config
-	auth   auth.Authenticator
-	jwtv   *jwt.Validator
-	otpv   *otp.Validator
+	store    Store
+	config   Config
+	auth     auth.Authenticator
+	jwtv     *jwt.Validator
+	otpv     *otp.Validator
+	pwhasher *pwhash.PasswordHasher
 }
 
 // NewServer creates a new server instance
-func NewServer(h *store.Handler, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, c udata.Config) *Server {
+func NewServer(store Store, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, config Config) *Server {
 	return &Server{
-		st:     h,
-		config: c,
+		store:  store,
+		config: config,
 		auth:   auth,
 		jwtv:   jwtv,
 		otpv:   otpv,
@@ -52,31 +138,34 @@ func (a *Server) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inpb
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	user := udata.User{
-		SessionTTL: req.User.SessionTtl,
-		IsAdmin:    req.User.IsAdmin,
-		IsActive:   req.User.IsActive,
-		Email:      req.User.Email,
-		Note:       req.User.Note,
-		Password:   req.Password,
+	if err := validatePass(req.Password); err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	passHash, err := a.pwhasher.HashPassword(req.Password)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't hash password: %v", err)
 	}
 
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		err := handler.CreateUser(ctx, &user)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
-		}
+	user := User{
+		IsAdmin:      req.User.IsAdmin,
+		IsActive:     req.User.IsActive,
+		Email:        req.User.Email,
+		PasswordHash: passHash,
+	}
 
-		for _, org := range req.Organizations {
-			if err := handler.CreateOrganizationUser(ctx, org.OrganizationId, user.ID,
-				org.IsAdmin, org.IsDeviceAdmin, org.IsGatewayAdmin); err != nil {
-				return status.Errorf(codes.Unknown, "%v", err)
-			}
-		}
+	var orgUsers []OrganizationUser
+	for _, org := range req.Organizations {
+		orgUsers = append(orgUsers, OrganizationUser{
+			OrganizationID: org.OrganizationId,
+			IsOrgAdmin:     org.IsAdmin,
+			IsDeviceAdmin:  org.IsDeviceAdmin,
+			IsGatewayAdmin: org.IsGatewayAdmin,
+		})
+	}
 
-		return nil
-	}); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+	user, err = a.store.CreateUser(ctx, user, orgUsers)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't create user: %v", err)
 	}
 
 	return &inpb.CreateUserResponse{Id: user.ID}, nil
@@ -93,30 +182,20 @@ func (a *Server) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUs
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	user, err := a.st.GetUser(ctx, req.Id)
+	user, err := a.store.GetUserByID(ctx, req.Id)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	resp := inpb.GetUserResponse{
 		User: &inpb.User{
-			Id:         user.ID,
-			SessionTtl: user.SessionTTL,
-			IsAdmin:    user.IsAdmin,
-			IsActive:   user.IsActive,
-			Username:   user.Email,
-			Email:      user.EmailOld,
-			Note:       user.Note,
+			Id:       user.ID,
+			IsAdmin:  user.IsAdmin,
+			IsActive: user.IsActive,
+			Username: user.Email,
 		},
-	}
-
-	resp.CreatedAt, err = ptypes.TimestampProto(user.CreatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
-	}
-	resp.UpdatedAt, err = ptypes.TimestampProto(user.UpdatedAt)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		CreatedAt: &timestamp.Timestamp{Seconds: user.CreatedAt.Unix()},
+		UpdatedAt: &timestamp.Timestamp{Seconds: user.UpdatedAt.Unix()},
 	}
 
 	return &resp, nil
@@ -124,15 +203,15 @@ func (a *Server) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUs
 
 // GetUserEmail returns true if user does not exist
 func (a *Server) GetUserEmail(ctx context.Context, req *inpb.GetUserEmailRequest) (*inpb.GetUserEmailResponse, error) {
-	username := normalizeUsername(req.UserEmail)
-	u, err := a.st.GetUserByEmail(ctx, username)
+	email := normalizeUsername(req.UserEmail)
+	u, err := a.store.GetUserByEmail(ctx, email)
 	if err != nil {
 		if err == errHandler.ErrDoesNotExist {
 			return &inpb.GetUserEmailResponse{Status: true}, nil
 		}
 		return nil, helpers.ErrToRPCError(err)
 	}
-	if u.SecurityToken != nil {
+	if u.SecurityToken != "" {
 		// user exists but has not finished registration
 		return &inpb.GetUserEmailResponse{Status: true}, nil
 	}
@@ -150,12 +229,12 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	users, err := a.st.GetUsers(ctx, int(req.Limit), int(req.Offset))
+	users, err := a.store.GetUsers(ctx, int(req.Offset), int(req.Limit))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
-	totalUserCount, err := a.st.GetUserCount(ctx)
+	totalUserCount, err := a.store.GetUserCount(ctx)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -164,22 +243,14 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 		TotalCount: int64(totalUserCount),
 	}
 
-	for _, u := range users {
+	for _, user := range users {
 		row := inpb.UserListItem{
-			Username:   u.Email,
-			Id:         u.ID,
-			SessionTtl: u.SessionTTL,
-			IsAdmin:    u.IsAdmin,
-			IsActive:   u.IsActive,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(u.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(u.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			Username:  user.Email,
+			Id:        user.ID,
+			IsAdmin:   user.IsAdmin,
+			IsActive:  user.IsActive,
+			CreatedAt: &timestamp.Timestamp{Seconds: user.CreatedAt.Unix()},
+			UpdatedAt: &timestamp.Timestamp{Seconds: user.UpdatedAt.Unix()},
 		}
 
 		resp.Result = append(resp.Result, &row)
@@ -202,19 +273,20 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empt
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	user, err := a.st.GetUser(ctx, req.User.Id)
+	user, err := a.store.GetUserByID(ctx, req.User.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
 
-	user.IsActive = req.User.IsActive
-	user.SessionTTL = req.User.SessionTtl
-	user.Email = req.User.Username
-	user.Note = req.User.Note
-
-	err = a.st.UpdateUser(ctx, &user)
-	if err != nil {
-		return nil, err
+	if req.User.IsActive != user.IsActive {
+		if err := a.store.SetUserActiveStatus(ctx, user.ID, req.User.IsActive); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't set user status: %v", err)
+		}
+	}
+	if req.User.Email != "" && req.User.Email != user.Email {
+		if err := a.store.SetUserEmail(ctx, user.ID, req.User.Email); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
+		}
 	}
 
 	return &empty.Empty{}, nil
@@ -230,7 +302,7 @@ func (a *Server) Delete(ctx context.Context, req *inpb.DeleteUserRequest) (*empt
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	if err := a.st.DeleteUser(ctx, req.Id); err != nil {
+	if err := a.store.DeleteUser(ctx, req.Id); err != nil {
 		return nil, err
 	}
 
@@ -247,7 +319,14 @@ func (a *Server) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswor
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	if err := a.st.UpdatePassword(ctx, req.UserId, req.Password); err != nil {
+	if err := validatePass(req.Password); err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	h, err := a.pwhasher.HashPassword(req.Password)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "problem updating the password: %v", err)
+	}
+	if err := a.store.SetUserPasswordHash(ctx, req.UserId, h); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
@@ -256,10 +335,13 @@ func (a *Server) UpdatePassword(ctx context.Context, req *inpb.UpdateUserPasswor
 
 func (a *Server) GetOTPCode(ctx context.Context, req *inpb.GetOTPCodeRequest) (*inpb.GetOTPCodeResponse, error) {
 	userEmail := normalizeUsername(req.UserEmail)
-	otp, err := a.st.GetTokenByUsername(ctx, userEmail)
+	u, err := a.store.GetUserByEmail(ctx, userEmail)
 	if err != nil {
-		return nil, err
+		return nil, helpers.ErrToRPCError(err)
+	}
+	if u.SecurityToken == "" {
+		return nil, status.Errorf(codes.NotFound, "no token for the user")
 	}
 
-	return &inpb.GetOTPCodeResponse{OtpCode: otp}, nil
+	return &inpb.GetOTPCodeResponse{OtpCode: u.SecurityToken}, nil
 }

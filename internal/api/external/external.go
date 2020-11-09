@@ -207,9 +207,10 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 		grpcAuth,
 		jwtValidator,
 		otpValidator,
-		userdata.Config{
-			Recaptcha:      ctrl.recaptcha,
-			Enable2FALogin: ctrl.enable2FA,
+		user.Config{
+			RecaptchaHost:   ctrl.recaptcha.HostServer,
+			RecaptchaSecret: ctrl.recaptcha.Secret,
+			Enable2FALogin:  ctrl.enable2FA,
 		},
 	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)
