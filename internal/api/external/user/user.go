@@ -206,8 +206,7 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empt
 	if err != nil {
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
-
-	user.IsAdmin = req.User.IsAdmin
+	
 	user.IsActive = req.User.IsActive
 	user.SessionTTL = req.User.SessionTtl
 	user.Email = req.User.Username
