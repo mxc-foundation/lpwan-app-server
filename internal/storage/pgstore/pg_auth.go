@@ -8,10 +8,10 @@ import (
 )
 
 func (ps *PgStore) AuthGetUser(ctx context.Context, username string) (auth.User, error) {
-	q := `SELECT id, is_admin FROM "user" WHERE email=$1 AND is_active=true`
+	q := `SELECT id, email, is_admin FROM "user" WHERE email=$1 AND is_active=true`
 	row := ps.db.QueryRowContext(ctx, q, username)
 	var res auth.User
-	if err := row.Scan(&res.ID, &res.IsGlobalAdmin); err != nil {
+	if err := row.Scan(&res.ID, &res.Email, &res.IsGlobalAdmin); err != nil {
 		return res, err
 	}
 	return res, nil
