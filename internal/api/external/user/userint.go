@@ -21,7 +21,6 @@ import (
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 )
@@ -90,10 +89,15 @@ func (a *Server) Login2FA(ctx context.Context, req *inpb.Login2FARequest) (*inpb
 	return &inpb.LoginResponse{Jwt: jwt}, nil
 }
 
+type RecaptchaConfig struct {
+	HostServer string `mapstructure:"host_server"`
+	Secret     string `mapstructure:"secret"`
+}
+
 // IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
 func (a *Server) IsPassVerifyingGoogleRecaptcha(response string, remoteip string) (*inpb.GoogleRecaptchaResponse, error) {
-	secret := a.config.RecaptchaSecret
-	postURL := a.config.RecaptchaHost
+	secret := a.config.Recaptcha.Secret
+	postURL := a.config.Recaptcha.HostServer
 
 	postStr := url.Values{"secret": {secret}, "response": {response}, "remoteip": {remoteip}}
 	/* #nosec */
@@ -204,7 +208,7 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 // Branding returns UI branding.
 func (a *Server) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
 	resp := inpb.BrandingResponse{
-		LogoPath: email.GetOperatorInfo().OperatorLogo,
+		LogoPath: a.config.OperatorLogoPath,
 	}
 
 	return &resp, nil
@@ -288,7 +292,7 @@ func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest
 	if err == nil {
 		// user exists but haven't finished registration
 		if !user.IsActive && user.SecurityToken != "" {
-			err = email.SendInvite(user.Email, email.Param{Token: user.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
+			err := a.mailer.SendRegistrationConfirmation(user.Email, req.Language, user.SecurityToken)
 			if err != nil {
 				log.WithError(err).Error(logInfo)
 				return nil, helpers.ErrToRPCError(err)
@@ -311,7 +315,7 @@ func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest
 		return nil, status.Errorf(codes.Internal, "couldn't register user: %v", err)
 	}
 
-	if err = email.SendInvite(userEmail, email.Param{Token: token}, email.EmailLanguage(req.Language), email.RegistrationConfirmation); err != nil {
+	if err := a.mailer.SendRegistrationConfirmation(userEmail, req.Language, token); err != nil {
 		log.WithError(err).Error(logInfo)
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -411,7 +415,7 @@ func (a *Server) RequestPasswordReset(ctx context.Context, req *inpb.PasswordRes
 	if err != nil {
 		if err == errHandler.ErrDoesNotExist {
 			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", userEmail)
-			if err := email.SendInvite(userEmail, email.Param{}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
+			if err := a.mailer.SendPasswordResetUnknown(userEmail, req.Language); err != nil {
 				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 			}
 			return nil, nil
@@ -429,7 +433,7 @@ func (a *Server) RequestPasswordReset(ctx context.Context, req *inpb.PasswordRes
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	if err := email.SendInvite(userEmail, email.Param{Token: otp}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
+	if err := a.mailer.SendPasswordReset(userEmail, req.Language, otp); err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 	}
 

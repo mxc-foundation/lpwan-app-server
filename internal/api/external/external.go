@@ -30,6 +30,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
@@ -39,7 +40,6 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
-	userdata "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
@@ -57,7 +57,7 @@ type controller struct {
 	s                   ExternalAPIStruct
 	applicationServerID uuid.UUID
 	serverAddr          string
-	recaptcha           userdata.RecaptchaStruct
+	recaptcha           user.RecaptchaConfig
 	enable2FA           bool
 	serverRegion        string
 
@@ -204,13 +204,14 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(h))
 	// user
 	userSrv := user.NewServer(h,
+		&email.Mailer{},
 		grpcAuth,
 		jwtValidator,
 		otpValidator,
 		user.Config{
-			RecaptchaHost:   ctrl.recaptcha.HostServer,
-			RecaptchaSecret: ctrl.recaptcha.Secret,
-			Enable2FALogin:  ctrl.enable2FA,
+			Recaptcha:        ctrl.recaptcha,
+			Enable2FALogin:   ctrl.enable2FA,
+			OperatorLogoPath: email.GetOperatorInfo().OperatorLogo,
 		},
 	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)

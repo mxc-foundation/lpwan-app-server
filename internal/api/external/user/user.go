@@ -96,17 +96,30 @@ type Store interface {
 	GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error)
 }
 
+// Mailer is an interface responsible for sending emails to the user
+type Mailer interface {
+	// SendRegistrationConfirmation sends email to the user confirming registration
+	SendRegistrationConfirmation(email, lang, securityToken string) error
+	// SendPasswordResetUnknown sends an email that password reset was requested,
+	// but the user is unknown
+	SendPasswordResetUnknown(email, lang string) error
+	// SendPasswordReset sends password reset email
+	SendPasswordReset(email, lang, otp string) error
+}
+
 // Server configuration
 type Config struct {
-	RecaptchaHost   string
-	RecaptchaSecret string
+	Recaptcha RecaptchaConfig
 	// If true, then users who have 2FA configured must enter OTP to login
 	Enable2FALogin bool
+	// path to logo
+	OperatorLogoPath string
 }
 
 // Server implements Internal User Service
 type Server struct {
 	store    Store
+	mailer   Mailer
 	config   Config
 	auth     auth.Authenticator
 	jwtv     *jwt.Validator
@@ -115,9 +128,10 @@ type Server struct {
 }
 
 // NewServer creates a new server instance
-func NewServer(store Store, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, config Config) *Server {
+func NewServer(store Store, mailer Mailer, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, config Config) *Server {
 	return &Server{
 		store:  store,
+		mailer: mailer,
 		config: config,
 		auth:   auth,
 		jwtv:   jwtv,
