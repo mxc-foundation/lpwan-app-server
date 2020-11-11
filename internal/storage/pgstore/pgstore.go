@@ -46,6 +46,26 @@ func New() *PgStore {
 	}
 }
 
+func (ps *PgStore) Tx(ctx context.Context, f func(context.Context, *PgStore) error) error {
+	for {
+		pst, err := ps.TxBegin(ctx)
+		if err != nil {
+			return err
+		}
+		err = f(ctx, pst)
+		if err == nil {
+			if err = pst.TxCommit(ctx); err == nil {
+				return nil
+			}
+		}
+		_ = pst.TxRollback(ctx)
+		if ps.IsErrorRepeat(err) {
+			continue
+		}
+		return err
+	}
+}
+
 func (ps *PgStore) TxBegin(ctx context.Context) (*PgStore, error) {
 	tx, err := ps.db.BeginTxx(ctx, &sql.TxOptions{
 		Isolation: sql.LevelSerializable,

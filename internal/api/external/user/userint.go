@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -162,6 +163,16 @@ func validatePass(password string) error {
 	return nil
 }
 
+// based on https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#email-state-typeemail
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+func validateEmail(email string) error {
+	if !emailRegex.MatchString(email) {
+		return status.Errorf(codes.InvalidArgument, "invalid email address")
+	}
+	return nil
+}
+
 // Profile returns the u profile.
 func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileResponse, error) {
 	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
@@ -282,6 +293,9 @@ func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest
 		"userEmail": userEmail,
 		"languange": req.Language,
 	}).Info(logInfo)
+	if err := validateEmail(userEmail); err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
 
 	user, err := a.store.GetUserByEmail(ctx, userEmail)
 	// internal error

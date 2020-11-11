@@ -44,6 +44,18 @@ type OrganizationUser struct {
 	UpdatedAt        time.Time
 }
 
+// Organization represents an organization.
+type Organization struct {
+	ID              int64
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	Name            string
+	DisplayName     string
+	CanHaveGateways bool
+	MaxDeviceCount  int
+	MaxGatewayCount int
+}
+
 // SearchResult defines a search result.
 type SearchResult struct {
 	Kind             string         `db:"kind"`
@@ -76,9 +88,9 @@ type Store interface {
 	// GetUserCount returns the total number of users
 	GetUserCount(ctx context.Context) (int64, error)
 	// GetUsers returns list of users
-	GetUsers(ctx context.Context, offset, limit int) ([]User, error)
-	// If password reset OTP has been generated already then returns it,
-	// otherwise sets the new OTP and returns it
+	GetUsers(ctx context.Context, limit, offset int) ([]User, error)
+	// GetOrSetPasswordResetOTP if the password reset OTP has been generated
+	// already then returns it, otherwise sets the new OTP and returns it
 	GetOrSetPasswordResetOTP(ctx context.Context, userID int64, otp string) (string, error)
 	// SetUserActiveStatus disables or enables the user
 	SetUserActiveStatus(ctx context.Context, userID int64, isActive bool) error
@@ -128,14 +140,15 @@ type Server struct {
 }
 
 // NewServer creates a new server instance
-func NewServer(store Store, mailer Mailer, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, config Config) *Server {
+func NewServer(store Store, mailer Mailer, auth auth.Authenticator, jwtv *jwt.Validator, otpv *otp.Validator, pwhasher *pwhash.PasswordHasher, config Config) *Server {
 	return &Server{
-		store:  store,
-		mailer: mailer,
-		config: config,
-		auth:   auth,
-		jwtv:   jwtv,
-		otpv:   otpv,
+		store:    store,
+		mailer:   mailer,
+		config:   config,
+		auth:     auth,
+		jwtv:     jwtv,
+		otpv:     otpv,
+		pwhasher: pwhasher,
 	}
 }
 
@@ -152,6 +165,9 @@ func (a *Server) Create(ctx context.Context, req *inpb.CreateUserRequest) (*inpb
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
+	if err := validateEmail(req.User.Email); err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
 	if err := validatePass(req.Password); err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -243,7 +259,7 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	users, err := a.store.GetUsers(ctx, int(req.Offset), int(req.Limit))
+	users, err := a.store.GetUsers(ctx, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -297,8 +313,12 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empt
 			return nil, status.Errorf(codes.Internal, "couldn't set user status: %v", err)
 		}
 	}
-	if req.User.Email != "" && req.User.Email != user.Email {
-		if err := a.store.SetUserEmail(ctx, user.ID, req.User.Email); err != nil {
+	newEmail := normalizeUsername(req.User.Email)
+	if newEmail != "" && req.User.Email != user.Email {
+		if err := validateEmail(newEmail); err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+		if err := a.store.SetUserEmail(ctx, user.ID, newEmail); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
 		}
 	}

@@ -158,7 +158,7 @@ func (m *Mailer) SendPasswordResetUnknown(email, lang string) error {
 }
 
 func (m *Mailer) SendPasswordReset(email, lang, otp string) error {
-	return SendInvite(email, Param{Token: otp}, EmailLanguage(lang), RegistrationConfirmation)
+	return SendInvite(email, Param{Token: otp}, EmailLanguage(lang), PasswordReset)
 }
 
 // SendInvite ...
