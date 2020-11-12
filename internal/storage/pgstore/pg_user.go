@@ -7,629 +7,371 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-
-	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 )
 
-const externalUserFields = "id, is_admin, is_active, session_ttl, created_at, updated_at, email, note, security_token"
-const internalUserFields = "*"
-
 // CreateUser creates the given user.
-func (ps *PgStore) CreateUser(ctx context.Context, user *User) error {
-	if err := user.Validate(); err != nil {
-		return errors.Wrap(err, "validation error")
-	}
+func (ps *PgStore) CreateUser(ctx context.Context, u user.User, ou []user.OrganizationUser) (user.User, error) {
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
+		nu, err := ps.createUser(ctx, u)
+		if err != nil {
+			return err
+		}
+		u.ID = nu.ID
+		for _, org := range ou {
+			org.UserID = u.ID
+			if err := ps.createOrganizationUser(ctx, org); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return u, err
+}
 
-	err := ps.SetUserPassword(user, user.Password)
-	if err != nil {
-		return err
-	}
-
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
-
-	err = sqlx.GetContext(ctx, ps.db, &user.ID, `
-		insert into "user" (
+func (ps *PgStore) createUser(ctx context.Context, u user.User) (user.User, error) {
+	var id int64
+	err := ps.db.QueryRowContext(ctx,
+		`INSERT INTO "user"
+	 	(
 			is_admin,
 			is_active,
-			session_ttl,
 			created_at,
 			updated_at,
 			password_hash,
 			email,
 			email_verified,
-			note,
-			external_id
+			security_token
 		)
-		values (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		returning
-			id`,
-		user.IsAdmin,
-		user.IsActive,
-		user.SessionTTL,
-		user.CreatedAt,
-		user.UpdatedAt,
-		user.PasswordHash,
-		user.Email,
-		user.EmailVerified,
-		user.Note,
-		user.ExternalID,
-	)
-	if err != nil {
-		return handlePSQLError(Insert, err, "insert error")
-	}
-
-	var externalID string
-	if user.ExternalID != nil {
-		externalID = *user.ExternalID
-	}
-
-	log.WithFields(log.Fields{
-		"id":          user.ID,
-		"external_id": externalID,
-		"email":       user.Email,
-		"ctx_id":      ctx.Value(logging.ContextIDKey),
-	}).Info("storage: user created")
-
-	return nil
-}
-
-// GetUser returns the User for the given id.
-func (ps *PgStore) GetUser(ctx context.Context, id int64) (User, error) {
-	var user User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where id = $1", id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return user, errHandler.ErrDoesNotExist
-		}
-		return user, errors.Wrap(err, "select error")
-	}
-
-	return user, nil
-}
-
-// GetUserByExternalID returns the User for the given ext. ID.
-func (ps *PgStore) GetUserByExternalID(ctx context.Context, externalID string) (User, error) {
-	var user User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" external_id id = $1", externalID)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return user, errHandler.ErrDoesNotExist
-		}
-		return user, errors.Wrap(err, "select error")
-	}
-
-	return user, nil
-}
-
-// GetUserByUsername returns the User for the given email.
-func (ps *PgStore) GetUserByUsername(ctx context.Context, userEmail string) (User, error) {
-	var user User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where email = $1", userEmail)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return user, errHandler.ErrDoesNotExist
-		}
-		return user, errors.Wrap(err, "select error")
-	}
-
-	return user, nil
-}
-
-// GetUserByEmail returns the User for the given userEmail.
-func (ps *PgStore) GetUserByEmail(ctx context.Context, userEmail string) (User, error) {
-	var user User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where email = $1", userEmail)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return user, errHandler.ErrDoesNotExist
-		}
-		return user, errors.Wrap(err, "select error")
-	}
-
-	return user, nil
-}
-
-// GetUserCount returns the total number of users.
-func (ps *PgStore) GetUserCount(ctx context.Context) (int, error) {
-	var count int
-	err := sqlx.GetContext(ctx, ps.db, &count, `
-		select
-			count(*)
-		from "user"
-	`)
-	if err != nil {
-		return 0, errors.Wrap(err, "select error")
-	}
-	return count, nil
-}
-
-// GetUsers returns a slice of users, respecting the given limit and offset.
-func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]User, error) {
-	var users []User
-	err := sqlx.SelectContext(ctx, ps.db, &users, "select "+externalUserFields+
-		" from public.user order by email limit $1 offset $2", limit, offset)
-
-	if err != nil {
-		return nil, errors.Wrap(err, "select error")
-	}
-	return users, nil
-}
-
-// UpdateUser updates the given User.
-func (ps *PgStore) UpdateUser(ctx context.Context, u *User) error {
-	if err := u.Validate(); err != nil {
-		return errors.Wrap(err, "validate user error")
-	}
-
-	u.UpdatedAt = time.Now()
-
-	res, err := ps.db.ExecContext(ctx, `
-		update "user"
-		set
-			updated_at = $2,
-			is_admin = $3,
-			is_active = $4,
-			session_ttl = $5,
-			email = $6,
-			email_verified = $7,
-			note = $8,
-			external_id = $9
-		where
-			id = $1`,
-		u.ID,
-		u.UpdatedAt,
+		VALUES ($1, $2, NOW(), NOW(), $3, $4, $5, $6)
+		RETURNING id`,
 		u.IsAdmin,
 		u.IsActive,
-		u.SessionTTL,
+		u.PasswordHash,
 		u.Email,
 		u.EmailVerified,
-		u.Note,
-		u.ExternalID,
-	)
+		u.SecurityToken,
+	).Scan(&id)
 	if err != nil {
-		return handlePSQLError(Update, err, "update error")
+		return u, fmt.Errorf("couldn't insert user: %w", err)
 	}
-	ra, err := res.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "get rows affected error")
-	}
-	if ra == 0 {
-		return errHandler.ErrDoesNotExist
-	}
-
-	var extUser string
-	if u.ExternalID != nil {
-		extUser = *u.ExternalID
-	}
-
-	log.WithFields(log.Fields{
-		"id":          u.ID,
-		"external_id": extUser,
-		"ctx_id":      ctx.Value(logging.ContextIDKey),
-	}).Info("storage: user updated")
-
-	return nil
+	u.ID = id
+	return u, nil
 }
 
-// DeleteUser deletes the User record matching the given ID.
-func (ps *PgStore) DeleteUser(ctx context.Context, id int64) error {
-	res, err := ps.db.ExecContext(ctx, `
-		delete from
-			"user"
-		where
-			id = $1
-	`, id)
-	if err != nil {
-		return errors.Wrap(err, "delete error")
-	}
-	ra, err := res.RowsAffected()
-	if err != nil {
-		return errors.Wrap(err, "get rows affected error")
-	}
-	if ra == 0 {
-		return errHandler.ErrDoesNotExist
-	}
-
-	log.WithFields(log.Fields{
-		"id":     id,
-		"ctx_id": ctx.Value(logging.ContextIDKey),
-	}).Info("storage: user deleted")
-	return nil
-}
-
-// UpdatePassword updates the user with the new password.
-func (ps *PgStore) UpdatePassword(ctx context.Context, id int64, newpassword string) error {
-	if err := ValidatePassword(newpassword); err != nil {
-		return errors.Wrap(err, "validation error")
-	}
-
-	pwHash, err := ctrl.c.PWH.HashPassword(newpassword)
-	if err != nil {
-		return err
-	}
-
-	// update password
-	_, err = ps.db.ExecContext(ctx, "update \"user\" set password_hash = $1, updated_at = now() where id = $2",
-		pwHash, id)
-	if err != nil {
-		return errors.Wrap(err, "update error")
-	}
-
-	log.WithFields(log.Fields{
-		"id":     id,
-		"ctx_id": ctx.Value(logging.ContextIDKey),
-	}).Info("user password updated")
-	return nil
-
-}
-
-// LoginUserByPassword checks the password for the user matching the given email
-func (ps *PgStore) LoginUserByPassword(ctx context.Context, userEmail string, password string) error {
-	// get the user by userEmail
-	var user User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+internalUserFields+" from \"user\" where email = $1", userEmail)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return errHandler.ErrDoesNotExist
-		}
-		return errors.Wrap(err, "select error")
-	}
-
-	// Compare the passed in password with the hash in the database.
-	if err := ps.VerifyUserPassword(password, user.PasswordHash); err != nil {
-		return errors.Wrap(err, "password doesn't match email")
-	}
-
-	return nil
-}
-
-// GetProfile returns the user profile (user, applications and organizations
-// to which the user is linked).
-func (ps *PgStore) GetProfile(ctx context.Context, id int64) (UserProfile, error) {
-	var prof UserProfile
-
-	user, err := ps.GetUser(ctx, id)
-	if err != nil {
-		return prof, errors.Wrap(err, "get user error")
-	}
-	prof.User = UserProfileUser{
-		ID:         user.ID,
-		Email:      user.Email,
-		SessionTTL: user.SessionTTL,
-		IsAdmin:    user.IsAdmin,
-		IsActive:   user.IsActive,
-		CreatedAt:  user.CreatedAt,
-		UpdatedAt:  user.UpdatedAt,
-	}
-
-	err = sqlx.SelectContext(ctx, ps.db, &prof.Organizations, `
-		select
-			ou.organization_id as organization_id,
-			o.name as organization_name,
-			ou.is_admin as is_admin,
-			ou.is_device_admin as is_device_admin,
-			ou.is_gateway_admin as is_gateway_admin,
-			ou.created_at as created_at,
-			ou.updated_at as updated_at
-		from
-			organization_user ou,
-			organization o
-		where
-			ou.user_id = $1
-			and ou.organization_id = o.id`,
-		id,
-	)
-	if err != nil {
-		return prof, errors.Wrap(err, "select error")
-	}
-
-	return prof, nil
-}
-
-func (ps *PgStore) GetUserToken(ctx context.Context, u User) (string, error) {
-	// Generate the token.
-	now := time.Now()
-	nowSecondsSinceEpoch := now.Unix()
-	var expSecondsSinceEpoch int64
-	if u.SessionTTL > 0 {
-		expSecondsSinceEpoch = nowSecondsSinceEpoch + (60 * int64(u.SessionTTL))
-	} else {
-		expSecondsSinceEpoch = nowSecondsSinceEpoch + int64(DefaultSessionTTL/time.Second)
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iss":   "lpwan-app-server",
-		"aud":   "lpwan-app-server",
-		"nbf":   nowSecondsSinceEpoch,
-		"exp":   expSecondsSinceEpoch,
-		"sub":   "user",
-		"id":    u.ID,
-		"email": u.Email, // backwards compatibility
-	})
-
-	jwt, err := token.SignedString([]byte(ctrl.c.JWTSecret))
-	if err != nil {
-		return jwt, errors.Wrap(err, "get jwt signed string error")
-	}
-	return jwt, err
-}
-
-// RegisterUser ...
-func (ps *PgStore) RegisterUser(ctx context.Context, user *User, token string) error {
-	if err := user.Validate(); err != nil {
-		return errors.Wrap(err, "validation error")
-	}
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
-
-	// Add the new user.
-	err := sqlx.GetContext(ctx, ps.db, &user.ID, `
-		insert into "user"(
-			email,
+func (ps *PgStore) createOrganizationUser(ctx context.Context, ou user.OrganizationUser) error {
+	_, err := ps.db.ExecContext(ctx,
+		`INSERT INTO organization_user (
+			organization_id,
+			user_id,
 			is_admin,
-			is_active,
-			session_ttl,
+			is_device_admin,
+			is_gateway_admin,
 			created_at,
-			updated_at,
-			email_verified,
-			note,
-			external_id,
-			security_token)
-		values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)	returning id`,
-		user.Email,
-		user.IsAdmin,
-		user.IsActive,
-		user.SessionTTL,
-		user.CreatedAt,
-		user.UpdatedAt,
-		user.EmailVerified,
-		user.Note,
-		user.ExternalID,
-		token,
+			updated_at
+		)
+		VALUES ($1, $2, $3, $4, $5, NOW(), NOW())`,
+		ou.OrganizationID,
+		ou.UserID,
+		ou.IsOrgAdmin,
+		ou.IsDeviceAdmin,
+		ou.IsGatewayAdmin,
 	)
-	if err != nil {
-		return errors.Wrap(err, "insert error")
-	}
-
-	log.WithFields(log.Fields{
-		"email":       user.Email,
-		"session_ttl": user.SessionTTL,
-		"is_admin":    user.IsAdmin,
-	}).Info("Registration: user created")
-	return nil
+	return err
 }
 
-// GetUserByToken ...
-func (ps *PgStore) GetUserByToken(ctx context.Context, token string) (User, error) {
-	var user User
-	err := sqlx.GetContext(ctx, ps.db, &user, "select "+externalUserFields+" from \"user\" where security_token = $1", token)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return user, errHandler.ErrDoesNotExist
-		}
-		return user, errors.Wrap(err, "select error")
-	}
-
-	return user, nil
-}
-
-// GetTokenByUsername ...
-func (ps *PgStore) GetTokenByUsername(ctx context.Context, userEmail string) (string, error) {
-	//var user User
-	var otp string
-	err := sqlx.GetContext(ctx, ps.db, &otp, "select security_token from \"user\" where email = $1", userEmail)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return otp, errHandler.ErrDoesNotExist
-		}
-		return otp, errors.Wrap(err, "select error")
-	}
-
-	return otp, nil
-}
-
-// FinishRegistration ...
-func (ps *PgStore) FinishRegistration(ctx context.Context, userID int64, password string) error {
-	if err := ValidatePassword(password); err != nil {
-		return errors.Wrap(err, "validation error")
-	}
-
-	pwdHash, err := ctrl.c.PWH.HashPassword(password)
-	if err != nil {
-		return err
-	}
-
-	_, err = ps.db.ExecContext(ctx, `
-	update
-	"user"
-	set
-	password_hash = $1,
-		is_active = true,
-		security_token = null,
-		updated_at = now()
-	where
-	id = $2
-	`,
-		pwdHash,
-		userID,
+func (ps *PgStore) getUser(ctx context.Context, condition string, args ...interface{}) (user.User, error) {
+	var u user.User
+	var pass, token sql.NullString
+	// considering that this is a private function and condition passed into it
+	// is always a literal and doesn't come from some external sources I think
+	// it should be ok to concatenate
+	// nolint: gosec
+	err := ps.db.QueryRowContext(ctx,
+		`SELECT id, created_at, updated_at, email, password_hash,
+			is_active, is_admin, security_token, email_verified
+		 FROM "user"
+		 WHERE `+condition, args...).Scan(
+		&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
+		&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified,
 	)
-	if err != nil {
-		return errors.Wrap(err, "update error")
+	if err == sql.ErrNoRows {
+		err = errHandler.ErrDoesNotExist
 	}
-
-	log.WithFields(log.Fields{
-		"id": userID,
-	}).Info("user password updated")
-
-	return nil
+	u.PasswordHash = pass.String
+	u.SecurityToken = token.String
+	return u, err
 }
 
-func (ps *PgStore) SetOTP(ctx context.Context, pr *PasswordResetRecord) error {
-	res, err := ps.db.ExecContext(ctx, `
-	UPDATE
-	password_reset
-	SET
-	otp = $1, generated_at = $2, attempts_left = $3
-	WHERE
-	user_id = $4
-	`,
-		pr.OTP, pr.GeneratedAt, pr.AttemptsLeft, pr.UserID)
-	if err != nil {
-		return err
-	}
-	// we need to make sure that we've updated exactly one row
-	rowCnt, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowCnt != 1 {
-		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
-	}
-	return nil
+// GetUserByID returns the User for the given id.
+func (ps *PgStore) GetUserByID(ctx context.Context, userID int64) (user.User, error) {
+	return ps.getUser(ctx, "id = $1", userID)
 }
 
-func (ps *PgStore) ReduceAttempts(ctx context.Context, pr *PasswordResetRecord) error {
-	pr.AttemptsLeft--
-	res, err := ps.db.ExecContext(ctx, `
-	UPDATE
-	password_reset
-	SET
-	attempts_left = $1
-	WHERE
-	user_id = $2
-	`,
-		pr.AttemptsLeft, pr.UserID)
-	if err != nil {
-		return err
-	}
-	// we need to make sure that we've updated exactly one row
-	rowCnt, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowCnt != 1 {
-		return fmt.Errorf("expected to update 1 row, but updated %d", rowCnt)
-	}
-	return nil
+// GetUserByEmail returns the User for the given email.
+func (ps *PgStore) GetUserByEmail(ctx context.Context, email string) (user.User, error) {
+	return ps.getUser(ctx, "email = $1", email)
 }
 
-type PasswordResetRecord struct {
-	UserID       int64
-	OTP          string
-	GeneratedAt  time.Time
-	AttemptsLeft int64
+func (ps *PgStore) GetUserByToken(ctx context.Context, token string) (user.User, error) {
+	return ps.getUser(ctx, "security_token = $1", token)
 }
 
-func (ps *PgStore) RequestPasswordReset(ctx context.Context, userID int64, otp string) (string, error) {
-	pr, err := ps.GetPasswordResetRecord(ctx, userID)
-	if err != nil {
-		return "", errors.Wrap(err, "couldn't get password reset record")
-	}
-	if pr.GeneratedAt.After(time.Now().Add(-30 * 24 * time.Hour)) {
-		return "", errors.New("can't reset password more than once a month")
-	}
-
-	pr.OTP = otp
-	pr.GeneratedAt = time.Now()
-	pr.AttemptsLeft = 3
-	if err = ps.SetOTP(ctx, pr); err != nil {
-		return "", errors.Wrap(err, "couldn't store reset code")
-	}
-
-	return otp, nil
-}
-
-func (ps *PgStore) ConfirmPasswordReset(ctx context.Context, userID int64, otp string, newPassword string) error {
-	pr, err := ps.GetPasswordResetRecord(ctx, userID)
-	if err != nil {
-		return errors.Wrap(err, "couldn't get password reset record")
-	}
-	if pr.AttemptsLeft < 1 {
-		return errors.New("no match found")
-	}
-	if err := ps.ReduceAttempts(ctx, pr); err != nil {
-		return errors.Wrap(err, "couldn't update db")
-	}
-	if subtle.ConstantTimeCompare([]byte(pr.OTP), []byte(otp)) == 1 {
-		// otp matches, unset otp, update password
-		pr.OTP = ""
-		pr.AttemptsLeft = 0
-		if err := ps.SetOTP(ctx, pr); err != nil {
-			return errors.Wrap(err, "couldn't update db")
-		}
-		if err := ps.UpdatePassword(ctx, pr.UserID, newPassword); err != nil {
-			return errors.Wrap(err, "couldn't update db")
-		}
-		// successfull update password, return nil, commit queries
-		return nil
-	}
-
-	// otp does not match, password is not updated, return errHandler.ErrInvalidOTP
-	return errHandler.ErrInvalidOTP
-}
-
-func (ps *PgStore) GetPasswordResetRecord(ctx context.Context, userID int64) (*PasswordResetRecord, error) {
-	query := `
-	SELECT
-	otp, generated_at, attempts_left
-	FROM
-	password_reset
-	WHERE
-	user_id = $1
-	`
+func (ps *PgStore) GetUserOrganizations(ctx context.Context, userID int64) ([]user.OrganizationUser, error) {
+	query := `SELECT ou.user_id, ou.organization_id, ou.created_at, ou.updated_at,
+				ou.is_admin, ou.is_device_admin, ou.is_gateway_admin, o.name
+			  FROM organization_user ou
+			    JOIN organization o ON (o.id = ou.organization_id)
+			  WHERE ou.user_id = $1`
 	rows, err := ps.db.QueryContext(ctx, query, userID)
 	if err != nil {
 		return nil, err
 	}
-	res := &PasswordResetRecord{UserID: userID}
-	var count int
 	defer rows.Close()
+	var res []user.OrganizationUser
 	for rows.Next() {
-		if count > 0 {
-			return nil, fmt.Errorf("got multiple reset password rows for %d", userID)
-		}
-		count++
-		if err := rows.Scan(&res.OTP, &res.GeneratedAt, &res.AttemptsLeft); err != nil {
-			return nil, fmt.Errorf("scan has failed: %v", err)
-		}
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	if count == 0 {
-		_, err := ps.db.ExecContext(ctx, `
-	INSERT
-	INTO
-	password_reset(user_id, otp, generated_at, attempts_left)
-	VALUES($1, $2, $3, $4)`, res.UserID, res.OTP, res.GeneratedAt, res.AttemptsLeft)
+		var ou user.OrganizationUser
+		err := rows.Scan(&ou.UserID, &ou.OrganizationID, &ou.CreatedAt, &ou.UpdatedAt,
+			&ou.IsOrgAdmin, &ou.IsDeviceAdmin, &ou.IsGatewayAdmin, &ou.OrganizationName)
 		if err != nil {
-			return nil, fmt.Errorf("failed to add a new password reset record: %v", err)
+			return nil, err
 		}
+		res = append(res, ou)
 	}
-	return res, nil
+	return res, rows.Err()
 }
 
-func (ps *PgStore) SetUserPassword(user *User, pw string) error {
-	pwHash, err := ctrl.c.PWH.HashPassword(pw)
+// GetUserCount returns the total number of users.
+func (ps *PgStore) GetUserCount(ctx context.Context) (int64, error) {
+	var count int64
+	err := ps.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM "user"`).Scan(&count)
+	return count, err
+}
+
+// GetUsers returns a slice of users, respecting the given limit and offset.
+func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User, error) {
+	query := `SELECT id, created_at, updated_at, email, password_hash,
+			    is_active, is_admin, security_token, email_verified
+		 	  FROM "user"
+			  ORDER BY email
+			  LIMIT $1
+			  OFFSET $2`
+	rows, err := ps.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var users []user.User
+	for rows.Next() {
+		var u user.User
+		var pass, token sql.NullString
+		err := rows.Scan(
+			&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
+			&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified)
+		if err != nil {
+			return nil, err
+		}
+		u.PasswordHash = pass.String
+		u.SecurityToken = token.String
+		users = append(users, u)
+	}
+	return users, rows.Err()
+}
+
+// SetUserEmail changes the email address of the user
+func (ps *PgStore) SetUserEmail(ctx context.Context, userID int64, email string) error {
+	query := `UPDATE "user"
+			  SET email = $1, updated_at = NOW()
+			  WHERE id = $2`
+	_, err := ps.db.ExecContext(ctx, query, email, userID)
+	return err
+}
+
+// SetUserActiveStatus disables or enables the user
+func (ps *PgStore) SetUserActiveStatus(ctx context.Context, userID int64, isActive bool) error {
+	query := `UPDATE "user"
+			  SET is_active = $1, updated_at = NOW()
+			  WHERE id = $2`
+	_, err := ps.db.ExecContext(ctx, query, isActive, userID)
+	return err
+}
+
+// SetUserPasswordHash sets the password hash for the user
+func (ps *PgStore) SetUserPasswordHash(ctx context.Context, userID int64, passwordHash string) error {
+	query := `UPDATE "user"
+			  SET password_hash = $1, updated_at = NOW()
+			  WHERE id = $2`
+	_, err := ps.db.ExecContext(ctx, query, passwordHash, userID)
+	return err
+}
+
+func (ps *PgStore) unsetUserSecurityToken(ctx context.Context, userID int64) error {
+	query := `UPDATE "user"
+			  SET security_token = null
+			  WHERE id = $1`
+	_, err := ps.db.ExecContext(ctx, query, userID)
+	return err
+}
+
+type prRecord struct {
+	otp          string
+	generatedAt  time.Time
+	attemptsLeft int64
+}
+
+func (ps *PgStore) getPasswordResetRecord(ctx context.Context, userID int64) (prRecord, error) {
+	query := `SELECT otp, generated_at, attempts_left
+				 FROM password_reset
+				 WHERE user_id = $1`
+	var pr prRecord
+	err := ps.db.QueryRowContext(ctx, query, userID).
+		Scan(&pr.otp, &pr.generatedAt, &pr.attemptsLeft)
+	return pr, err
+}
+
+func (ps *PgStore) setPasswordResetRecord(ctx context.Context, userID int64, pr prRecord) error {
+	query := `INSERT INTO password_reset (
+				user_id, otp, generated_at, attempts_left)
+			  VALUES ($1, $2, $3, $4)
+			  ON CONFLICT (user_id) DO UPDATE SET
+			 	otp = $2, generated_at = $3, attempts_left = $4`
+	_, err := ps.db.ExecContext(ctx, query, userID, pr.otp, pr.generatedAt, pr.attemptsLeft)
+	return err
+}
+
+// GetOrSetPasswordResetOTP if the password reset OTP has been generated
+// already then returns it, otherwise sets the new OTP and returns it
+func (ps *PgStore) GetOrSetPasswordResetOTP(ctx context.Context, userID int64, otp string) (string, error) {
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
+		pr, err := ps.getPasswordResetRecord(ctx, userID)
+		if err != nil && err != sql.ErrNoRows {
+			return err
+		}
+		if err == sql.ErrNoRows ||
+			pr.generatedAt.Before(time.Now().Add(-30*24*time.Hour)) {
+			// if no password reset record, or the record is old create a new one
+			return ps.setPasswordResetRecord(ctx, userID, prRecord{
+				otp:          otp,
+				generatedAt:  time.Now(),
+				attemptsLeft: 3,
+			})
+		}
+		if pr.attemptsLeft == 0 {
+			return fmt.Errorf("can not reset password more often than once a month")
+		}
+		// if password reset record is still valid, just return the existing OTP
+		otp = pr.otp
+		return nil
+	})
+	return otp, err
+}
+
+// SetUserPasswordIfOTPMatch sets the user's password if the OTP provided is correct
+func (ps *PgStore) SetUserPasswordIfOTPMatch(ctx context.Context, userID int64, otp, passwordHash string) error {
+	var invalidOTP bool
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
+		pr, err := ps.getPasswordResetRecord(ctx, userID)
+		if err != nil {
+			return err
+		}
+		if pr.generatedAt.Before(time.Now().Add(-30*24*time.Hour)) || len(pr.otp) < 6 {
+			// pr record has expired
+			return errHandler.ErrDoesNotExist
+		}
+		if pr.attemptsLeft < 1 {
+			return fmt.Errorf("no attempts left")
+		}
+		pr.attemptsLeft--
+		if subtle.ConstantTimeCompare([]byte(pr.otp), []byte(otp)) == 1 {
+			// otp matches, unset otp, update password
+			pr.otp = ""
+			pr.attemptsLeft = 0
+			if err := ps.SetUserPasswordHash(ctx, userID, passwordHash); err != nil {
+				return err
+			}
+		} else {
+			invalidOTP = true
+		}
+		return ps.setPasswordResetRecord(ctx, userID, pr)
+	})
+	if err == nil && invalidOTP {
+		return fmt.Errorf("invalid otp")
+	}
+	return err
+}
+
+// DeleteUser deletes the User record matching the given ID.
+func (ps *PgStore) DeleteUser(ctx context.Context, userID int64) error {
+	res, err := ps.db.ExecContext(ctx,
+		`DELETE FROM
+			"user"
+		WHERE
+			id = $1`,
+		userID)
 	if err != nil {
 		return err
 	}
-
-	user.PasswordHash = pwHash
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("couldn't get the number of rows deleted: %w", err)
+	}
+	if ra == 0 {
+		return errHandler.ErrDoesNotExist
+	}
 	return nil
 }
 
-func (ps *PgStore) VerifyUserPassword(pw string, pwHash string) error {
-	return ctrl.c.PWH.Validate(pw, pwHash)
+func (ps *PgStore) createOrganization(ctx context.Context, org user.Organization) (user.Organization, error) {
+	query := `INSERT INTO organization (
+				name,
+				display_name,
+				created_at,
+				updated_at,
+				can_have_gateways,
+				max_gateway_count,
+				max_device_count
+			  )
+			  VALUES ($1, $2, NOW(), NOW(), $3, $4, $5)
+			  RETURNING id, created_at, updated_at`
+	err := ps.db.QueryRowContext(ctx, query, org.Name, org.DisplayName, org.CanHaveGateways,
+		org.MaxGatewayCount, org.MaxDeviceCount).
+		Scan(&org.ID, &org.CreatedAt, &org.UpdatedAt)
+	return org, err
+}
+
+// ActivateUser creates the organization for the new user, adds the user to
+// the org and activates the user
+func (ps *PgStore) ActivateUser(ctx context.Context, userID int64, passwordHash, orgName, orgDisplayName string) error {
+	err := ps.Tx(ctx, func(ctx context.Context, ps *PgStore) error {
+		org := user.Organization{
+			Name:            orgName,
+			DisplayName:     orgDisplayName,
+			CanHaveGateways: true,
+		}
+		var err error
+		org, err = ps.createOrganization(ctx, org)
+		if err != nil {
+			return err
+		}
+		ou := user.OrganizationUser{
+			OrganizationID: org.ID,
+			UserID:         userID,
+			IsOrgAdmin:     true,
+		}
+		if err := ps.createOrganizationUser(ctx, ou); err != nil {
+			return err
+		}
+		if err := ps.SetUserActiveStatus(ctx, userID, true); err != nil {
+			return err
+		}
+		if err := ps.SetUserPasswordHash(ctx, userID, passwordHash); err != nil {
+			return err
+		}
+		if err := ps.unsetUserSecurityToken(ctx, userID); err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
 }

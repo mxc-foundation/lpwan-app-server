@@ -147,6 +147,20 @@ func Setup(name string, h *store.Handler) error {
 	return nil
 }
 
+type Mailer struct{}
+
+func (m *Mailer) SendRegistrationConfirmation(email, lang, securityToken string) error {
+	return SendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), RegistrationConfirmation)
+}
+
+func (m *Mailer) SendPasswordResetUnknown(email, lang string) error {
+	return SendInvite(email, Param{}, EmailLanguage(lang), PasswordResetUnknown)
+}
+
+func (m *Mailer) SendPasswordReset(email, lang, otp string) error {
+	return SendInvite(email, Param{Token: otp}, EmailLanguage(lang), PasswordReset)
+}
+
 // SendInvite ...
 func SendInvite(user string, param Param, language EmailLanguage, option EmailOptions) error {
 	var err error

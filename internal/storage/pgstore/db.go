@@ -14,12 +14,8 @@ import (
 	. "github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore/data"
 )
 
-type dbsql struct {
-	*sqlx.DB
-}
-
 type controller struct {
-	db dbsql
+	db *sqlx.DB
 	s  PostgreSQLStruct
 	c  Config
 }
@@ -66,7 +62,7 @@ func Setup() error {
 		}
 	}
 
-	ctrl.db = dbsql{d}
+	ctrl.db = d
 
 	return nil
 }

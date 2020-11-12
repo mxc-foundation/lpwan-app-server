@@ -9,13 +9,13 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq/hstore"
 
-	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 )
 
 // GlobalSearch performs a search on organizations, applications, gateways
 // and devices.
-func (ps *PgStore) GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error) {
-	var result []SearchResult
+func (ps *PgStore) GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]user.SearchResult, error) {
+	var result []user.SearchResult
 
 	query, tags := parseSearchQuery(search)
 	query = "%" + search + "%"

@@ -16,7 +16,7 @@ import (
 )
 
 func (ps *PgStore) ExecuteMigrateUp(m migrate.MigrationSource) error {
-	n, err := migrate.Exec(ctrl.db.DB.DB, "postgres", m, migrate.Up)
+	n, err := migrate.Exec(ctrl.db.DB, "postgres", m, migrate.Up)
 	if err != nil {
 		return errors.Wrap(err, "storage: applying PostgreSQL data migrations error")
 	}

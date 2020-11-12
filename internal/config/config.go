@@ -2,6 +2,7 @@ package config
 
 import (
 	external "github.com/mxc-foundation/lpwan-app-server/internal/api/external/data"
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	fragmentation "github.com/mxc-foundation/lpwan-app-server/internal/applayer/fragmentation/data"
 	multicastsetup "github.com/mxc-foundation/lpwan-app-server/internal/applayer/multicastsetup/data"
 	psconn "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn/data"
@@ -17,7 +18,6 @@ import (
 	mining "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
 	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis/data"
 	serverinfo "github.com/mxc-foundation/lpwan-app-server/internal/modules/serverinfo/data"
-	user "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 	monitoring "github.com/mxc-foundation/lpwan-app-server/internal/monitoring/data"
 	mxpm "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal/data"
 	oidc "github.com/mxc-foundation/lpwan-app-server/internal/oidc/data"
@@ -43,7 +43,7 @@ type Config struct {
 
 	ProvisionServer psconn.ProvisioningServerStruct `mapstructure:"provision_server"`
 
-	Recaptcha user.RecaptchaStruct `mapstructure:"recaptcha"`
+	Recaptcha user.RecaptchaConfig `mapstructure:"recaptcha"`
 
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`

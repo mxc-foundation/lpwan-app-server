@@ -30,16 +30,17 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/staking"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
+	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
 	m2mcli "github.com/mxc-foundation/lpwan-app-server/internal/mxp_portal"
 	"github.com/mxc-foundation/lpwan-app-server/internal/oidc"
+	"github.com/mxc-foundation/lpwan-app-server/internal/pwhash"
 	"github.com/mxc-foundation/lpwan-app-server/internal/static"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	authcus "github.com/mxc-foundation/lpwan-app-server/internal/authentication"
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
-	userdata "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/otp"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/pgstore"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
@@ -53,15 +54,15 @@ func init() {
 const moduleName = "external"
 
 type controller struct {
-	name                string
-	s                   ExternalAPIStruct
-	applicationServerID uuid.UUID
-	serverAddr          string
-	recaptcha           userdata.RecaptchaStruct
-	enable2FA           bool
-	serverRegion        string
-
-	moduleUp bool
+	name                   string
+	s                      ExternalAPIStruct
+	applicationServerID    uuid.UUID
+	serverAddr             string
+	recaptcha              user.RecaptchaConfig
+	enable2FA              bool
+	serverRegion           string
+	moduleUp               bool
+	passwordHashIterations int
 }
 
 var ctrl *controller
@@ -69,12 +70,13 @@ var ctrl *controller
 // SettingsSetup initialize module settings on start
 func SettingsSetup(name string, conf config.Config) (err error) {
 	ctrl = &controller{
-		name:         moduleName,
-		s:            conf.ApplicationServer.ExternalAPI,
-		serverAddr:   conf.General.ServerAddr,
-		recaptcha:    conf.Recaptcha,
-		enable2FA:    conf.General.Enable2FALogin,
-		serverRegion: conf.General.ServerRegion,
+		name:                   moduleName,
+		s:                      conf.ApplicationServer.ExternalAPI,
+		serverAddr:             conf.General.ServerAddr,
+		recaptcha:              conf.Recaptcha,
+		enable2FA:              conf.General.Enable2FALogin,
+		serverRegion:           conf.General.ServerRegion,
+		passwordHashIterations: conf.General.PasswordHashIterations,
 	}
 	ctrl.applicationServerID, err = uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
@@ -176,14 +178,15 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 		return errors.New("jwt_secret must be set")
 	}
 	jwtTTL := ctrl.s.JWTDefaultTTL
+	pgs := pgstore.New()
 
 	jwtValidator := jwt.NewValidator("HS256", []byte(jwtSecret), jwtTTL)
-	otpValidator, err := otp.NewValidator("lpwan-app-server", GetOTPSecret(), pgstore.New())
+	otpValidator, err := otp.NewValidator("lpwan-app-server", GetOTPSecret(), pgs)
 	if err != nil {
 		return err
 	}
-	grpcAuth := grpcauth.New(pgstore.New(), jwtValidator, otpValidator)
-	authcus.SetupCred(pgstore.New(), jwtValidator, otpValidator)
+	grpcAuth := grpcauth.New(pgs, jwtValidator, otpValidator)
+	authcus.SetupCred(pgs, jwtValidator, otpValidator)
 
 	pb.RegisterFUOTADeploymentServiceServer(grpcServer, NewFUOTADeploymentAPI(h))
 	pb.RegisterDeviceQueueServiceServer(grpcServer, NewDeviceQueueAPI(h))
@@ -203,13 +206,21 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	// orgnization
 	api.RegisterOrganizationServiceServer(grpcServer, NewOrganizationAPI(h))
 	// user
-	userSrv := user.NewServer(h,
+	pwhasher, err := pwhash.New(16, ctrl.passwordHashIterations)
+	if err != nil {
+		return err
+	}
+	userSrv := user.NewServer(
+		pgs,
+		&email.Mailer{},
 		grpcAuth,
 		jwtValidator,
 		otpValidator,
-		userdata.Config{
-			Recaptcha:      ctrl.recaptcha,
-			Enable2FALogin: ctrl.enable2FA,
+		pwhasher,
+		user.Config{
+			Recaptcha:        ctrl.recaptcha,
+			Enable2FALogin:   ctrl.enable2FA,
+			OperatorLogoPath: email.GetOperatorInfo().OperatorLogo,
 		},
 	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)

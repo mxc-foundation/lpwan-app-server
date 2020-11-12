@@ -9,10 +9,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -21,34 +22,28 @@ import (
 	inpb "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
-	"github.com/mxc-foundation/lpwan-app-server/internal/email"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/grpcauth"
-	orgs "github.com/mxc-foundation/lpwan-app-server/internal/modules/organization/data"
-	udata "github.com/mxc-foundation/lpwan-app-server/internal/modules/user/data"
-	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
 
 // Login validates the login request and returns a JWT token.
 func (a *Server) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.LoginResponse, error) {
 	userEmail := normalizeUsername(req.Username)
-	err := a.st.LoginUserByPassword(ctx, userEmail, req.Password)
-	if nil != err {
-		return nil, helpers.ErrToRPCError(err)
-	}
 
-	u, err := a.st.GetUserByUsername(ctx, userEmail)
+	u, err := a.store.GetUserByEmail(ctx, userEmail)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "couldn't get info about the user: %s", err.Error())
 	}
 
 	if !u.IsActive {
-		return nil, status.Error(codes.Unauthenticated, "incactive user")
+		return nil, status.Error(codes.Unauthenticated, "inactive user")
 	}
 
-	ttl := 60 * int64(u.SessionTTL)
-	var audience []string
+	if err := a.pwhasher.Validate(req.Password, u.PasswordHash); err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "invalid email or password")
+	}
 
+	var audience []string
 	is2fa, err := a.otpv.IsEnabled(ctx, u.Email)
 	if err != nil {
 		ctxlogrus.Extract(ctx).WithError(err).Error("couldn't get 2fa status")
@@ -57,6 +52,8 @@ func (a *Server) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.Login
 	if !a.config.Enable2FALogin {
 		is2fa = false
 	}
+
+	var ttl int64
 	if is2fa {
 		// if 2fa is enabled we issue token that is only valid for 10 minutes
 		// and is only good to perform second factor authentication. If second
@@ -91,6 +88,11 @@ func (a *Server) Login2FA(ctx context.Context, req *inpb.Login2FARequest) (*inpb
 	}
 
 	return &inpb.LoginResponse{Jwt: jwt}, nil
+}
+
+type RecaptchaConfig struct {
+	HostServer string `mapstructure:"host_server"`
+	Secret     string `mapstructure:"secret"`
 }
 
 // IsPassVerifyingGoogleRecaptcha defines the response to pass the google recaptcha verification
@@ -154,6 +156,23 @@ func OTPgen() string {
 	return string(otp)
 }
 
+func validatePass(password string) error {
+	if len(password) < 8 {
+		return status.Errorf(codes.InvalidArgument, "password must be at least 8 characters long")
+	}
+	return nil
+}
+
+// based on https://www.w3.org/TR/2016/REC-html51-20161101/sec-forms.html#email-state-typeemail
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+
+func validateEmail(email string) error {
+	if !emailRegex.MatchString(email) {
+		return status.Errorf(codes.InvalidArgument, "invalid email address")
+	}
+	return nil
+}
+
 // Profile returns the u profile.
 func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileResponse, error) {
 	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
@@ -161,38 +180,34 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	prof, err := a.st.GetProfile(ctx, cred.UserID)
+	user, err := a.store.GetUserByID(ctx, cred.UserID)
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
 
 	resp := inpb.ProfileResponse{
 		User: &inpb.User{
-			Id:         prof.User.ID,
-			Username:   prof.User.Email,
-			Email:      prof.User.Email,
-			SessionTtl: prof.User.SessionTTL,
-			IsAdmin:    prof.User.IsAdmin,
-			IsActive:   prof.User.IsActive,
+			Id:       user.ID,
+			Username: user.Email,
+			Email:    user.Email,
+			IsAdmin:  user.IsAdmin,
+			IsActive: user.IsActive,
 		},
 	}
 
-	for _, org := range prof.Organizations {
+	orgs, err := a.store.GetUserOrganizations(ctx, cred.UserID)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	for _, org := range orgs {
 		row := inpb.OrganizationLink{
-			OrganizationId:   org.ID,
-			OrganizationName: org.Name,
-			IsAdmin:          org.IsAdmin,
+			OrganizationId:   org.OrganizationID,
+			OrganizationName: org.OrganizationName,
+			IsAdmin:          org.IsOrgAdmin,
 			IsDeviceAdmin:    org.IsDeviceAdmin,
 			IsGatewayAdmin:   org.IsGatewayAdmin,
-		}
-
-		row.CreatedAt, err = ptypes.TimestampProto(org.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(org.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
+			CreatedAt:        &timestamp.Timestamp{Seconds: org.CreatedAt.Unix()},
+			UpdatedAt:        &timestamp.Timestamp{Seconds: org.UpdatedAt.Unix()},
 		}
 
 		resp.Organizations = append(resp.Organizations, &row)
@@ -204,7 +219,7 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 // Branding returns UI branding.
 func (a *Server) Branding(ctx context.Context, req *empty.Empty) (*inpb.BrandingResponse, error) {
 	resp := inpb.BrandingResponse{
-		LogoPath: email.GetOperatorInfo().OperatorLogo,
+		LogoPath: a.config.OperatorLogoPath,
 	}
 
 	return &resp, nil
@@ -217,7 +232,7 @@ func (a *Server) GlobalSearch(ctx context.Context, req *inpb.GlobalSearchRequest
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	results, err := a.st.GlobalSearch(ctx, cred.UserID, cred.IsGlobalAdmin, req.Search, int(req.Limit), int(req.Offset))
+	results, err := a.store.GlobalSearch(ctx, cred.UserID, cred.IsGlobalAdmin, req.Search, int(req.Limit), int(req.Offset))
 	if err != nil {
 		return nil, helpers.ErrToRPCError(err)
 	}
@@ -278,66 +293,45 @@ func (a *Server) RegisterUser(ctx context.Context, req *inpb.RegisterUserRequest
 		"userEmail": userEmail,
 		"languange": req.Language,
 	}).Info(logInfo)
-
-	u := udata.User{
-		Email:      userEmail,
-		SessionTTL: 0,
-		IsAdmin:    false,
-		IsActive:   false,
+	if err := validateEmail(userEmail); err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	token := OTPgen()
-
-	obj, err := a.st.GetUserByEmail(ctx, u.Email)
+	user, err := a.store.GetUserByEmail(ctx, userEmail)
 	// internal error
 	if err != nil && err != errHandler.ErrDoesNotExist {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	// u exists and finished registration
-	if (err == nil && obj.SecurityToken == nil) || (err == nil && obj.SecurityToken != nil && *obj.SecurityToken == "") {
+	if err == nil {
+		// user exists but haven't finished registration
+		if !user.IsActive && user.SecurityToken != "" {
+			err := a.mailer.SendRegistrationConfirmation(user.Email, req.Language, user.SecurityToken)
+			if err != nil {
+				log.WithError(err).Error(logInfo)
+				return nil, helpers.ErrToRPCError(err)
+			}
+
+			return &empty.Empty{}, nil
+		}
+		// user exists and finished registration
 		return nil, status.Errorf(codes.AlreadyExists, "")
 	}
 
-	// u exists but haven't finished registration
-	if err == nil && !obj.IsActive && obj.SecurityToken != nil && *obj.SecurityToken != "" {
-		err = email.SendInvite(obj.Email, email.Param{Token: *obj.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
-		if err != nil {
-			log.WithError(err).Error(logInfo)
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		return &empty.Empty{}, nil
+	// user doesn't exist
+	token := OTPgen()
+	u := User{
+		Email:         userEmail,
+		SecurityToken: token,
 	}
 
-	// u doesn't exist
-	if err != nil && err == errHandler.ErrDoesNotExist {
-		if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-			// u has never been created yet
-			err = handler.RegisterUser(ctx, &u, token)
-			if err != nil {
-				log.WithError(err).Error(logInfo)
-				return status.Errorf(codes.Unknown, "%v", err)
-			}
+	if _, err := a.store.CreateUser(ctx, u, nil); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't register user: %v", err)
+	}
 
-			// get u again
-			obj, err = handler.GetUserByEmail(ctx, u.Email)
-			if err != nil {
-				log.WithError(err).Error(logInfo)
-				// internal error
-				return status.Errorf(codes.Unknown, "%v", err)
-			}
-
-			err = email.SendInvite(obj.Email, email.Param{Token: *obj.SecurityToken}, email.EmailLanguage(req.Language), email.RegistrationConfirmation)
-			if err != nil {
-				log.WithError(err).Error(logInfo)
-				return helpers.ErrToRPCError(err)
-			}
-
-			return nil
-		}); err != nil {
-			return nil, status.Errorf(codes.Unknown, err.Error())
-		}
+	if err := a.mailer.SendRegistrationConfirmation(userEmail, req.Language, token); err != nil {
+		log.WithError(err).Error(logInfo)
+		return nil, helpers.ErrToRPCError(err)
 	}
 
 	return &empty.Empty{}, nil
@@ -430,72 +424,56 @@ func (a *Server) GetRecoveryCodes(ctx context.Context, req *inpb.GetRecoveryCode
 }
 
 func (a *Server) RequestPasswordReset(ctx context.Context, req *inpb.PasswordResetReq) (*inpb.PasswordResetResp, error) {
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		userEmail := normalizeUsername(req.Username)
-		u, err := handler.GetUserByUsername(ctx, userEmail)
-		if err != nil {
-			if err == errHandler.ErrDoesNotExist {
-				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown u %s", userEmail)
-				if err := email.SendInvite(userEmail, email.Param{}, email.EmailLanguage(req.Language), email.PasswordResetUnknown); err != nil {
-					return status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
-				}
-				return nil
+	userEmail := normalizeUsername(req.Username)
+	user, err := a.store.GetUserByEmail(ctx, userEmail)
+	if err != nil {
+		if err == errHandler.ErrDoesNotExist {
+			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", userEmail)
+			if err := a.mailer.SendPasswordResetUnknown(userEmail, req.Language); err != nil {
+				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 			}
-			return status.Errorf(codes.Internal, "couldn't get u info: %v", err)
+			return nil, nil
 		}
-		if !u.IsActive {
-			ctxlogrus.Extract(ctx).Warnf("password reset request for inactive u %s", userEmail)
-			return nil
-		}
+		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
+	}
 
-		otp, err := a.st.RequestPasswordReset(ctx, u.ID, OTPgen())
-		if err != nil {
-			return status.Errorf(codes.Internal, "%v", err)
-		}
+	if !user.IsActive {
+		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", userEmail)
+		return nil, nil
+	}
 
-		if err := email.SendInvite(userEmail, email.Param{Token: otp}, email.EmailLanguage(req.Language), email.PasswordReset); err != nil {
-			return status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
-		}
+	otp, err := a.store.GetOrSetPasswordResetOTP(ctx, user.ID, OTPgen())
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
 
-		return nil
-	}); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+	if err := a.mailer.SendPasswordReset(userEmail, req.Language, otp); err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 	}
 
 	return &inpb.PasswordResetResp{}, nil
 }
 
 func (a *Server) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPasswordResetReq) (*inpb.PasswordResetResp, error) {
-	var errUI error
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		userEmail := normalizeUsername(req.Username)
-		u, err := handler.GetUserByUsername(ctx, userEmail)
-		if err != nil {
-			if err == errHandler.ErrDoesNotExist {
-				ctxlogrus.Extract(ctx).Warnf("password reset request for unknown u %s", userEmail)
-				return status.Errorf(codes.PermissionDenied, "no match found")
-			}
-			return status.Errorf(codes.Internal, "couldn't get u info: %v", err)
+	userEmail := normalizeUsername(req.Username)
+	user, err := a.store.GetUserByEmail(ctx, userEmail)
+	if err != nil {
+		if err == errHandler.ErrDoesNotExist {
+			ctxlogrus.Extract(ctx).Warnf("password reset request for unknown user %s", userEmail)
+			return nil, status.Errorf(codes.PermissionDenied, "no match found")
 		}
-
-		err = a.st.ConfirmPasswordReset(ctx, u.ID, req.Otp, req.NewPassword)
-		if err != nil {
-			if err == errHandler.ErrInvalidOTP {
-				errUI = err
-				// return nil to commit transaction
-				return nil
-			}
-			return status.Errorf(codes.Internal, "%v", err)
-		}
-
-		// password reset successfully, return nil to commit transaction
-		return nil
-	}); err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 	}
 
-	if errUI != nil {
-		return nil, status.Error(codes.PermissionDenied, errUI.Error())
+	if err := validatePass(req.NewPassword); err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	ph, err := a.pwhasher.HashPassword(req.NewPassword)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't hash password: %v", err)
+	}
+	if err := a.store.SetUserPasswordIfOTPMatch(ctx, user.ID, req.Otp, ph); err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
 	return &inpb.PasswordResetResp{}, nil
@@ -503,16 +481,15 @@ func (a *Server) ConfirmPasswordReset(ctx context.Context, req *inpb.ConfirmPass
 
 // ConfirmRegistration checks provided security token and activates u
 func (a *Server) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegistrationRequest) (*inpb.ConfirmRegistrationResponse, error) {
-	u, err := a.st.GetUserByToken(ctx, req.Token)
+	u, err := a.store.GetUserByToken(ctx, req.Token)
 	if err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	log.Println("Confirming GetJwt", u.Email)
-	// give u a token that is valid only to finish the registration process
+	// issue a token that is valid only to finish the registration process
 	jwt, err := a.jwtv.SignToken(u.ID, u.Email, 86400, []string{"registration", "lora-app-server"})
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, err.Error())
+		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &inpb.ConfirmRegistrationResponse{
@@ -521,7 +498,7 @@ func (a *Server) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegis
 		IsAdmin:  u.IsAdmin,
 		IsActive: u.IsActive,
 		Jwt:      jwt,
-	}, status.Errorf(codes.OK, "")
+	}, nil
 }
 
 // FinishRegistration sets new u password and creates a new organization
@@ -530,46 +507,26 @@ func (a *Server) FinishRegistration(ctx context.Context, req *inpb.FinishRegistr
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-
-	if err := a.st.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		// Get the u id based on the userEmail and check that it matches the one
-		// in the request and that u is not active
-		u, err := handler.GetUserByUsername(ctx, cred.Username)
-		if nil != err {
-			return helpers.ErrToRPCError(err)
-		}
-		if u.ID != req.UserId {
-			return status.Errorf(codes.PermissionDenied, "u id mismatch")
-		}
-		if u.IsActive {
-			return status.Error(codes.PermissionDenied, "u has been registered already")
-		}
-
-		org := orgs.Organization{
-			Name:            req.OrganizationName,
-			DisplayName:     req.OrganizationDisplayName,
-			CanHaveGateways: true,
-		}
-
-		err = handler.FinishRegistration(ctx, req.UserId, req.Password)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
-		}
-
-		err = handler.CreateOrganization(ctx, &org)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
-		}
-
-		err = handler.CreateOrganizationUser(ctx, org.ID, u.ID, true, false, false)
-		if err != nil {
-			return status.Errorf(codes.Unknown, "%v", err)
-		}
-
-		return nil
-	}); err != nil {
-		return nil, status.Errorf(codes.Unknown, err.Error())
+	user, err := a.store.GetUserByEmail(ctx, cred.Username)
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	if req.UserId != user.ID {
+		return nil, status.Errorf(codes.PermissionDenied, "user id mismatch")
+	}
+	if user.IsActive {
+		return nil, status.Errorf(codes.AlreadyExists, "user has been activated already")
+	}
+	if err := validatePass(req.Password); err != nil {
+		return nil, helpers.ErrToRPCError(err)
+	}
+	ph, err := a.pwhasher.HashPassword(req.Password)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't hash the password: %v", err)
+	}
+	if err := a.store.ActivateUser(ctx, user.ID, ph, req.OrganizationName, req.OrganizationDisplayName); err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	return &empty.Empty{}, status.Errorf(codes.OK, "")
+	return &empty.Empty{}, nil
 }
