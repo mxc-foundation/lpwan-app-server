@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
+
+
+import "google/api/annotations.proto";
+
+service ExternalUserService {
+    // AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user
+    // then check binding status of this wechat user
+    rpc AuthenticateWeChatUser (AuthenticateWeChatUserRequest) returns (AuthenticateWeChatUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/authenticate-wechat-user"
+            body: "*"
+        };
+    }
+
+    // BindExternalUser binds external user id to supernode user
+    rpc BindExternalUser (BindExternalUserRequest) returns (BindExternalUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/bind-external-user"
+            body: "*"
+        };
+    }
+
+    // RegisterExternalUser creates new supernode account then bind it with external user id
+    rpc RegisterExternalUser (RegisterExternalUserRequest) returns (RegisterExternalUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/register-external-user"
+            body: "*"
+        };
+    }
+
+    // GetExternalUserIDFromUserID gets external user id by supernode user id
+    rpc GetExternalUserIDFromUserID (GetExternalUserIDFromUserIDRequest) returns (GetExternalUserIDFromUserIDResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/get-external-user-id"
+            body: "*"
+        };
+    }
+
+    // UnbindExternalUser unbinds external user and supernode user account
+    rpc UnbindExternalUser (UnbindExternalUserRequest) returns (UnbindExternalUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/unbind-external-user"
+            body: "*"
+        };
+    }
+}
+
+message AuthenticateWeChatUserRequest {
+    string code = 1;
+}
+
+message AuthenticateWeChatUserResponse {
+    string jwt = 1;
+    bool binding_is_required = 2;
+}
+
+message BindExternalUserRequest {
+    bool verify_current_user = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message BindExternalUserResponse {
+    bool try_different_credentials = 1;
+    string jwt = 2;
+}
+
+message RegisterExternalUserRequest {
+    string email = 1;
+    string user_display_name = 2;
+    string organization_name = 3;
+    string organization_display_name = 4;
+}
+
+message RegisterExternalUserResponse {
+    string jwt = 1;
+}
+
+message GetExternalUserIDFromUserIDRequest {
+    int64 user_id = 1;
+    string service = 2;
+}
+
+message GetExternalUserIDFromUserIDResponse {
+    string external_user_id = 3;
+}
+
+message UnbindExternalUserRequest {
+    int64 user_id = 1;
+    string service = 2;
+    string external_user_id = 3;
+}
+
+message UnbindExternalUserResponse {
+    string status = 1;
+}
