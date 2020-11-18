@@ -78,7 +78,7 @@
       }
     },
     "/api/external-login/get-external-user-id": {
-      "post": {
+      "get": {
         "summary": "GetExternalUserIDFromUserID gets external user id by supernode user id",
         "operationId": "GetExternalUserIDFromUserID",
         "responses": {
@@ -97,12 +97,17 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetExternalUserIDFromUserIDRequest"
-            }
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -218,18 +223,6 @@
           "type": "boolean"
         },
         "jwt": {
-          "type": "string"
-        }
-      }
-    },
-    "appserver_serves_uiGetExternalUserIDFromUserIDRequest": {
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string",
-          "format": "int64"
-        },
-        "service": {
           "type": "string"
         }
       }
