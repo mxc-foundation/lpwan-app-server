@@ -3,7 +3,6 @@ syntax = "proto3";
 package appserver_serves_ui;
 option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
 
-
 import "google/api/annotations.proto";
 
 service ExternalUserService {
@@ -35,8 +34,7 @@ service ExternalUserService {
     // GetExternalUserIDFromUserID gets external user id by supernode user id
     rpc GetExternalUserIDFromUserID (GetExternalUserIDFromUserIDRequest) returns (GetExternalUserIDFromUserIDResponse) {
         option (google.api.http) = {
-            post: "/api/external-login/get-external-user-id"
-            body: "*"
+            get: "/api/external-login/get-external-user-id"
         };
     }
 
