@@ -1450,6 +1450,10 @@
       "properties": {
         "manufacturerNr": {
           "type": "string"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

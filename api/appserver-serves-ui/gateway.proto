@@ -191,6 +191,7 @@ service GatewayService {
 
 message RegisterResellerRequest {
     string manufacturer_nr = 1;
+    int64 org_id = 2;
 }
 
 message RegisterResellerResponse {
