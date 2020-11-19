@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
+
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
@@ -63,6 +65,7 @@ type controller struct {
 	serverRegion           string
 	moduleUp               bool
 	passwordHashIterations int
+	enableSTC              bool
 }
 
 var ctrl *controller
@@ -77,6 +80,7 @@ func SettingsSetup(name string, conf config.Config) (err error) {
 		enable2FA:              conf.General.Enable2FALogin,
 		serverRegion:           conf.General.ServerRegion,
 		passwordHashIterations: conf.General.PasswordHashIterations,
+		enableSTC:              conf.General.EnableSTC,
 	}
 	ctrl.applicationServerID, err = uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
@@ -196,7 +200,21 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	// device
 	api.RegisterDeviceServiceServer(grpcServer, NewDeviceAPI(rpID, h))
 	// gateway
-	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(rpID, h, ctrl.serverAddr))
+	psCli, err := pscli.GetPServerClient()
+	if err != nil {
+		return err
+	}
+	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(
+		h,
+		grpcAuth,
+		Config{
+			ApplicationServerID: rpID,
+			ServerAddr:          ctrl.serverAddr,
+			EnableSTC:           ctrl.enableSTC,
+		},
+		psCli,
+	))
+
 	// gateway profile
 	api.RegisterGatewayProfileServiceServer(grpcServer, NewGatewayProfileAPI(h))
 	// application

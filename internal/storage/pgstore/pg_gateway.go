@@ -1095,3 +1095,35 @@ func (ps *PgStore) GetGatewayForPing(ctx context.Context) (*Gateway, error) {
 
 	return &gw, nil
 }
+
+// GetGatewayIsRegisteredForSTC checks whether gateway with given manufacturer number has been registered with reseller
+func (ps *PgStore) GetGatewayIsRegisteredForSTC(ctx context.Context, mannr string) (bool, error) {
+	var stcOrgID int64
+
+	err := sqlx.GetContext(ctx, ps.db, &stcOrgID, `
+		select stc_org_id from gateway_stc where manufacturer_nr = $1`,
+		mannr,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, errors.Wrap(err, "select err")
+	}
+
+	return true, nil
+}
+
+// AddGatewayReseller binds gateway manufacuturer number with reserller's organization id
+func (ps *PgStore) AddGatewayReseller(ctx context.Context, mannr string, organizationID int64) error {
+	_, err := ps.db.ExecContext(ctx, `
+		insert into gateway_stc (manufacturer_nr, stc_org_id) values ($1, $2)`,
+		mannr,
+		organizationID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

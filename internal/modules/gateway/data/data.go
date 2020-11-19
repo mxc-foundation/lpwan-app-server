@@ -76,6 +76,7 @@ type Gateway struct {
 	SerialNumber       string        `db:"sn"`
 	FirmwareHash       types.MD5SUM  `db:"firmware_hash"`
 	AutoUpdateFirmware bool          `db:"auto_update_firmware"`
+	STCOrgID           int64         `db:"stc_org_id"`
 }
 
 // GatewayListItem defines the gateway as list item.
@@ -95,6 +96,7 @@ type GatewayListItem struct {
 	NetworkServerName string        `db:"network_server_name"`
 	Model             string        `db:"model"`
 	Config            string        `db:"config"`
+	STCOrgID          int64         `db:"stc_org_id"`
 }
 
 type GatewayFirmware struct {
