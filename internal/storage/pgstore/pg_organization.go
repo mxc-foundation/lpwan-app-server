@@ -708,3 +708,21 @@ func (ps *PgStore) GetOrganizationUsers(ctx context.Context, organizationID int6
 	}
 	return users, nil
 }
+
+// OrganizationCanHaveGateways returns whether given organization can have gateways
+func (ps *PgStore) OrganizationCanHaveGateways(ctx context.Context, orgID int64) (bool, error) {
+	var canHaveGateway bool
+	err := sqlx.GetContext(ctx, ps.db, &canHaveGateway, `
+		select 
+			can_have_gateways 
+		from organization 
+		where 
+			id = $1`,
+		orgID,
+	)
+	if err != nil {
+		return false, err
+	}
+
+	return canHaveGateway, nil
+}

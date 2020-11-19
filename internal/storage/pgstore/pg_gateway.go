@@ -1096,8 +1096,8 @@ func (ps *PgStore) GetGatewayForPing(ctx context.Context) (*Gateway, error) {
 	return &gw, nil
 }
 
-// GetGatewayIsRegisteredForSTC checks whether gateway with given manufacturer number has been registered with reseller
-func (ps *PgStore) GetGatewayIsRegisteredForSTC(ctx context.Context, mannr string) (bool, error) {
+// GetSTCOrgIDForGateway checks whether gateway with given manufacturer number has been registered with reseller
+func (ps *PgStore) GetSTCOrgIDForGateway(ctx context.Context, mannr string) (int64, error) {
 	var stcOrgID int64
 
 	err := sqlx.GetContext(ctx, ps.db, &stcOrgID, `
@@ -1106,12 +1106,12 @@ func (ps *PgStore) GetGatewayIsRegisteredForSTC(ctx context.Context, mannr strin
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return false, nil
+			return 0, nil
 		}
-		return false, errors.Wrap(err, "select err")
+		return stcOrgID, errors.Wrap(err, "select err")
 	}
 
-	return true, nil
+	return stcOrgID, nil
 }
 
 // AddGatewayReseller binds gateway manufacuturer number with reserller's organization id
@@ -1120,6 +1120,19 @@ func (ps *PgStore) AddGatewayReseller(ctx context.Context, mannr string, organiz
 		insert into gateway_stc (manufacturer_nr, stc_org_id) values ($1, $2)`,
 		mannr,
 		organizationID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveGatewayReseller delete gateway_stc record with given manufacuturer number
+func (ps *PgStore) RemoveGatewayReseller(ctx context.Context, mannr string) error {
+	_, err := ps.db.ExecContext(ctx, `
+		delete from gateway_stc where manufacturer_nr = $1`,
+		mannr,
 	)
 	if err != nil {
 		return err

@@ -40,7 +40,7 @@ func (v *Validator) IsOrgAdmin(ctx context.Context, organizationID int64, opts .
 	return v.Credentials.IsOrgAdmin(ctx, organizationID, opts...)
 }
 
-// ValidateGatewaysAccess validates if the client has access to the gateways.
+// ValidateGlobalGatewaysAccess validates if the client has access to the gateways.
 func (v *Validator) ValidateGlobalGatewaysAccess(ctx context.Context, flag auth.Flag, organizationID int64) (bool, error) {
 	u, err := v.Credentials.GetUser(ctx)
 	if err != nil {

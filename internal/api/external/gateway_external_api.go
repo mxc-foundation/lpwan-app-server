@@ -26,6 +26,7 @@ import (
 	api "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui"
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 	psPb "github.com/mxc-foundation/lpwan-app-server/api/ps-serves-appserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/mannr"
 
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/helpers"
 	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
@@ -77,7 +78,7 @@ func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterRese
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if !cred.IsOrgAdmin && !cred.IsOrgUser {
+	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin && !cred.IsOrgUser {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
@@ -87,12 +88,12 @@ func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterRese
 	}
 
 	// check whether the gateway already has a reseller
-	isRegistered, err := a.st.GetGatewayIsRegisteredForSTC(ctx, req.ManufacturerNr)
+	stcOrgID, err := a.st.GetSTCOrgIDForGateway(ctx, req.ManufacturerNr)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	if isRegistered {
+	if stcOrgID != 0 {
 		return nil, status.Errorf(codes.PermissionDenied, "a reseller has already been registered for this gateway")
 	}
 
@@ -1112,8 +1113,36 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		return nil, status.Error(codes.InvalidArgument, "gateway sn number must not be empty string")
 	}
 
-	if valid, err := gw.NewValidator().ValidateGlobalGatewaysAccess(ctx, authcus.Create, req.OrganizationId); !valid || err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %v", err)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin && !cred.IsGatewayAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	canHaveGateways, err := a.st.OrganizationCanHaveGateways(ctx, req.OrganizationId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	if !canHaveGateways {
+		return nil, status.Error(codes.PermissionDenied, "organization cannot have gateways")
+	}
+
+	manufacturerNr := mannr.Serial2Manufacturer(req.Sn)
+	stcOrgID, err := a.st.GetSTCOrgIDForGateway(ctx, manufacturerNr)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	if stcOrgID == req.OrganizationId {
+		stcOrgID = 0
+
+		err := a.st.RemoveGatewayReseller(ctx, manufacturerNr)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
 	}
 
 	// register gateway with current supernode on remote provisioning server
@@ -1206,6 +1235,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		OsVersion:    resp.OsVersion,
 		Statistics:   "",
 		SerialNumber: resp.Sn,
+		STCOrgID:     stcOrgID,
 	}); err != nil {
 		return nil, err
 	}
