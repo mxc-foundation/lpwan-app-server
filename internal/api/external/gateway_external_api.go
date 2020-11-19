@@ -63,6 +63,11 @@ func NewGatewayAPI(applicationID uuid.UUID, h *store.Handler, serverAddr string)
 	}
 }
 
+func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterResellerRequest) (*api.RegisterResellerResponse, error) {
+
+	return &api.RegisterResellerResponse{}, nil
+}
+
 func (a *GatewayAPI) ManualTriggerUpdateFirmware(ctx context.Context, req *api.ManualTriggerUpdateFirmwareRequest) (*api.ManualTriggerUpdateFirmwareResponse, error) {
 	log.Info("ManualTriggerUpdateFirmware is called")
 

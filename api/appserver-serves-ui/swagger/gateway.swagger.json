@@ -610,6 +610,38 @@
         ]
       }
     },
+    "/api/gateways/register-reseller": {
+      "post": {
+        "operationId": "RegisterReseller",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiRegisterResellerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiRegisterResellerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "GatewayService"
+        ]
+      }
+    },
     "/api/gateways/set-auto-update/{gatewayId}": {
       "put": {
         "operationId": "SetAutoUpdateFirmware",
@@ -1409,6 +1441,22 @@
           "format": "int64"
         },
         "sn": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiRegisterResellerRequest": {
+      "type": "object",
+      "properties": {
+        "manufacturerNr": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiRegisterResellerResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
           "type": "string"
         }
       }
