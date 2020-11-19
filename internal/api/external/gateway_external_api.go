@@ -72,7 +72,7 @@ func NewGatewayAPI(h *store.Handler, auth auth.Authenticator, config GwConfig, p
 
 func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterResellerRequest) (*api.RegisterResellerResponse, error) {
 	// organization admin user or organization user should both be able to register organization as reseller for the gateway
-	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
@@ -108,7 +108,7 @@ func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterRese
 		return nil, status.Error(codes.PermissionDenied, "not brand new gateway")
 	}
 
-	err = a.st.AddGatewayReseller(ctx, req.ManufacturerNr, req.OrgId)
+	err = a.st.AddGatewayReseller(ctx, req.ManufacturerNr, req.OrganizationId)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
