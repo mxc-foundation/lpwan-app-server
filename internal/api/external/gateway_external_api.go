@@ -49,19 +49,19 @@ import (
 // GatewayAPI exports the Gateway related functions.
 type GatewayAPI struct {
 	st     *store.Handler
-	config Config
+	config GwConfig
 	auth   auth.Authenticator
 	pscli  psPb.ProvisionClient
 }
 
-type Config struct {
+type GwConfig struct {
 	ApplicationServerID uuid.UUID
 	ServerAddr          string
 	EnableSTC           bool
 }
 
 // NewGatewayAPI creates a new GatewayAPI.
-func NewGatewayAPI(h *store.Handler, auth auth.Authenticator, config Config, pscli psPb.ProvisionClient) *GatewayAPI {
+func NewGatewayAPI(h *store.Handler, auth auth.Authenticator, config GwConfig, pscli psPb.ProvisionClient) *GatewayAPI {
 	return &GatewayAPI{
 		st:     h,
 		auth:   auth,

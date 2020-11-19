@@ -207,7 +207,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	api.RegisterGatewayServiceServer(grpcServer, NewGatewayAPI(
 		h,
 		grpcAuth,
-		Config{
+		GwConfig{
 			ApplicationServerID: rpID,
 			ServerAddr:          ctrl.serverAddr,
 			EnableSTC:           ctrl.enableSTC,
