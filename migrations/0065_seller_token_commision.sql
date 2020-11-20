@@ -6,4 +6,4 @@ create table gateway_stc
 );
 
 alter table gateway
-    add column stc_org_id bigint;
+    add column stc_org_id bigint references organization on delete cascade;

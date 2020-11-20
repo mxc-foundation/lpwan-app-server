@@ -601,6 +601,7 @@ func (ps *PgStore) GetGateways(ctx context.Context, filters GatewayFilters) ([]G
 			g.altitude,
 			g.model,
 			g.config,
+			g.stc_org_id,
 			n.name as network_server_name
 		from
 			gateway g
@@ -1136,6 +1137,31 @@ func (ps *PgStore) RemoveGatewayReseller(ctx context.Context, mannr string) erro
 	)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// BindResellerToGateway assign stc_org_id of gateway with reseller's orgnization id
+func (ps *PgStore) BindResellerToGateway(ctx context.Context, stcOrgID int64, sn string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update 
+			gateway 
+		set stc_org_id = $1 
+			where sn = $2`,
+		stcOrgID,
+		sn,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return errHandler.ErrDoesNotExist
 	}
 
 	return nil

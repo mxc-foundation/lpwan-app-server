@@ -1235,9 +1235,15 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		OsVersion:    resp.OsVersion,
 		Statistics:   "",
 		SerialNumber: resp.Sn,
-		STCOrgID:     stcOrgID,
 	}); err != nil {
 		return nil, err
+	}
+
+	if stcOrgID != 0 {
+		err := a.st.BindResellerToGateway(ctx, stcOrgID, resp.Sn)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
 	}
 
 	return &api.RegisterResponse{
