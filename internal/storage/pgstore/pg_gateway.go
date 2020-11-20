@@ -15,6 +15,7 @@ import (
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
+	mining "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
 )
 
 func (ps *PgStore) CheckCreateGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
@@ -704,12 +705,12 @@ func (ps *PgStore) GetLastHeartbeat(ctx context.Context, mac lorawan.EUI64) (int
 	return lastHeartbeat, nil
 }
 
-func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error) {
-	var macs []lorawan.EUI64
+func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]mining.GatewayMining, error) {
+	var gws []mining.GatewayMining
 
-	err := sqlx.SelectContext(ctx, ps.db, &macs, `
+	err := sqlx.SelectContext(ctx, ps.db, &gws, `
 		select 
-			mac
+			mac, organization_id, stc_org_id
 		from gateway
 		where first_heartbeat not in (0)
         and $1 - first_heartbeat > $2`,
@@ -719,7 +720,7 @@ func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) 
 		return nil, errors.Wrap(err, "select error")
 	}
 
-	return macs, nil
+	return gws, nil
 }
 
 // GetGatewaysLoc returns a slice of gateways locations.
