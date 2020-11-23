@@ -4,6 +4,13 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/brocaar/lorawan"
+
+	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
+	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
+
+	"github.com/mxc-foundation/lpwan-app-server/internal/auth"
+
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
@@ -24,13 +31,19 @@ type Pricer interface {
 
 // WalletServerAPI is the structure that contains the validator
 type WalletServerAPI struct {
-	pricer Pricer
+	pricer    Pricer
+	st        *store.Handler
+	auth      auth.Authenticator
+	enableSTC bool
 }
 
 // NewWalletServerAPI validates the new wallet server api
-func NewWalletServerAPI() *WalletServerAPI {
+func NewWalletServerAPI(h *store.Handler, auth auth.Authenticator, enableSTC bool) *WalletServerAPI {
 	return &WalletServerAPI{
-		pricer: coingecko.New(),
+		pricer:    coingecko.New(),
+		st:        h,
+		auth:      auth,
+		enableSTC: enableSTC,
 	}
 }
 
@@ -62,8 +75,39 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 }
 
 func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.GetGatewayMiningIncomeRequest) (*api.GetGatewayMiningIncomeResponse, error) {
-	if err := wallet.NewValidator().IsOrgAdmin(ctx, req.OrgId); err != nil {
-		return nil, status.Error(codes.PermissionDenied, "must be organization admin")
+	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	var mac lorawan.EUI64
+	if err := mac.UnmarshalText([]byte(req.GatewayMac)); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
+	}
+
+	// get gateway information
+	item, err := s.st.GetGateway(ctx, mac, false)
+	if err != nil {
+		if err != errHandler.ErrDoesNotExist {
+			return nil, status.Errorf(codes.NotFound, "gateway with mac %s does not exist", req.GatewayMac)
+		}
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin {
+		// user is neither global admin nor organization user, check whether user is reseller of the gateway
+		if s.enableSTC && item.STCOrgID != nil && *item.STCOrgID != 0 {
+			stcOrgID := *item.STCOrgID
+			_, err = s.st.GetOrganizationUser(ctx, stcOrgID, cred.UserID)
+			if err != nil {
+				if err == errHandler.ErrDoesNotExist {
+					return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+				}
+				return nil, status.Errorf(codes.Internal, err.Error())
+			}
+		} else {
+			return nil, status.Error(codes.PermissionDenied, "permission denied")
+		}
 	}
 
 	logInfo := "api/appserver_serves_ui/GetGatewayMiningIncome org=" + strconv.FormatInt(req.OrgId, 10)

@@ -247,7 +247,13 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(ctrl.serverRegion))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())
 	api.RegisterTopUpServiceServer(grpcServer, NewTopUpServerAPI())
-	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI())
+
+	api.RegisterWalletServiceServer(grpcServer, NewWalletServerAPI(
+		h,
+		grpcAuth,
+		ctrl.enableSTC,
+	))
+
 	api.RegisterWithdrawServiceServer(grpcServer, NewWithdrawServerAPI())
 
 	api.RegisterStakingServiceServer(grpcServer, staking.NewServer(
