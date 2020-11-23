@@ -601,6 +601,7 @@ func (ps *PgStore) GetGateways(ctx context.Context, filters GatewayFilters) ([]G
 			g.altitude,
 			g.model,
 			g.config,
+			g.stc_org_id,
 			n.name as network_server_name
 		from
 			gateway g
@@ -1094,4 +1095,74 @@ func (ps *PgStore) GetGatewayForPing(ctx context.Context) (*Gateway, error) {
 	}
 
 	return &gw, nil
+}
+
+// GetSTCOrgIDForGateway checks whether gateway with given manufacturer number has been registered with reseller
+func (ps *PgStore) GetSTCOrgIDForGateway(ctx context.Context, mannr string) (int64, error) {
+	var stcOrgID int64
+
+	err := sqlx.GetContext(ctx, ps.db, &stcOrgID, `
+		select stc_org_id from gateway_stc where manufacturer_nr = $1`,
+		mannr,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return stcOrgID, errors.Wrap(err, "select err")
+	}
+
+	return stcOrgID, nil
+}
+
+// AddGatewayReseller binds gateway manufacuturer number with reserller's organization id
+func (ps *PgStore) AddGatewayReseller(ctx context.Context, mannr string, organizationID int64) error {
+	_, err := ps.db.ExecContext(ctx, `
+		insert into gateway_stc (manufacturer_nr, stc_org_id) values ($1, $2)`,
+		mannr,
+		organizationID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveGatewayReseller delete gateway_stc record with given manufacuturer number
+func (ps *PgStore) RemoveGatewayReseller(ctx context.Context, mannr string) error {
+	_, err := ps.db.ExecContext(ctx, `
+		delete from gateway_stc where manufacturer_nr = $1`,
+		mannr,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// BindResellerToGateway assign stc_org_id of gateway with reseller's orgnization id
+func (ps *PgStore) BindResellerToGateway(ctx context.Context, stcOrgID int64, sn string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update 
+			gateway 
+		set stc_org_id = $1 
+			where sn = $2`,
+		stcOrgID,
+		sn,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return errHandler.ErrDoesNotExist
+	}
+
+	return nil
 }

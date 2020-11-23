@@ -119,7 +119,7 @@ type Mailer interface {
 	SendPasswordReset(email, lang, otp string) error
 }
 
-// Server configuration
+// Config defines configuration
 type Config struct {
 	Recaptcha RecaptchaConfig
 	// If true, then users who have 2FA configured must enter OTP to login

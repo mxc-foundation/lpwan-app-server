@@ -8,4 +8,5 @@ type GeneralSettingsStruct struct {
 	DefaultLanguage        string `mapstructure:"defualt_language"`
 	ServerAddr             string `mapstructure:"server_addr"`
 	ServerRegion           string `mapstructure:"server_region"`
+	EnableSTC              bool   `mapstructure:"enable_stc"`
 }
