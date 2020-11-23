@@ -17,6 +17,6 @@ type Config struct {
 
 type GatewayMining struct {
 	GatewayMac lorawan.EUI64 `db:"mac"`
-	OwnerOrgId int64         `db:"organization_id"`
-	StcOrgId   *int64        `db:"stc_org_id"`
+	OwnerOrgID int64         `db:"organization_id"`
+	StcOrgID   *int64        `db:"stc_org_id"`
 }

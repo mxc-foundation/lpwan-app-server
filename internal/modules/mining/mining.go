@@ -110,11 +110,11 @@ func (ctrl *controller) submitMining(ctx context.Context) error {
 		}
 		gw := api.GatewayMining{
 			GatewayMac: v.GatewayMac.String(),
-			OwnerOrgId: v.OwnerOrgId,
+			OwnerOrgId: v.OwnerOrgID,
 			StcOrgId:   0,
 		}
-		if v.StcOrgId != nil {
-			gw.StcOrgId = *v.StcOrgId
+		if v.StcOrgID != nil {
+			gw.StcOrgId = *v.StcOrgID
 		}
 
 		gws = append(gws, &gw)
