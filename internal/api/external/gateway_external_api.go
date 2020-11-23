@@ -78,7 +78,7 @@ func (a *GatewayAPI) RegisterReseller(ctx context.Context, req *api.RegisterRese
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin && !cred.IsOrgUser {
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
@@ -525,9 +525,41 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 	if err := mac.UnmarshalText([]byte(req.Id)); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "bad gateway mac: %s", err)
 	}
-
-	if valid, err := gw.NewValidator().ValidateGatewayAccess(ctx, authcus.Read, mac); !valid || err != nil {
+	// first check whether user is an authorized user
+	_, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	item, err := a.st.GetGateway(ctx, mac, false)
+	if err != nil {
+		if err != errHandler.ErrDoesNotExist {
+			return nil, status.Errorf(codes.NotFound, "gateway with mac %s does not exist", req.Id)
+		}
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	// check whether user has access to the gateway information
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(item.OrganizationID))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		// user is neither global admin nor organization user, check whether user is reseller of the gateway
+		if a.config.EnableSTC && item.STCOrgID != nil && *item.STCOrgID != 0 {
+			stcOrgID := *item.STCOrgID
+			_, err = a.st.GetOrganizationUser(ctx, stcOrgID, cred.UserID)
+			if err != nil {
+				if err == errHandler.ErrDoesNotExist {
+					return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+				}
+				return nil, status.Errorf(codes.Internal, err.Error())
+			}
+
+		} else {
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
 	}
 
 	gw, err := a.st.GetGateway(ctx, mac, false)
@@ -639,26 +671,29 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 
 // List lists the gateways.
 func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*api.ListGatewayResponse, error) {
-	if valid, err := gw.NewValidator().ValidateGlobalGatewaysAccess(ctx, authcus.List, req.OrganizationId); !valid || err != nil {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	// to make sure the pagination of listing gateways work properly, need to take stc settings into consideration
+	//   when calling GetGatewayCount and GetGateways
 	filters := GatewayFilters{
 		Search:         req.Search,
 		Limit:          int(req.Limit),
 		Offset:         int(req.Offset),
 		OrganizationID: req.OrganizationId,
-	}
-
-	u, err := gw.NewValidator().GetUser(ctx)
-	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		EnabledSTC:     a.config.EnableSTC,
 	}
 
 	// Filter on username when OrganizationID is not set and the user is
 	// not a global admin.
-	if !u.IsGlobalAdmin && filters.OrganizationID == 0 {
-		filters.UserID = u.ID
+	if !cred.IsGlobalAdmin && filters.OrganizationID == 0 {
+		filters.UserID = cred.UserID
 	}
 
 	count, err := a.st.GetGatewayCount(ctx, filters)
@@ -687,6 +722,12 @@ func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*ap
 				Longitude: gw.Longitude,
 				Altitude:  gw.Altitude,
 			},
+		}
+
+		// add prefix 'stc_' to gateway name if gateway's stc_org_id equals to req.OrganizationID
+		// if stc is not enabled, gw.STCOrgID should either be nil or *gw.STCOrgID does not equal to req.OrganizationID
+		if gw.STCOrgID != nil && *gw.STCOrgID == req.OrganizationId {
+			row.Name = "STC_" + row.Name
 		}
 
 		row.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
@@ -1118,7 +1159,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin && !cred.IsGatewayAdmin {
+	if !cred.IsGlobalAdmin && !cred.IsGatewayAdmin {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
@@ -1239,7 +1280,7 @@ func (a *GatewayAPI) Register(ctx context.Context, req *api.RegisterRequest) (*a
 		return nil, err
 	}
 
-	if stcOrgID != 0 {
+	if stcOrgID != 0 && a.config.EnableSTC {
 		err := a.st.BindResellerToGateway(ctx, stcOrgID, resp.Sn)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
@@ -1294,13 +1335,16 @@ func (a *GatewayAPI) SetAutoUpdateFirmware(ctx context.Context, req *api.SetAuto
 	return &api.SetAutoUpdateFirmwareResponse{Message: "Auto update firmware set successfully"}, nil
 }
 
-// GetGatewayList defines the get Gateway list request and response
+// GetGatewayList defines the get Gateway list request and response, data is obtained from mxpeotocol-server
 func (a *GatewayAPI) GetGatewayList(ctx context.Context, req *api.GetGatewayListRequest) (*api.GetGatewayListResponse, error) {
 	logInfo := "api/appserver_serves_ui/GetGatewayList org=" + strconv.FormatInt(req.OrgId, 10)
 
-	err := gw.NewValidator().IsOrgAdmin(ctx, req.OrgId)
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
 	if err != nil {
-		return &api.GetGatewayListResponse{}, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	gwClient, err := m2mcli.GetM2MGatewayServiceClient()
