@@ -31,6 +31,7 @@ type controller struct {
 	s         Config
 	m2mClient api.MiningServiceClient
 	st        *store.Handler
+	enableSTC bool
 
 	moduleUp bool
 }
@@ -41,7 +42,8 @@ var ctrl *controller
 func SettingsSetup(name string, s config.Config) error {
 
 	ctrl = &controller{
-		s: s.ApplicationServer.MiningSetUp,
+		s:         s.ApplicationServer.MiningSetUp,
+		enableSTC: s.General.EnableSTC,
 	}
 	return nil
 }
@@ -113,7 +115,7 @@ func (ctrl *controller) submitMining(ctx context.Context) error {
 			OwnerOrgId: v.OwnerOrgID,
 			StcOrgId:   0,
 		}
-		if v.StcOrgID != nil {
+		if v.StcOrgID != nil && ctrl.enableSTC {
 			gw.StcOrgId = *v.StcOrgID
 		}
 
