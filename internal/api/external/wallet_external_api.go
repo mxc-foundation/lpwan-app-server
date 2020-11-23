@@ -75,6 +75,7 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 }
 
 func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.GetGatewayMiningIncomeRequest) (*api.GetGatewayMiningIncomeResponse, error) {
+	// req.OrgId should be the id of the org that user is making request with
 	cred, err := s.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrgId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
@@ -94,19 +95,17 @@ func (s *WalletServerAPI) GetGatewayMiningIncome(ctx context.Context, req *api.G
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	if !cred.IsGlobalAdmin && !cred.IsOrgAdmin {
-		// user is neither global admin nor organization user, check whether user is reseller of the gateway
-		if s.enableSTC && item.STCOrgID != nil && *item.STCOrgID != 0 {
-			stcOrgID := *item.STCOrgID
-			_, err = s.st.GetOrganizationUser(ctx, stcOrgID, cred.UserID)
-			if err != nil {
-				if err == errHandler.ErrDoesNotExist {
-					return nil, status.Errorf(codes.PermissionDenied, "permission denied")
-				}
-				return nil, status.Errorf(codes.Internal, err.Error())
-			}
-		} else {
+	if !cred.IsGlobalAdmin {
+		if !cred.IsOrgAdmin {
+			// user is neither global admin nor organization admin, return permission denied
 			return nil, status.Error(codes.PermissionDenied, "permission denied")
+		}
+
+		if req.OrgId != item.OrganizationID {
+			// gateway does not belong to req.OrgId, check wether gateway's reseller org id equals to req.OrgId
+			if !s.enableSTC || item.STCOrgID == nil || *item.STCOrgID != req.OrgId {
+				return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+			}
 		}
 	}
 
