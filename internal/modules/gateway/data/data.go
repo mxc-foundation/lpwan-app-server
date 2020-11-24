@@ -76,6 +76,7 @@ type Gateway struct {
 	SerialNumber       string        `db:"sn"`
 	FirmwareHash       types.MD5SUM  `db:"firmware_hash"`
 	AutoUpdateFirmware bool          `db:"auto_update_firmware"`
+	STCOrgID           *int64        `db:"stc_org_id"`
 }
 
 // GatewayListItem defines the gateway as list item.
@@ -95,6 +96,7 @@ type GatewayListItem struct {
 	NetworkServerName string        `db:"network_server_name"`
 	Model             string        `db:"model"`
 	Config            string        `db:"config"`
+	STCOrgID          *int64        `db:"stc_org_id"`
 }
 
 type GatewayFirmware struct {
@@ -150,6 +152,7 @@ type GatewayFilters struct {
 	OrganizationID int64  `db:"organization_id"`
 	UserID         int64  `db:"user_id"`
 	Search         string `db:"search"`
+	EnabledSTC     bool
 
 	// Limit and Offset are added for convenience so that this struct can
 	// be given as the arguments.
@@ -177,7 +180,13 @@ func (f GatewayFilters) SQL() string {
 		return ""
 	}
 
-	return "where " + strings.Join(filters, " and ")
+	query := "where " + strings.Join(filters, " and ")
+
+	if f.EnabledSTC {
+		query = query + " or g.stc_org_id = :organization_id"
+	}
+
+	return query
 }
 
 // Value implements the driver.Valuer interface.

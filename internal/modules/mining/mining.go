@@ -8,7 +8,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/brocaar/lorawan"
 	log "github.com/sirupsen/logrus"
 
 	api "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
@@ -32,6 +31,7 @@ type controller struct {
 	s         Config
 	m2mClient api.MiningServiceClient
 	st        *store.Handler
+	enableSTC bool
 
 	moduleUp bool
 }
@@ -42,7 +42,8 @@ var ctrl *controller
 func SettingsSetup(name string, s config.Config) error {
 
 	ctrl = &controller{
-		s: s.ApplicationServer.MiningSetUp,
+		s:         s.ApplicationServer.MiningSetUp,
+		enableSTC: s.General.EnableSTC,
 	}
 	return nil
 }
@@ -101,21 +102,29 @@ func (ctrl *controller) submitMining(ctx context.Context) error {
 		return nil
 	}
 
-	var macs []string
+	var gws []*api.GatewayMining
 
 	// update the first heartbeat = 0
 	for _, v := range miningGws {
-		err := ctrl.st.UpdateFirstHeartbeatToZero(ctx, v)
+		err := ctrl.st.UpdateFirstHeartbeatToZero(ctx, v.GatewayMac)
 		if err != nil {
 			log.WithError(err).Error("tokenMining/update first heartbeat to zero error")
 		}
-		mac := lorawan.EUI64.String(v)
-		macs = append(macs, mac)
+		gw := api.GatewayMining{
+			GatewayMac: v.GatewayMac.String(),
+			OwnerOrgId: v.OwnerOrgID,
+			StcOrgId:   0,
+		}
+		if v.StcOrgID != nil && ctrl.enableSTC {
+			gw.StcOrgId = *v.StcOrgID
+		}
+
+		gws = append(gws, &gw)
 	}
 
 	// if error, resend after one minute
 	for {
-		if err := ctrl.sendMining(ctx, macs); err != nil {
+		if err := ctrl.sendMining(ctx, gws); err != nil {
 			log.WithError(err).Error("send mining request to m2m error")
 			time.Sleep(60 * time.Second)
 			continue
@@ -126,9 +135,9 @@ func (ctrl *controller) submitMining(ctx context.Context) error {
 	return nil
 }
 
-func (ctrl *controller) sendMining(ctx context.Context, macs []string) error {
+func (ctrl *controller) sendMining(ctx context.Context, gws []*api.GatewayMining) error {
 	_, err := ctrl.m2mClient.Mining(ctx, &api.MiningRequest{
-		GatewayMac:    macs,
+		GatewayMining: gws,
 		PeriodSeconds: ctrl.s.Period,
 	})
 

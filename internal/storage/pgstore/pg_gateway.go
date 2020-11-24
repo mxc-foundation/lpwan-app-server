@@ -15,6 +15,7 @@ import (
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	. "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
+	mining "github.com/mxc-foundation/lpwan-app-server/internal/modules/mining/data"
 )
 
 func (ps *PgStore) CheckCreateGatewayAccess(ctx context.Context, username string, organizationID, userID int64) (bool, error) {
@@ -601,6 +602,7 @@ func (ps *PgStore) GetGateways(ctx context.Context, filters GatewayFilters) ([]G
 			g.altitude,
 			g.model,
 			g.config,
+			g.stc_org_id,
 			n.name as network_server_name
 		from
 			gateway g
@@ -703,12 +705,12 @@ func (ps *PgStore) GetLastHeartbeat(ctx context.Context, mac lorawan.EUI64) (int
 	return lastHeartbeat, nil
 }
 
-func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]lorawan.EUI64, error) {
-	var macs []lorawan.EUI64
+func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) ([]mining.GatewayMining, error) {
+	var gws []mining.GatewayMining
 
-	err := sqlx.SelectContext(ctx, ps.db, &macs, `
+	err := sqlx.SelectContext(ctx, ps.db, &gws, `
 		select 
-			mac
+			mac, organization_id, stc_org_id
 		from gateway
 		where first_heartbeat not in (0)
         and $1 - first_heartbeat > $2`,
@@ -718,7 +720,7 @@ func (ps *PgStore) GetGatewayMiningList(ctx context.Context, time, limit int64) 
 		return nil, errors.Wrap(err, "select error")
 	}
 
-	return macs, nil
+	return gws, nil
 }
 
 // GetGatewaysLoc returns a slice of gateways locations.
@@ -1094,4 +1096,74 @@ func (ps *PgStore) GetGatewayForPing(ctx context.Context) (*Gateway, error) {
 	}
 
 	return &gw, nil
+}
+
+// GetSTCOrgIDForGateway checks whether gateway with given manufacturer number has been registered with reseller
+func (ps *PgStore) GetSTCOrgIDForGateway(ctx context.Context, mannr string) (int64, error) {
+	var stcOrgID int64
+
+	err := sqlx.GetContext(ctx, ps.db, &stcOrgID, `
+		select stc_org_id from gateway_stc where manufacturer_nr = $1`,
+		mannr,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return stcOrgID, errors.Wrap(err, "select err")
+	}
+
+	return stcOrgID, nil
+}
+
+// AddGatewayReseller binds gateway manufacuturer number with reserller's organization id
+func (ps *PgStore) AddGatewayReseller(ctx context.Context, mannr string, organizationID int64) error {
+	_, err := ps.db.ExecContext(ctx, `
+		insert into gateway_stc (manufacturer_nr, stc_org_id) values ($1, $2)`,
+		mannr,
+		organizationID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RemoveGatewayReseller delete gateway_stc record with given manufacuturer number
+func (ps *PgStore) RemoveGatewayReseller(ctx context.Context, mannr string) error {
+	_, err := ps.db.ExecContext(ctx, `
+		delete from gateway_stc where manufacturer_nr = $1`,
+		mannr,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// BindResellerToGateway assign stc_org_id of gateway with reseller's orgnization id
+func (ps *PgStore) BindResellerToGateway(ctx context.Context, stcOrgID int64, sn string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update 
+			gateway 
+		set stc_org_id = $1 
+			where sn = $2`,
+		stcOrgID,
+		sn,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return errors.Wrap(err, "get rows affected error")
+	}
+	if ra == 0 {
+		return errHandler.ErrDoesNotExist
+	}
+
+	return nil
 }

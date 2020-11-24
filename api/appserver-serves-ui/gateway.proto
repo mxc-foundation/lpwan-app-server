@@ -180,6 +180,22 @@ service GatewayService {
     			body: "*"
     		};
     }
+
+    rpc RegisterReseller (RegisterResellerRequest) returns (RegisterResellerResponse) {
+        option (google.api.http) = {
+            post: "/api/gateways/register-reseller"
+            body: "*"
+        };
+    }
+}
+
+message RegisterResellerRequest {
+    string manufacturer_nr = 1;
+    int64 organization_id = 2;
+}
+
+message RegisterResellerResponse {
+    string status = 1;
 }
 
 enum GatewayMode {
