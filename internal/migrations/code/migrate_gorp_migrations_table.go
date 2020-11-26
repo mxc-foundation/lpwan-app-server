@@ -28,8 +28,9 @@ func MigrateGorpMigrations(handler *store.Handler) error {
 	}
 
 	newItemList := migrations.AssetNames()
-	// must sort out newItemList
+	// must sort out newItemList and itemList
 	sort.Strings(newItemList)
+	sort.Strings(itemList)
 
 	if len(itemList) > len(newItemList) {
 		return errors.New("new list is shorter than existing list, migration must be done manually")
