@@ -7,12 +7,13 @@
 package appserver_serves_ui
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	gw "github.com/brocaar/chirpstack-api/go/v3/gw"
 	proto "github.com/golang/protobuf/proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
