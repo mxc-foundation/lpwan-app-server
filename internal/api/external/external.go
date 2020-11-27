@@ -68,6 +68,7 @@ type controller struct {
 	moduleUp               bool
 	passwordHashIterations int
 	enableSTC              bool
+	externalAuth           user.ExternalAuthentication
 }
 
 var ctrl *controller
@@ -83,6 +84,7 @@ func SettingsSetup(name string, conf config.Config) (err error) {
 		serverRegion:           conf.General.ServerRegion,
 		passwordHashIterations: conf.General.PasswordHashIterations,
 		enableSTC:              conf.General.EnableSTC,
+		externalAuth:           conf.ExternalAuth,
 	}
 	ctrl.applicationServerID, err = uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
@@ -241,10 +243,12 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 			Recaptcha:        ctrl.recaptcha,
 			Enable2FALogin:   ctrl.enable2FA,
 			OperatorLogoPath: email.GetOperatorInfo().OperatorLogo,
+			WeChatLogin:      ctrl.externalAuth.WechatAuth,
 		},
 	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)
 	api.RegisterInternalServiceServer(grpcServer, userSrv)
+	api.RegisterExternalUserServiceServer(grpcServer, userSrv)
 
 	api.RegisterServerInfoServiceServer(grpcServer, NewServerInfoAPI(ctrl.serverRegion))
 	api.RegisterSettingsServiceServer(grpcServer, NewSettingsServerAPI())
@@ -391,6 +395,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	}
 	if err := api.RegisterInternalServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register internal handler error")
+	}
+	if err := api.RegisterExternalUserServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register external user handler error")
 	}
 	if err := api.RegisterGatewayServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register gateway handler error")

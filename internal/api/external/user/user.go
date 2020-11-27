@@ -119,6 +119,10 @@ type Mailer interface {
 	SendPasswordReset(email, lang, otp string) error
 }
 
+type ExternalAuthentication struct {
+	WechatAuth WeChatAuthentication `mapstructure:"wechat_auth"`
+}
+
 // Config defines configuration
 type Config struct {
 	Recaptcha RecaptchaConfig
@@ -126,6 +130,8 @@ type Config struct {
 	Enable2FALogin bool
 	// path to logo
 	OperatorLogoPath string
+	// external user wechat login config
+	WeChatLogin WeChatAuthentication
 }
 
 // Server implements Internal User Service
