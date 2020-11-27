@@ -45,6 +45,8 @@ type Config struct {
 
 	Recaptcha user.RecaptchaConfig `mapstructure:"recaptcha"`
 
+	ExternalAuth user.ExternalAuthentication `mapstructure:"external_auth"`
+
 	ApplicationServer struct {
 		ID string `mapstructure:"id"`
 
