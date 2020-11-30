@@ -20,7 +20,7 @@ func TestValidator(t *testing.T) {
 
 	v := NewValidator(jwa.HS256, testJWTKeyEnc, 86400)
 
-	defExpiry, err := v.SignToken(42, "carol@example.com", 0, nil)
+	defExpiry, err := v.SignToken(Claims{UserID: 42, Username: "carol@example.com"}, 0, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestValidator(t *testing.T) {
 			time.Until(tok.Expiration()).String())
 	}
 
-	bobToken, err := v.SignToken(77, "bob@example.com", 3600, nil)
+	bobToken, err := v.SignToken(Claims{UserID: 77, Username: "bob@example.com"}, 3600, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,12 +51,12 @@ func TestValidator(t *testing.T) {
 	}
 
 	v1 := NewValidator(jwa.HS512, testJWTKeyEnc, 86400)
-	bobWrongAlgo, err := v1.SignToken(77, "bob@example.com", 3600, nil)
+	bobWrongAlgo, err := v1.SignToken(Claims{UserID: 77, Username: "bob@example.com"}, 3600, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	bobTestAudience, err := v.SignToken(77, "bob@example.com", 3600, []string{"test", "foo"})
+	bobTestAudience, err := v.SignToken(Claims{UserID: 77, Username: "bob@example.com"}, 3600, []string{"test", "foo"})
 	if err != nil {
 		t.Fatal(err)
 	}

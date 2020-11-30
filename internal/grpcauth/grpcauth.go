@@ -3,6 +3,7 @@ package grpcauth
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -42,6 +43,33 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %v", err)
 	}
+
+	if opts.ExternalLimited {
+		if claims.ExternalService == auth.WECHAT {
+			wechatAuth := auth.WeChatAuth{}
+			if err := json.Unmarshal([]byte(claims.ExternalCred), &wechatAuth); err != nil {
+				return nil, fmt.Errorf("cannot parse external credentials to wechat service credentials")
+			}
+
+			// verify access_token with openid
+			url := fmt.Sprintf("https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s",
+				wechatAuth.AccessToken, wechatAuth.OpenID)
+			user := auth.GetWeChatUserInfoResponse{}
+
+			if err := auth.GetHTTPResponse(url, &user); err != nil {
+				return nil, fmt.Errorf("cannot verify access_token: %s", err.Error())
+			}
+
+			return &auth.Credentials{
+				ExternalUserService: auth.WECHAT,
+				ExternalUserID:      user.UnionID,
+			}, nil
+		}
+
+	} else if claims.Username == "" || claims.UserID == 0 {
+		return nil, fmt.Errorf("username and userID are required in claims")
+	}
+
 	// For non-existing user we only return username, there's no point in
 	// checking the OTP or anything else
 	if opts.AllowNonExisting {

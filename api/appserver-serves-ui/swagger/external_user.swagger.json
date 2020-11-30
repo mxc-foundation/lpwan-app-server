@@ -205,9 +205,6 @@
     "appserver_serves_uiBindExternalUserRequest": {
       "type": "object",
       "properties": {
-        "verifyCurrentUser": {
-          "type": "boolean"
-        },
         "email": {
           "type": "string"
         },
