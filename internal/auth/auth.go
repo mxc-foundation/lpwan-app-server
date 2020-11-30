@@ -14,6 +14,9 @@ type Options struct {
 	RequireOTP       bool
 	AllowNonExisting bool
 	OrgID            int64
+
+	// external auth
+	ExternalLimited bool
 }
 
 func NewOptions() *Options {
@@ -42,6 +45,17 @@ func (o *Options) WithOrgID(orgID int64) *Options {
 	return o
 }
 
+func (o *Options) WithExternalLimited() *Options {
+	o.ExternalLimited = true
+	return o
+}
+
+// ExternalServiceName defines const type: name of external services
+const (
+	WECHAT string = "wechat"
+	TG     string = "telegram"
+)
+
 // Credentials provides information about user's credentials
 type Credentials struct {
 	// UserID is the id of the user
@@ -62,6 +76,10 @@ type Credentials struct {
 	IsDeviceAdmin bool
 	// IsGatewayAdmin is true if the user is device admin for the org
 	IsGatewayAdmin bool
+	// ExternalUserID is the id of external user
+	ExternalUserID string
+	// ExternalUserService is the name of external user's service
+	ExternalUserService string
 }
 
 // User contains information about the user

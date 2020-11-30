@@ -103,6 +103,13 @@ type Store interface {
 	// DeleteUser deletes the user
 	DeleteUser(ctx context.Context, userID int64) error
 
+	// GetUserIDByExternalUserID gets user id from service name and external user id
+	GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error)
+	// GetExternalUserIDByUserID gets external user id from service name and user id
+	GetExternalUserIDByUserID(ctx context.Context, service string, userID int64) (string, error)
+	// AddExternalUserLogin inserts new external id and user id relation
+	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID string) error
+
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
 	GlobalSearch(ctx context.Context, userID int64, globalAdmin bool, search string, limit, offset int) ([]SearchResult, error)
@@ -120,7 +127,7 @@ type Mailer interface {
 }
 
 type ExternalAuthentication struct {
-	WechatAuth WeChatAuthentication `mapstructure:"wechat_auth"`
+	WechatAuth auth.WeChatAuthentication `mapstructure:"wechat_auth"`
 }
 
 // Config defines configuration
@@ -131,7 +138,7 @@ type Config struct {
 	// path to logo
 	OperatorLogoPath string
 	// external user wechat login config
-	WeChatLogin WeChatAuthentication
+	WeChatLogin auth.WeChatAuthentication
 }
 
 // Server implements Internal User Service

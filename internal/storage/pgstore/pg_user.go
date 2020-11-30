@@ -7,9 +7,48 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
+
+func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error) {
+	var userID int64
+	err := sqlx.GetContext(ctx, ps.db, &userID, `
+		select user_id from external_login where service=$1 and external_id=$2`,
+		service,
+		externalUserID,
+	)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+
+	return userID, nil
+}
+
+func (ps *PgStore) GetExternalUserIDByUserID(ctx context.Context, service string, userID int64) (string, error) {
+	var externalUserID string
+	err := sqlx.GetContext(ctx, ps.db, &externalUserID, `
+		select external_id from external_login where service=$1 and external_id=$2`,
+		service,
+		userID,
+	)
+	if err != nil {
+		return "", handlePSQLError(Select, err, "select error")
+	}
+
+	return externalUserID, nil
+}
+
+func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID string) error {
+	_, err := ps.db.ExecContext(ctx, `
+		insert into external_login (user_id , service, external_id) values ($1, $2, $3)`,
+		userID, service, externalUserID,
+	)
+
+	return err
+}
 
 // CreateUser creates the given user.
 func (ps *PgStore) CreateUser(ctx context.Context, u user.User, ou []user.OrganizationUser) (user.User, error) {

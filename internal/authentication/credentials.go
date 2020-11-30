@@ -129,6 +129,9 @@ func (c *Credentials) getCredentials(ctx context.Context, opts ...Option) (Crede
 	if err != nil {
 		return cred, errors.Wrap(err, "getCredentials")
 	}
+	if jwtClaims.Username == "" {
+		return cred, fmt.Errorf("username is required in claims")
+	}
 
 	otpClaims, err := c.h.otpValidator.GetClaims(ctx)
 	if err != nil {
@@ -343,7 +346,7 @@ func (c *Credentials) Is2FAEnabled(ctx context.Context, username string) (bool, 
 
 // SignJWToken requires username, since ctx does not contain user info at this point
 func (c *Credentials) SignJWToken(userID int64, username string, ttl int64, audience []string) (string, error) {
-	return c.h.jwtValidator.SignToken(userID, username, ttl, audience)
+	return c.h.jwtValidator.SignToken(jwt.Claims{UserID: userID, Username: username}, ttl, audience)
 }
 
 // New2FAConfiguration generates a new TOTP configuration for the user
