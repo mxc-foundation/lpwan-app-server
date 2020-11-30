@@ -57,9 +57,8 @@ message AuthenticateWeChatUserResponse {
 }
 
 message BindExternalUserRequest {
-    bool verify_current_user = 1;
-    string email = 2;
-    string password = 3;
+    string email = 1;
+    string password = 2;
 }
 
 message BindExternalUserResponse {

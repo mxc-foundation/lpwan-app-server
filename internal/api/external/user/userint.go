@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus/ctxlogrus"
@@ -63,13 +65,13 @@ func (a *Server) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.Login
 		audience = []string{"login-2fa"}
 	}
 
-	jwt, err := a.jwtv.SignToken(u.ID, u.Email, ttl, audience)
+	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email}, ttl, audience)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
 	}
 
-	return &inpb.LoginResponse{Jwt: jwt, Is_2FaRequired: is2fa}, nil
+	return &inpb.LoginResponse{Jwt: jwToken, Is_2FaRequired: is2fa}, nil
 }
 
 // Login2FA performs second factor authentication. It requires u to have
@@ -80,14 +82,14 @@ func (a *Server) Login2FA(ctx context.Context, req *inpb.Login2FARequest) (*inpb
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
-	jwt, err := a.jwtv.SignToken(cred.UserID, cred.Username, 0, nil)
+	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: cred.UserID, Username: cred.Username}, 0, nil)
 
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Error(codes.Internal, "couldn't create a token")
 	}
 
-	return &inpb.LoginResponse{Jwt: jwt}, nil
+	return &inpb.LoginResponse{Jwt: jwToken}, nil
 }
 
 type RecaptchaConfig struct {
@@ -487,7 +489,7 @@ func (a *Server) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegis
 	}
 
 	// issue a token that is valid only to finish the registration process
-	jwt, err := a.jwtv.SignToken(u.ID, u.Email, 86400, []string{"registration", "lora-app-server"})
+	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email}, 86400, []string{"registration", "lora-app-server"})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -497,7 +499,7 @@ func (a *Server) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegis
 		Username: u.Email,
 		IsAdmin:  u.IsAdmin,
 		IsActive: u.IsActive,
-		Jwt:      jwt,
+		Jwt:      jwToken,
 	}, nil
 }
 
