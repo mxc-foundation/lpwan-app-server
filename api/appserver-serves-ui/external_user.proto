@@ -32,7 +32,7 @@ service ExternalUserService {
     }
 
     // GetExternalUserIDFromUserID gets external user id by supernode user id
-    rpc GetExternalUserIDFromUserID (GetExternalUserIDFromUserIDRequest) returns (GetExternalUserIDFromUserIDResponse) {
+    rpc GetExternalUserFromUserID (GetExternalUserFromUserIDRequest) returns (GetExternalUserFromUserIDResponse) {
         option (google.api.http) = {
             get: "/api/external-login/get-external-user-id"
         };
@@ -77,13 +77,13 @@ message RegisterExternalUserResponse {
     string jwt = 1;
 }
 
-message GetExternalUserIDFromUserIDRequest {
+message GetExternalUserFromUserIDRequest {
     int64 user_id = 1;
     string service = 2;
 }
 
-message GetExternalUserIDFromUserIDResponse {
-    string external_user_id = 3;
+message GetExternalUserFromUserIDResponse {
+    string external_username = 1;
 }
 
 message UnbindExternalUserRequest {

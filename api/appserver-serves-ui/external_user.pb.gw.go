@@ -136,37 +136,37 @@ func local_request_ExternalUserService_RegisterExternalUser_0(ctx context.Contex
 }
 
 var (
-	filter_ExternalUserService_GetExternalUserIDFromUserID_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+	filter_ExternalUserService_GetExternalUserFromUserID_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
 )
 
-func request_ExternalUserService_GetExternalUserIDFromUserID_0(ctx context.Context, marshaler runtime.Marshaler, client ExternalUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetExternalUserIDFromUserIDRequest
+func request_ExternalUserService_GetExternalUserFromUserID_0(ctx context.Context, marshaler runtime.Marshaler, client ExternalUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetExternalUserFromUserIDRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExternalUserService_GetExternalUserIDFromUserID_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExternalUserService_GetExternalUserFromUserID_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.GetExternalUserIDFromUserID(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetExternalUserFromUserID(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_ExternalUserService_GetExternalUserIDFromUserID_0(ctx context.Context, marshaler runtime.Marshaler, server ExternalUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetExternalUserIDFromUserIDRequest
+func local_request_ExternalUserService_GetExternalUserFromUserID_0(ctx context.Context, marshaler runtime.Marshaler, server ExternalUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetExternalUserFromUserIDRequest
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExternalUserService_GetExternalUserIDFromUserID_0); err != nil {
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ExternalUserService_GetExternalUserFromUserID_0); err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.GetExternalUserIDFromUserID(ctx, &protoReq)
+	msg, err := server.GetExternalUserFromUserID(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -280,7 +280,7 @@ func RegisterExternalUserServiceHandlerServer(ctx context.Context, mux *runtime.
 
 	})
 
-	mux.Handle("GET", pattern_ExternalUserService_GetExternalUserIDFromUserID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ExternalUserService_GetExternalUserFromUserID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -291,7 +291,7 @@ func RegisterExternalUserServiceHandlerServer(ctx context.Context, mux *runtime.
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_ExternalUserService_GetExternalUserIDFromUserID_0(rctx, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_ExternalUserService_GetExternalUserFromUserID_0(rctx, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
@@ -299,7 +299,7 @@ func RegisterExternalUserServiceHandlerServer(ctx context.Context, mux *runtime.
 			return
 		}
 
-		forward_ExternalUserService_GetExternalUserIDFromUserID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_ExternalUserService_GetExternalUserFromUserID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -427,7 +427,7 @@ func RegisterExternalUserServiceHandlerClient(ctx context.Context, mux *runtime.
 
 	})
 
-	mux.Handle("GET", pattern_ExternalUserService_GetExternalUserIDFromUserID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_ExternalUserService_GetExternalUserFromUserID_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
@@ -436,14 +436,14 @@ func RegisterExternalUserServiceHandlerClient(ctx context.Context, mux *runtime.
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_ExternalUserService_GetExternalUserIDFromUserID_0(rctx, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_ExternalUserService_GetExternalUserFromUserID_0(rctx, inboundMarshaler, client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_ExternalUserService_GetExternalUserIDFromUserID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_ExternalUserService_GetExternalUserFromUserID_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -477,7 +477,7 @@ var (
 
 	pattern_ExternalUserService_RegisterExternalUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "external-login", "register-external-user"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_ExternalUserService_GetExternalUserIDFromUserID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "external-login", "get-external-user-id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_ExternalUserService_GetExternalUserFromUserID_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "external-login", "get-external-user-id"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_ExternalUserService_UnbindExternalUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "external-login", "unbind-external-user"}, "", runtime.AssumeColonVerbOpt(true)))
 )
@@ -489,7 +489,7 @@ var (
 
 	forward_ExternalUserService_RegisterExternalUser_0 = runtime.ForwardResponseMessage
 
-	forward_ExternalUserService_GetExternalUserIDFromUserID_0 = runtime.ForwardResponseMessage
+	forward_ExternalUserService_GetExternalUserFromUserID_0 = runtime.ForwardResponseMessage
 
 	forward_ExternalUserService_UnbindExternalUser_0 = runtime.ForwardResponseMessage
 )

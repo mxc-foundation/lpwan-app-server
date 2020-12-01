@@ -32,6 +32,7 @@ type GetWeChatUserInfoResponse struct {
 	OpenID     string `json:"openid"`
 	HeadImgURL string `json:"headimgurl"`
 	UnionID    string `json:"unionid"`
+	NickName   string `json:"nickname"`
 }
 
 func GetHTTPResponse(url string, dest interface{}) error {
