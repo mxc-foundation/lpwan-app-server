@@ -80,12 +80,12 @@
     "/api/external-login/get-external-user-id": {
       "get": {
         "summary": "GetExternalUserIDFromUserID gets external user id by supernode user id",
-        "operationId": "GetExternalUserIDFromUserID",
+        "operationId": "GetExternalUserFromUserID",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetExternalUserIDFromUserIDResponse"
+              "$ref": "#/definitions/appserver_serves_uiGetExternalUserFromUserIDResponse"
             }
           },
           "default": {
@@ -224,10 +224,10 @@
         }
       }
     },
-    "appserver_serves_uiGetExternalUserIDFromUserIDResponse": {
+    "appserver_serves_uiGetExternalUserFromUserIDResponse": {
       "type": "object",
       "properties": {
-        "externalUserId": {
+        "externalUsername": {
           "type": "string"
         }
       }
