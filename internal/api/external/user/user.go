@@ -26,6 +26,7 @@ type User struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Email         string
+	DisplayName   *string
 	PasswordHash  string
 	IsAdmin       bool
 	IsActive      bool
@@ -100,15 +101,19 @@ type Store interface {
 	SetUserPasswordHash(ctx context.Context, userID int64, passwordHash string) error
 	// SetUserPasswordIfOTPMatch sets the user's password if the OTP provided is correct
 	SetUserPasswordIfOTPMatch(ctx context.Context, userID int64, otp, passwordHash string) error
+	// SetUserDisplayName updates display name of the user
+	SetUserDisplayName(ctx context.Context, displayName string, userID int64) error
 	// DeleteUser deletes the user
 	DeleteUser(ctx context.Context, userID int64) error
 
 	// GetUserIDByExternalUserID gets user id from service name and external user id
 	GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error)
-	// GetExternalUserIDByUserID gets external user id from service name and user id
-	GetExternalUserIDByUserID(ctx context.Context, service string, userID int64) (string, error)
+	// GetExternalUserByUserID gets external user id from service name and user id
+	GetExternalUserByUserID(ctx context.Context, service string, userID int64) (ExternalUser, error)
 	// AddExternalUserLogin inserts new external id and user id relation
-	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID string) error
+	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error
+	// DeleteExternalUserLogin removes binding relation between external account and supernode account
+	DeleteExternalUserLogin(ctx context.Context, userID int64, service, externalUserID string) error
 
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
@@ -235,7 +240,7 @@ func (a *Server) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUs
 			Id:       user.ID,
 			IsAdmin:  user.IsAdmin,
 			IsActive: user.IsActive,
-			Username: user.Email,
+			Username: *user.DisplayName,
 		},
 		CreatedAt: &timestamp.Timestamp{Seconds: user.CreatedAt.Unix()},
 		UpdatedAt: &timestamp.Timestamp{Seconds: user.UpdatedAt.Unix()},
@@ -288,7 +293,7 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 
 	for _, user := range users {
 		row := inpb.UserListItem{
-			Username:  user.Email,
+			Username:  *user.DisplayName,
 			Id:        user.ID,
 			IsAdmin:   user.IsAdmin,
 			IsActive:  user.IsActive,

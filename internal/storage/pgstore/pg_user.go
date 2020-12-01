@@ -23,30 +23,35 @@ func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string
 	if err != nil {
 		return 0, handlePSQLError(Select, err, "select error")
 	}
-
 	return userID, nil
 }
 
-func (ps *PgStore) GetExternalUserIDByUserID(ctx context.Context, service string, userID int64) (string, error) {
-	var externalUserID string
-	err := sqlx.GetContext(ctx, ps.db, &externalUserID, `
-		select external_id from external_login where service=$1 and external_id=$2`,
+func (ps *PgStore) GetExternalUserByUserID(ctx context.Context, service string, userID int64) (user.ExternalUser, error) {
+	var externalUser user.ExternalUser
+	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
+		select user_id, service, external_id, external_username from external_login where service=$1 and external_id=$2`,
 		service,
 		userID,
 	)
 	if err != nil {
-		return "", handlePSQLError(Select, err, "select error")
+		return externalUser, handlePSQLError(Select, err, "select error")
 	}
-
-	return externalUserID, nil
+	return externalUser, nil
 }
 
-func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID string) error {
+func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error {
 	_, err := ps.db.ExecContext(ctx, `
-		insert into external_login (user_id , service, external_id) values ($1, $2, $3)`,
-		userID, service, externalUserID,
+		insert into external_login (user_id , service, external_id, external_username) values ($1, $2, $3, $4)`,
+		userID, service, externalUserID, externalUsername,
 	)
+	return err
+}
 
+func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, service, externalUserID string) error {
+	_, err := ps.db.ExecContext(ctx, `
+		delete from external_login where service = $1 and external_id = $2 and user_id = $3`,
+		service, externalUserID, userID,
+	)
 	return err
 }
 
@@ -93,7 +98,7 @@ func (ps *PgStore) createUser(ctx context.Context, u user.User) (user.User, erro
 		u.SecurityToken,
 	).Scan(&id)
 	if err != nil {
-		return u, fmt.Errorf("couldn't insert user: %w", err)
+		return u, handlePSQLError(Insert, err, "couldn't insert user")
 	}
 	u.ID = id
 	return u, nil
@@ -129,11 +134,11 @@ func (ps *PgStore) getUser(ctx context.Context, condition string, args ...interf
 	// nolint: gosec
 	err := ps.db.QueryRowContext(ctx,
 		`SELECT id, created_at, updated_at, email, password_hash,
-			is_active, is_admin, security_token, email_verified
+			is_active, is_admin, security_token, email_verified, display_name
 		 FROM "user"
 		 WHERE `+condition, args...).Scan(
 		&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
-		&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified,
+		&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, u.DisplayName,
 	)
 	if err == sql.ErrNoRows {
 		err = errHandler.ErrDoesNotExist
@@ -191,7 +196,7 @@ func (ps *PgStore) GetUserCount(ctx context.Context) (int64, error) {
 // GetUsers returns a slice of users, respecting the given limit and offset.
 func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User, error) {
 	query := `SELECT id, created_at, updated_at, email, password_hash,
-			    is_active, is_admin, security_token, email_verified
+			    is_active, is_admin, security_token, email_verified, display_name
 		 	  FROM "user"
 			  ORDER BY email
 			  LIMIT $1
@@ -207,7 +212,7 @@ func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User
 		var pass, token sql.NullString
 		err := rows.Scan(
 			&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
-			&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified)
+			&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, u.DisplayName)
 		if err != nil {
 			return nil, err
 		}
@@ -216,6 +221,15 @@ func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User
 		users = append(users, u)
 	}
 	return users, rows.Err()
+}
+
+// SetUserDisplayName updates display name of the user
+func (ps *PgStore) SetUserDisplayName(ctx context.Context, displayName string, userID int64) error {
+	query := `UPDATE "user"
+			  SET display_name = $1, updated_at = NOW()
+			  WHERE id = $2`
+	_, err := ps.db.ExecContext(ctx, query, displayName, userID)
+	return err
 }
 
 // SetUserEmail changes the email address of the user
