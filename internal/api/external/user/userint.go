@@ -71,6 +71,8 @@ func (a *Server) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.Login
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
 	}
 
+	_ = a.store.SetUserDisplayName(ctx, u.Email, u.ID)
+
 	return &inpb.LoginResponse{Jwt: jwToken, Is_2FaRequired: is2fa}, nil
 }
 

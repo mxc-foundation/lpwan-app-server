@@ -80,6 +80,7 @@ message RegisterExternalUserResponse {
 message GetExternalUserFromUserIDRequest {
     int64 user_id = 1;
     string service = 2;
+    int64 organization_id = 3;
 }
 
 message GetExternalUserFromUserIDResponse {
@@ -90,6 +91,7 @@ message UnbindExternalUserRequest {
     int64 user_id = 1;
     string service = 2;
     string external_user_id = 3;
+    int64 organization_id = 4;
 }
 
 message UnbindExternalUserResponse {

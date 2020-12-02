@@ -35,7 +35,7 @@ type GetWeChatUserInfoResponse struct {
 	NickName   string `json:"nickname"`
 }
 
-func GetHTTPResponse(url string, dest interface{}) error {
+func GetHTTPResponse(url string, dest interface{}, disallowUnknowFields bool) error {
 	// #nosec
 	resp, err := http.Get(url)
 	if err != nil {
@@ -49,7 +49,9 @@ func GetHTTPResponse(url string, dest interface{}) error {
 
 	// disallow unknow fileds to filter out error messages from wechat server when no err is returned
 	decoder := json.NewDecoder(resp.Body)
-	decoder.DisallowUnknownFields()
+	if disallowUnknowFields {
+		decoder.DisallowUnknownFields()
+	}
 
 	if err := decoder.Decode(dest); err != nil {
 		return err
@@ -66,7 +68,7 @@ func GetAccessTokenFromCode(ctx context.Context, code, appID, secret string, res
 	// get access_token
 	url := fmt.Sprintf("https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code",
 		appID, secret, code)
-	if err := GetHTTPResponse(url, response); err != nil {
+	if err := GetHTTPResponse(url, response, true); err != nil {
 		return err
 	}
 
@@ -81,8 +83,12 @@ func GetWeChatUserInfoFromAccessToken(ctx context.Context, accessToken, openID s
 
 	url := fmt.Sprintf("https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s",
 		accessToken, openID)
-	if err := GetHTTPResponse(url, response); err != nil {
+	if err := GetHTTPResponse(url, response, false); err != nil {
 		return err
+	}
+
+	if response.UnionID == "" {
+		return fmt.Errorf("unionid is required, cannot be empty string")
 	}
 
 	return nil
