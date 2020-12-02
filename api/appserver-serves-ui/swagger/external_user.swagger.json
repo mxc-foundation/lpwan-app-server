@@ -108,6 +108,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "organizationId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -269,6 +276,10 @@
         },
         "externalUserId": {
           "type": "string"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

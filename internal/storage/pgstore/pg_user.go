@@ -138,7 +138,7 @@ func (ps *PgStore) getUser(ctx context.Context, condition string, args ...interf
 		 FROM "user"
 		 WHERE `+condition, args...).Scan(
 		&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
-		&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, u.DisplayName,
+		&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, &u.DisplayName,
 	)
 	if err == sql.ErrNoRows {
 		err = errHandler.ErrDoesNotExist
@@ -212,7 +212,7 @@ func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User
 		var pass, token sql.NullString
 		err := rows.Scan(
 			&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
-			&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, u.DisplayName)
+			&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, &u.DisplayName)
 		if err != nil {
 			return nil, err
 		}
