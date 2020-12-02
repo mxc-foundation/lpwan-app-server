@@ -25,6 +25,10 @@ type ExternalUser struct {
 // AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user
 // then check binding status of this wechat user
 func (a *Server) AuthenticateWeChatUser(ctx context.Context, req *pb.AuthenticateWeChatUserRequest) (*pb.AuthenticateWeChatUserResponse, error) {
+	log.WithFields(log.Fields{
+		"code": req.Code,
+	}).Debug("AuthenticateWeChatUser is calld")
+
 	body := auth.GetAccessTokenResponse{}
 	user := auth.GetWeChatUserInfoResponse{}
 
