@@ -15,6 +15,14 @@ service ExternalUserService {
         };
     }
 
+    // DebugAuthenticateWeChatUser will only be called by debug mode
+    rpc DebugAuthenticateWeChatUser (AuthenticateWeChatUserRequest) returns (AuthenticateWeChatUserResponse) {
+        option (google.api.http) = {
+            post: "/api/external-login/debug-authenticate-wechat-user"
+            body: "*"
+        };
+    }
+
     // BindExternalUser binds external user id to supernode user
     rpc BindExternalUser (BindExternalUserRequest) returns (BindExternalUserResponse) {
         option (google.api.http) = {

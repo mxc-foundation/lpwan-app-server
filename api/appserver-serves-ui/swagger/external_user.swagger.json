@@ -77,6 +77,39 @@
         ]
       }
     },
+    "/api/external-login/debug-authenticate-wechat-user": {
+      "post": {
+        "summary": "DebugAuthenticateWeChatUser will only be called by debug mode",
+        "operationId": "DebugAuthenticateWeChatUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiAuthenticateWeChatUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiAuthenticateWeChatUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
     "/api/external-login/get-external-user-id": {
       "get": {
         "summary": "GetExternalUserIDFromUserID gets external user id by supernode user id",
