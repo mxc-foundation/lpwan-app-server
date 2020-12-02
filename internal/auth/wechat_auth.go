@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // WeChatAuthentication defines configuration for authorizing wechat users
@@ -36,6 +38,11 @@ type GetWeChatUserInfoResponse struct {
 }
 
 func GetHTTPResponse(url string, dest interface{}, disallowUnknowFields bool) error {
+	log.WithFields(log.Fields{
+		"url":                  url,
+		"disallowUnkownFields": disallowUnknowFields,
+	}).Debug("auth.GetHTTPResponse is called")
+
 	// #nosec
 	resp, err := http.Get(url)
 	if err != nil {
@@ -72,6 +79,8 @@ func GetAccessTokenFromCode(ctx context.Context, code, appID, secret string, res
 		return err
 	}
 
+	log.Debugf("GetAccessTokenFromCode response: %v", response)
+
 	return nil
 }
 
@@ -90,6 +99,8 @@ func GetWeChatUserInfoFromAccessToken(ctx context.Context, accessToken, openID s
 	if response.UnionID == "" {
 		return fmt.Errorf("unionid is required, cannot be empty string")
 	}
+
+	log.Debugf("GetAccessTokenFromCode response: %v", response)
 
 	return nil
 }
