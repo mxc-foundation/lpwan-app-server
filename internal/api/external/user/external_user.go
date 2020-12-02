@@ -27,7 +27,7 @@ type ExternalUser struct {
 func (a *Server) AuthenticateWeChatUser(ctx context.Context, req *pb.AuthenticateWeChatUserRequest) (*pb.AuthenticateWeChatUserResponse, error) {
 	log.WithFields(log.Fields{
 		"code": req.Code,
-	}).Debug("AuthenticateWeChatUser is calld")
+	}).Debug("AuthenticateWeChatUser")
 
 	body := auth.GetAccessTokenResponse{}
 	user := auth.GetWeChatUserInfoResponse{}
@@ -66,6 +66,10 @@ func (a *Server) AuthenticateWeChatUser(ctx context.Context, req *pb.Authenticat
 			log.Errorf("SignToken returned an error: %v", err)
 			return nil, status.Errorf(codes.Internal, "couldn't create a token")
 		}
+
+		log.WithFields(log.Fields{
+			"jwtWithLimited": jwtWithLimited,
+		}).Debug("AuthenticateWeChatUser")
 
 		return &pb.AuthenticateWeChatUserResponse{Jwt: jwtWithLimited, BindingIsRequired: true}, nil
 
