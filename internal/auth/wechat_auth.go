@@ -100,7 +100,7 @@ func GetWeChatUserInfoFromAccessToken(ctx context.Context, accessToken, openID s
 		return fmt.Errorf("unionid is required, cannot be empty string")
 	}
 
-	log.Debugf("GetAccessTokenFromCode response: %v", response)
+	log.Debugf("GetWeChatUserInfoFromAccessToken response: %v", response)
 
 	return nil
 }
