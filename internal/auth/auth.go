@@ -80,6 +80,8 @@ type Credentials struct {
 	ExternalUserID string
 	// ExternalUserService is the name of external user's service
 	ExternalUserService string
+	// ExternalUsername is the nickname of the external user
+	ExternalUsername string
 }
 
 // User contains information about the user

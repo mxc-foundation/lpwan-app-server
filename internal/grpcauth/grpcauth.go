@@ -52,17 +52,15 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 			}
 
 			// verify access_token with openid
-			url := fmt.Sprintf("https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s",
-				wechatAuth.AccessToken, wechatAuth.OpenID)
 			user := auth.GetWeChatUserInfoResponse{}
-
-			if err := auth.GetHTTPResponse(url, &user); err != nil {
+			if err := auth.GetWeChatUserInfoFromAccessToken(ctx, wechatAuth.AccessToken, wechatAuth.OpenID, &user); err != nil {
 				return nil, fmt.Errorf("cannot verify access_token: %s", err.Error())
 			}
 
 			return &auth.Credentials{
 				ExternalUserService: auth.WECHAT,
 				ExternalUserID:      user.UnionID,
+				ExternalUsername:    user.NickName,
 			}, nil
 		}
 

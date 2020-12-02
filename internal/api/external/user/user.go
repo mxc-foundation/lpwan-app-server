@@ -26,7 +26,7 @@ type User struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Email         string
-	DisplayName   *string
+	DisplayName   string
 	PasswordHash  string
 	IsAdmin       bool
 	IsActive      bool
@@ -240,7 +240,7 @@ func (a *Server) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUs
 			Id:       user.ID,
 			IsAdmin:  user.IsAdmin,
 			IsActive: user.IsActive,
-			Username: *user.DisplayName,
+			Username: user.DisplayName,
 		},
 		CreatedAt: &timestamp.Timestamp{Seconds: user.CreatedAt.Unix()},
 		UpdatedAt: &timestamp.Timestamp{Seconds: user.UpdatedAt.Unix()},
@@ -293,7 +293,7 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 
 	for _, user := range users {
 		row := inpb.UserListItem{
-			Username:  *user.DisplayName,
+			Username:  user.DisplayName,
 			Id:        user.ID,
 			IsAdmin:   user.IsAdmin,
 			IsActive:  user.IsActive,
