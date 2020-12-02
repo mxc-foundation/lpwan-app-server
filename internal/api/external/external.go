@@ -242,6 +242,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 			Enable2FALogin:   ctrl.enable2FA,
 			OperatorLogoPath: email.GetOperatorInfo().OperatorLogo,
 			WeChatLogin:      ctrl.externalAuth.WechatAuth,
+			DebugWeChatLogin: ctrl.externalAuth.DebugWechatAuth,
 		},
 	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)

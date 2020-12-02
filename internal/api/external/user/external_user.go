@@ -22,17 +22,11 @@ type ExternalUser struct {
 	ExternalUserName string `db:"external_username"`
 }
 
-// AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user
-// then check binding status of this wechat user
-func (a *Server) AuthenticateWeChatUser(ctx context.Context, req *pb.AuthenticateWeChatUserRequest) (*pb.AuthenticateWeChatUserResponse, error) {
-	log.WithFields(log.Fields{
-		"code": req.Code,
-	}).Debug("AuthenticateWeChatUser")
-
+func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret string) (*pb.AuthenticateWeChatUserResponse, error) {
 	body := auth.GetAccessTokenResponse{}
 	user := auth.GetWeChatUserInfoResponse{}
 
-	if err := auth.GetAccessTokenFromCode(ctx, req.Code, a.config.WeChatLogin.AppID, a.config.WeChatLogin.Secret, &body); err != nil {
+	if err := auth.GetAccessTokenFromCode(ctx, code, appID, secret, &body); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 	if body.UnionID == "" {
@@ -98,6 +92,29 @@ func (a *Server) AuthenticateWeChatUser(ctx context.Context, req *pb.Authenticat
 	_ = a.store.SetUserDisplayName(ctx, user.NickName, u.ID)
 
 	return &pb.AuthenticateWeChatUserResponse{Jwt: jwtNormal, BindingIsRequired: false}, nil
+}
+
+// AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user
+// then check binding status of this wechat user
+func (a *Server) AuthenticateWeChatUser(ctx context.Context, req *pb.AuthenticateWeChatUserRequest) (*pb.AuthenticateWeChatUserResponse, error) {
+	log.WithFields(log.Fields{
+		"code":   req.Code,
+		"appid":  a.config.WeChatLogin.AppID,
+		"secret": a.config.WeChatLogin.Secret,
+	}).Debug("AuthenticateWeChatUser")
+
+	return a.authenticateWeChatUser(ctx, req.Code, a.config.WeChatLogin.AppID, a.config.WeChatLogin.Secret)
+}
+
+// DebugAuthenticateWeChatUser will only be called by debug mode
+func (a *Server) DebugAuthenticateWeChatUser(ctx context.Context, req *pb.AuthenticateWeChatUserRequest) (*pb.AuthenticateWeChatUserResponse, error) {
+	log.WithFields(log.Fields{
+		"code":   req.Code,
+		"appid":  a.config.DebugWeChatLogin.AppID,
+		"secret": a.config.DebugWeChatLogin.Secret,
+	}).Debug("DebugAuthenticateWeChatUser")
+
+	return a.authenticateWeChatUser(ctx, req.Code, a.config.WeChatLogin.AppID, a.config.WeChatLogin.Secret)
 }
 
 // BindExternalUser binds external user id to supernode user

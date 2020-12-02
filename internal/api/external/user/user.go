@@ -132,7 +132,8 @@ type Mailer interface {
 }
 
 type ExternalAuthentication struct {
-	WechatAuth auth.WeChatAuthentication `mapstructure:"wechat_auth"`
+	WechatAuth      auth.WeChatAuthentication `mapstructure:"wechat_auth"`
+	DebugWechatAuth auth.WeChatAuthentication `mapstructure:"debug_wechat_auth"`
 }
 
 // Config defines configuration
@@ -144,6 +145,8 @@ type Config struct {
 	OperatorLogoPath string
 	// external user wechat login config
 	WeChatLogin auth.WeChatAuthentication
+	// external user wechat login config, debug mode
+	DebugWeChatLogin auth.WeChatAuthentication
 }
 
 // Server implements Internal User Service
