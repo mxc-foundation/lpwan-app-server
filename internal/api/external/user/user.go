@@ -114,6 +114,8 @@ type Store interface {
 	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error
 	// DeleteExternalUserLogin removes binding relation between external account and supernode account
 	DeleteExternalUserLogin(ctx context.Context, userID int64, service, externalUserID string) error
+	// SetExternalUsername updates external user's username
+	SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error
 
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices

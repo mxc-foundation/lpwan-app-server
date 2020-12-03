@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 
@@ -19,7 +20,7 @@ type ExternalUser struct {
 	UserID           int64  `db:"user_id"`
 	ServiceName      string `db:"service"`
 	ExternalUserID   string `db:"external_id"`
-	ExternalUserName string `db:"external_username"`
+	ExternalUsername string `db:"external_username"`
 }
 
 func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret string) (*pb.AuthenticateWeChatUserResponse, error) {
@@ -81,17 +82,28 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 		return nil, status.Errorf(codes.Unauthenticated, "inactive user")
 	}
 
-	// wechat user already bound with existing account, sign jwt with username and user id
-	jwtNormal, err := a.jwtv.SignToken(jwt.Claims{Username: u.Email, UserID: u.ID}, 0, nil)
+	jwtNormal, err := a.loginWithExternalUser(ctx, u.ID, auth.WECHAT, u.Email, user.UnionID, user.NickName)
 	if err != nil {
-		log.Errorf("SignToken returned an error: %v", err)
-		return nil, status.Errorf(codes.Internal, "couldn't create a token")
+		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	// from the moment user successfully login with external user account, set user display name to external user's nickname
-	_ = a.store.SetUserDisplayName(ctx, user.NickName, u.ID)
-
 	return &pb.AuthenticateWeChatUserResponse{Jwt: jwtNormal, BindingIsRequired: false}, nil
+}
+
+func (a *Server) loginWithExternalUser(ctx context.Context, userID int64, service, email, externalUserID, externalUsername string) (string, error) {
+	// wechat user already bound with existing account, sign jwt with username and user id
+	jwtNormal, err := a.jwtv.SignToken(jwt.Claims{Username: email, UserID: userID}, 0, nil)
+	if err != nil {
+		log.Errorf("SignToken returned an error: %v", err)
+		return "", fmt.Errorf("couldn't create a token")
+	}
+
+	// update external username
+	_ = a.store.SetExternalUsername(ctx, service, externalUserID, externalUsername)
+	// from the moment user successfully login with external user account, set user display name to external user's nickname
+	_ = a.store.SetUserDisplayName(ctx, externalUsername, userID)
+
+	return jwtNormal, nil
 }
 
 // AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user
@@ -147,14 +159,10 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 
 			// when this API is called, if wechat user has been verified and bound to existing user, return jwt
 			// so that caller logic can proceed
-			jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email}, 0, nil)
+			jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.ExternalUserService, u.Email, cred.ExternalUserID, cred.ExternalUsername)
 			if err != nil {
-				log.Errorf("SignToken returned an error: %v", err)
-				return nil, status.Errorf(codes.Internal, "couldn't create a token")
+				return nil, status.Errorf(codes.Internal, err.Error())
 			}
-
-			// from the moment user successfully login with external user account, set user display name to external user's nickname
-			_ = a.store.SetUserDisplayName(ctx, cred.ExternalUsername, u.ID)
 
 			return &pb.BindExternalUserResponse{Jwt: jwToken}, nil
 		} else if err != errHandler.ErrDoesNotExist {
@@ -166,14 +174,10 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
-		jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email}, 0, nil)
+		jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.ExternalUserService, u.Email, cred.ExternalUserID, cred.ExternalUsername)
 		if err != nil {
-			log.Errorf("SignToken returned an error: %v", err)
-			return nil, status.Errorf(codes.Internal, "couldn't create a token")
+			return nil, status.Errorf(codes.Internal, err.Error())
 		}
-
-		// from the moment user successfully login with external user account, set user display name to external user's nickname
-		_ = a.store.SetUserDisplayName(ctx, cred.ExternalUsername, u.ID)
 
 		return &pb.BindExternalUserResponse{Jwt: jwToken}, nil
 
@@ -221,14 +225,11 @@ func (a *Server) RegisterExternalUser(ctx context.Context, req *pb.RegisterExter
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
-		jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email}, 0, nil)
+		jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.ExternalUserService, u.Email, cred.ExternalUserID, cred.ExternalUsername)
 		if err != nil {
 			log.Errorf("SignToken returned an error: %v", err)
 			return nil, status.Errorf(codes.Internal, "couldn't create a token")
 		}
-
-		// from the moment user successfully login with external user account, set user display name to external user's nickname
-		_ = a.store.SetUserDisplayName(ctx, cred.ExternalUsername, u.ID)
 
 		return &pb.RegisterExternalUserResponse{Jwt: jwToken}, nil
 	}
@@ -255,7 +256,7 @@ func (a *Server) GetExternalUserFromUserID(ctx context.Context, req *pb.GetExter
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	return &pb.GetExternalUserFromUserIDResponse{ExternalUsername: externalUser.ExternalUserName, ExternalUserId: externalUser.ExternalUserID}, nil
+	return &pb.GetExternalUserFromUserIDResponse{ExternalUsername: externalUser.ExternalUsername, ExternalUserId: externalUser.ExternalUserID}, nil
 }
 
 // UnbindExternalUser unbinds external user and supernode user account
