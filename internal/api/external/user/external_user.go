@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"encoding/json"
-	"runtime"
 
 	log "github.com/sirupsen/logrus"
 
@@ -239,7 +238,6 @@ func (a *Server) RegisterExternalUser(ctx context.Context, req *pb.RegisterExter
 
 // GetExternalUserFromUserID gets external user id by supernode user id
 func (a *Server) GetExternalUserFromUserID(ctx context.Context, req *pb.GetExternalUserFromUserIDRequest) (*pb.GetExternalUserFromUserIDResponse, error) {
-	runtime.Breakpoint()
 	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed : %s", err.Error())
