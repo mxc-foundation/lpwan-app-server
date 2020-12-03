@@ -29,7 +29,7 @@ func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string
 func (ps *PgStore) GetExternalUserByUserID(ctx context.Context, service string, userID int64) (user.ExternalUser, error) {
 	var externalUser user.ExternalUser
 	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
-		select user_id, service, external_id, external_username from external_login where service=$1 and external_id=$2`,
+		select user_id, service, external_id, external_username from external_login where service=$1 and user_id=$2`,
 		service,
 		userID,
 	)
