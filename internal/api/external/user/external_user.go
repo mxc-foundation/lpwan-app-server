@@ -255,7 +255,7 @@ func (a *Server) GetExternalUserFromUserID(ctx context.Context, req *pb.GetExter
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
-	return &pb.GetExternalUserFromUserIDResponse{ExternalUsername: externalUser.ExternalUserName}, nil
+	return &pb.GetExternalUserFromUserIDResponse{ExternalUsername: externalUser.ExternalUserName, ExternalUserId: externalUser.ExternalUserID}, nil
 }
 
 // UnbindExternalUser unbinds external user and supernode user account

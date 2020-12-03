@@ -93,6 +93,7 @@ message GetExternalUserFromUserIDRequest {
 
 message GetExternalUserFromUserIDResponse {
     string external_username = 1;
+    string external_user_id = 2;
 }
 
 message UnbindExternalUserRequest {
