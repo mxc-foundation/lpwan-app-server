@@ -70,8 +70,7 @@ message BindExternalUserRequest {
 }
 
 message BindExternalUserResponse {
-    bool try_different_credentials = 1;
-    string jwt = 2;
+    string jwt = 1;
 }
 
 message RegisterExternalUserRequest {
