@@ -47,6 +47,14 @@ func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, use
 	return err
 }
 
+func (ps *PgStore) SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error {
+	_, err := ps.db.ExecContext(ctx, `
+		update external_login set external_username = $1 where service = $2 and external_id = $3`,
+		externalUsername, service, externalUserID,
+	)
+	return err
+}
+
 func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, service, externalUserID string) error {
 	_, err := ps.db.ExecContext(ctx, `
 		delete from external_login where service = $1 and external_id = $2 and user_id = $3`,
