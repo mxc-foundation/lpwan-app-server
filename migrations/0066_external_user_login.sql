@@ -15,7 +15,7 @@ alter table "user"
 alter table "user"
     drop column email_old;
 alter table "user"
-    add column display_name text;
+    add column display_name text not null default '';
 
 update "user"
-set display_name = "user".email;
+set display_name = email;
