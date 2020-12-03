@@ -256,9 +256,6 @@
     "appserver_serves_uiBindExternalUserResponse": {
       "type": "object",
       "properties": {
-        "tryDifferentCredentials": {
-          "type": "boolean"
-        },
         "jwt": {
           "type": "string"
         }

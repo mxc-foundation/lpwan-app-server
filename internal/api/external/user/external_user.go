@@ -142,7 +142,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 		externalUser, err := a.store.GetExternalUserByUserID(ctx, cred.ExternalUserService, u.ID)
 		if err == nil {
 			if externalUser.ExternalUserID != cred.ExternalUserID {
-				return &pb.BindExternalUserResponse{TryDifferentCredentials: true, Jwt: ""}, nil
+				return &pb.BindExternalUserResponse{Jwt: ""}, nil
 			}
 
 			// when this API is called, if wechat user has been verified and bound to existing user, return jwt
@@ -156,7 +156,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 			// from the moment user successfully login with external user account, set user display name to external user's nickname
 			_ = a.store.SetUserDisplayName(ctx, cred.ExternalUsername, u.ID)
 
-			return &pb.BindExternalUserResponse{TryDifferentCredentials: false, Jwt: jwToken}, nil
+			return &pb.BindExternalUserResponse{Jwt: jwToken}, nil
 		} else if err != errHandler.ErrDoesNotExist {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
@@ -175,7 +175,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 		// from the moment user successfully login with external user account, set user display name to external user's nickname
 		_ = a.store.SetUserDisplayName(ctx, cred.ExternalUsername, u.ID)
 
-		return &pb.BindExternalUserResponse{TryDifferentCredentials: false, Jwt: jwToken}, nil
+		return &pb.BindExternalUserResponse{Jwt: jwToken}, nil
 
 	}
 
