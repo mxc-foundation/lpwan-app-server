@@ -30,13 +30,12 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 	if err := auth.GetAccessTokenFromCode(ctx, code, appID, secret, &body); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
-	if body.UnionID == "" {
-		if err := auth.GetWeChatUserInfoFromAccessToken(ctx, body.AccessToken, body.OpenID, &user); err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
-		}
 
-		body.UnionID = user.UnionID
+	if err := auth.GetWeChatUserInfoFromAccessToken(ctx, body.AccessToken, body.OpenID, &user); err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
+
+	body.UnionID = user.UnionID
 
 	// check whether wechat user has already bound to existing account
 	userID, err := a.store.GetUserIDByExternalUserID(ctx, auth.WECHAT, body.UnionID)
