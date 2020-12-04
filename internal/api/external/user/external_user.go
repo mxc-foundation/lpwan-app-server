@@ -86,6 +86,10 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 
+	log.WithFields(log.Fields{
+		"jwt": jwtNormal,
+	}).Debug("AuthenticateWeChatUser")
+
 	return &pb.AuthenticateWeChatUserResponse{Jwt: jwtNormal, BindingIsRequired: false}, nil
 }
 
