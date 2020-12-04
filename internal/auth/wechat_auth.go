@@ -79,7 +79,8 @@ func GetAccessTokenFromCode(ctx context.Context, code, appID, secret string, res
 		return err
 	}
 
-	log.Debugf("GetAccessTokenFromCode response: %v", response)
+	log.Debugf("GetAccessTokenFromCode response: {'access_token': %s, 'openid': %s, 'unionid': %s, 'scope': %s}",
+		response.AccessToken, response.OpenID, response.UnionID, response.Scope)
 
 	return nil
 }
@@ -100,7 +101,8 @@ func GetWeChatUserInfoFromAccessToken(ctx context.Context, accessToken, openID s
 		return fmt.Errorf("unionid is required, cannot be empty string")
 	}
 
-	log.Debugf("GetWeChatUserInfoFromAccessToken response: %v", response)
+	log.Debugf("GetWeChatUserInfoFromAccessToken response: {'unionid': %s, 'nickname': %s, 'openid': %s}",
+		response.UnionID, response.NickName, response.OpenID)
 
 	return nil
 }
