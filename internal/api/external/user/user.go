@@ -109,7 +109,9 @@ type Store interface {
 	// GetUserIDByExternalUserID gets user id from service name and external user id
 	GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error)
 	// GetExternalUserByUserID gets external user id from service name and user id
-	GetExternalUserByUserID(ctx context.Context, service string, userID int64) (ExternalUser, error)
+	GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (ExternalUser, error)
+	// GetExternalUsersByUserID gets all external users bound with userID
+	GetExternalUsersByUserID(ctx context.Context, userID int64) ([]ExternalUser, error)
 	// AddExternalUserLogin inserts new external id and user id relation
 	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error
 	// DeleteExternalUserLogin removes binding relation between external account and supernode account

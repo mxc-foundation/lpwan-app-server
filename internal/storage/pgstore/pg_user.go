@@ -26,7 +26,7 @@ func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string
 	return userID, nil
 }
 
-func (ps *PgStore) GetExternalUserByUserID(ctx context.Context, service string, userID int64) (user.ExternalUser, error) {
+func (ps *PgStore) GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (user.ExternalUser, error) {
 	var externalUser user.ExternalUser
 	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
 		select user_id, service, external_id, external_username from external_login where service=$1 and user_id=$2`,
@@ -37,6 +37,18 @@ func (ps *PgStore) GetExternalUserByUserID(ctx context.Context, service string, 
 		return externalUser, handlePSQLError(Select, err, "select error")
 	}
 	return externalUser, nil
+}
+
+func (ps *PgStore) GetExternalUsersByUserID(ctx context.Context, userID int64) ([]user.ExternalUser, error) {
+	var externalUsers []user.ExternalUser
+	err := sqlx.GetContext(ctx, ps.db, &externalUsers, `
+		select user_id, service, external_id, external_username from external_login where user_id=$1`,
+		userID,
+	)
+	if err != nil {
+		return externalUsers, handlePSQLError(Select, err, "select error")
+	}
+	return externalUsers, nil
 }
 
 func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error {
