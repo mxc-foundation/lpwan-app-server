@@ -217,6 +217,23 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 		resp.Organizations = append(resp.Organizations, &row)
 	}
 
+	externalUsers, err := a.store.GetExternalUsersByUserID(ctx, user.ID)
+	if err != nil {
+		if err != errHandler.ErrDoesNotExist {
+			return nil, status.Errorf(codes.Internal, err.Error())
+		}
+	}
+
+	for _, eu := range externalUsers {
+		item := inpb.ExternalUserAccount{
+			ExternalUserId:   eu.ExternalUserID,
+			ExternalUsername: eu.ExternalUsername,
+			Service:          eu.ServiceName,
+		}
+
+		resp.ExternalUserAccounts = append(resp.ExternalUserAccounts, &item)
+	}
+
 	return &resp, nil
 }
 
