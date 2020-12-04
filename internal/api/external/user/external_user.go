@@ -151,7 +151,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 		}
 
 		// check whether user has already bound with wechat account
-		externalUser, err := a.store.GetExternalUserByUserID(ctx, cred.ExternalUserService, u.ID)
+		externalUser, err := a.store.GetExternalUserByUserIDAndService(ctx, cred.ExternalUserService, u.ID)
 		if err == nil {
 			if externalUser.ExternalUserID != cred.ExternalUserID {
 				return &pb.BindExternalUserResponse{Jwt: ""}, nil
@@ -248,7 +248,7 @@ func (a *Server) GetExternalUserFromUserID(ctx context.Context, req *pb.GetExter
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	externalUser, err := a.store.GetExternalUserByUserID(ctx, req.Service, req.UserId)
+	externalUser, err := a.store.GetExternalUserByUserIDAndService(ctx, req.Service, req.UserId)
 	if err != nil {
 		if err == errHandler.ErrDoesNotExist {
 			return nil, status.Errorf(codes.NotFound, "user not bind to external account of service %s", req.Service)

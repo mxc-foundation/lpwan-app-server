@@ -187,12 +187,20 @@ message LoginResponse {
 message Login2FARequest {
 }
 
+message ExternalUserAccount {
+    string external_user_id = 1;
+    string external_username = 2;
+    string service = 3;
+}
+
 message ProfileResponse {
     // User object.
     User user = 1;
 
     // Organizations to which the user is associated.
     repeated OrganizationLink organizations = 3;
+    // ExternalUserAccount to which the user is associated.
+    repeated ExternalUserAccount external_user_accounts = 4;
 }
 
 message GlobalSearchRequest {
