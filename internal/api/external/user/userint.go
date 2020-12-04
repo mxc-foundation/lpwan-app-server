@@ -192,7 +192,7 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 	resp := inpb.ProfileResponse{
 		User: &inpb.User{
 			Id:       user.ID,
-			Username: user.Email,
+			Username: user.DisplayName,
 			Email:    user.Email,
 			IsAdmin:  user.IsAdmin,
 			IsActive: user.IsActive,
@@ -453,14 +453,14 @@ func (a *Server) RequestPasswordReset(ctx context.Context, req *inpb.PasswordRes
 			if err := a.mailer.SendPasswordResetUnknown(userEmail, req.Language); err != nil {
 				return nil, status.Errorf(codes.Internal, "couldn't send recovery email: %v", err)
 			}
-			return nil, nil
+			return &inpb.PasswordResetResp{}, nil
 		}
 		return nil, status.Errorf(codes.Internal, "couldn't get user info: %v", err)
 	}
 
 	if !user.IsActive {
 		ctxlogrus.Extract(ctx).Warnf("password reset request for inactive user %s", userEmail)
-		return nil, nil
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied: inactive")
 	}
 
 	otp, err := a.store.GetOrSetPasswordResetOTP(ctx, user.ID, OTPgen())
