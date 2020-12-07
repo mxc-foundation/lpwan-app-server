@@ -91,7 +91,7 @@ func (ps *PgStore) SetExternalUsername(ctx context.Context, service, externalUse
 
 func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error {
 	res, err := ps.db.ExecContext(ctx, `
-		delete from external_login where service = $1 and user_id = $3`,
+		delete from external_login where service = $1 and user_id = $2`,
 		service, userID,
 	)
 	if err != nil {
