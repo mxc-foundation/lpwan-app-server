@@ -509,7 +509,7 @@ func (a *Server) ConfirmRegistration(ctx context.Context, req *inpb.ConfirmRegis
 	}
 
 	// issue a token that is valid only to finish the registration process
-	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email}, 86400, []string{"registration", "lora-app-server"})
+	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email, Service: auth.EMAIL}, 86400, []string{"registration", "lora-app-server"})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
