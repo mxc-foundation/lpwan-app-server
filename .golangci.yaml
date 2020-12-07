@@ -25,7 +25,7 @@ issues:
     - path: _test\.go
       linters:
         - gocyclo
-  exclude-use-default: true
+  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
 
