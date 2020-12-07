@@ -65,8 +65,8 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 			}, nil
 		}
 
-	} else if claims.Username == "" || claims.UserID == 0 {
-		return nil, fmt.Errorf("username and userID are required in claims")
+	} else if claims.Service != auth.EMAIL || claims.Username == "" || claims.UserID == 0 {
+		return nil, fmt.Errorf("username and userID are required in claims for email login")
 	}
 
 	// For non-existing user we only return username, there's no point in
