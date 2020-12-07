@@ -89,6 +89,8 @@ message User {
 
     // Optional note to store with the user.
     string note = 7;
+
+    string last_login_service = 8;
 }
 
 message UserListItem {

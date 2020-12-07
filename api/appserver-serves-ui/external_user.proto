@@ -39,13 +39,6 @@ service ExternalUserService {
         };
     }
 
-    // GetExternalUserIDFromUserID gets external user id by supernode user id
-    rpc GetExternalUserFromUserID (GetExternalUserFromUserIDRequest) returns (GetExternalUserFromUserIDResponse) {
-        option (google.api.http) = {
-            get: "/api/external-login/get-external-user-id"
-        };
-    }
-
     // UnbindExternalUser unbinds external user and supernode user account
     rpc UnbindExternalUser (UnbindExternalUserRequest) returns (UnbindExternalUserResponse) {
         option (google.api.http) = {
@@ -75,31 +68,16 @@ message BindExternalUserResponse {
 
 message RegisterExternalUserRequest {
     string email = 1;
-    string user_display_name = 2;
-    string organization_name = 3;
-    string organization_display_name = 4;
+    string organization_name = 2;
 }
 
 message RegisterExternalUserResponse {
     string jwt = 1;
 }
 
-message GetExternalUserFromUserIDRequest {
-    int64 user_id = 1;
-    string service = 2;
-    int64 organization_id = 3;
-}
-
-message GetExternalUserFromUserIDResponse {
-    string external_username = 1;
-    string external_user_id = 2;
-}
-
 message UnbindExternalUserRequest {
-    int64 user_id = 1;
-    string service = 2;
-    string external_user_id = 3;
-    int64 organization_id = 4;
+    string service = 1;
+    int64 organization_id = 2;
 }
 
 message UnbindExternalUserResponse {

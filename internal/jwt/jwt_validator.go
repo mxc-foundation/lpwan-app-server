@@ -18,8 +18,8 @@ type Claims struct {
 	UserID int64 `json:"userId"`
 	// Username defines the identity of the user.
 	Username string `json:"username"`
-	// ExternalService
-	ExternalService string `json:"service"`
+	// Service
+	Service string `json:"service"`
 	// ExternalCred defines key credentials to verify a wechat user
 	ExternalCred string `json:"externalCred"`
 }
@@ -59,7 +59,7 @@ func (v Validator) SignToken(claims Claims, ttl int64, audience []string) (strin
 	t.Set(jwt.ExpirationKey, time.Now().Add(time.Duration(ttl)*time.Second))
 	t.Set("username", claims.Username)
 	t.Set("userId", claims.UserID)
-	t.Set("service", claims.ExternalService)
+	t.Set("service", claims.Service)
 	t.Set("externalCred", claims.ExternalCred)
 
 	token, err := jwt.Sign(t, v.algorithm, v.secret)
@@ -109,7 +109,7 @@ func (v Validator) GetClaims(tokenEncoded, audience string) (*Claims, error) {
 		if !ok {
 			return nil, fmt.Errorf("serviceName is not a string")
 		}
-		claims.ExternalService = serviceNameStr
+		claims.Service = serviceNameStr
 	}
 
 	externalCred, ok := token.Get("externalCred")

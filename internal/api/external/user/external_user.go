@@ -50,8 +50,8 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 		}
 
 		claims := jwt.Claims{
-			ExternalService: auth.WECHAT,
-			ExternalCred:    string(wechatCredStr),
+			Service:      auth.WECHAT,
+			ExternalCred: string(wechatCredStr),
 		}
 
 		// not bound with any existing account, sign jwt with access_token and openid
@@ -104,7 +104,7 @@ func (a *Server) loginWithExternalUser(ctx context.Context, userID int64, servic
 	// update external username
 	_ = a.store.SetExternalUsername(ctx, service, externalUserID, externalUsername)
 	// from the moment user successfully login with external user account, set user display name to external user's nickname
-	_ = a.store.SetUserDisplayName(ctx, externalUsername, userID)
+	_ = a.store.SetUserLastLogin(ctx, userID, externalUsername, service)
 
 	return jwtNormal, nil
 }
@@ -139,7 +139,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if cred.ExternalUserService == auth.WECHAT {
+	if cred.Service == auth.WECHAT {
 		// verify user credentials: req.Email, req.Password
 		userEmail := normalizeUsername(req.Email)
 		u, err := a.store.GetUserByEmail(ctx, userEmail)
@@ -154,7 +154,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 		}
 
 		// check whether user has already bound with wechat account
-		externalUser, err := a.store.GetExternalUserByUserIDAndService(ctx, cred.ExternalUserService, u.ID)
+		externalUser, err := a.store.GetExternalUserByUserIDAndService(ctx, cred.Service, u.ID)
 		if err == nil {
 			if externalUser.ExternalUserID != cred.ExternalUserID {
 				return &pb.BindExternalUserResponse{Jwt: ""}, nil
@@ -162,7 +162,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 
 			// when this API is called, if wechat user has been verified and bound to existing user, return jwt
 			// so that caller logic can proceed
-			jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.ExternalUserService, u.Email, cred.ExternalUserID, cred.ExternalUsername)
+			jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.Service, u.Email, cred.ExternalUserID, cred.ExternalUsername)
 			if err != nil {
 				return nil, status.Errorf(codes.Internal, err.Error())
 			}
@@ -173,11 +173,11 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 		}
 
 		// Bind wechat account with supernode account
-		if err := a.store.AddExternalUserLogin(ctx, cred.ExternalUserService, u.ID, cred.ExternalUserID, cred.ExternalUsername); err != nil {
+		if err := a.store.AddExternalUserLogin(ctx, cred.Service, u.ID, cred.ExternalUserID, cred.ExternalUsername); err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
-		jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.ExternalUserService, u.Email, cred.ExternalUserID, cred.ExternalUsername)
+		jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.Service, u.Email, cred.ExternalUserID, cred.ExternalUsername)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
@@ -186,7 +186,7 @@ func (a *Server) BindExternalUser(ctx context.Context, req *pb.BindExternalUserR
 
 	}
 
-	return nil, status.Errorf(codes.Unavailable, "external service authentication not supported: %s", cred.ExternalUserService)
+	return nil, status.Errorf(codes.Unavailable, "external service authentication not supported: %s", cred.Service)
 }
 
 // RegisterExternalUser creates new supernode account then bind it with external user id
@@ -196,7 +196,7 @@ func (a *Server) RegisterExternalUser(ctx context.Context, req *pb.RegisterExter
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	if cred.ExternalUserService == auth.WECHAT {
+	if cred.Service == auth.WECHAT {
 		// create new user
 		u, err := a.store.CreateUser(ctx, User{
 			Email: req.Email,
@@ -218,17 +218,17 @@ func (a *Server) RegisterExternalUser(ctx context.Context, req *pb.RegisterExter
 			}
 		}
 
-		err = a.store.ActivateUser(ctx, u.ID, "", req.OrganizationName, req.OrganizationDisplayName)
+		err = a.store.ActivateUser(ctx, u.ID, "", req.OrganizationName, req.OrganizationName)
 		if err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
 		// bind new user with wechat account
-		if err := a.store.AddExternalUserLogin(ctx, cred.ExternalUserService, u.ID, cred.ExternalUserID, cred.ExternalUsername); err != nil {
+		if err := a.store.AddExternalUserLogin(ctx, cred.Service, u.ID, cred.ExternalUserID, cred.ExternalUsername); err != nil {
 			return nil, status.Errorf(codes.Internal, err.Error())
 		}
 
-		jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.ExternalUserService, u.Email, cred.ExternalUserID, cred.ExternalUsername)
+		jwToken, err := a.loginWithExternalUser(ctx, u.ID, cred.Service, u.Email, cred.ExternalUserID, cred.ExternalUsername)
 		if err != nil {
 			log.Errorf("SignToken returned an error: %v", err)
 			return nil, status.Errorf(codes.Internal, "couldn't create a token")
@@ -237,29 +237,7 @@ func (a *Server) RegisterExternalUser(ctx context.Context, req *pb.RegisterExter
 		return &pb.RegisterExternalUserResponse{Jwt: jwToken}, nil
 	}
 
-	return nil, status.Errorf(codes.Unavailable, "external service authentication not supported: %s", cred.ExternalUserService)
-}
-
-// GetExternalUserFromUserID gets external user id by supernode user id
-func (a *Server) GetExternalUserFromUserID(ctx context.Context, req *pb.GetExternalUserFromUserIDRequest) (*pb.GetExternalUserFromUserIDResponse, error) {
-	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
-	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed : %s", err.Error())
-	}
-
-	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
-		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
-	}
-
-	externalUser, err := a.store.GetExternalUserByUserIDAndService(ctx, req.Service, req.UserId)
-	if err != nil {
-		if err == errHandler.ErrDoesNotExist {
-			return nil, status.Errorf(codes.NotFound, "user not bind to external account of service %s", req.Service)
-		}
-		return nil, status.Errorf(codes.Internal, err.Error())
-	}
-
-	return &pb.GetExternalUserFromUserIDResponse{ExternalUsername: externalUser.ExternalUsername, ExternalUserId: externalUser.ExternalUserID}, nil
+	return nil, status.Errorf(codes.Unavailable, "external service authentication not supported: %s", cred.Service)
 }
 
 // UnbindExternalUser unbinds external user and supernode user account
@@ -273,7 +251,7 @@ func (a *Server) UnbindExternalUser(ctx context.Context, req *pb.UnbindExternalU
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	if err := a.store.DeleteExternalUserLogin(ctx, req.UserId, req.Service, req.ExternalUserId); err != nil {
+	if err := a.store.DeleteExternalUserLogin(ctx, cred.UserID, req.Service); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
 

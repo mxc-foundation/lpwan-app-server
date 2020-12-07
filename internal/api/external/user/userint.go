@@ -65,13 +65,13 @@ func (a *Server) Login(ctx context.Context, req *inpb.LoginRequest) (*inpb.Login
 		audience = []string{"login-2fa"}
 	}
 
-	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email}, ttl, audience)
+	jwToken, err := a.jwtv.SignToken(jwt.Claims{UserID: u.ID, Username: u.Email, Service: auth.EMAIL}, ttl, audience)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return nil, status.Errorf(codes.Internal, "couldn't create a token")
 	}
 
-	_ = a.store.SetUserDisplayName(ctx, u.Email, u.ID)
+	_ = a.store.SetUserLastLogin(ctx, u.ID, u.Email, auth.EMAIL)
 
 	return &inpb.LoginResponse{Jwt: jwToken, Is_2FaRequired: is2fa}, nil
 }
@@ -191,11 +191,12 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 
 	resp := inpb.ProfileResponse{
 		User: &inpb.User{
-			Id:       user.ID,
-			Username: user.DisplayName,
-			Email:    user.Email,
-			IsAdmin:  user.IsAdmin,
-			IsActive: user.IsActive,
+			Id:               user.ID,
+			Username:         user.DisplayName,
+			Email:            user.Email,
+			IsAdmin:          user.IsAdmin,
+			IsActive:         user.IsActive,
+			LastLoginService: cred.Service,
 		},
 	}
 

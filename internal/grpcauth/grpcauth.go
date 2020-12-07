@@ -45,7 +45,7 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 	}
 
 	if opts.ExternalLimited {
-		if claims.ExternalService == auth.WECHAT {
+		if claims.Service == auth.WECHAT {
 			wechatAuth := auth.WeChatAuth{}
 			if err := json.Unmarshal([]byte(claims.ExternalCred), &wechatAuth); err != nil {
 				return nil, fmt.Errorf("cannot parse external credentials to wechat service credentials")
@@ -58,14 +58,14 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 			}
 
 			return &auth.Credentials{
-				ExternalUserService: auth.WECHAT,
-				ExternalUserID:      user.UnionID,
-				ExternalUsername:    user.NickName,
+				Service:          auth.WECHAT,
+				ExternalUserID:   user.UnionID,
+				ExternalUsername: user.NickName,
 			}, nil
 		}
 
-	} else if claims.Username == "" || claims.UserID == 0 {
-		return nil, fmt.Errorf("username and userID are required in claims")
+	} else if claims.Service != auth.EMAIL || claims.Username == "" || claims.UserID == 0 {
+		return nil, fmt.Errorf("username and userID are required in claims for email login")
 	}
 
 	// For non-existing user we only return username, there's no point in
@@ -83,7 +83,7 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 		}
 	}
 
-	creds, err := auth.NewCredentials(ctx, ga.store, claims.Username, opts.OrgID)
+	creds, err := auth.NewCredentials(ctx, ga.store, claims.Username, opts.OrgID, claims.Service)
 	if err != nil {
 		return nil, fmt.Errorf("user validation has failed: %v", err)
 	}

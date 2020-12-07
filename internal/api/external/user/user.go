@@ -22,16 +22,17 @@ import (
 
 // User defines the user structure.
 type User struct {
-	ID            int64
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	Email         string
-	DisplayName   string
-	PasswordHash  string
-	IsAdmin       bool
-	IsActive      bool
-	EmailVerified bool
-	SecurityToken string
+	ID               int64
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	Email            string
+	DisplayName      string
+	PasswordHash     string
+	IsAdmin          bool
+	IsActive         bool
+	EmailVerified    bool
+	SecurityToken    string
+	LastLoginService string
 }
 
 type OrganizationUser struct {
@@ -105,6 +106,8 @@ type Store interface {
 	SetUserDisplayName(ctx context.Context, displayName string, userID int64) error
 	// DeleteUser deletes the user
 	DeleteUser(ctx context.Context, userID int64) error
+	// SetUserLastLogin updates display_name and last_login_service
+	SetUserLastLogin(ctx context.Context, userID int64, displayName, service string) error
 
 	// GetUserIDByExternalUserID gets user id from service name and external user id
 	GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error)
@@ -115,7 +118,7 @@ type Store interface {
 	// AddExternalUserLogin inserts new external id and user id relation
 	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error
 	// DeleteExternalUserLogin removes binding relation between external account and supernode account
-	DeleteExternalUserLogin(ctx context.Context, userID int64, service, externalUserID string) error
+	DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error
 	// SetExternalUsername updates external user's username
 	SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error
 
