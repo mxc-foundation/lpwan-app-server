@@ -428,6 +428,9 @@
         "note": {
           "type": "string",
           "description": "Optional note to store with the user."
+        },
+        "lastLoginService": {
+          "type": "string"
         }
       }
     },
