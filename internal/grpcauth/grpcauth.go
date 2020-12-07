@@ -39,6 +39,7 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 	if err != nil {
 		return nil, fmt.Errorf("couldn't find JWT token: %v", err)
 	}
+
 	claims, err := ga.jwtv.GetClaims(token, opts.Audience)
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %v", err)
@@ -64,8 +65,8 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 			}, nil
 		}
 
-	} else if claims.Service != auth.EMAIL || claims.Username == "" || claims.UserID == 0 {
-		return nil, fmt.Errorf("username and userID are required in claims for email login")
+	} else if claims.Username == "" || claims.UserID == 0 {
+		return nil, fmt.Errorf("username and userID are required in claims")
 	}
 
 	// For non-existing user we only return username, there's no point in
