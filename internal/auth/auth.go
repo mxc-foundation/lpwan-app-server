@@ -52,6 +52,7 @@ func (o *Options) WithExternalLimited() *Options {
 
 // ExternalServiceName defines const type: name of external services
 const (
+	EMAIL  string = "email"
 	WECHAT string = "wechat"
 	TG     string = "telegram"
 )
@@ -78,8 +79,8 @@ type Credentials struct {
 	IsGatewayAdmin bool
 	// ExternalUserID is the id of external user
 	ExternalUserID string
-	// ExternalUserService is the name of external user's service
-	ExternalUserService string
+	// Service is the name of external user's service
+	Service string
 	// ExternalUsername is the nickname of the external user
 	ExternalUsername string
 }
@@ -108,7 +109,7 @@ type Store interface {
 	AuthGetOrgUser(ctx context.Context, userID int64, orgID int64) (OrgUser, error)
 }
 
-func NewCredentials(ctx context.Context, st Store, username string, orgID int64) (*Credentials, error) {
+func NewCredentials(ctx context.Context, st Store, username string, orgID int64, service string) (*Credentials, error) {
 	user, err := st.AuthGetUser(ctx, username)
 	if err != nil {
 		return nil, err
@@ -118,6 +119,7 @@ func NewCredentials(ctx context.Context, st Store, username string, orgID int64)
 		Username:      user.Email,
 		IsGlobalAdmin: user.IsGlobalAdmin,
 		IsExisting:    true,
+		Service:       service,
 	}
 	if orgID > 0 {
 		orgUser, err := st.AuthGetOrgUser(ctx, user.ID, orgID)

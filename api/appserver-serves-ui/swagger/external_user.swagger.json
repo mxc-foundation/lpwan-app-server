@@ -110,51 +110,6 @@
         ]
       }
     },
-    "/api/external-login/get-external-user-id": {
-      "get": {
-        "summary": "GetExternalUserIDFromUserID gets external user id by supernode user id",
-        "operationId": "GetExternalUserFromUserID",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/appserver_serves_uiGetExternalUserFromUserIDResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "service",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "organizationId",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
-          }
-        ],
-        "tags": [
-          "ExternalUserService"
-        ]
-      }
-    },
     "/api/external-login/register-external-user": {
       "post": {
         "summary": "RegisterExternalUser creates new supernode account then bind it with external user id",
@@ -261,30 +216,13 @@
         }
       }
     },
-    "appserver_serves_uiGetExternalUserFromUserIDResponse": {
-      "type": "object",
-      "properties": {
-        "externalUsername": {
-          "type": "string"
-        },
-        "externalUserId": {
-          "type": "string"
-        }
-      }
-    },
     "appserver_serves_uiRegisterExternalUserRequest": {
       "type": "object",
       "properties": {
         "email": {
           "type": "string"
         },
-        "userDisplayName": {
-          "type": "string"
-        },
         "organizationName": {
-          "type": "string"
-        },
-        "organizationDisplayName": {
           "type": "string"
         }
       }
@@ -300,14 +238,7 @@
     "appserver_serves_uiUnbindExternalUserRequest": {
       "type": "object",
       "properties": {
-        "userId": {
-          "type": "string",
-          "format": "int64"
-        },
         "service": {
-          "type": "string"
-        },
-        "externalUserId": {
           "type": "string"
         },
         "organizationId": {

@@ -51,26 +51,84 @@ func (ps *PgStore) GetExternalUsersByUserID(ctx context.Context, userID int64) (
 }
 
 func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error {
-	_, err := ps.db.ExecContext(ctx, `
+	res, err := ps.db.ExecContext(ctx, `
 		insert into external_login (user_id , service, external_id, external_username) values ($1, $2, $3, $4)`,
 		userID, service, externalUserID, externalUsername,
 	)
-	return err
+	if err != nil {
+		return handlePSQLError(Insert, err, "insert error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+
+	return nil
 }
 
 func (ps *PgStore) SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error {
-	_, err := ps.db.ExecContext(ctx, `
+	res, err := ps.db.ExecContext(ctx, `
 		update external_login set external_username = $1 where service = $2 and external_id = $3`,
 		externalUsername, service, externalUserID,
 	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
 	return err
 }
 
-func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, service, externalUserID string) error {
-	_, err := ps.db.ExecContext(ctx, `
-		delete from external_login where service = $1 and external_id = $2 and user_id = $3`,
-		service, externalUserID, userID,
+func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		delete from external_login where service = $1 and user_id = $3`,
+		service, userID,
 	)
+	if err != nil {
+		return handlePSQLError(Delete, err, "delete error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+	return err
+}
+
+func (ps *PgStore) SetUserLastLogin(ctx context.Context, userID int64, displayName, service string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		UPDATE 
+			"user" 
+		SET 
+			display_name = $1, updated_at = NOW() , last_login_service = $2 
+		WHERE id = $3`,
+		displayName, service, userID,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+
 	return err
 }
 
