@@ -95,7 +95,7 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 
 func (a *Server) loginWithExternalUser(ctx context.Context, userID int64, service, email, externalUserID, externalUsername string) (string, error) {
 	// wechat user already bound with existing account, sign jwt with username and user id
-	jwtNormal, err := a.jwtv.SignToken(jwt.Claims{Username: email, UserID: userID}, 0, nil)
+	jwtNormal, err := a.jwtv.SignToken(jwt.Claims{Username: email, UserID: userID, Service: service}, 0, nil)
 	if err != nil {
 		log.Errorf("SignToken returned an error: %v", err)
 		return "", fmt.Errorf("couldn't create a token")
