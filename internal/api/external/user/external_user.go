@@ -152,7 +152,7 @@ func (a *Server) DebugAuthenticateWeChatUser(ctx context.Context, req *pb.Authen
 		"secret": a.config.DebugWeChatLogin.Secret,
 	}).Debug("DebugAuthenticateWeChatUser")
 
-	return a.authenticateWeChatUser(ctx, req.Code, a.config.WeChatLogin.AppID, a.config.WeChatLogin.Secret)
+	return a.authenticateWeChatUser(ctx, req.Code, a.config.DebugWeChatLogin.AppID, a.config.DebugWeChatLogin.Secret)
 }
 
 // BindExternalUser binds external user id to supernode user
