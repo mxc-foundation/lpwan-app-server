@@ -251,8 +251,17 @@ func (a *Server) UnbindExternalUser(ctx context.Context, req *pb.UnbindExternalU
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
+	u, err := a.store.GetUserByID(ctx, cred.UserID)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
 	if err := a.store.DeleteExternalUserLogin(ctx, cred.UserID, req.Service); err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	if u.LastLoginService == cred.Service {
+		_ = a.store.SetUserLastLogin(ctx, cred.UserID, cred.Username, auth.EMAIL)
 	}
 
 	return &pb.UnbindExternalUserResponse{}, nil
