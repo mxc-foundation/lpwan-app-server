@@ -28,6 +28,7 @@ func NewServer(cli pb.DHXServiceClient, auth auth.Authenticator, store Store) *S
 	}
 }
 
+// Store defines db APIs for dhx service
 type Store interface {
 	// GetOnlineGatewayCount returns count of gateways that meet certain requirements:
 	// 1. online (last_seen_at is not earlier than 10 mins ago)
