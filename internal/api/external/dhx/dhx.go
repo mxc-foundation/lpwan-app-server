@@ -14,16 +14,25 @@ import (
 
 // Server defines the DHX service Server API structure
 type Server struct {
+	store  Store
 	dhxCli pb.DHXServiceClient
 	auth   auth.Authenticator
 }
 
 // NewServer creates a new DHX service server
-func NewServer(cli pb.DHXServiceClient, auth auth.Authenticator) *Server {
+func NewServer(cli pb.DHXServiceClient, auth auth.Authenticator, store Store) *Server {
 	return &Server{
 		dhxCli: cli,
 		auth:   auth,
+		store:  store,
 	}
+}
+
+type Store interface {
+	// GetOnlineGatewayCount returns count of gateways that meet certain requirements:
+	// 1. online (last_seen_at is not earlier than 10 mins ago)
+	// 2. must be matchx new model (sn and modle are not empty string)
+	GetOnlineGatewayCount(ctx context.Context, orgID int64) (int, error)
 }
 
 // DHXCreateStake creates new dhx stake
@@ -58,6 +67,17 @@ func (a *Server) DHXCreateCouncil(ctx context.Context, req *api.DHXCreateCouncil
 	}
 	if !cred.IsOrgAdmin {
 		return nil, status.Errorf(codes.PermissionDenied, "permission deinied")
+	}
+
+	// check whether council has 5+ gateways
+	count, err := a.store.GetOnlineGatewayCount(ctx, req.OrganizationId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	if count < 5 {
+		return nil, status.Error(codes.FailedPrecondition,
+			"at least 5 online gateways are required to be registered for creating council chair")
 	}
 
 	res, err := a.dhxCli.DHXCreateCouncil(ctx, &pb.DHXCreateCouncilRequest{

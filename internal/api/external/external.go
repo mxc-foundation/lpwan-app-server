@@ -266,6 +266,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 	api.RegisterDHXServcieServer(grpcServer, dhx.NewServer(
 		m2mcli.GetDHXServiceClient(),
 		grpcAuth,
+		pgs,
 	))
 
 	return nil
