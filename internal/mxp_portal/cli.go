@@ -4,6 +4,11 @@ import (
 	pb "github.com/mxc-foundation/lpwan-app-server/api/m2m-serves-appserver"
 )
 
+// GetDHXServiceClient returns a new GetDHXServiceClient of mxprotocol-server
+func GetDHXServiceClient() pb.DHXServiceClient {
+	return pb.NewDHXServiceClient(ctrl.m2mconn)
+}
+
 // GetM2MDeviceServiceClient returns a new DSDeviceServiceClient of mxprotocol-server
 func GetM2MDeviceServiceClient() (pb.DSDeviceServiceClient, error) {
 	return pb.NewDSDeviceServiceClient(ctrl.m2mconn), nil
