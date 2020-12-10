@@ -52,6 +52,7 @@ func (a *Server) DHXCreateStake(ctx context.Context, req *api.DHXCreateStakeRequ
 		Currency:   req.Currency,
 		LockMonths: req.LockMonths,
 		Boost:      req.Boost,
+		OrgId:      req.OrganizationId,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Unavailable, err.Error())
@@ -93,7 +94,7 @@ func (a *Server) DHXCreateCouncil(ctx context.Context, req *api.DHXCreateCouncil
 		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
-	return &api.DHXCreateCouncilResponse{RequestId: res.RequestId, StakeId: res.StakeId}, nil
+	return &api.DHXCreateCouncilResponse{CouncilId: res.CouncilId, StakeId: res.StakeId}, nil
 }
 
 // DHXListCouncils lists all existing councils

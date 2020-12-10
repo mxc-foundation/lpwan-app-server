@@ -71,7 +71,7 @@ message DHXCreateCouncilRequest {
 
 message DHXCreateCouncilResponse {
     // id of the council create request in the table
-    int64 request_id = 1;
+    int64 council_id = 1;
     // id of the stake that was created while creating the council
     int64 stake_id = 2;
 }

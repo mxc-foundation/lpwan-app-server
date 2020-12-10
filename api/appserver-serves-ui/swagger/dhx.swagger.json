@@ -192,7 +192,7 @@
     "appserver_serves_uiDHXCreateCouncilResponse": {
       "type": "object",
       "properties": {
-        "requestId": {
+        "councilId": {
           "type": "string",
           "format": "int64",
           "title": "id of the council create request in the table"
