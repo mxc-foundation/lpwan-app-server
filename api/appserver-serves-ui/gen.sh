@@ -25,7 +25,8 @@ protoc -I. -I${GRPC_GW_PATH} --go_out=paths=source_relative,plugins=grpc:. \
   wallet.proto \
   withdraw.proto \
   settings.proto \
-  staking.proto
+  staking.proto \
+  dhx.proto
 
 # generate the JSON interface code
 protoc -I. -I${GRPC_GW_PATH} --grpc-gateway_out=paths=source_relative,logtostderr=true:. \
@@ -49,7 +50,8 @@ protoc -I. -I${GRPC_GW_PATH} --grpc-gateway_out=paths=source_relative,logtostder
   wallet.proto \
   withdraw.proto \
   settings.proto \
-  staking.proto
+  staking.proto \
+  dhx.proto
 
 # generate the swagger definitions
 protoc -I. -I${GRPC_GW_PATH} --swagger_out=json_names_for_fields=true,simple_operation_ids=true:./swagger \
@@ -73,7 +75,8 @@ protoc -I. -I${GRPC_GW_PATH} --swagger_out=json_names_for_fields=true,simple_ope
   wallet.proto \
   withdraw.proto \
   settings.proto \
-  staking.proto
+  staking.proto \
+  dhx.proto
 
 # merge the swagger code into one file
 #go run swagger/main.go swagger > ../static/swagger/api.swagger.json
