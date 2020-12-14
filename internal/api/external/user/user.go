@@ -291,37 +291,37 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 
 // Update updates the given user.
 func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empty.Empty, error) {
-	if req.User == nil {
-		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
-	}
-	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
-	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
-	}
-	if !(cred.UserID == req.User.Id) {
-		// only user themselves can do that
-		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
-	}
+	/*	if req.User == nil {
+			return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
+		}
+		cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+		if err != nil {
+			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+		}
+		if !(cred.UserID == req.User.Id) {
+			// only user themselves can do that
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+		}
 
-	user, err := a.store.GetUserByID(ctx, req.User.Id)
-	if err != nil {
-		return nil, status.Errorf(codes.Unknown, "%v", err)
-	}
+		user, err := a.store.GetUserByID(ctx, req.User.Id)
+		if err != nil {
+			return nil, status.Errorf(codes.Unknown, "%v", err)
+		}
 
-	/*	if req.User.IsActive != user.IsActive {
-		if err := a.store.SetUserActiveStatus(ctx, user.ID, req.User.IsActive); err != nil {
-			return nil, status.Errorf(codes.Internal, "couldn't set user status: %v", err)
-		}
-	}*/
-	newEmail := normalizeUsername(req.User.Email)
-	if newEmail != "" && req.User.Email != user.Email {
-		if err := validateEmail(newEmail); err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		if err := a.store.SetUserEmail(ctx, user.ID, newEmail); err != nil {
-			return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
-		}
-	}
+			if req.User.IsActive != user.IsActive {
+			if err := a.store.SetUserActiveStatus(ctx, user.ID, req.User.IsActive); err != nil {
+				return nil, status.Errorf(codes.Internal, "couldn't set user status: %v", err)
+			}
+
+		newEmail := normalizeUsername(req.User.Email)
+		if newEmail != "" && req.User.Email != user.Email {
+			if err := validateEmail(newEmail); err != nil {
+				return nil, helpers.ErrToRPCError(err)
+			}
+			if err := a.store.SetUserEmail(ctx, user.ID, newEmail); err != nil {
+				return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
+			}
+		}*/
 
 	return &empty.Empty{}, nil
 }
