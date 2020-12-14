@@ -308,11 +308,11 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empt
 		return nil, status.Errorf(codes.Unknown, "%v", err)
 	}
 
-	if req.User.IsActive != user.IsActive {
+	/*	if req.User.IsActive != user.IsActive {
 		if err := a.store.SetUserActiveStatus(ctx, user.ID, req.User.IsActive); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't set user status: %v", err)
 		}
-	}
+	}*/
 	newEmail := normalizeUsername(req.User.Email)
 	if newEmail != "" && req.User.Email != user.Email {
 		if err := validateEmail(newEmail); err != nil {
