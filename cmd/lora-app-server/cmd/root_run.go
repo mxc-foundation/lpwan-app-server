@@ -6,6 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/dhx"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/config"
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
 
@@ -38,6 +40,13 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}).Info("starting Lpwan Application Server")
 
 	if err := mgr.SetupSystemModules(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := dhx.Setup(dhx.Config{
+		SupernodeID: config.C.General.ServerAddr,
+		DHXServer:   config.C.DHXServer,
+	}); err != nil {
 		log.Fatal(err)
 	}
 
