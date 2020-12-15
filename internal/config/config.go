@@ -41,6 +41,8 @@ type Config struct {
 
 	M2MServer grpccli.ConnectionOpts `mapstructure:"m2m_server"`
 
+	DHXServer grpccli.ConnectionOpts `mapstructure:"dhx_center"`
+
 	ProvisionServer psconn.ProvisioningServerStruct `mapstructure:"provision_server"`
 
 	Recaptcha user.RecaptchaConfig `mapstructure:"recaptcha"`
