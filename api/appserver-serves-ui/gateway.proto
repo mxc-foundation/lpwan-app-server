@@ -50,6 +50,13 @@ service GatewayService {
 		};
     }
 
+    // List lists the gateways.
+    rpc ListNewGateways (ListGatewayRequest) returns (ListGatewayResponse) {
+        option (google.api.http) = {
+			get: "/api/new-gateways"
+		};
+    }
+
     // ListLocations lists the gateways locations.
     rpc ListLocations (ListGatewayLocationsRequest) returns (ListGatewayLocationsResponse) {
         option (google.api.http) = {
