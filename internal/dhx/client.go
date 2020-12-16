@@ -2,8 +2,6 @@ package dhx
 
 import (
 	"context"
-	"fmt"
-
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
@@ -39,11 +37,17 @@ func Setup(config Config) (err error) {
 		"tlsKey":      config.DHXServer.TLSKey,
 	}).Infof("register supernode id in dhx-center")
 
-	_, err = GetDHXCenterServerClient().UpdateSupernode(context.Background(),
-		&api.UpdateSupernodeRequest{DomainName: config.SupernodeID})
-	if err != nil {
-		return fmt.Errorf("failed to update supernode in dhx center: %s", err.Error())
-	}
+	go func() {
+		_, err = GetDHXCenterServerClient().UpdateSupernode(context.Background(),
+			&api.UpdateSupernodeRequest{DomainName: config.SupernodeID})
+
+		for err != nil {
+			log.Warnf("failed to update supernode in dhx center: %s", err.Error())
+
+			_, err = GetDHXCenterServerClient().UpdateSupernode(context.Background(),
+				&api.UpdateSupernodeRequest{DomainName: config.SupernodeID})
+		}
+	}()
 
 	return nil
 }
