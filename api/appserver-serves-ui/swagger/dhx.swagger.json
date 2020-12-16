@@ -1,0 +1,386 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "dhx.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/dhx-mining/create-council": {
+      "post": {
+        "summary": "Request to create a new council",
+        "operationId": "DHXCreateCouncil",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXCreateCouncilResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXCreateCouncilRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/create-stake": {
+      "post": {
+        "summary": "Request to lockdrop for DHX pre-mining",
+        "operationId": "DHXCreateStake",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXCreateStakeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXCreateStakeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/last-mining": {
+      "get": {
+        "summary": "Return info about the last paid day of DHX mining",
+        "operationId": "DHXGetLastMining",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXGetLastMiningResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/list-councils": {
+      "get": {
+        "summary": "List all existing councils",
+        "operationId": "DHXListCouncils",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXListCouncilsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
+    "/api/dhx-mining/list-stakes": {
+      "get": {
+        "summary": "List all dhx stakes for the organization",
+        "operationId": "DHXListStakes",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXListStakesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "chairOrgId",
+            "description": "if not 0 then return stakes for the council chaired by the specified\norg. Only the council chair should be able to request this.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "organizationId",
+            "description": "if not 0 then return stakes of the given organization. Only the org user\nshould be able to request this.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "appserver_serves_uiCouncil": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "chairOrgId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "appserver_serves_uiDHXCreateCouncilRequest": {
+      "type": "object",
+      "properties": {
+        "organizationId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization that will chair the council"
+        },
+        "amount": {
+          "type": "string",
+          "title": "amount that shall be staked then the council is created"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "lockMonths": {
+          "type": "string",
+          "format": "int64",
+          "title": "for how many months the stake should be locked"
+        },
+        "boost": {
+          "type": "string",
+          "title": "the boost that user expects"
+        },
+        "name": {
+          "type": "string",
+          "title": "the name of the council"
+        }
+      }
+    },
+    "appserver_serves_uiDHXCreateCouncilResponse": {
+      "type": "object",
+      "properties": {
+        "councilId": {
+          "type": "string",
+          "format": "int64",
+          "title": "id of the council create request in the table"
+        },
+        "stakeId": {
+          "type": "string",
+          "format": "int64",
+          "title": "id of the stake that was created while creating the council"
+        }
+      }
+    },
+    "appserver_serves_uiDHXCreateStakeRequest": {
+      "type": "object",
+      "properties": {
+        "councilId": {
+          "type": "string",
+          "format": "int64",
+          "title": "in which council to create the lockdrop"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "lockMonths": {
+          "type": "string",
+          "format": "int64",
+          "title": "for how many months the stake should be locked"
+        },
+        "boost": {
+          "type": "string",
+          "title": "the boost that user expects"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiDHXCreateStakeResponse": {
+      "type": "object",
+      "properties": {
+        "stakeId": {
+          "type": "string",
+          "format": "int64",
+          "title": "ID of the created stake"
+        }
+      }
+    },
+    "appserver_serves_uiDHXGetLastMiningResponse": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the last date for which mining has been paid"
+        },
+        "miningPower": {
+          "type": "string",
+          "title": "the calculated mining power of the supernode for this day"
+        },
+        "dhxAmount": {
+          "type": "string",
+          "title": "the amount of DHX that supernode has received"
+        }
+      }
+    },
+    "appserver_serves_uiDHXListCouncilsResponse": {
+      "type": "object",
+      "properties": {
+        "council": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiCouncil"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiDHXListStakesResponse": {
+      "type": "object",
+      "properties": {
+        "stake": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiDHXStake"
+          }
+        }
+      }
+    },
+    "appserver_serves_uiDHXStake": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "councilId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "councilName": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lockTill": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "boost": {
+          "type": "string"
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "dhxMined": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

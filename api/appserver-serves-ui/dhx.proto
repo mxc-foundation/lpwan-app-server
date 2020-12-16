@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+package appserver_serves_ui;
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/appserver-serves-ui;appserver_serves_ui";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service DHXServcie {
+    // Request to lockdrop for DHX pre-mining
+    rpc DHXCreateStake (DHXCreateStakeRequest) returns (DHXCreateStakeResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/create-stake"
+            body: "*"
+        };
+    }
+
+    // Request to create a new council
+    rpc DHXCreateCouncil (DHXCreateCouncilRequest) returns (DHXCreateCouncilResponse) {
+        option (google.api.http) = {
+            post: "/api/dhx-mining/create-council"
+            body: "*"
+        };
+    }
+
+    // List all existing councils
+    rpc DHXListCouncils (DHXListCouncilsRequest) returns (DHXListCouncilsResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/list-councils"
+        };
+    }
+
+    // List all dhx stakes for the organization
+    rpc DHXListStakes (DHXListStakesRequest) returns (DHXListStakesResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/list-stakes"
+        };
+    }
+
+    // Return info about the last paid day of DHX mining
+    rpc DHXGetLastMining (DHXGetLastMiningRequest) returns (DHXGetLastMiningResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/last-mining"
+        };
+    }
+}
+
+message DHXGetLastMiningRequest {
+}
+
+message DHXGetLastMiningResponse {
+    // the last date for which mining has been paid
+    google.protobuf.Timestamp date = 1;
+    // the calculated mining power of the supernode for this day
+    string mining_power = 2;
+    // the amount of DHX that supernode has received
+    string dhx_amount = 3;
+}
+
+message DHXCreateStakeRequest {
+    // in which council to create the lockdrop
+    int64 council_id = 1;
+    string amount = 2;
+    string currency = 3;
+    // for how many months the stake should be locked
+    int64 lock_months = 4;
+    // the boost that user expects
+    string boost = 5;
+    int64 organization_id = 6;
+}
+
+message DHXCreateStakeResponse {
+    // ID of the created stake
+    int64 stake_id = 1;
+}
+
+message DHXCreateCouncilRequest {
+    // organization that will chair the council
+    int64 organization_id = 1;
+    // amount that shall be staked then the council is created
+    string amount = 2;
+    string currency = 3;
+    // for how many months the stake should be locked
+    int64 lock_months = 4;
+    // the boost that user expects
+    string boost = 5;
+    // the name of the council
+    string name = 6;
+}
+
+message DHXCreateCouncilResponse {
+    // id of the council create request in the table
+    int64 council_id = 1;
+    // id of the stake that was created while creating the council
+    int64 stake_id = 2;
+}
+
+message DHXListCouncilsRequest {
+}
+
+message Council {
+    int64 id = 1;
+    int64 chair_org_id = 2;
+    string name = 3;
+}
+
+message DHXListCouncilsResponse {
+    repeated Council council = 1;
+}
+
+// chair_org_id or organization_id must be set. Only supernode admin should be able to
+// request with both set to 0
+message DHXListStakesRequest {
+    // if not 0 then return stakes for the council chaired by the specified
+    // org. Only the council chair should be able to request this
+    int64 chair_org_id = 1;
+    // if not 0 then return stakes of the given organization. Only the org user
+    // should be able to request this
+    int64 organization_id = 2;
+}
+
+message DHXStake {
+    int64 id = 1;
+    int64 organization_id = 2;
+    string amount = 3;
+    string currency = 4;
+    int64 council_id = 5;
+    string council_name = 6;
+    google.protobuf.Timestamp created = 7;
+    google.protobuf.Timestamp lock_till = 8;
+    string boost = 9;
+    bool closed = 10;
+    string dhx_mined = 11;
+}
+
+message DHXListStakesResponse {
+    repeated DHXStake stake = 1;
+}

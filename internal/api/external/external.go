@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/dhx"
+
 	pscli "github.com/mxc-foundation/lpwan-app-server/internal/clients/psconn"
 
 	"golang.org/x/net/context"
@@ -261,6 +263,12 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 		grpcAuth,
 	))
 
+	api.RegisterDHXServcieServer(grpcServer, dhx.NewServer(
+		m2mcli.GetDHXServiceClient(),
+		grpcAuth,
+		pgs,
+	))
+
 	return nil
 }
 
@@ -395,6 +403,9 @@ func getJSONGateway(ctx context.Context) (http.Handler, error) {
 	}
 	if err := api.RegisterNetworkServerServiceHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
 		return nil, errors.Wrap(err, "register network-server handler error")
+	}
+	if err := api.RegisterDHXServcieHandlerFromEndpoint(ctx, mux, apiEndpoint, grpcDialOpts); err != nil {
+		return nil, errors.Wrap(err, "register dhx service hander error")
 	}
 
 	return mux, nil

@@ -548,7 +548,33 @@ func (ps *PgStore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate 
 	return gw, nil
 }
 
-// GetGatewayCount returns the total number of new gateways.
+// GetOnlineGatewayCount returns count of gateways that meet certain requirements:
+// 1. online (last_seen_at is not earlier than 10 mins ago)
+// 2. must be matchx new model (sn and modle are not empty string)
+func (ps *PgStore) GetOnlineGatewayCount(ctx context.Context, orgID int64) (int, error) {
+	var count int
+	err := sqlx.GetContext(ctx, ps.db, &count, `
+		select 
+		       count(*) 
+		from 
+		     gateway 
+		where 
+		      organization_id = $1 
+		  and 
+		      model != ''
+		  and 
+		      sn != ''
+		  and 
+		      last_seen_at > current_timestamp - interval '10 minutes' 
+		  `, orgID)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+
+	return count, nil
+}
+
+// GetGatewayCount returns the total number of gateways.
 func (ps *PgStore) GetGatewayCount(ctx context.Context, filters GatewayFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"
