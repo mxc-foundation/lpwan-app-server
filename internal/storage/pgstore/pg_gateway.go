@@ -548,7 +548,7 @@ func (ps *PgStore) GetGateway(ctx context.Context, mac lorawan.EUI64, forUpdate 
 	return gw, nil
 }
 
-// GetGatewayCount returns the total number of gateways.
+// GetGatewayCount returns the total number of new gateways.
 func (ps *PgStore) GetGatewayCount(ctx context.Context, filters GatewayFilters) (int, error) {
 	if filters.Search != "" {
 		filters.Search = "%" + filters.Search + "%"

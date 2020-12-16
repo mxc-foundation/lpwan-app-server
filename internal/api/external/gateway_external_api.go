@@ -683,11 +683,12 @@ func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*ap
 	// to make sure the pagination of listing gateways work properly, need to take stc settings into consideration
 	//   when calling GetGatewayCount and GetGateways
 	filters := GatewayFilters{
-		Search:         req.Search,
-		Limit:          int(req.Limit),
-		Offset:         int(req.Offset),
-		OrganizationID: req.OrganizationId,
-		EnabledSTC:     a.config.EnableSTC,
+		Search:          req.Search,
+		Limit:           int(req.Limit),
+		Offset:          int(req.Offset),
+		OrganizationID:  req.OrganizationId,
+		EnabledSTC:      a.config.EnableSTC,
+		NewGatewayModel: true,
 	}
 
 	// Filter on username when OrganizationID is not set and the user is
