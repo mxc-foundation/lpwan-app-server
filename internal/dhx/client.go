@@ -2,6 +2,7 @@ package dhx
 
 import (
 	"context"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -44,6 +45,7 @@ func Setup(config Config) (err error) {
 
 		for err != nil {
 			log.Warnf("failed to update supernode in dhx center: %s", err.Error())
+			time.Sleep(10 * time.Second)
 
 			_, err = GetDHXCenterServerClient().UpdateSupernode(context.Background(),
 				&api.UpdateSupernodeRequest{DomainName: config.SupernodeID})
