@@ -182,3 +182,22 @@ func (a *Server) DHXListStakes(ctx context.Context, req *api.DHXListStakesReques
 
 	return &api.DHXListStakesResponse{Stake: response}, nil
 }
+
+// DHXGetLastMining returns info about the last paid day of DHX mining
+func (a *Server) DHXGetLastMining(ctx context.Context, req *api.DHXGetLastMiningRequest) (*api.DHXGetLastMiningResponse, error) {
+	_, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
+
+	res, err := a.dhxCli.DHXGetLastMining(ctx, &pb.DHXGetLastMiningRequest{})
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	return &api.DHXGetLastMiningResponse{
+		Date:        res.Date,
+		MiningPower: res.MiningPower,
+		DhxAmount:   res.DhxAmount,
+	}, nil
+}

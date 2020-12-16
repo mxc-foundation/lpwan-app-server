@@ -77,6 +77,29 @@
         ]
       }
     },
+    "/api/dhx-mining/last-mining": {
+      "get": {
+        "summary": "Return info about the last paid day of DHX mining",
+        "operationId": "DHXGetLastMining",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiDHXGetLastMiningResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DHXServcie"
+        ]
+      }
+    },
     "/api/dhx-mining/list-councils": {
       "get": {
         "summary": "List all existing councils",
@@ -240,6 +263,24 @@
           "type": "string",
           "format": "int64",
           "title": "ID of the created stake"
+        }
+      }
+    },
+    "appserver_serves_uiDHXGetLastMiningResponse": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the last date for which mining has been paid"
+        },
+        "miningPower": {
+          "type": "string",
+          "title": "the calculated mining power of the supernode for this day"
+        },
+        "dhxAmount": {
+          "type": "string",
+          "title": "the amount of DHX that supernode has received"
         }
       }
     },

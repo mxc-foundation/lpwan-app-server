@@ -36,6 +36,25 @@ service DHXServcie {
             get: "/api/dhx-mining/list-stakes"
         };
     }
+
+    // Return info about the last paid day of DHX mining
+    rpc DHXGetLastMining (DHXGetLastMiningRequest) returns (DHXGetLastMiningResponse) {
+        option (google.api.http) = {
+            get: "/api/dhx-mining/last-mining"
+        };
+    }
+}
+
+message DHXGetLastMiningRequest {
+}
+
+message DHXGetLastMiningResponse {
+    // the last date for which mining has been paid
+    google.protobuf.Timestamp date = 1;
+    // the calculated mining power of the supernode for this day
+    string mining_power = 2;
+    // the amount of DHX that supernode has received
+    string dhx_amount = 3;
 }
 
 message DHXCreateStakeRequest {
