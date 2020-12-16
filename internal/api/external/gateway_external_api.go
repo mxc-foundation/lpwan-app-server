@@ -765,34 +765,25 @@ func (a *GatewayAPI) ListLocations(ctx context.Context, req *api.ListGatewayLoca
 
 	redisConn := redis.RedisClient()
 
-	resultJSON, err := redisConn.Get(gatewayLocationsRedisKey).Bytes()
-	if err == nil {
-		if err := json.Unmarshal(resultJSON, &result); err != nil {
-			return nil, status.Error(codes.Internal, "Unable to unmarshal json result")
-		}
+	gwsLoc, err := a.st.GetGatewaysLoc(ctx, viper.GetInt("application_server.gateways_locations_limit"))
+	if err != nil {
+		return nil, helpers.ErrToRPCError(err)
 	}
 
-	if len(result) == 0 {
-		gwsLoc, err := a.st.GetGatewaysLoc(ctx, viper.GetInt("application_server.gateways_locations_limit"))
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
+	for _, loc := range gwsLoc {
+		result = append(result, &api.GatewayLocationListItem{
+			Location: &api.GatewayLocation{
+				Latitude:  loc.Latitude,
+				Longitude: loc.Longitude,
+				Altitude:  loc.Altitude,
+			},
+		})
+	}
 
-		for _, loc := range gwsLoc {
-			result = append(result, &api.GatewayLocationListItem{
-				Location: &api.GatewayLocation{
-					Latitude:  loc.Latitude,
-					Longitude: loc.Longitude,
-					Altitude:  loc.Altitude,
-				},
-			})
-		}
-
-		bytes, err := json.Marshal(&result)
-		if err == nil {
-			if err := redisConn.Set(gatewayLocationsRedisKey, bytes, redis.MicLookupExpire).Err(); err != nil {
-				log.WithError(err).Warn("Set gateway location to redis error")
-			}
+	bytes, err := json.Marshal(&result)
+	if err == nil {
+		if err := redisConn.Set(gatewayLocationsRedisKey, bytes, redis.MicLookupExpire).Err(); err != nil {
+			log.WithError(err).Warn("Set gateway location to redis error")
 		}
 	}
 
