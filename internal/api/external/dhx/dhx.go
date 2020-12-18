@@ -44,7 +44,7 @@ func (a *Server) DHXCreateStake(ctx context.Context, req *api.DHXCreateStakeRequ
 	}
 	logrus.Infof("creating stake orgId %d, councilId %d, amount %s", req.OrganizationId, req.CouncilId, req.Amount)
 	if !cred.IsOrgAdmin {
-		return nil, status.Errorf(codes.PermissionDenied, "permission deinied")
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	res, err := a.dhxCli.DHXCreateStake(ctx, &pb.DHXCreateStakeRequest{
@@ -69,7 +69,7 @@ func (a *Server) DHXCreateCouncil(ctx context.Context, req *api.DHXCreateCouncil
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 	if !cred.IsOrgAdmin {
-		return nil, status.Errorf(codes.PermissionDenied, "permission deinied")
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	// check whether council has 5+ gateways
@@ -132,7 +132,7 @@ func (a *Server) DHXListStakes(ctx context.Context, req *api.DHXListStakesReques
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 		if !cred.IsOrgUser && !cred.IsGlobalAdmin {
-			return nil, status.Errorf(codes.PermissionDenied, "permission deinied")
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 		}
 
 	} else if req.ChairOrgId != 0 {
@@ -141,7 +141,7 @@ func (a *Server) DHXListStakes(ctx context.Context, req *api.DHXListStakesReques
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 		if !cred.IsOrgUser && !cred.IsGlobalAdmin {
-			return nil, status.Errorf(codes.PermissionDenied, "permission deinied")
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 		}
 	} else {
 		// both req.OrganizationId and req.ChairOrgId are 0, only global admin is allowed to make the request
@@ -150,7 +150,7 @@ func (a *Server) DHXListStakes(ctx context.Context, req *api.DHXListStakesReques
 			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 		}
 		if !cred.IsGlobalAdmin {
-			return nil, status.Errorf(codes.PermissionDenied, "permission deinied")
+			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 		}
 	}
 
