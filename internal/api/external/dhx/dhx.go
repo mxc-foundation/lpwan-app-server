@@ -3,7 +3,6 @@ package dhx
 import (
 	"context"
 
-	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -42,7 +41,6 @@ func (a *Server) DHXCreateStake(ctx context.Context, req *api.DHXCreateStakeRequ
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
-	logrus.Infof("creating stake orgId %d, councilId %d, amount %s", req.OrganizationId, req.CouncilId, req.Amount)
 	if !cred.IsOrgAdmin {
 		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
