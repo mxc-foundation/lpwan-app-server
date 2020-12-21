@@ -62,7 +62,8 @@ func (s *WalletServerAPI) GetWalletBalance(ctx context.Context, req *api.GetWall
 	}
 
 	resp, err := walletClient.GetWalletBalance(ctx, &pb.GetWalletBalanceRequest{
-		OrgId: req.OrgId,
+		OrgId:    req.OrgId,
+		Currency: req.Currency,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
@@ -152,7 +153,10 @@ func (s *WalletServerAPI) GetWalletMiningIncome(ctx context.Context, req *api.Ge
 	}
 
 	resp, err := walletClient.GetWalletMiningIncome(ctx, &pb.GetWalletMiningIncomeRequest{
-		OrgId: req.OrgId,
+		OrgId:    req.OrgId,
+		From:     req.From,
+		Till:     req.Till,
+		Currency: req.Currency,
 	})
 	if err != nil {
 		log.WithError(err).Error(logInfo)
