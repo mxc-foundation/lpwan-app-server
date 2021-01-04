@@ -149,10 +149,11 @@ type GatewaysActiveInactive struct {
 
 // GatewayFilters provides filters for filtering gateways.
 type GatewayFilters struct {
-	OrganizationID int64  `db:"organization_id"`
-	UserID         int64  `db:"user_id"`
-	Search         string `db:"search"`
-	EnabledSTC     bool
+	OrganizationID  int64  `db:"organization_id"`
+	UserID          int64  `db:"user_id"`
+	Search          string `db:"search"`
+	EnabledSTC      bool
+	NewGatewayModel bool
 
 	// Limit and Offset are added for convenience so that this struct can
 	// be given as the arguments.
@@ -174,6 +175,11 @@ func (f GatewayFilters) SQL() string {
 
 	if f.Search != "" {
 		filters = append(filters, "(g.name ilike :search or encode(g.mac, 'hex') ilike :search)")
+	}
+
+	if f.NewGatewayModel {
+		filters = append(filters, "g.sn != ''")
+		filters = append(filters, "g.model != ''")
 	}
 
 	if len(filters) == 0 {

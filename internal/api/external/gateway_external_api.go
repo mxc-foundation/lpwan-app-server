@@ -669,6 +669,67 @@ func (a *GatewayAPI) Get(ctx context.Context, req *api.GetGatewayRequest) (*api.
 	return &resp, err
 }
 
+func (a *GatewayAPI) listGateways(ctx context.Context, filters GatewayFilters) (int64, []*api.GatewayListItem, error) {
+	var gwList []*api.GatewayListItem
+	count, err := a.st.GetGatewayCount(ctx, filters)
+
+	if err != nil {
+		return 0, nil, helpers.ErrToRPCError(err)
+	}
+
+	gws, err := a.st.GetGateways(ctx, filters)
+	if err != nil {
+		return 0, nil, helpers.ErrToRPCError(err)
+	}
+
+	for _, gw := range gws {
+		row := api.GatewayListItem{
+			Id:              gw.MAC.String(),
+			Name:            gw.Name,
+			Description:     gw.Description,
+			OrganizationId:  gw.OrganizationID,
+			NetworkServerId: gw.NetworkServerID,
+			Location: &common.Location{
+				Latitude:  gw.Latitude,
+				Longitude: gw.Longitude,
+				Altitude:  gw.Altitude,
+			},
+		}
+
+		// add prefix 'stc_' to gateway name if gateway's stc_org_id equals to req.OrganizationID
+		// if stc is not enabled, gw.STCOrgID should either be nil or *gw.STCOrgID does not equal to req.OrganizationID
+		if gw.STCOrgID != nil && *gw.STCOrgID == filters.OrganizationID {
+			row.Name = "STC_" + row.Name
+		}
+
+		row.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
+		if err != nil {
+			return 0, nil, helpers.ErrToRPCError(err)
+		}
+		row.UpdatedAt, err = ptypes.TimestampProto(gw.UpdatedAt)
+		if err != nil {
+			return 0, nil, helpers.ErrToRPCError(err)
+		}
+
+		if gw.FirstSeenAt != nil {
+			row.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
+			if err != nil {
+				return 0, nil, helpers.ErrToRPCError(err)
+			}
+		}
+		if gw.LastSeenAt != nil {
+			row.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
+			if err != nil {
+				return 0, nil, helpers.ErrToRPCError(err)
+			}
+		}
+
+		gwList = append(gwList, &row)
+	}
+
+	return int64(count), gwList, nil
+}
+
 // List lists the gateways.
 func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*api.ListGatewayResponse, error) {
 	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
@@ -696,63 +757,47 @@ func (a *GatewayAPI) List(ctx context.Context, req *api.ListGatewayRequest) (*ap
 		filters.UserID = cred.UserID
 	}
 
-	count, err := a.st.GetGatewayCount(ctx, filters)
+	resp := api.ListGatewayResponse{}
+	resp.TotalCount, resp.Result, err = a.listGateways(ctx, filters)
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, err
 	}
 
-	gws, err := a.st.GetGateways(ctx, filters)
+	return &resp, nil
+}
+
+// ListNewGateways lists only new model gateways.
+func (a *GatewayAPI) ListNewGateways(ctx context.Context, req *api.ListGatewayRequest) (*api.ListGatewayResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
 	if err != nil {
-		return nil, helpers.ErrToRPCError(err)
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
 	}
 
-	resp := api.ListGatewayResponse{
-		TotalCount: int64(count),
+	if !cred.IsGlobalAdmin && !cred.IsOrgUser {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
-	for _, gw := range gws {
-		row := api.GatewayListItem{
-			Id:              gw.MAC.String(),
-			Name:            gw.Name,
-			Description:     gw.Description,
-			OrganizationId:  gw.OrganizationID,
-			NetworkServerId: gw.NetworkServerID,
-			Location: &common.Location{
-				Latitude:  gw.Latitude,
-				Longitude: gw.Longitude,
-				Altitude:  gw.Altitude,
-			},
-		}
+	// to make sure the pagination of listing gateways work properly, need to take stc settings into consideration
+	//   when calling GetGatewayCount and GetGateways
+	filters := GatewayFilters{
+		Search:          req.Search,
+		Limit:           int(req.Limit),
+		Offset:          int(req.Offset),
+		OrganizationID:  req.OrganizationId,
+		EnabledSTC:      a.config.EnableSTC,
+		NewGatewayModel: true,
+	}
 
-		// add prefix 'stc_' to gateway name if gateway's stc_org_id equals to req.OrganizationID
-		// if stc is not enabled, gw.STCOrgID should either be nil or *gw.STCOrgID does not equal to req.OrganizationID
-		if gw.STCOrgID != nil && *gw.STCOrgID == req.OrganizationId {
-			row.Name = "STC_" + row.Name
-		}
+	// Filter on username when OrganizationID is not set and the user is
+	// not a global admin.
+	if !cred.IsGlobalAdmin && filters.OrganizationID == 0 {
+		filters.UserID = cred.UserID
+	}
 
-		row.CreatedAt, err = ptypes.TimestampProto(gw.CreatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-		row.UpdatedAt, err = ptypes.TimestampProto(gw.UpdatedAt)
-		if err != nil {
-			return nil, helpers.ErrToRPCError(err)
-		}
-
-		if gw.FirstSeenAt != nil {
-			row.FirstSeenAt, err = ptypes.TimestampProto(*gw.FirstSeenAt)
-			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
-		}
-		if gw.LastSeenAt != nil {
-			row.LastSeenAt, err = ptypes.TimestampProto(*gw.LastSeenAt)
-			if err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
-		}
-
-		resp.Result = append(resp.Result, &row)
+	resp := api.ListGatewayResponse{}
+	resp.TotalCount, resp.Result, err = a.listGateways(ctx, filters)
+	if err != nil {
+		return nil, err
 	}
 
 	return &resp, nil

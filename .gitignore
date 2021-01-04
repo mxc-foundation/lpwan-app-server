@@ -35,6 +35,7 @@ api/appserver-serves-ui/geo/
 api/appserver-serves-ui/gw/
 api/appserver-serves-ui/nc/
 api/appserver-serves-ui/ns/
+api/appserver-serves-ui/fuota/
 
 # certificates
 /certs
