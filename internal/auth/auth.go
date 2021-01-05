@@ -45,6 +45,7 @@ func (o *Options) WithOrgID(orgID int64) *Options {
 	return o
 }
 
+// WithExternalLimited restricts checking external credentials only
 func (o *Options) WithExternalLimited() *Options {
 	o.ExternalLimited = true
 	return o
@@ -109,6 +110,7 @@ type Store interface {
 	AuthGetOrgUser(ctx context.Context, userID int64, orgID int64) (OrgUser, error)
 }
 
+// NewCredentials returns credential set of an user
 func NewCredentials(ctx context.Context, st Store, username string, orgID int64, service string) (*Credentials, error) {
 	user, err := st.AuthGetUser(ctx, username)
 	if err != nil {

@@ -49,18 +49,18 @@ func (v Validator) SignToken(claims Claims, ttl int64, audience []string) (strin
 	if ttl == 0 {
 		ttl = v.defaultTTL
 	}
-	t.Set(jwt.IssuerKey, "lora-app-server")
+	_ = t.Set(jwt.IssuerKey, "lora-app-server")
 	if len(audience) == 0 {
-		t.Set(jwt.AudienceKey, "lora-app-server")
+		_ = t.Set(jwt.AudienceKey, "lora-app-server")
 	} else {
-		t.Set(jwt.AudienceKey, audience)
+		_ = t.Set(jwt.AudienceKey, audience)
 	}
-	t.Set(jwt.IssuedAtKey, time.Now())
-	t.Set(jwt.ExpirationKey, time.Now().Add(time.Duration(ttl)*time.Second))
-	t.Set("username", claims.Username)
-	t.Set("userId", claims.UserID)
-	t.Set("service", claims.Service)
-	t.Set("externalCred", claims.ExternalCred)
+	_ = t.Set(jwt.IssuedAtKey, time.Now())
+	_ = t.Set(jwt.ExpirationKey, time.Now().Add(time.Duration(ttl)*time.Second))
+	_ = t.Set("username", claims.Username)
+	_ = t.Set("userId", claims.UserID)
+	_ = t.Set("service", claims.Service)
+	_ = t.Set("externalCred", claims.ExternalCred)
 
 	token, err := jwt.Sign(t, v.algorithm, v.secret)
 	if err != nil {

@@ -138,6 +138,7 @@ type Mailer interface {
 	SendPasswordReset(email, lang, otp string) error
 }
 
+// ExternalAuthentication defines configuration for external_auth section
 type ExternalAuthentication struct {
 	WechatAuth      auth.WeChatAuthentication `mapstructure:"wechat_auth"`
 	DebugWechatAuth auth.WeChatAuthentication `mapstructure:"debug_wechat_auth"`

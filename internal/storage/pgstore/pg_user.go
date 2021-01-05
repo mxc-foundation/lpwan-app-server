@@ -13,6 +13,7 @@ import (
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
 
+// GetUserIDByExternalUserID gets userID with given external userID and external service
 func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error) {
 	var userID int64
 	err := sqlx.GetContext(ctx, ps.db, &userID, `
@@ -26,6 +27,7 @@ func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string
 	return userID, nil
 }
 
+// GetExternalUserByUserIDAndService gets external user with given userID and external service
 func (ps *PgStore) GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (user.ExternalUser, error) {
 	var externalUser user.ExternalUser
 	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
@@ -39,6 +41,7 @@ func (ps *PgStore) GetExternalUserByUserIDAndService(ctx context.Context, servic
 	return externalUser, nil
 }
 
+// GetExternalUsersByUserID gets external user list with given userID
 func (ps *PgStore) GetExternalUsersByUserID(ctx context.Context, userID int64) ([]user.ExternalUser, error) {
 	var externalUsers []user.ExternalUser
 	err := sqlx.SelectContext(ctx, ps.db, &externalUsers, `
@@ -50,6 +53,7 @@ func (ps *PgStore) GetExternalUsersByUserID(ctx context.Context, userID int64) (
 	return externalUsers, nil
 }
 
+// AddExternalUserLogin adds new external user binding relation
 func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error {
 	res, err := ps.db.ExecContext(ctx, `
 		insert into external_login (user_id , service, external_id, external_username) values ($1, $2, $3, $4)`,
@@ -70,6 +74,7 @@ func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, use
 	return nil
 }
 
+// SetExternalUsername updates external user username
 func (ps *PgStore) SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error {
 	res, err := ps.db.ExecContext(ctx, `
 		update external_login set external_username = $1 where service = $2 and external_id = $3`,
@@ -89,6 +94,7 @@ func (ps *PgStore) SetExternalUsername(ctx context.Context, service, externalUse
 	return err
 }
 
+// DeleteExternalUserLogin delete external user binding relation
 func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error {
 	res, err := ps.db.ExecContext(ctx, `
 		delete from external_login where service = $1 and user_id = $2`,
@@ -108,6 +114,7 @@ func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, se
 	return err
 }
 
+// SetUserLastLogin updates user display name and last login service type
 func (ps *PgStore) SetUserLastLogin(ctx context.Context, userID int64, displayName, service string) error {
 	res, err := ps.db.ExecContext(ctx, `
 		UPDATE 

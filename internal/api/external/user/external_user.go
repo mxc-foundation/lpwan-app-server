@@ -16,6 +16,7 @@ import (
 	"github.com/mxc-foundation/lpwan-app-server/internal/jwt"
 )
 
+// ExternalUser represents struct of table external_login
 type ExternalUser struct {
 	UserID           int64  `db:"user_id"`
 	ServiceName      string `db:"service"`

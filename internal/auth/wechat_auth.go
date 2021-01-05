@@ -25,11 +25,13 @@ type GetAccessTokenResponse struct {
 	UnionID      string `json:"unionid"`
 }
 
+// WeChatAuth defines necessary variables for authenticating a wechat user
 type WeChatAuth struct {
 	AccessToken string `json:"access_token"`
 	OpenID      string `json:"openid"`
 }
 
+// GetWeChatUserInfoResponse represents struct of get wechat user info response
 type GetWeChatUserInfoResponse struct {
 	OpenID     string `json:"openid"`
 	HeadImgURL string `json:"headimgurl"`
@@ -37,6 +39,7 @@ type GetWeChatUserInfoResponse struct {
 	NickName   string `json:"nickname"`
 }
 
+// GetHTTPResponse send http request with given url then decode response and fill the fields of given dest
 func GetHTTPResponse(url string, dest interface{}, disallowUnknowFields bool) error {
 	log.WithFields(log.Fields{
 		"url":                  url,
@@ -67,6 +70,7 @@ func GetHTTPResponse(url string, dest interface{}, disallowUnknowFields bool) er
 	return nil
 }
 
+// GetAccessTokenFromCode sends http request and return response for getting access token with appid, secret and code
 func GetAccessTokenFromCode(ctx context.Context, code, appID, secret string, response *GetAccessTokenResponse) error {
 	if code == "" || appID == "" || secret == "" {
 		return fmt.Errorf("cannot get access_token: invalid argument")
@@ -85,6 +89,7 @@ func GetAccessTokenFromCode(ctx context.Context, code, appID, secret string, res
 	return nil
 }
 
+// GetWeChatUserInfoFromAccessToken sends http request and return response of getting wechat user info with access token and openid
 func GetWeChatUserInfoFromAccessToken(ctx context.Context, accessToken, openID string, response *GetWeChatUserInfoResponse) error {
 	// get user info
 	if accessToken == "" || openID == "" {
