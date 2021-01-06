@@ -54,7 +54,7 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 
 			// verify access_token with openid
 			user := auth.GetWeChatUserInfoResponse{}
-			if err := auth.GetWeChatUserInfoFromAccessToken(ctx, auth.UrlStrGetWeChatUserInfoFromAccessToken, wechatAuth.AccessToken, wechatAuth.OpenID, &user); err != nil {
+			if err := auth.GetWeChatUserInfoFromAccessToken(ctx, auth.URLStrGetWeChatUserInfoFromAccessToken, wechatAuth.AccessToken, wechatAuth.OpenID, &user); err != nil {
 				return nil, fmt.Errorf("cannot verify access_token: %s", err.Error())
 			}
 

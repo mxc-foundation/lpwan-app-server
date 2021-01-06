@@ -71,10 +71,12 @@ func GetHTTPResponse(url string, dest interface{}, disallowUnknowFields bool) er
 }
 
 const (
-	// UrlStrGetAccessTokenFromCode defines https request url provided by wechat for getting access token
-	UrlStrGetAccessTokenFromCode = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code"
-	// UrlStrGetWeChatUserInfoFromAccessToken defines https request url provided by wechat for getting user info
-	UrlStrGetWeChatUserInfoFromAccessToken = "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s"
+	// URLStrGetAccessTokenFromCode defines https request url provided by wechat for getting access token
+	// #nosec
+	URLStrGetAccessTokenFromCode = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code"
+	// URLStrGetWeChatUserInfoFromAccessToken defines https request url provided by wechat for getting user info
+	// #nosec
+	URLStrGetWeChatUserInfoFromAccessToken = "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s"
 )
 
 // GetAccessTokenFromCode sends http request and return response for getting access token with appid, secret and code

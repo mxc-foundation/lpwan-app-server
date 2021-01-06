@@ -28,11 +28,11 @@ func (a *Server) authenticateWeChatUser(ctx context.Context, code, appID, secret
 	body := auth.GetAccessTokenResponse{}
 	user := auth.GetWeChatUserInfoResponse{}
 
-	if err := auth.GetAccessTokenFromCode(ctx, auth.UrlStrGetAccessTokenFromCode, code, appID, secret, &body); err != nil {
+	if err := auth.GetAccessTokenFromCode(ctx, auth.URLStrGetAccessTokenFromCode, code, appID, secret, &body); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
-	if err := auth.GetWeChatUserInfoFromAccessToken(ctx, auth.UrlStrGetWeChatUserInfoFromAccessToken, body.AccessToken, body.OpenID, &user); err != nil {
+	if err := auth.GetWeChatUserInfoFromAccessToken(ctx, auth.URLStrGetWeChatUserInfoFromAccessToken, body.AccessToken, body.OpenID, &user); err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
 
