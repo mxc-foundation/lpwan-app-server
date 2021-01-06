@@ -162,12 +162,13 @@ func TestOptions(t *testing.T) {
 	if *defaults != expDefaults {
 		t.Errorf("expected defaults: %v, got %v", expDefaults, *defaults)
 	}
-	opts := defaults.WithAudience("test").WithAllowNonExisting().WithRequireOTP().WithOrgID(19)
+	opts := defaults.WithAudience("test").WithAllowNonExisting().WithRequireOTP().WithOrgID(19).WithExternalLimited()
 	expOpts := Options{
 		Audience:         "test",
 		RequireOTP:       true,
 		AllowNonExisting: true,
 		OrgID:            19,
+		ExternalLimited:  true,
 	}
 	if *opts != expOpts {
 		t.Errorf("expected opts: %v, got %v", expOpts, *opts)

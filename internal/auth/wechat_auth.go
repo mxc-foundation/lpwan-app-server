@@ -70,15 +70,21 @@ func GetHTTPResponse(url string, dest interface{}, disallowUnknowFields bool) er
 	return nil
 }
 
+const (
+	// UrlStrGetAccessTokenFromCode defines https request url provided by wechat for getting access token
+	UrlStrGetAccessTokenFromCode = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code"
+	// UrlStrGetWeChatUserInfoFromAccessToken defines https request url provided by wechat for getting user info
+	UrlStrGetWeChatUserInfoFromAccessToken = "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s"
+)
+
 // GetAccessTokenFromCode sends http request and return response for getting access token with appid, secret and code
-func GetAccessTokenFromCode(ctx context.Context, code, appID, secret string, response *GetAccessTokenResponse) error {
+func GetAccessTokenFromCode(ctx context.Context, urlStr, code, appID, secret string, response *GetAccessTokenResponse) error {
 	if code == "" || appID == "" || secret == "" {
 		return fmt.Errorf("cannot get access_token: invalid argument")
 	}
 
 	// get access_token
-	url := fmt.Sprintf("https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code",
-		appID, secret, code)
+	url := fmt.Sprintf(urlStr, appID, secret, code)
 	if err := GetHTTPResponse(url, response, true); err != nil {
 		return err
 	}
@@ -90,14 +96,13 @@ func GetAccessTokenFromCode(ctx context.Context, code, appID, secret string, res
 }
 
 // GetWeChatUserInfoFromAccessToken sends http request and return response of getting wechat user info with access token and openid
-func GetWeChatUserInfoFromAccessToken(ctx context.Context, accessToken, openID string, response *GetWeChatUserInfoResponse) error {
+func GetWeChatUserInfoFromAccessToken(ctx context.Context, urlStr, accessToken, openID string, response *GetWeChatUserInfoResponse) error {
 	// get user info
 	if accessToken == "" || openID == "" {
 		return fmt.Errorf("cannot get wechat user info: invalid argument")
 	}
 
-	url := fmt.Sprintf("https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s",
-		accessToken, openID)
+	url := fmt.Sprintf(urlStr, accessToken, openID)
 	if err := GetHTTPResponse(url, response, false); err != nil {
 		return err
 	}
