@@ -429,6 +429,14 @@ func (ps *PgStore) GetOrganizationCount(ctx context.Context, filters Organizatio
 	return count, nil
 }
 
+// GetOrganizationName returns the name of the organization with the given ID
+func (ps *PgStore) GetOrganizationName(ctx context.Context, orgID int64) (string, error) {
+	query := `SELECT name FROM organization WHERE id = $1`
+	var name string
+	err := ps.db.QueryRowContext(ctx, query, orgID).Scan(&name)
+	return name, err
+}
+
 // GetOrganizations returns a slice of organizations, sorted by name.
 func (ps *PgStore) GetOrganizations(ctx context.Context, filters OrganizationFilters) ([]Organization, error) {
 	if filters.Search != "" {
