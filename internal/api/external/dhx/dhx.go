@@ -33,6 +33,8 @@ type Store interface {
 	// 1. online (last_seen_at is not earlier than 10 mins ago)
 	// 2. must be matchx new model (sn and modle are not empty string)
 	GetOnlineGatewayCount(ctx context.Context, orgID int64) (int, error)
+	// GetOrganizationName returns the name of the organization with the given ID
+	GetOrganizationName(ctx context.Context, orgID int64) (string, error)
 }
 
 // DHXCreateStake creates new dhx stake
@@ -81,13 +83,18 @@ func (a *Server) DHXCreateCouncil(ctx context.Context, req *api.DHXCreateCouncil
 			"at least 5 online gateways are required to be registered for creating council chair")
 	}
 
+	name, err := a.store.GetOrganizationName(ctx, req.OrganizationId)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't get organization name: %v", err)
+	}
+
 	res, err := a.dhxCli.DHXCreateCouncil(ctx, &pb.DHXCreateCouncilRequest{
 		OrgId:      req.OrganizationId,
 		Amount:     req.Amount,
 		Currency:   req.Currency,
 		LockMonths: req.LockMonths,
 		Boost:      req.Boost,
-		Name:       req.Name,
+		Name:       name,
 	})
 	if err != nil {
 		return nil, status.Errorf(codes.Unavailable, err.Error())
