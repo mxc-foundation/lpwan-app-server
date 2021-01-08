@@ -215,7 +215,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "properties": {}
+              "$ref": "#/definitions/appserver_serves_uiUpdateUserResponse"
             }
           },
           "default": {
@@ -392,6 +392,15 @@
       "properties": {
         "user": {
           "$ref": "#/definitions/appserver_serves_uiUser",
+          "description": "User object to update."
+        }
+      }
+    },
+    "appserver_serves_uiUpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "type": "string",
           "description": "User object to update."
         }
       }

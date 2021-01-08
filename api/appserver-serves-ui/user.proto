@@ -32,7 +32,7 @@ service UserService {
     }
 
     // Update an existing user.
-    rpc Update (UpdateUserRequest) returns (google.protobuf.Empty) {
+    rpc Update (UpdateUserRequest) returns (UpdateUserResponse) {
         option (google.api.http) = {
 			put: "/api/users/{user.id}"
 			body: "*"
@@ -168,6 +168,11 @@ message GetUserResponse {
 message UpdateUserRequest {
     // User object to update.
     User user = 1;
+}
+
+message UpdateUserResponse {
+    // User object to update.
+    string jwt = 1;
 }
 
 message DeleteUserRequest {
