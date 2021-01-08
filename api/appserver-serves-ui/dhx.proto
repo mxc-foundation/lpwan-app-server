@@ -98,10 +98,20 @@ message DHXCreateCouncilResponse {
 message DHXListCouncilsRequest {
 }
 
+// Information about the council
 message Council {
+    // numerical council ID
     int64 id = 1;
+    // ID of the organization that chaires the council
     int64 chair_org_id = 2;
+    // name of the council unique on this supernode
     string name = 3;
+    // the date when council was last paid revenues
+    google.protobuf.Timestamp last_paid_date = 4;
+    // councils mpower when it was paid last time
+    string last_mpower = 5;
+    // councils DHX revenue when it was paid last time
+    string last_dhx_revenue = 6;
 }
 
 message DHXListCouncilsResponse {

@@ -118,9 +118,12 @@ func (a *Server) DHXListCouncils(ctx context.Context, req *api.DHXListCouncilsRe
 	var response []*api.Council
 	for _, v := range res.Council {
 		item := api.Council{
-			Id:         v.Id,
-			ChairOrgId: v.ChairOrgId,
-			Name:       v.Name,
+			Id:             v.Id,
+			ChairOrgId:     v.ChairOrgId,
+			Name:           v.Name,
+			LastPaidDate:   v.LastPaidDate,
+			LastDhxRevenue: v.LastDhxRevenue,
+			LastMpower:     v.LastMpower,
 		}
 
 		response = append(response, &item)
