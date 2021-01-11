@@ -130,6 +130,10 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 	}
 	log.Infof("  NetworkServer: %s", n.Server)
 
+	//
+	var upFreqChannel uint32 = (req.TxInfo.Frequency - 470300000) / 200000
+	var downFreq uint32 = 500300000 + ((upFreqChannel % 48) * 200000)
+
 	// Check Message Type
 	var messageType byte = req.MacPayload[0]
 	if messageType == UpMessageHello {
@@ -138,7 +142,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 		payload := proprietaryPayload{
 			MacPayload: []byte("HELLO"),
 			GatewayMAC: mac,
-			Frequency:  500300000,
+			Frequency:  downFreq,
 			DR:         3,
 			Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
 			Context:    maxRssiRx.Context,
@@ -268,7 +272,7 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 	_, err = nsClient.SendDelayedProprietaryPayload(context.Background(), &ns.SendDelayedProprietaryPayloadRequest{
 		MacPayload:            payload.MacPayload,
 		GatewayMacs:           [][]byte{payload.GatewayMAC[:]},
-		PolarizationInversion: false,
+		PolarizationInversion: true,
 		Frequency:             uint32(payload.Frequency),
 		Dr:                    uint32(payload.DR),
 		Context:               payload.Context,
