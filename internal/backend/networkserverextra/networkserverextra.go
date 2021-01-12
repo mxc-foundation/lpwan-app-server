@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"sync"
 	"time"
 
@@ -72,7 +73,10 @@ func (p *pool) Get(hostname string, caCert, tlsCert, tlsKey []byte) (nsextra.Net
 	// if the connection exists in the map, but when the certificates changed
 	// try to cloe the connection and re-connect
 	if ok && (!bytes.Equal(c.caCert, caCert) || !bytes.Equal(c.tlsCert, tlsCert) || !bytes.Equal(c.tlsKey, tlsKey)) {
-		c.clientConn.Close()
+		err := c.clientConn.Close()
+		if err != nil {
+			return nil, errors.Wrap(err, "close opened network-server api client error")
+		}
 		delete(p.clients, hostname)
 		connect = true
 	}
@@ -109,7 +113,7 @@ func (p *pool) createClient(hostname string, caCert, tlsCert, tlsKey []byte) (*g
 		grpc.WithStreamInterceptor(
 			grpc_logrus.StreamClientInterceptor(logrusEntry, logrusOpts...),
 		),
-		grpc.WithBalancerName(roundrobin.Name),
+		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
 	}
 
 	if len(caCert) == 0 && len(tlsCert) == 0 && len(tlsKey) == 0 {

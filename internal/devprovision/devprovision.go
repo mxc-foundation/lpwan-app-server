@@ -2,14 +2,10 @@ package devprovision
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"time"
 
 	mgr "github.com/mxc-foundation/lpwan-app-server/internal/system_manager"
-
-	rs "github.com/mxc-foundation/lpwan-app-server/internal/modules/redis"
 
 	"github.com/gofrs/uuid"
 	//	"github.com/golang/protobuf/ptypes"
@@ -18,15 +14,12 @@ import (
 
 	"github.com/brocaar/chirpstack-api/go/v3/as"
 	gwV3 "github.com/brocaar/chirpstack-api/go/v3/gw"
-	"github.com/brocaar/chirpstack-api/go/v3/ns"
 	"github.com/brocaar/lorawan"
 	duration "github.com/golang/protobuf/ptypes/duration"
 
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
-	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserverextra"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
-	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -65,7 +58,7 @@ var ctrl struct {
 
 // Setup prepares device provisioning service module
 func Setup(name string, h *store.Handler) error {
-	if ctrl.moduleUp == true {
+	if ctrl.moduleUp {
 		return nil
 	}
 	defer func() {
@@ -88,11 +81,12 @@ func SendPingLoop() {
 		}
 
 		ctx := context.Background()
-		ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
+		// ctx = context.WithValue(ctx, logging.ContextIDKey, ctxID)
+		context.WithValue(ctx, logging.ContextIDKey, ctxID)
 
-		if err := sendGatewayPing(ctx, ctrl.handler); err != nil {
-			log.Errorf("send gateway ping error: %s", err)
-		}
+		// if err := sendGatewayPing(ctx, ctrl.handler); err != nil {
+		// 	log.Errorf("send gateway ping error: %s", err)
+		// }
 		time.Sleep(time.Second)
 	}
 }
@@ -210,62 +204,6 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 	return processed, nil
 }
 
-// sendGatewayPing selects the next gateway to ping, creates the "ping"
-// frame and sends this frame to the network-server for transmission.
-func sendGatewayPing(ctx context.Context, handler *store.Handler) error {
-	err := handler.Tx(ctx, func(ctx context.Context, handler *store.Handler) error {
-		gw, err := handler.GetGatewayForPing(ctx)
-		if err != nil {
-			return errors.Wrap(err, "get gateway for ping error")
-		}
-		if gw == nil {
-			return nil
-		}
-
-		n, err := handler.GetNetworkServer(ctx, gw.NetworkServerID)
-		if err != nil {
-			return errors.Wrap(err, "get network-server error")
-		}
-
-		ping := gwd.GatewayPing{
-			GatewayMAC: gw.MAC,
-			Frequency:  n.GatewayDiscoveryTXFrequency,
-			DR:         n.GatewayDiscoveryDR,
-		}
-		err = handler.CreateGatewayPing(ctx, &ping)
-		if err != nil {
-			return errors.Wrap(err, "create gateway ping error")
-		}
-
-		var mic lorawan.MIC
-		if _, err = rand.Read(mic[:]); err != nil {
-			return errors.Wrap(err, "read random bytes error")
-		}
-
-		err = CreatePingLookup(mic, ping.ID)
-		if err != nil {
-			return errors.Wrap(err, "store mic lookup error")
-		}
-
-		err = sendPing(mic, n, ping)
-		if err != nil {
-			return errors.Wrap(err, "send ping error")
-		}
-
-		gw.LastPingID = &ping.ID
-		gw.LastPingSentAt = &ping.CreatedAt
-
-		err = handler.UpdateGateway(ctx, gw)
-		if err != nil {
-			return errors.Wrap(err, "update gateway error")
-		}
-
-		return nil
-	})
-
-	return err
-}
-
 func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 	nsClient, err := networkserverextra.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
@@ -290,47 +228,4 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 	}).Info("gateway proprietary payload sent to network-server")
 
 	return nil
-}
-
-func sendPing(mic lorawan.MIC, n nsd.NetworkServer, ping gwd.GatewayPing) error {
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-	if err != nil {
-		return errors.Wrap(err, "get network-server client error")
-	}
-
-	_, err = nsClient.SendProprietaryPayload(context.Background(), &ns.SendProprietaryPayloadRequest{
-		Mic:                   mic[:],
-		GatewayMacs:           [][]byte{ping.GatewayMAC[:]},
-		PolarizationInversion: false,
-		Frequency:             uint32(ping.Frequency),
-		Dr:                    uint32(ping.DR),
-	})
-	if err != nil {
-		return errors.Wrap(err, "send proprietary payload error")
-	}
-
-	log.WithFields(log.Fields{
-		"gateway_mac": ping.GatewayMAC,
-		"id":          ping.ID,
-	}).Info("gateway ping sent to network-server")
-
-	return nil
-}
-
-// CreatePingLookup creates an automatically expiring MIC to ping id lookup.
-func CreatePingLookup(mic lorawan.MIC, id int64) error {
-	keyWord := fmt.Sprintf("%s", mic)
-	return rs.RedisClient().Set(fmt.Sprintf(rs.MicLookupTempl, keyWord), id, rs.MicLookupExpire).Err()
-}
-
-// GetPingLookup :
-func GetPingLookup(mic lorawan.MIC) (int64, error) {
-	keyWord := fmt.Sprintf("%s", mic)
-	return rs.RedisClient().Get(fmt.Sprintf(rs.MicLookupTempl, keyWord)).Int64()
-}
-
-// DeletePingLookup :
-func DeletePingLookup(mic lorawan.MIC) error {
-	keyWord := fmt.Sprintf("%s", mic)
-	return rs.RedisClient().Del(fmt.Sprintf(rs.MicLookupTempl, keyWord)).Err()
 }

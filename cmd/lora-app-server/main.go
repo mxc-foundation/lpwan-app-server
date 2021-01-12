@@ -16,7 +16,6 @@ import (
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/downlink"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/fuota"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/gwping"
-	_ "github.com/mxc-foundation/lpwan-app-server/internal/devprovision"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/integration"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/js"
 	_ "github.com/mxc-foundation/lpwan-app-server/internal/migrations/code"
