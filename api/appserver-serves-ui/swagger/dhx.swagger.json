@@ -95,6 +95,16 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization id. If specified return details for the given organization and the council it chairs.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
         "tags": [
           "DHXServcie"
         ]
@@ -298,6 +308,31 @@
         "dhxAmount": {
           "type": "string",
           "title": "the amount of DHX that supernode has received"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization id, mining power and revenue (if requested)"
+        },
+        "orgMiningPower": {
+          "type": "string"
+        },
+        "orgDhxAmount": {
+          "type": "string"
+        },
+        "councilId": {
+          "type": "string",
+          "format": "int64",
+          "title": "council id, name, mining power and revenue (if the org chairs one)"
+        },
+        "councilName": {
+          "type": "string"
+        },
+        "councilMiningPower": {
+          "type": "string"
+        },
+        "councilDhxAmount": {
+          "type": "string"
         }
       }
     },

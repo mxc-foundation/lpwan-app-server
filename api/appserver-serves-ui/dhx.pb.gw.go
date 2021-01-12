@@ -155,9 +155,20 @@ func local_request_DHXServcie_DHXListStakes_0(ctx context.Context, marshaler run
 
 }
 
+var (
+	filter_DHXServcie_DHXGetLastMining_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_DHXServcie_DHXGetLastMining_0(ctx context.Context, marshaler runtime.Marshaler, client DHXServcieClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq DHXGetLastMiningRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DHXServcie_DHXGetLastMining_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := client.DHXGetLastMining(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -167,6 +178,13 @@ func request_DHXServcie_DHXGetLastMining_0(ctx context.Context, marshaler runtim
 func local_request_DHXServcie_DHXGetLastMining_0(ctx context.Context, marshaler runtime.Marshaler, server DHXServcieServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq DHXGetLastMiningRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DHXServcie_DHXGetLastMining_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := server.DHXGetLastMining(ctx, &protoReq)
 	return msg, metadata, err
