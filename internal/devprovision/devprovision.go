@@ -22,7 +22,9 @@ import (
 	"github.com/brocaar/lorawan"
 	duration "github.com/golang/protobuf/ptypes/duration"
 
+	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserver"
+	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserverextra"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
 	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
@@ -265,11 +267,11 @@ func sendGatewayPing(ctx context.Context, handler *store.Handler) error {
 }
 
 func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
-	nsClient, err := networkserver.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+	nsClient, err := networkserverextra.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
 	if err != nil {
 		return errors.Wrap(err, "get network-server client error")
 	}
-	_, err = nsClient.SendDelayedProprietaryPayload(context.Background(), &ns.SendDelayedProprietaryPayloadRequest{
+	_, err = nsClient.SendDelayedProprietaryPayload(context.Background(), &nsextra.SendDelayedProprietaryPayloadRequest{
 		MacPayload:            payload.MacPayload,
 		GatewayMacs:           [][]byte{payload.GatewayMAC[:]},
 		PolarizationInversion: true,

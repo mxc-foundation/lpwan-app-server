@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package nsextra;
+
+option go_package = "github.com/mxc-foundation/lpwan-app-server/api/ns-extra;nsextra";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+
+//import "common/common.proto";
+
+
+// NetworkServerExtraService provides the extra network-server API methods.
+service NetworkServerExtraService {
+    // SendDelayedProprietaryPayload send a delayed payload using the 'Proprietary' LoRaWAN message-type.
+    rpc SendDelayedProprietaryPayload(SendDelayedProprietaryPayloadRequest) returns (google.protobuf.Empty) {}
+}
+
+message SendDelayedProprietaryPayloadRequest {
+    // MACPayload of the proprietary LoRaWAN frame.
+    bytes mac_payload = 1;
+
+    // MIC of the proprietary LoRaWAN frame (must be 4 bytes).
+    bytes mic = 2;
+
+    // Gateway MAC address(es) to use for transmitting the LoRaWAN frame.
+    repeated bytes gateway_macs = 3;
+
+    // Set to true for sending as a gateway, or false for sending as a node.
+    // In the latter case the frame will be received by other gateways.
+    bool polarization_inversion = 4;
+
+    // Frequency (Hz) to use for the transmission.
+    uint32 frequency = 5;
+
+    // Data-rate to use for the transmission.
+    uint32 dr = 6;
+    
+    // Gateway specific context.
+    bytes context = 7;
+    
+    // The delay will be added to the gateway internal timing, provided by the context object.
+    google.protobuf.Duration delay = 8;
+}

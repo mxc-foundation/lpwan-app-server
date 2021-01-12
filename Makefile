@@ -61,6 +61,7 @@ api:
 	@go generate api/extapi/api.go
 	@go generate api/appserver-serves-gateway/api.go
 	@go generate api/appserver-serves-m2m/api.go
+	@go generate api/ns-extra/api.go
 
 internal/statics internal/migrations: static/swagger/api.swagger.json
 	@echo "Generating static files"
