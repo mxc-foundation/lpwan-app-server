@@ -171,16 +171,33 @@
       "properties": {
         "id": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "numerical council ID"
         },
         "chairOrgId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "ID of the organization that chaires the council"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "name of the council unique on this supernode"
+        },
+        "lastPaidDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the date when council was last paid revenues"
+        },
+        "lastMpower": {
+          "type": "string",
+          "title": "councils mpower when it was paid last time"
+        },
+        "lastDhxRevenue": {
+          "type": "string",
+          "title": "councils DHX revenue when it was paid last time"
         }
-      }
+      },
+      "title": "Information about the council"
     },
     "appserver_serves_uiDHXCreateCouncilRequest": {
       "type": "object",
