@@ -20,6 +20,7 @@ import (
 	nsextra "github.com/mxc-foundation/lpwan-app-server/api/ns-extra"
 	"github.com/mxc-foundation/lpwan-app-server/internal/backend/networkserverextra"
 	"github.com/mxc-foundation/lpwan-app-server/internal/logging"
+	gwd "github.com/mxc-foundation/lpwan-app-server/internal/modules/gateway/data"
 	nsd "github.com/mxc-foundation/lpwan-app-server/internal/networkserver_portal/data"
 	"github.com/mxc-foundation/lpwan-app-server/internal/storage/store"
 )
@@ -51,7 +52,9 @@ func init() {
 const moduleName = "devprovision"
 
 var ctrl struct {
-	handler *store.Handler
+	handler           *store.Handler
+	handlerMock       *handlerMock
+	networkServerMock *networkServerMock
 
 	moduleUp bool
 }
@@ -66,9 +69,19 @@ func Setup(name string, h *store.Handler) error {
 	}()
 
 	ctrl.handler = h
+	ctrl.handlerMock = nil
+	ctrl.networkServerMock = nil
 
 	go SendPingLoop()
 
+	return nil
+}
+
+// Setup for unit test
+func setupUnitTest(h *handlerMock, n *networkServerMock) error {
+	ctrl.handler = nil
+	ctrl.handlerMock = h
+	ctrl.networkServerMock = n
 	return nil
 }
 
@@ -91,8 +104,8 @@ func SendPingLoop() {
 	}
 }
 
-// HandleReceivedPing handles a ping received by one or multiple gateways.
-func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequest) (bool, error) {
+// HandleReceivedFrame handles a ping received by one or multiple gateways.
+func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkRequest) (bool, error) {
 	var processed bool = false
 	var mic lorawan.MIC
 	copy(mic[:], req.Mic)
@@ -108,6 +121,10 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 			maxRssiRx = rx
 		}
 	}
+	if maxRssiRx == nil {
+		return processed, errors.Errorf("No gateway found.")
+	}
+
 	log.Infof("  MAC:%s, RSSI: %d, Context: %s", hex.EncodeToString(maxRssiRx.GatewayId), maxRssiRx.Rssi,
 		hex.EncodeToString(maxRssiRx.Context))
 
@@ -115,12 +132,23 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 	var mac lorawan.EUI64
 	copy(mac[:], maxRssiRx.GatewayId)
 
-	gw, err := ctrl.handler.GetGateway(ctx, mac, false)
+	var gw gwd.Gateway
+	var n nsd.NetworkServer
+	var err error
+	if ctrl.handlerMock != nil {
+		gw, err = ctrl.handlerMock.GetGateway(ctx, mac, false)
+	} else {
+		gw, err = ctrl.handler.GetGateway(ctx, mac, false)
+	}
 	if err != nil {
 		return processed, errors.Wrap(err, "get gateway error")
 	}
 
-	n, err := ctrl.handler.GetNetworkServer(ctx, gw.NetworkServerID)
+	if ctrl.handlerMock != nil {
+		n, err = ctrl.handlerMock.GetNetworkServer(ctx, gw.NetworkServerID)
+	} else {
+		n, err = ctrl.handler.GetNetworkServer(ctx, gw.NetworkServerID)
+	}
 	if err != nil {
 		return processed, errors.Wrap(err, "get network-server error")
 	}
@@ -205,11 +233,7 @@ func HandleReceivedPing(ctx context.Context, req *as.HandleProprietaryUplinkRequ
 }
 
 func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
-	nsClient, err := networkserverextra.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
-	if err != nil {
-		return errors.Wrap(err, "get network-server client error")
-	}
-	_, err = nsClient.SendDelayedProprietaryPayload(context.Background(), &nsextra.SendDelayedProprietaryPayloadRequest{
+	request := nsextra.SendDelayedProprietaryPayloadRequest{
 		MacPayload:            payload.MacPayload,
 		GatewayMacs:           [][]byte{payload.GatewayMAC[:]},
 		PolarizationInversion: true,
@@ -217,9 +241,22 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 		Dr:                    uint32(payload.DR),
 		Context:               payload.Context,
 		Delay:                 payload.Delay,
-	})
-	if err != nil {
-		return errors.Wrap(err, "send proprietary payload error")
+	}
+
+	if ctrl.networkServerMock != nil {
+		_, err := ctrl.networkServerMock.SendDelayedProprietaryPayload(context.Background(), &request)
+		if err != nil {
+			return errors.Wrap(err, "send proprietary payload error")
+		}
+	} else {
+		nsClient, err := networkserverextra.GetPool().Get(n.Server, []byte(n.CACert), []byte(n.TLSCert), []byte(n.TLSKey))
+		if err != nil {
+			return errors.Wrap(err, "get network-server client error")
+		}
+		_, err = nsClient.SendDelayedProprietaryPayload(context.Background(), &request)
+		if err != nil {
+			return errors.Wrap(err, "send proprietary payload error")
+		}
 	}
 
 	log.WithFields(log.Fields{
