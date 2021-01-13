@@ -95,6 +95,16 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "orgId",
+            "description": "organization id. If specified return details for the given organization and the council it chairs.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
         "tags": [
           "DHXServcie"
         ]
@@ -171,16 +181,33 @@
       "properties": {
         "id": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "numerical council ID"
         },
         "chairOrgId": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "ID of the organization that chaires the council"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "name of the council unique on this supernode"
+        },
+        "lastPaidDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "the date when council was last paid revenues"
+        },
+        "lastMpower": {
+          "type": "string",
+          "title": "councils mpower when it was paid last time"
+        },
+        "lastDhxRevenue": {
+          "type": "string",
+          "title": "councils DHX revenue when it was paid last time"
         }
-      }
+      },
+      "title": "Information about the council"
     },
     "appserver_serves_uiDHXCreateCouncilRequest": {
       "type": "object",
@@ -281,6 +308,31 @@
         "dhxAmount": {
           "type": "string",
           "title": "the amount of DHX that supernode has received"
+        },
+        "orgId": {
+          "type": "string",
+          "format": "int64",
+          "title": "organization id, mining power and revenue (if requested)"
+        },
+        "orgMiningPower": {
+          "type": "string"
+        },
+        "orgDhxAmount": {
+          "type": "string"
+        },
+        "councilId": {
+          "type": "string",
+          "format": "int64",
+          "title": "council id, name, mining power and revenue (if the org chairs one)"
+        },
+        "councilName": {
+          "type": "string"
+        },
+        "councilMiningPower": {
+          "type": "string"
+        },
+        "councilDhxAmount": {
+          "type": "string"
         }
       }
     },

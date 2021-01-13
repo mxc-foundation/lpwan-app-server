@@ -118,9 +118,12 @@ func (a *Server) DHXListCouncils(ctx context.Context, req *api.DHXListCouncilsRe
 	var response []*api.Council
 	for _, v := range res.Council {
 		item := api.Council{
-			Id:         v.Id,
-			ChairOrgId: v.ChairOrgId,
-			Name:       v.Name,
+			Id:             v.Id,
+			ChairOrgId:     v.ChairOrgId,
+			Name:           v.Name,
+			LastPaidDate:   v.LastPaidDate,
+			LastDhxRevenue: v.LastDhxRevenue,
+			LastMpower:     v.LastMpower,
 		}
 
 		response = append(response, &item)
@@ -191,19 +194,33 @@ func (a *Server) DHXListStakes(ctx context.Context, req *api.DHXListStakesReques
 
 // DHXGetLastMining returns info about the last paid day of DHX mining
 func (a *Server) DHXGetLastMining(ctx context.Context, req *api.DHXGetLastMiningRequest) (*api.DHXGetLastMiningResponse, error) {
-	_, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	authOpts := auth.NewOptions()
+	if req.OrgId != 0 {
+		authOpts = authOpts.WithOrgID(req.OrgId)
+	}
+	cred, err := a.auth.GetCredentials(ctx, authOpts)
 	if err != nil {
 		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
 	}
+	if req.OrgId != 0 && !cred.IsOrgUser {
+		return nil, status.Error(codes.PermissionDenied, "permission denied")
+	}
 
-	res, err := a.dhxCli.DHXGetLastMining(ctx, &pb.DHXGetLastMiningRequest{})
+	res, err := a.dhxCli.DHXGetLastMining(ctx, &pb.DHXGetLastMiningRequest{OrgId: req.OrgId})
 	if err != nil {
 		return nil, status.Errorf(codes.Unavailable, err.Error())
 	}
 
 	return &api.DHXGetLastMiningResponse{
-		Date:        res.Date,
-		MiningPower: res.MiningPower,
-		DhxAmount:   res.DhxAmount,
+		Date:               res.Date,
+		MiningPower:        res.MiningPower,
+		DhxAmount:          res.DhxAmount,
+		OrgId:              res.OrgId,
+		OrgMiningPower:     res.OrgMiningPower,
+		OrgDhxAmount:       res.OrgDhxAmount,
+		CouncilId:          res.CouncilId,
+		CouncilName:        res.CouncilName,
+		CouncilMiningPower: res.CouncilMiningPower,
+		CouncilDhxAmount:   res.CouncilDhxAmount,
 	}, nil
 }

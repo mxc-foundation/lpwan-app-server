@@ -46,6 +46,8 @@ service DHXServcie {
 }
 
 message DHXGetLastMiningRequest {
+    // organization id. If specified return details for the given organization and the council it chairs
+    int64 org_id = 1;
 }
 
 message DHXGetLastMiningResponse {
@@ -55,6 +57,15 @@ message DHXGetLastMiningResponse {
     string mining_power = 2;
     // the amount of DHX that supernode has received
     string dhx_amount = 3;
+    // organization id, mining power and revenue (if requested)
+    int64 org_id = 4;
+    string org_mining_power = 5;
+    string org_dhx_amount = 6;
+    // council id, name, mining power and revenue (if the org chairs one)
+    int64 council_id = 7;
+    string council_name = 8;
+    string council_mining_power = 9;
+    string council_dhx_amount = 10;
 }
 
 message DHXCreateStakeRequest {
@@ -98,10 +109,20 @@ message DHXCreateCouncilResponse {
 message DHXListCouncilsRequest {
 }
 
+// Information about the council
 message Council {
+    // numerical council ID
     int64 id = 1;
+    // ID of the organization that chaires the council
     int64 chair_org_id = 2;
+    // name of the council unique on this supernode
     string name = 3;
+    // the date when council was last paid revenues
+    google.protobuf.Timestamp last_paid_date = 4;
+    // councils mpower when it was paid last time
+    string last_mpower = 5;
+    // councils DHX revenue when it was paid last time
+    string last_dhx_revenue = 6;
 }
 
 message DHXListCouncilsResponse {
