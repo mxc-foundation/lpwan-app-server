@@ -3,6 +3,7 @@ package grpcauth
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -38,10 +39,36 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 	if err != nil {
 		return nil, fmt.Errorf("couldn't find JWT token: %v", err)
 	}
+
 	claims, err := ga.jwtv.GetClaims(token, opts.Audience)
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %v", err)
 	}
+
+	if opts.ExternalLimited {
+		if claims.Service == auth.WECHAT {
+			wechatAuth := auth.WeChatAuth{}
+			if err := json.Unmarshal([]byte(claims.ExternalCred), &wechatAuth); err != nil {
+				return nil, fmt.Errorf("cannot parse external credentials to wechat service credentials")
+			}
+
+			// verify access_token with openid
+			user := auth.GetWeChatUserInfoResponse{}
+			if err := auth.GetWeChatUserInfoFromAccessToken(ctx, auth.URLStrGetWeChatUserInfoFromAccessToken, wechatAuth.AccessToken, wechatAuth.OpenID, &user); err != nil {
+				return nil, fmt.Errorf("cannot verify access_token: %s", err.Error())
+			}
+
+			return &auth.Credentials{
+				Service:          auth.WECHAT,
+				ExternalUserID:   user.UnionID,
+				ExternalUsername: user.NickName,
+			}, nil
+		}
+
+	} else if claims.Username == "" || claims.UserID == 0 {
+		return nil, fmt.Errorf("username and userID are required in claims")
+	}
+
 	// For non-existing user we only return username, there's no point in
 	// checking the OTP or anything else
 	if opts.AllowNonExisting {
@@ -57,7 +84,7 @@ func (ga *grpcAuth) GetCredentials(ctx context.Context, opts *auth.Options) (*au
 		}
 	}
 
-	creds, err := auth.NewCredentials(ctx, ga.store, claims.Username, opts.OrgID)
+	creds, err := auth.NewCredentials(ctx, ga.store, claims.Username, opts.OrgID, claims.Service)
 	if err != nil {
 		return nil, fmt.Errorf("user validation has failed: %v", err)
 	}

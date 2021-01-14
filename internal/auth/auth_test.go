@@ -51,11 +51,11 @@ func TestCredentials(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	malory, err := NewCredentials(ctx, ts, "malory@example.com", 5)
+	malory, err := NewCredentials(ctx, ts, "malory@example.com", 5, EMAIL)
 	if err == nil {
 		t.Errorf("got credentials for mallory: %v", *malory)
 	}
-	alice, err := NewCredentials(ctx, ts, "alice@example.com", 111)
+	alice, err := NewCredentials(ctx, ts, "alice@example.com", 111, EMAIL)
 	if err == nil {
 		t.Errorf("expected db error, but got: %v", *alice)
 	}
@@ -74,6 +74,7 @@ func TestCredentials(t *testing.T) {
 				Username:   "alice@example.com",
 				IsExisting: true,
 				OrgID:      1,
+				Service:    EMAIL,
 			},
 		},
 		{
@@ -89,6 +90,7 @@ func TestCredentials(t *testing.T) {
 				IsOrgAdmin:     true,
 				IsDeviceAdmin:  true,
 				IsGatewayAdmin: true,
+				Service:        EMAIL,
 			},
 		},
 		{
@@ -102,6 +104,7 @@ func TestCredentials(t *testing.T) {
 				OrgID:         7,
 				IsOrgUser:     true,
 				IsDeviceAdmin: true,
+				Service:       EMAIL,
 			},
 		},
 		{
@@ -118,6 +121,7 @@ func TestCredentials(t *testing.T) {
 				IsOrgAdmin:     true,
 				IsDeviceAdmin:  true,
 				IsGatewayAdmin: true,
+				Service:        EMAIL,
 			},
 		},
 		{
@@ -134,12 +138,13 @@ func TestCredentials(t *testing.T) {
 				IsOrgAdmin:     true,
 				IsDeviceAdmin:  true,
 				IsGatewayAdmin: true,
+				Service:        EMAIL,
 			},
 		},
 	}
 	for _, tc := range tests {
 		t.Logf(tc.name)
-		cred, err := NewCredentials(ctx, ts, tc.username, tc.orgid)
+		cred, err := NewCredentials(ctx, ts, tc.username, tc.orgid, EMAIL)
 		if err != nil {
 			t.Errorf("couldn't get credentials: %v", err)
 		}
@@ -157,12 +162,13 @@ func TestOptions(t *testing.T) {
 	if *defaults != expDefaults {
 		t.Errorf("expected defaults: %v, got %v", expDefaults, *defaults)
 	}
-	opts := defaults.WithAudience("test").WithAllowNonExisting().WithRequireOTP().WithOrgID(19)
+	opts := defaults.WithAudience("test").WithAllowNonExisting().WithRequireOTP().WithOrgID(19).WithExternalLimited()
 	expOpts := Options{
 		Audience:         "test",
 		RequireOTP:       true,
 		AllowNonExisting: true,
 		OrgID:            19,
+		ExternalLimited:  true,
 	}
 	if *opts != expOpts {
 		t.Errorf("expected opts: %v, got %v", expOpts, *opts)

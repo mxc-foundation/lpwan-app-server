@@ -48,7 +48,7 @@ func (ts testStore) AuthGetOrgUser(ctx context.Context, userID, orgID int64) (au
 
 func TestAuthenticator(t *testing.T) {
 	jwtv := jwt.NewValidator(jwa.HS256, testJWTKeyEnc, 86400)
-	aliceTok, err := jwtv.SignToken(17, "alice@example.com", 0, []string{"lora-app-server"})
+	aliceTok, err := jwtv.SignToken(jwt.Claims{UserID: 17, Username: "alice@example.com", Service: auth.EMAIL}, 0, []string{"lora-app-server"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +62,7 @@ func TestAuthenticator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bobTok, err := jwtv.SignToken(19, "bob@example.com", 0, []string{"registration"})
+	bobTok, err := jwtv.SignToken(jwt.Claims{UserID: 19, Username: "bob@example.com", Service: auth.EMAIL}, 0, []string{"registration"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,6 +87,7 @@ func TestAuthenticator(t *testing.T) {
 				UserID:     17,
 				Username:   "alice@example.com",
 				IsExisting: true,
+				Service:    auth.EMAIL,
 			},
 		},
 		{
@@ -102,6 +103,7 @@ func TestAuthenticator(t *testing.T) {
 				IsOrgAdmin:     true,
 				IsGatewayAdmin: true,
 				IsDeviceAdmin:  true,
+				Service:        auth.EMAIL,
 			},
 		},
 		{
@@ -126,18 +128,25 @@ func TestAuthenticator(t *testing.T) {
 				UserID:     17,
 				Username:   "alice@example.com",
 				IsExisting: true,
+				Service:    auth.EMAIL,
 			},
 		},
 		{
 			name:   "non-existing user, default options",
 			token:  bobTok,
 			errExp: "invalid token",
+			creds: auth.Credentials{
+				Service: auth.EMAIL,
+			},
 		},
 		{
 			name:   "non-existing user, with correct audience option",
 			token:  bobTok,
 			opts:   auth.NewOptions().WithAudience("registration"),
 			errExp: "user validation",
+			creds: auth.Credentials{
+				Service: auth.EMAIL,
+			},
 		},
 		{
 			name:  "non-existing user, with audience and allow non-existent options",

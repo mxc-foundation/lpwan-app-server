@@ -7,9 +7,137 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/mxc-foundation/lpwan-app-server/internal/api/external/user"
 	errHandler "github.com/mxc-foundation/lpwan-app-server/internal/errors"
 )
+
+// GetUserIDByExternalUserID gets userID with given external userID and external service
+func (ps *PgStore) GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error) {
+	var userID int64
+	err := sqlx.GetContext(ctx, ps.db, &userID, `
+		select user_id from external_login where service=$1 and external_id=$2`,
+		service,
+		externalUserID,
+	)
+	if err != nil {
+		return 0, handlePSQLError(Select, err, "select error")
+	}
+	return userID, nil
+}
+
+// GetExternalUserByUserIDAndService gets external user with given userID and external service
+func (ps *PgStore) GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (user.ExternalUser, error) {
+	var externalUser user.ExternalUser
+	err := sqlx.GetContext(ctx, ps.db, &externalUser, `
+		select user_id, service, external_id, external_username from external_login where service=$1 and user_id=$2`,
+		service,
+		userID,
+	)
+	if err != nil {
+		return externalUser, handlePSQLError(Select, err, "select error")
+	}
+	return externalUser, nil
+}
+
+// GetExternalUsersByUserID gets external user list with given userID
+func (ps *PgStore) GetExternalUsersByUserID(ctx context.Context, userID int64) ([]user.ExternalUser, error) {
+	var externalUsers []user.ExternalUser
+	err := sqlx.SelectContext(ctx, ps.db, &externalUsers, `
+		select user_id, service, external_id, external_username from external_login where user_id=$1`,
+		userID)
+	if err != nil {
+		return externalUsers, handlePSQLError(Select, err, "select error")
+	}
+	return externalUsers, nil
+}
+
+// AddExternalUserLogin adds new external user binding relation
+func (ps *PgStore) AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		insert into external_login (user_id , service, external_id, external_username) values ($1, $2, $3, $4)`,
+		userID, service, externalUserID, externalUsername,
+	)
+	if err != nil {
+		return handlePSQLError(Insert, err, "insert error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+
+	return nil
+}
+
+// SetExternalUsername updates external user username
+func (ps *PgStore) SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update external_login set external_username = $1 where service = $2 and external_id = $3`,
+		externalUsername, service, externalUserID,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+	return err
+}
+
+// DeleteExternalUserLogin delete external user binding relation
+func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		delete from external_login where service = $1 and user_id = $2`,
+		service, userID,
+	)
+	if err != nil {
+		return handlePSQLError(Delete, err, "delete error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+	return err
+}
+
+// SetUserLastLogin updates user display name and last login service type
+func (ps *PgStore) SetUserLastLogin(ctx context.Context, userID int64, displayName, service string) error {
+	res, err := ps.db.ExecContext(ctx, `
+		UPDATE 
+			"user" 
+		SET 
+			display_name = $1, updated_at = NOW() , last_login_service = $2 
+		WHERE id = $3`,
+		displayName, service, userID,
+	)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+
+	return err
+}
 
 // CreateUser creates the given user.
 func (ps *PgStore) CreateUser(ctx context.Context, u user.User, ou []user.OrganizationUser) (user.User, error) {
@@ -54,7 +182,7 @@ func (ps *PgStore) createUser(ctx context.Context, u user.User) (user.User, erro
 		u.SecurityToken,
 	).Scan(&id)
 	if err != nil {
-		return u, fmt.Errorf("couldn't insert user: %w", err)
+		return u, handlePSQLError(Insert, err, "couldn't insert user")
 	}
 	u.ID = id
 	return u, nil
@@ -90,11 +218,11 @@ func (ps *PgStore) getUser(ctx context.Context, condition string, args ...interf
 	// nolint: gosec
 	err := ps.db.QueryRowContext(ctx,
 		`SELECT id, created_at, updated_at, email, password_hash,
-			is_active, is_admin, security_token, email_verified
+			is_active, is_admin, security_token, email_verified, display_name
 		 FROM "user"
 		 WHERE `+condition, args...).Scan(
 		&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
-		&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified,
+		&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, &u.DisplayName,
 	)
 	if err == sql.ErrNoRows {
 		err = errHandler.ErrDoesNotExist
@@ -152,7 +280,7 @@ func (ps *PgStore) GetUserCount(ctx context.Context) (int64, error) {
 // GetUsers returns a slice of users, respecting the given limit and offset.
 func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User, error) {
 	query := `SELECT id, created_at, updated_at, email, password_hash,
-			    is_active, is_admin, security_token, email_verified
+			    is_active, is_admin, security_token, email_verified, display_name
 		 	  FROM "user"
 			  ORDER BY email
 			  LIMIT $1
@@ -168,7 +296,7 @@ func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User
 		var pass, token sql.NullString
 		err := rows.Scan(
 			&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Email, &pass,
-			&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified)
+			&u.IsActive, &u.IsAdmin, &token, &u.EmailVerified, &u.DisplayName)
 		if err != nil {
 			return nil, err
 		}
@@ -177,6 +305,15 @@ func (ps *PgStore) GetUsers(ctx context.Context, limit, offset int) ([]user.User
 		users = append(users, u)
 	}
 	return users, rows.Err()
+}
+
+// SetUserDisplayName updates display name of the user
+func (ps *PgStore) SetUserDisplayName(ctx context.Context, displayName string, userID int64) error {
+	query := `UPDATE "user"
+			  SET display_name = $1, updated_at = NOW()
+			  WHERE id = $2`
+	_, err := ps.db.ExecContext(ctx, query, displayName, userID)
+	return err
 }
 
 // SetUserEmail changes the email address of the user

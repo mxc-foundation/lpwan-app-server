@@ -14,6 +14,9 @@ type Options struct {
 	RequireOTP       bool
 	AllowNonExisting bool
 	OrgID            int64
+
+	// external auth
+	ExternalLimited bool
 }
 
 func NewOptions() *Options {
@@ -42,6 +45,19 @@ func (o *Options) WithOrgID(orgID int64) *Options {
 	return o
 }
 
+// WithExternalLimited restricts checking external credentials only
+func (o *Options) WithExternalLimited() *Options {
+	o.ExternalLimited = true
+	return o
+}
+
+// ExternalServiceName defines const type: name of external services
+const (
+	EMAIL  string = "email"
+	WECHAT string = "wechat"
+	TG     string = "telegram"
+)
+
 // Credentials provides information about user's credentials
 type Credentials struct {
 	// UserID is the id of the user
@@ -62,6 +78,12 @@ type Credentials struct {
 	IsDeviceAdmin bool
 	// IsGatewayAdmin is true if the user is device admin for the org
 	IsGatewayAdmin bool
+	// ExternalUserID is the id of external user
+	ExternalUserID string
+	// Service is the name of external user's service
+	Service string
+	// ExternalUsername is the nickname of the external user
+	ExternalUsername string
 }
 
 // User contains information about the user
@@ -88,7 +110,8 @@ type Store interface {
 	AuthGetOrgUser(ctx context.Context, userID int64, orgID int64) (OrgUser, error)
 }
 
-func NewCredentials(ctx context.Context, st Store, username string, orgID int64) (*Credentials, error) {
+// NewCredentials returns credential set of an user
+func NewCredentials(ctx context.Context, st Store, username string, orgID int64, service string) (*Credentials, error) {
 	user, err := st.AuthGetUser(ctx, username)
 	if err != nil {
 		return nil, err
@@ -98,6 +121,7 @@ func NewCredentials(ctx context.Context, st Store, username string, orgID int64)
 		Username:      user.Email,
 		IsGlobalAdmin: user.IsGlobalAdmin,
 		IsExisting:    true,
+		Service:       service,
 	}
 	if orgID > 0 {
 		orgUser, err := st.AuthGetOrgUser(ctx, user.ID, orgID)

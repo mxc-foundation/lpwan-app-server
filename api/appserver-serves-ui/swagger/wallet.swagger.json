@@ -365,6 +365,20 @@
     }
   },
   "definitions": {
+    "appserver_serves_uiExternalUserAccount": {
+      "type": "object",
+      "properties": {
+        "externalUserId": {
+          "type": "string"
+        },
+        "externalUsername": {
+          "type": "string"
+        },
+        "service": {
+          "type": "string"
+        }
+      }
+    },
     "appserver_serves_uiGetDownLinkPriceResponse": {
       "type": "object",
       "properties": {
@@ -593,6 +607,13 @@
             "$ref": "#/definitions/appserver_serves_uiOrganizationLink"
           },
           "description": "Organizations to which the user is associated."
+        },
+        "externalUserAccounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/appserver_serves_uiExternalUserAccount"
+          },
+          "description": "ExternalUserAccount to which the user is associated."
         }
       }
     },
@@ -628,6 +649,9 @@
         "note": {
           "type": "string",
           "description": "Optional note to store with the user."
+        },
+        "lastLoginService": {
+          "type": "string"
         }
       }
     },

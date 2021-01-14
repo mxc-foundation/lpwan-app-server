@@ -22,15 +22,17 @@ import (
 
 // User defines the user structure.
 type User struct {
-	ID            int64
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	Email         string
-	PasswordHash  string
-	IsAdmin       bool
-	IsActive      bool
-	EmailVerified bool
-	SecurityToken string
+	ID               int64
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	Email            string
+	DisplayName      string
+	PasswordHash     string
+	IsAdmin          bool
+	IsActive         bool
+	EmailVerified    bool
+	SecurityToken    string
+	LastLoginService string
 }
 
 type OrganizationUser struct {
@@ -100,8 +102,25 @@ type Store interface {
 	SetUserPasswordHash(ctx context.Context, userID int64, passwordHash string) error
 	// SetUserPasswordIfOTPMatch sets the user's password if the OTP provided is correct
 	SetUserPasswordIfOTPMatch(ctx context.Context, userID int64, otp, passwordHash string) error
+	// SetUserDisplayName updates display name of the user
+	SetUserDisplayName(ctx context.Context, displayName string, userID int64) error
 	// DeleteUser deletes the user
 	DeleteUser(ctx context.Context, userID int64) error
+	// SetUserLastLogin updates display_name and last_login_service
+	SetUserLastLogin(ctx context.Context, userID int64, displayName, service string) error
+
+	// GetUserIDByExternalUserID gets user id from service name and external user id
+	GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error)
+	// GetExternalUserByUserID gets external user id from service name and user id
+	GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (ExternalUser, error)
+	// GetExternalUsersByUserID gets all external users bound with userID
+	GetExternalUsersByUserID(ctx context.Context, userID int64) ([]ExternalUser, error)
+	// AddExternalUserLogin inserts new external id and user id relation
+	AddExternalUserLogin(ctx context.Context, service string, userID int64, externalUserID, externalUsername string) error
+	// DeleteExternalUserLogin removes binding relation between external account and supernode account
+	DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error
+	// SetExternalUsername updates external user's username
+	SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error
 
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
@@ -119,6 +138,12 @@ type Mailer interface {
 	SendPasswordReset(email, lang, otp string) error
 }
 
+// ExternalAuthentication defines configuration for external_auth section
+type ExternalAuthentication struct {
+	WechatAuth      auth.WeChatAuthentication `mapstructure:"wechat_auth"`
+	DebugWechatAuth auth.WeChatAuthentication `mapstructure:"debug_wechat_auth"`
+}
+
 // Config defines configuration
 type Config struct {
 	Recaptcha RecaptchaConfig
@@ -126,6 +151,10 @@ type Config struct {
 	Enable2FALogin bool
 	// path to logo
 	OperatorLogoPath string
+	// external user wechat login config
+	WeChatLogin auth.WeChatAuthentication
+	// external user wechat login config, debug mode
+	DebugWeChatLogin auth.WeChatAuthentication
 }
 
 // Server implements Internal User Service
@@ -222,7 +251,7 @@ func (a *Server) Get(ctx context.Context, req *inpb.GetUserRequest) (*inpb.GetUs
 			Id:       user.ID,
 			IsAdmin:  user.IsAdmin,
 			IsActive: user.IsActive,
-			Username: user.Email,
+			Username: user.DisplayName,
 		},
 		CreatedAt: &timestamp.Timestamp{Seconds: user.CreatedAt.Unix()},
 		UpdatedAt: &timestamp.Timestamp{Seconds: user.UpdatedAt.Unix()},
@@ -275,7 +304,7 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 
 	for _, user := range users {
 		row := inpb.UserListItem{
-			Username:  user.Email,
+			Username:  user.DisplayName,
 			Id:        user.ID,
 			IsAdmin:   user.IsAdmin,
 			IsActive:  user.IsActive,
@@ -290,40 +319,49 @@ func (a *Server) List(ctx context.Context, req *inpb.ListUserRequest) (*inpb.Lis
 }
 
 // Update updates the given user.
-func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*empty.Empty, error) {
-	/*	if req.User == nil {
-			return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
+func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*inpb.UpdateUserResponse, error) {
+	var jwToken string
+
+	if req.User == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "user must not be nil")
+	}
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+	}
+	if !(cred.UserID == req.User.Id) {
+		// only user themselves can do that
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	user, err := a.store.GetUserByID(ctx, req.User.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "%v", err)
+	}
+
+	if req.User.Username != "" && req.User.Username != user.DisplayName {
+		if err := a.store.SetUserDisplayName(ctx, req.User.Username, user.ID); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't update user's display name : %v", err)
 		}
-		cred, err := a.auth.GetCredentials(ctx, auth.NewOptions())
+	}
+
+	newEmail := normalizeUsername(req.User.Email)
+	if newEmail != "" && req.User.Email != user.Email {
+		if err := validateEmail(newEmail); err != nil {
+			return nil, helpers.ErrToRPCError(err)
+		}
+		if err := a.store.SetUserEmail(ctx, user.ID, newEmail); err != nil {
+			return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
+		}
+
+		// user email is changed, we must update jwt and return it to API caller
+		jwToken, err = a.jwtv.SignToken(jwt.Claims{Username: newEmail, UserID: user.ID, Service: cred.Service}, 0, nil)
 		if err != nil {
-			return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err)
+			return nil, status.Errorf(codes.Internal, "couldn't create a token: %v", err)
 		}
-		if !(cred.UserID == req.User.Id) {
-			// only user themselves can do that
-			return nil, status.Errorf(codes.PermissionDenied, "permission denied")
-		}
+	}
 
-		user, err := a.store.GetUserByID(ctx, req.User.Id)
-		if err != nil {
-			return nil, status.Errorf(codes.Unknown, "%v", err)
-		}
-
-			if req.User.IsActive != user.IsActive {
-			if err := a.store.SetUserActiveStatus(ctx, user.ID, req.User.IsActive); err != nil {
-				return nil, status.Errorf(codes.Internal, "couldn't set user status: %v", err)
-			}
-
-		newEmail := normalizeUsername(req.User.Email)
-		if newEmail != "" && req.User.Email != user.Email {
-			if err := validateEmail(newEmail); err != nil {
-				return nil, helpers.ErrToRPCError(err)
-			}
-			if err := a.store.SetUserEmail(ctx, user.ID, newEmail); err != nil {
-				return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
-			}
-		}*/
-
-	return &empty.Empty{}, nil
+	return &inpb.UpdateUserResponse{Jwt: jwToken}, nil
 }
 
 // Delete deletes the user matching the given ID.
