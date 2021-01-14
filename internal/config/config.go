@@ -41,7 +41,10 @@ type Config struct {
 
 	M2MServer grpccli.ConnectionOpts `mapstructure:"m2m_server"`
 
-	DHXServer grpccli.ConnectionOpts `mapstructure:"dhx_center"`
+	DHXCenter struct {
+		Enable    bool                   `mapstructure:"enable"`
+		DHXServer grpccli.ConnectionOpts `mapstructure:"dhx_server"`
+	} `mapstructure:"dhx_center"`
 
 	ProvisionServer psconn.ProvisioningServerStruct `mapstructure:"provision_server"`
 
