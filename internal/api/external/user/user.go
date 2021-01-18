@@ -345,6 +345,7 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*inpb
 		}
 	}
 
+	var userEmail string
 	newEmail := normalizeUsername(req.User.Email)
 	if newEmail != "" && req.User.Email != user.Email {
 		if err := validateEmail(newEmail); err != nil {
@@ -353,12 +354,15 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*inpb
 		if err := a.store.SetUserEmail(ctx, user.ID, newEmail); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
 		}
+		userEmail = newEmail
+	} else {
+		userEmail = user.Email
+	}
 
-		// user email is changed, we must update jwt and return it to API caller
-		jwToken, err = a.jwtv.SignToken(jwt.Claims{Username: newEmail, UserID: user.ID, Service: cred.Service}, 0, nil)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "couldn't create a token: %v", err)
-		}
+	// username or email changed or not, always return jwt in response
+	jwToken, err = a.jwtv.SignToken(jwt.Claims{Username: userEmail, UserID: user.ID, Service: cred.Service}, 0, nil)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't create a token: %v", err)
 	}
 
 	return &inpb.UpdateUserResponse{Jwt: jwToken}, nil

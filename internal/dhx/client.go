@@ -13,6 +13,7 @@ import (
 
 // Config defines configuration struct for dhx service module
 type Config struct {
+	Enable      bool
 	SupernodeID string
 	DHXServer   grpccli.ConnectionOpts
 }
@@ -25,6 +26,11 @@ var ctrl *controller
 
 // Setup prepares dhx service module
 func Setup(config Config) (err error) {
+	if !config.Enable {
+		log.Info("dhx center service disabled")
+		return nil
+	}
+
 	ctrl = &controller{}
 	ctrl.dhxcconn, err = grpccli.Connect(config.DHXServer)
 	if err != nil {

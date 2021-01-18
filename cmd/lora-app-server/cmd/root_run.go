@@ -44,8 +44,9 @@ func run(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	if err := dhx.Setup(dhx.Config{
+		Enable:      config.C.DHXCenter.Enable,
 		SupernodeID: config.C.General.ServerAddr,
-		DHXServer:   config.C.DHXServer,
+		DHXServer:   config.C.DHXCenter.DHXServer,
 	}); err != nil {
 		log.Fatal(err)
 	}
