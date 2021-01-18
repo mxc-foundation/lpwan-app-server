@@ -155,29 +155,16 @@ func HandleReceivedFrame(ctx context.Context, req *as.HandleProprietaryUplinkReq
 	log.Infof("  NetworkServer: %s", n.Server)
 
 	//
-	var upFreqChannel uint32 = (req.TxInfo.Frequency - 470300000) / 200000
-	var downFreq uint32 = 500300000 + ((upFreqChannel % 48) * 200000)
 
 	// Check Message Type
 	var messageType byte = req.MacPayload[0]
 	if messageType == UpMessageHello {
 		log.Info("  HELLO Message.")
 
-		payload := proprietaryPayload{
-			MacPayload: []byte("HELLO"),
-			GatewayMAC: mac,
-			Frequency:  downFreq,
-			DR:         3,
-			Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
-			Context:    maxRssiRx.Context,
-		}
-
-		err = sendProprietary(n, payload)
+		processed, err = handleHello(n, req, maxRssiRx)
 		if err != nil {
 			return processed, errors.Wrap(err, "send proprietary error")
 		}
-
-		processed = true
 	} else if messageType == UpMessageAuth {
 		log.Info("  AUTH Message.")
 		processed = true
@@ -265,4 +252,32 @@ func sendProprietary(n nsd.NetworkServer, payload proprietaryPayload) error {
 	}).Info("gateway proprietary payload sent to network-server")
 
 	return nil
+}
+
+//
+func handleHello(nserver nsd.NetworkServer, reqest *as.HandleProprietaryUplinkRequest, targetgateway *gwV3.UplinkRXInfo) (bool, error) {
+	log.Info("  HELLO Message.")
+
+	var upFreqChannel uint32 = (reqest.TxInfo.Frequency - 470300000) / 200000
+	var downFreq uint32 = 500300000 + ((upFreqChannel % 48) * 200000)
+	var mac lorawan.EUI64
+	var err error
+
+	copy(mac[:], targetgateway.GatewayId)
+
+	payload := proprietaryPayload{
+		MacPayload: []byte("HELLO"),
+		GatewayMAC: mac,
+		Frequency:  downFreq,
+		DR:         3,
+		Delay:      &duration.Duration{Seconds: 5, Nanos: 0},
+		Context:    targetgateway.Context,
+	}
+
+	err = sendProprietary(nserver, payload)
+	if err != nil {
+		return false, errors.Wrap(err, "send proprietary error")
+	}
+
+	return true, nil
 }
