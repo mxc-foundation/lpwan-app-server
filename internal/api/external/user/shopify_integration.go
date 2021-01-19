@@ -8,8 +8,7 @@ type ShopifyAdminAPI struct {
 	APIVersion string `mapstructure:"api_version"`
 }
 
-// ShopifyCustomer includes part of response of api
-// https://apikey:secret@{hostname}/admin/api/2021-01/customers/search.json\?query\=email:{email}
+// ShopifyCustomer includes a part of attributes of customer
 type ShopifyCustomer struct {
 	ID          int64  `json:"id"`
 	Email       string `json:"email"`
@@ -20,6 +19,8 @@ type ShopifyCustomer struct {
 	LastOrderID int64  `json:"last_order_id"`
 }
 
+// ShopifyCustomerList maps response of api
+// https://apikey:secret@{hostname}/admin/api/2021-01/customers/search.json\?query\=email:{email}
 type ShopifyCustomerList struct {
 	Customers []ShopifyCustomer `json:"customers"`
 }

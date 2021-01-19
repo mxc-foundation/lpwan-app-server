@@ -149,6 +149,7 @@ func Setup(name string, h *store.Handler) error {
 
 type Mailer struct{}
 
+// SendVerifyEmailConfirmation sends security token to given address for verifying the address
 func (m *Mailer) SendVerifyEmailConfirmation(email, lang, securityToken string) error {
 	return SendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), VerifyEmail)
 }
