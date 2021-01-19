@@ -53,9 +53,10 @@ func (o *Options) WithExternalLimited() *Options {
 
 // ExternalServiceName defines const type: name of external services
 const (
-	EMAIL  string = "email"
-	WECHAT string = "wechat"
-	TG     string = "telegram"
+	EMAIL   string = "email"
+	WECHAT  string = "wechat"
+	TG      string = "telegram"
+	SHOPIFY string = "shopify"
 )
 
 // Credentials provides information about user's credentials

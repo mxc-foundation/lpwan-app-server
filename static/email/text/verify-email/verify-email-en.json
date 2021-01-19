@@ -1,0 +1,9 @@
+{
+  "from": "%s Supernode",
+  "subject": "Please confirm this email address",
+  "plainText": "To proceed with your current operations, please first confirm this email. Here is your 2FA code: %s . If this wasn't you, please don't give your 2FA code to anyone else.",
+  "title": "%s E-mail",
+  "body1": "To proceed with your current operations, please first confirm this email.",
+  "body2": "If this wasn't you, please don't give your 2FA code to anyone else.",
+  "body3": "Here is your 2FA code:"
+}

@@ -149,6 +149,10 @@ func Setup(name string, h *store.Handler) error {
 
 type Mailer struct{}
 
+func (m *Mailer) SendVerifyEmailConfirmation(email, lang, securityToken string) error {
+	return SendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), VerifyEmail)
+}
+
 func (m *Mailer) SendRegistrationConfirmation(email, lang, securityToken string) error {
 	return SendInvite(email, Param{Token: securityToken}, EmailLanguage(lang), RegistrationConfirmation)
 }

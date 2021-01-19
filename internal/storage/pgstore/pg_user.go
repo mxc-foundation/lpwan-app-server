@@ -114,6 +114,61 @@ func (ps *PgStore) DeleteExternalUserLogin(ctx context.Context, userID int64, se
 	return err
 }
 
+// GetExternalUserByUsername returns external user with given external username
+func (ps *PgStore) GetExternalUserByUsername(ctx context.Context, service, externalUsername string) (user.ExternalUser, error) {
+	var user user.ExternalUser
+	err := sqlx.GetContext(ctx, ps.db, &user, `
+		select * from external_login where service=$1 and external_username=$2
+	`, service, externalUsername)
+	if err != nil {
+		return user, handlePSQLError(Select, err, "select error")
+	}
+
+	return user, nil
+}
+
+// GetExternalUserByToken returns external user with given security token
+func (ps *PgStore) GetExternalUserByToken(ctx context.Context, service, token string) (user.ExternalUser, error) {
+	var user user.ExternalUser
+	err := sqlx.GetContext(ctx, ps.db, &user, `
+		select * from external_login where service=$1 and external_id=$2
+	`, service, token)
+	if err != nil {
+		return user, handlePSQLError(Select, err, "select error")
+	}
+
+	return user, nil
+}
+
+// SetExternalUserID updates external id of an external user
+func (ps *PgStore) SetExternalUserID(ctx context.Context, extUser user.ExternalUser) error {
+	res, err := ps.db.ExecContext(ctx, `
+		update 
+			external_login
+		set 
+			external_id=$1 
+		where 
+			user_id=$2 
+		and 
+			service=$3 
+		and 
+			external_username=$4
+	`, extUser.ExternalUserID, extUser.UserID, extUser.ServiceName, extUser.ExternalUsername)
+	if err != nil {
+		return handlePSQLError(Update, err, "update error")
+	}
+
+	c, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if c == 0 {
+		return fmt.Errorf("no record affected")
+	}
+
+	return err
+}
+
 // SetUserLastLogin updates user display name and last login service type
 func (ps *PgStore) SetUserLastLogin(ctx context.Context, userID int64, displayName, service string) error {
 	res, err := ps.db.ExecContext(ctx, `

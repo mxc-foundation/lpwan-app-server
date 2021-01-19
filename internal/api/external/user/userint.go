@@ -190,14 +190,12 @@ func (a *Server) Profile(ctx context.Context, req *empty.Empty) (*inpb.ProfileRe
 	}
 
 	resp := inpb.ProfileResponse{
-		User: &inpb.User{
-			Id:               user.ID,
-			Username:         user.DisplayName,
-			Email:            user.Email,
-			IsAdmin:          user.IsAdmin,
-			IsActive:         user.IsActive,
-			LastLoginService: cred.Service,
-		},
+		Id:               user.ID,
+		Username:         user.DisplayName,
+		Email:            user.Email,
+		IsAdmin:          user.IsAdmin,
+		IsActive:         user.IsActive,
+		LastLoginService: cred.Service,
 	}
 
 	orgs, err := a.store.GetUserOrganizations(ctx, cred.UserID)

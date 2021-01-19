@@ -11,6 +11,39 @@
     "application/json"
   ],
   "paths": {
+    "/api/confirm-external-email": {
+      "post": {
+        "summary": "ConfirmBindingEmail checks given token and bind",
+        "operationId": "ConfirmBindingEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiConfirmBindingEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiConfirmBindingEmailRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
+    },
     "/api/external-login/authenticate-wechat-user": {
       "post": {
         "summary": "AuthenticateWeChatUser interacts with wechat open platform to authenticate wechat user\nthen check binding status of this wechat user",
@@ -175,6 +208,39 @@
           "ExternalUserService"
         ]
       }
+    },
+    "/api/verify-external-email": {
+      "post": {
+        "summary": "VerifyEmail sends email with confirmation message to given address",
+        "operationId": "VerifyEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiVerifyEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/appserver_serves_uiVerifyEmailRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ExternalUserService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -216,6 +282,22 @@
         }
       }
     },
+    "appserver_serves_uiConfirmBindingEmailRequest": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "title": "token sent to user in VerifyEmail"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiConfirmBindingEmailResponse": {
+      "type": "object"
+    },
     "appserver_serves_uiRegisterExternalUserRequest": {
       "type": "object",
       "properties": {
@@ -254,6 +336,25 @@
           "type": "string"
         }
       }
+    },
+    "appserver_serves_uiVerifyEmailRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "title": "user will receive confirmation message on given email address"
+        },
+        "language": {
+          "type": "string"
+        },
+        "organizationId": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "appserver_serves_uiVerifyEmailResponse": {
+      "type": "object"
     },
     "protobufAny": {
       "type": "object",
