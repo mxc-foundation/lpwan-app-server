@@ -273,3 +273,100 @@ func (a *Server) UnbindExternalUser(ctx context.Context, req *pb.UnbindExternalU
 
 	return &pb.UnbindExternalUserResponse{}, nil
 }
+
+// VerifyEmail sends confirmation message to given email address
+func (a *Server) VerifyEmail(ctx context.Context, req *pb.VerifyEmailRequest) (*pb.VerifyEmailResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed : %s", err.Error())
+	}
+
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	// check whether external email already exist
+	_, err = a.store.GetExternalUserByUsername(ctx, auth.SHOPIFY, req.Email)
+	if err == nil {
+		return nil, status.Errorf(codes.AlreadyExists, "email already exists")
+	} else if err != errHandler.ErrDoesNotExist {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	// check whether user already bound to one external email
+	_, err = a.store.GetExternalUserByUserIDAndService(ctx, auth.SHOPIFY, cred.UserID)
+	if err == nil {
+		return nil, status.Errorf(codes.AlreadyExists, "only one email can be bound")
+	} else if err != errHandler.ErrDoesNotExist {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	token := OTPgen()
+	if err = a.store.AddExternalUserLogin(ctx, auth.SHOPIFY, cred.UserID, token, req.Email); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	// send token to given email address
+	if err = a.mailer.SendVerifyEmailConfirmation(req.Email, req.Language, token); err != nil {
+		return nil, status.Errorf(codes.Unknown, err.Error())
+	}
+
+	return &pb.VerifyEmailResponse{}, nil
+}
+
+func (a *Server) getShopifyCustomerIDFromEmail(ctx context.Context, extUser ExternalUser) (string, error) {
+	url := fmt.Sprintf("https://%s:%s@%s/admin/api/%s/customers/search.json?query=email:%s",
+		a.config.ShopifyConfig.APIKey, a.config.ShopifyConfig.Secret, a.config.ShopifyConfig.Hostname,
+		a.config.ShopifyConfig.APIVersion, extUser.ExternalUsername)
+
+	var customers ShopifyCustomerList
+	if err := auth.GetHTTPResponse(url, &customers, false); err != nil {
+		return "", err
+	}
+
+	if len(customers.Customers) == 0 {
+		// remove email from external login
+		if err := a.store.DeleteExternalUserLogin(ctx, extUser.UserID, extUser.ServiceName); err != nil {
+			return "", err
+		}
+		return "", fmt.Errorf("no customer record found: %s", extUser.ExternalUsername)
+	}
+
+	return fmt.Sprintf("%d", customers.Customers[0].ID), nil
+}
+
+// ConfirmBindingEmail checks given token and bind
+func (a *Server) ConfirmBindingEmail(ctx context.Context, req *pb.ConfirmBindingEmailRequest) (*pb.ConfirmBindingEmailResponse, error) {
+	cred, err := a.auth.GetCredentials(ctx, auth.NewOptions().WithOrgID(req.OrganizationId))
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "authentication failed: %s", err.Error())
+	}
+
+	if !cred.IsOrgAdmin {
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
+	}
+
+	extUser, err := a.store.GetExternalUserByToken(ctx, auth.SHOPIFY, req.Token)
+	if err != nil {
+		if err == errHandler.ErrDoesNotExist {
+			return nil, status.Errorf(codes.InvalidArgument, "Incorrect token")
+		}
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	if cred.UserID != extUser.UserID {
+		return nil, status.Errorf(codes.InvalidArgument, "Incorrect token")
+	}
+
+	// get shopify customer id from email
+	customerID, err := a.getShopifyCustomerIDFromEmail(ctx, extUser)
+	if err != nil {
+		return nil, status.Errorf(codes.Unavailable, err.Error())
+	}
+
+	extUser.ExternalUserID = customerID
+	if err = a.store.SetExternalUserID(ctx, extUser); err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+
+	return &pb.ConfirmBindingEmailResponse{}, nil
+}

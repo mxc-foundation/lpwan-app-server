@@ -69,6 +69,7 @@ type controller struct {
 	passwordHashIterations int
 	enableSTC              bool
 	externalAuth           user.ExternalAuthentication
+	shopifyConfig          user.ShopifyAdminAPI
 }
 
 var ctrl *controller
@@ -85,6 +86,7 @@ func SettingsSetup(name string, conf config.Config) (err error) {
 		passwordHashIterations: conf.General.PasswordHashIterations,
 		enableSTC:              conf.General.EnableSTC,
 		externalAuth:           conf.ExternalAuth,
+		shopifyConfig:          conf.ShopifyConfig,
 	}
 	ctrl.applicationServerID, err = uuid.FromString(conf.ApplicationServer.ID)
 	if err != nil {
@@ -245,6 +247,7 @@ func SetupCusAPI(h *store.Handler, grpcServer *grpc.Server, rpID uuid.UUID) erro
 			OperatorLogoPath: email.GetOperatorInfo().OperatorLogo,
 			WeChatLogin:      ctrl.externalAuth.WechatAuth,
 			DebugWeChatLogin: ctrl.externalAuth.DebugWechatAuth,
+			ShopifyConfig:    ctrl.shopifyConfig,
 		},
 	)
 	api.RegisterUserServiceServer(grpcServer, userSrv)

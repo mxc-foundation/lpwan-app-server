@@ -111,7 +111,7 @@ type Store interface {
 
 	// GetUserIDByExternalUserID gets user id from service name and external user id
 	GetUserIDByExternalUserID(ctx context.Context, service string, externalUserID string) (int64, error)
-	// GetExternalUserByUserID gets external user id from service name and user id
+	// GetExternalUserByUserIDAndService gets external user id from service name and user id
 	GetExternalUserByUserIDAndService(ctx context.Context, service string, userID int64) (ExternalUser, error)
 	// GetExternalUsersByUserID gets all external users bound with userID
 	GetExternalUsersByUserID(ctx context.Context, userID int64) ([]ExternalUser, error)
@@ -121,6 +121,12 @@ type Store interface {
 	DeleteExternalUserLogin(ctx context.Context, userID int64, service string) error
 	// SetExternalUsername updates external user's username
 	SetExternalUsername(ctx context.Context, service, externalUserID, externalUsername string) error
+	// GetExternalUserByToken returns external user with given security token
+	GetExternalUserByToken(ctx context.Context, service, token string) (ExternalUser, error)
+	// GetExternalUserByUsername returns external user with given external username
+	GetExternalUserByUsername(ctx context.Context, service, externalUsername string) (ExternalUser, error)
+	// SetExternalUserID updates external id of an external user
+	SetExternalUserID(ctx context.Context, extUser ExternalUser) error
 
 	// GlobalSearch performs a search on organizations, applications, gateways
 	// and devices
@@ -131,6 +137,8 @@ type Store interface {
 type Mailer interface {
 	// SendRegistrationConfirmation sends email to the user confirming registration
 	SendRegistrationConfirmation(email, lang, securityToken string) error
+	// SendVerifyEmailConfirmation sends email with confirmation message to given address
+	SendVerifyEmailConfirmation(email, lang, securityToken string) error
 	// SendPasswordResetUnknown sends an email that password reset was requested,
 	// but the user is unknown
 	SendPasswordResetUnknown(email, lang string) error
@@ -155,6 +163,8 @@ type Config struct {
 	WeChatLogin auth.WeChatAuthentication
 	// external user wechat login config, debug mode
 	DebugWeChatLogin auth.WeChatAuthentication
+	// shopify private app configuration
+	ShopifyConfig ShopifyAdminAPI
 }
 
 // Server implements Internal User Service
@@ -345,6 +355,7 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*inpb
 		}
 	}
 
+	var userEmail string
 	newEmail := normalizeUsername(req.User.Email)
 	if newEmail != "" && req.User.Email != user.Email {
 		if err := validateEmail(newEmail); err != nil {
@@ -353,12 +364,15 @@ func (a *Server) Update(ctx context.Context, req *inpb.UpdateUserRequest) (*inpb
 		if err := a.store.SetUserEmail(ctx, user.ID, newEmail); err != nil {
 			return nil, status.Errorf(codes.Internal, "couldn't update user's email: %v", err)
 		}
+		userEmail = newEmail
+	} else {
+		userEmail = user.Email
+	}
 
-		// user email is changed, we must update jwt and return it to API caller
-		jwToken, err = a.jwtv.SignToken(jwt.Claims{Username: newEmail, UserID: user.ID, Service: cred.Service}, 0, nil)
-		if err != nil {
-			return nil, status.Errorf(codes.Internal, "couldn't create a token: %v", err)
-		}
+	// username or email changed or not, always return jwt in response
+	jwToken, err = a.jwtv.SignToken(jwt.Claims{Username: userEmail, UserID: user.ID, Service: cred.Service}, 0, nil)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "couldn't create a token: %v", err)
 	}
 
 	return &inpb.UpdateUserResponse{Jwt: jwToken}, nil
