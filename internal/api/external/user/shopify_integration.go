@@ -6,6 +6,7 @@ type ShopifyAdminAPI struct {
 	APIKey     string `mapstructure:"api_key"`
 	Secret     string `mapstructure:"secret"`
 	APIVersion string `mapstructure:"api_version"`
+	StoreName  string `mapstructure:"store_name"`
 }
 
 // ShopifyCustomer includes a part of attributes of customer
